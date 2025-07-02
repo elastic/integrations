@@ -1,0 +1,340 @@
+---
+description: Pipeline for processing alert logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.time
+        - json.alertId
+      tag: fingerprint_alert
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert
+      value: alert
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Armis
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Asset Management and Security
+  - rename:
+      field: json.activityUUIDs
+      tag: rename_activityUUIDs
+      target_field: armis.alert.activity_uuids
+      ignore_missing: true
+  - convert:
+      field: json.affectedDevicesCount
+      tag: convert_affectedDevicesCount_to_long
+      target_field: armis.alert.affected_devices_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.alertId
+      tag: convert_alertId_to_string
+      target_field: armis.alert.alert_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_alert_alert_id
+      copy_from: armis.alert.alert_id
+      ignore_empty_value: true
+  - rename:
+      field: json.classification
+      tag: rename_classification
+      target_field: armis.alert.classification
+      ignore_missing: true
+  - rename:
+      field: json.connectionIds
+      tag: rename_connectionIds
+      target_field: armis.alert.connection_ids
+      ignore_missing: true
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: armis.alert.description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_alert_description
+      copy_from: armis.alert.description
+      ignore_empty_value: true
+  - rename:
+      field: json.destinationEndpoints
+      tag: rename_destinationEndpoints
+      target_field: armis.alert.destination_endpoints
+      ignore_missing: true
+  - convert:
+      field: json.deviceIds
+      tag: convert_deviceIds_to_string
+      target_field: armis.alert.device_ids
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: armis.alert.device_ids
+      tag: foreach_deviceIds
+      if: ctx.armis?.alert?.device_ids instanceof List
+      processor:
+        append:
+          field: host.id
+          tag: append_deviceIds_into_host_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: armis.alert.device_ids
+      tag: foreach_deviceIds
+      if: ctx.armis?.alert?.device_ids instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_deviceIds_into_related_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - date:
+      field: json.lastAlertUpdateTime
+      tag: date_lastAlertUpdateTime
+      target_field: armis.alert.last_alert_update_time
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      if: ctx.json?.lastAlertUpdateTime != null && ctx.json.lastAlertUpdateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mitreAttackLabels
+      tag: rename_mitreAttackLabels
+      target_field: armis.alert.mitre_attack_labels
+      ignore_missing: true
+  - append:
+      field: threat.technique.name
+      tag: append_mitre_attack_labels_into_threat_technique_name
+      value: '{{{armis.alert.mitre_attack_labels}}}'
+      allow_duplicates: false
+      if: ctx.armis?.alert?.mitre_attack_labels != null
+  - convert:
+      field: json.policyId
+      tag: convert_policyId_to_string
+      target_field: armis.alert.policy_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_alert_policy_id
+      copy_from: armis.alert.policy_id
+      ignore_empty_value: true
+  - rename:
+      field: json.policyLabels
+      tag: rename_policyLabels
+      target_field: armis.alert.policy_labels
+      ignore_missing: true
+  - rename:
+      field: json.policyTitle
+      tag: rename_policyTitle
+      target_field: armis.alert.policy_title
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_alert_policy_title
+      copy_from: armis.alert.policy_title
+      ignore_empty_value: true
+  - set:
+      field: armis.alert.friendly_name
+      tag: set_armis_alert_friendly_name_from_alert_policy_title
+      copy_from: armis.alert.policy_title
+      ignore_empty_value: true
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: armis.alert.severity
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.armis?.alert?.severity instanceof String
+      source: |-
+        String severity = ctx.armis.alert.severity;
+        if (severity.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (severity.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.sourceEndpoints
+      tag: rename_sourceEndpoints
+      target_field: armis.alert.source_endpoints
+      ignore_missing: true
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: armis.alert.status
+      ignore_missing: true
+  - date:
+      field: json.statusChangeTime
+      tag: date_statusChangeTime
+      target_field: armis.alert.status_change_time
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      if: ctx.json?.statusChangeTime != null && ctx.json.statusChangeTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_status_change_time
+      copy_from: armis.alert.status_change_time
+      ignore_empty_value: true
+  - date:
+      field: json.time
+      tag: date_time
+      target_field: armis.alert.time
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.title
+      tag: rename_title
+      target_field: armis.alert.title
+      ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: armis.alert.type
+      ignore_missing: true
+  - remove:
+      field:
+        - armis.alert.alert_id
+        - armis.alert.device_ids
+        - armis.alert.description
+        - armis.alert.policy_id
+        - armis.alert.policy_title
+        - armis.alert.status_change_time
+        - armis.alert.mitre_attack_labels
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

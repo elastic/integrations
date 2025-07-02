@@ -1,0 +1,141 @@
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  provider: azure
+  scopes:
+{{#each token_scopes as |token_scope|}}
+    - {{token_scope}}
+{{/each}}
+  endpoint_params: 
+    grant_type: client_credentials
+{{#if token_url}}
+  token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+  azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+redact:
+  fields: ~
+state: 
+  admin_report_settings_path: '/admin/reportSettings'
+  orgs_path: '/organization?$select=id,displayName,tenantType'
+program: |
+    state.with(
+      request("GET", state.url.trim_right("/") + state.admin_report_settings_path).do_request().as(admin_report_settings_resp,
+        admin_report_settings_resp.StatusCode == 200
+        ?
+          bytes(admin_report_settings_resp.Body).decode_json().as(admin_report_settings_json, 
+            request("GET", state.url.trim_right("/") + state.orgs_path).do_request().as(orgs_resp, 
+              orgs_resp.StatusCode == 200
+              ?
+                bytes(orgs_resp.Body).decode_json().as(orgs_json,
+                  {
+                    "events": [{
+                      "o365": {
+                        "metrics": {
+                          "tenant_settings": {
+                            "display_concealed_names": admin_report_settings_json.displayConcealedNames,
+                            "tenant": {
+                              "display_name": orgs_json.value[0].displayName,
+                              "id": orgs_json.value[0].id,
+                              "type": orgs_json.value[0].tenantType
+                            }
+                          }
+                        }
+                      }
+                    }]
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(orgs_resp.StatusCode),
+                      "id": string(orgs_resp.Status),
+                      "message": "GET " + state.orgs_path + ": " + (
+                        size(orgs_resp.Body) != 0 ?
+                          string(orgs_resp.Body)
+                        :
+                          string(orgs_resp.Status) + ' (' + string(orgs_resp.StatusCode) + ')'
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+            )
+          )
+        : 
+          {
+            "events": {
+              "error": {
+                "code": string(admin_report_settings_resp.StatusCode),
+                "id": string(admin_report_settings_resp.Status),
+                "message": "GET " + state.admin_report_settings_path + ": " + (
+                  size(admin_report_settings_resp.Body) != 0 ?
+                    string(admin_report_settings_resp.Body)
+                  :
+                    string(admin_report_settings_resp.Status) + ' (' + string(admin_report_settings_resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

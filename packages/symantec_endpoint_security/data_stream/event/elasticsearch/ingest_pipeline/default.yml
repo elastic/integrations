@@ -27,6 +27,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.module
+      copy_from: ses.feature_name
+      tag: set_event_module
+      if: ctx.ses?.feature_name instanceof String && ctx.ses.feature_name != ''
   - convert:
       field: ses.category_id
       tag: convert_category_id_to_string
@@ -198,6 +203,11 @@ processors:
       value: '{{{ses.device_end_time}}}'
       allow_duplicates: false
       if: ctx.ses?.device_end_time != null
+  - set:
+      field: group.name
+      tag: set_group_name_from_device_group
+      copy_from: ses.device_group
+      ignore_empty_value: true
   - convert:
       field: ses.device_gateway
       tag: convert_device_gateway_to_ip
@@ -679,6 +689,16 @@ processors:
         - remove:
             field: ses.is_user_present
             ignore_missing: true
+  - foreach:
+      field: ses.lineage
+      if: ctx.ses?.lineage instanceof List
+      tag: foreach_lineage
+      processor:
+        append:
+          tag: append_lineage_to_process_previous_executable
+          field: process.previous.executable
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: log.level
       tag: append_log_level_from_log_level
@@ -744,6 +764,12 @@ processors:
       tag: set_message_from_message
       copy_from: ses.message
       ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_type
+      copy_from: ses.type
+      ignore_empty_value: true
+      if: ctx.message == null || ctx.message == ''
   - convert:
       field: ses.message_id
       tag: convert_message_id_to_string
@@ -783,6 +809,17 @@ processors:
         - remove:
             field: ses.open_mode
             ignore_missing: true
+  - json:
+      field: ses.product_data
+      tag: decode_product_data_if_json
+      if: ctx.ses?.product_data instanceof String
+      ignore_failure: true
+  - set:
+      field: message
+      tag: set_message_from_product_data_bpe_description
+      copy_from: ses.product_data.bpe_description
+      ignore_empty_value: true
+      if: ctx.message == null || ctx.message == ''
   - convert:
       field: ses.proxy_device_ip
       tag: convert_proxy_device_ip_to_ip
@@ -1129,23 +1166,32 @@ processors:
       if: ctx.ses?.category_id != null && ctx.ses.category_id == '6'
       tag: pipeline_category_diagnostic
       ignore_missing_pipeline: true
-  - foreach:
-      field: file.size
-      if: ctx.file?.size instanceof List
-      tag: foreach_file_size
-      processor:
-        convert:
-          field: _ingest._value
-          tag: convert_file_size_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      description: Convert size array to longs
+      tag: script_to_convert_file_size
+      if: ctx.file?.size instanceof List && ctx.file.size.length != 0
+
+      lang: painless
+      source: >-
+        def new_sizes = [];
+        for (int i = 0; i < ctx.file.size.length; i++) {
+          def sz = ctx.file.size[i];
+          if (sz == null) {
+            continue
+          }
+          if (sz instanceof long || sz instanceof int) {
+            new_sizes.add((long)sz);
+          } else if (sz instanceof String && sz != "") {
+            new_sizes.add(Long.parseLong(sz));
+          }
+        }
+        ctx.file.size = new_sizes;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - script:
       description: Move raw_data to raw_data.value if the value is not compatible with flattened.
       lang: painless
@@ -1171,6 +1217,7 @@ processors:
         - ses.device_domain
         - ses.device_domain_uid
         - ses.device_end_time
+        - ses.device_group
         - ses.device_hw_bios_manufacturer
         - ses.device_hw_cpu_type
         - ses.device_ip
@@ -1184,6 +1231,8 @@ processors:
         - ses.device_type
         - ses.device_uid
         - ses.event_duration
+        - ses.feature_name
+        - ses.lineage
         - ses.log_level
         - ses.log_name
         - ses.message

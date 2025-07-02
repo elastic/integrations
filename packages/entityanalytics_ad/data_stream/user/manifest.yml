@@ -26,7 +26,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        description: The Active Directory user name.
+        description: The Active Directory user DN.
       - name: ad_password
         type: password
         title: Active Directory User Password
@@ -51,6 +51,35 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----
       - name: id
         type: text
         title: Input ID
@@ -69,8 +98,7 @@ streams:
         type: text
         title: User Attributes
         description: >-
-          User attributes to request from the AD server (all if not set). Attribute names should be obtained from the
-          AD server rather than from the fields within ingested documents, as fields are renamed during ingest.
+          User attributes to request from the AD server (all if not set). Attribute names should be obtained from the AD server rather than from the fields within ingested documents, as fields are renamed during ingest.
         multi: true
         required: false
         show_user: false
@@ -78,11 +106,18 @@ streams:
         type: text
         title: Group Attributes
         description: >-
-          Group attributes to request from the AD server (all if not set). Attribute names should be obtained from the
-          AD server rather than from the fields within ingested documents, as fields are renamed during ingest.
+          Group attributes to request from the AD server (all if not set). Attribute names should be obtained from the AD server rather than from the fields within ingested documents, as fields are renamed during ingest.
         multi: true
         required: false
         show_user: false
+      - name: preserve_group_member_list
+        required: true
+        show_user: false
+        title: Preserve group member list
+        description: Unless set, the member list will be deleted from group attributes to avoid large documents.
+        type: bool
+        multi: false
+        default: false
       - name: tags
         type: text
         title: Tags

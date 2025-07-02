@@ -5,9 +5,14 @@ processors:
       field: event.code
       type: string
       ignore_missing: true
+  - script:
+      description: Remove all empty values from event_data.
+      lang: painless
+      source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
+      if: ctx.winlog?.event_data != null
   - pipeline:
       name: '{{ IngestPipeline "standard" }}'
-      if: 'ctx?.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
+      if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
   - gsub:
       field: source.ip
       pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
@@ -38,7 +43,7 @@ processors:
       value: '{{source.ip}}'
       allow_duplicates: false
       if: |-
-        ctx?.source?.ip != null &&
+        ctx.source?.ip != null &&
         ctx.source.ip != "-"
   - convert:
       field: winlog.record_id
@@ -56,7 +61,7 @@ processors:
       copy_from: winlog.level
       ignore_empty_value: true
       ignore_failure: true
-      if: ctx?.winlog?.level != ""
+      if: ctx.winlog?.level != ""
   - date:
       field: winlog.time_created
       tag: "time_created_date"
@@ -76,6 +81,12 @@ processors:
       field: error.code
       type: string
       ignore_missing: true
+  - remove:
+      description: Remove empty event data.
+      field: winlog.event_data
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.winlog?.event_data != null && ctx.winlog.event_data.size() == 0
 on_failure:
   - set:
       field: event.kind

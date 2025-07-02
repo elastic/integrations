@@ -14,7 +14,37 @@ resource.ssl:
 {{#if resource_timeout}}
 resource.timeout: {{resource_timeout}}
 {{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{url}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
 auth.oauth2:
   client.id: {{client_id}}
   client.secret: {{client_secret}}
@@ -141,7 +171,7 @@ program: |
                   "error": {
                     "code": string(resp.StatusCode),
                     "id": string(resp.Status),
-                    "message": "GET " + state.path + ": " + (
+                    "message": "GET " + state.type_to_api_map[work_list[0].type] + ": " + (
                       size(resp.Body) != 0 ?
                         string(resp.Body)
                       :

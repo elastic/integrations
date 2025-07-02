@@ -41,50 +41,50 @@ An example event for `intelligence` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-12T10:26:45.318654640Z",
+    "@timestamp": "2025-05-15T05:41:39.529550940Z",
     "agent": {
-        "ephemeral_id": "434f328f-443d-4cd9-aad8-717d835a2312",
-        "id": "c48e3b22-841c-4ed3-ba7f-a039638b8e1b",
-        "name": "elastic-agent-54553",
+        "ephemeral_id": "c4e3038f-6797-46c3-b082-cbd123c7cbe3",
+        "id": "1c061faa-0b6d-43fe-b1d8-93ca2ddea2de",
+        "name": "elastic-agent-51370",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "anomali": {
         "threatstream": {
             "can_add_public_tags": true,
-            "confidence": 12,
-            "deletion_scheduled_at": "2025-02-19T10:26:45.31865464Z",
+            "confidence": 60,
+            "deletion_scheduled_at": "2025-05-22T05:41:39.52955094Z",
             "expiration_ts": "9999-12-31T00:00:00.000Z",
             "feed_id": 0,
-            "id": "235548914",
+            "id": "232020126",
             "is_anonymous": false,
             "is_editable": false,
             "is_public": true,
-            "itype": "apt_email",
+            "itype": "apt_domain",
             "meta": {
-                "severity": "medium"
+                "severity": "very-high"
             },
-            "owner_organization_id": 70,
+            "owner_organization_id": 67,
             "retina_confidence": -1,
-            "source_reported_confidence": 12,
+            "source_reported_confidence": 60,
             "status": "active",
             "threat_type": "apt",
-            "type": "email",
-            "update_id": 100000002,
-            "uuid": "bc5a223e-f7a1-4acb-b50b-c81395e34218",
-            "value": "edc2@wsx.com"
+            "type": "domain",
+            "update_id": "100000001",
+            "uuid": "0921be47-9cc2-4265-b896-c62a7cb91042",
+            "value": "gen1xyz.com"
         }
     },
     "data_stream": {
         "dataset": "ti_anomali.intelligence",
-        "namespace": "29572",
+        "namespace": "27115",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c48e3b22-841c-4ed3-ba7f-a039638b8e1b",
+        "id": "1c061faa-0b6d-43fe-b1d8-93ca2ddea2de",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -93,12 +93,12 @@ An example event for `intelligence` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2021-04-29T16:00:35.529Z",
+        "created": "2021-04-06T09:56:22.915Z",
         "dataset": "ti_anomali.intelligence",
-        "ingested": "2025-02-12T10:26:45Z",
+        "ingested": "2025-05-15T05:41:39Z",
         "kind": "enrichment",
-        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":12,\"created_by\":null,\"created_ts\":\"2021-04-29T16:00:35.529Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":235548914,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_email\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 142\",\"severity\":\"medium\"},\"modified_ts\":\"2021-04-29T16:00:35.529Z\",\"org\":\"\",\"owner_organization_id\":70,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/235548914/\",\"retina_confidence\":-1,\"sort\":[467407026],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":12,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":9,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"email\",\"update_id\":100000002,\"uuid\":\"bc5a223e-f7a1-4acb-b50b-c81395e34218\",\"value\":\"edc2@wsx.com\",\"workgroups\":[]}",
-        "severity": 5,
+        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":60,\"created_by\":null,\"created_ts\":\"2021-04-06T09:56:22.915Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":232020126,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_domain\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 136\",\"severity\":\"very-high\"},\"modified_ts\":\"2021-04-06T09:56:22.915Z\",\"org\":\"\",\"owner_organization_id\":67,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/232020126/\",\"retina_confidence\":-1,\"sort\":[455403032],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":60,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":54,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"domain\",\"update_id\":100000001,\"uuid\":\"0921be47-9cc2-4265-b896-c62a7cb91042\",\"value\":\"gen1xyz.com\",\"workgroups\":[]}",
+        "severity": 9,
         "type": [
             "indicator"
         ]
@@ -113,16 +113,16 @@ An example event for `intelligence` looks as following:
     ],
     "threat": {
         "indicator": {
-            "confidence": "Low",
-            "email": {
-                "address": "edc2@wsx.com"
-            },
+            "confidence": "Medium",
             "marking": {
                 "tlp": "WHITE"
             },
-            "modified_at": "2021-04-29T16:00:35.529Z",
+            "modified_at": "2021-04-06T09:56:22.915Z",
             "provider": "Analyst",
-            "type": "email-addr"
+            "type": "domain-name",
+            "url": {
+                "domain": "gen1xyz.com"
+            }
         }
     }
 }
@@ -139,7 +139,7 @@ An example event for `intelligence` looks as following:
 | anomali.threatstream.expiration_ts | Time stamp of when intelligence will expire on ThreatStream, in UTC time. Note: expiration_ts can only be specified in an advanced search query. | date |
 | anomali.threatstream.feed_id | Numeric ID of the threat feed that generated the indicator. feed_id = 0 for user-created indicators. | long |
 | anomali.threatstream.id | Unique ID for the indicator. This identifier is assigned to the indicator when it is first created on ThreatStream. Unlike update_id, this identifier never changes as long as the indicator is available on ThreatStream. | keyword |
-| anomali.threatstream.import_session_id | ID of import session in which the indicator was imported. import_session_id=0 if the indicator came in through a threat feed. | long |
+| anomali.threatstream.import_session_id | ID of import session in which the indicator was imported. import_session_id=0 if the indicator came in through a threat feed. | keyword |
 | anomali.threatstream.is_anonymous | Whether the organization and user information is anonymized when the observable is accessed by users outside of the owner organization. | boolean |
 | anomali.threatstream.is_editable | Indicates whether the imported entity can be updated by an intelligence source. This attribute is reserved for intelligence source providers and can be ignored. | boolean |
 | anomali.threatstream.is_public | Visibility of the indicator—public or private. 0/False—if the indicator is private or belongs to a Trusted Circle 1/True—if the indicator is public Default: 0/False | boolean |
@@ -162,9 +162,9 @@ An example event for `intelligence` looks as following:
 | anomali.threatstream.status | Status assigned to the indicator. For example, active, inactive, falsepos. | keyword |
 | anomali.threatstream.threat_type | Summarized threat type of the indicator. For example, malware, compromised, apt, c2, and so on. | keyword |
 | anomali.threatstream.threatscore | Deprecated. | keyword |
-| anomali.threatstream.trusted_circle_ids | IDs of the trusted circles with which the indicator is shared. | long |
+| anomali.threatstream.trusted_circle_ids | IDs of the trusted circles with which the indicator is shared. | keyword |
 | anomali.threatstream.type | Type of indicator—domain, email, ip, md5, string, url. | keyword |
-| anomali.threatstream.update_id | An incrementing numeric identifier associated with each update to intelligence on ThreatStream. | long |
+| anomali.threatstream.update_id | An incrementing numeric identifier associated with each update to intelligence on ThreatStream. | keyword |
 | anomali.threatstream.uuid | UUID (universally unique identifier) assigned to the observable for STIX compliance. | keyword |
 | anomali.threatstream.value | Value of the observable. For example, 192.168.0.10 or http://www.google.com. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -197,9 +197,9 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "2f4f6445-5077-4a66-8582-2c74e071b6dd",
-        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "5b173eb1-b99b-41b7-8bd8-aee3a5e52c58",
+        "id": "574058b5-688b-43f0-ac43-68a85476b2fa",
+        "name": "elastic-agent-42471",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -226,14 +226,14 @@ An example event for `threatstream` looks as following:
     },
     "data_stream": {
         "dataset": "ti_anomali.threatstream",
-        "namespace": "44735",
+        "namespace": "11488",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
+        "id": "574058b5-688b-43f0-ac43-68a85476b2fa",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -243,7 +243,7 @@ An example event for `threatstream` looks as following:
             "threat"
         ],
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2024-08-01T07:49:22Z",
+        "ingested": "2025-05-14T08:28:29Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
@@ -299,7 +299,7 @@ An example event for `threatstream` looks as following:
 | @timestamp | Event timestamp. | date |
 | anomali.threatstream.added_at | Date when IOC was added. | date |
 | anomali.threatstream.classification | Indicates whether an indicator is private or from a public feed and available publicly. Possible values: private, public. | keyword |
-| anomali.threatstream.confidence | The measure of the accuracy (from 0 to 100) assigned by ThreatStream's predictive analytics technology to indicators. | short |
+| anomali.threatstream.confidence | The measure of the accuracy (from 0 to 100) assigned by ThreatStream's predictive analytics technology to indicators. | long |
 | anomali.threatstream.deleted_at | Date when IOC was deleted/expired. | date |
 | anomali.threatstream.detail2 | Detail text for indicator. | text |
 | anomali.threatstream.id | The ID of the indicator. | keyword |

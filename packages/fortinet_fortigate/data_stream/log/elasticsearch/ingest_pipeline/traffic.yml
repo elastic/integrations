@@ -66,6 +66,11 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - convert:
+    field: fortinet.firewall.rcvddelta
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert:
     field: fortinet.firewall.rcvdbyte
     target_field: destination.bytes
     type: long
@@ -92,6 +97,11 @@ processors:
 - rename:
     field: fortinet.firewall.group
     target_field: source.user.group.name
+    ignore_missing: true
+- convert:
+    field: fortinet.firewall.sentdelta
+    type: long
+    ignore_failure: true
     ignore_missing: true
 - convert:
     field: fortinet.firewall.sentbyte
@@ -220,6 +230,16 @@ processors:
     target_field: url
     keep_original: false
     if: ctx.fortinet?.firewall?.url != null
+    on_failure:
+      - set:
+            tag: traffic_set_url_original_on_fail
+            field: url.original
+            copy_from: fortinet.firewall.url
+- script:
+    if: ctx.fortinet?.firewall?.rcvddelta instanceof Number && ctx.fortinet?.firewall?.sentdelta instanceof Number
+    tag: script_sum_delta_bytes
+    lang: painless
+    source: ctx.fortinet.firewall.deltabytes = ctx.fortinet.firewall.rcvddelta + ctx.fortinet.firewall.sentdelta
 - remove:
     field: fortinet.firewall.url
     ignore_missing: true

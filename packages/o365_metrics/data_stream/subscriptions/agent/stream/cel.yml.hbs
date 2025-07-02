@@ -15,21 +15,52 @@ auth.oauth2:
 {{else if azure_tenant_id}}
     azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
-
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{url}}
 {{#if resource_ssl}}
 resource.ssl: 
   {{resource_ssl}}
 {{/if}}
-
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 {{/if}}
 
 tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
@@ -43,6 +74,8 @@ processors:
 
 state:
   want_more: false
+  subscribed_sku_path: '/subscribedSkus'
+  directory_subscriptions_path: '/directory/subscriptions'
   base:
     tenant_id: "{{azure_tenant_id}}"
     period: "{{period}}"
@@ -54,29 +87,92 @@ redact:
 program: |
     state.with(
       request(
-        "GET",
-        state.url + "/subscribedSkus"
-      ).do_request().as(resp,
-        resp.StatusCode == 200
+        "GET", 
+        state.url.trim_right("/") + state.subscribed_sku_path
+      ).do_request().as(sku_resp,
+        sku_resp.StatusCode == 200
         ?
-          bytes(resp.Body).decode_json().as(body, {
-                 "events": body.value.map(e,{"message": e.encode_json()}),                   
-          })
+          bytes(sku_resp.Body).decode_json().as(sku_json,
+            {
+              "events": sku_json.value.map(sku,
+                {
+                 "o365":{  
+                  "metrics": {
+                    "subscriptions": {
+                      "applies_to": sku.appliesTo,
+                      "consumed_units": {"count": sku.consumedUnits},
+                      "id": sku.id,
+                      "sku_part_number": sku.skuPartNumber,
+                      "account_name": sku.accountName,
+                      "account_id": sku.accountId,
+                      "capability_status": sku.capabilityStatus,
+                      "sku_id": sku.skuId,
+                      "subscription_ids": sku.subscriptionIds,
+                      "prepaid_units": {
+                        "enabled": {"count": sku.prepaidUnits.enabled},
+                        "suspended": {"count": sku.prepaidUnits.suspended},
+                        "warning": {"count": sku.prepaidUnits.warning},
+                        "locked_out": {"count": sku.prepaidUnits.lockedOut}
+                    },
+                      "surplus_units": {"count": sku.prepaidUnits.enabled - sku.consumedUnits},
+                      "service_plans": sku.servicePlans.map(sp,
+                       {
+                         "applies_to": sp.appliesTo,
+                         "service_plan_id": sp.servicePlanId,
+                         "service_plan_name": sp.servicePlanName,
+                         "provisioning_status": sp.provisioningStatus
+                       }
+                      ),
+                      "subscription_details": sku.subscriptionIds.map(subscriptionId,
+                        request(
+                          "GET", 
+                          state.url.trim_right("/") + state.directory_subscriptions_path + "/" + subscriptionId
+                        ).do_request().as(subscriptions_resp,
+                          subscriptions_resp.StatusCode != 200
+                          ?
+                            {
+                                "subscription_error": [
+                                  string(subscriptions_resp.StatusCode), 
+                                  string(subscriptions_resp.Body)
+                                ].join(" ")
+                            }
+                          :
+                            bytes(subscriptions_resp.Body).decode_json().as(subscriptions,
+                              {
+                                "is_trial": subscriptions.isTrial,
+                                "next_lifecycle_date_time": subscriptions.nextLifecycleDateTime,
+                                "id": subscriptions.id,
+                                "status": subscriptions.status,
+                                "total_licenses": subscriptions.totalLicenses,
+                                "created_date_time": subscriptions.createdDateTime,
+                                "owner_tenant_id": subscriptions.ownerTenantId
+                              }
+                            )
+                        )
+                      )
+                    }
+                  }
+                }
+              }
+              ),
+              "want_more": false
+            }
+          )
         :
           {
             "events": {
               "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
+                "code": string(sku_resp.StatusCode),
+                "id": string(sku_resp.Status),
+                "message": "GET " + state.subscribed_sku_path + ": " + (
+                  size(sku_resp.Body) != 0 ?
+                    string(sku_resp.Body)
                   :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    string(sku_resp.Status) + ' (' + string(sku_resp.StatusCode) + ')'
                 ),
               },
             },
-            "want_more": false,
+            "want_more": false
           }
       )
     )

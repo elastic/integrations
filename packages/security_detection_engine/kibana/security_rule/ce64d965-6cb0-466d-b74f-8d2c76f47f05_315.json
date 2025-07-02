@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the use of the Exchange PowerShell cmdlet, Set-CASMailbox, to add a new ActiveSync allowed device. Adversaries may target user email to collect sensitive information.",
+        "false_positives": [
+            "Legitimate exchange system administration activity."
+        ],
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "New ActiveSyncAllowedDeviceID Added via PowerShell",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating New ActiveSyncAllowedDeviceID Added via PowerShell\n\nActiveSync is a protocol enabling mobile devices to synchronize with Exchange mailboxes, crucial for accessing emails on-the-go. Adversaries may exploit the Exchange PowerShell cmdlet, Set-CASMailbox, to add unauthorized devices, gaining persistent access to sensitive email data. The detection rule identifies suspicious PowerShell activity by monitoring for specific command patterns, helping to flag potential unauthorized device additions and mitigate risks associated with account manipulation.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific process name (e.g., powershell.exe, pwsh.exe, powershell_ise.exe) and the command line arguments used, focusing on the presence of \"Set-CASMailbox\" and \"ActiveSyncAllowedDeviceIDs\".\n- Examine the user account associated with the process execution to determine if the account has a history of legitimate administrative actions or if it might be compromised.\n- Check the device ID added to the ActiveSyncAllowedDeviceIDs list to verify if it is recognized and authorized for use within the organization.\n- Investigate the source IP address and host from which the PowerShell command was executed to assess if it aligns with expected administrative activity or if it originates from an unusual or suspicious location.\n- Review recent email access logs for the user account to identify any unusual patterns or access from unfamiliar devices that could indicate unauthorized access.\n- Correlate this event with other security alerts or logs from data sources like Microsoft Defender for Endpoint or Sysmon to identify any related suspicious activities or patterns.\n\n### False positive analysis\n\n- Legitimate administrative tasks may trigger the rule when IT staff use PowerShell to configure or update ActiveSync settings for users. To manage this, create exceptions for known administrative accounts or specific maintenance windows.\n- Automated scripts for device management that include the Set-CASMailbox cmdlet can cause false positives. Review and whitelist these scripts if they are verified as part of routine operations.\n- Third-party applications that integrate with Exchange and modify ActiveSync settings might be flagged. Identify and exclude these applications if they are trusted and necessary for business operations.\n- Regular audits of device additions by authorized personnel can help distinguish between legitimate and suspicious activities, allowing for more accurate exception handling.\n- Consider the context of the activity, such as the time of day and the user account involved, to refine detection rules and reduce false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected user account by disabling it to prevent further unauthorized access to the mailbox.\n- Revoke the ActiveSync device access by removing the unauthorized device ID from the user's mailbox settings using the Exchange PowerShell cmdlet.\n- Conduct a thorough review of the affected user's mailbox and account activity logs to identify any unauthorized access or data exfiltration attempts.\n- Reset the password for the compromised user account and enforce multi-factor authentication (MFA) to enhance security.\n- Notify the security team and relevant stakeholders about the incident for further investigation and potential escalation.\n- Implement additional monitoring on the affected account and similar accounts for any unusual activity or further attempts to add unauthorized devices.\n- Review and update the organization's security policies and procedures related to mobile device access and PowerShell usage to prevent recurrence.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name: (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\") and process.args : \"Set-CASMailbox*ActiveSyncAllowedDeviceIDs*\"\n",
+        "references": [
+            "https://www.volexity.com/blog/2020/12/14/dark-halo-leverages-solarwinds-compromise-to-breach-organizations/",
+            "https://docs.microsoft.com/en-us/powershell/module/exchange/set-casmailbox?view=exchange-ps"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ce64d965-6cb0-466d-b74f-8d2c76f47f05",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.002",
+                                "name": "Additional Email Delegate Permissions",
+                                "reference": "https://attack.mitre.org/techniques/T1098/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 315
+    },
+    "id": "ce64d965-6cb0-466d-b74f-8d2c76f47f05_315",
+    "type": "security-rule"
+}

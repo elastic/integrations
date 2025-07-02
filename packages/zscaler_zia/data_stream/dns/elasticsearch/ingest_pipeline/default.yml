@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing DNS logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -37,6 +48,33 @@ processors:
       tag: rename_resp_event
       target_field: json
       ignore_missing: true
+  - script:
+      tag: check_template_version
+      params:
+        pkg_version: 3.12.0
+        data_stream: dns-log
+        expect:
+          fields: category|cloudname|clt_sip|company|datacenter|datacentercity|datacentercountry|datetime|day|day_of_month|department|dept|deviceappversion|devicehostname|devicemodel|devicename|deviceostype|deviceosversion|deviceowner|devicetype|dns_gateway_rule|dns_gateway_server_protocol|dns_gateway_status|dns_req|dns_reqtype|dns_resp|dnsapp|dnsappcat|durationms|ecs_prefix|ecs_slot|eedone|epochtime|error|hour|http_code|istcp|loc|location|login|minutes|month|month_of_year|oclientsourceip|odevicehostname|odevicename|odeviceowner|odomcat|protocol|recordid|reqaction|reqrulelabel|resaction|respipcat|respipcategory|resrulelabel|restype|second|srv_dip|srv_dport|tz|user|year
+          version: v2
+      if: ctx.json != null && ctx._conf?.strict_fields == true
+      source: |-
+        if (ctx.resp?.version == null) {
+          def fields = [];
+          for (e in ctx.json.entrySet()) {
+            fields.add(e.getKey());
+          }
+          Collections.sort(fields);
+          String signature = String.join("|", fields);
+          if (signature != params.expect.fields) {
+            ctx.error = ctx.error ?: [:];
+            ctx.error.message = ctx.error.message ?: [];
+            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+          }
+        } else if (ctx.resp.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+        }
   - remove:
       field: resp
       tag: remove_resp
@@ -775,8 +813,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field: json
-      tag: remove_json
+      field:
+        - json
+        - _conf
+      tag: remove_unused
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values

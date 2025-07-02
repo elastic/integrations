@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing threat logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -12,10 +23,33 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
       ignore_failure: true
+  - script:
+      description: Drops null/empty values from event recursively. Done to avoid work on empty values.
+      lang: painless
+      if: ctx.json != null
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
   - fingerprint:
       fields:
         - json.threatInfo.createdAt
@@ -349,13 +383,29 @@ processors:
       field: json.agentRealtimeInfo.agentOsRevision
       target_field: sentinel_one.threat.agent.os.version
       ignore_missing: true
-  - rename:
-      field: json.agentRealtimeInfo.agentOsType
-      target_field: host.os.type
-      ignore_missing: true
-  - lowercase:
-      field: host.os.type
-      ignore_missing: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.json?.agentRealtimeInfo?.agentOsType != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String agent_os_type = ctx.json.agentRealtimeInfo.agentOsType.toLowerCase();
+        for (String os: params.os_type) {
+          if (agent_os_type.contains(os)) {
+            ctx.host.os.put('type', os);
+            return;
+          }
+        }
   - rename:
       field: json.agentRealtimeInfo.agentUuid
       target_field: sentinel_one.threat.agent.uuid
@@ -557,7 +607,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.description
-      target_field: message
+      target_field: sentinel_one.threat.description
       ignore_missing: true
   - set:
       field: event.id
@@ -1176,6 +1226,10 @@ processors:
       field: json.threatInfo.threatName
       target_field: sentinel_one.threat.name
       ignore_missing: true
+  - set:
+      field: message
+      value: 'Threat Detected: {{{sentinel_one.threat.name}}} ({{{sentinel_one.threat.confidence_level}}})'
+      if: ctx.sentinel_one?.threat.name != null && ctx.sentinel_one?.threat?.confidence_level != null
   - rename:
       field: json.whiteningOptions
       target_field: sentinel_one.threat.whitening_option

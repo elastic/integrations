@@ -5,6 +5,12 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
+  - gsub:
+      field: message
+      pattern: "^(\\xEF\\xBB\\xBF|\\xFF\\xFE\\x00\\x00|\\x00\\x00\\xFE\\xFF|\\xFF\\xFE|\\xFE\\xFF)"
+      replacement: ""
+      ignore_failure: true
+      tag: bom_removed
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -15,10 +21,33 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: json
+      if: "ctx.event?.original.startsWith(\"{\\\"\")"
       on_failure:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - grok:
+      field: event.original
+      tag: grok_event_original
+      patterns:
+      - 'Detection type: %{DATA:json.threat_name} Detection name: %{DATA:json.threat_name}
+        Computer name: %{HOSTNAME:json.hostname} Logged user: %{DATA:user.domain}\\%{DATA:json.user}
+        Time of occurrence: %{ESET_TIMESTAMP:json.occured_plaintext} Scanner: %{DATA:json.scanner_id}
+        Action performed: %{DATA:json.action_taken}$'
+      - '^%{DATA:message}\s+%{HOSTNAME:json.hostname} %{ESET_TIMESTAMP:json.occured_plaintext} %{DATA:eset_protect.event.threat_type} %{NOTSPACE:threat.indicator.name} %{ESET_THREAT_INDICATOR_TYPE:json.object_type} %{GREEDYDATA:json.object_uri}$'
+      pattern_definitions:
+        ESET_TIMESTAMP: "%{MONTHNUM}/%{MONTHDAY}/%{YEAR}, %{HOUR}:%{MINUTE}:%{SECOND} (?:AM|PM) UTC\\+%{INT}"
+        ESET_THREAT_INDICATOR_TYPE: File
+      if: "! ctx.event?.original.startsWith(\"{\\\"\")"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - append:
+      field: tags
+      value: eset_notification
+      allow_duplicates: false
+      if: "! ctx.event?.original.startsWith(\"{\\\"\") && ctx.json?.hostname != null"
   - set:
       field: event.kind
       tag: set_event_kind_alert
@@ -157,12 +186,19 @@ processors:
       value: "{{{eset_protect.event.ipv6}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv6 != null
+  - gsub:
+      field: json.occured_plaintext
+      pattern: UTC([+-])([0-9])$
+      replacement: UTC$10$2:00
+      target_field: json.occured
+      if: ctx.json?.occured_plaintext != null && ctx.json.occured_plaintext != ''
   - date:
       field: json.occured
       tag: date_occured
       target_field: eset_protect.event.occured
       formats:
         - dd-MMM-yyyy HH:mm:ss
+        - M/d/yy, h:m:s a z
       if: ctx.json?.occured != null && ctx.json.occured != ''
       on_failure:
         - append:
@@ -385,6 +421,16 @@ processors:
       tag: rename_event
       target_field: eset_protect.event.name
       ignore_missing: true
+  - rename:
+      field: json.trigger_event
+      tag: rename_trigger_event
+      target_field: eset_protect.event.trigger_event
+      ignore_missing: true
+  - rename:
+      field: json.detection_uuid
+      tag: rename_detection_uuid
+      target_field: eset_protect.event.detection_uuid
+      ignore_missing: true
   - set:
       field: message
       tag: set_message_from_event_name
@@ -527,6 +573,11 @@ processors:
       tag: set_process_executable_from_event_processname
       copy_from: eset_protect.event.processname
       ignore_empty_value: true
+  - rename:
+      field: json.command_line
+      tag: rename_command_line
+      target_field: eset_protect.event.command_line
+      ignore_missing: true
   - grok:
       field: eset_protect.event.processname
       tag: grok_processname

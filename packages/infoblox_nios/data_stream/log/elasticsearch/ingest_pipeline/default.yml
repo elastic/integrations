@@ -24,6 +24,7 @@ processors:
       ignore_failure: true
   - date:
       field: event.created
+      tag: date_event_created_tz
       timezone: '{{{event.timezone}}}'
       if: ctx.event?.timezone != null && ctx.event.created != null
       target_field: event.created
@@ -38,9 +39,14 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
       field: event.created
+      tag: date_event_created_notz
       if: ctx.event?.timezone == null && ctx.event?.created != null
       target_field: event.created
       formats:
@@ -54,7 +60,11 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: infoblox_nios.log.type
       value: 'DHCP'
@@ -99,7 +109,11 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
       field: related.ip
       value: '{{{_tmp.host.ip}}}'
@@ -178,7 +192,11 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error

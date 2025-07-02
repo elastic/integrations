@@ -62,11 +62,6 @@ processors:
       ignore_missing: true
   - append:
       field: related.user
-      value: '{{{response.username}}}'
-      if: ctx.response?.username != null
-      allow_duplicates: false
-  - append:
-      field: related.user
       value: '{{{response.targetUsername}}}'
       if: ctx.response?.targetUsername != null
       allow_duplicates: false
@@ -88,9 +83,27 @@ processors:
       target_field: user.name
       ignore_missing: true
   - rename:
-      field: response.accessListEntry
-      target_field: mongodb_atlas.organization.access_list_entry
+       field: user.name
+       target_field: user.email
+       tag: rename_user_email
+       if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
       ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
   - script:
       description: Convert Additional Info keys to snake case.
       tag: additional-info-keys-to-snake-case
@@ -157,11 +170,11 @@ processors:
       ignore_missing: true
   - rename:
       field: response.currentValue.number
-      target_field: mongodb_atlas.organization.current_value.number
+      target_field: mongodb_atlas.organization.metric.value
       ignore_missing: true
   - rename:
       field: response.currentValue.units
-      target_field: mongodb_atlas.organization.current_value.units
+      target_field: mongodb_atlas.organization.metric.unit
       ignore_missing: true
   - rename:
       field: response.database
@@ -175,6 +188,20 @@ processors:
       field: response.hostId
       target_field: mongodb_atlas.organization.host.id
       ignore_missing: true
+  - convert:
+      field: response.hostname
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: related.hosts
+            value: '{{{response.hostname}}}'
+            allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{response.hostname}}}'
+      if: ctx.related?.hosts == null
+      allow_duplicates: false
   - rename:
       field: response.hostname
       target_field: mongodb_atlas.organization.host.name
@@ -208,6 +235,14 @@ processors:
       target_field: mongodb_atlas.organization.replicaset.name
       ignore_missing: true
   - rename:
+      field: response.resourceId
+      target_field: mongodb_atlas.organization.resource.id
+      ignore_missing: true
+  - rename:
+      field: response.resourceType
+      target_field: mongodb_atlas.organization.resource.type
+      ignore_missing: true
+  - rename:
       field: response.shardName
       target_field: mongodb_atlas.organization.shard.name
       ignore_missing: true
@@ -222,6 +257,10 @@ processors:
   - rename:
       field: response.teamId
       target_field: mongodb_atlas.organization.team.id
+      ignore_missing: true
+  - rename:
+      field: response.whitelistEntry
+      target_field: mongodb_atlas.organization.whitelist_entry
       ignore_missing: true
   - script:
       lang: painless

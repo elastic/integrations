@@ -5,6 +5,9 @@ resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
 {{/if}}
 resource.url: {{url}}
+# There is a limit of 10 API requests per second for each tenant. This includes all endpoints.
+resource.rate_limit.limit: 4
+resource.rate_limit.burst: 1
 state:
   token_id: "{{token_id}}"
   api_token: {{api_token}}
@@ -54,17 +57,17 @@ program: |
         "auth": (string(state.api_token) + string(t.nonce) + string(t.timestamp)).sha256().hex(),
       })).as(h, req.with({
         "Header":{
-          "x-xdr-timestamp": [h.timestamp],
-          "x-xdr-nonce": [h.nonce],
-          "Authorization": [h.auth],
-          "x-xdr-auth-id": [state.token_id],
+          "x-xdr-timestamp": [string(h.timestamp)],
+          "x-xdr-nonce": [string(h.nonce)],
+          "Authorization": [string(h.auth)],
+          "x-xdr-auth-id": [string(state.token_id)],
         }
       }))
     :
       req.with({
         "Header":{
-          "Authorization": [state.api_token],
-          "x-xdr-auth-id": [state.token_id],
+          "Authorization": [string(state.api_token)],
+          "x-xdr-auth-id": [string(state.token_id)],
         }
       })
     ).do_request().as(resp, resp.StatusCode == 200 ?

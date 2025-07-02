@@ -24,26 +24,7 @@ The GitLab module has been developed with and tested against the [community edit
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -1466,24 +1447,24 @@ An example event for `sidekiq` looks as following:
 {
     "@timestamp": "2018-04-03T22:57:22.071Z",
     "agent": {
-        "ephemeral_id": "cc5ea64a-1be7-4bf7-ac2e-a934734ba7d0",
-        "id": "d0298772-a948-4edb-95bf-6b9152967f34",
-        "name": "elastic-agent-16126",
+        "ephemeral_id": "0f0e4d1b-e9ae-4838-a977-c6c5126e05c4",
+        "id": "7963dc7d-539d-44df-84f6-9c8e5c85cd39",
+        "name": "elastic-agent-20780",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "gitlab.sidekiq",
-        "namespace": "99205",
+        "namespace": "22209",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d0298772-a948-4edb-95bf-6b9152967f34",
+        "id": "7963dc7d-539d-44df-84f6-9c8e5c85cd39",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1491,9 +1472,9 @@ An example event for `sidekiq` looks as following:
             "web"
         ],
         "dataset": "gitlab.sidekiq",
-        "duration": 0.139,
+        "duration": 139000000,
         "end": "2018-04-03T22:57:22.071Z",
-        "ingested": "2024-09-23T21:03:08Z",
+        "ingested": "2025-06-23T23:00:47Z",
         "kind": "event",
         "original": "{\"severity\": \"INFO\",\"time\": \"2018-04-03T22:57:22.071Z\",\"queue\": \"cronjob:update_all_mirrors\",\"args\": [],\"class\": \"UpdateAllMirrorsWorker\",\"retry\": false,\"queue_namespace\": \"cronjob\",\"jid\": \"06aeaa3b0aadacf9981f368e\",\"created_at\": \"2018-04-03T22:57:21.930Z\",\"enqueued_at\": \"2018-04-03T22:57:21.931Z\",\"pid\": 10077,\"worker_id\": \"sidekiq_0\",\"message\": \"UpdateAllMirrorsWorker JID-06aeaa3b0aadacf9981f368e: done: 0.139 sec\",\"job_status\": \"done\",\"duration\": 0.139,\"completed_at\": \"2018-04-03T22:57:22.071Z\",\"db_duration\": 0.05,\"db_duration_s\": 0.0005,\"gitaly_duration\": 0,\"gitaly_calls\": 0}",
         "severity": 6,
@@ -1527,8 +1508,8 @@ An example event for `sidekiq` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "30",
-            "inode": "215",
+            "device_id": "38",
+            "inode": "1451225",
             "path": "/tmp/service_logs/test-gitlab-sidekiq.log"
         },
         "offset": 0

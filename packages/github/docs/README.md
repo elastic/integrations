@@ -1,6 +1,6 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest ).
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database. 
 
 ## Logs
 
@@ -23,10 +23,14 @@ For Organizations:
   - You must be using GitHub Enterprise Cloud.
   - The organization must be part of an enterprise plan that includes audit log functionality.
 
-Required scopes:
+Github integration can collect audit logs from 2 sources: [Github API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise) and [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs).
+
+When using Github API to collect audit log events, below requirements must be met for Personal Access Token (PAT):
  - You must use a Personal Access Token with `read:audit_log` scope. This applies to both organization and enterprise admins.
- - If you're an enterprise admin, ensure your token also includes `admin:enterprise` to access enterprise-wide logs.
- 
+ - If you're an enterprise admin, ensure your token also includes `admin:enterprise` scope to access enterprise-wide logs.
+
+To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming. For more details, see [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
+
 *This integration is not compatible with GitHub Enterprise server.*
 
 **Exported fields**
@@ -39,20 +43,76 @@ Required scopes:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| github.active |  | boolean |
+| github.actor_id | The id of the actor who performed the action. | keyword |
 | github.actor_ip | The IP address of the entity performing the action. | ip |
+| github.actor_is_bot |  | boolean |
+| github.actor_location.country_name |  | keyword |
+| github.actor_location.ip |  | ip |
+| github.audit_log_stream_enabled |  | boolean |
+| github.audit_log_stream_id |  | keyword |
+| github.audit_log_stream_sink |  | keyword |
+| github.audit_log_stream_sink_details |  | keyword |
+| github.blocked_user | The username of the account being blocked. | keyword |
+| github.business |  | keyword |
+| github.business_id |  | keyword |
 | github.category | GitHub action category. | keyword |
+| github.changes.billing_plan |  | keyword |
+| github.changes.roles |  | keyword |
+| github.commit_id |  | keyword |
+| github.data.event |  | keyword |
+| github.data.head_branch |  | keyword |
+| github.data.head_sha |  | keyword |
+| github.data.started_at |  | date |
+| github.data.trigger_id |  | keyword |
+| github.data.workflow_id |  | keyword |
+| github.data.workflow_run_id |  | keyword |
+| github.device |  | keyword |
+| github.events |  | keyword |
+| github.events_object |  | object |
+| github.forked_repository |  | keyword |
 | github.hashed_token | SHA-256 hash of the token used for authentication. | keyword |
+| github.hook_id |  | keyword |
 | github.integration | The GitHub App that triggered the event. | keyword |
+| github.login_method |  | keyword |
+| github.logout_reason |  | keyword |
+| github.message |  | keyword |
+| github.name |  | keyword |
+| github.new_role |  | keyword |
+| github.old_role |  | keyword |
+| github.operation_type |  | keyword |
 | github.org | GitHub organization name. | keyword |
+| github.org_id |  | keyword |
 | github.permission | GitHub user permissions for the event. | keyword |
 | github.programmatic_access_type | Type of authentication used. | keyword |
+| github.public_repo |  | boolean |
+| github.pull_request_id |  | keyword |
+| github.pull_request_title |  | keyword |
+| github.pull_request_url |  | keyword |
+| github.reason |  | keyword |
 | github.repo | GitHub repository name. | keyword |
+| github.repo_id |  | keyword |
+| github.repositories_added |  | keyword |
 | github.repositories_added_names | The name of the repository added to a GitHub App installation. | keyword |
+| github.repositories_removed |  | keyword |
 | github.repositories_removed_names | The name of the repository removed from a GitHub App installation. | keyword |
+| github.repository | The name of the repository. | keyword |
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
+| github.request_category |  | keyword |
+| github.secrets_updated |  | keyword |
+| github.source_branch |  | keyword |
+| github.target_branch |  | keyword |
 | github.team | GitHub team name. | keyword |
+| github.token_id |  | keyword |
+| github.token_scopes |  | keyword |
+| github.topic |  | keyword |
+| github.transport_protocol | The type of protocol (for example, HTTP or SSH) used to transfer Git data. | long |
+| github.transport_protocol_name | A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data. | keyword |
 | github.user_agent | The user agent of the entity performing the action. | keyword |
+| github.user_id |  | keyword |
+| github.version |  | keyword |
+| github.visibility | The repository visibility, for example `public` or `private`. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -65,24 +125,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "9246e7d9-fcc1-46ab-b3fd-2d0888f2a94d",
-        "id": "ad5c3ec8-3015-4cd2-a269-a2f3df062a2c",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "00ee9264-c5fd-4eb4-ba61-2650d7b10b86",
+        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
+        "name": "elastic-agent-20844",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "ep",
+        "namespace": "80528",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ad5c3ec8-3015-4cd2-a269-a2f3df062a2c",
+        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "repo.destroy",
@@ -91,10 +151,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2024-01-18T15:58:09.826Z",
+        "created": "2025-03-18T07:21:56.275Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2024-01-18T15:58:19Z",
+        "ingested": "2025-03-18T07:21:57Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -104,7 +164,8 @@ An example event for `audit` looks as following:
     "github": {
         "category": "repo",
         "org": "mona-org",
-        "repo": "mona-org/mona-test-repo"
+        "repo": "mona-org/mona-test-repo",
+        "visibility": "private"
     },
     "input": {
         "type": "httpjson"
@@ -913,6 +974,191 @@ An example event for `issues` looks as following:
     "user": {
         "id": "1",
         "name": "octocat"
+    }
+}
+```
+
+### Security Advisories
+
+The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed global security advisories from the GitHub advisory database. See [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
+
+To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) (GitHub App user access tokens, GitHub App installation access tokens, Fine-grained personal access tokens). This fine-grained token does not require any permissions. 
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| github.security_advisory.credits.avatar_url |  | keyword |
+| github.security_advisory.credits.events_url |  | keyword |
+| github.security_advisory.credits.followers_url |  | keyword |
+| github.security_advisory.credits.following_url |  | keyword |
+| github.security_advisory.credits.gists_url |  | keyword |
+| github.security_advisory.credits.html_url |  | keyword |
+| github.security_advisory.credits.id |  | long |
+| github.security_advisory.credits.login |  | keyword |
+| github.security_advisory.credits.node_id |  | keyword |
+| github.security_advisory.credits.organizations_url |  | keyword |
+| github.security_advisory.credits.received_events_url |  | keyword |
+| github.security_advisory.credits.repos_url |  | keyword |
+| github.security_advisory.credits.site_admin |  | boolean |
+| github.security_advisory.credits.starred_url |  | keyword |
+| github.security_advisory.credits.subscriptions_url |  | keyword |
+| github.security_advisory.credits.type |  | keyword |
+| github.security_advisory.credits.url |  | keyword |
+| github.security_advisory.credits.user.avatar_url |  | keyword |
+| github.security_advisory.credits.user.events_url |  | keyword |
+| github.security_advisory.credits.user.followers_url |  | keyword |
+| github.security_advisory.credits.user.following_url |  | keyword |
+| github.security_advisory.credits.user.gists_url |  | keyword |
+| github.security_advisory.credits.user.gravatar_id |  | keyword |
+| github.security_advisory.credits.user.html_url |  | keyword |
+| github.security_advisory.credits.user.id |  | long |
+| github.security_advisory.credits.user.login |  | keyword |
+| github.security_advisory.credits.user.node_id |  | keyword |
+| github.security_advisory.credits.user.organizations_url |  | keyword |
+| github.security_advisory.credits.user.received_events_url |  | keyword |
+| github.security_advisory.credits.user.repos_url |  | keyword |
+| github.security_advisory.credits.user.site_admin |  | boolean |
+| github.security_advisory.credits.user.starred_url |  | keyword |
+| github.security_advisory.credits.user.subscriptions_url |  | keyword |
+| github.security_advisory.credits.user.type |  | keyword |
+| github.security_advisory.credits.user.url |  | keyword |
+| github.security_advisory.credits.user.user_view_type |  | keyword |
+| github.security_advisory.credits.user_view_type |  | keyword |
+| github.security_advisory.cve_id |  | keyword |
+| github.security_advisory.cvss.score |  | float |
+| github.security_advisory.cvss.vector_string |  | keyword |
+| github.security_advisory.cvss_severities.cvss_v3.score |  | float |
+| github.security_advisory.cvss_severities.cvss_v3.vector_string |  | keyword |
+| github.security_advisory.cvss_severities.cvss_v4.score |  | float |
+| github.security_advisory.cvss_severities.cvss_v4.vector_string |  | keyword |
+| github.security_advisory.cwes.cwe_id |  | keyword |
+| github.security_advisory.cwes.name |  | keyword |
+| github.security_advisory.description |  | match_only_text |
+| github.security_advisory.epss.percentage |  | float |
+| github.security_advisory.epss.percentile |  | float |
+| github.security_advisory.ghsa_id |  | keyword |
+| github.security_advisory.github_reviewed_at |  | date |
+| github.security_advisory.html_url |  | keyword |
+| github.security_advisory.identifiers.type |  | keyword |
+| github.security_advisory.identifiers.value |  | keyword |
+| github.security_advisory.nvd_published_at |  | date |
+| github.security_advisory.published_at |  | date |
+| github.security_advisory.references |  | keyword |
+| github.security_advisory.repository_advisory_url |  | keyword |
+| github.security_advisory.severity |  | keyword |
+| github.security_advisory.source_code_location |  | keyword |
+| github.security_advisory.summary |  | keyword |
+| github.security_advisory.type |  | keyword |
+| github.security_advisory.updated_at |  | date |
+| github.security_advisory.url |  | keyword |
+| github.security_advisory.vulnerabilities.first_patched_version |  | keyword |
+| github.security_advisory.vulnerabilities.package.ecosystem |  | keyword |
+| github.security_advisory.vulnerabilities.package.name |  | keyword |
+| github.security_advisory.vulnerabilities.vulnerable_version_range |  | keyword |
+| input.type | Type of filebeat input. | keyword |
+
+
+An example event for `security_advisories` looks as following:
+
+```json
+{
+    "@timestamp": "2025-06-08T18:11:33.974Z",
+    "agent": {
+        "ephemeral_id": "bce1f914-1cba-4582-b13b-a1a05311af9d",
+        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
+        "name": "elastic-agent-27512",
+        "type": "filebeat",
+        "version": "9.0.1"
+    },
+    "data_stream": {
+        "dataset": "github.security_advisories",
+        "namespace": "19249",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
+        "snapshot": false,
+        "version": "9.0.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
+        "dataset": "github.security_advisories",
+        "ingested": "2025-06-08T18:11:36Z",
+        "kind": "enrichment",
+        "type": [
+            "info"
+        ]
+    },
+    "github": {
+        "security_advisory": {
+            "cve_id": "CVE-2025-23096",
+            "cvss_severities": {
+                "cvss_v3": {
+                    "score": 0
+                },
+                "cvss_v4": {
+                    "score": 0
+                }
+            },
+            "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
+            "ghsa_id": "GHSA-vpq6-j9hp-2h3w",
+            "html_url": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+            "identifiers": {
+                "type": [
+                    "GHSA",
+                    "CVE"
+                ],
+                "value": [
+                    "GHSA-vpq6-j9hp-2h3w",
+                    "CVE-2025-23096"
+                ]
+            },
+            "nvd_published_at": "2025-06-04T15:15:23.000Z",
+            "published_at": "2025-06-04T15:30:41.000Z",
+            "references": [
+                "https://nvd.nist.gov/vuln/detail/CVE-2025-23096",
+                "https://semiconductor.samsung.com/support/quality-support/product-security-updates",
+                "https://semiconductor.samsung.com/support/quality-support/product-security-updates/cve-2025-23096",
+                "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w"
+            ],
+            "severity": "unknown",
+            "summary": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double...",
+            "type": "unreviewed",
+            "updated_at": "2025-06-04T15:30:46.000Z",
+            "url": "https://api.github.com/advisories/GHSA-vpq6-j9hp-2h3w"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "forwarded",
+        "github-security-advisories"
+    ],
+    "url": {
+        "domain": "github.com",
+        "full": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+        "original": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+        "path": "/advisories/GHSA-vpq6-j9hp-2h3w",
+        "scheme": "https"
+    },
+    "vulnerability": {
+        "classification": "CVSS",
+        "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
+        "enumeration": "CVE",
+        "id": "CVE-2025-23096",
+        "severity": "unknown"
     }
 }
 ```

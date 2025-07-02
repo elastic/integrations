@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT**
+>
+> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+
 # Cylance integration
 
 This integration is for [Cylance](https://www.blackberry.com/us/en/products/unified-endpoint-security/blackberry-protect) logs. It includes the following datasets for receiving logs over syslog or read from a file:

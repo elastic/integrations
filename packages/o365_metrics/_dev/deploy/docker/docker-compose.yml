@@ -1,0 +1,15 @@
+version: '2.3'
+services:
+  o365_metrics:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: o365_metrics
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      SERVER_ADDRESS: 'http://o365_metrics:8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config.yml

@@ -48,6 +48,17 @@ For more information on how to implement the comprehensive solution using API Ma
 
 The logs collected using the API Management services for the enterprise customer of the Azure OpenAI services are listed on the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count) page. This records the inputs and outputs of the request, like prompts, tokens, and model usage.
 
+##### Content Filtering
+
+Azure OpenAI Content Filter's sophisticated algorithms analyze text and multimedia content to identify potential issues related to violence, explicit language, or other sensitive topics.
+This process includes monitoring key metrics such as false positives, false negatives, precision, recall, and overall model performance. By continuously monitoring the content filtering data, organizations can identify any potential biases, errors, or gaps in the AI model's decision-making process and make necessary adjustments to improve the overall content filtering accuracy and compliance with regulatory requirements.
+
+In Azure OpenAI content filtering, users can create a custom blocklist to specify specific words, phrases, or content that they want the AI model to filter out. Users can now monitor the custom blocklists by blocklist id.
+
+It provides a robust system for filtering content based on predefined categories and severity levels such as safe, low, medium, and high.
+
+Check [Azure OpenAI Content Filter's](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/content-filter?tabs=warning%2Cuser-prompt%2Cpython-new) for more details.
+
 #### Settings
 
 Refer to [Azure Logs Integration settings](https://docs.elastic.co/integrations/azure#:~:text=*.cloudapp.net-,Settings,-Use%20the%20following) for more details on the configuration.
@@ -124,23 +135,74 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.open_ai.properties.backend_request_body.messages.content | The prompt input. | keyword |
 | azure.open_ai.properties.backend_request_body.messages.role | The API access role. | keyword |
 | azure.open_ai.properties.backend_request_body.model | The model name. | keyword |
-| azure.open_ai.properties.backend_response_body.choices.content_filter_results | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.custom_blocklists.filtered | Request filtered by custom blocklist. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.custom_blocklists.id | The custom blocklist id. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.jailbreak.detected | True if the jailbreak risk detected. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.jailbreak.filtered | True if the content filtered for jailbreak category. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.profanity.detected | The profanity detected. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.profanity.filtered | Filtered by profanity. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.license | The license of the repository | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.url | Example citation of public GitHub repository where code snippet was found. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.detected | The protected material code detected. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.filtered | Filtered by protected material code. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_text.detected | The protected material text detected. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_text.filtered | Filtered by protected material text. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.self_harm.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.self_harm.severity | The severity levels (safe, low, medium, and high) for self-harm category. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.sexual.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.sexual.severity | The severity levels (safe, low, medium, and high) for sexual category. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.ungrounded_material.details.completion_end_offset | End offset of the ungrounded completion content. | long |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.ungrounded_material.details.completion_start_offset | Start offset of the ungrounded completion content. | long |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.ungrounded_material.detected | Ungrounded completion content was detected. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.ungrounded_material.filtered | Filtered by ungrounded completion content. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.violence.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
 | azure.open_ai.properties.backend_response_body.choices.finish_reason | A string indicating the reason why the response was generated (e.g., "max_tokens"). | keyword |
 | azure.open_ai.properties.backend_response_body.choices.index | The index of the response in the array. | long |
 | azure.open_ai.properties.backend_response_body.choices.logprobs | An object containing information about the probability distribution over possible responses. | flattened |
 | azure.open_ai.properties.backend_response_body.choices.message.content | The response text content. | keyword |
 | azure.open_ai.properties.backend_response_body.choices.message.role | The API access role. | keyword |
+| azure.open_ai.properties.backend_response_body.content_filtered_categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
+| azure.open_ai.properties.backend_response_body.content_filtered_categories.severity | The severity levels (safe, low, medium, and high). | keyword |
 | azure.open_ai.properties.backend_response_body.created | The timestamp when the request was created. | long |
 | azure.open_ai.properties.backend_response_body.error.code | The error code. | keyword |
 | azure.open_ai.properties.backend_response_body.error.innererror.code | The error code. | keyword |
-| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.custom_blocklists.filtered | Request filtered by custom blocklist. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.custom_blocklists.id | The custom blocklist id. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.hate.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.detected | True if jailbreak risk is detected. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.filtered | True if the content filtered for jailbreak category. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.profanity.detected | The profanity detected. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.profanity.filtered | Filtered by profanity. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.self_harm.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.self_harm.severity | The severity levels (safe, low, medium, and high) for self-harm category. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.sexual.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.sexual.severity | The severity levels (safe, low, medium, and high) for sexual category. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.violence.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filtered_categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filtered_categories.severity | The severity levels (safe, low, medium, and high). | keyword |
 | azure.open_ai.properties.backend_response_body.error.message | The error message. | text |
 | azure.open_ai.properties.backend_response_body.error.param | Parameter passed to the API. | keyword |
 | azure.open_ai.properties.backend_response_body.error.status | The response status code. | long |
 | azure.open_ai.properties.backend_response_body.id | A unique identifier for the request. | keyword |
 | azure.open_ai.properties.backend_response_body.model | The ID of the OpenAI model used to generate the response. | keyword |
 | azure.open_ai.properties.backend_response_body.object | The operation type. | keyword |
-| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.detected | True if the jailbreak risk detected. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.filtered | True if the content filtered for jailbreak category. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.profanity.detected | The profanity detected. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.profanity.filtered | Filtered by profanity. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.self_harm.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.self_harm.severity | The severity levels (safe, low, medium, and high) for self-harm category. | keyword |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.sexual.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.sexual.severity | The severity levels (safe, low, medium, and high) for sexual category. | keyword |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.violence.filtered | True if the content filtered based on severity level. | boolean |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
 | azure.open_ai.properties.backend_response_body.prompt_filter_results.prompt_index | Index of the prompt used to generate response. | long |
 | azure.open_ai.properties.backend_response_body.system_fingerprint | The fingerprint is generated by Azure API Management and is used to track the performance and usage of the backend service. | keyword |
 | azure.open_ai.properties.backend_response_body.usage.input_tokens | the total input tokens. | long |
@@ -151,6 +213,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.open_ai.properties.backend_url | The backend URL connects to the Azure OpenAI model. | keyword |
 | azure.open_ai.properties.cache | The request cache. | keyword |
 | azure.open_ai.properties.client_protocol | The client HTTP protocol. | keyword |
+| azure.open_ai.properties.client_tls_cipher_suite | The client TLS Cipher Suite. | keyword |
 | azure.open_ai.properties.client_tls_version | The client TLS version. | keyword |
 | azure.open_ai.properties.model_deployment_name | The deployed model name. | keyword |
 | azure.open_ai.properties.model_name | The OpenAI model. | keyword |

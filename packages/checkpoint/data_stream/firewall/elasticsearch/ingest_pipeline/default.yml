@@ -33,7 +33,7 @@ processors:
       tag: "kv_syslog_structured_semicolon_colon"
       field: syslog5424_sd
       field_split: '(?<="); '
-      value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
+      value_split: '(?i)(?<=[0-9a-z]):{1,2}(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -63,7 +63,7 @@ processors:
       if: ctx.checkpoint == null
       field: syslog5424_sd
       field_split: '(?<=") '
-      value_split: '(?i)(?<=[a-z])=(?=")'
+      value_split: '(?i)(?<=[0-9a-z])=(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -224,7 +224,7 @@ processors:
       ignore_missing: true
   - set:
       field: source.user.name
-      copy_from: checkpoint.user
+      copy_from: checkpoint.src_user_name
       ignore_empty_value: true
   - set:
       field: source.user.name
@@ -232,10 +232,15 @@ processors:
       if: ctx.source?.user?.name == null
       ignore_empty_value: true
   - set:
-      field: source.user.name
-      copy_from: checkpoint.src_user_name
-      if: ctx.source?.user?.name == null
+      field: user.name
+      copy_from: checkpoint.user
+      if: ctx.user?.name == null
       ignore_empty_value: true
+  - convert:
+      field: checkpoint.failed_login_factor_num
+      type: long
+      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: checkpoint.client_outbound_packets
       target_field: source.packets
@@ -280,6 +285,7 @@ processors:
       type: long
       ignore_failure: true
       ignore_missing: true
+      if: "ctx.checkpoint?.service != '4294967295'"
   - convert:
       field: checkpoint.xlatedport
       target_field: destination.nat.port
@@ -434,6 +440,17 @@ processors:
       field: checkpoint.action
       value: logon-failed
       if: ctx.checkpoint?.action == 'Failed Log In'
+  - set:
+      field: host.hostname
+      tag: set_host_name
+      copy_from: checkpoint.hostname
+      ignore_empty_value: true
+  - convert:
+      type: ip
+      tag: convert_host_ip
+      field: checkpoint.host_ip
+      target_field: host.ip
+      if: ctx.checkpoint?.host_ip != null
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
@@ -672,6 +689,12 @@ processors:
   - lowercase:
       field: user.group.name
       ignore_missing: true
+  - lowercase:
+      field: source.user.name
+      ignore_missing: true
+  - lowercase:
+      field: destination.user.name
+      ignore_missing: true
   - rename:
       field: checkpoint.packet_capture
       target_field: event.url
@@ -783,7 +806,7 @@ processors:
       if: ctx?.network?.iana_number != null
       source: |
         def iana_number = ctx.network.iana_number;
-        if (iana_number == '0') {
+        if (iana_number == '0' && ctx.source?.ip?.contains(':')) {
             ctx.network.transport = 'hopopt';
         } else if (iana_number == '1') {
             ctx.network.transport = 'icmp';
@@ -803,8 +826,14 @@ processors:
             ctx.network.transport = 'ipv6-icmp';
         } else if (iana_number == '112') {
             ctx.network.transport = 'vrrp';
+        } else if (iana_number == '114') {
+            ctx.network.transport = '0-hop';
         } else if (iana_number == '132') {
             ctx.network.transport = 'sctp';
+        } else if (iana_number == '4294967295') {
+            iana_number = null;
+        } else {
+            ctx.network.transport = iana_number;
         }
   - date:
       field: checkpoint.subs_exp
@@ -1087,6 +1116,12 @@ processors:
       formats: ["ISO8601", "UNIX"]
       target_field: event.start
       if: "ctx.checkpoint?.creation_time != null"
+  - date:
+      tag: convert_login_timestamp
+      field: checkpoint.login_timestamp
+      formats: ["ISO8601", "UNIX"]
+      target_field: checkpoint.login_timestamp
+      if: "ctx.checkpoint?.login_timestamp != null"
   - rename:
       field: checkpoint.duration
       target_field: event.duration
@@ -1094,6 +1129,11 @@ processors:
   - convert:
       tag: convert_event_duration_to_integer
       field: event.duration
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_session_timeout_to_integer
+      field: checkpoint.session_timeout
       type: long
       ignore_missing: true
   - script:
@@ -1133,26 +1173,89 @@ processors:
       pattern: ^:"
       replacement: ""
       if: ctx.checkpoint?.sys_message != null
+  # Standardize user fields
+  - rename:
+      target_field: user.email
+      field: user.name
+      tag: rename_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      if: ctx.user?.name == null
+      ignore_missing: true
+      ignore_failure: true
   - append:
       field: related.user
-      value: "{{{checkpoint.user}}}"
+      value: "{{{user.id}}}"
       allow_duplicates: false
-      if: ctx.checkpoint?.user != null
+      if: ctx.user?.id != null
   - append:
       field: related.user
-      value: "{{{checkpoint.administrator}}}"
+      value: "{{{user.name}}}"
       allow_duplicates: false
-      if: ctx.checkpoint?.administrator != null
+      if: ctx.user?.name != null
   - append:
       field: related.user
-      value: "{{{checkpoint.src_user_name}}}"
+      value: "{{{user.email}}}"
       allow_duplicates: false
-      if: ctx.checkpoint?.src_user_name != null
+      if: ctx.user?.email != null
+  - rename:
+      target_field: source.user.email
+      field: source.user.name
+      tag: rename_source_user_email
+      if: ctx.source?.user?.email == null && ctx.source?.user?.name != null && ctx.source.user.name.indexOf("@") > 0
+  - dissect:
+      field: source.user.email
+      pattern: '%{source.user.name}@%{source.user.domain}'
+      tag: dissect_source_user_email
+      if: ctx.source?.user?.name == null
+      ignore_missing: true
+      ignore_failure: true
   - append:
       field: related.user
-      value: "{{{checkpoint.dst_user_name}}}"
+      value: "{{{source.user.id}}}"
       allow_duplicates: false
-      if: ctx.checkpoint?.dst_user_name != null
+      if: ctx.source?.user?.id != null
+  - append:
+      field: related.user
+      value: "{{{source.user.name}}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+  - append:
+      field: related.user
+      value: "{{{source.user.email}}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.email != null
+  - rename:
+      target_field: destination.user.email
+      field: destination.user.name
+      tag: rename_destination_user_email
+      if: ctx.destination?.user?.email == null && ctx.destination?.user?.name != null && ctx.destination.user.name.indexOf("@") > 0
+  - dissect:
+      field: destination.user.email
+      pattern: '%{destination.user.name}@%{destination.user.domain}'
+      tag: dissect_source_user_email
+      if: ctx.destination?.user?.name == null
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{destination.user.id}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.id != null
+  - append:
+      field: related.user
+      value: "{{{destination.user.name}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.name != null
+  - append:
+      field: related.user
+      value: "{{{destination.user.email}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.email != null
+
   - script:
       lang: painless
       source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"

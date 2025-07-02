@@ -30,37 +30,40 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       source: >-
         def convertToMilliseconds(long timestamp) {
-              if ((long)1e19 - 1 < timestamp) {
-                  throw new IllegalArgumentException("Timestamp format not recognized: " + timestamp);
-              } else if ((long)1e16 - 1 < timestamp) {
-                  return timestamp / 1000000;  // Convert nanoseconds to milliseconds
-              } else if ((long)1e13 - 1 < timestamp) {
-                  return timestamp / 1000;  // Convert microseconds to milliseconds
-              } else if ((long)1e10 - 1 < timestamp) {
-                  return timestamp;  // Already in milliseconds, no conversion needed
-              } else {
-                  return timestamp * 1000;  // Convert seconds to milliseconds
-              }
+          if ((long)1e19 - 1 < timestamp) {
+            throw new IllegalArgumentException("Timestamp format not recognized: " + timestamp);
+          } else if ((long)1e16 - 1 < timestamp) {
+            return timestamp / 1000000;  // Convert nanoseconds to milliseconds
+          } else if ((long)1e13 - 1 < timestamp) {
+            return timestamp / 1000;  // Convert microseconds to milliseconds
+          } else if ((long)1e10 - 1 < timestamp) {
+            return timestamp;  // Already in milliseconds, no conversion needed
+          } else {
+            return timestamp * 1000;  // Convert seconds to milliseconds
           }
+        }
 
-          def processFields(Map fields) {
-              for (entry in fields.entrySet()) {
-                  def fieldName = entry.getKey();
-                  def fieldValue = entry.getValue();
-                  // Check if the field is a nested object (Map)
-                  if (fieldValue instanceof Map) {
-                      // Recursively process nested objects
-                      processFields((Map) fieldValue);
-                  } else if (fieldName.endsWith('time') || fieldName.endsWith('_time')) {
-                      // If the field name ends with "time" or "_time" and is a number, convert it
-                      if (fieldValue instanceof Number) {
-                          fields[fieldName] = convertToMilliseconds(((Number) fieldValue).longValue());
-                      }
-                  }
-              }
-              return null;
+        def processFields(Map fields) {
+          if (fields == null) {
+            return null;
           }
-          processFields(ctx.ocsf);
+          for (entry in fields.entrySet()) {
+            def fieldName = entry.getKey();
+            def fieldValue = entry.getValue();
+            // Check if the field is a nested object (Map)
+            if (fieldValue instanceof Map) {
+              // Recursively process nested objects
+              processFields((Map) fieldValue);
+            } else if (fieldName.endsWith('time') || fieldName.endsWith('_time')) {
+              // If the field name ends with "time" or "_time" and is a number, convert it
+              if (fieldValue instanceof Number) {
+                fields[fieldName] = convertToMilliseconds(((Number) fieldValue).longValue());
+              }
+            }
+          }
+          return null;
+        }
+        processFields(ctx.ocsf);
     
   - rename:
       field: ocsf.resource
@@ -402,6 +405,28 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: ocsf.api.request.data
+      if: ctx.ocsf?.api?.request?.data instanceof String
+      on_failure:
+        - rename:
+            field: ocsf.api.request.data
+            target_field: ocsf.api.request.data.value
+  - rename:
+      field: ocsf.api.request.data
+      target_field: ocsf.api.request.data.value
+      if: ctx.ocsf?.api?.request?.data != null && !(ctx.ocsf.api.request.data instanceof Map)
+  - json:
+      field: ocsf.api.response.data
+      if: ctx.ocsf?.api?.response?.data instanceof String
+      on_failure:
+        - rename:
+            field: ocsf.api.response.data
+            target_field: ocsf.api.response.data.value
+  - rename:
+      field: ocsf.api.response.data
+      target_field: ocsf.api.response.data.value
+      if: ctx.ocsf?.api?.response?.data != null && !(ctx.ocsf.api.response.data instanceof Map)
   - convert:
       field: ocsf.activity_id
       tag: convert_activity_id_to_string

@@ -2,10 +2,10 @@ config_version: "2"
 interval: {{interval}}
 request.url: {{api_url}}/api/ttp/attachment/get-logs
 request.method: "POST"
-{{#if enable_request_tracer}}
-request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
-{{/if}}
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+  maxbackups: 5
 request.transforms:
 - set:
     target: body.data
@@ -37,8 +37,12 @@ response.pagination:
     target: body.data
 - set:
     target: body.meta.pagination.pageToken
-    value: '[[.last_response.body.meta.pagination.next]]'
+    value: >-
+        [[- if (eq (len .last_response.body.fail) 0) -]]
+          [[- .last_response.body.meta.pagination.next -]]
+        [[- end -]]
     fail_on_template_error: true
+    do_not_log_failure: true
 cursor:
   next_date:
     value: '[[.first_event.date]]'

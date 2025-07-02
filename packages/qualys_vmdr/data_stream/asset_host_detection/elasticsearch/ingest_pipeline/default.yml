@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Asset Host Detection data.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -30,6 +41,22 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
+  - rename:
+      field: interval_id
+      tag: rename_interval_id
+      target_field: qualys_vmdr.asset_host_detection.interval_id
+      ignore_missing: true
+  - date:
+      field: interval_start
+      tag: date_interval_start
+      target_field: qualys_vmdr.asset_host_detection.interval_start
+      formats:
+        - ISO8601
+      if: ctx.interval_start != null && ctx.interval_start != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fail:
       tag: cel_failure
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -41,7 +68,7 @@ processors:
   - set:
       field: event.category
       tag: set_event_catgeory
-      value: [host]
+      value: [vulnerability]
   - set:
       field: event.type
       tag: set_event_type
@@ -58,6 +85,22 @@ processors:
       field: message
       tag: json_message
       target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.interval_id
+      tag: rename_json_interval_id
+      target_field: qualys_vmdr.asset_host_detection.interval_id
+      ignore_missing: true
+  - date:
+      field: json.interval_start
+      tag: date_json_interval_start
+      target_field: qualys_vmdr.asset_host_detection.interval_start
+      formats:
+        - ISO8601
+      if: ctx.json?.interval_start != null && ctx.json.interval_start != ''
       on_failure:
         - append:
             field: error.message
@@ -1169,37 +1212,36 @@ processors:
         if (results.startsWith("Package||")) {
           if (ctx.package == null) {
             ctx.package = new HashMap();
-            ctx.qualys_vmdr.asset_host_detection.package_nested = new HashMap();
+            ctx.qualys_vmdr.asset_host_detection.package_nested = new ArrayList();
           }
           if (ctx.package.name == null) {
             ctx.package.name = new ArrayList();
-            ctx.qualys_vmdr.asset_host_detection.package_nested.name = new ArrayList();
           }
           if (ctx.package.version == null) {
             ctx.package.version = new ArrayList();
-            ctx.qualys_vmdr.asset_host_detection.package_nested.version = new ArrayList();
           }
           if (ctx.package.fixed_version == null) {
             ctx.package.fixed_version = new ArrayList();
-            ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version = new ArrayList();
           }
           def res = results.splitOnToken(";;");
           for (int i=1; i < res.length; i++) {
+            def pkg_nest = [:];
             def pkg = res[i].splitOnToken("||");
             if (pkg.length < 1) {
               continue;
             }
             ctx.package.name.add(pkg[0]);
-            ctx.qualys_vmdr.asset_host_detection.package_nested.name.add(pkg[0]);
+            pkg_nest.name = pkg[0];
             if (pkg.length < 2) {
               continue;
             }
             ctx.package.version.add(pkg[1]);
-            ctx.qualys_vmdr.asset_host_detection.package_nested.version.add(pkg[1]);
+            pkg_nest.version = pkg[1];
             if (pkg.length == 3) {
               ctx.package.fixed_version.add(pkg[2]);
-              ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version.add(pkg[2]);
+              pkg_nest.fixed_version = pkg[2];
             }
+            ctx.qualys_vmdr.asset_host_detection.package_nested.add(pkg_nest);
           }
         }
       on_failure:
@@ -1553,8 +1595,14 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      if: ctx.event?.original == null
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - fingerprint:
       tag: fingerprint_event_original
       description: >
@@ -1577,6 +1625,8 @@ processors:
       field:
         - json
         - message
+        - interval_id
+        - interval_start
         - _conf
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_FOUND_DATETIME
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_REOPENED_DATETIME

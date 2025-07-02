@@ -13,10 +13,12 @@ processors:
         - '^%{SPACE}%{HEADER_NOTIMEZONE} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
+        - '^<%{NUMBER}>%{NUMBER} (%{TIMESTAMP_ISO8601:_tmp.timestamp}|-) (%{SYSLOGHOST:citrix.host}|-) (%{DATA:_tmp.appname}|-) (%{DATA:_tmp.procid}|-) (%{DATA:_tmp.msgid}|-) (%{DATA:_tmp.structured_data}|-) (%{DATA:_tmp.details} :)?%{SPACE}"?%{GREEDYDATA:citrix.extended.message}"?$'
+
       pattern_definitions:
         HEADER_NOTIMEZONE: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone}? (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
-        NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}|%{MONTHDAY}/%{MONTHNUM}/%{YEAR}):%{HOUR}:%{MINUTE}:%{SECOND}'  
+        NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}|%{MONTHDAY}/%{MONTHNUM}/%{YEAR}):%{HOUR}:%{MINUTE}:%{SECOND}'
   - grok:
       description: Parse out details.
       tag: grok_tmp_details
@@ -25,6 +27,7 @@ processors:
         - '^%{DEFAULT:_tmp.default}?%{WORD:citrix.device_event_class_id} %{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
       pattern_definitions:
         DEFAULT: 'default '
+      ignore_missing: true
   - set:
       field: event.category
       tag: set_event_category_network
@@ -330,24 +333,6 @@ processors:
       value: '{{{citrix_adc.log.ssl_relay.address}}}'
       allow_duplicates: false
       if: ctx.citrix_adc?.log?.ssl_relay?.address != null
-  - append:
-      field: related.user
-      tag: append_user_name_into_related_user
-      value: '{{{user.name}}}'
-      allow_duplicates: false
-      if: ctx.user?.name != null
-  - append:
-      field: related.user
-      tag: append_user_name_into_related_user
-      value: '{{{source.user.name}}}'
-      allow_duplicates: false
-      if: ctx.source?.user?.name != null
-  - append:
-      field: related.user
-      tag: append_user_name_into_related_user
-      value: '{{{destination.user.name}}}'
-      allow_duplicates: false
-      if: ctx.destination?.user?.name != null
   - remove:
       field:
         - citrix_adc.log.action
