@@ -1,0 +1,87 @@
+title: Collect GitHub Security Advisories data from GitHub REST API.
+type: logs
+streams:
+  - input: cel
+    title: GitHub Security Advisories data
+    description: Collect GitHub Security Advisories data from GitHub REST API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: api_url
+        type: text
+        title: API URL
+        description: URL for GitHub Security Advisories database REST API
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.github.com/advisories
+      - name: api_key
+        type: password
+        title: API key
+        description: API key for GitHub REST API. This Personal Access Token is used to authenticate with the GitHub REST API and should be kept secret.
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: advisory_type
+        title: Advisory type
+        multi: false
+        required: true
+        show_user: true
+        type: select
+        options:
+          - text: Reviewed
+            value: reviewed
+          - text: Unreviewed
+            value: unreviewed
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: >-
+          Batch size for the response of the GitHub REST API. Maximum value is 100.
+        default: 100
+        multi: false
+        required: true
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - github-security-advisories
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+

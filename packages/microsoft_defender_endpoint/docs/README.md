@@ -111,11 +111,11 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-27T10:31:25.333Z",
+    "@timestamp": "2025-06-26T07:39:37.683Z",
     "agent": {
-        "ephemeral_id": "f481d28b-2b00-4bf2-b5b2-b1a40c1f3aaf",
-        "id": "69a70946-8492-4834-baf6-1db2cc9db17c",
-        "name": "elastic-agent-16526",
+        "ephemeral_id": "1eb5c026-8daf-479c-8685-e69263ac5497",
+        "id": "0ebaf690-12f1-40a6-bf6a-cc1468818f04",
+        "name": "elastic-agent-77058",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -130,14 +130,14 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "48129",
+        "namespace": "81472",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "69a70946-8492-4834-baf6-1db2cc9db17c",
+        "id": "0ebaf690-12f1-40a6-bf6a-cc1468818f04",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -153,7 +153,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-06-30T10:07:44.333733Z",
         "id": "da637291085411733957_-1043898914",
-        "ingested": "2025-05-27T10:31:28Z",
+        "ingested": "2025-06-26T07:39:40Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 21,
@@ -460,24 +460,24 @@ An example event for `machine_action` looks as following:
 {
     "@timestamp": "2024-11-22T12:48:56.768Z",
     "agent": {
-        "ephemeral_id": "b8f3aa0a-03f9-46a5-a7a1-4d7e7fcc8827",
-        "id": "9f7d3c70-f0c6-4f5e-84f3-b6c9806bf2c1",
-        "name": "elastic-agent-61668",
+        "ephemeral_id": "9a1d6c29-c9ee-4fe3-b548-486c5816bac4",
+        "id": "adb7b810-f850-4c24-826a-be0de9006fc6",
+        "name": "elastic-agent-60393",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine_action",
-        "namespace": "94050",
+        "namespace": "82658",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9f7d3c70-f0c6-4f5e-84f3-b6c9806bf2c1",
+        "id": "adb7b810-f850-4c24-826a-be0de9006fc6",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": "RunAntiVirusScan",
@@ -485,7 +485,7 @@ An example event for `machine_action` looks as following:
         "created": "2024-11-22T12:48:33.993Z",
         "dataset": "microsoft_defender_endpoint.machine_action",
         "id": "d72456af-1234-5678-abcd-abcdef87fdee",
-        "ingested": "2025-05-27T10:33:29Z",
+        "ingested": "2025-06-03T13:37:04Z",
         "kind": "event",
         "original": "{\"cancellationComment\":null,\"cancellationDateTimeUtc\":null,\"cancellationRequestor\":null,\"commands\":[],\"computerDnsName\":\"c-lab-24\",\"creationDateTimeUtc\":\"2024-11-22T12:48:33.9936591Z\",\"errorHResult\":0,\"externalId\":null,\"id\":\"d72456af-1234-5678-abcd-abcdef87fdee\",\"lastUpdateDateTimeUtc\":\"2024-11-22T12:48:56.7684808Z\",\"machineId\":\"de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8\",\"relatedFileInfo\":null,\"requestSource\":\"Portal\",\"requestor\":\"testuser@example.com\",\"requestorComment\":\"Quick Scan\",\"scope\":\"Quick\",\"status\":\"Succeeded\",\"title\":null,\"troubleshootInfo\":null,\"type\":\"RunAntiVirusScan\"}",
         "outcome": "success",
@@ -521,6 +521,7 @@ An example event for `machine_action` looks as following:
             "de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8"
         ],
         "user": [
+            "testuser",
             "testuser@example.com"
         ]
     },
@@ -530,7 +531,9 @@ An example event for `machine_action` looks as following:
         "microsoft_defender_endpoint-machine_action"
     ],
     "user": {
-        "name": "testuser@example.com"
+        "domain": "example.com",
+        "email": "testuser@example.com",
+        "name": "testuser"
     }
 }
 ```

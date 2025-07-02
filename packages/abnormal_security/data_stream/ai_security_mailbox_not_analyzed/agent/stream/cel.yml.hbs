@@ -18,21 +18,30 @@ state:
   initial_interval: {{initial_interval}}
   access_token: {{access_token}}
   want_more: false
+{{#if wait_interval}}
+  wait: {{wait_interval}}
+{{/if}}
 redact:
   fields:
     - access_token
 program: |
-  (
-    state.with({
-      "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
-      "end_time": now.format(time_layout.RFC3339),
-    })
-  ).as(state, state.with(
+  {
+    "start_time": state.?cursor.last_timestamp.optMap(t,
+      t.parse_time(time_layout.RFC3339)
+    ).orValue(
+      now - duration(state.initial_interval)
+    ),
+    "end_time": now - duration(state.?wait.orValue("0s")),
+  }.as(query_range, state.with(
     request(
       "GET",
       state.url.trim_right("/") + "/v1/abuse_mailbox/not_analyzed?" + {
-        "start": [state.start_time],
-        "end": [state.end_time],
+        // Condition the start of the request interval so that start is never
+        // after end. Sacrifice a null interval request in the case that the
+        // last start is still within the wait interval.
+        // TODO: replace list min with diadic min when stack version is at least v8.18.
+        "start": [min([query_range.start_time, query_range.end_time]).format(time_layout.RFC3339)],
+        "end": [query_range.end_time.format(time_layout.RFC3339)],
       }.format_query()
     ).with({
       "Header":{
@@ -47,10 +56,14 @@ program: |
               }
             ),
             "cursor": {
-              ?"last_timestamp": has(body.results) && body.results.size() > 0 ?
-                optional.of(body.results.map(r, timestamp(r.reported_datetime)).max().format(time_layout.RFC3339))
+              "last_timestamp": has(body.results) && body.results.size() > 0 ?
+                body.results.map(r, timestamp(r.reported_datetime)).max().format(time_layout.RFC3339)
+              : has(state.?cursor.last_timestamp) ?
+                state.cursor.last_timestamp
               :
-                state.?cursor.last_timestamp
+                // If we did not get any messages, keep the start as
+                // the next cursor.
+                query_range.start_time
             },
           }
         :
