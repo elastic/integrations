@@ -79,6 +79,7 @@ An example event for `nod_feed` looks as following:
     },
     "domaintools": {
         "domain": "tractorpoweredcoreaerator.com",
+        "feed": "nod",
         "timestamp": "2025-01-30T20:14:48Z"
     },
     "threat": {
@@ -191,7 +192,7 @@ An example event for `nad_feed` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "logs",
-        "dataset": "ti_domaintools.nod_feed"
+        "dataset": "ti_domaintools.nad_feed"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -222,6 +223,7 @@ An example event for `nad_feed` looks as following:
     },
     "domaintools": {
         "domain": "tractorpoweredcoreaerator.com",
+        "feed": "nad",
         "timestamp": "2025-01-30T20:14:48Z"
     },
     "threat": {
@@ -231,7 +233,7 @@ An example event for `nad_feed` looks as following:
         },
         "feed": {
             "reference": "https://docs.techdocs.ci.domaintools.cloud/feeds/realtime/userguide/",
-            "name": "DomainTools NOD",
+            "name": "DomainTools NAD",
             "description": "Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network."
         }
     },
