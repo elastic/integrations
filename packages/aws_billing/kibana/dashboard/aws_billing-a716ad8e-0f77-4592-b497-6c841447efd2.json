@@ -106,7 +106,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "022c23f1-4faf-4ea4-8a15-fd07328bfbc0": {
+                                        "1fc8dce3-4809-45da-8ed4-0763a45dfa7d": {
                                             "columns": [
                                                 {
                                                     "columnId": "Total Unblended Cost",
@@ -117,6 +117,14 @@
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {
@@ -132,7 +140,7 @@
                                             ],
                                             "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
                                             "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
                                             }
                                         }
                                     }
@@ -141,11 +149,11 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
+                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
                             },
                             "visualization": {
                                 "breakdownByAccessor": "aws_billing.cur.line_item.currency_code",
-                                "layerId": "022c23f1-4faf-4ea4-8a15-fd07328bfbc0",
+                                "layerId": "1fc8dce3-4809-45da-8ed4-0763a45dfa7d",
                                 "layerType": "data",
                                 "metricAccessor": "Total Unblended Cost"
                             }
@@ -160,20 +168,20 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 7,
-                    "i": "244baf7a-fcc9-41d7-bffa-71d5e7885c3f",
+                    "h": 8,
+                    "i": "a29e42de-b121-4761-a064-b2ef922b319e",
                     "w": 10,
                     "x": 10,
-                    "y": 7
+                    "y": 0
                 },
-                "panelIndex": "244baf7a-fcc9-41d7-bffa-71d5e7885c3f",
+                "panelIndex": "a29e42de-b121-4761-a064-b2ef922b319e",
                 "title": "",
                 "type": "lens"
             },
@@ -204,33 +212,43 @@
                                         }
                                     ],
                                     "layers": {
-                                        "0e08ae20-8d86-4e74-ae12-41c0d10b5bfa": {
+                                        "c88446fb-a0b9-4fb5-822e-aa0a555d4f8f": {
                                             "columns": [
                                                 {
-                                                    "columnId": "EC2 Unblended Cost",
-                                                    "customLabel": false,
-                                                    "fieldName": "EC2 Unblended Cost",
+                                                    "columnId": "Total Unblended Cost",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Unblended Cost",
                                                     "inMetricDimension": true,
-                                                    "label": "EC2 Unblended Cost",
+                                                    "label": "Unblended Cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2,
+                                                                "suffix": ""
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "aws_billing.cur.line_item.currency_code",
+                                                    "columnId": "aws_billing.cur.bill.billing_period_start_date",
                                                     "customLabel": true,
-                                                    "fieldName": "aws_billing.cur.line_item.currency_code",
-                                                    "label": "Currency Code",
+                                                    "fieldName": "aws_billing.cur.bill.billing_period_start_date",
+                                                    "label": "Month",
                                                     "meta": {
-                                                        "esType": "keyword",
-                                                        "type": "string"
+                                                        "esType": "date",
+                                                        "type": "date"
                                                     }
                                                 }
                                             ],
                                             "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
                                             "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE (aws_billing.cur.line_item.product_code == \"AmazonEC2\" AND aws_billing.cur.line_item.type == \"Usage\") and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `EC2 Unblended Cost`"
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.bill.billing_period_start_date \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
                                             }
                                         }
                                     }
@@ -239,17 +257,69 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM aws_billing.cur_latest\n| WHERE (aws_billing.cur.line_item.product_code == \"AmazonEC2\" AND aws_billing.cur.line_item.type == \"Usage\") and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `EC2 Unblended Cost`"
+                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.bill.billing_period_start_date \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
                             },
                             "visualization": {
-                                "breakdownByAccessor": "aws_billing.cur.line_item.currency_code",
-                                "layerId": "0e08ae20-8d86-4e74-ae12-41c0d10b5bfa",
-                                "layerType": "data",
-                                "metricAccessor": "EC2 Unblended Cost"
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "Total Unblended Cost"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "c88446fb-a0b9-4fb5-822e-aa0a555d4f8f",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "aws_billing.cur.bill.billing_period_start_date"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "Bar vertical stacked",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsXY"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -258,22 +328,62 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM aws_billing.cur_latest\n| WHERE (aws_billing.cur.line_item.product_code == \"AmazonEC2\" AND aws_billing.cur.line_item.type == \"Usage\") and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.currency_code \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `EC2 Unblended Cost`"
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.bill.billing_period_start_date \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Total Unblended Cost`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 7,
-                    "i": "8944be4d-b928-4607-86bc-792e148012a9",
+                    "h": 8,
+                    "i": "5144d67e-dbef-4e8f-a7fa-f236325fde2f",
                     "w": 10,
                     "x": 10,
+                    "y": 8
+                },
+                "panelIndex": "5144d67e-dbef-4e8f-a7fa-f236325fde2f",
+                "title": "Cost per month",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "#### AWS Cost and Usage\n\nThis dashboard provides insights into the following:\n\n- Overview of cost distribution across all users\n- Cost breakdown by AWS service and region\n- Cost distribution across linked accounts\n- Visual trends of usage over time\n\nYou can adjust the __time range__ using the filter options to view cost and usage for the current month, last 3 or 6 months, or all time.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "54348929-e6b7-4be3-807d-456a25edd2f5",
+                    "w": 10,
+                    "x": 0,
                     "y": 0
                 },
-                "panelIndex": "8944be4d-b928-4607-86bc-792e148012a9",
-                "title": "",
-                "type": "lens"
+                "panelIndex": "54348929-e6b7-4be3-807d-456a25edd2f5",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -302,17 +412,10 @@
                                         }
                                     ],
                                     "layers": {
-                                        "1cc0f5a8-3624-48a2-bad2-e845f6583e77": {
-                                            "columns": [],
-                                            "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
-                                            "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
-                                            }
-                                        },
-                                        "8c106e1a-491d-4ce1-bcae-366a58227fc8": {
+                                        "172a0fe0-c377-40d4-88a7-097fe38a0726": {
                                             "columns": [
                                                 {
-                                                    "columnId": "b511e8ea-5116-4f58-9ae4-82f93348366c",
+                                                    "columnId": "5c98d9b6-344e-45dd-8540-a4ed2b5e837d",
                                                     "fieldName": "aws_billing.cur.line_item.product_code",
                                                     "label": "aws_billing.cur.line_item.product_code",
                                                     "meta": {
@@ -322,7 +425,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "f0080fd1-013c-4fb2-bd08-420909fd54ad",
+                                                    "columnId": "f4ca7a3e-4ca0-4450-9fac-731952d2f5a7",
                                                     "fieldName": "Unblended Cost",
                                                     "label": "Unblended Cost",
                                                     "meta": {
@@ -342,7 +445,14 @@
                                             ],
                                             "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
                                             "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                            }
+                                        },
+                                        "ab0c001c-83c3-469b-a48b-94c500c217ba": {
+                                            "columns": [],
+                                            "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
+                                            "query": {
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                                             }
                                         }
                                     }
@@ -351,7 +461,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                             },
                             "visualization": {
                                 "layers": [
@@ -375,16 +485,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "8c106e1a-491d-4ce1-bcae-366a58227fc8",
+                                        "layerId": "172a0fe0-c377-40d4-88a7-097fe38a0726",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "metrics": [
-                                            "f0080fd1-013c-4fb2-bd08-420909fd54ad"
+                                            "f4ca7a3e-4ca0-4450-9fac-731952d2f5a7"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "b511e8ea-5116-4f58-9ae4-82f93348366c"
+                                            "5c98d9b6-344e-45dd-8540-a4ed2b5e837d"
                                         ]
                                     }
                                 ],
@@ -401,20 +511,20 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code \n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 14,
-                    "i": "b8596bc9-ea37-409a-95e2-f7992a2f5794",
+                    "h": 16,
+                    "i": "f914c231-74b1-4266-ab3c-2751c2fceb8c",
                     "w": 14,
                     "x": 20,
                     "y": 0
                 },
-                "panelIndex": "b8596bc9-ea37-409a-95e2-f7992a2f5794",
+                "panelIndex": "f914c231-74b1-4266-ab3c-2751c2fceb8c",
                 "title": "Percentage of cost per product",
                 "type": "lens"
             },
@@ -445,10 +555,10 @@
                                         }
                                     ],
                                     "layers": {
-                                        "aba1d571-684e-4bc7-b3fe-29e6e8d9fb11": {
+                                        "17d95294-fd67-4a63-b3f6-9c2bea175bb9": {
                                             "columns": [
                                                 {
-                                                    "columnId": "db2fa11a-7e27-4928-9548-794c3e6a8e98",
+                                                    "columnId": "dcb2d0aa-8f14-4914-9320-33f9bd67671c",
                                                     "fieldName": "aws_billing.cur.product.region_code",
                                                     "label": "aws_billing.cur.product.region_code",
                                                     "meta": {
@@ -458,7 +568,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "f0cca82b-a584-47c8-8836-2ea5450fb17e",
+                                                    "columnId": "eebf4170-9528-45f7-9ee1-d492411969ca",
                                                     "fieldName": "Unblended Cost",
                                                     "label": "Unblended Cost",
                                                     "meta": {
@@ -478,14 +588,14 @@
                                             ],
                                             "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
                                             "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                                             }
                                         },
-                                        "d1456cb5-e44e-4970-bb58-0ea4e97b18e0": {
+                                        "7dc228c6-b397-45d2-b7f7-7e30d530102d": {
                                             "columns": [],
                                             "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
                                             "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                                             }
                                         }
                                     }
@@ -494,7 +604,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                             },
                             "visualization": {
                                 "layers": [
@@ -518,16 +628,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "aba1d571-684e-4bc7-b3fe-29e6e8d9fb11",
+                                        "layerId": "17d95294-fd67-4a63-b3f6-9c2bea175bb9",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "metrics": [
-                                            "f0cca82b-a584-47c8-8836-2ea5450fb17e"
+                                            "eebf4170-9528-45f7-9ee1-d492411969ca"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "db2fa11a-7e27-4928-9548-794c3e6a8e98"
+                                            "dcb2d0aa-8f14-4914-9320-33f9bd67671c"
                                         ]
                                     }
                                 ],
@@ -544,62 +654,22 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months) AND aws_billing.cur.line_item.type == \"Usage\"\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.product.region_code\n| WHERE sum_line_item_unblended_cost \u003e= 0\n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 14,
-                    "i": "5f03bba9-0995-4126-a4fc-948fa5fefed3",
+                    "h": 16,
+                    "i": "367aa6db-21c7-41ea-8fc0-0f302cb1e377",
                     "w": 14,
                     "x": 34,
                     "y": 0
                 },
-                "panelIndex": "5f03bba9-0995-4126-a4fc-948fa5fefed3",
+                "panelIndex": "367aa6db-21c7-41ea-8fc0-0f302cb1e377",
                 "title": "Percentage of cost per region",
                 "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "#### AWS Cost and Usage\n\nThis dashboard provides insights into the following:\n\n- Total and EC2-specific unblended costs\n- Cost breakdown by AWS service and region\n- Cost distribution across linked accounts\n- Visual trends of usage over time\n\nYou can adjust the __time range__ using the filter options to view cost and usage for the current month, last 3 or 6 months, or all time.",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "15c0b512-8cef-4619-b938-9c215ba3271c",
-                    "w": 10,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "15c0b512-8cef-4619-b938-9c215ba3271c",
-                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -628,13 +698,13 @@
                                         }
                                     ],
                                     "layers": {
-                                        "856a2e58-e7a6-4953-a928-fc15592510a2": {
+                                        "0fbb125d-bdba-4058-bb83-14b968df22f0": {
                                             "columns": [
                                                 {
-                                                    "columnId": "85f3681d-09d6-4e49-8ae4-7d403e21547b",
+                                                    "columnId": "1daf6eb8-6442-45e6-8b5e-1bce0c545b55",
                                                     "customLabel": true,
                                                     "fieldName": "aws_billing.cur.bill.billing_period_start_date",
-                                                    "label": "Billing Period Start Date",
+                                                    "label": "Month",
                                                     "meta": {
                                                         "esType": "date",
                                                         "sourceParams": {
@@ -649,17 +719,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "4f3fa897-0af2-4c81-905b-22a1f6189cf0",
-                                                    "fieldName": "aws_billing.cur.line_item.product_code",
-                                                    "label": "aws_billing.cur.line_item.product_code",
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "sourceParams": {},
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "46665215-84be-48ce-9fce-e02c44d324f3",
+                                                    "columnId": "e793eeaf-cf1d-4045-acfa-5a4d23a60736",
                                                     "fieldName": "Unblended Cost",
                                                     "label": "Unblended Cost",
                                                     "meta": {
@@ -675,11 +735,21 @@
                                                             }
                                                         }
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "b7e607d6-6619-4a40-bb83-5b896cd32887",
+                                                    "fieldName": "aws_billing.cur.line_item.product_code",
+                                                    "label": "aws_billing.cur.line_item.product_code",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "sourceParams": {},
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
                                             "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                                             }
                                         }
                                     }
@@ -688,7 +758,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -710,7 +780,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "46665215-84be-48ce-9fce-e02c44d324f3"
+                                            "e793eeaf-cf1d-4045-acfa-5a4d23a60736"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -730,11 +800,11 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "856a2e58-e7a6-4953-a928-fc15592510a2",
+                                        "layerId": "0fbb125d-bdba-4058-bb83-14b968df22f0",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
-                                        "splitAccessor": "4f3fa897-0af2-4c81-905b-22a1f6189cf0",
-                                        "xAccessor": "85f3681d-09d6-4e49-8ae4-7d403e21547b"
+                                        "splitAccessor": "b7e607d6-6619-4a40-bb83-5b896cd32887",
+                                        "xAccessor": "1daf6eb8-6442-45e6-8b5e-1bce0c545b55"
                                     }
                                 ],
                                 "legend": {
@@ -760,20 +830,20 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.product_code, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 14,
-                    "i": "b654dabf-937a-4b7c-be96-c31ed47b39bc",
-                    "w": 24,
+                    "h": 16,
+                    "i": "cdbf2a04-db16-498a-912e-a6c7df3b20db",
+                    "w": 16,
                     "x": 0,
-                    "y": 14
+                    "y": 16
                 },
-                "panelIndex": "b654dabf-937a-4b7c-be96-c31ed47b39bc",
+                "panelIndex": "cdbf2a04-db16-498a-912e-a6c7df3b20db",
                 "title": "Cost per product",
                 "type": "lens"
             },
@@ -804,13 +874,13 @@
                                         }
                                     ],
                                     "layers": {
-                                        "eb84e9e1-16a8-40d4-9d81-9b57aa2ab864": {
+                                        "7b63f2ca-8119-4847-ae7b-fa3e93481df5": {
                                             "columns": [
                                                 {
-                                                    "columnId": "51cc3934-27d3-43bb-9773-101d81652ad1",
+                                                    "columnId": "efcbdecd-ab6f-44b2-a786-22c45626e14f",
                                                     "customLabel": true,
                                                     "fieldName": "aws_billing.cur.bill.billing_period_start_date",
-                                                    "label": "Billing Period Start Date",
+                                                    "label": "Month",
                                                     "meta": {
                                                         "esType": "date",
                                                         "sourceParams": {
@@ -825,17 +895,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "3d7b2f99-6825-45f3-bf85-8f35cf55f97e",
-                                                    "fieldName": "aws_billing.cur.line_item.usage_account_name",
-                                                    "label": "aws_billing.cur.line_item.usage_account_name",
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "sourceParams": {},
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "9f121518-d8d3-41e4-8542-e20b1e7a1ecf",
+                                                    "columnId": "37bea656-cf94-4ce8-939a-485be35a31de",
                                                     "fieldName": "Unblended Cost",
                                                     "label": "Unblended Cost",
                                                     "meta": {
@@ -851,11 +911,21 @@
                                                             }
                                                         }
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "412313b8-7b80-4998-8cd6-e9d56bf0199f",
+                                                    "fieldName": "aws_billing.cur.line_item.usage_account_name",
+                                                    "label": "aws_billing.cur.line_item.usage_account_name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "sourceParams": {},
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
                                             "query": {
-                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.usage_account_name, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.usage_account_name, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                                             }
                                         }
                                     }
@@ -864,7 +934,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.usage_account_name, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.usage_account_name, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -886,7 +956,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "9f121518-d8d3-41e4-8542-e20b1e7a1ecf"
+                                            "37bea656-cf94-4ce8-939a-485be35a31de"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -906,16 +976,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "eb84e9e1-16a8-40d4-9d81-9b57aa2ab864",
+                                        "layerId": "7b63f2ca-8119-4847-ae7b-fa3e93481df5",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
-                                        "splitAccessor": "3d7b2f99-6825-45f3-bf85-8f35cf55f97e",
-                                        "xAccessor": "51cc3934-27d3-43bb-9773-101d81652ad1"
+                                        "splitAccessor": "412313b8-7b80-4998-8cd6-e9d56bf0199f",
+                                        "xAccessor": "efcbdecd-ab6f-44b2-a786-22c45626e14f"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "bottom"
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "tickLabelsVisibilitySettings": {
@@ -936,58 +1006,227 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month, NOW() - 1 month)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.usage_account_name, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.line_item.usage_account_name, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 14,
-                    "i": "ec37573c-1708-4991-8b52-684c252412aa",
-                    "w": 24,
-                    "x": 24,
-                    "y": 14
+                    "h": 16,
+                    "i": "1d4be6f1-b984-4519-ab42-5e51d6f08a6a",
+                    "w": 16,
+                    "x": 16,
+                    "y": 16
                 },
-                "panelIndex": "ec37573c-1708-4991-8b52-684c252412aa",
+                "panelIndex": "1d4be6f1-b984-4519-ab42-5e51d6f08a6a",
                 "title": "Cost per linked account",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
+                                    "name": "aws_billing.cur_latest",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "aws_billing.cur_latest",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
+                                            "title": "aws_billing.cur_latest"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "e63bb5e6-97b5-47b3-8eb4-b2a642af12c0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Unblended Cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Unblended Cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Unblended Cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "aws_billing.cur.resource_tags.aws_created_by",
+                                                    "customLabel": false,
+                                                    "fieldName": "aws_billing.cur.resource_tags.aws_created_by",
+                                                    "label": "aws_billing.cur.resource_tags.aws_created_by",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "aws_billing.cur.bill.billing_period_start_date",
+                                                    "customLabel": true,
+                                                    "fieldName": "aws_billing.cur.bill.billing_period_start_date",
+                                                    "label": "Month",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "e65c8b0bfe6b4a0aebad76d709d8666b7812bb7a07da7ac7ce8d2af692bce544",
+                                            "query": {
+                                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.resource_tags.aws_created_by, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.resource_tags.aws_created_by, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "Unblended Cost"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "e63bb5e6-97b5-47b3-8eb4-b2a642af12c0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "aws_billing.cur.resource_tags.aws_created_by",
+                                        "xAccessor": "aws_billing.cur.bill.billing_period_start_date"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Unblended Cost over aws_billing.cur.bill.billing_period_start_date",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month , NOW())\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.resource_tags.aws_created_by, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "03d92c50-9024-489b-b07d-f2e5eed16693",
+                    "w": 16,
+                    "x": 32,
+                    "y": 16
+                },
+                "panelIndex": "03d92c50-9024-489b-b07d-f2e5eed16693",
+                "title": "Cost per user",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Metrics] AWS Cost and Usage Report - Last month",
+        "title": "[Metrics] AWS Cost and Usage Report - Last 3 months",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-06-25T15:24:22.856Z",
+    "created_at": "2025-07-02T09:53:34.432Z",
     "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
-    "id": "aws_billing-f002bdf9-4736-4e83-8517-d69f4072e523",
-    "managed": true,
+    "id": "aws_billing-a716ad8e-0f77-4592-b497-6c841447efd2",
+    "managed": false,
     "references": [
         {
             "name": "38eb0e3e-12bc-48e0-b594-eb03a117a639:link_b6533e72-35b4-4531-8e04-f104916537e1_dashboard",
             "type": "dashboard",
-            "id": "aws_billing-8db64524-8324-4e26-8827-010e81ad1f3e"
+            "id": "aws_billing-01aace34-9219-4c6c-80a9-b903af48950f"
         },
         {
             "name": "38eb0e3e-12bc-48e0-b594-eb03a117a639:link_2f0cba9f-b64b-417e-9819-fdff7bc1e7f2_dashboard",
             "type": "dashboard",
-            "id": "aws_billing-f002bdf9-4736-4e83-8517-d69f4072e523"
+            "id": "aws_billing-fa467f8d-50d9-4cb0-ae88-94ef24e9941a"
         },
         {
             "name": "38eb0e3e-12bc-48e0-b594-eb03a117a639:link_edf2d69e-8788-4beb-bd2d-cd947d978bab_dashboard",
             "type": "dashboard",
-            "id": "aws_billing-5c838dc0-c28a-4b1a-adaf-f683efea1db5"
+            "id": "aws_billing-a716ad8e-0f77-4592-b497-6c841447efd2"
         },
         {
             "name": "38eb0e3e-12bc-48e0-b594-eb03a117a639:link_3ced28f4-a77d-47d0-a827-08d07823729e_dashboard",
             "type": "dashboard",
-            "id": "aws_billing-adcc74e1-d4f9-49c0-8168-07fe543bf1b9"
+            "id": "aws_billing-fb79da15-4c4c-453f-9d3d-b792ce2482ff"
         },
         {
             "name": "38eb0e3e-12bc-48e0-b594-eb03a117a639:link_9a656ba3-684f-4cad-8791-67ac0d2fcb07_dashboard",
             "type": "dashboard",
-            "id": "aws_billing-9d555517-a6aa-460e-a148-60367dcc251a"
+            "id": "aws_billing-81918d21-70c6-4bc0-a03e-9e298460a525"
         }
     ],
     "type": "dashboard",
