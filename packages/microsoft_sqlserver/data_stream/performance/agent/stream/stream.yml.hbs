@@ -43,8 +43,12 @@ sql_queries:
     response_format: table
   - query: "SELECT cntr_value As 're_compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'"
     response_format: table
-  - query: "SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters WHERE counter_name like '{{dynamic_counter_name}}'"
+{{#if dynamic_counter_name}}
+  {{#each dynamic_counter_name as | dynamic_counter i|}}
+  - query: "SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters WHERE counter_name like '{{dynamic_counter}}'"
     response_format: variables
+  {{/each}}
+{{/if}}
 {{#if processors}}
 processors:
 {{processors}}
