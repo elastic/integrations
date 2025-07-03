@@ -93,14 +93,14 @@ Considering you already have an AWS S3 bucket setup, to configure it with Symant
 
 1. If you already have an Azure storage container setup, configure it with Symantec Endpoint Security.
 2. Enable the Symantec Endpoint Streaming by following [these instructions](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html).
-3. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options.For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
+3. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options. For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
 
-- How to setup the `auth.oauth2` credentials can be found in the Azure documentation https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app[here]
-- For more details about the Azure Blob Storage input settings, check the  [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
+- How to setup the `auth.oauth2` credentials can be found in the Azure documentation [here]( https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- For more details about the Azure Blob Storage input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
 
 Note:
 - The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
-- We recommend assigning either the Storage Blob Data Reader or BlobOwner role. The Storage Blob Data Reader role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The Storage Blob Data Owner role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
+- We recommend assigning either the **Storage Blob Data Reader** or **Storage Blob Data Owner** role. The **Storage Blob Data Reader** role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The **Storage Blob Data Owner** role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
 
 ### Collect data from a GCS bucket
 

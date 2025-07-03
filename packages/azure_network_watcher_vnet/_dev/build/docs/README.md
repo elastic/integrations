@@ -21,15 +21,15 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 3. Click **Show keys** to show your **access keys** and **connection strings** to enable buttons to copy the values.
 4. Under **key1**, find the key value. Click **Copy** to copy the **account key**. In the same way, copy the storage account name shown above the keys.
 5. In your storage account, go to **Data storage** > **Containers** to copy the container name.
-6. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options.For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
+6. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options. For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
 
-- How to setup the `auth.oauth2` credentials can be found in the Azure documentation https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app[here]
-- For more details about the Azure Blob Storage input settings, check the  [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
+- How to setup the `auth.oauth2` credentials can be found in the Azure documentation [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- For more details about the Azure Blob Storage input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
 
 Note:
 - Follow [these steps](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-portal) to enable virtual network flow logs.
 - The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
-- We recommend assigning either the Storage Blob Data Reader or BlobOwner role. The Storage Blob Data Reader role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The Storage Blob Data Owner role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
+- We recommend assigning either the **Storage Blob Data Reader** or **Storage Blob Data Owner** role. The **Storage Blob Data Reader** role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The **Storage Blob Data Owner** role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
 
 ### Enable the integration in Elastic
 
