@@ -1,0 +1,75 @@
+- name: activemq_artemis.cluster
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      dimension: true
+      description: Name of the cluster connection.
+    - name: node
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Unique node identifier in the cluster.
+    - name: topology
+      type: keyword
+      description: Cluster topology information.
+    - name: started
+      type: boolean
+      description: Whether the cluster connection is started.
+    - name: messages
+      type: group
+      fields:
+        - name: pending_acknowledgment
+          type: long
+          metric_type: gauge
+          description: Number of messages pending acknowledgment in cluster replication.
+        - name: received
+          type: long
+          metric_type: counter
+          description: Total number of messages received from cluster nodes.
+    - name: connectors
+      type: group
+      fields:
+        - name: static
+          type: keyword
+          description: Static connectors configured for the cluster connection.
+    - name: discovery
+      type: group
+      fields:
+        - name: group_name
+          type: keyword
+          description: Discovery group name used for cluster discovery.
+    - name: address
+      type: keyword
+      description: Address pattern for cluster message forwarding.
+    - name: max_hops
+      type: long
+      metric_type: gauge
+      description: Maximum number of hops for cluster message forwarding.
+    - name: call_timeout
+      type: long
+      unit: ms
+      metric_type: gauge
+      description: Timeout for cluster calls in milliseconds.
+    - name: retry_interval
+      type: long
+      unit: ms
+      metric_type: gauge
+      description: Retry interval for cluster connections in milliseconds.
+    - name: retry_interval_multiplier
+      type: float
+      metric_type: gauge
+      description: Multiplier for retry interval on failure.
+    - name: max_retry_interval
+      type: long
+      unit: ms
+      metric_type: gauge
+      description: Maximum retry interval in milliseconds.
+    - name: reconnect_attempts
+      type: long
+      metric_type: gauge
+      description: Number of reconnection attempts configured.
+    - name: bridge
+      type: keyword
+      description: Bridge configuration for cluster connection.
