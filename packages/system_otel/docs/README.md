@@ -1,6 +1,6 @@
 # System OpenTelemetry Assets
 
-System OpenTelemetry Assets provides dashboards for vizualising OpenTelemetry hosts metrics and logs. 
+System OpenTelemetry Assets provides dashboards for vizualising OpenTelemetry hosts' metrics and logs. 
 
 ## Requirements
 
