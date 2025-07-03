@@ -50,7 +50,7 @@ The metrics data stream collects the cognitive service metrics that is specific 
 **Model HTTP Request Metrics:**
 - `Requests`: Total number of calls made to the model API over a period of time.
 
-**Model HTTP Request Metrics:**
+**Model HTTP Latency Metrics:**
 - `Latency`: Measures time taken to process the first byte of response, last byte of response and the request latency.
 
 **Model Usage Metrics:**
