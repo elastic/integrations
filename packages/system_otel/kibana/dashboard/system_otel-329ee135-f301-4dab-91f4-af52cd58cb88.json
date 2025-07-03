@@ -166,7 +166,7 @@
                                                     "customLabel": true,
                                                     "fieldName": "util",
                                                     "inMetricDimension": true,
-                                                    "label": "CPU Usage",
+                                                    "label": "CPU Utilization",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -233,7 +233,7 @@
                     "y": 2
                 },
                 "panelIndex": "0bd3d08c-b0f1-46be-8501-9a1c7940146f",
-                "title": "CPU Usage",
+                "title": "CPU Utilization",
                 "type": "lens"
             },
             {
@@ -335,7 +335,7 @@
                     "y": 2
                 },
                 "panelIndex": "007d4051-e24a-486f-a1e4-7f092fe5e2f5",
-                "title": "CPU Usage (copy)",
+                "title": "Normalized Load",
                 "type": "lens"
             },
             {
@@ -370,11 +370,11 @@
                                         "e0a218e8-f283-4c9d-8d24-2ee7952f17a8": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Memory Usage",
+                                                    "columnId": "Memory Utilization",
                                                     "customLabel": false,
-                                                    "fieldName": "Memory Usage",
+                                                    "fieldName": "Memory Utilization",
                                                     "inMetricDimension": true,
-                                                    "label": "Memory Usage",
+                                                    "label": "Memory Utilization",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -391,7 +391,7 @@
                                             ],
                                             "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
                                             "query": {
-                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL AND \nattributes.state == \"used\"\n| STATS `Memory Usage` = AVG(metrics.system.memory.utilization)"
+                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL AND \nattributes.state == \"used\"\n| STATS `Memory Utilization` = AVG(metrics.system.memory.utilization)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -401,17 +401,17 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL AND \nattributes.state == \"used\"\n| STATS `Memory Usage` = AVG(metrics.system.memory.utilization)"
+                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL AND \nattributes.state == \"used\"\n| STATS `Memory Utilization` = AVG(metrics.system.memory.utilization)"
                             },
                             "visualization": {
                                 "color": "#DCE3ED",
                                 "layerId": "e0a218e8-f283-4c9d-8d24-2ee7952f17a8",
                                 "layerType": "data",
-                                "metricAccessor": "Memory Usage",
+                                "metricAccessor": "Memory Utilization",
                                 "subtitle": "Average"
                             }
                         },
-                        "title": "Memory Usage",
+                        "title": "Memory Utilization",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {
@@ -422,7 +422,7 @@
                     "filters": [],
                     "hidePanelTitles": true,
                     "query": {
-                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL AND \nattributes.state == \"used\"\n| STATS `Memory Usage` = AVG(metrics.system.memory.utilization)"
+                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL AND \nattributes.state == \"used\"\n| STATS `Memory Utilization` = AVG(metrics.system.memory.utilization)"
                     },
                     "searchSessionId": "d7cfaf51-c948-4acb-9f00-c5af03f94c72",
                     "syncColors": false,
@@ -437,7 +437,7 @@
                     "y": 2
                 },
                 "panelIndex": "e261a266-47b9-4b4b-a084-299210106572",
-                "title": "CPU Usage (copy 1)",
+                "title": "Memory Utilization",
                 "type": "lens"
             },
             {
@@ -519,7 +519,7 @@
                     "y": 2
                 },
                 "panelIndex": "66822d21-c587-455b-9085-e034dd895894",
-                "title": "CPU Usage (copy 2)",
+                "title": "Disk Usage",
                 "type": "lens"
             },
             {
@@ -670,11 +670,11 @@
                                         "2e2094be-156c-442f-a5eb-872e83b619ba": {
                                             "columns": [
                                                 {
-                                                    "columnId": "CPU Usage",
+                                                    "columnId": "CPU Utilization",
                                                     "customLabel": false,
-                                                    "fieldName": "CPU Usage",
+                                                    "fieldName": "CPU Utilization",
                                                     "inMetricDimension": true,
-                                                    "label": "CPU Usage",
+                                                    "label": "CPU Utilization",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -701,7 +701,7 @@
                                             ],
                                             "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
                                             "query": {
-                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.cpu.utilization IS NOT NULL\n| STATS cpu_util_per_state = AVG(metrics.system.cpu.utilization) BY time = BUCKET(@timestamp, 500, ?_tstart, ?_tend), state = attributes.state \n| STATS `CPU Usage` = 1 - SUM(cpu_util_per_state) WHERE state IN (\"idle\", \"wait\", \"steal\") BY time"
+                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.cpu.utilization IS NOT NULL\n| STATS cpu_util_per_state = AVG(metrics.system.cpu.utilization) BY time = BUCKET(@timestamp, 500, ?_tstart, ?_tend), state = attributes.state \n| STATS `CPU Utilization` = 1 - SUM(cpu_util_per_state) WHERE state IN (\"idle\", \"wait\") BY time"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -711,7 +711,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.cpu.utilization IS NOT NULL\n| STATS cpu_util_per_state = AVG(metrics.system.cpu.utilization) BY time = BUCKET(@timestamp, 500, ?_tstart, ?_tend), state = attributes.state \n| STATS `CPU Usage` = 1 - SUM(cpu_util_per_state) WHERE state IN (\"idle\", \"wait\", \"steal\") BY time"
+                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.cpu.utilization IS NOT NULL\n| STATS cpu_util_per_state = AVG(metrics.system.cpu.utilization) BY time = BUCKET(@timestamp, 500, ?_tstart, ?_tend), state = attributes.state \n| STATS `CPU Utilization` = 1 - SUM(cpu_util_per_state) WHERE state IN (\"idle\", \"wait\") BY time"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -733,7 +733,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "CPU Usage"
+                                            "CPU Utilization"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -784,7 +784,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.cpu.utilization IS NOT NULL\n| STATS cpu_util_per_state = AVG(metrics.system.cpu.utilization) BY time = BUCKET(@timestamp, 500, ?_tstart, ?_tend), state = attributes.state \n| STATS `CPU Usage` = 1 - SUM(cpu_util_per_state) WHERE state IN (\"idle\", \"wait\", \"steal\") BY time"
+                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.cpu.utilization IS NOT NULL\n| STATS cpu_util_per_state = AVG(metrics.system.cpu.utilization) BY time = BUCKET(@timestamp, 500, ?_tstart, ?_tend), state = attributes.state \n| STATS `CPU Utilization` = 1 - SUM(cpu_util_per_state) WHERE state IN (\"idle\", \"wait\") BY time"
                     },
                     "searchSessionId": "d7cfaf51-c948-4acb-9f00-c5af03f94c72",
                     "syncColors": false,
@@ -799,7 +799,7 @@
                     "y": 19
                 },
                 "panelIndex": "f7fe6ccd-7816-4ac0-865f-cbb6baa76685",
-                "title": "CPU Usage",
+                "title": "CPU Utilization",
                 "type": "lens"
             },
             {
@@ -834,11 +834,11 @@
                                         "d56f749b-9ae2-4213-9933-f8e46c4c7cd7": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Memory Usage",
+                                                    "columnId": "Memory Utilization",
                                                     "customLabel": false,
-                                                    "fieldName": "Memory Usage",
+                                                    "fieldName": "Memory Utilization",
                                                     "inMetricDimension": true,
-                                                    "label": "Memory Usage",
+                                                    "label": "Memory Utilization",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -865,7 +865,7 @@
                                             ],
                                             "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
                                             "query": {
-                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL\n| STATS memory_util_per_state = AVG(metrics.system.memory.utilization) BY time = BUCKET(@timestamp, 200, ?_tstart, ?_tend), state = attributes.state \n| STATS `Memory Usage` = SUM(memory_util_per_state) WHERE state == \"used\" BY time"
+                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL\n| STATS memory_util_per_state = AVG(metrics.system.memory.utilization) BY time = BUCKET(@timestamp, 200, ?_tstart, ?_tend), state = attributes.state \n| STATS `Memory Utilization` = SUM(memory_util_per_state) WHERE state == \"used\" BY time"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -875,7 +875,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL\n| STATS memory_util_per_state = AVG(metrics.system.memory.utilization) BY time = BUCKET(@timestamp, 200, ?_tstart, ?_tend), state = attributes.state \n| STATS `Memory Usage` = SUM(memory_util_per_state) WHERE state == \"used\" BY time"
+                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL\n| STATS memory_util_per_state = AVG(metrics.system.memory.utilization) BY time = BUCKET(@timestamp, 200, ?_tstart, ?_tend), state = attributes.state \n| STATS `Memory Utilization` = SUM(memory_util_per_state) WHERE state == \"used\" BY time"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -897,7 +897,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "Memory Usage"
+                                            "Memory Utilization"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -951,7 +951,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL\n| STATS memory_util_per_state = AVG(metrics.system.memory.utilization) BY time = BUCKET(@timestamp, 200, ?_tstart, ?_tend), state = attributes.state \n| STATS `Memory Usage` = SUM(memory_util_per_state) WHERE state == \"used\" BY time"
+                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE metrics.system.memory.utilization IS NOT NULL\n| STATS memory_util_per_state = AVG(metrics.system.memory.utilization) BY time = BUCKET(@timestamp, 200, ?_tstart, ?_tend), state = attributes.state \n| STATS `Memory Utilization` = SUM(memory_util_per_state) WHERE state == \"used\" BY time"
                     },
                     "searchSessionId": "d7cfaf51-c948-4acb-9f00-c5af03f94c72",
                     "syncColors": false,
@@ -966,7 +966,7 @@
                     "y": 33
                 },
                 "panelIndex": "843d656c-d60f-4b64-95e8-8ace2fc05bee",
-                "title": "Memory Usage",
+                "title": "Memory Utilization",
                 "type": "lens"
             },
             {
