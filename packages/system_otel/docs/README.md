@@ -9,6 +9,8 @@ Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiv
 - the [Elastic Distributions of OpenTelemetry](https://www.elastic.co/docs/reference/opentelemetry/quickstart/)
 - or using the vanilla / upstream OpenTelemetry Collector
 
+Compatible `hostmetrics` receiver versions are all versions `>= v0.102.0`.
+
 For full functionality of the dashboards included in this content pack, you will need to ensure the following metrics are enabled in the [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver):
 
 | Metric | Enabled by default in EDOT Collector | Enabled by default in upstream Contrib Collector |
@@ -65,3 +67,8 @@ If individual widgets in the dashboard show errors that certain fields are not e
 
 - For your use case the missing data is not relevant (e.g. you are only running plain, local VMs, no `Cloud` metadata will be available)
 - You are using the OpenTelemetry upstream Contrib Collector (or any other, non-EDOT Collector) and some of the above-mentioned requirements are not met
+
+See also:
+
+- [Scraper limitations](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.129.0/receiver/hostmetricsreceiver#host-metrics-receiver) with the `hostmetrics` receiver for certain systems
+- [Related EDOT Collector limitations](https://www.elastic.co/docs/reference/opentelemetry/compatibility/limitations#infrastructure-and-host-metrics) for host metrics 
