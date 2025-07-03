@@ -29,6 +29,20 @@ processors:
       target_field: tmp_json
       description: 'Parses the message field as JSON and stores it in a temporary field to identify the event dataset.'
   
+  # Unfortunately, some log categories come in uppercase, violating the spec [1].
+  # To properly identify the event dataset and apply the correct routing rules,
+  # we need to convert them to lowercase.
+  #
+  # Note: the target data stream is responsible to deal with the capitalized names.
+  #
+  # [1]: https://learn.microsoft.com/en-us/azure/azure-monitor/platform/resource-logs-schema#top-level-common-schema
+  - rename:
+      field: tmp_json.Category
+      target_field: tmp_json.category
+      if: 'ctx.tmp_json?.category == null'
+      ignore_missing: true
+      description: 'Rename the invalid `Category` field to `category` to apply the correct routing rules.'
+
   # Defaults to azure.events if the `category` field is not present.
   - set:
       field: event.dataset
