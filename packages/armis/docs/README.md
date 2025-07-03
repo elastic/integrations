@@ -22,65 +22,46 @@ The Armis integration collects three types of logs.
 
 ## Requirements
 
-### Agentless Enabled Integration
+### Agentless-enabled integration
+
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent Based Installation
-- Elastic Agent must be installed
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent-based installation
 
-#### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
 1. Log in to your Armis portal.
 2. Navigate to the **Settings** tab.
 3. Select **Asset Management & Security**.
 4. Go to **API Management** and generate a **Secret Key**.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Armis`.
-3. Select the "Armis" integration from the search results.
-4. Select "Add Armis" to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Secret Key to enable data collection.
-6. Select "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Armis**.
+3. Select the **Armis** integration and add it.
+4. Add all the required integration configuration parameters, including the URL, Secret Key to enable data collection.
+5. Save the integration.
 
 ## Limitations
 
-1. In the **vulnerability data stream**, our filtering mechanism for the **vulnerability search API** relies specifically on the `lastDetected` field. This means that when a user takes action on a vulnerability and `lastDetected` updates, only then will the event for that vulnerability be retrieved. Initially, we assumed this field would always have a value and could be used as a cursor timestamp for fetching data between intervals. However, due to inconsistencies in the API response, we observed cases where `lastDetected` is `null`.
+In the **vulnerability data stream**, our filtering mechanism for the **vulnerability search API** relies specifically on the `lastDetected` field. This means that when a user takes action on a vulnerability and `lastDetected` updates, only then will the event for that vulnerability be retrieved. Initially, we assumed this field would always have a value and could be used as a cursor timestamp for fetching data between intervals. However, due to inconsistencies in the API response, we observed cases where `lastDetected` is `null`.
 
 ## Troubleshooting
 
-- If you are seeing below mentioned errors in the **vulnerability data stream**, try reducing the page size in your request.
+- If you get the following errors in the **vulnerability data stream**, reduce the page size in your request.
 
   **Common errors:**
   - `502 Bad Gateway`
   - `414 Request-URI Too Large`
 
-- If you are encountering issues in the **alert data stream**, particularly during the initial data fetch, try reducing the initial interval.
+- If you encounter issues in the **alert data stream**, particularly during the initial data fetch, reduce the initial interval.
 
   **Example error:**
   - `The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.`
