@@ -1,0 +1,48 @@
+title: Kafka JVM metrics
+type: metrics
+streams:
+  - input: jolokia/metrics
+    template_path: stream.yml.hbs
+    title: Kafka JVM metrics
+    description: Collect JVM metrics from Kafka brokers via JMX/Jolokia
+    vars:
+      - name: period
+        type: text
+        title: Period
+        description: Collection period (e.g., 10s, 30s)
+        default: 30s
+      - name: hosts
+        type: text
+        title: Hosts
+        description: Kafka broker Jolokia endpoints
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - 'localhost:8778'
+      - name: namespace
+        type: text
+        title: Namespace
+        description: Namespace for JVM metrics
+        default: kafka.jvm
+      - name: username
+        type: text
+        title: Username
+        description: JMX username (optional)
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: JMX password (optional)
+        required: false
+        show_user: true
+        secret: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.

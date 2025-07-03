@@ -1,0 +1,122 @@
+metricsets: ["jmx"]
+period: {{period}}
+http_method: "GET"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+namespace: {{namespace}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+  # Buffer Pool MBeans
+  - mbean: 'java.nio:type=BufferPool,name=*'
+    attributes:
+      - attr: UsedMemory
+        field: buffer_pool.used.bytes
+      - attr: TotalCapacity
+        field: buffer_pool.capacity.bytes
+      - attr: Count
+        field: buffer_pool.count
+    
+  # Class Loading MBeans
+  - mbean: 'java.lang:type=ClassLoading'
+    attributes:
+      - attr: LoadedClassCount
+        field: classes.loaded.current
+      - attr: TotalLoadedClassCount
+        field: classes.loaded.total
+      - attr: UnloadedClassCount
+        field: classes.unloaded.total
+        
+  # Compilation MBeans
+  - mbean: 'java.lang:type=Compilation'
+    attributes:
+      - attr: TotalCompilationTime
+        field: compilation.time.ms
+        
+  # Garbage Collection MBeans  
+  - mbean: 'java.lang:type=GarbageCollector,name=*'
+    attributes:
+      - attr: CollectionCount
+        field: gc.collection.count
+      - attr: CollectionTime
+        field: gc.collection.time.ms
+        
+  # Memory MBeans
+  - mbean: 'java.lang:type=Memory'
+    attributes:
+      - attr: HeapMemoryUsage.committed
+        field: memory.heap.committed
+      - attr: HeapMemoryUsage.init
+        field: memory.heap.init
+      - attr: HeapMemoryUsage.max
+        field: memory.heap.max
+      - attr: HeapMemoryUsage.used
+        field: memory.heap.used
+      - attr: NonHeapMemoryUsage.committed
+        field: memory.non_heap.committed
+      - attr: NonHeapMemoryUsage.init
+        field: memory.non_heap.init
+      - attr: NonHeapMemoryUsage.max
+        field: memory.non_heap.max
+      - attr: NonHeapMemoryUsage.used
+        field: memory.non_heap.used
+      - attr: ObjectPendingFinalizationCount
+        field: memory.objects_pending_finalization
+        
+  # Memory Pool MBeans
+  - mbean: 'java.lang:type=MemoryPool,name=*'
+    attributes:
+      - attr: Usage.committed
+        field: memory_pool.usage.committed
+      - attr: Usage.init
+        field: memory_pool.usage.init
+      - attr: Usage.max
+        field: memory_pool.usage.max
+      - attr: Usage.used
+        field: memory_pool.usage.used
+      - attr: CollectionUsage.committed
+        field: memory_pool.collection_usage.committed
+      - attr: CollectionUsage.init
+        field: memory_pool.collection_usage.init
+      - attr: CollectionUsage.max
+        field: memory_pool.collection_usage.max
+      - attr: CollectionUsage.used
+        field: memory_pool.collection_usage.used
+        
+  # Runtime MBeans
+  - mbean: 'java.lang:type=Runtime'
+    attributes:
+      - attr: VmName
+        field: runtime.name
+      - attr: VmVendor
+        field: runtime.vendor
+      - attr: VmVersion
+        field: runtime.version
+      - attr: SpecName
+        field: runtime.spec.name
+      - attr: SpecVendor
+        field: runtime.spec.vendor
+      - attr: SpecVersion
+        field: runtime.spec.version
+        
+  # Threading MBeans
+  - mbean: 'java.lang:type=Threading'
+    attributes:
+      - attr: ThreadCount
+        field: threads.count
+      - attr: DaemonThreadCount
+        field: threads.daemon
+      - attr: PeakThreadCount
+        field: threads.peak
+      - attr: TotalStartedThreadCount
+        field: threads.started.total

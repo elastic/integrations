@@ -1,0 +1,241 @@
+- name: kafka.jvm
+  type: group
+  fields:
+    # Buffer Pool Fields
+    - name: buffer_pool
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Buffer pool name
+        - name: used
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Used memory in bytes
+              unit: byte
+              metric_type: gauge
+        - name: capacity
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Total capacity in bytes
+              unit: byte
+              metric_type: gauge
+        - name: count
+          type: long
+          description: Number of buffers
+          metric_type: gauge
+    # Class Loading Fields
+    - name: classes
+      type: group
+      fields:
+        - name: loaded
+          type: group
+          fields:
+            - name: current
+              type: long
+              description: Currently loaded classes
+              metric_type: gauge
+            - name: total
+              type: long
+              description: Total classes loaded since JVM start
+              metric_type: counter
+        - name: unloaded
+          type: group
+          fields:
+            - name: total
+              type: long
+              description: Total classes unloaded since JVM start
+              metric_type: counter
+    # Compilation Fields
+    - name: compilation
+      type: group
+      fields:
+        - name: time
+          type: group
+          fields:
+            - name: ms
+              type: long
+              description: Total compilation time in milliseconds
+              unit: ms
+              metric_type: counter
+    # Garbage Collection Fields
+    - name: gc
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: GC collector name
+        - name: collection
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: Number of GC collections
+              metric_type: counter
+            - name: time
+              type: group
+              fields:
+                - name: ms
+                  type: long
+                  description: Total collection time in milliseconds
+                  unit: ms
+                  metric_type: counter
+    # Memory Fields
+    - name: memory
+      type: group
+      fields:
+        - name: heap
+          type: group
+          fields:
+            - name: committed
+              type: long
+              description: Committed heap memory
+              unit: byte
+              metric_type: gauge
+            - name: init
+              type: long
+              description: Initial heap memory
+              unit: byte
+              metric_type: gauge
+            - name: max
+              type: long
+              description: Maximum heap memory
+              unit: byte
+              metric_type: gauge
+            - name: used
+              type: long
+              description: Used heap memory
+              unit: byte
+              metric_type: gauge
+        - name: non_heap
+          type: group
+          fields:
+            - name: committed
+              type: long
+              description: Committed non-heap memory
+              unit: byte
+              metric_type: gauge
+            - name: init
+              type: long
+              description: Initial non-heap memory
+              unit: byte
+              metric_type: gauge
+            - name: max
+              type: long
+              description: Maximum non-heap memory
+              unit: byte
+              metric_type: gauge
+            - name: used
+              type: long
+              description: Used non-heap memory
+              unit: byte
+              metric_type: gauge
+        - name: objects_pending_finalization
+          type: long
+          description: Objects pending finalization
+          metric_type: gauge
+    # Memory Pool Fields
+    - name: memory_pool
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Memory pool name
+        - name: usage
+          type: group
+          fields:
+            - name: committed
+              type: long
+              description: Committed bytes in memory pool
+              unit: byte
+              metric_type: gauge
+            - name: init
+              type: long
+              description: Initial bytes in memory pool
+              unit: byte
+              metric_type: gauge
+            - name: max
+              type: long
+              description: Maximum bytes in memory pool
+              unit: byte
+              metric_type: gauge
+            - name: used
+              type: long
+              description: Used bytes in memory pool
+              unit: byte
+              metric_type: gauge
+        - name: collection_usage
+          type: group
+          fields:
+            - name: committed
+              type: long
+              description: Committed bytes after GC
+              unit: byte
+              metric_type: gauge
+            - name: init
+              type: long
+              description: Initial bytes after GC
+              unit: byte
+              metric_type: gauge
+            - name: max
+              type: long
+              description: Maximum bytes after GC
+              unit: byte
+              metric_type: gauge
+            - name: used
+              type: long
+              description: Used bytes after GC
+              unit: byte
+              metric_type: gauge
+    # Runtime Fields
+    - name: runtime
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: JVM name
+        - name: vendor
+          type: keyword
+          description: JVM vendor
+        - name: version
+          type: keyword
+          description: JVM version
+        - name: spec
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: JVM specification name
+            - name: vendor
+              type: keyword
+              description: JVM specification vendor
+            - name: version
+              type: keyword
+              description: JVM specification version
+    # Threading Fields
+    - name: threads
+      type: group
+      fields:
+        - name: count
+          type: long
+          description: Current number of threads
+          metric_type: gauge
+        - name: daemon
+          type: long
+          description: Number of daemon threads
+          metric_type: gauge
+        - name: peak
+          type: long
+          description: Peak number of threads
+          metric_type: gauge
+        - name: started
+          type: group
+          fields:
+            - name: total
+              type: long
+              description: Total number of threads started
+              metric_type: counter

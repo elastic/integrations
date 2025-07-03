@@ -1,0 +1,46 @@
+metricsets: ["jmx"]
+period: {{period}}
+http_method: "GET"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+namespace: {{namespace}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+  # Server ReplicaManager MBeans
+  - mbean: 'kafka.server:type=ReplicaManager,name=*'
+    attributes:
+      - attr: AtMinIsrPartitionCount
+        field: replica_manager.at_min_isr_partition_count
+      - attr: FailedIsrUpdatesPerSec
+        field: replica_manager.failed_isr_updates_per_sec
+      - attr: IsrExpandsPerSec
+        field: replica_manager.isr_expands_per_sec
+      - attr: IsrShrinksPerSec
+        field: replica_manager.isr_shrinks_per_sec
+      - attr: LeaderCount
+        field: replica_manager.leader_count
+      - attr: OfflineReplicaCount
+        field: replica_manager.offline_replica_count
+      - attr: PartitionCount
+        field: replica_manager.partition_count
+      - attr: PartitionsWithLateTransactionsCount
+        field: replica_manager.partitions_with_late_transactions_count
+      - attr: ProducerIdCount
+        field: replica_manager.producer_id_count
+      - attr: ReassigningPartitions
+        field: replica_manager.reassigning_partitions
+      - attr: UnderMinIsrPartitionCount
+        field: replica_manager.under_min_isr_partition_count
+      - attr: UnderReplicatedPartitions
+        field: replica_manager.under_replicated_partitions

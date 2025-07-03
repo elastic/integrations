@@ -1,0 +1,78 @@
+metricsets: ["jmx"]
+period: {{period}}
+http_method: "GET"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+namespace: {{namespace}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+  # Network Acceptor MBeans
+  - mbean: 'kafka.network:type=Acceptor,name=*'
+    attributes:
+      - attr: AcceptorBlockedPercent
+        field: acceptor.blocked_percent
+        
+  # Network Processor MBeans
+  - mbean: 'kafka.network:type=Processor,name=*'
+    attributes:
+      - attr: IdlePercent
+        field: processor.idle_percent
+        
+  # Network Request Channel MBeans
+  - mbean: 'kafka.network:type=RequestChannel,name=*'
+    attributes:
+      - attr: RequestQueueSize
+        field: request_channel.request_queue_size
+      - attr: ResponseQueueSize
+        field: request_channel.response_queue_size
+        
+  # Network Request Metrics MBeans
+  - mbean: 'kafka.network:type=RequestMetrics,name=*'
+    attributes:
+      - attr: ErrorsPerSec
+        field: request_metrics.errors_per_sec
+      - attr: LocalTimeMs
+        field: request_metrics.local_time_ms
+      - attr: MessageConversionsTimeMs
+        field: request_metrics.message_conversions_time_ms
+      - attr: RemoteTimeMs
+        field: request_metrics.remote_time_ms
+      - attr: RequestBytes
+        field: request_metrics.request_bytes
+      - attr: RequestQueueTimeMs
+        field: request_metrics.request_queue_time_ms
+      - attr: RequestsPerSec
+        field: request_metrics.requests_per_sec
+      - attr: ResponseQueueTimeMs
+        field: request_metrics.response_queue_time_ms
+      - attr: ResponseSendTimeMs
+        field: request_metrics.response_send_time_ms
+      - attr: TemporaryMemoryBytes
+        field: request_metrics.temporary_memory_bytes
+      - attr: ThrottleTimeMs
+        field: request_metrics.throttle_time_ms
+      - attr: TotalTimeMs
+        field: request_metrics.total_time_ms
+        
+  # Network Socket Server MBeans
+  - mbean: 'kafka.network:type=SocketServer,name=*'
+    attributes:
+      - attr: ExpiredConnectionsKilledCount
+        field: socket_server.expired_connections_killed_count
+      - attr: MemoryPoolAvailable
+        field: socket_server.memory_pool_available
+      - attr: MemoryPoolUsed
+        field: socket_server.memory_pool_used
+      - attr: NetworkProcessorAvgIdlePercent
+        field: socket_server.network_processor_avg_idle_percent
