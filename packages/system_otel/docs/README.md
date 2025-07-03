@@ -9,7 +9,7 @@ Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiv
 - the [Elastic Distributions of OpenTelemetry](https://www.elastic.co/docs/reference/opentelemetry/quickstart/)
 - or using the vanilla / upstream OpenTelemetry Collector
 
-For full functionality of the dashboards included this content pack you will need to ensure the following metrics are enabled in the [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver):
+For full functionality of the dashboards included in this content pack, you will need to ensure the following metrics are enabled in the [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver):
 
 | Metric | Enabled by default in EDOT Collector | Enabled by default in upstream Contrib Collector |
 |---|---|---|
