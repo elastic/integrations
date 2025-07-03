@@ -12,31 +12,13 @@ The Imperva integration collects one type of data: securesphere.
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent, and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **kibana.version** required is **8.10.1**.
 
 ## Setup
 
-### To collect data from Imperva, follow the required steps:
+### Collect data from Imperva
 
 1. The gateway and management server (MX) should have the relevant connectivity for sending logs using the Syslog server.
 
@@ -68,16 +50,16 @@ The minimum **kibana.version** required is **8.10.1**.
 - Create system events policy.
 - Assign a followed action to a system event policy.
 
-For more information on working with action sets and followed actions, refer to the Imperva relevant [documentation]( https://docs.imperva.com/bundle/v15.0-waf-management-server-manager-user-guide/page/Working_with_Action_Sets_and_Followed_Actions.htm).
+For more information on working with action sets and followed actions, check the Imperva [documentation](https://docs.imperva.com/bundle/v15.0-waf-management-server-manager-user-guide/page/Working_with_Action_Sets_and_Followed_Actions.htm).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana, go to Management > Integrations
-2. In the "Search for integrations" search bar, type Imperva.
-3. Click on the "Imperva" integration from the search results.
-4. Click on the "Add Imperva" button to add the integration.
-5. Enable the data collection mode from the following: Filestream, TCP, or UDP.
-6. Add all the required configuration parameters, such as paths for the filestream or listen address and listen port for the TCP and UDP.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Imperva**.
+3. Select the **Imperva** integration and add it.
+4. Enable the data collection mode from the following: Filestream, TCP, or UDP.
+5. Add all the required configuration parameters, such as paths for the filestream or listen address and listen port for the TCP and UDP.
+6. Save the integration.
 
 ## Logs Reference
 

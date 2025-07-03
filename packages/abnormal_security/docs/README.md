@@ -1,12 +1,12 @@
-# Abnormal Security
+# Abnormal AI
 
-Abnormal Security is a behavioral AI-based email security platform that learns the behavior of every identity in a cloud email environment and analyzes the risk of every event to block even the most sophisticated attacks.
+Abnormal AI is a behavioral AI-based email security platform that learns the behavior of every identity in a cloud email environment and analyzes the risk of every event to block even the most sophisticated attacks.
 
-The Abnormal Security integration collects data for AI Security Mailbox (formerly known as Abuse Mailbox), Audit, Case, and Threat logs using REST API.
+The Abnormal AI integration collects data for AI Security Mailbox (formerly known as Abuse Mailbox), Audit, Case, and Threat logs using REST API.
 
 ## Data streams
 
-The Abnormal Security integration collects six types of logs:
+The Abnormal AI integration collects six types of logs:
 
 - **[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of AI Security Mailbox.
 
@@ -26,31 +26,31 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Setup
 
-### To collect data from the Abnormal Security Client API:
+### To collect data from the Abnormal AI Client API:
 
 #### Step 1: Go to Portal
-* Visit the [Abnormal Security Portal](https://portal.abnormalsecurity.com/home/settings/integrations) and click on the `Abnormal REST API` setting.
+* Visit the [Abnormal AI Portal](https://portal.abnormalsecurity.com/home/settings/integrations) and click on the `Abnormal REST API` setting.
 
 #### Step 2: Generating the authentication token
-* Retrieve your authentication token. This token will be used further in the Elastic integration setup to authenticate and access different Abnormal Security Logs.
+* Retrieve your authentication token. This token will be used further in the Elastic integration setup to authenticate and access different Abnormal AI Logs.
 
 #### Step 3: IP allowlisting
-* Abnormal Security requires you to restrict API access based on source IP. So in order for the integration to work, user needs to update the IP allowlisting to include the external source IP of the endpoint running the integration via Elastic Agent.
+* Abnormal AI requires you to restrict API access based on source IP. So in order for the integration to work, user needs to update the IP allowlisting to include the external source IP of the endpoint running the integration via Elastic Agent.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Abnormal Security`.
-3. Select the "Abnormal Security" integration from the search results.
-4. Select "Add Abnormal Security" to add the integration.
+2. In "Search for integrations" top bar, search for `Abnormal AI`.
+3. Select the "Abnormal AI" integration from the search results.
+4. Select "Add Abnormal AI" to add the integration.
 5. Add all the required integration configuration parameters, including Access Token, Interval, Initial Interval and Page Size to enable data collection.
 6. Select "Save and continue" to save the integration.
 
-**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL changes based on location so find your own base URL.
+**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal AI Base URL changes based on location so find your own base URL.
 
 ### Enabling enrichment for Threat events
 
-Introduced in version 1.8.0, the Abnormal Security integration includes a new option called `Enable Attachments and Links enrichment` for the Threat data stream. When enabled, this feature enriches incoming threat events with additional details about any attachments and links included in the original message.
+Introduced in version 1.8.0, the Abnormal AI integration includes a new option called `Enable Attachments and Links enrichment` for the Threat data stream. When enabled, this feature enriches incoming threat events with additional details about any attachments and links included in the original message.
 
 ## Logs reference
 
@@ -874,7 +874,7 @@ An example event for `threat` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abnormal_security.threat.abx_message_id | A unique identifier for an individual message within a threat (i.e email campaign). | keyword |
-| abnormal_security.threat.abx_portal_url | The URL at which the specific message details are viewable in Abnormal Security's Portal web interface. | keyword |
+| abnormal_security.threat.abx_portal_url | The URL at which the specific message details are viewable in Abnormal AI's Portal web interface. | keyword |
 | abnormal_security.threat.attachment_count | Number of attachments in email (only available for IESS customers). | long |
 | abnormal_security.threat.attachment_names | List of attachment names, if any. Attachments retrieved from the attachments endpoint are appended to this field if enrichment is enabled. | keyword |
 | abnormal_security.threat.attack.strategy |  | keyword |

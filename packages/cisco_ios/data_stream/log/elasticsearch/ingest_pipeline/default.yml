@@ -33,6 +33,18 @@ processors:
       ignore_missing: true
   - grok:
       field: event.original
+      tag: grok_kiwi_header
+      description: |- 
+        The Kiwi syslog header is expected to be in the following format:
+        <PRI>Original Address=IP [RFC 5424 header] [Cisco IOS log]
+        
+        This grok pattern currently only extracts the Cisco IOS log from
+        the event. It does not extract any Kiwi syslog header fields.
+      patterns:
+        - '^<%{NONNEGINT:log.syslog.priority:long}>Original Address=(?:%{DATA} ){7}%{GREEDYDATA:_temp_.message}$'
+        - '^%{GREEDYDATA:_temp_.message}$'
+  - grok:
+      field: _temp_.message
       tag: grok_header
       patterns:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{TIMESTAMP_ISO8601:_temp_.cisco_timestamp} %{CISCO_HOSTNAME:log.syslog.hostname} %{GREEDYDATA:_temp_.message}$'

@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing Event logs.
 processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -250,6 +253,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.activity_due?.display_value != null && ctx.servicenow.event.activity_due.display_value != ''
       on_failure:
         - remove:
@@ -317,6 +321,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.last_review_date?.display_value != null && ctx.servicenow.event.last_review_date.display_value != ''
       on_failure:
         - remove:
@@ -389,6 +394,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.assigned?.display_value != null && ctx.servicenow.event.assigned.display_value != ''
       on_failure:
         - remove:
@@ -497,6 +503,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.attested_date?.display_value != null && ctx.servicenow.event.attested_date.display_value != ''
       on_failure:
         - remove:
@@ -827,6 +834,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.closed_at?.display_value != null && ctx.servicenow.event.closed_at.display_value != ''
       on_failure:
         - remove:
@@ -945,6 +953,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.delivery_date?.display_value != null && ctx.servicenow.event.delivery_date.display_value != ''
       on_failure:
         - remove:
@@ -1039,6 +1048,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.end_date?.display_value != null && ctx.servicenow.event.end_date.display_value != ''
       on_failure:
         - remove:
@@ -1136,6 +1146,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.first_discovered?.display_value != null && ctx.servicenow.event.first_discovered.display_value != ''
       on_failure:
         - remove:
@@ -1334,6 +1345,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.last_discovered?.display_value != null && ctx.servicenow.event.last_discovered.display_value != ''
       on_failure:
         - remove:
@@ -1504,6 +1516,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.opened_at?.display_value != null && ctx.servicenow.event.opened_at.display_value != ''
       on_failure:
         - remove:
@@ -1576,6 +1589,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.work_end?.display_value != null && ctx.servicenow.event.work_end.display_value != ''
       on_failure:
         - remove:
@@ -1643,6 +1657,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.approval_set?.display_value != null && ctx.servicenow.event.approval_set.display_value != ''
       on_failure:
         - remove:
@@ -1710,6 +1725,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.work_start?.display_value != null && ctx.servicenow.event.work_start.display_value != ''
       on_failure:
         - remove:
@@ -1777,6 +1793,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.follow_up?.display_value != null && ctx.servicenow.event.follow_up.display_value != ''
       on_failure:
         - remove:
@@ -1844,6 +1861,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.expected_start?.display_value != null && ctx.servicenow.event.expected_start.display_value != ''
       on_failure:
         - remove:
@@ -1911,6 +1929,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.due_date?.display_value != null && ctx.servicenow.event.due_date.display_value != ''
       on_failure:
         - remove:
@@ -1978,6 +1997,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.checked_out?.display_value != null && ctx.servicenow.event.checked_out.display_value != ''
       on_failure:
         - remove:
@@ -2045,6 +2065,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.checked_in?.display_value != null && ctx.servicenow.event.checked_in.display_value != ''
       on_failure:
         - remove:
@@ -2112,6 +2133,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.due?.display_value != null && ctx.servicenow.event.due.display_value != ''
       on_failure:
         - remove:
@@ -2179,6 +2201,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.planned_end_date?.display_value != null && ctx.servicenow.event.planned_end_date.display_value != ''
       on_failure:
         - remove:
@@ -2246,6 +2269,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.planned_start_date?.display_value != null && ctx.servicenow.event.planned_start_date.display_value != ''
       on_failure:
         - remove:
@@ -2330,6 +2354,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.order_date?.display_value != null && ctx.servicenow.event.order_date.display_value != ''
       on_failure:
         - remove:
@@ -2428,6 +2453,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.purchase_date?.display_value != null && ctx.servicenow.event.purchase_date.display_value != ''
       on_failure:
         - remove:
@@ -2543,6 +2569,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.resolved_at?.display_value != null && ctx.servicenow.event.resolved_at.display_value != ''
       on_failure:
         - remove:
@@ -2639,6 +2666,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.start_date?.display_value != null && ctx.servicenow.event.start_date.display_value != ''
       on_failure:
         - remove:
@@ -2706,6 +2734,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.sys_created_on?.display_value != null && ctx.servicenow.event.sys_created_on.display_value != ''
       on_failure:
         - remove:
@@ -2778,6 +2807,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.install_date?.display_value != null && ctx.servicenow.event.install_date.display_value != ''
       on_failure:
         - remove:
@@ -2868,6 +2898,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.sys_updated_on?.display_value != null && ctx.servicenow.event.sys_updated_on.display_value != ''
       on_failure:
         - remove:
@@ -2938,15 +2969,58 @@ processors:
   - uri_parts:
       field: servicenow.event.url.display_value
       tag: uri_parts_url_full
-      ignore_missing: true
+      if: >
+        ctx.servicenow?.event?.url?.display_value instanceof String &&
+        ctx.servicenow.event.url.display_value != ''
       on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - script:
+            description: >
+              URL values appear to be URI decoded, so attempt encoding the
+              necessary characters to give uri_parts the best chance at success.
+            tag: script_encode_url
+            source: |-
+              String encode(String path) {
+              StringBuilder sb = new StringBuilder();
+              for (int i = 0; i < path.length(); i++) {
+                char c = path.charAt(i);
+                if (
+                  (c >= (char)'a' && c <= (char)'z') ||
+                  (c >= (char)'A' && c <= (char)'Z') ||
+                  (c >= (char)'0' && c <= (char)'9') ||
+                  c != (char)' ' && c != (char)'^'
+                ) {
+                    sb.append(c);
+                    continue;
+                  }
+                  sb.append('%');
+                  sb.append(Integer.toHexString((int)c));
+                }
+                return sb.toString();
+              }
+              ctx._tmp_url = encode(ctx.servicenow.event.url.display_value);
+        - uri_parts:
+            tag: uri_parts_url_display_value_retry
+            field: _tmp_url
+            keep_original: false
+            on_failure:
+               - append:
+                   field: error.message
+                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - set:
+            tag: set_uri_original_if_url_decode_succeeds
+            if: ctx.url != null
+            description: Set url.original to the unmodified value.
+            field: url.original
+            copy_from: servicenow.event.url.display_value
+        - remove:
+            description: remove the temporary url field
+            field: _tmp_url
   - set:
       field: url.full
       tag: set_url_display_value_into_url_full
+      if: ctx.url != null && ctx.servicenow?.event?.url?.display_value =~ /^([a-z][a-z0-9+\-.]*):/
       copy_from: servicenow.event.url.display_value
+      description: Only copy the original URL if the original has a scheme
       ignore_empty_value: true
   - convert:
       field: servicenow.event.unverified.display_value
@@ -3034,6 +3108,7 @@ processors:
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
       if: ctx.servicenow?.event?.warranty_expiration?.display_value != null && ctx.servicenow.event.warranty_expiration.display_value != ''
       on_failure:
         - remove:
@@ -3346,10 +3421,11 @@ processors:
           return src;
         }
         filterMassive(ctx);
-  - set:
+  - append:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
+      allow_duplicates: false
       if: ctx.error?.message != null
   - append:
       field: tags
