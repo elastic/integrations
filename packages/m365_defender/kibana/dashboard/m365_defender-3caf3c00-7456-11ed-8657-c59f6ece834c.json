@@ -14,7 +14,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "m365_defender.event.threat.types",
-                        "id": "462266f4-6e00-4cc8-98c1-f99680e11323",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -32,7 +31,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "m365_defender.event.delivery.action",
-                        "id": "6c9ef091-b6c7-427f-9a54-e8c0ed58a1c7",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -50,7 +48,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "m365_defender.event.email.action",
-                        "id": "72bea75c-f16a-4af5-8834-e55d35225ba1",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -68,7 +65,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "email.direction",
-                        "id": "a08f3a7c-3f2c-4d38-9325-2dbf39c34163",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -85,7 +81,7 @@
             },
             "showApplySelections": false
         },
-        "description": "Overview of Microsoft 365 Defender Email Events.",
+        "description": "Overview of Microsoft Defender XDR Email Events.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -126,7 +122,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Navigation\n\n#### M365 Defender\n\n#### EventHub Datastream  \n[Alert Events](#/dashboard/m365_defender-2690a440-7235-11ed-8657-c59f6ece834c)  \n[Device Events](#/dashboard/m365_defender-c0b796d0-720a-11ed-8657-c59f6ece834c)  \n[App \u0026 Identity Events](#/dashboard/m365_defender-d587df00-745f-11ed-8657-c59f6ece834c)  \n**Email Events**  \n\n#### Incident Datastream (Graph API)  \n\n[Incidents](#/dashboard/m365_defender-ac54d310-44ab-11ed-8375-0168a9970c06)  \n[Alerts](#/dashboard/m365_defender-d80d7840-4366-11ed-b1f2-e917f608bd03)  \n\n#### Rest API Datastream  \n[Vulnerability](#/dashboard/m365_defender-afb93ff7-9903-4d91-9028-9fe9c5a434f8)\n\n#### Description\n\nThis dashboard visualizes Email type events according to the [Microsoft Documentation](https://learn.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-deviceevents-table?view=o365-worldwide).  \nThe data is collected from a configured Event Hub, using the M365 Defender Event datastream.  \n\nThe supported event types are:\n- AdvancedHunting-EmailAttachmentInfo\n- AdvancedHunting-EmailEvents\n- AdvancedHunting-EmailPostDeliveryEvents\n- AdvancedHunting-EmailUrlInfo\n- AdvancedHunting-UrlClickEvents\n\n**[Integration Page](/app/integrations/detail/m365_defender/overview)**\n",
+                            "markdown": "### Navigation\n\n#### Microsoft Defender XDR\n\n#### EventHub Datastream  \n[Alert Events](#/dashboard/m365_defender-2690a440-7235-11ed-8657-c59f6ece834c)  \n[Device Events](#/dashboard/m365_defender-c0b796d0-720a-11ed-8657-c59f6ece834c)  \n[App \u0026 Identity Events](#/dashboard/m365_defender-d587df00-745f-11ed-8657-c59f6ece834c)  \n**Email Events**  \n\n#### Incident Datastream (Graph API)  \n\n[Incidents](#/dashboard/m365_defender-ac54d310-44ab-11ed-8375-0168a9970c06)  \n[Alerts](#/dashboard/m365_defender-d80d7840-4366-11ed-b1f2-e917f608bd03)  \n\n#### Rest API Datastream  \n[Vulnerability](#/dashboard/m365_defender-afb93ff7-9903-4d91-9028-9fe9c5a434f8)\n\n#### Description\n\nThis dashboard visualizes Email type events according to the [Microsoft Documentation](https://learn.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-deviceevents-table?view=o365-worldwide).  \nThe data is collected from a configured Event Hub, using the Microsoft Defender XDR Event datastream.  \n\nThe supported event types are:\n- AdvancedHunting-EmailAttachmentInfo\n- AdvancedHunting-EmailEvents\n- AdvancedHunting-EmailPostDeliveryEvents\n- AdvancedHunting-EmailUrlInfo\n- AdvancedHunting-UrlClickEvents\n\n**[Integration Page](/app/integrations/detail/m365_defender/overview)**\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -367,8 +363,103 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -595,8 +686,103 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -792,8 +978,103 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -985,8 +1266,103 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -1178,8 +1554,103 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -1371,8 +1842,103 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -1599,8 +2165,103 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -1827,8 +2488,103 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-EmailAttachmentInfo",
+                                    "AdvancedHunting-EmailEvents",
+                                    "AdvancedHunting-EmailPostDeliveryEvents",
+                                    "AdvancedHunting-EmailUrlInfo",
+                                    "AdvancedHunting-UrlClickEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailAttachmentInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailPostDeliveryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-EmailUrlInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-UrlClickEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -1843,13 +2599,12 @@
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Microsoft 365 Defender] Email Events",
+        "title": "[Logs Microsoft Defender XDR] Email Events",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-04-10T09:40:38.999Z",
+    "created_at": "2025-06-27T11:59:02.098Z",
     "id": "m365_defender-3caf3c00-7456-11ed-8657-c59f6ece834c",
-    "managed": true,
     "references": [
         {
             "id": "logs-*",
@@ -1973,22 +2728,22 @@
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_c6a18219-9d93-4724-a702-0fd35b5da0f2:optionsListDataView",
+            "name": "controlGroup_462266f4-6e00-4cc8-98c1-f99680e11323:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_eb3752d3-bcf9-48ea-818d-6efa42cfcf0e:optionsListDataView",
+            "name": "controlGroup_6c9ef091-b6c7-427f-9a54-e8c0ed58a1c7:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_d83fd392-5319-425a-bfeb-86807a4af1ad:optionsListDataView",
+            "name": "controlGroup_72bea75c-f16a-4af5-8834-e55d35225ba1:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_c41c460b-fc35-44fd-a04c-14db646b4d64:optionsListDataView",
+            "name": "controlGroup_a08f3a7c-3f2c-4d38-9325-2dbf39c34163:optionsListDataView",
             "type": "index-pattern"
         },
         {
@@ -2003,5 +2758,6 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

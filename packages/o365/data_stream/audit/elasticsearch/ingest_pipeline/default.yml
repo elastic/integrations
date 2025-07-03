@@ -81,17 +81,25 @@ processors:
       copy_from: o365audit.FileSize
       ignore_empty_value: true
       override: false
-  - gsub:
-      field: file.size
-      pattern: '\D+'
-      replacement: ''
-      if: ctx.file?.size instanceof String
-      ignore_missing: true
-  - convert:
+  - script:
       tag: convert_file_size_to_long
-      field: file.size
-      type: long
-      ignore_missing: true
+      if: ctx.file?.size != null
+      source: |-
+        if (ctx.file.size instanceof long || ctx.file.size instanceof int) {
+          return;
+        }
+        if (ctx.file.size instanceof double) {
+          ctx.file.size = (long) ctx.file.size;
+          return;
+        }
+        try {
+          // Attempt to parse as long to prevent inexact integer conversion.
+          ctx.file.size = Long.parseLong(ctx.file.size);
+        }
+        catch (NumberFormatException e) {
+          // But fall back to float parsing for cases where we failed.
+          ctx.file.size = (long) Double.parseDouble(ctx.file.size);
+        }
       on_failure:
         - remove:
             field: file.size
@@ -160,7 +168,11 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
-      ignore_failure: true
+      tag: rename_organization_id
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - json:
       tag: json-extract-stringly-AdditionalInfo
@@ -468,8 +480,12 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeAdmin"
+      tag: rename_organization_name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -496,8 +512,12 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeItem"
+      tag: rename_organization_name_exchange_item
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -1112,7 +1132,7 @@ processors:
       if: ctx.server?.ip != null
   - script:
       lang: painless
-      if: 'ctx.user?.id != null && ctx.user?.id.contains("@")'
+      if: 'ctx.user?.id instanceof String && ctx.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1123,7 +1143,7 @@ processors:
         ctx.user.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.user?.target?.id != null && ctx.user?.target?.id.contains("@")'
+      if: 'ctx.user?.target?.id instanceof String && ctx.user?.target?.id.contains("@")'
       source: >
         String[] splitmail = ctx.user.target.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1134,7 +1154,7 @@ processors:
         ctx.user.target.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.source?.user?.id != null && ctx.source?.user?.id.contains("@")'
+      if: 'ctx.source?.user?.id instanceof String && ctx.source?.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.source.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1145,7 +1165,7 @@ processors:
         ctx.source.user.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.destination?.user?.id != null && ctx.destination?.user?.id.contains("@")'
+      if: 'ctx.destination?.user?.id instanceof String && ctx.destination?.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.destination.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1157,7 +1177,7 @@ processors:
   - set:
       field: network.type
       value: ipv6
-      if: 'ctx.client?.ip != null && ctx.client?.ip.contains(":")'
+      if: 'ctx.client?.ip instanceof String && ctx.client?.ip.contains(":")'
   - set:
       field: network.type
       value: ipv4

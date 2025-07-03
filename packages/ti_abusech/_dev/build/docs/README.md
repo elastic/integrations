@@ -9,8 +9,10 @@ This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes t
 
 ## Note:
 
-From February 2025, AbuseCH recommends using an optional `Auth Key` (API Key) in the requests to avoid rate limiting issues.
-More details on this topic can be found [here](https://abuse.ch/blog/community-first/). For versions **2.6.1, 2.8.0 and above**, we have added an optional `Auth Key` configuration option that can be used to avoid rate limiting.
+AbuseCH requires using an `Auth Key` (API Key) in the requests for authentication.
+Requests without authentication will be denied by the API.
+
+More details on this topic can be found [here](https://abuse.ch/blog/community-first/).
 
 ## Agentless Enabled Integration
 
