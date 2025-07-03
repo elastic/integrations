@@ -10,8 +10,6 @@ source:
               # This filters only the documents that have the required fields (ie post 1.16 for the integration)
               - exists:
                   field: "elasticsearch.index.creation_date"
-              - exists:
-                  field: "elasticsearch.index.tier_preference"
             should:
               - term:
                   event.dataset: "elasticsearch.index"
@@ -55,6 +53,10 @@ pivot:
         script:
           lang: painless
           source: >
+            if (doc.containsKey('elasticsearch.index.tier') && !doc['elasticsearch.index.tier'].empty) {
+              return doc['elasticsearch.index.tier'].value;
+            }
+            
             def pref = doc.containsKey('elasticsearch.index.tier_preference') && !doc['elasticsearch.index.tier_preference'].empty ? doc['elasticsearch.index.tier_preference'].value : null;
             if (pref == null) return 'unknown';
             if (pref.contains('data_hot') || pref.contains('data_content')) return 'hot/content';
