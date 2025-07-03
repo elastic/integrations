@@ -6,46 +6,29 @@ Trend Micro Deep Security provides advanced server security for physical, virtua
 
 ## Data Streams
 
-This integration supports **deep_security** data stream. See more details from Deep Security logging documentation [here](https://help.deepsecurity.trendmicro.com/20_0/on-premise/events.html).
+This integration supports **deep_security** data stream. For more details, check the [Deep Security logging documentation](https://help.deepsecurity.trendmicro.com/20_0/on-premise/events.html).
+
+## Compatibility
+
+This integration has been tested against Deep Security 20. If you have a Trend Micro Vision One XDR license, we recommend using the [Vision One](https://docs.elastic.co/integrations/trend_micro_vision_one) integration to ingest Deep Security events. For more information on how to configure Deep Security events with Vision One, check the [Deep Security documentation](https://help.deepsecurity.trendmicro.com/aws/xdr.html).
 
 ## Requirements
 
-Elastic Agent is required to ingest data from Deep Security. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-## Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **kibana.version** required is **8.11.0**.
 
-This integration has been tested against Deep Security 20. Please note if you have a Trend Micro Vision One XDR license, we recommend using the [Vision One](https://docs.elastic.co/integrations/trend_micro_vision_one) integration to ingest Deep Security events. For steps on how to configure Deep Security events with Vision One, please see [here](https://help.deepsecurity.trendmicro.com/aws/xdr.html).
-
 ## Setup
 
-Follow the [setup guide](https://help.deepsecurity.trendmicro.com/20_0/on-premise/event-syslog.html) to forward deep security events to a syslog server.
+Follow the Deep Security [setup guide](https://help.deepsecurity.trendmicro.com/20_0/on-premise/event-syslog.html) to forward Deep Security events to a syslog server.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Trend Micro.
-3. Click on the "Trend Micro" integration from the search results.
-4. Click on the "Add Trend Micro" button to add the integration.
-5. Add all the required integration configuration parameters according to the enabled input type.
-6. Click on "Save and Continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Trend Micro**.
+3. Select the **Trend Micro** integration and add it.
+4. Add all the required integration configuration parameters according to the enabled input type.
+5. Save the integration.
 
 ## Logs
 

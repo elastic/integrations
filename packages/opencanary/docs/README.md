@@ -6,39 +6,19 @@ This integration is for [Thinkst OpenCanary](https://github.com/thinkst/opencana
 
 The OpenCanary integration collects the following event types:
 
-- **events**
+`events`: Collects the OpenCanary logs.
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-### Installing and managing an Elastic Agent:
+### Enable the integration in Elastic
 
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
-
-### Enabling the integration in Elastic:
-
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `OpenCanary`.
-3. Select the "OpenCanary" integration from the search results.
-4. Select "Add OpenCanary" to add the integration.
-5. Add all the required integration configuration parameters.
-6. Select "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **OpenCanary**.
+3. Select the **OpenCanary** integration and add it.
+4. Add all the required integration configuration parameters.
+5. Save the integration.
 
 ## Logs
 
@@ -50,74 +30,161 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-05T14:37:26.457Z",
+    "@timestamp": "2025-05-21T02:54:23.002Z",
+    "agent": {
+        "ephemeral_id": "8d51c220-ed3c-4159-9811-8da1fcd45066",
+        "id": "25a5d87f-ff90-46b3-bd51-d65a0f0c23c7",
+        "name": "elastic-agent-32912",
+        "type": "filebeat",
+        "version": "8.17.4"
+    },
+    "data_stream": {
+        "dataset": "opencanary.events",
+        "namespace": "80572",
+        "type": "logs"
+    },
     "destination": {
-        "address": "10.10.10.10",
-        "domain": "OpenCanary1",
-        "ip": "10.10.10.10",
-        "port": 445
+        "address": "1.128.0.1",
+        "as": {
+            "number": 64496,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Greenwich",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.47687,
+                "lon": -0.00041
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "1.128.0.1",
+        "port": 23
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "25a5d87f-ff90-46b3-bd51-d65a0f0c23c7",
+        "snapshot": false,
+        "version": "8.17.4"
     },
     "event": {
-        "action": "flistxattr",
+        "agent_id_status": "verified",
         "category": [
             "network",
             "intrusion_detection"
         ],
-        "created": "2024-04-05T14:37:26.457Z",
-        "kind": [
-            "alert"
-        ],
-        "original": "{\"dst_host\": \"10.10.10.10\", \"dst_port\": 445, \"local_time\": \"2024-04-05 14:37:26.457226\", \"local_time_adjusted\": \"2024-04-05 07:37:26.457252\", \"logdata\": {\"AUDITACTION\": \"flistxattr\", \"DOMAIN\": \"CONTOSO\", \"FILENAME\": \"/shares/database\", \"LOCALNAME\": \"OpenCanary1\", \"REMOTENAME\": \"Client1\", \"SHARENAME\": \"database\", \"SMBARCH\": \"OSX\", \"SMBVER\": \"SMB3_11\", \"STATUS\": \"ok\", \"USER\": \"jdoe\"}, \"logtype\": 5000, \"node_id\": \"opencanary-1\", \"src_host\": \"192.168.0.10\", \"src_port\": \"-1\", \"utc_time\": \"2024-04-05 14:37:26.457249\"}",
-        "provider": "LOG_SMB_FILE_OPEN",
-        "start": "2024-04-05T14:37:26.457Z",
+        "created": "2025-05-21T02:54:23.002Z",
+        "dataset": "opencanary.events",
+        "ingested": "2025-05-22T13:03:43Z",
+        "kind": "alert",
+        "original": "{\"dst_host\": \"1.128.0.1\", \"dst_port\": 23, \"honeycred\": false, \"local_time\": \"2025-05-21 02:54:23.002821\", \"local_time_adjusted\": \"2025-05-21 02:54:23.002888\", \"logdata\": {\"PASSWORD\": \"admin\", \"USERNAME\": \"admin\"}, \"logtype\": 6001, \"node_id\": \"opencanary-1\", \"src_host\": \"1.128.0.10\", \"src_port\": 28884, \"utc_time\": \"2025-05-21 02:54:23.002880\"}",
+        "provider": "LOG_TELNET_LOGIN_ATTEMPT",
+        "start": "2025-05-21T02:54:23.002Z",
+        "timezone": "+00:00",
         "type": [
             "connection"
         ]
     },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-32912",
+        "ip": [
+            "172.22.0.2",
+            "172.20.0.4"
+        ],
+        "mac": [
+            "72-D6-4C-81-59-51",
+            "DA-7B-39-1C-96-A3"
+        ],
+        "name": "elastic-agent-32912",
+        "os": {
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
     "log": {
-        "logger": "LOG_SMB_FILE_OPEN"
+        "file": {
+            "device_id": "44",
+            "inode": "116",
+            "path": "/tmp/service_logs/events.log"
+        },
+        "logger": "LOG_TELNET_LOGIN_ATTEMPT",
+        "offset": 0
     },
     "network": {
         "direction": "internal"
     },
     "opencanary": {
+        "dst_host": "1.128.0.1",
+        "dst_port": 23,
+        "honeycred": false,
+        "local_time": "2025-05-21 02:54:23.002821",
+        "local_time_adjusted": "2025-05-21 02:54:23.002888",
+        "logdata": {
+            "password": "admin",
+            "username": "admin"
+        },
+        "logtype": 6001,
         "node": {
             "id": "opencanary-1"
         },
-        "smb": {
-            "filename": "/shares/database",
-            "share_name": "database",
-            "smb_arch": "OSX",
-            "smb_version": "SMB3_11",
-            "status": "ok"
-        }
+        "src_host": "1.128.0.10",
+        "src_port": 28884,
+        "utc_time": "2025-05-21 02:54:23.002880"
     },
     "related": {
-        "hosts": [
-            "OpenCanary1",
-            "Client1"
-        ],
         "ip": [
-            "10.10.10.10",
-            "192.168.0.10"
+            "1.128.0.1",
+            "1.128.0.10"
         ],
         "user": [
-            "jdoe"
+            "admin"
         ]
     },
     "source": {
-        "address": "192.168.0.10",
-        "domain": "Client1",
-        "ip": "192.168.0.10",
-        "port": -1
+        "address": "1.128.0.10",
+        "as": {
+            "number": 64496,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Greenwich",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.47687,
+                "lon": -0.00041
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "1.128.0.10",
+        "port": 28884
     },
     "tags": [
         "preserve_original_event",
-        "redact_passwords"
+        "preserve_duplicate_custom_fields",
+        "opencanary-logs"
     ],
     "user": {
-        "domain": "CONTOSO",
-        "name": "jdoe"
+        "name": "admin"
     }
 }
 ```
@@ -137,25 +204,59 @@ An example event for `events` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| opencanary.dst_host |  | keyword |
+| opencanary.dst_port |  | integer |
+| opencanary.honeycred |  | boolean |
+| opencanary.level |  | keyword |
+| opencanary.local_time |  | keyword |
+| opencanary.local_time_adjusted |  | keyword |
+| opencanary.logdata.auditaction |  | keyword |
+| opencanary.logdata.banner_id |  | keyword |
+| opencanary.logdata.community_string |  | keyword |
 | opencanary.logdata.cwr |  | keyword |
+| opencanary.logdata.data |  | keyword |
 | opencanary.logdata.df |  | keyword |
+| opencanary.logdata.domain |  | keyword |
 | opencanary.logdata.ece |  | keyword |
+| opencanary.logdata.function |  | keyword |
+| opencanary.logdata.headers.\* |  | keyword |
+| opencanary.logdata.host |  | keyword |
+| opencanary.logdata.hostname |  | keyword |
 | opencanary.logdata.id |  | long |
+| opencanary.logdata.in |  | keyword |
+| opencanary.logdata.language |  | keyword |
 | opencanary.logdata.len |  | keyword |
+| opencanary.logdata.localname |  | keyword |
+| opencanary.logdata.mac |  | keyword |
+| opencanary.logdata.msg.logdata | Generic log message field | text |
+| opencanary.logdata.password | The password submitted to the service | keyword |
+| opencanary.logdata.path |  | keyword |
 | opencanary.logdata.prec |  | keyword |
+| opencanary.logdata.proto |  | keyword |
+| opencanary.logdata.remotename |  | keyword |
+| opencanary.logdata.repo |  | keyword |
+| opencanary.logdata.requests |  | keyword |
 | opencanary.logdata.res |  | keyword |
 | opencanary.logdata.session |  | keyword |
 | opencanary.logdata.syn |  | keyword |
 | opencanary.logdata.tos |  | keyword |
 | opencanary.logdata.ttl |  | long |
 | opencanary.logdata.urgp |  | long |
+| opencanary.logdata.user |  | keyword |
+| opencanary.logdata.useragent |  | keyword |
+| opencanary.logdata.username |  | keyword |
 | opencanary.logdata.window |  | long |
+| opencanary.logtype |  | long |
 | opencanary.mssql.client.app |  | keyword |
 | opencanary.mssql.client.hostname |  | keyword |
 | opencanary.mssql.client.interface_library |  | keyword |
 | opencanary.mssql.database |  | keyword |
 | opencanary.node.id | Identifier for the OpenCanary node as configured in `/etc/opencanaryd/opencanary.conf` | keyword |
+| opencanary.ntp.cmd |  | keyword |
 | opencanary.redis.args |  | keyword |
 | opencanary.redis.command |  | keyword |
 | opencanary.skin | Skin configured for the OpenCanary service. | keyword |
@@ -165,10 +266,19 @@ An example event for `events` looks as following:
 | opencanary.smb.smb_arch |  | keyword |
 | opencanary.smb.smb_version |  | keyword |
 | opencanary.smb.status |  | keyword |
+| opencanary.src_host |  | keyword |
+| opencanary.src_port |  | integer |
 | opencanary.ssh.local_version |  | keyword |
 | opencanary.ssh.remote_version |  | keyword |
 | opencanary.tcp_banner.banner_id |  | keyword |
 | opencanary.tcp_banner.data |  | keyword |
 | opencanary.tcp_banner.function |  | keyword |
 | opencanary.tcp_banner.secret_string |  | keyword |
+| opencanary.tftp.filename |  | keyword |
+| opencanary.tftp.node |  | keyword |
+| opencanary.tftp.opcode |  | keyword |
+| opencanary.utc_time |  | keyword |
+| opencanary.vnc.client_response |  | keyword |
+| opencanary.vnc.password |  | keyword |
+| opencanary.vnc.server_challenge |  | keyword |
 
