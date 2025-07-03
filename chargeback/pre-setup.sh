@@ -34,11 +34,12 @@ PUT chargeback_conf_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.0.4" }
+      "package": { "name": "chargeback", "version": "0.1.0" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
       "conf_ecu_rate": { "type": "float" },
+      "conf_ecu_rate_unit": { "type": "keyword"},
       "conf_indexing_weight": { "type": "integer" },
       "conf_query_weight": { "type": "integer" },
       "conf_storage_weight": { "type": "integer" }
@@ -51,11 +52,11 @@ POST chargeback_conf_lookup/_doc/config
 {
   "config_join_key": "chargeback_config",
   "conf_ecu_rate": 0.85,
+  "conf_ecu_rate_unit": "EUR",
   "conf_indexing_weight": 20,
   "conf_query_weight": 20,
   "conf_storage_weight": 40
 }
-
 
 # Create the lookup indices for billing and cluster contributions.
 PUT billing_cluster_cost_lookup
@@ -67,7 +68,7 @@ PUT billing_cluster_cost_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.0.4" }
+      "package": { "name": "chargeback", "version": "0.1.0" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -100,7 +101,7 @@ PUT cluster_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.0.4" }
+      "package": { "name": "chargeback", "version": "0.1.0" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -127,7 +128,7 @@ PUT cluster_deployment_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.0.4" }
+      "package": { "name": "chargeback", "version": "0.1.0" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -152,7 +153,7 @@ PUT cluster_tier_and_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.0.4" }
+      "package": { "name": "chargeback", "version": "0.1.0" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -180,7 +181,7 @@ PUT cluster_tier_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.0.4" }
+      "package": { "name": "chargeback", "version": "0.1.0" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
