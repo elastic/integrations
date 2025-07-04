@@ -1,0 +1,74 @@
+metricsets: ["jmx"]
+period: {{period}}
+http_method: "GET"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+namespace: {{namespace}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+  # Log MBeans
+  - mbean: 'kafka.log:type=Log,name=*'
+    attributes:
+      - attr: LogEndOffset
+        field: log.log_end_offset
+      - attr: LogStartOffset
+        field: log.log_start_offset
+      - attr: NumLogSegments
+        field: log.num_log_segments
+      - attr: Size
+        field: log.size
+        
+  # Log Cleaner MBeans
+  - mbean: 'kafka.log:type=LogCleaner,name=*'
+    attributes:
+      - attr: CleanerRecopyPercent
+        field: log_cleaner.cleaner_recopy_percent
+      - attr: DeadThreadCount
+        field: log_cleaner.dead_thread_count
+      - attr: MaxBufferUtilizationPercent
+        field: log_cleaner.max_buffer_utilization_percent
+      - attr: MaxCleanTimeSecs
+        field: log_cleaner.max_clean_time_secs
+      - attr: MaxCompactionDelaySecs
+        field: log_cleaner.max_compaction_delay_secs
+        
+  # Log Cleaner Manager MBeans
+  - mbean: 'kafka.log:type=LogCleanerManager,name=*'
+    attributes:
+      - attr: MaxDirtyPercent
+        field: log_cleaner_manager.max_dirty_percent
+      - attr: TimeSinceLastRunMs
+        field: log_cleaner_manager.time_since_last_run_ms
+      - attr: UncleanableBytes
+        field: log_cleaner_manager.uncleanable_bytes
+      - attr: UncleanablePartitionsCount
+        field: log_cleaner_manager.uncleanable_partitions_count
+        
+  # Log Flush Stats MBeans
+  - mbean: 'kafka.log:type=LogFlushStats,name=*'
+    attributes:
+      - attr: LogFlushRateAndTimeMs
+        field: log_flush_stats.log_flush_rate_and_time_ms
+        
+  # Log Manager MBeans
+  - mbean: 'kafka.log:type=LogManager,name=*'
+    attributes:
+      - attr: LogDirectoryOffline
+        field: log_manager.log_directory_offline
+      - attr: OfflineLogDirectoryCount
+        field: log_manager.offline_log_directory_count
+      - attr: RemainingLogsToRecover
+        field: log_manager.remaining_logs_to_recover
+      - attr: RemainingSegmentsToRecover
+        field: log_manager.remaining_segments_to_recover
