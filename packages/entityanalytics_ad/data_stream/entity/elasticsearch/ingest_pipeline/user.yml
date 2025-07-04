@@ -1,0 +1,63 @@
+---
+description: Pipeline for processing User logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: ['iam']
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: ['user','info']
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: activedirectory_user
+
+  - pipeline:
+      name: '{{ IngestPipeline "common" }}'
+      tag: pipeline_entity
+      ignore_missing_pipeline: true
+
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.sam_account_name}}}"
+      tag: append_name_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.sam_account_name != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.id}}}"
+      tag: append_id_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.id != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.object_guid}}}"
+      tag: append_object_guid_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.object_guid != null
+
+  - rename:
+      field: activedirectory.id
+      target_field: activedirectory.user.object_dn
+
+  - rename:
+      field: activedirectory
+      target_field: entityanalytics_ad
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
