@@ -19,7 +19,7 @@ For full functionality of the dashboards included in this content pack, you will
 | `system.cpu.time` | ✅ | ✅ |
 | `system.cpu.utilization` | ✅ | ❌ |
 | `system.cpu.logical.count` | ✅ | ❌ |
-|**[Load](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/loadscraper/documentation.md)**|||
+|**[Load](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/receiver/hostmetricsreceiver/internal/scraper/loadscraper/documentation.md)**|||
 | `system.cpu.load_average.1m` | ✅ | ✅ |
 | `system.cpu.load_average.5m` | ✅ | ✅ |
 | `system.cpu.load_average.15m` | ✅ | ✅ |
