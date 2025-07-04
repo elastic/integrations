@@ -100,8 +100,6 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$ ]
     if [[ "${BUILDKITE_STEP_KEY}" == "publish-benchmarks" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
-        GITHUB_TOKEN=$VAULT_GITHUB_TOKEN
-        export GITHUB_TOKEN
     fi
 
     if [[ "${BUILDKITE_STEP_KEY}" =~ ^test-integrations- ]]; then
@@ -120,19 +118,3 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-serverless" ]]; then
         export EC_REGION_SECRET
     fi
 fi
-
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" ]]; then
-  if [[ "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
-    GITHUB_USERNAME="elastic-vault-github-plugin-prod"
-    GITHUB_EMAIL="elasticmachine@elastic.co"
-    GITHUB_TOKEN=$VAULT_GITHUB_TOKEN
-    export GITHUB_TOKEN GITHUB_EMAIL GITHUB_USERNAME
-  fi
-fi
-
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations" || "$BUILDKITE_PIPELINE_SLUG" == "integrations-serverless" ]]; then
-  if [[ "$BUILDKITE_STEP_KEY" == "report-failed-tests" ]]; then
-    export GITHUB_TOKEN="${VAULT_GITHUB_TOKEN}"
-  fi
-fi
-
