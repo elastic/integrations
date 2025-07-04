@@ -70,5 +70,5 @@ If individual widgets in the dashboard show errors that certain fields are not e
 
 See also:
 
-- [Scraper limitations](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.129.0/receiver/hostmetricsreceiver#host-metrics-receiver) with the `hostmetrics` receiver for certain systems
+- [Scraper limitations](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.127.0/receiver/hostmetricsreceiver#host-metrics-receiver) with the `hostmetrics` receiver for certain systems
 - [Related EDOT Collector limitations](https://www.elastic.co/docs/reference/opentelemetry/compatibility/limitations#infrastructure-and-host-metrics) for host metrics 
