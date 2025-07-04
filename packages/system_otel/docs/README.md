@@ -45,7 +45,7 @@ For full functionality of the dashboards included in this content pack, you will
 For step-by-step instructions on how to ingest OpenTelemetry data using Elastic's distribution of the OpenTelemetry Collector, see the
 [quickstart guide](https://www.elastic.co/docs/reference/opentelemetry/quickstart/).
 
-Also, it's recommended to enable the [`resourcedetection` processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourcedetectionprocessor/README.md) with detection of the following resource attributes explicitly enabled:
+Also, it's recommended to enable the [`resourcedetection` processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/processor/resourcedetectionprocessor/README.md) with detection of the following resource attributes explicitly enabled:
 
 - `host.name`
 - `host.id`
