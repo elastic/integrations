@@ -4,7 +4,7 @@ System OpenTelemetry Assets provides dashboards for vizualising OpenTelemetry ho
 
 ## Requirements
 
-Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver) through:
+Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.127.0/receiver/hostmetricsreceiver) through:
 
 - the [Elastic Distributions of OpenTelemetry](https://www.elastic.co/docs/reference/opentelemetry/quickstart/)
 - or using the vanilla / upstream OpenTelemetry Collector
