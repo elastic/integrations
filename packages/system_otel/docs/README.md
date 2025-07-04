@@ -32,7 +32,7 @@ For full functionality of the dashboards included in this content pack, you will
 | `system.network.errors` | ✅ | ✅ |
 | `system.network.io` | ✅ | ✅ |
 | `system.network.packets` | ✅ | ✅ |
-|**[Disk](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/diskscraper/documentation.md)**|||
+|**[Disk](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/receiver/hostmetricsreceiver/internal/scraper/diskscraper/documentation.md)**|||
 | `system.disk.io` | ✅ | ✅ |
 | `system.disk.io_time` | ✅ | ✅ |
 | `system.disk.operations` | ✅ | ✅ |
