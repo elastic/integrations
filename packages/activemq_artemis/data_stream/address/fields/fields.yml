@@ -1,0 +1,67 @@
+- name: activemq_artemis.address
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      dimension: true
+      description: Name of the address.
+    - name: routing_types
+      type: keyword
+      description: Routing types supported by the address (ANYCAST, MULTICAST).
+    - name: queue_names
+      type: keyword
+      description: Names of queues associated with this address.
+    - name: queues
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Number of queues associated with this address.
+    - name: messages
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Total number of messages in all queues for this address.
+        - name: unroutable
+          type: group
+          fields:
+            - name: count
+              type: long
+              metric_type: counter
+              description: Number of unroutable messages for this address.
+    - name: size
+      type: long
+      unit: byte
+      metric_type: gauge
+      description: Total size of all messages for this address.
+    - name: limit
+      type: group
+      fields:
+        - name: used_pct
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: Percentage of address limit used.
+    - name: page
+      type: group
+      fields:
+        - name: bytes
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Bytes per page for this address.
+        - name: bytes_count
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Number of bytes per page.
+        - name: used
+          type: long
+          metric_type: gauge
+          description: Number of pages used for this address.
+    - name: roles
+      type: keyword
+      description: Security roles configured for this address.

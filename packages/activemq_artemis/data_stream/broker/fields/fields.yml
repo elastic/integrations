@@ -1,0 +1,102 @@
+- name: activemq_artemis.broker
+  type: group
+  fields:
+    - name: connections
+      type: group 
+      fields:
+        - name: active
+          type: long
+          metric_type: gauge
+          description: Number of active connections to the broker.
+        - name: total
+          type: long
+          metric_type: counter
+          description: Total number of connections created since broker start.
+    - name: messages
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Total number of messages in all queues on the broker.
+        - name: added
+          type: long
+          metric_type: counter
+          description: Total number of messages added to all queues since broker start.
+        - name: acknowledged
+          type: long
+          metric_type: counter
+          description: Total number of messages acknowledged from all queues since broker start.
+    - name: memory
+      type: group
+      fields:
+        - name: address
+          type: group
+          fields:
+            - name: used
+              type: long
+              unit: byte
+              metric_type: gauge
+              description: Amount of memory used by addresses.
+            - name: used_pct
+              type: float
+              unit: percent
+              metric_type: gauge
+              description: Percentage of address memory used.
+        - name: global
+          type: group
+          fields:
+            - name: max
+              type: long
+              unit: byte
+              metric_type: gauge
+              description: Maximum global memory size configured.
+    - name: disk
+      type: group
+      fields:
+        - name: max
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Maximum disk usage configured.
+        - name: store
+          type: group
+          fields:
+            - name: used
+              type: long
+              unit: byte
+              metric_type: gauge
+              description: Amount of disk space used by the store.
+    - name: addresses
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Number of addresses on the broker.
+    - name: queues
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Number of queues on the broker.
+    - name: cluster
+      type: group
+      fields:
+        - name: connections
+          type: group
+          fields:
+            - name: count
+              type: long
+              metric_type: gauge
+              description: Number of cluster connections.
+    - name: ha
+      type: group
+      fields:
+        - name: policy
+          type: keyword
+          description: High availability policy configured.
+    - name: version
+      type: keyword
+      description: ActiveMQ Artemis version.
