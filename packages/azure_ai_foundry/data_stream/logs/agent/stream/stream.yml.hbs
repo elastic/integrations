@@ -1,0 +1,26 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
+tags:
+{{#if preserve_original_event}}
+    - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+    - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+    publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+    processors:
+    {{processors}}
+{{/if}}
+sanitize_options:
+{{#if sanitize_newlines}}
+    - NEW_LINES
+{{/if}}
+{{#if sanitize_singlequotes}}
+    - SINGLE_QUOTES
+{{/if}}
