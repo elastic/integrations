@@ -23,7 +23,7 @@ For full functionality of the dashboards included in this content pack, you will
 | `system.cpu.load_average.1m` | ✅ | ✅ |
 | `system.cpu.load_average.5m` | ✅ | ✅ |
 | `system.cpu.load_average.15m` | ✅ | ✅ |
-|**[Memory](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/memoryscraper/documentation.md)**|||
+|**[Memory](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/receiver/hostmetricsreceiver/internal/scraper/memoryscraper/documentation.md)**|||
 | `system.memory.usage` | ✅ | ✅ |
 | `system.memory.utilization` | ✅ | ❌ |
 |**[Network](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/networkscraper/documentation.md)**|||
