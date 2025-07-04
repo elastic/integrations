@@ -8,7 +8,7 @@ resource.url: {{api_url}}
 state:
   api_username: {{api_username}}
   api_key: {{api_key}}
-  session_id: DomainToolsElasticSID
+  session_id: {{session_id}}
   app_name: elastic_feeds
   app_partner: elastic
   app_version: 0.1.0
@@ -33,13 +33,14 @@ program: |
                     "Accept": ["application/x-ndjson"],
                 },
             }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
+        ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
             {
                 "events": string(resp.Body).split("\n").filter(x,x!="").map(e,
                     {
                         "message": e,
                     }
                 ),
+                "want_more": resp.StatusCode == 206
             }
         :
             {
