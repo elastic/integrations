@@ -36,7 +36,7 @@ For full functionality of the dashboards included in this content pack, you will
 | `system.disk.io` | ✅ | ✅ |
 | `system.disk.io_time` | ✅ | ✅ |
 | `system.disk.operations` | ✅ | ✅ |
-|**[File System](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/filesystemscraper/documentation.md)**|||
+|**[File System](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/receiver/hostmetricsreceiver/internal/scraper/filesystemscraper/documentation.md)**|||
 | `system.filesystem.usage` | ✅ | ✅ |
 |**[Processes](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/processesscraper/documentation.md)**|||
 | `system.processes.count` | ✅ | ✅ |
