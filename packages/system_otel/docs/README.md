@@ -11,7 +11,7 @@ Collect and ingest OpenTelemetry data from the Collector's [`hostmetrics` receiv
 
 Compatible `hostmetrics` receiver versions are all versions `>= v0.102.0`.
 
-For full functionality of the dashboards included in this content pack, you will need to ensure the following metrics are enabled in the [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver):
+For full functionality of the dashboards included in this content pack, you will need to ensure the following metrics are enabled in the [`hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.127.0/receiver/hostmetricsreceiver):
 
 | Metric | Enabled by default in EDOT Collector | Enabled by default in upstream Contrib Collector |
 |---|---|---|
