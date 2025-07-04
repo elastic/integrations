@@ -159,9 +159,21 @@ An example event for `nod_feed` looks as following:
 | domaintools.domain | The Domain. Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network. | keyword |
 | domaintools.feed | The feed. | keyword |
 | domaintools.timestamp | Timestamp when the domain was added to the DomainTools feed, in ISO 8601 UTC form. | date |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | message | The feed. | match_only_text |
+| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
 
 ### Newly Active Domains (NAD) Feed
@@ -264,9 +276,21 @@ An example event for `nad_feed` looks as following:
 | domaintools.domain | The Domain. Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network. | keyword |
 | domaintools.feed | The feed. | keyword |
 | domaintools.timestamp | Timestamp when the domain was added to the DomainTools feed, in ISO 8601 UTC form. | date |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | message | The feed. | match_only_text |
+| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
 
 ### Domain Discovery Feed
@@ -519,9 +543,9 @@ An example event for `domainrdap` looks as following:
 | domaintools.domain | The Domain. | keyword |
 | domaintools.feed | The feed type. | keyword |
 | domaintools.first_request_timestamp | The first request timestamp. | date |
-| domaintools.parsed_record.parsed_fields.contact.country |  | keyword |
-| domaintools.parsed_record.parsed_fields.contact.email |  | keyword |
-| domaintools.parsed_record.parsed_fields.contact.name |  | keyword |
+| domaintools.parsed_record.parsed_fields.contacts.country |  | keyword |
+| domaintools.parsed_record.parsed_fields.contacts.email |  | keyword |
+| domaintools.parsed_record.parsed_fields.contacts.name |  | keyword |
 | domaintools.parsed_record.parsed_fields.creation_date | The domain creation date. | keyword |
 | domaintools.parsed_record.parsed_fields.email_domains | List of email domains. | keyword |
 | domaintools.parsed_record.parsed_fields.emails | List of emails. | keyword |
@@ -529,9 +553,10 @@ An example event for `domainrdap` looks as following:
 | domaintools.parsed_record.parsed_fields.handle | The domain handle. | keyword |
 | domaintools.parsed_record.parsed_fields.last_changed_date | The domain last changed date. | keyword |
 | domaintools.parsed_record.parsed_fields.nameservers | The domain nameservers. | keyword |
-| domaintools.parsed_record.parsed_fields.registrar.contact.email |  | keyword |
-| domaintools.parsed_record.parsed_fields.registrar.contact.name |  | keyword |
-| domaintools.parsed_record.parsed_fields.registrar.contact.phone |  | keyword |
+| domaintools.parsed_record.parsed_fields.registrar.contacts.email |  | keyword |
+| domaintools.parsed_record.parsed_fields.registrar.contacts.name |  | keyword |
+| domaintools.parsed_record.parsed_fields.registrar.contacts.phone |  | keyword |
+| domaintools.parsed_record.parsed_fields.registrar.contacts.roles |  | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.iana_id |  | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.name | The registrar name. | keyword |
 | domaintools.requests_url | List of extracted rdap request urls used. | keyword |
