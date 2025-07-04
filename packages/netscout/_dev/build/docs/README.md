@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT**
+>
+> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+
 # Netscout integration
 
 This integration is for [Netscout](https://www.netscout.com/product/arbor-sightline) device's logs. It includes the following

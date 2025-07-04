@@ -33,7 +33,7 @@ processors:
   - fingerprint:
       fields:
         - json.receivedTime
-        - json.abxMessageId
+        - json.abxMessageIdStr
         - json.threatId
         - json.internetMessageId
       tag: fingerprint_threat
@@ -67,12 +67,18 @@ processors:
       field: observer.product
       tag: set_observer_product
       value: Inbound Email Security
+  - rename:
+      field: json.abxMessageIdStr
+      tag: rename_abxMessageIdStr
+      target_field: abnormal_security.threat.abx_message_id
+      ignore_missing: true
   - convert:
       field: json.abxMessageId
       tag: convert_abxMessageId_to_string
       target_field: abnormal_security.threat.abx_message_id
       type: string
       ignore_missing: true
+      if: ctx.abnormal_security?.threat?.abx_message_id == null
   - set:
       field: event.id
       tag: set_event_id_from_threat_abx_message_id
@@ -108,6 +114,16 @@ processors:
       tag: rename_attachmentNames
       target_field: abnormal_security.threat.attachment_names
       ignore_missing: true
+  - foreach:
+      field: json.attachments
+      if: ctx.json.attachments instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: abnormal_security.threat.attachment_names
+          tag: append_attachments
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - script:
       description: Set email.attachments field.
       tag: script_to_set_email_attachments_field
@@ -131,6 +147,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.links
+      tag: rename_links
+      target_field: abnormal_security.threat.links
+      ignore_missing: true
   - rename:
       field: json.attackStrategy
       tag: rename_attackStrategy

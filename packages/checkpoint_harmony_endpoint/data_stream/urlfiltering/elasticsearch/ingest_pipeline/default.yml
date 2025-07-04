@@ -9,7 +9,7 @@ processors:
       value: checkpoint_harmony_endpoint
   - set:
       field: ecs.version
-      value: "8.11.0"
+      value: "8.17.0"
   - set:
       field: event.kind
       value: alert
@@ -262,6 +262,32 @@ processors:
         - checkpoint_harmony_endpoint.urlfiltering.dst
       ignore_missing: true
       tag: remove_custom_duplicate_fields
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == '<NA>' || v == '-1' ||(v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == '<NA>' || v == '-1' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
 
 ########################## Handle failures ################
 

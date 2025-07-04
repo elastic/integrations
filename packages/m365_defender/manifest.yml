@@ -1,8 +1,8 @@
-format_version: "3.2.3"
+format_version: "3.3.2"
 name: m365_defender
-title: Microsoft M365 Defender
-version: "3.3.1"
-description: Collect logs from Microsoft M365 Defender with Elastic Agent.
+title: Microsoft Defender XDR
+version: "3.11.0"
+description: Collect logs from Microsoft Defender XDR with Elastic Agent.
 categories:
   - "security"
   - "edr_xdr"
@@ -14,20 +14,23 @@ conditions:
     version: "^8.18.0 || ^9.0.0"
 policy_templates:
   - name: m365_defender
-    title: M365 Defender Logs
-    description: Collect logs from M365 Defender API
-    deployment_modes: 
+    title: Microsoft Defender XDR Logs
+    description: Collect logs from Microsoft Defender XDR API
+    deployment_modes:
       default:
-        enabled: true 
+        enabled: true
       agentless:
         enabled: true
         organization: security
         division: engineering
         team: security-service-integrations
+        resources:
+          requests:
+            memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
     inputs:
       - type: httpjson
-        title: "Collect logs from M365 Defender API"
-        description: "Collect logs from M365 Defender via API"
+        title: "Collect logs from Microsoft Defender XDR API"
+        description: "Collect logs from Microsoft Defender XDR via API"
         vars:
           - name: login_url
             type: text
@@ -118,6 +121,94 @@ policy_templates:
       - type: azure-eventhub
         title: "Collect logs from Azure Event Hub"
         description: "Collect logs from Azure Event Hub"
+      - type: cel
+        title: "Collect logs from Microsoft Defender for Endpoint API"
+        description: "Collecting logs via Microsoft Defender for Endpoint API."
+        vars: 
+          - name: url
+            type: text
+            title: URL
+            description: By default, the URL is set to `https://api.securitycenter.microsoft.com`. It is observed that Microsoft Defender XDR Base URL changes based on location so find your own base URL.
+            multi: false
+            required: true
+            show_user: false
+            default: https://api.securitycenter.microsoft.com
+          - name: client_id
+            type: text
+            title: Client ID
+            description: Client ID for Azure AD application.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            secret: true
+            description: Client Secret for Azure AD application.
+            multi: false
+            required: true
+            show_user: true
+          - name: azure_tenant_id
+            type: text
+            title: Azure Tenant ID 
+            description: Tenant ID of the Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: token_url
+            type: text
+            title: Oauth2 Token URL
+            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Azure Tenant ID` will be used for oauth2 token generation.
+            show_user: true
+            required: false
+            default: https://login.microsoftonline.com
+            secret: false
+          - name: token_scopes
+            type: text
+            title: Token Scopes
+            description: Defines the level of access granted to the API. This scope is required to authenticate and authorize API requests in Microsoft Defender XDR Vulnerability Management.
+            multi: true
+            secret: false
+            required: true
+            show_user: false
+            default: 
+              - "https://securitycenter.onmicrosoft.com/windowsatpservice/.default"
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
 icons:
   - src: /img/logo.svg
     title: M365 logo
@@ -125,27 +216,31 @@ icons:
     type: image/svg+xml
 screenshots:
   - src: /img/m365-defender-alert.png
-    title: Microsoft 365 Defender Alert Dashboard
+    title: Microsoft Defender XDR Alert Dashboard
     size: 600x600
     type: image/png
   - src: /img/m365-defender-incidents.png
-    title: Microsoft 365 Defender (Incidents) Incidents Dashboard
+    title: Microsoft Defender XDR (Incidents) Incidents Dashboard
     size: 600x600
     type: image/png
   - src: /img/m365-defender-events-alerts1.png
-    title: Microsoft 365 Defender (Events) Alerts Dashboard
+    title: Microsoft Defender XDR (Events) Alerts Dashboard
     size: 600x600
     type: image/png
   - src: /img/m365-defender-events-device1.png
-    title: Microsoft 365 Defender (Events) Device Dashboard
+    title: Microsoft Defender XDR (Events) Device Dashboard
     size: 600x600
     type: image/png
   - src: /img/m365-defender-events-email1.png
-    title: Microsoft 365 Defender (Events) Email Dashboard
+    title: Microsoft Defender XDR (Events) Email Dashboard
     size: 600x600
     type: image/png
   - src: /img/m365-defender-events-app1.png
-    title: Microsoft 365 Defender (Events) App & Identity Dashboard
+    title: Microsoft Defender XDR (Events) App & Identity Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/m365-defender-vulnerability.png
+    title: Microsoft Defender XDR Vulnerability
     size: 600x600
     type: image/png
 owner:

@@ -13,6 +13,18 @@ processors:
     field: json.type
     target_field: keycloak.login.type
     ignore_missing: true
+- set:
+    field: event.outcome
+    value: success
+    if: ctx.keycloak?.login?.type != null && ctx.keycloak.login.type.equalsIgnoreCase('login')
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx.keycloak?.login?.type != null && ctx.keycloak.login.type.equalsIgnoreCase('login_error')
+- set:
+    field: event.outcome
+    value: unknown
+    if: ctx.event?.outcome == null
 - rename:
     field: json.operationType
     target_field: keycloak.admin.operation

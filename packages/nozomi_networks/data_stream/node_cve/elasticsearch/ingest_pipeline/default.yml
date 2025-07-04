@@ -1,0 +1,591 @@
+---
+description: Pipeline for processing node cve logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: set_event_category
+      value: vulnerability
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: set_event_type
+      value: info
+      allow_duplicates: false
+  - fingerprint:
+      fields:
+        - json.id
+        - json.time
+        - json.cve_update_time
+        - json.record_created_at
+      tag: fingerprint_nozomi_networks_node_cve
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.appliance_host
+      tag: rename_appliance_host
+      target_field: nozomi_networks.node_cve.appliance_host
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_node_cve_appliance_host
+      copy_from: nozomi_networks.node_cve.appliance_host
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_node_cve_appliance_host_into_related_hosts
+      value: '{{{nozomi_networks.node_cve.appliance_host}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.node_cve?.appliance_host != null
+  - rename:
+      field: json.appliance_id
+      tag: rename_appliance_id
+      target_field: nozomi_networks.node_cve.appliance_id
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_node_cve_appliance_id
+      copy_from: nozomi_networks.node_cve.appliance_id
+      ignore_empty_value: true
+  - convert:
+      field: json.appliance_ip
+      tag: convert_appliance_ip_to_ip
+      target_field: nozomi_networks.node_cve.appliance_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.appliance_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_nozomi_networks_node_cve_appliance_ip_into_host_ip
+      value: '{{{nozomi_networks.node_cve.appliance_ip}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.node_cve?.appliance_ip != null
+  - append:
+      field: related.ip
+      tag: append_node_cve_appliance_ip_into_related_ip
+      value: '{{{nozomi_networks.node_cve.appliance_ip}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.node_cve?.appliance_ip != null
+  - rename:
+      field: json.asset_id
+      tag: rename_asset_id
+      target_field: nozomi_networks.node_cve.asset_id
+      ignore_missing: true
+  - set:
+      field: device.id
+      tag: set_device_id_from_node_cve_asset_id
+      copy_from: nozomi_networks.node_cve.asset_id
+      ignore_empty_value: true
+  - rename:
+      field: json.cve
+      tag: rename_cve
+      target_field: nozomi_networks.node_cve.cve
+      ignore_missing: true
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id_from_node_cve_cve
+      copy_from: nozomi_networks.node_cve.cve
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.reference
+      tag: set_vulnerability_reference_from_vulnerability_id
+      value: https://www.cve.org/CVERecord?id={{{vulnerability.id}}}
+      if: ctx.vulnerability?.id != null && ctx.vulnerability.id.contains('CVE')
+  - script:
+      description: Dynamically set cve.enumeration values.
+      tag: script_map_vulnerability_id
+      lang: painless
+      if: ctx.vulnerability?.id != null
+      params:
+        vulnerability_enumeration:
+          - CVE
+          - TVM
+      source: |
+        String vulnerability_id = ctx.vulnerability.id.toUpperCase();
+        for (String enum: params.vulnerability_enumeration) {
+          if (vulnerability_id.contains(enum)) {
+            ctx.vulnerability.put('enumeration', enum);
+            return;
+          }
+        }
+  - date:
+      field: json.cve_creation_time
+      tag: date_cve_creation_time
+      target_field: nozomi_networks.node_cve.cve_creation_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.cve_creation_time != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.published_date
+      tag: set_vulnerability_published_date_from_node_cve_cve_creation_time
+      copy_from: nozomi_networks.node_cve.cve_creation_time
+      ignore_empty_value: true
+  - set:
+      field: event.start
+      tag: set_event_start_from_node_cve_cve_creation_time
+      copy_from: nozomi_networks.node_cve.cve_creation_time
+      ignore_empty_value: true
+  - convert:
+      field: json.cve_epss_score
+      tag: convert_cve_epss_score_to_double
+      target_field: nozomi_networks.node_cve.cve_epss_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.cve_references
+      tag: rename_cve_references
+      target_field: nozomi_networks.node_cve.cve_references
+      ignore_missing: true
+  - convert:
+      field: json.cve_score
+      tag: convert_cve_score_to_double
+      target_field: nozomi_networks.node_cve.cve_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_node_cve_cve_score
+      copy_from: nozomi_networks.node_cve.cve_score
+      ignore_empty_value: true
+  - rename:
+      field: json.cve_source
+      tag: rename_cve_source
+      target_field: nozomi_networks.node_cve.cve_source
+      ignore_missing: true
+  - rename:
+      field: json.cve_summary
+      tag: rename_cve_summary
+      target_field: nozomi_networks.node_cve.cve_summary
+      ignore_missing: true
+  - set:
+      field: vulnerability.description
+      tag: set_vulnerability_description_from_node_cve_cve_summary
+      copy_from: nozomi_networks.node_cve.cve_summary
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_node_cve_cve_summary
+      copy_from: nozomi_networks.node_cve.cve_summary
+      ignore_empty_value: true
+  - date:
+      field: json.cve_update_time
+      tag: date_cve_update_time
+      target_field: nozomi_networks.node_cve.cve_update_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.cve_update_time != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_node_cve_cve_update_time
+      copy_from: nozomi_networks.node_cve.cve_update_time
+      ignore_empty_value: true
+  - rename:
+      field: json.cwe_id
+      tag: rename_cwe_id
+      target_field: nozomi_networks.node_cve.cwe_id
+      ignore_missing: true
+  - rename:
+      field: json.cwe_name
+      tag: rename_cwe_name
+      target_field: nozomi_networks.node_cve.cwe_name
+      ignore_missing: true
+  - append:
+      field: vulnerability.category
+      tag: append_nozomi_networks_node_cve_cwe_name_into_vulnerability_category
+      value: '{{{nozomi_networks.node_cve.cwe_name}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.node_cve?.cwe_name != null
+  - rename:
+      field: json.firmware_version
+      tag: rename_firmware_version
+      target_field: nozomi_networks.node_cve.firmware_version
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: nozomi_networks.node_cve.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_node_cve_id
+      copy_from: nozomi_networks.node_cve.id
+      ignore_empty_value: true
+  - rename:
+      field: json.installed_on
+      tag: rename_installed_on
+      target_field: nozomi_networks.node_cve.installed_on
+      ignore_missing: true
+  - convert:
+      field: json.is_kev
+      tag: convert_is_kev_to_boolean
+      target_field: nozomi_networks.node_cve.is_kev
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.latest_hotfix
+      tag: rename_latest_hotfix
+      target_field: nozomi_networks.node_cve.latest_hotfix
+      ignore_missing: true
+  - convert:
+      field: json.likelihood
+      tag: convert_likelihood_to_double
+      target_field: nozomi_networks.node_cve.likelihood
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.matching_cpes
+      tag: rename_matching_cpes
+      target_field: nozomi_networks.node_cve.matching_cpes
+      ignore_missing: true
+  - rename:
+      field: json.minimum_hotfix
+      tag: rename_minimum_hotfix
+      target_field: nozomi_networks.node_cve.minimum_hotfix
+      ignore_missing: true
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: nozomi_networks.node_cve.name
+      ignore_missing: true
+  - rename:
+      field: json.node_firmware_version
+      tag: rename_node_firmware_version
+      target_field: nozomi_networks.node_cve.node_firmware_version
+      ignore_missing: true
+  - rename:
+      field: json.node_id
+      tag: rename_node_id
+      target_field: nozomi_networks.node_cve.node_id
+      ignore_missing: true
+  - rename:
+      field: json.node_label
+      tag: rename_node_label
+      target_field: nozomi_networks.node_cve.node_label
+      ignore_missing: true
+  - rename:
+      field: json.node_os
+      tag: rename_node_os
+      target_field: nozomi_networks.node_cve.node_os
+      ignore_missing: true
+  - rename:
+      field: json.node_product_name
+      tag: rename_node_product_name
+      target_field: nozomi_networks.node_cve.node_product_name
+      ignore_missing: true
+  - rename:
+      field: json.node_type
+      tag: rename_node_type
+      target_field: nozomi_networks.node_cve.node_type
+      ignore_missing: true
+  - rename:
+      field: json.node_vendor
+      tag: rename_node_vendor
+      target_field: nozomi_networks.node_cve.node_vendor
+      ignore_missing: true
+  - foreach:
+      field: json.nodes
+      tag: foreach_nodes
+      if: ctx.json?.nodes instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_nodes_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: nozomi_networks.node_cve.nodes_hosts
+                tag: append_nodes_into_nodes_hosts
+                value: '{{{_ingest._value}}}'
+                allow_duplicates: false
+            - append:
+                field: related.hosts
+                tag: append_nodes_into_related_hosts
+                value: '{{{_ingest._value}}}'
+                allow_duplicates: false
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+  - foreach:
+      field: json.nodes
+      tag: foreach_nodes
+      if: ctx.json?.nodes instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_nodes_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.nodes
+      tag: rename_nodes
+      target_field: nozomi_networks.node_cve.nodes_ip
+      ignore_missing: true
+  - rename:
+      field: json.os
+      tag: rename_os
+      target_field: nozomi_networks.node_cve.os
+      ignore_missing: true
+  - set:
+      field: host.os.family
+      tag: set_host_os_family_from_node_cve_os
+      copy_from: nozomi_networks.node_cve.os
+      if: ctx.nozomi_networks?.node_cve?.firmware_version == ''
+      ignore_empty_value: true
+  - rename:
+      field: json.probability
+      tag: rename_probability
+      target_field: nozomi_networks.node_cve.probability
+      ignore_missing: true
+  - rename:
+      field: json.product_name
+      tag: rename_product_name
+      target_field: nozomi_networks.node_cve.product_name
+      ignore_missing: true
+  - date:
+      field: json.record_created_at
+      tag: date_record_created_at
+      target_field: nozomi_networks.node_cve.record_created_at
+      formats:
+        - UNIX_MS
+      if: ctx.json?.record_created_at != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_record_created_at
+      copy_from: nozomi_networks.node_cve.record_created_at
+      ignore_empty_value: true
+  - foreach:
+      field: json.references
+      tag: foreach_references_source
+      if: ctx.json?.references instanceof List
+      processor:
+        append:
+          field: vulnerability.scanner.vendor
+          tag: append_references_source_into_threat_indicator_provider
+          value: '{{{_ingest._value.source}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.references
+      tag: foreach_references_url
+      if: ctx.json?.references instanceof List
+      processor:
+        append:
+          field: vulnerability.reference
+          tag: append_references_url_into_threat_indicator_reference
+          value: '{{{_ingest._value.url}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.references
+      tag: rename_references
+      target_field: nozomi_networks.node_cve.references
+      ignore_missing: true
+  - rename:
+      field: json.resolution_reason
+      tag: rename_resolution_reason
+      target_field: nozomi_networks.node_cve.resolution_reason
+      ignore_missing: true
+  - convert:
+      field: json.resolved
+      tag: convert_resolved_to_boolean
+      target_field: nozomi_networks.node_cve.resolved
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resolved_source
+      tag: rename_resolved_source
+      target_field: nozomi_networks.node_cve.resolved_source
+      ignore_missing: true
+  - date:
+      field: json.time
+      tag: date_time
+      target_field: nozomi_networks.node_cve.time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.time != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: nozomi_networks.node_cve.type
+      ignore_missing: true
+  - rename:
+      field: json.vendor
+      tag: rename_vendor
+      target_field: nozomi_networks.node_cve.vendor
+      ignore_missing: true
+  - rename:
+      field: json.zone
+      tag: rename_zone
+      target_field: nozomi_networks.node_cve.zone
+      ignore_missing: true
+  - rename:
+      field: json.zones
+      tag: rename_zones
+      target_field: nozomi_networks.node_cve.zones
+      ignore_missing: true
+  - foreach:
+      field: nozomi_networks.node_cve.references
+      tag: foreach_nozomi_networks_node_cve_references
+      if: ctx.nozomi_networks?.node_cve?.references instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.url
+            - _ingest._value.source
+          tag: remove_custom_duplicate_fields_from_nozomi_networks_node_cve_references
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - nozomi_networks.node_cve.appliance_host
+        - nozomi_networks.node_cve.appliance_id
+        - nozomi_networks.node_cve.appliance_ip
+        - nozomi_networks.node_cve.asset_id
+        - nozomi_networks.node_cve.cve
+        - nozomi_networks.node_cve.cve_creation_time
+        - nozomi_networks.node_cve.cve_score
+        - nozomi_networks.node_cve.cve_summary
+        - nozomi_networks.node_cve.cve_update_time
+        - nozomi_networks.node_cve.cwe_name
+        - nozomi_networks.node_cve.id
+        - nozomi_networks.node_cve.record_created_at
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

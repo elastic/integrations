@@ -42,15 +42,6 @@ streams:
         required: true
         show_user: true
         description: URL of the AWS SQS queue that messages will be received from.
-      - name: is_fdr_queue
-        type: bool
-        title: Is FDR queue
-        multi: false
-        required: true
-        show_user: true
-        description: |
-          By default the FDR queue is expected. This option must be set to `false` if you are using your own queue.
-        default: true
       - name: enrich_metadata
         required: true
         show_user: true
@@ -191,51 +182,6 @@ streams:
         required: false
         show_user: false
         description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
-      - name: fdr_parsing_script
-        type: textarea
-        title: FDR Notification Parsing Script
-        multi: false
-        required: true
-        show_user: false
-        description: The JS script used to parse the custom format of SQS FDR notifications.
-        default: |
-          function parse(n) {
-            var m = JSON.parse(n);
-            var evts = [];
-            var files = m.files;
-            var bucket = m.bucket;
-            if (!Array.isArray(files) || (files.length == 0) || bucket == null || bucket == "") {
-              return evts;
-            }
-            files.sort(function(a, b) {
-              var isMetadata = function(a) {
-                return a.path && ((a.path.indexOf("aidmaster") !== -1) || (a.path.indexOf("userinfo") !== -1));
-              };
-              var cmp = function(a, b) {
-                if (a < b) {
-                  return -1;
-                }
-                if (a > b) {
-                  return 1;
-                }
-                return 0;
-              };
-              if (isMetadata(a) === isMetadata(b)) {
-                return cmp(a.path, b.path);
-              }
-              if (isMetadata(a)) {
-                return -1;
-              }
-              return 1;
-            });
-            files.forEach(function(f){
-              var evt = new S3EventV2();
-              evt.SetS3BucketName(bucket);
-              evt.SetS3ObjectKey(f.path);
-              evts.push(evt);
-            });
-            return evts;
-          }
       - name: tags
         type: text
         title: Tags

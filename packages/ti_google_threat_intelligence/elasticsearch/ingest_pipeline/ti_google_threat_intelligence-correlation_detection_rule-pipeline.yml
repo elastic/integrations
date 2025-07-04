@@ -1,0 +1,313 @@
+---
+description: Pipeline for processing detected IOC events from the user's environment.
+processors:
+  - script:
+      lang: painless
+      if: ctx.threat?.enrichments != null;
+      tag: store_matched_indicator_from_alert_into_temp_fields
+      description: Store the first 'matched' and 'indicator' object from the alert, as it comes from Google Threat Intelligence API.
+      source: >
+        for (def obj : ctx.threat.enrichments) {
+          if (obj.containsKey('matched') && obj.containsKey('indicator')) {
+            ctx.temp_fields = obj;
+            break;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Retain event.dataset and event.module from the matched source index in temp_fields,
+# as they originate from the source event's module and dataset in the alert
+# and are essential for navigating to the corresponding document.
+  - rename:
+      field: event.dataset
+      tag : keep_event_dataset_from_alert
+      target_field: temp_fields.dataset
+      ignore_missing: true
+  - rename:
+      field: event.module
+      tag : keep_event_module_from_alert
+      target_field: temp_fields.module
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: remove_unwanted_fields
+      source: |-
+        // Define the list of fields to retain
+        def fieldsToKeep = ["@timestamp"];
+
+        // Define regex patterns
+        def gtiPattern = /^temp_fields/;  // Matches keys starting with 'temp_fields'
+        def underscorePattern = /^_/;  // Matches keys starting with '_'
+
+        // Get a copy of the current document keys
+        def keys = new ArrayList(ctx.keySet());
+
+        // Iterate over the keys
+        for (def key : keys) {
+          // If the key is not in fieldsToKeep, does not match any Pattern, remove it
+          if (!fieldsToKeep.contains(key) && !(key =~ gtiPattern) && !(key =~ underscorePattern)) {
+            ctx.remove(key);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Define hardcoded values required for processing.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Threat Intelligence
+  - set:
+      field: data_stream.dataset
+      tag: set_data_stream_dataset
+      value: ti_google_threat_intelligence.enriched_ioc
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: ti_google_threat_intelligence.enriched_ioc
+# Extract relevant fields from temp_fields and map them to threat.indicator.
+  - rename:
+      field: temp_fields.indicator
+      tag : rename_temp_fields_to_indicator
+      target_field: gti.threat.indicator
+      ignore_missing: true
+  - rename:
+      field: temp_fields.matched.atomic
+      tag : rename_temp_fields_to_matched_value
+      target_field: gti.threat.indicator.matched.value
+      ignore_missing: true
+  - rename:
+      field: temp_fields.matched.field
+      tag : rename_temp_fields_to_matched_field
+      target_field: gti.threat.indicator.matched.field
+      ignore_missing: true
+  - rename:
+      field: temp_fields.dataset
+      tag : rename_temp_fields_to_matched_dataset
+      target_field: gti.threat.indicator.matched.dataset
+      ignore_missing: true
+  - rename:
+      field: temp_fields.module
+      tag : rename_temp_fields_to_matched_module
+      target_field: gti.threat.indicator.matched.module
+      ignore_missing: true
+# Create ECS-compliant mappings for threat.indicator fields.
+  - set:
+      field: threat.feed.name
+      tag: set_threat_feed_name
+      copy_from: gti.threat.indicator.feed.name
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.as.number
+      tag: set_threat_indicator_as_number_from_attributes_as_number
+      copy_from: gti.threat.indicator.attributes.as_number
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.continent_code
+      tag: set_threat_indicator_geo_continent_code_from_attributes_continent
+      copy_from: gti.threat.indicator.attributes.continent
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.country_iso_code
+      tag: set_threat_indicator_geo_country_iso_code_from_attributes_country
+      copy_from: gti.threat.indicator.attributes.country
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.first_seen
+      tag: set_threat_indicator_first_seen_from_event_created
+      copy_from: gti.threat.indicator.attributes.creation_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.last_seen
+      tag: set_threat_indicator_last_seen_from_attributes_last_analysis_date
+      copy_from: gti.threat.indicator.attributes.last_analysis_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.original
+      tag: set_threat_indicator_url_original_from_attributes_url
+      copy_from: gti.threat.indicator.attributes.url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full_from_url_original
+      value: "{{{threat.indicator.url.original}}}"
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full_from_attributes_last_final_url
+      copy_from: gti.threat.indicator.attributes.last_final_url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_attributes_last_modification_date
+      copy_from: gti.threat.indicator.attributes.last_modification_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5_from_attributes_md5
+      copy_from: gti.threat.indicator.attributes.md5
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name_from_attributes_names
+      copy_from: gti.threat.indicator.attributes.names
+      ignore_empty_value: true
+  - script:
+      description: Set threat indicator type from gti threat.indicator type.
+      if: ctx.gti?.threat?.indicator?.type != null
+      tag: set_threat_indicator_type_from_gti_type
+      lang: painless
+      params:
+        domain: domain-name
+        file: file
+        ip_address: ipv4-addr
+        url: url
+      source: |-
+        if (ctx.threat == null) {
+          ctx.threat = new HashMap();
+        }
+        if (ctx.threat.indicator == null) {
+          ctx.threat.indicator = new HashMap();
+        }
+        ctx.threat.indicator.type = params[ctx.gti.threat.indicator.type];
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: threat.indicator.id
+      tag: append_threat_indicator_id
+      value: '{{{gti.threat.indicator.id}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_id
+      copy_from: gti.threat.indicator.id
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256_from_id
+      copy_from: gti.threat.indicator.id
+      if: ctx.gti?.threat?.indicator?.type == 'file'
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.ip
+      tag: set_threat_indicator_url_from_id
+      copy_from: gti.threat.indicator.id
+      if: ctx.gti?.threat?.indicator?.type == 'ip_address'
+      ignore_empty_value: true
+  - uri_parts:
+      field: threat.indicator.url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_file_hash_md5_into_related_hash
+      value: '{{{threat.indicator.file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
+  - append:
+      field: related.hash
+      tag: append_vhash_into_related_hash
+      value: '{{{gti.threat.indicator.vhash}}}'
+      allow_duplicates: false
+      if: ctx.gti?.threat?.indicator?.vhash != null
+  - append:
+      field: related.hash
+      tag: append_jarm_into_related_hash
+      value: '{{{gti.threat.indicator.jarm}}}'
+      allow_duplicates: false
+      if: ctx.gti?.threat?.indicator?.jarm != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_into_related_hash
+      value: '{{{threat.indicator.file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.sha256 != null
+  - append:
+      field: related.hash
+      tag: append_id
+      value: '{{{gti.threat.indicator.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.threat?.indicator?.type == 'url'
+  - append:
+      field: related.ip
+      tag: append_ip_into_related_ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.ip != null
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code
+      copy_from: gti.threat.indicator.http_response_code
+      ignore_empty_value: true
+  - set:
+      field: event.ingested
+      tag: set_event_ingested_as_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - remove:
+      field: temp_fields
+      tag: remove_temp_fields
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

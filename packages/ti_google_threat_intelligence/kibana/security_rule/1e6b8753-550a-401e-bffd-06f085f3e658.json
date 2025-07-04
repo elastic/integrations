@@ -1,0 +1,84 @@
+{
+  "attributes": {
+    "id": "1e6b8753-550a-401e-bffd-06f085f3e658",
+    "name": "Google Threat Intelligence Domain IOC Correlation",
+    "tags": [
+      "Google Threat Intelligence",
+      "Domain IOC",
+      "Elastic",
+      "Threat Intelligence"
+    ],
+    "interval": "1h",
+    "revision": 1,
+    "description": "This rule is triggered when Domain IOC's collected from the Google Threat Intelligence Integration have a match against Domain that were found in the customer environment.",
+    "risk_score": 99,
+    "severity": "critical",
+    "license": "Elastic License v2",
+    "author": ["Elastic"],
+    "false_positives": [],
+    "from": "now-3900s",
+    "rule_id": "1e6b8753-550a-401e-bffd-06f085f3e658",
+    "max_signals": 1000,
+    "risk_score_mapping": [],
+    "severity_mapping": [],
+    "threat": [],
+    "to": "now",
+    "references": [],
+    "version": 1,
+    "exceptions_list": [],
+    "immutable": false,
+    "rule_source": { "type": "internal" },
+    "related_integrations": [
+      { "package": "ti_google_threat_intelligence", "version": "^0.1.0" }
+    ],
+    "required_fields": [
+      { "name": "threat.indicator.id", "type": "keyword", "ecs": false }
+    ],
+    "setup": "",
+    "type": "threat_match",
+    "language": "kuery",
+    "index": [
+      "apm-*-transaction*",
+      "auditbeat-*",
+      "endgame-*",
+      "filebeat-*",
+      "logs-*",
+      "packetbeat-*",
+      "traces-apm*",
+      "winlogbeat-*",
+      "-*elastic-cloud-logs-*"
+    ],
+    "query": "NOT event.module : \"ti_google_threat_intelligence\" ",
+    "filters": [],
+    "threat_filters": [],
+    "threat_query": "@timestamp >= \"now-30d/d\"",
+    "threat_mapping": [
+      {
+        "entries": [
+          {
+            "field": "source.domain",
+            "type": "mapping",
+            "value": "threat.indicator.id"
+          }
+        ]
+      },
+      {
+        "entries": [
+          {
+            "field": "destination.domain",
+            "type": "mapping",
+            "value": "threat.indicator.id"
+          }
+        ]
+      }
+    ],
+    "threat_language": "kuery",
+    "threat_index": [
+      "logs-ti_google_threat_intelligence_latest.dest_domain_ioc-*"
+    ],
+    "threat_indicator_path": "gti.threat.indicator",
+    "actions": []
+  },
+  "type": "security-rule",
+  "id": "1e6b8753-550a-401e-bffd-06f085f3e658"
+}

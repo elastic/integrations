@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing tunnel logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -37,6 +48,37 @@ processors:
       tag: rename_resp_event
       target_field: json
       ignore_missing: true
+  - script:
+      tag: check_template_version
+      params:
+        pkg_version: 3.12.0
+        data_stream: tunnel-log
+        expect:
+          fields:
+            "Recordtype|datetime|day|dd|destinationip|event|eventreason|hh|locationname|mm|mon|mth|olocationname|ovpncredentialname|recordid|sourceip|sourceport|ss|timezone|tunneltype|user|yyyy": true
+            "Recordtype|datetime|day|dd|destinationip|dpdrec|hh|locationname|mm|mon|mth|olocationname|ovpncredentialname|recordid|rxbytes|rxpackets|sourceip|sourceport|ss|timezone|tunneltype|txbytes|txpackets|user|yyyy": true
+            "Recordtype|algo|authentication|authtype|datetime|day|dd|destinationip|destinationport|hh|ikeversion|lifetime|locationname|mm|mon|mth|olocationname|ovpncredentialname|recordid|sourceip|sourceport|spi_in|spi_out|ss|timezone|tunneltype|user|vendorname|yyyy": true
+            "Recordtype|algo|authentication|authtype|datetime|day|dd|destinationipend|destinationipstart|destinationportstart|destinationip|hh|ikeversion|lifebytes|lifetime|locationname|mm|mon|mth|olocationname|ovpncredentialname|protocol|recordid|sourceip|spi|srcipend|srcipstart|sourceportstart|ss|tunnelprotocol|tunneltype|timezone|user|yyyy": true
+          version: v2
+      if: ctx.json != null && ctx._conf?.strict_fields == true
+      source: |-
+        if (ctx.resp?.version == null) {
+          def fields = [];
+          for (e in ctx.json.entrySet()) {
+            fields.add(e.getKey());
+          }
+          Collections.sort(fields);
+          String signature = String.join("|", fields);
+          if (params.expect.fields[signature] != true) {
+            ctx.error = ctx.error ?: [:];
+            ctx.error.message = ctx.error.message ?: [];
+            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+          }
+        } else if (ctx.resp.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+        }
   - remove:
       field: resp
       tag: remove_resp
@@ -687,8 +729,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field: json
-      tag: remove_json
+      field:
+        - json
+        - _conf
+      tag: remove_unused
       ignore_missing: true
   - script:
       lang: painless

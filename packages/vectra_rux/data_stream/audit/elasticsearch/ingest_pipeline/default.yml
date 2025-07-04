@@ -17,6 +17,17 @@ processors:
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
   - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - remove:
       field: message
       tag: remove_message
       ignore_missing: true
@@ -253,12 +264,30 @@ processors:
       tag: set_user_name_from_audit_user_name
       copy_from: vectra_rux.audit.user.name
       ignore_empty_value: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
   - append:
       field: related.user
       tag: append_vectra_rux_audit_user_name_into_related_user
-      value: '{{{vectra_rux.audit.user.name}}}'
+      value: '{{{user.name}}}'
       allow_duplicates: false
-      if: ctx.vectra_rux?.audit?.user?.name != null
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_vectra_rux_audit_user_email_into_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
   - rename:
       field: json.user_role
       tag: rename_user_role

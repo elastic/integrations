@@ -1,0 +1,857 @@
+---
+description: Pipeline for processing alert logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - fingerprint:
+      fields:
+        - json.id
+        - json.time
+        - json.created_time
+        - json.record_created_at
+      tag: fingerprint_nozomi_networks_alert
+      target_field: _id
+      ignore_missing: true
+  - convert:
+      field: json.ack
+      tag: convert_ack_to_boolean
+      target_field: nozomi_networks.alert.ack
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.appliance_host
+      tag: rename_appliance_host
+      target_field: nozomi_networks.alert.appliance_host
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_alert_appliance_host
+      copy_from: nozomi_networks.alert.appliance_host
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_alert_appliance_host_into_related_hosts
+      value: '{{{nozomi_networks.alert.appliance_host}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.appliance_id
+      tag: rename_appliance_id
+      target_field: nozomi_networks.alert.appliance_id
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_alert_appliance_id
+      copy_from: nozomi_networks.alert.appliance_id
+      ignore_empty_value: true
+  - convert:
+      field: json.appliance_ip
+      tag: convert_appliance_ip_to_ip
+      target_field: nozomi_networks.alert.appliance_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.appliance_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_nozomi_networks_alert_appliance_ip_into_host_ip
+      value: '{{{nozomi_networks.alert.appliance_ip}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.appliance_ip != null
+  - append:
+      field: related.ip
+      tag: append_alert_appliance_ip_into_related_ip
+      value: '{{{nozomi_networks.alert.appliance_ip}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.appliance_ip != null
+  - rename:
+      field: json.appliance_site
+      tag: rename_appliance_site
+      target_field: nozomi_networks.alert.appliance_site
+      ignore_missing: true
+  - rename:
+      field: json.bpf_filter
+      tag: rename_bpf_filter
+      target_field: nozomi_networks.alert.bpf_filter
+      ignore_missing: true
+  - rename:
+      field: json.capture_device
+      tag: rename_capture_device
+      target_field: nozomi_networks.alert.capture_device
+      ignore_missing: true
+  - rename:
+      field: json.close_option
+      tag: rename_close_option
+      target_field: nozomi_networks.alert.close_option
+      ignore_missing: true
+  - date:
+      field: json.closed_time
+      tag: date_closed_time
+      target_field: nozomi_networks.alert.closed_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.closed_time != null && ctx.json.closed_time != 0
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.created_time
+      tag: date_created_time
+      target_field: nozomi_networks.alert.created_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.created_time != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_alert_created_time
+      copy_from: nozomi_networks.alert.created_time
+      ignore_empty_value: true
+  - rename:
+      field: json.custom_fields_dst
+      tag: rename_custom_fields_dst
+      target_field: nozomi_networks.alert.custom_fields_dst
+      ignore_missing: true
+  - rename:
+      field: json.custom_fields_src
+      tag: rename_custom_fields_src
+      target_field: nozomi_networks.alert.custom_fields_src
+      ignore_missing: true
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: nozomi_networks.alert.description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_alert_description
+      copy_from: nozomi_networks.alert.description
+      ignore_empty_value: true
+  - rename:
+      field: json.dst_roles
+      tag: rename_dst_roles
+      target_field: nozomi_networks.alert.dst_roles
+      ignore_missing: true
+  - append:
+      field: destination.user.roles
+      tag: append_nozomi_networks_alert_dst_roles_into_destination_user_roles
+      value: '{{{nozomi_networks.alert.dst_roles}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.dst_roles != null
+  - convert:
+      field: json.grouped_visible
+      tag: convert_grouped_visible_to_boolean
+      target_field: nozomi_networks.alert.grouped_visible
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: nozomi_networks.alert.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_alert_id
+      copy_from: nozomi_networks.alert.id
+      ignore_empty_value: true
+  - rename:
+      field: json.id_dst
+      tag: rename_id_dst
+      target_field: nozomi_networks.alert.id_dst
+      ignore_missing: true
+  - rename:
+      field: json.id_src
+      tag: rename_id_src
+      target_field: nozomi_networks.alert.id_src
+      ignore_missing: true
+  - rename:
+      field: json.incident_keys
+      tag: rename_incident_keys
+      target_field: nozomi_networks.alert.incident_keys
+      ignore_missing: true
+  - convert:
+      field: json.ip_dst
+      tag: convert_ip_dst_to_ip
+      target_field: nozomi_networks.alert.destination_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ip_dst != ''
+      on_failure:
+        - rename:
+            field: json.ip_dst
+            tag: rename_ip_dst
+            target_field: nozomi_networks.alert.ip_dst
+            ignore_missing: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_alert_destination_ip
+      copy_from: nozomi_networks.alert.destination_ip
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_alert_destination_ip_into_related_ip
+      value: '{{{nozomi_networks.alert.destination_ip}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.destination_ip != null
+  - convert:
+      field: json.ip_src
+      tag: convert_ip_src_to_ip
+      target_field: nozomi_networks.alert.source_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ip_src != ''
+      on_failure:
+        - rename:
+            field: json.ip_src
+            tag: rename_ip_src
+            target_field: nozomi_networks.alert.ip_src
+            ignore_missing: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_alert_ip_src
+      copy_from: nozomi_networks.alert.source_ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_alert_source_ip_into_related_ip
+      value: '{{{nozomi_networks.alert.source_ip}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.source_ip != null
+  - convert:
+      field: json.is_incident
+      tag: convert_is_incident_to_boolean
+      target_field: nozomi_networks.alert.is_incident
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.is_security
+      tag: convert_is_security_to_boolean
+      target_field: nozomi_networks.alert.is_security
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.label_dst
+      tag: rename_label_dst
+      target_field: nozomi_networks.alert.label_dst
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_alert_label_dst_into_related_hosts
+      value: '{{{nozomi_networks.alert.label_dst}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.label_dst != null
+  - rename:
+      field: json.label_src
+      tag: rename_label_src
+      target_field: nozomi_networks.alert.label_src
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_alert_label_src_into_related_hosts
+      value: '{{{nozomi_networks.alert.label_src}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.label_src != null
+  - gsub:
+      field: json.mac_dst
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_mac_dst
+      target_field: destination.mac
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: destination.mac
+      tag: uppercase_mac_dst
+      ignore_missing: true
+      if: ctx.destination?.mac != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mac_dst
+      tag: rename_mac_dst
+      target_field: nozomi_networks.alert.mac_dst
+      ignore_missing: true
+  - gsub:
+      field: json.mac_src
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_src_mac
+      target_field: source.mac
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: source.mac
+      tag: uppercase_src_mac
+      ignore_missing: true
+      if: ctx.source?.mac != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mac_src
+      tag: rename_mac_src
+      target_field: nozomi_networks.alert.mac_src
+      ignore_missing: true
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: nozomi_networks.alert.name
+      ignore_missing: true
+  - rename:
+      field: json.note
+      tag: rename_note
+      target_field: nozomi_networks.alert.note
+      ignore_missing: true
+  - rename:
+      field: json.parents
+      tag: rename_parents
+      target_field: nozomi_networks.alert.parents
+      ignore_missing: true
+  - rename:
+      field: json.playbook_contents
+      tag: rename_playbook_contents
+      target_field: nozomi_networks.alert.playbook_contents
+      ignore_missing: true
+  - convert:
+      field: json.port_dst
+      tag: convert_port_dst_to_long
+      target_field: nozomi_networks.alert.port_dst
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_alert_port_dst
+      copy_from: nozomi_networks.alert.port_dst
+      ignore_empty_value: true
+  - convert:
+      field: json.port_src
+      tag: convert_port_src_to_long
+      target_field: nozomi_networks.alert.port_src
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_alert_port_src
+      copy_from: nozomi_networks.alert.port_src
+      ignore_empty_value: true
+  - convert:
+      field: json.properties.base_risk
+      tag: convert_properties_base_risk_to_long
+      target_field: nozomi_networks.alert.properties.base_risk
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.from_id
+      tag: rename_properties_from_id
+      target_field: nozomi_networks.alert.properties.from_id
+      ignore_missing: true
+  - convert:
+      field: json.properties.is_dst_node_learned
+      tag: convert_properties_is_dst_node_learned_to_boolean
+      target_field: nozomi_networks.alert.properties.is_dst_node_learned
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.is_dst_public
+      tag: convert_properties_is_dst_public_to_boolean
+      target_field: nozomi_networks.alert.properties.is_dst_public
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.is_dst_reputation_bad
+      tag: convert_properties_is_dst_reputation_bad_to_boolean
+      target_field: nozomi_networks.alert.properties.is_dst_reputation_bad
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.is_src_node_learned
+      tag: convert_properties_is_src_node_learned_to_boolean
+      target_field: nozomi_networks.alert.properties.is_src_node_learned
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.is_src_public
+      tag: convert_properties_is_src_public_to_boolean
+      target_field: nozomi_networks.alert.properties.is_src_public
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.is_src_reputation_bad
+      tag: convert_properties_is_src_reputation_bad_to_boolean
+      target_field: nozomi_networks.alert.properties.is_src_reputation_bad
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.mitre_attack_for_ics.destination.levels
+      tag: rename_properties_mitre_attack_for_ics_destination_levels
+      target_field: nozomi_networks.alert.properties.mitre_attack_for_ics.destination.levels
+      ignore_missing: true
+  - rename:
+      field: json.properties.mitre_attack_for_ics.destination.types
+      tag: rename_properties_mitre_attack_for_ics_destination_types
+      target_field: nozomi_networks.alert.properties.mitre_attack_for_ics.destination.types
+      ignore_missing: true
+  - rename:
+      field: json.properties.mitre_attack_for_ics.source.levels
+      tag: rename_properties_mitre_attack_for_ics_source_levels
+      target_field: nozomi_networks.alert.properties.mitre_attack_for_ics.source.levels
+      ignore_missing: true
+  - rename:
+      field: json.properties.mitre_attack_for_ics.source.types
+      tag: rename_properties_mitre_attack_for_ics_source_types
+      target_field: nozomi_networks.alert.properties.mitre_attack_for_ics.source.types
+      ignore_missing: true
+  - rename:
+      field: json.properties.n2os_version
+      tag: rename_properties_n2os_version
+      target_field: nozomi_networks.alert.properties.n2os_version
+      ignore_missing: true
+  - rename:
+      field: json.properties.raised_by
+      tag: rename_properties_raised_by
+      target_field: nozomi_networks.alert.properties.raised_by
+      ignore_missing: true
+  - rename:
+      field: json.properties.to_id
+      tag: rename_properties_to_id
+      target_field: nozomi_networks.alert.properties.to_id
+      ignore_missing: true
+  - rename:
+      field: json.protocol
+      tag: rename_protocol
+      target_field: nozomi_networks.alert.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_alert_protocol
+      copy_from: nozomi_networks.alert.protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - date:
+      field: json.record_created_at
+      tag: date_record_created_at
+      target_field: nozomi_networks.alert.record_created_at
+      formats:
+        - UNIX_MS
+      if: ctx.json?.record_created_at != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_alert_record_created_at
+      copy_from: nozomi_networks.alert.record_created_at
+      ignore_empty_value: true
+  - convert:
+      field: json.replicated
+      tag: convert_replicated_to_boolean
+      target_field: nozomi_networks.alert.replicated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.risk
+      tag: convert_risk_to_double
+      target_field: nozomi_networks.alert.risk
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score_from_alert_risk
+      copy_from: nozomi_networks.alert.risk
+      ignore_empty_value: true
+  - convert:
+      field: json.sec_profile_visible
+      tag: convert_sec_profile_visible_to_boolean
+      target_field: nozomi_networks.alert.sec_profile_visible
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.session_id
+      tag: rename_session_id
+      target_field: nozomi_networks.alert.session_id
+      ignore_missing: true
+  - convert:
+      field: json.severity
+      tag: convert_severity_to_long
+      target_field: nozomi_networks.alert.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event severity and label based on numeric severity scale.
+      tag: set_event_severity_and_label
+      if: ctx.nozomi_networks?.alert?.severity != null
+      source: |-
+        def severity = ctx.nozomi_networks.alert.severity;
+          if (severity >= 0 && severity <= 3) {
+            ctx.nozomi_networks.alert.severity_label = 'low';
+            ctx.event.severity = 21;
+          } else if (severity >= 4 && severity <= 6) {
+            ctx.nozomi_networks.alert.severity_label = 'medium';
+            ctx.event.severity = 47;
+          } else if (severity >= 7 && severity <= 10) {
+            ctx.nozomi_networks.alert.severity_label = 'high';
+            ctx.event.severity = 73;
+          }
+  - rename:
+      field: json.src_roles
+      tag: rename_src_roles
+      target_field: nozomi_networks.alert.src_roles
+      ignore_missing: true
+  - append:
+      field: source.user.roles
+      tag: append_nozomi_networks_alert_src_roles_into_source_user_roles
+      value: '{{{nozomi_networks.alert.src_roles}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.alert?.src_roles != null
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: nozomi_networks.alert.status
+      ignore_missing: true
+  - convert:
+      field: json.synchronized
+      tag: convert_synchronized_to_boolean
+      target_field: nozomi_networks.alert.synchronized
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.threat_name
+      tag: rename_threat_name
+      target_field: nozomi_networks.alert.threat_name
+      ignore_missing: true
+  - rename:
+      field: json.ti_source
+      tag: rename_ti_source
+      target_field: nozomi_networks.alert.ti_source
+      ignore_missing: true
+  - date:
+      field: json.time
+      tag: date_time
+      target_field: nozomi_networks.alert.time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.time != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.trace_sha1
+      tag: rename_trace_sha1
+      target_field: nozomi_networks.alert.trace_sha1
+      ignore_missing: true
+  - rename:
+      field: json.trace_status
+      tag: rename_trace_status
+      target_field: nozomi_networks.alert.trace_status
+      ignore_missing: true
+  - rename:
+      field: json.transport_protocol
+      tag: rename_transport_protocol
+      target_field: nozomi_networks.alert.transport_protocol
+      ignore_missing: true
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_alert_transport_protocol
+      copy_from: nozomi_networks.alert.transport_protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - rename:
+      field: json.trigger_id
+      tag: rename_trigger_id
+      target_field: nozomi_networks.alert.trigger_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_alert_trigger_id
+      copy_from: nozomi_networks.alert.trigger_id
+      ignore_empty_value: true
+  - rename:
+      field: json.trigger_type
+      tag: rename_trigger_type
+      target_field: nozomi_networks.alert.trigger_type
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_alert_trigger_type
+      copy_from: nozomi_networks.alert.trigger_type
+      ignore_empty_value: true
+  - rename:
+      field: json.type_id
+      tag: rename_type_id
+      target_field: nozomi_networks.alert.type_id
+      ignore_missing: true
+  - rename:
+      field: json.type_name
+      tag: rename_type_name
+      target_field: nozomi_networks.alert.type_name
+      ignore_missing: true
+  - rename:
+      field: json.zone_dst
+      tag: rename_zone_dst
+      target_field: nozomi_networks.alert.zone_dst
+      ignore_missing: true
+  - rename:
+      field: json.zone_src
+      tag: rename_zone_src
+      target_field: nozomi_networks.alert.zone_src
+      ignore_missing: true
+  - remove:
+      field:
+        - nozomi_networks.alert.appliance_host
+        - nozomi_networks.alert.appliance_id
+        - nozomi_networks.alert.appliance_ip
+        - nozomi_networks.alert.created_time
+        - nozomi_networks.alert.description
+        - nozomi_networks.alert.dst_roles
+        - nozomi_networks.alert.id
+        - nozomi_networks.alert.destination_ip
+        - nozomi_networks.alert.source_ip
+        - nozomi_networks.alert.port_dst
+        - nozomi_networks.alert.port_src
+        - nozomi_networks.alert.protocol
+        - nozomi_networks.alert.record_created_at
+        - nozomi_networks.alert.risk
+        - nozomi_networks.alert.src_roles
+        - nozomi_networks.alert.transport_protocol
+        - nozomi_networks.alert.trigger_id
+        - nozomi_networks.alert.trigger_type
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

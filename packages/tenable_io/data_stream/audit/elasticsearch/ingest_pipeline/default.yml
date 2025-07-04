@@ -8,6 +8,17 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -270,20 +281,37 @@ processors:
       tag: set_user_id_from_actor_id
       copy_from: tenable_io.audit.actor.id
       ignore_empty_value: true
-  - append:
-      field: related.user
-      tag: append_actor_id_to_related_user
-      value: '{{{tenable_io.audit.actor.id}}}'
-      allow_duplicates: false
   - set:
       field: user.name
       tag: set_user_name_from_actor_name
       copy_from: tenable_io.audit.actor.name
       ignore_empty_value: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      tag: append_actor_id_to_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
   - append:
       field: related.user
       tag: append_actor_name_to_related_user
-      value: '{{{tenable_io.audit.actor.name}}}'
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_actor_email_to_related_user
+      value: '{{{user.email}}}'
       allow_duplicates: false
   - set:
       field: user.target.id
@@ -303,12 +331,30 @@ processors:
       copy_from: tenable_io.audit.target.name
       ignore_empty_value: true
       if: ctx.tenable_io?.audit?.target?.type != null && ctx.tenable_io.audit.target.type == 'User'
+  - rename:
+      field: user.target.name
+      target_field: user.target.email
+      tag: rename_user_target_email
+      if: ctx.user?.target?.name != null && ctx.user.target.name.indexOf("@") > 0
+  - dissect:
+      field: user.target.email
+      pattern: '%{user.target.name}@%{user.target.domain}'
+      tag: dissect_user_target_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.target?.name == null
   - append:
       field: related.user
       tag: append_target_name_to_related_user
-      value: '{{{tenable_io.audit.target.name}}}'
+      value: '{{{user.target.name}}}'
       allow_duplicates: false
-      if: ctx.tenable_io?.audit?.target?.type != null && ctx.tenable_io.audit.target.type == 'User'
+      if: ctx.user?.target?.name != null
+  - append:
+      field: related.user
+      tag: append_target_email_to_related_user
+      value: '{{{user.target.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.email != null
   - script:
       lang: painless
       if: ctx.tenable_io?.audit?.fields instanceof List

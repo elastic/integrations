@@ -887,8 +887,8 @@ An example event for `siem` looks as following:
 | mimecast.spamScore | The metric that measures the likelihood of the event being considered spam. | keyword |
 | mimecast.subject | The subject of the email. | keyword |
 | mimecast.subtype |  | keyword |
-| mimecast.taggedExternal | The message has been tagged as originating from a external source. (True; False) | keyword |
-| mimecast.taggedMalicious | The message has been tagged as malicious. (True; False) | keyword |
+| mimecast.taggedExternal | The message has been tagged as originating from a external source. (True; False) | boolean |
+| mimecast.taggedMalicious | The message has been tagged as malicious. (True; False) | boolean |
 | mimecast.timestamp | The date and time of event. | keyword |
 | mimecast.tlsCipher | The TLS Cipher used if the email was delivered or received using TLS. | keyword |
 | mimecast.tlsUsed | If the message was delivered using TLS or not. (Yes; No) | keyword |

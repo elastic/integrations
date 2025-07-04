@@ -29,6 +29,15 @@ Users can configure the syslog server address in DatAlert so that alerts can be 
 
 This integration expects to use `External system default template (CEF)` for alert forwarding in Varonis DatAlert tool. In case any custom template is used, all the fields in `External system default template (CEF)` should also be present in custom template along with the other additional fields. Additional fields will be part of `varonis.logs` object and such fields will be indexed only if dynamic mapping is enabled in Elasticsearch.
 
+## Pre-Processors
+
+There are cases where incoming CEF messages do not follow the CEF specification exactly, and this can cause errors with
+message decoding. To work around this, there is an option for pre-processors, which are run before the CEF message is decoded.
+These can be used modify the message to follow the CEF specification correctly, which will allow proper decoding.
+
+The pre-processors will modify the `message` field before CEF decoding is done on the agent, but the original, non-preprocessed,
+message will still be preserved in the `event.original` field when the agent sends the event.
+
 ## Logs reference
 
 ### varonis.logs

@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Incident logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -135,22 +146,27 @@ processors:
       field: json.severity
       target_field: m365_defender.incident.severity
       ignore_failure: true
-  - set:
-      field: event.severity
-      value: 1
-      if: ctx.m365_defender?.incident?.severity == 'informational'
-  - set:
-      field: event.severity
-      value: 2
-      if: ctx.m365_defender?.incident?.severity == 'low'
-  - set:
-      field: event.severity
-      value: 3
-      if: ctx.m365_defender?.incident?.severity == 'medium'
-  - set:
-      field: event.severity
-      value: 4
-      if: ctx.m365_defender?.incident?.severity == 'high'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.m365_defender?.incident?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.m365_defender.incident.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uri_parts:
       field: json.incidentWebUrl
       target_field: m365_defender.incident.web_url
@@ -170,15 +186,30 @@ processors:
       field: json.assignedTo
       target_field: m365_defender.incident.assigned_to
       ignore_missing: true
-  - set:
-      field: source.user.name
-      copy_from: m365_defender.incident.assigned_to
+  - grok:
+      field: m365_defender.incident.assigned_to
+      patterns:
+        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
+        - '%{GREEDYDATA:source.user.name}'
+      ignore_missing: true
       ignore_failure: true
+  - set:
+      field: source.user.email
+      copy_from: m365_defender.incident.assigned_to
+      tag: copy_source_user_email
+      if: ctx.m365_defender?.incident?.assigned_to != null && ctx.m365_defender.incident.assigned_to.indexOf("@") > 0
   - append:
       field: related.user
-      value: '{{{m365_defender.incident.assigned_to}}}'
+      value: '{{{source.user.name}}}'
       allow_duplicates: false
       ignore_failure: true
+      if: ctx.source?.user?.name != null
+  - append:
+      field: related.user
+      value: '{{{source.user.email}}}'
+      allow_duplicates: false
+      ignore_failure: true
+      if: ctx.source?.user?.email != null
   - rename:
       field: json.alerts.threatFamilyName
       target_field: m365_defender.incident.alert.threat_family_name
@@ -947,6 +978,16 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
+        append:
+          field: device.id
+          tag: append_azureAdDeviceId_into_device_id
+          value: '{{{_ingest._value.azureAdDeviceId}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
         rename:
           field: _ingest._value.azureAdDeviceId
           target_field: _ingest._value.azure_ad_device_id
@@ -1535,6 +1576,15 @@ processors:
           field: _ingest._value.userAccount.displayName
           target_field: _ingest._value.user_account.display_name
           ignore_missing: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.user_account.display_name}}}'
+          allow_duplicates: false
+          ignore_failure: true
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
@@ -2232,6 +2282,26 @@ processors:
         if (!processParentPid.isEmpty()) {
           ctx.process.parent.pid = convertToOrderedArray(processParentPid);
         }
+  - foreach:
+      field: process.pid
+      tag: foreach_process_pid
+      if: ctx.process?.pid instanceof List
+      processor:
+        append:
+          field: process.entity_id
+          tag: append_process_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: process.parent.pid
+      tag: foreach_process_parent_pid
+      if: ctx.process?.parent?.pid instanceof List
+      processor:
+        append:
+          field: process.parent.entity_id
+          tag: append_process_parent_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List

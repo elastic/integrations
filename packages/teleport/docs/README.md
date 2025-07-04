@@ -22,26 +22,7 @@ The `teleport` integration collects the following logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -50,15 +31,13 @@ to make it send audit logs to the Elasticsearch instance.
 
 See the [Getting started guide](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) for instructions on setting up the Elastic Stack.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Teleport`.
-3. Select the "Teleport" integration from the search results.
-4. Select "Add Teleport" to add the integration.
-5. Add all the required integration configuration parameters, including Paths.
-6. Select "Save and continue" to save the integration.
-
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Symantec Endpoint Security**.
+3. Select the **Symantec Endpoint Security** integration and add it.
+4. Add all the required integration configuration parameters, including Paths.
+5. Save the integration.
 
 ## Reference
 
@@ -80,41 +59,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-04-22T00:49:03.000Z",
     "agent": {
-        "ephemeral_id": "6c572258-fcb8-48b0-bb7b-ffb396adb07a",
-        "id": "c12ead0e-edd3-4b3c-9a69-06eb2964d4cd",
-        "name": "elastic-agent-51912",
+        "ephemeral_id": "c29e01c1-a81a-4435-8264-1b93a60fb5a9",
+        "id": "da8bdad7-eb36-4672-a8fb-2c8f4acdd435",
+        "name": "elastic-agent-96476",
         "type": "filebeat",
-        "version": "8.14.0"
-    },
-    "client": {
-        "address": "67.43.156.11",
-        "as": {
-            "number": 35908
-        },
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.11",
-        "port": 42
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "teleport.audit",
-        "namespace": "41787",
+        "namespace": "75574",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c12ead0e-edd3-4b3c-9a69-06eb2964d4cd",
+        "id": "da8bdad7-eb36-4672-a8fb-2c8f4acdd435",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": "user.login",
@@ -122,16 +84,15 @@ An example event for `audit` looks as following:
         "category": [
             "authentication"
         ],
-        "code": "T1012I",
+        "code": "T1000I",
         "dataset": "teleport.audit",
-        "id": "173d6b6e-d613-44be-8ff6-f9f893791ef4",
-        "ingested": "2025-04-22T06:23:17Z",
+        "id": "173d6b6e-d613-44be-8ff6-f9f893791ef2",
+        "ingested": "2025-06-03T16:26:53Z",
         "kind": "event",
-        "original": "{\"addr.remote\":\"67.43.156.11:42\",\"code\":\"T1012I\",\"cluster_name\":\"root.cluster\",\"event\":\"user.login\",\"method\":\"headless\",\"ei\":0,\"success\":false,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef4\",\"user\":\"admin@example.com\"}",
+        "original": "{\"code\":\"T1000I\",\"event\":\"user.login\",\"method\":\"local\",\"success\":true,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef2\",\"user\":\"admin@example.com\"}",
         "outcome": [
-            "failure"
+            "success"
         ],
-        "sequence": 0,
         "type": [
             "start"
         ]
@@ -141,22 +102,15 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "64768",
-            "inode": "1615130",
+            "device_id": "38",
+            "inode": "171",
             "path": "/tmp/service_logs/test-teleport-all-events.log"
         },
-        "offset": 62632
-    },
-    "orchestrator": {
-        "cluster": {
-            "name": "root.cluster"
-        }
+        "offset": 9009
     },
     "related": {
-        "ip": [
-            "67.43.156.11"
-        ],
         "user": [
+            "admin",
             "admin@example.com"
         ]
     },
@@ -169,12 +123,14 @@ An example event for `audit` looks as following:
     "teleport": {
         "audit": {
             "login": {
-                "method": "headless"
+                "method": "local"
             }
         }
     },
     "user": {
-        "name": "admin@example.com"
+        "domain": "example.com",
+        "email": "admin@example.com",
+        "name": "admin"
     }
 }
 ```
