@@ -15,7 +15,7 @@ For full functionality of the dashboards included in this content pack, you will
 
 | Metric | Enabled by default in EDOT Collector | Enabled by default in upstream Contrib Collector |
 |---|---|---|
-|**[CPU](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)**|||
+|**[CPU](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)**|||
 | `system.cpu.time` | ✅ | ✅ |
 | `system.cpu.utilization` | ✅ | ❌ |
 | `system.cpu.logical.count` | ✅ | ❌ |
