@@ -1197,7 +1197,7 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab.production.params.operationName |  | keyword |
 | gitlab.production.params.query |  | keyword |
 | gitlab.production.params.search |  | keyword |
-| gitlab.production.params.variables |  | keyword |
+| gitlab.production.params.variables |  | flattened |
 | gitlab.production.queue_duration_s |  | float |
 | gitlab.production.rate_limiting_gates |  | keyword |
 | gitlab.production.redis_allowed_cross_slot_calls |  | long |
