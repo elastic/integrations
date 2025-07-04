@@ -16,7 +16,7 @@ integration also supports S3 notification from SNS to SQS.
 
 You can enable SQS notification method by setting `queue_url` configuration value.
 You can enable S3 bucket list polling method by setting `bucket_arn`, `access_point_arn`
-or `non_aws_bucket_name` configuration values and `number_of_workers` value.
+or `non_aws_bucket_name` configuration values.
 
 `queue_url`, `bucket_arn`, `access_point_arn` and `non_aws_bucket_name` cannot be set 
 at the same time and at least one of these value must be set.
