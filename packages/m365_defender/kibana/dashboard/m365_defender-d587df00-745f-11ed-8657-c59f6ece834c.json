@@ -14,7 +14,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "host.name",
-                        "id": "0cc22091-cdfe-438a-9862-3abe3a5bd70d",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -32,7 +31,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "host.type",
-                        "id": "23922902-bb87-4371-b685-ab920615f2a3",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -50,7 +48,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "m365_defender.event.action.type",
-                        "id": "7bae90a1-a3eb-4d51-b578-7e8e90ed0585",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -68,7 +65,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "m365_defender.event.application",
-                        "id": "97e71696-8315-45fe-b91a-2ee4c0aa9c53",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -85,7 +81,7 @@
             },
             "showApplySelections": false
         },
-        "description": "Overview of Microsoft 365 Defender App \u0026 Identity Events.",
+        "description": "Overview of Microsoft Defender XDR App \u0026 Identity Events.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -126,7 +122,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Navigation\n\n#### M365 Defender\n\n#### EventHub Datastream  \n[Alert Events](#/dashboard/m365_defender-2690a440-7235-11ed-8657-c59f6ece834c)  \n[Device Events](#/dashboard/m365_defender-c0b796d0-720a-11ed-8657-c59f6ece834c)  \n**App \u0026 Identity Events**  \n[Email Events](#/dashboard/m365_defender-3caf3c00-7456-11ed-8657-c59f6ece834c)  \n\n#### Incident Datastream (Graph API)  \n\n[Incidents](#/dashboard/m365_defender-ac54d310-44ab-11ed-8375-0168a9970c06)  \n[Alerts](#/dashboard/m365_defender-d80d7840-4366-11ed-b1f2-e917f608bd03)  \n\n#### Rest API Datastream  \n[Vulnerability](#/dashboard/m365_defender-afb93ff7-9903-4d91-9028-9fe9c5a434f8)\n\n#### Description\n\nThis dashboard visualizes CloudApp and Identity type events according to the [Microsoft Documentation](https://learn.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-deviceevents-table?view=o365-worldwide).  \nThe data is collected from a configured Event Hub, using the M365 Defender Event datastream.  \n\nThe supported event types are:\n- AdvancedHunting-IdentityDirectoryEvents\n- AdvancedHunting-IdentityLogonEvents\n- AdvancedHunting-IdentityQueryEvents\n- AdvancedHunting-CloudAppEvents\n\n**[Integration Page](/app/integrations/detail/m365_defender/overview)**\n",
+                            "markdown": "### Navigation\n\n#### Microsoft Defender XDR\n\n#### EventHub Datastream  \n[Alert Events](#/dashboard/m365_defender-2690a440-7235-11ed-8657-c59f6ece834c)  \n[Device Events](#/dashboard/m365_defender-c0b796d0-720a-11ed-8657-c59f6ece834c)  \n**App \u0026 Identity Events**  \n[Email Events](#/dashboard/m365_defender-3caf3c00-7456-11ed-8657-c59f6ece834c)  \n\n#### Incident Datastream (Graph API)  \n\n[Incidents](#/dashboard/m365_defender-ac54d310-44ab-11ed-8375-0168a9970c06)  \n[Alerts](#/dashboard/m365_defender-d80d7840-4366-11ed-b1f2-e917f608bd03)  \n\n#### Rest API Datastream  \n[Vulnerability](#/dashboard/m365_defender-afb93ff7-9903-4d91-9028-9fe9c5a434f8)\n\n#### Description\n\nThis dashboard visualizes CloudApp and Identity type events according to the [Microsoft Documentation](https://learn.microsoft.com/en-us/defender-xdr/advanced-hunting-deviceevents-table?view=o365-worldwide).  \nThe data is collected from a configured Event Hub, using the Microsoft Defender XDR Event datastream.  \n\nThe supported event types are:\n- AdvancedHunting-IdentityDirectoryEvents\n- AdvancedHunting-IdentityLogonEvents\n- AdvancedHunting-IdentityQueryEvents\n- AdvancedHunting-CloudAppEvents\n\n**[Integration Page](/app/integrations/detail/m365_defender/overview)**\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -283,8 +279,96 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 9,
@@ -478,8 +562,106 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "m365_defender.event"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "m365_defender.event"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "m365_defender.event.category",
+                                            "index": "logs-*",
+                                            "key": "m365_defender.event.category",
+                                            "negate": false,
+                                            "params": [
+                                                "AdvancedHunting-CloudAppEvents",
+                                                "AdvancedHunting-IdentityDirectoryEvents",
+                                                "AdvancedHunting-IdentityLogonEvents",
+                                                "AdvancedHunting-IdentityQueryEvents"
+                                            ],
+                                            "type": "phrases",
+                                            "value": [
+                                                "AdvancedHunting-CloudAppEvents",
+                                                "AdvancedHunting-IdentityDirectoryEvents",
+                                                "AdvancedHunting-IdentityLogonEvents",
+                                                "AdvancedHunting-IdentityQueryEvents"
+                                            ]
+                                        },
+                                        "query": {
+                                            "bool": {
+                                                "minimum_should_match": 1,
+                                                "should": [
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 18,
@@ -664,8 +846,96 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 18,
@@ -816,8 +1086,96 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 9,
@@ -997,8 +1355,96 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
@@ -1178,8 +1624,96 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
@@ -1393,8 +1927,96 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 23,
@@ -1579,8 +2201,96 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 23,
@@ -1765,8 +2475,96 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-IdentityDirectoryEvents",
+                                    "AdvancedHunting-IdentityLogonEvents",
+                                    "AdvancedHunting-IdentityQueryEvents",
+                                    "AdvancedHunting-CloudAppEvents"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityDirectoryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityLogonEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-IdentityQueryEvents"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-CloudAppEvents"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 23,
@@ -1781,13 +2579,12 @@
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Microsoft 365 Defender] App \u0026 Identity Events",
+        "title": "[Logs Microsoft Defender XDR] App \u0026 Identity Events",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-04-10T09:40:38.999Z",
+    "created_at": "2025-06-27T11:58:52.029Z",
     "id": "m365_defender-d587df00-745f-11ed-8657-c59f6ece834c",
-    "managed": true,
     "references": [
         {
             "id": "logs-*",
@@ -1921,22 +2718,22 @@
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_0bef957d-efec-4a22-b42c-f34b74bb710d:optionsListDataView",
+            "name": "controlGroup_0cc22091-cdfe-438a-9862-3abe3a5bd70d:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_8af65dc8-130f-4bc1-b477-7add1d9157e5:optionsListDataView",
+            "name": "controlGroup_97e71696-8315-45fe-b91a-2ee4c0aa9c53:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_7e5b04d6-bf45-4597-bb91-d1839f27910c:optionsListDataView",
+            "name": "controlGroup_23922902-bb87-4371-b685-ab920615f2a3:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_c0730ca8-83e1-40c2-ae24-286f12b85a79:optionsListDataView",
+            "name": "controlGroup_7bae90a1-a3eb-4d51-b578-7e8e90ed0585:optionsListDataView",
             "type": "index-pattern"
         },
         {
@@ -1951,5 +2748,6 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
