@@ -2,14 +2,14 @@
 
 ## Overview
 
-Elastic Security is a free and open solution that helps detect, investigate, and respond to threats using data from endpoints, cloud, and network sources. It offers SIEM and endpoint protection with powerful search, correlation, and visualization features in Kibana.
+[Elastic Security](https://www.elastic.co/security) is a free and open solution that helps detect, investigate, and respond to threats using data from endpoints, cloud, and network sources. It offers SIEM and endpoint protection with powerful search, correlation, and visualization features in Kibana.
 It enables security teams to streamline investigations and strengthen their overall security posture.
 
 ## Data streams
 
 The Elastic Security integration collects the following events:
 
-`alert`: - Retrieve alerts from Elasticsearch Instance using Elasticsearch [_search](https://www.elastic.co/docs/api/doc/elasticsearch/group/endpoint-search) API.
+`alert`: - Retrieve alerts from Elasticsearch Instance using Elasticsearch [_search](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-search-2) API.
 
 ## Requirements
 
@@ -33,8 +33,8 @@ You will need the following information:
 2. Authentication credentials such as username, password, API key, or bearer token depending on the selected authentication type.
 
 Note:
-1. Users must have read index privileges on the `.alerts-security.alerts*` indices to access and query security alerts.
-2. To learn how to create authentication credentials and use the appropriate authentication type, refer to the Elasticsearch Authentication [Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/authentication).
+1. Users must have `read` index privileges on the `..alerts-security.alerts-<space_id>` indices to access and query security alerts.
+2. To learn how to create authentication credentials and use the appropriate authentication type, refer to the Elasticsearch Authentication [Documentation](https://www.elastic.co/docs/deploy-manage/users-roles/cluster-or-deployment-auth/user-authentication).
 
 ### Enable the integration in Elastic
 

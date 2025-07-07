@@ -20,7 +20,7 @@ state:
   user: {{username}}
   password: {{password}}
   bearer_token: {{bearer_token}}
-  index: .alerts-security.alerts*
+  index: .alerts-security.alerts-{{space_id}}
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
 redact:
@@ -30,9 +30,9 @@ redact:
     - api_key
     - bearer_token
 program: |
-  state.with({
-    "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
-  }).as(state, state.with(
+  state.?cursor.last_timestamp.orValue(
+    (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+  ).as(start_time, state.with(
       request(
         "GET",
         state.url.trim_right("/") + "/" + state.index + "/_search?" + {
@@ -43,7 +43,7 @@ program: |
           "query": {
             "range": {
               "@timestamp": {
-                "gt": state.start_time,
+                "gt": start_time,
                 "lte": "now"
               }
             }
@@ -68,8 +68,8 @@ program: |
             has(body.?hits.hits) && body.hits.hits.size() > 0 ?
               body.hits.hits.map(e,{
                 "source_metadata": {
-                   "_index": e.?_index,
-                   "_id": e.?_id,
+                   ?"_index": e.?_index,
+                   ?"_id": e.?_id,
                 },
                 "message": e._source.drop(['data_stream', 'event.dataset', 'event.module']).encode_json(),
               })

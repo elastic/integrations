@@ -2,14 +2,14 @@
 
 ## Overview
 
-Elastic Security is a free and open solution that helps detect, investigate, and respond to threats using data from endpoints, cloud, and network sources. It offers SIEM and endpoint protection with powerful search, correlation, and visualization features in Kibana.
+[Elastic Security](https://www.elastic.co/security) is a free and open solution that helps detect, investigate, and respond to threats using data from endpoints, cloud, and network sources. It offers SIEM and endpoint protection with powerful search, correlation, and visualization features in Kibana.
 It enables security teams to streamline investigations and strengthen their overall security posture.
 
 ## Data streams
 
 The Elastic Security integration collects the following events:
 
-`alert`: - Retrieve alerts from Elasticsearch Instance using Elasticsearch [_search](https://www.elastic.co/docs/api/doc/elasticsearch/group/endpoint-search) API.
+`alert`: - Retrieve alerts from Elasticsearch Instance using Elasticsearch [_search](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-search-2) API.
 
 ## Requirements
 
@@ -33,8 +33,8 @@ You will need the following information:
 2. Authentication credentials such as username, password, API key, or bearer token depending on the selected authentication type.
 
 Note:
-1. Users must have read index privileges on the `.alerts-security.alerts*` indices to access and query security alerts.
-2. To learn how to create authentication credentials and use the appropriate authentication type, refer to the Elasticsearch Authentication [Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/authentication).
+1. Users must have `read` index privileges on the `..alerts-security.alerts-<space_id>` indices to access and query security alerts.
+2. To learn how to create authentication credentials and use the appropriate authentication type, refer to the Elasticsearch Authentication [Documentation](https://www.elastic.co/docs/deploy-manage/users-roles/cluster-or-deployment-auth/user-authentication).
 
 ### Enable the integration in Elastic
 
@@ -56,7 +56,7 @@ An example event for `alert` looks as following:
 
 ```json
 {
-    "@timestamp": "2060-06-09T13:56:03.205Z",
+    "@timestamp": "2022-06-09T13:56:03.205Z",
     "Endpoint": {
         "policy": {
             "applied": {
@@ -66,66 +66,6 @@ An example event for `alert` looks as following:
                             {
                                 "name": "diagnostic-configuration-v1",
                                 "sha256": "BBBBB40ca79cf0e165053daac3e4df8b428dea81c8d20edefca330d77bc0958c1"
-                            },
-                            {
-                                "name": "diagnostic-endpointelf-v1-blocklist",
-                                "sha256": "bbbbcb66f9337eb33f5c0359f51ad37761ff13e4a7c4be390e03d2c227ac7cf6"
-                            },
-                            {
-                                "name": "diagnostic-endpointelf-v1-exceptionlist",
-                                "sha256": "bbb2da99e044ecc7d50cea407bf17f33c546e5309aa7ee661234baed2b7750"
-                            },
-                            {
-                                "name": "diagnostic-endpointelf-v1-model",
-                                "sha256": "bbb0b5bb99b3b875f51678efae67874bae37bfcc0036ad86bd2f7cbf767824"
-                            },
-                            {
-                                "name": "diagnostic-malware-signature-v1-linux",
-                                "sha256": "bbb1dc5dabd9b0653fe08c856ce6488dc94999522c4548af2c71d4b62754d9a"
-                            },
-                            {
-                                "name": "diagnostic-rules-linux-v1",
-                                "sha256": "accfa58fca69040d49731d334770b96d88ca82c26c0e42b02908f2fcb7acf"
-                            },
-                            {
-                                "name": "endpointelf-v1-blocklist",
-                                "sha256": "0d43a899fb1e8389d36e95c87b1ed852661fc007041d41b45929a3b34f4"
-                            },
-                            {
-                                "name": "endpointelf-v1-exceptionlist",
-                                "sha256": "eb9689fb8b88f6fde235f1d5d9329c3056a21e6f451e36f23604ff8394"
-                            },
-                            {
-                                "name": "endpointelf-v1-model",
-                                "sha256": "ae994398f94f2bef6f2418b103935ac731db362dd74de9bfe4b490c61cf"
-                            },
-                            {
-                                "name": "global-configuration-v1",
-                                "sha256": "d0806a4f21ae4a2bd5889f2a179e764b3f0d9707bee8c5ec4668d9d88"
-                            },
-                            {
-                                "name": "global-eventfilterlist-linux-v1",
-                                "sha256": "8edb9a6739c50fbb25f49376983ca5ed8d3e79d710a43b01369c8c"
-                            },
-                            {
-                                "name": "global-exceptionlist-linux",
-                                "sha256": "efb487bf50555cece86abacb6b6e803d428ff1093e662ad5babb649"
-                            },
-                            {
-                                "name": "global-trustlist-linux-v1",
-                                "sha256": "614b22f442f53135ad6ddfa84e5f5cbfb0cb7d8f5a141d22645d589986"
-                            },
-                            {
-                                "name": "production-malware-signature-v1-linux",
-                                "sha256": "b60abcb862c755e47b106cfdcee07061068423c20e23d320831a40c6f6"
-                            },
-                            {
-                                "name": "production-rules-linux-v1",
-                                "sha256": "7b0f97917e6675e54a7f52799ace2a0d6b9ef6cccca6a0423b591e32be"
-                            },
-                            {
-                                "name": "tamper-protection-config-v1",
-                                "sha256": "07f2afe84d3b52b6cd8b841f33ffe6eb8e2297cefd4eaa3e50e567b4d30e"
                             }
                         ],
                         "snapshot": "latest",
@@ -137,22 +77,6 @@ An example event for `alert` looks as following:
                             {
                                 "name": "endpoint-blocklist-linux-v1",
                                 "sha256": "d801aacc330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658"
-                            },
-                            {
-                                "name": "endpoint-eventfilterlist-linux-v1",
-                                "sha256": "d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658"
-                            },
-                            {
-                                "name": "endpoint-exceptionlist-linux-v1",
-                                "sha256": "d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658"
-                            },
-                            {
-                                "name": "endpoint-hostisolationexceptionlist-linux-v1",
-                                "sha256": "d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658"
-                            },
-                            {
-                                "name": "endpoint-trustlist-linux-v1",
-                                "sha256": "d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658"
                             }
                         ],
                         "version": "1.0.0"
@@ -163,7 +87,7 @@ An example event for `alert` looks as following:
     },
     "Events": [
         {
-            "@timestamp": "2060-06-09T13:52:06.9710234Z",
+            "@timestamp": "2022-06-09T13:52:06.9710234Z",
             "_label": "script_executed",
             "_state": 0,
             "event": {
@@ -190,290 +114,6 @@ An example event for `alert` looks as following:
                 "name": "admin"
             },
             "message": "Endpoint process event",
-            "process": {
-                "Ext": {
-                    "ancestry": [
-                        "YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0",
-                        "YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MS0xNzE3OTQxMTIx",
-                        "YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx",
-                        "YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE4OS0xNzE3OTQxMTIx",
-                        "YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw",
-                        "YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ=="
-                    ]
-                },
-                "args": [
-                    "/tmp/bash",
-                    "exec(base64.b64decode*abcdef)"
-                ],
-                "args_count": 2,
-                "command_line": "/tmp/bash exec(base64.b64decode*abcdef)",
-                "entity_id": "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2",
-                "entry_leader": {
-                    "args": [
-                        "/usr/sbin/cron",
-                        "-f"
-                    ],
-                    "args_count": 2,
-                    "entity_id": "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw",
-                    "entry_meta": {
-                        "type": "init"
-                    },
-                    "executable": "/usr/sbin/cron",
-                    "group": {
-                        "id": 0,
-                        "name": "root"
-                    },
-                    "interactive": false,
-                    "name": "cron",
-                    "parent": {
-                        "entity_id": "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ==",
-                        "pid": 1,
-                        "start": "2024-06-07T01:17:01.19Z"
-                    },
-                    "pid": 895,
-                    "real_group": {
-                        "id": 0,
-                        "name": "root"
-                    },
-                    "real_user": {
-                        "id": 0,
-                        "name": "root"
-                    },
-                    "same_as_process": false,
-                    "start": "2024-06-07T01:17:10.36Z",
-                    "user": {
-                        "id": 0,
-                        "name": "root"
-                    },
-                    "working_directory": "/var/spool/cron"
-                },
-                "executable": "/tmp/bash",
-                "group": {
-                    "id": 1006,
-                    "name": "admin"
-                },
-                "group_leader": {
-                    "args": [
-                        "/bin/sh",
-                        "-c",
-                        "/tmp/rta-random-attack.sh > /tmp/rta-random.log 2>&1"
-                    ],
-                    "args_count": 3,
-                    "entity_id": "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx",
-                    "executable": "/bin/sh",
-                    "group": {
-                        "id": 1006,
-                        "name": "admin"
-                    },
-                    "interactive": false,
-                    "name": "sh",
-                    "pid": 141190,
-                    "real_group": {
-                        "id": 1006,
-                        "name": "admin"
-                    },
-                    "real_user": {
-                        "id": 1005,
-                        "name": "admin"
-                    },
-                    "same_as_process": false,
-                    "start": "2024-06-09T13:52:01.51Z",
-                    "supplemental_groups": [
-                        {
-                            "id": 4,
-                            "name": "adm"
-                        },
-                        {
-                            "id": 30,
-                            "name": "dip"
-                        },
-                        {
-                            "id": 44,
-                            "name": "video"
-                        },
-                        {
-                            "id": 46,
-                            "name": "plugdev"
-                        },
-                        {
-                            "id": 1000,
-                            "name": "google-sudoers"
-                        }
-                    ],
-                    "user": {
-                        "id": 1005,
-                        "name": "admin"
-                    },
-                    "working_directory": "/home/admin"
-                },
-                "hash": {
-                    "md5": "f9bf2d21a340f2b3ee534fba5b29e417",
-                    "sha1": "21a5d9c728d069ba6239c1da751a2f31fba9b1aa",
-                    "sha256": "d9df3091f6093bd9a7b308e536fbc285aeef2c5139577cc96bc594a4845f0e13"
-                },
-                "interactive": false,
-                "name": "bash",
-                "parent": {
-                    "args": [
-                        "python3",
-                        "-m",
-                        "rta",
-                        "-n",
-                        "empire_stager"
-                    ],
-                    "args_count": 5,
-                    "command_line": "python3 -m rta -n empire_stager",
-                    "entity_id": "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0",
-                    "executable": "/usr/bin/python3",
-                    "group": {
-                        "id": 1006,
-                        "name": "admin"
-                    },
-                    "interactive": false,
-                    "name": "python3",
-                    "pid": 141205,
-                    "real_group": {
-                        "id": 1006,
-                        "name": "admin"
-                    },
-                    "real_user": {
-                        "id": 1005,
-                        "name": "admin"
-                    },
-                    "start": "2024-06-09T13:52:04.27Z",
-                    "supplemental_groups": [
-                        {
-                            "id": 4,
-                            "name": "adm"
-                        },
-                        {
-                            "id": 30,
-                            "name": "dip"
-                        },
-                        {
-                            "id": 44,
-                            "name": "video"
-                        },
-                        {
-                            "id": 46,
-                            "name": "plugdev"
-                        },
-                        {
-                            "id": 1000,
-                            "name": "google-sudoers"
-                        }
-                    ],
-                    "user": {
-                        "id": 1005,
-                        "name": "admin"
-                    },
-                    "working_directory": "/home/admin/detection-rules"
-                },
-                "pid": 141206,
-                "previous": [
-                    {
-                        "args": [
-                            "python3",
-                            "-m",
-                            "rta",
-                            "-n",
-                            "empire_stager"
-                        ],
-                        "args_count": 5,
-                        "executable": "/usr/bin/python3"
-                    }
-                ],
-                "real_group": {
-                    "id": 1006,
-                    "name": "admin"
-                },
-                "real_user": {
-                    "id": 1005,
-                    "name": "admin"
-                },
-                "session_leader": {
-                    "args": [
-                        "/bin/sh",
-                        "-c",
-                        "/tmp/rta-random-attack.sh > /tmp/rta-random.log 2>&1"
-                    ],
-                    "args_count": 3,
-                    "entity_id": "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx",
-                    "executable": "/bin/sh",
-                    "group": {
-                        "id": 1006,
-                        "name": "admin"
-                    },
-                    "interactive": false,
-                    "name": "sh",
-                    "pid": 141190,
-                    "real_group": {
-                        "id": 1006,
-                        "name": "admin"
-                    },
-                    "real_user": {
-                        "id": 1005,
-                        "name": "admin"
-                    },
-                    "same_as_process": false,
-                    "start": "2024-06-09T13:52:01.51Z",
-                    "supplemental_groups": [
-                        {
-                            "id": 4,
-                            "name": "adm"
-                        },
-                        {
-                            "id": 30,
-                            "name": "dip"
-                        },
-                        {
-                            "id": 44,
-                            "name": "video"
-                        },
-                        {
-                            "id": 46,
-                            "name": "plugdev"
-                        },
-                        {
-                            "id": 1000,
-                            "name": "google-sudoers"
-                        }
-                    ],
-                    "user": {
-                        "id": 1005,
-                        "name": "admin"
-                    },
-                    "working_directory": "/home/admin"
-                },
-                "start": "2024-06-09T13:52:06.94Z",
-                "supplemental_groups": [
-                    {
-                        "id": 4,
-                        "name": "adm"
-                    },
-                    {
-                        "id": 30,
-                        "name": "dip"
-                    },
-                    {
-                        "id": 44,
-                        "name": "video"
-                    },
-                    {
-                        "id": 46,
-                        "name": "plugdev"
-                    },
-                    {
-                        "id": 1000,
-                        "name": "google-sudoers"
-                    }
-                ],
-                "user": {
-                    "id": 1005,
-                    "name": "admin"
-                },
-                "working_directory": "/home/admin/detection-rules"
-            },
             "user": {
                 "Ext": {
                     "real": {
@@ -488,7 +128,7 @@ An example event for `alert` looks as following:
     ],
     "Responses": [
         {
-            "@timestamp": "2060-06-09T13:52:07.403464561Z",
+            "@timestamp": "2022-06-09T13:52:07.403464561Z",
             "action": {
                 "action": "kill_process",
                 "field": "process.entity_id",
@@ -505,7 +145,7 @@ An example event for `alert` looks as following:
     ],
     "agent": {
         "build": {
-            "original": "version: 8.13.0, compiled: Wed Mar 20 20:00:00 2024, branch: HEAD, commit: f90579240155fc17f659ed37f7864ab1194ed2ea"
+            "original": "version: 8.13.0, compiled: Wed Mar 20 20:00:00 2022, branch: HEAD, commit: f90579240155fc17f659ed37f7864ab1194ed2ea"
         },
         "id": "abcd-513b-4526-a34a-e229a6f15dff",
         "type": "endpoint",
@@ -513,7 +153,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "elastic_security.alert",
-        "namespace": "27449",
+        "namespace": "49122",
         "type": "logs"
     },
     "ecs": {
@@ -525,7 +165,7 @@ An example event for `alert` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "16950a5e-0ba7-409b-ab8f-50dd26e0bb11",
+        "id": "2863eb76-9d3a-4478-b149-3e3efbafdfd9",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -540,9 +180,9 @@ An example event for `alert` looks as following:
         "created": "2024-06-09T13:52:07.402627721Z",
         "dataset": "elastic_security.alert",
         "id": "Na7UF0/g6Q++++3Y96",
-        "ingested": "2025-06-30T11:54:29Z",
+        "ingested": "2025-07-07T10:07:53Z",
         "kind": "alert",
-        "original": "{\"@timestamp\":\"2060-06-09T13:56:03.205Z\",\"Endpoint\":{\"policy\":{\"applied\":{\"artifacts\":{\"global\":{\"identifiers\":[{\"name\":\"diagnostic-configuration-v1\",\"sha256\":\"BBBBB40ca79cf0e165053daac3e4df8b428dea81c8d20edefca330d77bc0958c1\"},{\"name\":\"diagnostic-endpointelf-v1-blocklist\",\"sha256\":\"bbbbcb66f9337eb33f5c0359f51ad37761ff13e4a7c4be390e03d2c227ac7cf6\"},{\"name\":\"diagnostic-endpointelf-v1-exceptionlist\",\"sha256\":\"bbb2da99e044ecc7d50cea407bf17f33c546e5309aa7ee661234baed2b7750\"},{\"name\":\"diagnostic-endpointelf-v1-model\",\"sha256\":\"bbb0b5bb99b3b875f51678efae67874bae37bfcc0036ad86bd2f7cbf767824\"},{\"name\":\"diagnostic-malware-signature-v1-linux\",\"sha256\":\"bbb1dc5dabd9b0653fe08c856ce6488dc94999522c4548af2c71d4b62754d9a\"},{\"name\":\"diagnostic-rules-linux-v1\",\"sha256\":\"accfa58fca69040d49731d334770b96d88ca82c26c0e42b02908f2fcb7acf\"},{\"name\":\"endpointelf-v1-blocklist\",\"sha256\":\"0d43a899fb1e8389d36e95c87b1ed852661fc007041d41b45929a3b34f4\"},{\"name\":\"endpointelf-v1-exceptionlist\",\"sha256\":\"eb9689fb8b88f6fde235f1d5d9329c3056a21e6f451e36f23604ff8394\"},{\"name\":\"endpointelf-v1-model\",\"sha256\":\"ae994398f94f2bef6f2418b103935ac731db362dd74de9bfe4b490c61cf\"},{\"name\":\"global-configuration-v1\",\"sha256\":\"d0806a4f21ae4a2bd5889f2a179e764b3f0d9707bee8c5ec4668d9d88\"},{\"name\":\"global-eventfilterlist-linux-v1\",\"sha256\":\"8edb9a6739c50fbb25f49376983ca5ed8d3e79d710a43b01369c8c\"},{\"name\":\"global-exceptionlist-linux\",\"sha256\":\"efb487bf50555cece86abacb6b6e803d428ff1093e662ad5babb649\"},{\"name\":\"global-trustlist-linux-v1\",\"sha256\":\"614b22f442f53135ad6ddfa84e5f5cbfb0cb7d8f5a141d22645d589986\"},{\"name\":\"production-malware-signature-v1-linux\",\"sha256\":\"b60abcb862c755e47b106cfdcee07061068423c20e23d320831a40c6f6\"},{\"name\":\"production-rules-linux-v1\",\"sha256\":\"7b0f97917e6675e54a7f52799ace2a0d6b9ef6cccca6a0423b591e32be\"},{\"name\":\"tamper-protection-config-v1\",\"sha256\":\"07f2afe84d3b52b6cd8b841f33ffe6eb8e2297cefd4eaa3e50e567b4d30e\"}],\"snapshot\":\"latest\",\"update_age\":0,\"version\":\"1.0.1049\"},\"user\":{\"identifiers\":[{\"name\":\"endpoint-blocklist-linux-v1\",\"sha256\":\"d801aacc330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658\"},{\"name\":\"endpoint-eventfilterlist-linux-v1\",\"sha256\":\"d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658\"},{\"name\":\"endpoint-exceptionlist-linux-v1\",\"sha256\":\"d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658\"},{\"name\":\"endpoint-hostisolationexceptionlist-linux-v1\",\"sha256\":\"d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658\"},{\"name\":\"endpoint-trustlist-linux-v1\",\"sha256\":\"d801aa1330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658\"}],\"version\":\"1.0.0\"}}}}},\"Events\":[{\"@timestamp\":\"2060-06-09T13:52:06.9710234Z\",\"_label\":\"script_executed\",\"_state\":0,\"event\":{\"action\":\"exec\",\"category\":[\"process\"],\"created\":\"2024-06-09T13:52:06.9710234Z\",\"id\":\"Na7UF0/g6QHP1vOo++++3Y8t\",\"kind\":\"event\",\"outcome\":\"unknown\",\"type\":[\"start\"]},\"group\":{\"Ext\":{\"real\":{\"id\":1006,\"name\":\"admin\"}},\"id\":1006,\"name\":\"admin\"},\"message\":\"Endpoint process event\",\"process\":{\"Ext\":{\"ancestry\":[\"YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0\",\"YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MS0xNzE3OTQxMTIx\",\"YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx\",\"YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE4OS0xNzE3OTQxMTIx\",\"YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw\",\"YYYYYY4NDYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ==\"]},\"args\":[\"/tmp/bash\",\"exec(base64.b64decode*abcdef)\"],\"args_count\":2,\"command_line\":\"/tmp/bash exec(base64.b64decode*abcdef)\",\"entity_id\":\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2\",\"entry_leader\":{\"args\":[\"/usr/sbin/cron\",\"-f\"],\"args_count\":2,\"entity_id\":\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw\",\"entry_meta\":{\"type\":\"init\"},\"executable\":\"/usr/sbin/cron\",\"group\":{\"id\":0,\"name\":\"root\"},\"interactive\":false,\"name\":\"cron\",\"parent\":{\"entity_id\":\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ==\",\"pid\":1,\"start\":\"2024-06-07T01:17:01.19Z\"},\"pid\":895,\"real_group\":{\"id\":0,\"name\":\"root\"},\"real_user\":{\"id\":0,\"name\":\"root\"},\"same_as_process\":false,\"start\":\"2024-06-07T01:17:10.36Z\",\"user\":{\"id\":0,\"name\":\"root\"},\"working_directory\":\"/var/spool/cron\"},\"env_vars\":[],\"executable\":\"/tmp/bash\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"group_leader\":{\"args\":[\"/bin/sh\",\"-c\",\"/tmp/rta-random-attack.sh \\u003e /tmp/rta-random.log 2\\u003e\\u00261\"],\"args_count\":3,\"entity_id\":\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx\",\"executable\":\"/bin/sh\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"interactive\":false,\"name\":\"sh\",\"pid\":141190,\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"same_as_process\":false,\"start\":\"2024-06-09T13:52:01.51Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin\"},\"hash\":{\"md5\":\"f9bf2d21a340f2b3ee534fba5b29e417\",\"sha1\":\"21a5d9c728d069ba6239c1da751a2f31fba9b1aa\",\"sha256\":\"d9df3091f6093bd9a7b308e536fbc285aeef2c5139577cc96bc594a4845f0e13\"},\"interactive\":false,\"name\":\"bash\",\"parent\":{\"args\":[\"python3\",\"-m\",\"rta\",\"-n\",\"empire_stager\"],\"args_count\":5,\"command_line\":\"python3 -m rta -n empire_stager\",\"entity_id\":\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0\",\"executable\":\"/usr/bin/python3\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"interactive\":false,\"name\":\"python3\",\"pid\":141205,\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"start\":\"2024-06-09T13:52:04.27Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin/detection-rules\"},\"pid\":141206,\"previous\":[{\"args\":[\"python3\",\"-m\",\"rta\",\"-n\",\"empire_stager\"],\"args_count\":5,\"executable\":\"/usr/bin/python3\"}],\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"session_leader\":{\"args\":[\"/bin/sh\",\"-c\",\"/tmp/rta-random-attack.sh \\u003e /tmp/rta-random.log 2\\u003e\\u00261\"],\"args_count\":3,\"entity_id\":\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx\",\"executable\":\"/bin/sh\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"interactive\":false,\"name\":\"sh\",\"pid\":141190,\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"same_as_process\":false,\"start\":\"2024-06-09T13:52:01.51Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin\"},\"start\":\"2024-06-09T13:52:06.94Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"thread\":{\"capabilities\":{\"effective\":[],\"permitted\":[]}},\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin/detection-rules\"},\"user\":{\"Ext\":{\"real\":{\"id\":1005,\"name\":\"admin\"}},\"id\":1005,\"name\":\"admin\"}}],\"Responses\":[{\"@timestamp\":\"2060-06-09T13:52:07.403464561Z\",\"action\":{\"action\":\"kill_process\",\"field\":\"process.entity_id\",\"state\":0},\"message\":\"Success\",\"process\":{\"entity_id\":\"YyyyyyyYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2\",\"name\":\"bash\",\"pid\":141206},\"result\":0}],\"agent\":{\"build\":{\"original\":\"version: 8.13.0, compiled: Wed Mar 20 20:00:00 2024, branch: HEAD, commit: f90579240155fc17f659ed37f7864ab1194ed2ea\"},\"id\":\"abcd-513b-4526-a34a-e229a6f15dff\",\"type\":\"endpoint\",\"version\":\"8.13.0\"},\"ecs\":{\"version\":\"8.10.0\"},\"elastic\":{\"agent\":{\"id\":\"abcd-513b-4526-a34a-e229a6f15dff\"}},\"event.action\":\"rule_detection\",\"event.agent_id_status\":\"verified\",\"event.category\":[\"malware\",\"intrusion_detection\"],\"event.code\":\"behavior\",\"event.created\":\"2024-06-09T13:52:07.402627721Z\",\"event.id\":\"Na7UF0/g6Q++++3Y96\",\"event.ingested\":\"2024-06-09T13:52:08Z\",\"event.kind\":\"signal\",\"event.outcome\":\"success\",\"event.risk_score\":73,\"event.sequence\":600720,\"event.severity\":73,\"event.type\":[\"info\",\"allowed\"],\"group\":{\"Ext\":{\"real\":{\"id\":1006,\"name\":\"admin\"}},\"id\":1006,\"name\":\"admin\"},\"host\":{\"architecture\":\"x86_64\",\"hostname\":\"siem-linux-release-sec-bis\",\"id\":\"aaaad59dd2c858c4f9b5d50c4a0e7d7\",\"ip\":[\"127.0.0.1\",\"::1\",\"89.160.20.156\"],\"mac\":[\"AA-FF-AA-FF-00-02\"],\"name\":\"siem-linux-release-sec-bis\",\"os\":{\"Ext\":{\"variant\":\"Debian\"},\"family\":\"debian\",\"full\":\"Debian 11.9\",\"kernel\":\"5.10.0-29-cloud-amd64 #1 SMP Debian 5.10.216-1 (2024-05-03)\",\"name\":\"Linux\",\"platform\":\"debian\",\"type\":\"linux\",\"version\":\"11.9\"},\"risk\":{\"calculated_level\":\"Critical\",\"calculated_score_norm\":98.00494}},\"kibana.alert.ancestors\":[{\"depth\":0,\"id\":\"f3PTBcu\",\"index\":\".ds-logs-endpoint.alerts-default-2024.05.18-002\",\"type\":\"event\"}],\"kibana.alert.depth\":1,\"kibana.alert.last_detected\":\"2024-06-09T13:56:03.235Z\",\"kibana.alert.original_event.action\":\"rule_detection\",\"kibana.alert.original_event.agent_id_status\":\"verified\",\"kibana.alert.original_event.category\":[\"malware\",\"intrusion_detection\"],\"kibana.alert.original_event.code\":\"behavior\",\"kibana.alert.original_event.created\":\"2024-06-09T13:52:07.402627721Z\",\"kibana.alert.original_event.dataset\":\"endpoint.alerts\",\"kibana.alert.original_event.id\":\"Na7UF0/abcddd++++3Y96\",\"kibana.alert.original_event.ingested\":\"2024-06-09T13:52:08Z\",\"kibana.alert.original_event.kind\":\"alert\",\"kibana.alert.original_event.module\":\"endpoint\",\"kibana.alert.original_event.outcome\":\"success\",\"kibana.alert.original_event.risk_score\":73,\"kibana.alert.original_event.sequence\":600720,\"kibana.alert.original_event.severity\":73,\"kibana.alert.original_event.type\":[\"info\",\"allowed\"],\"kibana.alert.original_time\":\"2024-06-09T13:52:07.402Z\",\"kibana.alert.reason\":\"malware, intrusion_detection event with process bash, parent process python3, by admin on siem-linux-release-sec-bis created high alert Malicious Behavior Prevention Alert: Empire Stager Execution.\",\"kibana.alert.risk_score\":73,\"kibana.alert.rule.actions\":[],\"kibana.alert.rule.author\":[\"Elastic\"],\"kibana.alert.rule.category\":\"Custom Query Rule\",\"kibana.alert.rule.consumer\":\"siem\",\"kibana.alert.rule.created_at\":\"2024-04-18T11:06:23.900Z\",\"kibana.alert.rule.created_by\":\"elastic\",\"kibana.alert.rule.description\":\"Generates a detection alert each time an Elastic Endpoint Security alert is received. Enabling this rule allows you to immediately begin investigating your Endpoint alerts.\",\"kibana.alert.rule.enabled\":true,\"kibana.alert.rule.exceptions_list\":[{\"id\":\"endpoint_list\",\"list_id\":\"endpoint_list\",\"namespace_type\":\"agnostic\",\"type\":\"endpoint\"}],\"kibana.alert.rule.execution.uuid\":\"abcd-fda4-40dc-8586-f3d0fa908bc4\",\"kibana.alert.rule.false_positives\":[],\"kibana.alert.rule.from\":\"now-10m\",\"kibana.alert.rule.immutable\":true,\"kibana.alert.rule.indices\":[\"logs-endpoint.alerts-*\"],\"kibana.alert.rule.interval\":\"5m\",\"kibana.alert.rule.license\":\"Elastic License v2\",\"kibana.alert.rule.max_signals\":10000,\"kibana.alert.rule.name\":\"Malicious Behavior Prevention Alert: Empire Stager Execution\",\"kibana.alert.rule.parameters\":{\"author\":[\"Elastic\"],\"description\":\"Generates a detection alert each time an Elastic Endpoint Security alert is received. Enabling this rule allows you to immediately begin investigating your Endpoint alerts.\",\"exceptions_list\":[{\"id\":\"endpoint_list\",\"list_id\":\"endpoint_list\",\"namespace_type\":\"agnostic\",\"type\":\"endpoint\"}],\"false_positives\":[],\"from\":\"now-10m\",\"immutable\":true,\"index\":[\"logs-endpoint.alerts-*\"],\"language\":\"kuery\",\"license\":\"Elastic License v2\",\"max_signals\":10000,\"query\":\"event.kind:alert and event.module:(endpoint and not endgame)\\n\",\"references\":[],\"related_integrations\":[{\"package\":\"endpoint\",\"version\":\"^8.2.0\"}],\"required_fields\":[{\"ecs\":true,\"name\":\"event.kind\",\"type\":\"keyword\"},{\"ecs\":true,\"name\":\"event.module\",\"type\":\"keyword\"}],\"risk_score\":47,\"risk_score_mapping\":[{\"field\":\"event.risk_score\",\"operator\":\"equals\",\"value\":\"\"}],\"rule_id\":\"abcdef-0b5f-4c3d-8305-a268d404c306\",\"rule_name_override\":\"message\",\"setup\":\"## Setup\\n\\nThis rule is configured to generate more **Max alerts per run** than the default 1000 alerts per run set for all rules. This is to ensure that it captures as many alerts as possible.\\n\\n**IMPORTANT:** The rule's **Max alerts per run** setting can be superseded by the xpack.alerting.rules.run.alerts.max Kibana config setting, which determines the maximum alerts generated by _any_ rule in the Kibana alerting framework. For example, if xpack.alerting.rules.run.alerts.max is set to 1000, this rule will still generate no more than 1000 alerts even if its own **Max alerts per run** is set higher.\\n\\nTo make sure this rule can generate as many alerts as it's configured in its own **Max alerts per run** setting, increase the xpack.alerting.rules.run.alerts.max system setting accordingly.\\n\\n**NOTE:** Changing xpack.alerting.rules.run.alerts.max is not possible in Serverless projects.\",\"severity\":\"medium\",\"severity_mapping\":[{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"low\",\"value\":\"21\"},{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"medium\",\"value\":\"47\"},{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"high\",\"value\":\"73\"},{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"critical\",\"value\":\"99\"}],\"threat\":[],\"timestamp_override\":\"event.ingested\",\"to\":\"now\",\"type\":\"query\",\"version\":103},\"kibana.alert.rule.producer\":\"siem\",\"kibana.alert.rule.references\":[],\"kibana.alert.rule.revision\":1,\"kibana.alert.rule.risk_score\":47,\"kibana.alert.rule.risk_score_mapping\":[{\"field\":\"event.risk_score\",\"operator\":\"equals\",\"value\":\"\"}],\"kibana.alert.rule.rule_id\":\"9a1a2dae-0b5f-4c3d-8305-a268d404c306\",\"kibana.alert.rule.rule_name_override\":\"message\",\"kibana.alert.rule.rule_type_id\":\"siem.queryRule\",\"kibana.alert.rule.severity\":\"medium\",\"kibana.alert.rule.severity_mapping\":[{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"low\",\"value\":\"21\"},{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"medium\",\"value\":\"47\"},{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"high\",\"value\":\"73\"},{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"critical\",\"value\":\"99\"}],\"kibana.alert.rule.tags\":[\"Data Source: Elastic Defend\"],\"kibana.alert.rule.threat\":[],\"kibana.alert.rule.timestamp_override\":\"event.ingested\",\"kibana.alert.rule.to\":\"now\",\"kibana.alert.rule.type\":\"query\",\"kibana.alert.rule.updated_at\":\"2024-05-20T01:03:43.962Z\",\"kibana.alert.rule.updated_by\":\"elastic\",\"kibana.alert.rule.uuid\":\"abcd-3ea9-4695-9a1b-4af87bead73e\",\"kibana.alert.rule.version\":103,\"kibana.alert.severity\":\"high\",\"kibana.alert.start\":\"2024-06-09T13:56:03.235Z\",\"kibana.alert.status\":\"active\",\"kibana.alert.url\":\"https://release-app/app/security/alerts/redirect/abcd?index=.alerts-security.alerts-default×tamp=2024-06-09T13:56:03.205Z\",\"kibana.alert.uuid\":\"abcdef123\",\"kibana.alert.workflow_assignee_ids\":[],\"kibana.alert.workflow_status\":\"open\",\"kibana.alert.workflow_tags\":[],\"kibana.space_ids\":[\"default\"],\"kibana.version\":\"8.14.0\",\"message\":\"Malicious Behavior Prevention Alert: Empire Stager Execution\",\"process\":{\"Ext\":{\"ancestry\":[\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0\",\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MS0xNzE3OTQxMTIx\",\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx\",\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE4OS0xNzE3OTQxMTIx\",\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw\",\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ==\"]},\"args\":[\"/tmp/bash\",\"exec(base64.b64decode*abcdef)\"],\"args_count\":2,\"command_line\":\"/tmp/bash exec(base64.b64decode*abcdef)\",\"entity_id\":\"YYYYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2\",\"entry_leader\":{\"args\":[\"/usr/sbin/cron\",\"-f\"],\"args_count\":2,\"entity_id\":\"YYYYYYYYYTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw\",\"entry_meta\":{\"type\":\"init\"},\"executable\":\"/usr/sbin/cron\",\"group\":{\"id\":0,\"name\":\"root\"},\"interactive\":false,\"name\":\"cron\",\"parent\":{\"entity_id\":\"ABCDEFYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ==\",\"pid\":1,\"start\":\"2024-06-07T01:17:01.19Z\"},\"pid\":895,\"real_group\":{\"id\":0,\"name\":\"root\"},\"real_user\":{\"id\":0,\"name\":\"root\"},\"same_as_process\":false,\"start\":\"2024-06-07T01:17:10.36Z\",\"user\":{\"id\":0,\"name\":\"root\"},\"working_directory\":\"/var/spool/cron\"},\"env_vars\":[],\"executable\":\"/tmp/bash\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"group_leader\":{\"args\":[\"/bin/sh\",\"-c\",\"/tmp/rta-random-attack.sh \\u003e /tmp/rta-random.log 2\\u003e\\u00261\"],\"args_count\":3,\"entity_id\":\"ABCDEFGEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx\",\"executable\":\"/bin/sh\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"interactive\":false,\"name\":\"sh\",\"pid\":141190,\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"same_as_process\":false,\"start\":\"2024-06-09T13:52:01.51Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin\"},\"hash\":{\"md5\":\"ABCDf2d21a340f2b3ee534fba5b29e417\",\"sha1\":\"ABCDc728d069ba6239c1da751a2f31fba9b1aa\",\"sha256\":\"ABCD3091f6093bd9a7b308e536fbc285aeef2c5139577cc96bc594a4845f0e13\"},\"interactive\":false,\"name\":\"bash\",\"parent\":{\"args\":[\"python3\",\"-m\",\"rta\",\"-n\",\"empire_stager\"],\"args_count\":5,\"command_line\":\"python3 -m rta -n empire_stager\",\"entity_id\":\"YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0\",\"executable\":\"/usr/bin/python3\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"interactive\":false,\"name\":\"python3\",\"pid\":141205,\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"start\":\"2024-06-09T13:52:04.27Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin/detection-rules\"},\"pid\":141206,\"previous\":[{\"args\":[\"python3\",\"-m\",\"rta\",\"-n\",\"empire_stager\"],\"args_count\":5,\"executable\":\"/usr/bin/python3\"}],\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"session_leader\":{\"args\":[\"/bin/sh\",\"-c\",\"/tmp/rta-random-attack.sh \\u003e /tmp/rta-random.log 2\\u003e\\u00261\"],\"args_count\":3,\"entity_id\":\"ABCDEYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx\",\"executable\":\"/bin/sh\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"interactive\":false,\"name\":\"sh\",\"pid\":141190,\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"real_user\":{\"id\":1005,\"name\":\"admin\"},\"same_as_process\":false,\"start\":\"2024-06-09T13:52:01.51Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin\"},\"start\":\"2024-06-09T13:52:06.94Z\",\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"},{\"id\":30,\"name\":\"dip\"},{\"id\":44,\"name\":\"video\"},{\"id\":46,\"name\":\"plugdev\"},{\"id\":1000,\"name\":\"google-sudoers\"}],\"thread\":{\"capabilities\":{\"effective\":[],\"permitted\":[]}},\"user\":{\"id\":1005,\"name\":\"admin\"},\"working_directory\":\"/home/admin/detection-rules\"},\"rule\":{\"description\":\"Identifies when a script interpreter executes a base64-encoded Empire stager. Empire is penetration testing software that is often utilized by attackers.\",\"id\":\"ABCD-82ff-4743-9e07-1c6901b1f0ea\",\"name\":\"Empire Stager Execution\",\"reference\":[\"https://github.com/abc/emp\",\"https://github.com/BC-abcd/emp\"],\"ruleset\":\"production\",\"version\":\"1.0.29\"},\"threat\":[{\"framework\":\"MITRE ATT\\u0026CK\",\"tactic\":{\"id\":\"TA0002\",\"name\":\"Execution\",\"reference\":\"https://attack.mitre.org/tactics/TA0002/\"},\"technique\":[{\"id\":\"T1059\",\"name\":\"Command and Scripting Interpreter\",\"reference\":\"https://attack.mitre.org/techniques/T1059/\",\"subtechnique\":[{\"id\":\"T1059.004\",\"name\":\"Unix Shell\",\"reference\":\"https://attack.mitre.org/techniques/T1059/004/\"},{\"id\":\"T1059.006\",\"name\":\"Python\",\"reference\":\"https://attack.mitre.org/techniques/T1059/006/\"}]}]},{\"framework\":\"MITRE ATT\\u0026CK\",\"tactic\":{\"id\":\"TA0011\",\"name\":\"Command and Control\",\"reference\":\"https://attack.mitre.org/tactics/TA0011/\"},\"technique\":[{\"id\":\"T1132\",\"name\":\"Data Encoding\",\"reference\":\"https://attack.mitre.org/techniques/T1132/\",\"subtechnique\":[{\"id\":\"T1132.001\",\"name\":\"Standard Encoding\",\"reference\":\"https://attack.mitre.org/techniques/T1132/001/\"}]}]}],\"user\":{\"Ext\":{\"real\":{\"id\":1005,\"name\":\"admin\"}},\"id\":1005,\"name\":\"admin\",\"risk\":{\"calculated_level\":\"Critical\",\"calculated_score_norm\":98.13564}}}",
+        "original": "{\"@timestamp\":\"2022-06-09T13:56:03.205Z\",\"Endpoint\":{\"policy\":{\"applied\":{\"artifacts\":{\"global\":{\"identifiers\":[{\"name\":\"diagnostic-configuration-v1\",\"sha256\":\"BBBBB40ca79cf0e165053daac3e4df8b428dea81c8d20edefca330d77bc0958c1\"}],\"snapshot\":\"latest\",\"update_age\":0,\"version\":\"1.0.1049\"},\"user\":{\"identifiers\":[{\"name\":\"endpoint-blocklist-linux-v1\",\"sha256\":\"d801aacc330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658\"}],\"version\":\"1.0.0\"}}}}},\"Events\":[{\"@timestamp\":\"2022-06-09T13:52:06.9710234Z\",\"_label\":\"script_executed\",\"_state\":0,\"event\":{\"action\":\"exec\",\"category\":[\"process\"],\"created\":\"2024-06-09T13:52:06.9710234Z\",\"id\":\"Na7UF0/g6QHP1vOo++++3Y8t\",\"kind\":\"event\",\"outcome\":\"unknown\",\"type\":[\"start\"]},\"group\":{\"Ext\":{\"real\":{\"id\":1006,\"name\":\"admin\"}},\"id\":1006,\"name\":\"admin\"},\"message\":\"Endpoint process event\",\"user\":{\"Ext\":{\"real\":{\"id\":1005,\"name\":\"admin\"}},\"id\":1005,\"name\":\"admin\"}}],\"Responses\":[{\"@timestamp\":\"2022-06-09T13:52:07.403464561Z\",\"action\":{\"action\":\"kill_process\",\"field\":\"process.entity_id\",\"state\":0},\"message\":\"Success\",\"process\":{\"entity_id\":\"YyyyyyyYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2\",\"name\":\"bash\",\"pid\":141206},\"result\":0}],\"agent\":{\"build\":{\"original\":\"version: 8.13.0, compiled: Wed Mar 20 20:00:00 2022, branch: HEAD, commit: f90579240155fc17f659ed37f7864ab1194ed2ea\"},\"id\":\"abcd-513b-4526-a34a-e229a6f15dff\",\"type\":\"endpoint\",\"version\":\"8.13.0\"},\"ecs\":{\"version\":\"8.10.0\"},\"elastic\":{\"agent\":{\"id\":\"abcd-513b-4526-a34a-e229a6f15dff\"}},\"event.action\":\"rule_detection\",\"event.agent_id_status\":\"verified\",\"event.category\":[\"malware\",\"intrusion_detection\"],\"event.code\":\"behavior\",\"event.created\":\"2024-06-09T13:52:07.402627721Z\",\"event.id\":\"Na7UF0/g6Q++++3Y96\",\"event.ingested\":\"2024-06-09T13:52:08Z\",\"event.kind\":\"signal\",\"event.outcome\":\"success\",\"event.risk_score\":73,\"event.sequence\":600720,\"event.severity\":73,\"event.type\":[\"info\",\"allowed\"],\"group\":{\"Ext\":{\"real\":{\"id\":1006,\"name\":\"admin\"}},\"id\":1006,\"name\":\"admin\"},\"host\":{\"architecture\":\"x86_64\",\"hostname\":\"siem-linux-release-sec-bis\",\"id\":\"aaaad59dd2c858c4f9b5d50c4a0e7d7\",\"ip\":[\"127.0.0.1\",\"::1\",\"89.160.20.156\"],\"mac\":[\"AA-FF-AA-FF-00-02\"],\"name\":\"siem-linux-release-sec-bis\",\"os\":{\"Ext\":{\"variant\":\"Debian\"},\"family\":\"debian\",\"full\":\"Debian 11.9\",\"kernel\":\"5.10.0-29-cloud-amd64 #1 SMP Debian 5.10.216-1 (2024-05-03)\",\"name\":\"Linux\",\"platform\":\"debian\",\"type\":\"linux\",\"version\":\"11.9\"},\"risk\":{\"calculated_level\":\"Critical\",\"calculated_score_norm\":98.00494}},\"kibana.alert.ancestors\":[{\"depth\":0,\"id\":\"f3PTBcu\",\"index\":\".ds-logs-endpoint.alerts-default-2024.05.18-002\",\"type\":\"event\"}],\"kibana.alert.depth\":1,\"kibana.alert.last_detected\":\"2022-06-09T13:56:03.235Z\",\"kibana.alert.original_event.action\":\"rule_detection\",\"kibana.alert.original_event.agent_id_status\":\"verified\",\"kibana.alert.original_event.category\":[\"malware\",\"intrusion_detection\"],\"kibana.alert.original_event.code\":\"behavior\",\"kibana.alert.original_event.created\":\"2024-06-09T13:52:07.402627721Z\",\"kibana.alert.original_event.dataset\":\"endpoint.alerts\",\"kibana.alert.original_event.id\":\"Na7UF0/abcddd++++3Y96\",\"kibana.alert.original_event.ingested\":\"2024-06-09T13:52:08Z\",\"kibana.alert.original_event.kind\":\"alert\",\"kibana.alert.original_event.module\":\"endpoint\",\"kibana.alert.original_event.outcome\":\"success\",\"kibana.alert.original_event.risk_score\":73,\"kibana.alert.original_event.sequence\":600720,\"kibana.alert.original_event.severity\":73,\"kibana.alert.original_event.type\":[\"info\",\"allowed\"],\"kibana.alert.original_time\":\"2024-06-09T13:52:07.402Z\",\"kibana.alert.reason\":\"malware, intrusion_detection event with process bash, parent process python3, by admin on siem-linux-release-sec-bis created high alert Malicious Behavior Prevention Alert: Empire Stager Execution.\",\"kibana.alert.risk_score\":73,\"kibana.alert.rule.actions\":[],\"kibana.alert.rule.author\":[\"Elastic\"],\"kibana.alert.rule.category\":\"Custom Query Rule\",\"kibana.alert.rule.consumer\":\"siem\",\"kibana.alert.rule.created_at\":\"2024-04-18T11:06:23.900Z\",\"kibana.alert.rule.created_by\":\"elastic\",\"kibana.alert.rule.description\":\"Generates a detection alert each time an Elastic Endpoint Security alert is received. Enabling this rule allows you to immediately begin investigating your Endpoint alerts.\",\"kibana.alert.rule.enabled\":true,\"kibana.alert.rule.exceptions_list\":[{\"id\":\"endpoint_list\",\"list_id\":\"endpoint_list\",\"namespace_type\":\"agnostic\",\"type\":\"endpoint\"}],\"kibana.alert.rule.execution.uuid\":\"abcd-fda4-40dc-8586-f3d0fa908bc4\",\"kibana.alert.rule.false_positives\":[],\"kibana.alert.rule.from\":\"now-10m\",\"kibana.alert.rule.immutable\":true,\"kibana.alert.rule.indices\":[\"logs-endpoint.alerts-*\"],\"kibana.alert.rule.interval\":\"5m\",\"kibana.alert.rule.license\":\"Elastic License v2\",\"kibana.alert.rule.max_signals\":10000,\"kibana.alert.rule.name\":\"Malicious Behavior Prevention Alert: Empire Stager Execution\",\"kibana.alert.rule.parameters\":{\"author\":[\"Elastic\"],\"description\":\"Generates a detection alert each time an Elastic Endpoint Security alert is received. Enabling this rule allows you to immediately begin investigating your Endpoint alerts.\",\"false_positives\":[],\"from\":\"now-10m\",\"immutable\":true,\"index\":[\"logs-endpoint.alerts-*\"],\"language\":\"kuery\",\"license\":\"Elastic License v2\",\"max_signals\":10000,\"query\":\"event.kind:alert and event.module:(endpoint and not endgame)\\n\",\"references\":[],\"risk_score\":47,\"risk_score_mapping\":[{\"field\":\"event.risk_score\",\"operator\":\"equals\",\"value\":\"\"}],\"rule_id\":\"abcdef-0b5f-4c3d-8305-a268d404c306\",\"rule_name_override\":\"message\",\"setup\":\"## Setup\\n\\nThis rule is configured to generate more **Max alerts per run** than the default 1000 alerts per run set for all rules. This is to ensure that it captures as many alerts as possible.\\n\\n**IMPORTANT:** The rule's **Max alerts per run** setting can be superseded by the xpack.alerting.rules.run.alerts.max Kibana config setting, which determines the maximum alerts generated by _any_ rule in the Kibana alerting framework. For example, if xpack.alerting.rules.run.alerts.max is set to 1000, this rule will still generate no more than 1000 alerts even if its own **Max alerts per run** is set higher.\\n\\nTo make sure this rule can generate as many alerts as it's configured in its own **Max alerts per run** setting, increase the xpack.alerting.rules.run.alerts.max system setting accordingly.\\n\\n**NOTE:** Changing xpack.alerting.rules.run.alerts.max is not possible in Serverless projects.\",\"severity\":\"medium\",\"severity_mapping\":[{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"low\",\"value\":\"21\"}],\"threat\":[],\"timestamp_override\":\"event.ingested\",\"to\":\"now\",\"type\":\"query\",\"version\":103},\"kibana.alert.rule.producer\":\"siem\",\"kibana.alert.rule.references\":[],\"kibana.alert.rule.revision\":1,\"kibana.alert.rule.risk_score\":47,\"kibana.alert.rule.risk_score_mapping\":[{\"field\":\"event.risk_score\",\"operator\":\"equals\",\"value\":\"\"}],\"kibana.alert.rule.rule_id\":\"9a1a2dae-0b5f-4c3d-8305-a268d404c306\",\"kibana.alert.rule.rule_name_override\":\"message\",\"kibana.alert.rule.rule_type_id\":\"siem.queryRule\",\"kibana.alert.rule.severity\":\"medium\",\"kibana.alert.rule.severity_mapping\":[{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"low\",\"value\":\"21\"}],\"kibana.alert.rule.tags\":[\"Data Source: Elastic Defend\"],\"kibana.alert.rule.threat\":[],\"kibana.alert.rule.timestamp_override\":\"event.ingested\",\"kibana.alert.rule.to\":\"now\",\"kibana.alert.rule.type\":\"query\",\"kibana.alert.rule.updated_at\":\"2024-05-20T01:03:43.962Z\",\"kibana.alert.rule.updated_by\":\"elastic\",\"kibana.alert.rule.uuid\":\"abcd-3ea9-4695-9a1b-4af87bead73e\",\"kibana.alert.rule.version\":103,\"kibana.alert.severity\":\"high\",\"kibana.alert.start\":\"2022-06-09T13:56:03.235Z\",\"kibana.alert.status\":\"active\",\"kibana.alert.url\":\"https://release-app/app/security/alerts/redirect/abcd?index=.alerts-security.alerts-default×tamp=2024-06-09T13:56:03.205Z\",\"kibana.alert.uuid\":\"abcdef123\",\"kibana.alert.workflow_assignee_ids\":[],\"kibana.alert.workflow_status\":\"open\",\"kibana.alert.workflow_tags\":[],\"kibana.space_ids\":[\"default\"],\"kibana.version\":\"8.14.0\",\"message\":\"Malicious Behavior Prevention Alert: Empire Stager Execution\",\"process\":{\"args\":[\"/tmp/bash\",\"exec(base64.b64decode*abcdef)\"],\"args_count\":2,\"command_line\":\"/tmp/bash exec(base64.b64decode*abcdef)\",\"entity_id\":\"YYYYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2\",\"env_vars\":[],\"executable\":\"/tmp/bash\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"hash\":{\"md5\":\"ABCDf2d21a340f2b3ee534fba5b29e417\",\"sha1\":\"ABCDc728d069ba6239c1da751a2f31fba9b1aa\",\"sha256\":\"ABCD3091f6093bd9a7b308e536fbc285aeef2c5139577cc96bc594a4845f0e13\"},\"name\":\"bash\",\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"}],\"user\":{\"id\":1005,\"name\":\"admin\"}},\"rule\":{\"description\":\"Identifies when a script interpreter executes a base64-encoded Empire stager. Empire is penetration testing software that is often utilized by attackers.\",\"id\":\"ABCD-82ff-4743-9e07-1c6901b1f0ea\",\"name\":\"Empire Stager Execution\",\"reference\":[\"https://github.com/abc/emp\",\"https://github.com/BC-abcd/emp\"],\"ruleset\":\"production\",\"version\":\"1.0.29\"},\"threat\":[{\"framework\":\"MITRE ATT\\u0026CK\",\"tactic\":{\"id\":\"TA0011\",\"name\":\"Command and Control\",\"reference\":\"https://attack.mitre.org/tactics/TA0011/\"},\"technique\":[{\"id\":\"T1132\",\"name\":\"Data Encoding\",\"reference\":\"https://attack.mitre.org/techniques/T1132/\",\"subtechnique\":[{\"id\":\"T1132.001\",\"name\":\"Standard Encoding\",\"reference\":\"https://attack.mitre.org/techniques/T1132/001/\"}]}]}],\"user\":{\"Ext\":{\"real\":{\"id\":1005,\"name\":\"admin\"}},\"id\":1005,\"name\":\"admin\",\"risk\":{\"calculated_level\":\"Critical\",\"calculated_score_norm\":98.13564}}}",
         "outcome": "success",
         "risk_score": 73,
         "sequence": 600720,
@@ -606,7 +246,7 @@ An example event for `alert` looks as following:
                 }
             ],
             "depth": 1,
-            "last_detected": "2024-06-09T13:56:03.235Z",
+            "last_detected": "2022-06-09T13:56:03.235Z",
             "original_event": {
                 "action": "rule_detection",
                 "agent_id_status": "verified",
@@ -668,14 +308,6 @@ An example event for `alert` looks as following:
                         "Elastic"
                     ],
                     "description": "Generates a detection alert each time an Elastic Endpoint Security alert is received. Enabling this rule allows you to immediately begin investigating your Endpoint alerts.",
-                    "exceptions_list": [
-                        {
-                            "id": "endpoint_list",
-                            "list_id": "endpoint_list",
-                            "namespace_type": "agnostic",
-                            "type": "endpoint"
-                        }
-                    ],
                     "from": "now-10m",
                     "immutable": true,
                     "index": [
@@ -685,24 +317,6 @@ An example event for `alert` looks as following:
                     "license": "Elastic License v2",
                     "max_signals": 10000,
                     "query": "event.kind:alert and event.module:(endpoint and not endgame)\n",
-                    "related_integrations": [
-                        {
-                            "package": "endpoint",
-                            "version": "^8.2.0"
-                        }
-                    ],
-                    "required_fields": [
-                        {
-                            "ecs": true,
-                            "name": "event.kind",
-                            "type": "keyword"
-                        },
-                        {
-                            "ecs": true,
-                            "name": "event.module",
-                            "type": "keyword"
-                        }
-                    ],
                     "risk_score": 47,
                     "risk_score_mapping": [
                         {
@@ -720,24 +334,6 @@ An example event for `alert` looks as following:
                             "operator": "equals",
                             "severity": "low",
                             "value": "21"
-                        },
-                        {
-                            "field": "event.severity",
-                            "operator": "equals",
-                            "severity": "medium",
-                            "value": "47"
-                        },
-                        {
-                            "field": "event.severity",
-                            "operator": "equals",
-                            "severity": "high",
-                            "value": "73"
-                        },
-                        {
-                            "field": "event.severity",
-                            "operator": "equals",
-                            "severity": "critical",
-                            "value": "99"
                         }
                     ],
                     "timestamp_override": "event.ingested",
@@ -764,24 +360,6 @@ An example event for `alert` looks as following:
                         "operator": "equals",
                         "severity": "low",
                         "value": "21"
-                    },
-                    {
-                        "field": "event.severity",
-                        "operator": "equals",
-                        "severity": "medium",
-                        "value": "47"
-                    },
-                    {
-                        "field": "event.severity",
-                        "operator": "equals",
-                        "severity": "high",
-                        "value": "73"
-                    },
-                    {
-                        "field": "event.severity",
-                        "operator": "equals",
-                        "severity": "critical",
-                        "value": "99"
                     }
                 ],
                 "tags": [
@@ -796,7 +374,7 @@ An example event for `alert` looks as following:
                 "version": 103
             },
             "severity": "high",
-            "start": "2024-06-09T13:56:03.235Z",
+            "start": "2022-06-09T13:56:03.235Z",
             "status": "active",
             "url": "https://release-app/app/security/alerts/redirect/abcd?index=.alerts-security.alerts-default×tamp=2024-06-09T13:56:03.205Z",
             "uuid": "abcdef123",
@@ -809,16 +387,6 @@ An example event for `alert` looks as following:
     },
     "message": "Malicious Behavior Prevention Alert: Empire Stager Execution",
     "process": {
-        "Ext": {
-            "ancestry": [
-                "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0",
-                "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MS0xNzE3OTQxMTIx",
-                "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx",
-                "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE4OS0xNzE3OTQxMTIx",
-                "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw",
-                "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ=="
-            ]
-        },
         "args": [
             "/tmp/bash",
             "exec(base64.b64decode*abcdef)"
@@ -826,271 +394,31 @@ An example event for `alert` looks as following:
         "args_count": 2,
         "command_line": "/tmp/bash exec(base64.b64decode*abcdef)",
         "entity_id": "YYYYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2",
-        "entry_leader": {
-            "args": [
-                "/usr/sbin/cron",
-                "-f"
-            ],
-            "args_count": 2,
-            "entity_id": "YYYYYYYYYTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTg5NS0xNzE3NzIzMDMw",
-            "entry_meta": {
-                "type": "init"
-            },
-            "executable": "/usr/sbin/cron",
-            "group": {
-                "id": 0,
-                "name": "root"
-            },
-            "interactive": false,
-            "name": "cron",
-            "parent": {
-                "entity_id": "ABCDEFYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTEtMTcxNzcyMzAyMQ==",
-                "pid": 1,
-                "start": "2024-06-07T01:17:01.19Z"
-            },
-            "pid": 895,
-            "real_group": {
-                "id": 0,
-                "name": "root"
-            },
-            "real_user": {
-                "id": 0,
-                "name": "root"
-            },
-            "same_as_process": false,
-            "start": "2024-06-07T01:17:10.36Z",
-            "user": {
-                "id": 0,
-                "name": "root"
-            },
-            "working_directory": "/var/spool/cron"
-        },
         "executable": "/tmp/bash",
         "group": {
             "id": 1006,
             "name": "admin"
-        },
-        "group_leader": {
-            "args": [
-                "/bin/sh",
-                "-c",
-                "/tmp/rta-random-attack.sh > /tmp/rta-random.log 2>&1"
-            ],
-            "args_count": 3,
-            "entity_id": "ABCDEFGEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx",
-            "executable": "/bin/sh",
-            "group": {
-                "id": 1006,
-                "name": "admin"
-            },
-            "interactive": false,
-            "name": "sh",
-            "pid": 141190,
-            "real_group": {
-                "id": 1006,
-                "name": "admin"
-            },
-            "real_user": {
-                "id": 1005,
-                "name": "admin"
-            },
-            "same_as_process": false,
-            "start": "2024-06-09T13:52:01.51Z",
-            "supplemental_groups": [
-                {
-                    "id": 4,
-                    "name": "adm"
-                },
-                {
-                    "id": 30,
-                    "name": "dip"
-                },
-                {
-                    "id": 44,
-                    "name": "video"
-                },
-                {
-                    "id": 46,
-                    "name": "plugdev"
-                },
-                {
-                    "id": 1000,
-                    "name": "google-sudoers"
-                }
-            ],
-            "user": {
-                "id": 1005,
-                "name": "admin"
-            },
-            "working_directory": "/home/admin"
         },
         "hash": {
             "md5": "ABCDf2d21a340f2b3ee534fba5b29e417",
             "sha1": "ABCDc728d069ba6239c1da751a2f31fba9b1aa",
             "sha256": "ABCD3091f6093bd9a7b308e536fbc285aeef2c5139577cc96bc594a4845f0e13"
         },
-        "interactive": false,
         "name": "bash",
-        "parent": {
-            "args": [
-                "python3",
-                "-m",
-                "rta",
-                "-n",
-                "empire_stager"
-            ],
-            "args_count": 5,
-            "command_line": "python3 -m rta -n empire_stager",
-            "entity_id": "YYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNS0xNzE3OTQxMTI0",
-            "executable": "/usr/bin/python3",
-            "group": {
-                "id": 1006,
-                "name": "admin"
-            },
-            "interactive": false,
-            "name": "python3",
-            "pid": 141205,
-            "real_group": {
-                "id": 1006,
-                "name": "admin"
-            },
-            "real_user": {
-                "id": 1005,
-                "name": "admin"
-            },
-            "start": "2024-06-09T13:52:04.27Z",
-            "supplemental_groups": [
-                {
-                    "id": 4,
-                    "name": "adm"
-                },
-                {
-                    "id": 30,
-                    "name": "dip"
-                },
-                {
-                    "id": 44,
-                    "name": "video"
-                },
-                {
-                    "id": 46,
-                    "name": "plugdev"
-                },
-                {
-                    "id": 1000,
-                    "name": "google-sudoers"
-                }
-            ],
-            "user": {
-                "id": 1005,
-                "name": "admin"
-            },
-            "working_directory": "/home/admin/detection-rules"
-        },
-        "pid": 141206,
-        "previous": [
-            {
-                "args": [
-                    "python3",
-                    "-m",
-                    "rta",
-                    "-n",
-                    "empire_stager"
-                ],
-                "args_count": 5,
-                "executable": "/usr/bin/python3"
-            }
-        ],
         "real_group": {
             "id": 1006,
             "name": "admin"
         },
-        "real_user": {
-            "id": 1005,
-            "name": "admin"
-        },
-        "session_leader": {
-            "args": [
-                "/bin/sh",
-                "-c",
-                "/tmp/rta-random-attack.sh > /tmp/rta-random.log 2>&1"
-            ],
-            "args_count": 3,
-            "entity_id": "ABCDEYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTE5MC0xNzE3OTQxMTIx",
-            "executable": "/bin/sh",
-            "group": {
-                "id": 1006,
-                "name": "admin"
-            },
-            "interactive": false,
-            "name": "sh",
-            "pid": 141190,
-            "real_group": {
-                "id": 1006,
-                "name": "admin"
-            },
-            "real_user": {
-                "id": 1005,
-                "name": "admin"
-            },
-            "same_as_process": false,
-            "start": "2024-06-09T13:52:01.51Z",
-            "supplemental_groups": [
-                {
-                    "id": 4,
-                    "name": "adm"
-                },
-                {
-                    "id": 30,
-                    "name": "dip"
-                },
-                {
-                    "id": 44,
-                    "name": "video"
-                },
-                {
-                    "id": 46,
-                    "name": "plugdev"
-                },
-                {
-                    "id": 1000,
-                    "name": "google-sudoers"
-                }
-            ],
-            "user": {
-                "id": 1005,
-                "name": "admin"
-            },
-            "working_directory": "/home/admin"
-        },
-        "start": "2024-06-09T13:52:06.94Z",
         "supplemental_groups": [
             {
                 "id": 4,
                 "name": "adm"
-            },
-            {
-                "id": 30,
-                "name": "dip"
-            },
-            {
-                "id": 44,
-                "name": "video"
-            },
-            {
-                "id": 46,
-                "name": "plugdev"
-            },
-            {
-                "id": 1000,
-                "name": "google-sudoers"
             }
         ],
         "user": {
             "id": 1005,
             "name": "admin"
-        },
-        "working_directory": "/home/admin/detection-rules"
+        }
     },
     "rule": {
         "description": "Identifies when a script interpreter executes a base64-encoded Empire stager. Empire is penetration testing software that is often utilized by attackers.",
@@ -1104,8 +432,8 @@ An example event for `alert` looks as following:
         "version": "1.0.29"
     },
     "source_metadata": {
-        "_id": "fghiabcd",
-        "_index": "abcd-1234"
+        "_id": "xyzxyz123",
+        "_index": "efgh_1234"
     },
     "tags": [
         "preserve_original_event",
@@ -1113,33 +441,6 @@ An example event for `alert` looks as following:
         "elastic_security-alert"
     ],
     "threat": [
-        {
-            "framework": "MITRE ATT&CK",
-            "tactic": {
-                "id": "TA0002",
-                "name": "Execution",
-                "reference": "https://attack.mitre.org/tactics/TA0002/"
-            },
-            "technique": [
-                {
-                    "id": "T1059",
-                    "name": "Command and Scripting Interpreter",
-                    "reference": "https://attack.mitre.org/techniques/T1059/",
-                    "subtechnique": [
-                        {
-                            "id": "T1059.004",
-                            "name": "Unix Shell",
-                            "reference": "https://attack.mitre.org/techniques/T1059/004/"
-                        },
-                        {
-                            "id": "T1059.006",
-                            "name": "Python",
-                            "reference": "https://attack.mitre.org/techniques/T1059/006/"
-                        }
-                    ]
-                }
-            ]
-        },
         {
             "framework": "MITRE ATT&CK",
             "tactic": {

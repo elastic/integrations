@@ -19,19 +19,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      lang: painless
-      description: Script to remove message.
-      tag: script_remove_message
-      if: ctx.event?.original != null && ctx.message != null
-      source: |-
-        if(ctx.event.original == ctx.message) {
-          ctx.remove('message');
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original == ctx.message
   - remove:
       field:
         - organization
