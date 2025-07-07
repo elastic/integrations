@@ -13,7 +13,7 @@ For example, you could use the data from this integration to know which websites
 
 ## Data streams
 
-The Cloudflare Logpush integration collects logs for the following types of events. For more information on each dataset, refer to the [Logs reference](#logs-reference) section.
+The Cloudflare Logpush integration collects logs for the following types of events. For more information on each dataset, refer to the Logs reference section at the end of this page.
 
 ### Zero Trust events
 
@@ -179,7 +179,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
 7. Configure Cloudflare to send logs to the Elastic Agent via HTTP Endpoint, or any R2, AWS or GCS Bucket following the specific guides above.
 
-## Logs reference [logs-reference]
+## Logs reference
 
 ### access_request
 
