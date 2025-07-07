@@ -1,61 +1,64 @@
 # SQL input
 
-The SQL input package allows you to execute custom queries against an SQL database and store the results in Elasticsearch.
+The SQL input package allows you to run custom queries against an SQL database and store the results in Elasticsearch.
 
-This input package supports the below listed databases:
+This input package supports the following databases
 
 - MySQL
 - Oracle
 - Microsoft SQL
 - PostgreSQL
 
-## Configuration Options for the User:
+## Configuration options
 
 
-### Hosts: 
-The host configuration should be specified from where the metrics are to be fetched. It varies depending upon the driver you are running
+### Hosts
 
-#### MySQL: 
+The host configuration should be specified from where the metrics are to be fetched. It varies depending upon the driver you are running.
+
+#### MySQL
+
 The supported configuration takes this form
 - `<user>:<password>@tcp(<host>:<port>)/`
 
-Example of supported configuration is as below:
+Here is an example of the supported configuration:
 - `root:root@tcp(localhost:3306)/`
 
-#### Oracle: 
+#### Oracle 
 
-The following two types of host configurations are supported:
+Two types of host configurations are supported:
 
-1. Old style host configuration :
+- Old style host configuration
 
     a. `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
-    
     b. `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
 
-2. DSN host configuration:
+- DSN host configuration
 
     a. `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
-    
     b. `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
   
-#### MSSQL: 
+#### MSSQL
+
 The supported configuration takes this form
 - `sqlserver://<user>:<password>@<host>`
 
-Example of supported configurations is as below:
+Here is an example of the supported configuration:
 - `sqlserver://root:test@localhost`
 
-#### PostgreSQL: 
+#### PostgreSQL
+
 The supported configuration takes this form
 - `postgres://<user>:<password>@<connection_string>`
 
-Example of supported configuration is as below:
+Here is an example of the supported configuration 
 - `postgres://postgres:postgres@localhost:5432/stuff?sslmode=disable`
 
-Note: If the password contains the backslash (`\`) character, it must be escaped with a backslash. For example, if the password is `my\_password`, it should be written as `my\\_password`.
+NOTE: If the password includes a backslash (\), you need to escape it by adding another backslash. For example, my\_password should be written as my\\_password.
 
 ### Driver
-Specify the driver for which you want to run the queries. Below are the supported drivers:
+
+Specifies the driver for which you want to run the queries. These are the supported drivers:
 
 - mysql
 - oracle
@@ -63,9 +66,11 @@ Specify the driver for which you want to run the queries. Below are the supporte
 - postgres
 
 ### SQL_Queries
-Receives the list of queries to execute. query and response_format is repeated to get multiple query inputs.
 
-Eg:   
+Receives the list of queries to run. `query` and `response_format` is repeated to get multiple query inputs.
+
+For example:
+
 sql_queries: 
   - query: SHOW GLOBAL STATUS LIKE 'Innodb_system%'
     
@@ -92,7 +97,7 @@ This feature can be enabled using the `merge_results` config.
 `merge_results` can merge queries having response format as "variable". 
 However, for queries with a response format as "table", a merge is possible only if each table query produces a single row.
 
-For example, if we have 2 queries as below for PostgreSQL:
+For example, if we have the following queries for PostgreSQL:
 
 sql_queries:
   - query: "SELECT blks_hit,blks_read FROM pg_stat_database LIMIT 1;"
