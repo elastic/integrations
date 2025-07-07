@@ -4,6 +4,37 @@ Azure AI Foundry provides a comprehensive suite of AI services that enable devel
 
 ## Data streams
 
+### Logs
+
+The Azure AI Foundry logs data stream captures the gateway log events.
+
+These are the supported Azure log categories:
+
+| Data Stream |       Log Category       |
+|:-----------:|:------------------------:|
+|    logs     | ApiManagementGatewayLogs |
+
+#### Requirements and setup
+
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+#### API Gateway Logs
+
+The API Management services provide the advanced logging capabilities. The `ApiManagementGatewayLogs` category comes under the advanced logging. This is not directly available in the Azure AI Foundry service itself. You have to set up the API Management services in Azure to access the Azure AI Foundry models. When the setup is complete, add the diagnostic setting for the API Management service.
+
+For more information on how to implement the comprehensive solution using API Management services to monitor the Azure AI Foundry services, check the [AI Foundry API](https://learn.microsoft.com/en-us/azure/api-management/azure-ai-foundry-api) page.
+
+**Diagnostic settings**
+
+- Enable the category `Logs related to ApiManagement Gateway` to stream the logs to the event hub.
+
+```text
+   ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
+   │   APIM service   │      │  Diagnostic  │     │    Event Hub    │
+   │    <<source>>    │─────▶│   settings   │────▶│ <<destination>> │
+   └──────────────────┘      └──────────────┘     └─────────────────┘
+```
+
 ### Metrics
 
 The metrics data stream collects the cognitive service metrics that is specific to the Azure AI Foundry service.
@@ -39,6 +70,16 @@ Should return a list of resources.
 If no resource filter is specified, then all Azure AI Foundry services inside the entire subscription will be considered.
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
+
+#### Logs Reference
+
+{{event "logs"}}
+
+**ECS Field Reference**
+
+For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
+
+{{fields "logs"}}
 
 #### Metrics Reference
 
