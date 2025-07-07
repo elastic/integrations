@@ -18,7 +18,15 @@ processors:
 {{/if}}
 jmx.mappings:
   # Buffer Pool MBeans
-  - mbean: 'java.nio:type=BufferPool,name=*'
+  - mbean: 'java.nio:type=BufferPool,name=direct'
+    attributes:
+      - attr: UsedMemory
+        field: buffer_pool.used.bytes
+      - attr: TotalCapacity
+        field: buffer_pool.capacity.bytes
+      - attr: Count
+        field: buffer_pool.count
+  - mbean: 'java.nio:type=BufferPool,name=mapped'
     attributes:
       - attr: UsedMemory
         field: buffer_pool.used.bytes
@@ -44,7 +52,25 @@ jmx.mappings:
         field: compilation.time.ms
         
   # Garbage Collection MBeans  
-  - mbean: 'java.lang:type=GarbageCollector,name=*'
+  - mbean: 'java.lang:type=GarbageCollector,name=G1 Young Generation'
+    attributes:
+      - attr: CollectionCount
+        field: gc.collection.count
+      - attr: CollectionTime
+        field: gc.collection.time.ms
+  - mbean: 'java.lang:type=GarbageCollector,name=G1 Old Generation'
+    attributes:
+      - attr: CollectionCount
+        field: gc.collection.count
+      - attr: CollectionTime
+        field: gc.collection.time.ms
+  - mbean: 'java.lang:type=GarbageCollector,name=ParNew'
+    attributes:
+      - attr: CollectionCount
+        field: gc.collection.count
+      - attr: CollectionTime
+        field: gc.collection.time.ms
+  - mbean: 'java.lang:type=GarbageCollector,name=ConcurrentMarkSweep'
     attributes:
       - attr: CollectionCount
         field: gc.collection.count
@@ -74,7 +100,43 @@ jmx.mappings:
         field: memory.objects_pending_finalization
         
   # Memory Pool MBeans
-  - mbean: 'java.lang:type=MemoryPool,name=*'
+  - mbean: 'java.lang:type=MemoryPool,name=Eden Space'
+    attributes:
+      - attr: Usage.committed
+        field: memory_pool.usage.committed
+      - attr: Usage.init
+        field: memory_pool.usage.init
+      - attr: Usage.max
+        field: memory_pool.usage.max
+      - attr: Usage.used
+        field: memory_pool.usage.used
+      - attr: CollectionUsage.committed
+        field: memory_pool.collection_usage.committed
+      - attr: CollectionUsage.init
+        field: memory_pool.collection_usage.init
+      - attr: CollectionUsage.max
+        field: memory_pool.collection_usage.max
+      - attr: CollectionUsage.used
+        field: memory_pool.collection_usage.used
+  - mbean: 'java.lang:type=MemoryPool,name=Survivor Space'
+    attributes:
+      - attr: Usage.committed
+        field: memory_pool.usage.committed
+      - attr: Usage.init
+        field: memory_pool.usage.init
+      - attr: Usage.max
+        field: memory_pool.usage.max
+      - attr: Usage.used
+        field: memory_pool.usage.used
+      - attr: CollectionUsage.committed
+        field: memory_pool.collection_usage.committed
+      - attr: CollectionUsage.init
+        field: memory_pool.collection_usage.init
+      - attr: CollectionUsage.max
+        field: memory_pool.collection_usage.max
+      - attr: CollectionUsage.used
+        field: memory_pool.collection_usage.used
+  - mbean: 'java.lang:type=MemoryPool,name=Tenured Gen'
     attributes:
       - attr: Usage.committed
         field: memory_pool.usage.committed
