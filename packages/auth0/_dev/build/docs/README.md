@@ -34,7 +34,7 @@ Using the external address of the agent to which the integration is added, and t
 2. Choose **Custom Webhook**.
 3. Name the new **Event Stream** appropriately (e.g. Elastic) and click **Create**.
 4. In **Payload URL**, enter the endpoint URL set up in the **Configure the Auth0 integration** section.
-5. In **Authorization Token**, enter the **Authorization Token**. This must match the value entered in Step 3 of **Configure the Auth0 integration** section.
+5. In **Authorization Token**, enter the **Authorization Token**. This must match the value entered in Step 3 of the **Configure the Auth0 integration** section.
 6. In **Content Type**, choose  **application/json**.
 7. In **Content Format**, choose **JSON Lines**.
 8. Click **Save**.
