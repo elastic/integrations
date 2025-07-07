@@ -24,14 +24,78 @@ request.transforms:
       value: 100
       value_type: int
   - set:
+      # To collect managed insights, we request them by ARN in the first
+      # request. In later requests without specific ARNs, the API will only
+      # return custom insights.
+      # The source of this list is:
+      # https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-managed-insights.html
+      target: body.InsightArns
+      value_type: json
+      value: >-
+        [
+          "arn:aws:securityhub:::insight/securityhub/default/1",
+          "arn:aws:securityhub:::insight/securityhub/default/10",
+          "arn:aws:securityhub:::insight/securityhub/default/3",
+          "arn:aws:securityhub:::insight/securityhub/default/14",
+          "arn:aws:securityhub:::insight/securityhub/default/9",
+          "arn:aws:securityhub:::insight/securityhub/default/6",
+          "arn:aws:securityhub:::insight/securityhub/default/7",
+          "arn:aws:securityhub:::insight/securityhub/default/8",
+          "arn:aws:securityhub:::insight/securityhub/default/11",
+          "arn:aws:securityhub:::insight/securityhub/default/12",
+          "arn:aws:securityhub:::insight/securityhub/default/13",
+          "arn:aws:securityhub:::insight/securityhub/default/16",
+          "arn:aws:securityhub:::insight/securityhub/default/17",
+          "arn:aws:securityhub:::insight/securityhub/default/18",
+          "arn:aws:securityhub:::insight/securityhub/default/19",
+          "arn:aws:securityhub:::insight/securityhub/default/21",
+          "arn:aws:securityhub:::insight/securityhub/default/22",
+          "arn:aws:securityhub:::insight/securityhub/default/23",
+          "arn:aws:securityhub:::insight/securityhub/default/24",
+          "arn:aws:securityhub:::insight/securityhub/default/25",
+          "arn:aws:securityhub:::insight/securityhub/default/26",
+          "arn:aws:securityhub:::insight/securityhub/default/27",
+          "arn:aws:securityhub:::insight/securityhub/default/28",
+          "arn:aws:securityhub:::insight/securityhub/default/29",
+          "arn:aws:securityhub:::insight/securityhub/default/30",
+          "arn:aws:securityhub:::insight/securityhub/default/31",
+          "arn:aws:securityhub:::insight/securityhub/default/32",
+          "arn:aws:securityhub:::insight/securityhub/default/33",
+          "arn:aws:securityhub:::insight/securityhub/default/34",
+          "arn:aws:securityhub:::insight/securityhub/default/35",
+          "arn:aws:securityhub:::insight/securityhub/default/36",
+          "arn:aws:securityhub:::insight/securityhub/default/37",
+          "arn:aws:securityhub:::insight/securityhub/default/38",
+          "arn:aws:securityhub:::insight/securityhub/default/39",
+          "arn:aws:securityhub:::insight/securityhub/default/40"
+        ]
+  - set:
       target: header.Authorization
       value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/securityhub/aws4_request") (hash "sha256" "POST\n" "/insights/get\n" "\n" "host:securityhub.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
 {{!-- https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-auth-using-authorization-header.html --}}
 response.pagination:
+  - delete:
+      # Only request specific ARNs in the first request (for managed insights).
+      target: body.InsightArns
   - set:
+      # This transform's job is to fail and end pagination when finished.
+      # It will set a value if the last request was the first in the sequence
+      # (which collects the managed insights), or if there is another page of
+      # custom insights to fetch. Otherwise, there will be a value template
+      # error (.last_response.body.NextToken doesn't exist) and the pagination
+      # sequence will end (because fail_on_template_error is set).
       target: body.NextToken
-      value: '[[if (eq (len .last_response.body.Insights) 100)]][[.last_response.body.NextToken]][[end]]'
+      value: '[[if (eq (.last_response.page) 0)]][["placeholder"]][[else]][[.last_response.body.NextToken]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
+  - delete:
+      # This value may be a placeholder rather than an actual token.
+      target: body.NextToken
+  - set:
+      # Set a NextToken value if one actually exists, but continue either way.
+      target: body.NextToken
+      value: '[[.last_response.body.NextToken]]'
+      fail_on_template_error: false
   - delete:
       target: header.Authorization
   - set:

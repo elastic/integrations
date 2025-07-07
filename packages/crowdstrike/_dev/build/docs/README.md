@@ -251,6 +251,27 @@ The option `Enable Data Deduplication` allows you to avoid consuming duplicate e
 If duplicate events are ingested, to help find them, the integration `event.id` field is populated by concatenating a few Crowdstrike fields that uniquely identifies the event. These fields are `id`, `aid`, and `cid` from the Crowdstrike event. The fields are separated with pipe `|`.
 For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
 
+#### Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name              | `event.severity` |
+|----------------------------|:----------------:|
+| Low, Info or Informational | 21               |
+| Medium                     | 47               |
+| High                       | 73               |
+| Critical                   | 99               |
+
+If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
+
+| Crowdstrike `severity` | Severity Name |
+|------------------------|:-------------:|
+| 0 - 19                 | info          |
+| 20 - 39                | low           |
+| 40 - 59                | medium        |
+| 60 - 79                | high          |
+| 80 - 100               | critical      |
+
 #### Example
 
 {{fields "fdr"}}

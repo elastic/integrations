@@ -1,0 +1,68 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-ti_google_threat_intelligence.cryptominer*"
+    - "logs-ti_google_threat_intelligence.iot*"
+    - "logs-ti_google_threat_intelligence.mobile*"
+    - "logs-ti_google_threat_intelligence.threat_actor*"
+    - "logs-ti_google_threat_intelligence.first_stage_delivery_vectors*"
+    - "logs-ti_google_threat_intelligence.linux*"
+    - "logs-ti_google_threat_intelligence.osx*"
+    - "logs-ti_google_threat_intelligence.trending*"
+    - "logs-ti_google_threat_intelligence.infostealer*"
+    - "logs-ti_google_threat_intelligence.malicious_network_infrastructure*"
+    - "logs-ti_google_threat_intelligence.phishing*"
+    - "logs-ti_google_threat_intelligence.vulnerability_weaponization*"
+    - "logs-ti_google_threat_intelligence.malware*"
+    - "logs-ti_google_threat_intelligence.ransomware*"
+  query:
+    bool:
+      filter:
+        - match_phrase:
+            threat.indicator.type: domain-name
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "logs-ti_google_threat_intelligence_latest.dest_domain_ioc-1"
+  aliases:
+    - alias: "logs-ti_google_threat_intelligence_latest.domain_ioc"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - threat.indicator.id
+  sort: "@timestamp"
+description: >-
+  Latest Domain IOC from Google Threat Intelligence API. As Domain IOC get updated, this transform stores only the latest state of each Domain IOC inside the destination index. Thus the transform's destination index contains only the latest state of the Domain IOC.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: '@timestamp'
+    max_age: 30d
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  # We are currently using multiple source indices in this transform because system tests do not support
+  # executing queries defined within the transform. This causes test failures, so we've raised the issue here:
+  # https://github.com/elastic/elastic-package/issues/2676
+  #
+  # To avoid unauthorized errors when using multiple source indices, we've set "run_as_kibana_system: false".
+  #
+  # Once the issue is resolved:
+  # - Remove "run_as_kibana_system: false"
+  # - Switch to a single index pattern (e.g., "logs-ti_google_threat_intelligence.*-*")
+  # - Apply the appropriate query in the source section
+  run_as_kibana_system: false

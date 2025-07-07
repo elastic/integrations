@@ -3,6 +3,13 @@
 WARNING: Migrating from the "Custom Logs (Deprecated)" to "Custom Logs
 (Filestream)" will cause files to be re-ingested because the state is not migrated.
 
+IMPORTANT: The Filestream integration will only start ingesting files
+**when they are 1024 bytes in size or larger**. This can be adjusted by
+setting "Fingerprint length", however it will influence how files are
+identified. Refer to the
+[fingerprint](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream#filebeat-input-filestream-file-identity-fingerprint)
+documentation for more details.
+
 In future releases it's expected to have an automated way to migrate the state. However, this is not possible at the moment.
 
 The current best option for minimizing the data duplication while migrating to "Custom Logs (Filestream)" is to use the 'Ignore Older' or 'Exclude Files' options.

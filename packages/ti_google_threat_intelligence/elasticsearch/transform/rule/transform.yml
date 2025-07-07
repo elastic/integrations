@@ -1,0 +1,46 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - ".alerts-security.alerts-*"
+  query:
+    bool:
+      filter:
+        - match_phrase:
+            kibana.alert.rule.tags: Google Threat Intelligence
+        - match_phrase:
+            kibana.alert.rule.category: Indicator Match Rule
+      must_not:
+        - match_phrase:
+            kibana.alert.rule.tags: IOC Stream
+dest:
+  index: "logs-ti_google_threat_intelligence.enriched_ioc-1"
+  aliases:
+    - alias: "logs-ti_google_threat_intelligence.enriched_ioc"
+      move_on_creation: true
+latest:
+  unique_key:
+    - kibana.alert.uuid
+  sort: "@timestamp"
+description: >-
+  Detected IOC from the user's environment. As IOCs are identified, this transform filters and extracts necessary information before storing it inside the destination index.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "@timestamp"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: '@timestamp'
+    max_age: 30d
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

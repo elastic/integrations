@@ -273,6 +273,18 @@ processors:
         } else if (iana_number == '132') {
             ctx.network.transport = 'sctp';
         }
+  - rename:
+      field: source.user.name
+      target_field: source.user.email
+      tag: rename_source_user_email
+      if: ctx.source?.user?.name != null && ctx.source.user.name.indexOf("@") > 0
+  - dissect:
+      field: source.user.email
+      pattern: '%{source.user.name}@%{source.user.domain}'
+      tag: dissect_source_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.source?.user?.name == null && ctx.source?.user?.domain == null
 
 #########################
 ## ECS Related Mapping ##
@@ -326,16 +338,11 @@ processors:
       ignore_failure: true
       allow_duplicates: false
   - append:
-      if: 'ctx?.destination?.user?.name != null'
+      if: 'ctx?.source?.user?.email != null'
       field: related.user
-      value: '{{{destination.user.name}}}'
+      value: '{{{source.user.email}}}'
       ignore_failure: true
       allow_duplicates: false
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 
 #########################
 ## ECS Process Mapping ##

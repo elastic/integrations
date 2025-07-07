@@ -1,12 +1,11 @@
 config_version: 2
 resource:
-  url: "{{api_host}}/api/v1/computers-inventory"
+  url: "{{api_host}}"
   timeout: {{http_client_timeout}}
-{{#if enable_request_tracer}}
   tracer:
+    enabled: {{enable_request_tracer}}
     filename: "../../logs/jamf_pro-versions/http-request-trace-*.ndjson"
     maxbackups: 5
-{{/if}}
 auth:
   oauth2:
     client:
@@ -34,7 +33,7 @@ redact:
 program: |-
   request(
   	"GET",
-  	state.url.trim_right("/") + "?" + {
+  	state.url.trim_right("/") + "/api/v1/computers-inventory?" + {
   		"section": state.sections,
   		"page-size": [string(state.page_size)],
   		"sort": ["general.reportDate:asc"],

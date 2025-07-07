@@ -480,6 +480,18 @@ processors:
       target_field: threat.indicator.provider
       ignore_missing: true
 
+  # Convert certain fields to the string type
+  - convert:
+      field: json.import_session_id
+      tag: convert_import_session_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.trusted_circle_ids
+      tag: convert_trusted_circle_ids_to_string
+      type: string
+      ignore_missing: true
+
   # Map the severity field to event.severity
   - set:
       tag: set_event_severity_low
@@ -525,8 +537,17 @@ processors:
       tag: script_convert_a_large_integer
       description: Convert a large integer that arrives as a Double to a string without an exponent
       lang: painless
-      source: ctx.json.id = Long.toString((long) ctx.json.id);
-      if: "!(ctx.json.id instanceof String)"
+      source: |
+        if (ctx.json?.id != null && !(ctx.json.id instanceof String)) {
+          ctx.json.id = Long.toString((long) ctx.json.id);
+        }
+        if (ctx.json?.update_id != null && !(ctx.json.update_id instanceof String)) {
+          ctx.json.update_id = Long.toString((long) ctx.json.update_id);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # restructure meta.registrant_* to meta.registrant.*
   - rename:
