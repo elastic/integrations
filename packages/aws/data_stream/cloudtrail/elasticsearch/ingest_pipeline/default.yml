@@ -1015,26 +1015,17 @@ processors:
         }
         Map aed_map = [:];
         if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MobileVersion != null) {
-          if (ctx.aws.cloudtrail.flattened.additional_eventdata.MobileVersion == 'No') {
-            aed_map.mobile_version = false;
-          } else {
-            aed_map.mobile_version = true;
-          }
+          aed_map.mobile_version = ctx.aws.cloudtrail.flattened.additional_eventdata.MobileVersion != 'No';
         }
         if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.LoginTo != null) {
           aed_map.login_to = ctx.aws.cloudtrail.flattened.additional_eventdata.LoginTo;
         }
         if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MFAUsed != null) {
-          if (ctx.aws.cloudtrail.flattened.additional_eventdata.MFAUsed == 'No') {
-            aed_map.mfa_used = false;
-          } else {
-            aed_map.mfa_used = true;
-          }
+          aed_map.mfa_used = ctx.aws.cloudtrail.flattened.additional_eventdata.MFAUsed != 'No';
         }
         if (aed_map.size() > 0) {
-          Map cl_map = [:];
-          cl_map.additional_eventdata = aed_map;
-          ctx.aws.cloudtrail.console_login = cl_map;
+          ctx.aws.cloudtrail.console_login = [:];
+          ctx.aws.cloudtrail.console_login.additional_eventdata = aed_map;
         }
   - script:
       lang: painless
