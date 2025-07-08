@@ -14,7 +14,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "host.name",
-                        "id": "534738ec-8737-44ca-892b-9ebeae8a5206",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -32,7 +31,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "user.name",
-                        "id": "bd14990b-e404-4c63-a107-fe338183f846",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -50,7 +48,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "event.severity",
-                        "id": "e84ad14d-6f5c-4dce-8693-5294ebae8ad1",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -68,7 +65,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "m365_defender.event.alert.category",
-                        "id": "ff486caf-f06e-47c4-a451-1d21575d19e2",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -85,7 +81,7 @@
             },
             "showApplySelections": false
         },
-        "description": "Overview of Microsoft 365 Defender Alert Events.",
+        "description": "Overview of Microsoft Defender XDR Alert Events.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -126,7 +122,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Navigation\n\n#### M365 Defender\n\n#### EventHub Datastream  \n**Alert Events**  \n[Device Events](#/dashboard/m365_defender-c0b796d0-720a-11ed-8657-c59f6ece834c)  \n[App \u0026 Identity Events](#/dashboard/m365_defender-d587df00-745f-11ed-8657-c59f6ece834c)  \n[Email Events](#/dashboard/m365_defender-3caf3c00-7456-11ed-8657-c59f6ece834c)  \n\n#### Incident Datastream (Graph API)  \n\n[Incidents](#/dashboard/m365_defender-ac54d310-44ab-11ed-8375-0168a9970c06)  \n[Alerts](#/dashboard/m365_defender-d80d7840-4366-11ed-b1f2-e917f608bd03)  \n\n#### Rest API Datastream  \n[Vulnerability](#/dashboard/m365_defender-afb93ff7-9903-4d91-9028-9fe9c5a434f8)\n\n#### Description\n\nThis dashboard visualizes Alert type events according to the [Microsoft Documentation](https://learn.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-deviceevents-table?view=o365-worldwide).  \nThe data is collected from a configured Event Hub, using the M365 Defender Event datastream.\n\nThe supported event types are:\n- AdvancedHunting-AlertEvidence\n- AdvancedHunting-AlertInfo\n\n**[Integration Page](/app/integrations/detail/m365_defender/overview)**\n\n",
+                            "markdown": "### Navigation\n\n#### Microsoft Defender XDR\n\n#### EventHub Datastream  \n**Alert Events**  \n[Device Events](#/dashboard/m365_defender-c0b796d0-720a-11ed-8657-c59f6ece834c)  \n[App \u0026 Identity Events](#/dashboard/m365_defender-d587df00-745f-11ed-8657-c59f6ece834c)  \n[Email Events](#/dashboard/m365_defender-3caf3c00-7456-11ed-8657-c59f6ece834c)  \n\n#### Incident Datastream (Graph API)  \n\n[Incidents](#/dashboard/m365_defender-ac54d310-44ab-11ed-8375-0168a9970c06)  \n[Alerts](#/dashboard/m365_defender-d80d7840-4366-11ed-b1f2-e917f608bd03)  \n\n#### Rest API Datastream  \n[Vulnerability](#/dashboard/m365_defender-afb93ff7-9903-4d91-9028-9fe9c5a434f8)\n\n#### Description\n\nThis dashboard visualizes Alert type events according to the [Microsoft Documentation](https://learn.microsoft.com/en-us/defender-xdr/advanced-hunting-deviceevents-table?view=o365-worldwide).  \nThe data is collected from a configured Event Hub, using the Microsoft Defender XDR Event datastream.\n\nThe supported event types are:\n- AdvancedHunting-AlertEvidence\n- AdvancedHunting-AlertInfo\n\n**[Integration Page](/app/integrations/detail/m365_defender/overview)**\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -348,8 +344,114 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "m365_defender.event.category",
+                                            "index": "logs-*",
+                                            "key": "m365_defender.event.category",
+                                            "negate": false,
+                                            "params": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ],
+                                            "type": "phrases",
+                                            "value": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ]
+                                        },
+                                        "query": {
+                                            "bool": {
+                                                "minimum_should_match": 1,
+                                                "should": [
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.severity",
+                                            "index": "logs-*",
+                                            "key": "event.severity",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.severity": "4"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 8,
@@ -565,8 +667,114 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "m365_defender.event.category",
+                                            "index": "logs-*",
+                                            "key": "m365_defender.event.category",
+                                            "negate": false,
+                                            "params": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ],
+                                            "type": "phrases",
+                                            "value": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ]
+                                        },
+                                        "query": {
+                                            "bool": {
+                                                "minimum_should_match": 1,
+                                                "should": [
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.severity",
+                                            "index": "logs-*",
+                                            "key": "event.severity",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "3"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.severity": "3"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 8,
@@ -782,8 +990,114 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "m365_defender.event.category",
+                                            "index": "logs-*",
+                                            "key": "m365_defender.event.category",
+                                            "negate": false,
+                                            "params": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ],
+                                            "type": "phrases",
+                                            "value": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ]
+                                        },
+                                        "query": {
+                                            "bool": {
+                                                "minimum_should_match": 1,
+                                                "should": [
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.severity",
+                                            "index": "logs-*",
+                                            "key": "event.severity",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "2"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.severity": "2"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 8,
@@ -965,8 +1279,114 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "m365_defender.event.category",
+                                            "index": "logs-*",
+                                            "key": "m365_defender.event.category",
+                                            "negate": false,
+                                            "params": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ],
+                                            "type": "phrases",
+                                            "value": [
+                                                "AdvancedHunting-AlertEvidence",
+                                                "AdvancedHunting-AlertInfo"
+                                            ]
+                                        },
+                                        "query": {
+                                            "bool": {
+                                                "minimum_should_match": 1,
+                                                "should": [
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.severity",
+                                            "index": "logs-*",
+                                            "key": "event.severity",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "1"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.severity": "1"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 8,
@@ -1116,8 +1536,82 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 8,
@@ -1324,8 +1818,82 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 13,
@@ -1501,8 +2069,82 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -1701,8 +2343,82 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -1873,8 +2589,82 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -2045,8 +2835,82 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -2216,8 +3080,82 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -2387,8 +3325,82 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 20,
@@ -2568,8 +3580,82 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 19,
@@ -2735,8 +3821,82 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertInfo",
+                                    "AdvancedHunting-AlertEvidence"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertInfo",
+                                    "AdvancedHunting-AlertEvidence"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 19,
@@ -2903,8 +4063,82 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -3112,8 +4346,82 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "m365_defender.event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "m365_defender.event"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "m365_defender.event.category",
+                                "index": "logs-*",
+                                "key": "m365_defender.event.category",
+                                "negate": false,
+                                "params": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ],
+                                "type": "phrases",
+                                "value": [
+                                    "AdvancedHunting-AlertEvidence",
+                                    "AdvancedHunting-AlertInfo"
+                                ]
+                            },
+                            "query": {
+                                "bool": {
+                                    "minimum_should_match": 1,
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertEvidence"
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "m365_defender.event.category": "AdvancedHunting-AlertInfo"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -3128,13 +4436,12 @@
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Microsoft 365 Defender] Alert Events",
+        "title": "[Logs Microsoft Defender XDR] Alert Events",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-04-10T09:40:38.999Z",
+    "created_at": "2025-06-27T12:07:05.478Z",
     "id": "m365_defender-2690a440-7235-11ed-8657-c59f6ece834c",
-    "managed": true,
     "references": [
         {
             "id": "logs-*",
@@ -3378,22 +4685,22 @@
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_9798e5d7-7091-4c53-b0bd-8710dea40d25:optionsListDataView",
+            "name": "controlGroup_534738ec-8737-44ca-892b-9ebeae8a5206:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_614102a1-8cf4-4ff5-922e-3f44d2a23f0d:optionsListDataView",
+            "name": "controlGroup_e84ad14d-6f5c-4dce-8693-5294ebae8ad1:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_65abf0e3-2af9-492f-9cc8-bde9bf25f632:optionsListDataView",
+            "name": "controlGroup_bd14990b-e404-4c63-a107-fe338183f846:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_9be16fea-bc5d-424d-9a18-99ffbad3807a:optionsListDataView",
+            "name": "controlGroup_ff486caf-f06e-47c4-a451-1d21575d19e2:optionsListDataView",
             "type": "index-pattern"
         },
         {
@@ -3408,5 +4715,6 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

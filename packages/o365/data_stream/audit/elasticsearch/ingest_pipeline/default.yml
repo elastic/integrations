@@ -81,17 +81,25 @@ processors:
       copy_from: o365audit.FileSize
       ignore_empty_value: true
       override: false
-  - gsub:
-      field: file.size
-      pattern: '\D+'
-      replacement: ''
-      if: ctx.file?.size instanceof String
-      ignore_missing: true
-  - convert:
+  - script:
       tag: convert_file_size_to_long
-      field: file.size
-      type: long
-      ignore_missing: true
+      if: ctx.file?.size != null
+      source: |-
+        if (ctx.file.size instanceof long || ctx.file.size instanceof int) {
+          return;
+        }
+        if (ctx.file.size instanceof double) {
+          ctx.file.size = (long) ctx.file.size;
+          return;
+        }
+        try {
+          // Attempt to parse as long to prevent inexact integer conversion.
+          ctx.file.size = Long.parseLong(ctx.file.size);
+        }
+        catch (NumberFormatException e) {
+          // But fall back to float parsing for cases where we failed.
+          ctx.file.size = (long) Double.parseDouble(ctx.file.size);
+        }
       on_failure:
         - remove:
             field: file.size
@@ -160,7 +168,11 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
-      ignore_failure: true
+      tag: rename_organization_id
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - json:
       tag: json-extract-stringly-AdditionalInfo
@@ -468,8 +480,12 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeAdmin"
+      tag: rename_organization_name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -496,8 +512,12 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeItem"
+      tag: rename_organization_name_exchange_item
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -918,6 +938,15 @@ processors:
       target_field: destination.user.email
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
+  - script:
+      description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.TargetYammerUserId != null
+      source: |-
+        if (ctx.o365audit.TargetYammerUserId instanceof double) {
+          ctx.o365audit.TargetYammerUserId = ((long)ctx.o365audit.TargetYammerUserId).toString();
+        } else {
+          ctx.o365audit.TargetYammerUserId = ctx.o365audit.TargetYammerUserId.toString();
+        }
   - rename:
       field: o365audit.TargetYammerUserId
       target_field: destination.user.id
@@ -1112,7 +1141,7 @@ processors:
       if: ctx.server?.ip != null
   - script:
       lang: painless
-      if: 'ctx.user?.id != null && ctx.user?.id.contains("@")'
+      if: 'ctx.user?.id instanceof String && ctx.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1123,7 +1152,7 @@ processors:
         ctx.user.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.user?.target?.id != null && ctx.user?.target?.id.contains("@")'
+      if: 'ctx.user?.target?.id instanceof String && ctx.user?.target?.id.contains("@")'
       source: >
         String[] splitmail = ctx.user.target.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1134,7 +1163,7 @@ processors:
         ctx.user.target.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.source?.user?.id != null && ctx.source?.user?.id.contains("@")'
+      if: 'ctx.source?.user?.id instanceof String && ctx.source?.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.source.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1145,7 +1174,7 @@ processors:
         ctx.source.user.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.destination?.user?.id != null && ctx.destination?.user?.id.contains("@")'
+      if: 'ctx.destination?.user?.id instanceof String && ctx.destination?.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.destination.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1157,7 +1186,7 @@ processors:
   - set:
       field: network.type
       value: ipv6
-      if: 'ctx.client?.ip != null && ctx.client?.ip.contains(":")'
+      if: 'ctx.client?.ip instanceof String && ctx.client?.ip.contains(":")'
   - set:
       field: network.type
       value: ipv4
@@ -1265,26 +1294,51 @@ processors:
           tag: convert_target_type_to_string
           type: string
           ignore_missing: true
-  - convert:
-      field: o365audit.Version
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.InternalLogonType
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.LogonType
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.ActorYammerUserId
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.YammerNetworkId
-      type: string
-      ignore_missing: true
+  - script:
+      description: Ensure that versions are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.Version != null
+      source: |-
+        if (ctx.o365audit.Version instanceof double) {
+          ctx.o365audit.Version = ((long)ctx.o365audit.Version).toString();
+        } else {
+          ctx.o365audit.Version = ctx.o365audit.Version.toString();
+        }
+  - script:
+      description: Ensure that internal logon types are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.InternalLogonType != null
+      source: |-
+        if (ctx.o365audit.InternalLogonType instanceof double) {
+          ctx.o365audit.InternalLogonType = ((long)ctx.o365audit.InternalLogonType).toString();
+        } else {
+          ctx.o365audit.InternalLogonType = ctx.o365audit.InternalLogonType.toString();
+        }
+  - script:
+      description: Ensure that logon types are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.LogonType != null
+      source: |-
+        if (ctx.o365audit.LogonType instanceof double) {
+          ctx.o365audit.LogonType = ((long)ctx.o365audit.LogonType).toString();
+        } else {
+          ctx.o365audit.LogonType = ctx.o365audit.LogonType.toString();
+        }
+  - script:
+      description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.ActorYammerUserId != null
+      source: |-
+        if (ctx.o365audit.ActorYammerUserId instanceof double) {
+          ctx.o365audit.ActorYammerUserId = ((long)ctx.o365audit.ActorYammerUserId).toString();
+        } else {
+          ctx.o365audit.ActorYammerUserId = ctx.o365audit.ActorYammerUserId.toString();
+        }
+  - script:
+      description: Ensure that network IDs are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.YammerNetworkId != null
+      source: |-
+        if (ctx.o365audit.YammerNetworkId instanceof double) {
+          ctx.o365audit.YammerNetworkId = ((long)ctx.o365audit.YammerNetworkId).toString();
+        } else {
+          ctx.o365audit.YammerNetworkId = ctx.o365audit.YammerNetworkId.toString();
+        }
   - append:
       field: email.message_id
       value: "{{{o365audit.InternetMessageId}}}"
