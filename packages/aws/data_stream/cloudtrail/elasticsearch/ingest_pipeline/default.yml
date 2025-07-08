@@ -897,31 +897,48 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      source: |
-        if (ctx.aws.cloudtrail?.flattened == null) {
+      source: |-
+        ctx._conf = ctx._conf ?: [:];
+        ctx._conf.keep_flattened_duplicates = ctx._conf.retain == null ||
+          ctx._conf.retain.contains('all') ||
+          ctx._conf.retain.contains('flattened') ||
+          ctx._conf.retain.contains('minimal')
+  - script:
+      description: >
+        Set values in aws.cloudtrail.request_parameters, aws.cloudtrail.response_elements, and
+        aws.cloudtrail.additional_eventdata. If _conf.drop_flattened_duplicates is false, also
+        copy into aws.cloudtrail.flattened. Since aws.cloudtrail.flattened is optionally present,
+        is MUST NEVER be used as an RHS in any processor.
+        Assignments of json.requestParameters, json.responseElements, json.additionalEventData
+        and json.serviceEventDetails to the corresponding flattened fields are shallow, so
+        sub-fields of these field MUST NEVER be renamed or otherwise mutated, that is, they
+        MUST NEVER be an LHS in any processor.
+      lang: painless
+      source: |-
+        if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail?.flattened == null) {
           ctx.aws.cloudtrail.flattened = [:];
         }
         if (ctx.json?.requestParameters != null) {
           ctx.aws.cloudtrail.request_parameters = ctx.json.requestParameters.toString();
-          if (ctx.aws.cloudtrail.request_parameters.length() < 32766) {
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.request_parameters.length() < 32766) {
             ctx.aws.cloudtrail.flattened.request_parameters = ctx.json.requestParameters;
           }
         }
         if (ctx.json?.responseElements != null) {
           ctx.aws.cloudtrail.response_elements = ctx.json.responseElements.toString();
-          if (ctx.aws.cloudtrail.response_elements.length() < 32766) {
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.response_elements.length() < 32766) {
             ctx.aws.cloudtrail.flattened.response_elements = ctx.json.responseElements;
           }
         }
         if (ctx.json?.additionalEventData != null) {
           ctx.aws.cloudtrail.additional_eventdata = ctx.json.additionalEventData.toString();
-          if (ctx.aws.cloudtrail.additional_eventdata.length() < 32766) {
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.additional_eventdata.length() < 32766) {
             ctx.aws.cloudtrail.flattened.additional_eventdata = ctx.json.additionalEventData;
           }
         }
         if (ctx.json?.serviceEventDetails != null) {
           ctx.aws.cloudtrail.service_event_details = ctx.json.serviceEventDetails.toString();
-          if (ctx.aws.cloudtrail.service_event_details.length() < 32766) {
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.service_event_details.length() < 32766) {
             ctx.aws.cloudtrail.flattened.service_event_details = ctx.json.serviceEventDetails;
           }
         }
@@ -993,19 +1010,19 @@ processors:
       ignore_failure: true
   - append:
       field: related.user
-      value: '{{aws.cloudtrail.flattened.request_parameters.userName}}'
+      value: '{{json.requestParameters.userName}}'
       allow_duplicates: false
-      if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.userName != null
+      if: ctx.json?.requestParameters?.userName != null
   - append:
       field: related.user
-      value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
+      value: '{{json.requestParameters.newUserName}}'
       allow_duplicates: false
-      if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.newUserName != null
+      if: ctx.json?.requestParameters?.newUserName != null
   - append:
       field: related.user
-      value: '{{aws.cloudtrail.flattened.response_elements.user.userId}}'
+      value: '{{json.responseElements.user.userId}}'
       allow_duplicates: false
-      if: ctx.aws?.cloudtrail?.flattened?.response_elements?.user?.userId != null
+      if: ctx.json?.responseElements?.user?.userId != null
   - script:
       lang: painless
       ignore_failure: true
@@ -1014,14 +1031,14 @@ processors:
           return;
         }
         Map aed_map = [:];
-        if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MobileVersion != null) {
-          aed_map.mobile_version = ctx.aws.cloudtrail.flattened.additional_eventdata.MobileVersion != 'No';
+        if (ctx.json?.additionalEventData?.MobileVersion != null) {
+          aed_map.mobile_version = ctx.json.additionalEventData.MobileVersion != 'No';
         }
-        if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.LoginTo != null) {
-          aed_map.login_to = ctx.aws.cloudtrail.flattened.additional_eventdata.LoginTo;
+        if (ctx.json?.additionalEventData?.LoginTo != null) {
+          aed_map.login_to = ctx.json.additionalEventData.LoginTo;
         }
-        if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MFAUsed != null) {
-          aed_map.mfa_used = ctx.aws.cloudtrail.flattened.additional_eventdata.MFAUsed != 'No';
+        if (ctx.json?.additionalEventData?.MFAUsed != null) {
+          aed_map.mfa_used = ctx.json.additionalEventData.MFAUsed != 'No';
         }
         if (aed_map.size() > 0) {
           ctx.aws.cloudtrail.console_login = [:];
@@ -1545,8 +1562,8 @@ processors:
           return;
         }
 
-        if (ctx.event.action == 'ConsoleLogin' && ctx.aws?.cloudtrail?.flattened?.response_elements.ConsoleLogin != null) {
-          ctx.event.outcome = Processors.lowercase(ctx.aws.cloudtrail.flattened.response_elements.ConsoleLogin);
+        if (ctx.event.action == 'ConsoleLogin' && ctx.json?.responseElements?.ConsoleLogin != null) {
+          ctx.event.outcome = Processors.lowercase(ctx.json.responseElements.ConsoleLogin);
         }
 
         if (params.get(ctx.event.action) == null) {
@@ -1627,41 +1644,38 @@ processors:
       field: json.digestSignatureAlgorithm
       target_field: aws.cloudtrail.digest.signature_algorithm
       ignore_failure: true
-  - rename:
-      field: json.insightDetails
-      target_field: aws.cloudtrail.insight_details
-      ignore_failure: true
   - set:
       field: group.id
-      value: '{{{aws.cloudtrail.flattened.response_elements.group.groupId}}}'
+      copy_from: json.responseElements.group.groupId
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: user.target.id
-      value: '{{{aws.cloudtrail.flattened.response_elements.user.userId}}}'
+      copy_from: json.responseElements.user.userId
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: user.changes.name
-      value: '{{{aws.cloudtrail.flattened.request_parameters.newUserName}}}'
+      copy_from: json.requestParameters.newUserName
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: group.name
-      value: '{{{aws.cloudtrail.flattened.request_parameters.groupName}}}'
+      copy_from: json.requestParameters.groupName
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: user.target.name
-      value: '{{{aws.cloudtrail.flattened.request_parameters.userName}}}'
+      copy_from: json.requestParameters.userName
       ignore_empty_value: true
-      ignore_failure: true
+  - remove:
+      field:
+        - aws.cloudtrail.digest
+        - json.insightDetails
+      if: '!ctx._conf.keep_flattened_duplicates'
+      ignore_missing: true
   - rename:
       field: aws.cloudtrail.digest
       target_field: aws.cloudtrail.flattened.digest
       ignore_missing: true
   - rename:
-      field: aws.cloudtrail.insight_details
+      field: json.insightDetails
       target_field: aws.cloudtrail.flattened.insight_details
       ignore_missing: true
   - remove:
@@ -1708,11 +1722,9 @@ processors:
       ignore_failure: true
 
   # Remove the fields that the user does not want.
-  # TODO: This is unpleasantly inefficient. It would be ideal if we had not
-  # populated the fields in the first place, but the current state of the
-  # pipeline makes that non-trivial as both the flattened fields and the
-  # non-flattened origin fields are referred to throughout the pipeline,
-  # making it difficult to disentangle them. This the TODO to be done.
+  # In the case that we did not want the flattened fields our work is already
+  # done, since we did not retain them. Otherwise we remove the relevant fields
+  # in the following two processors.
   - script:
       if: ctx._conf?.retain == 'minimal' && ctx.aws?.cloudtrail?.flattened != null
       tag: script_retain_minimal_flattened
@@ -1752,16 +1764,12 @@ processors:
         ctx.aws.cloudtrail.flattened = flattened;
   - remove:
       field:
-        - aws.cloudtrail.flattened
-      ignore_missing: true
-      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'flattened' && ctx._conf.retain != 'minimal'
-  - remove:
-      field:
         - aws.cloudtrail.response_elements
         - aws.cloudtrail.request_parameters
         - aws.cloudtrail.additional_eventdata
       ignore_missing: true
       if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'keyword' && ctx._conf.retain != 'minimal'
+
   - remove:
       field:
         - json
