@@ -145,7 +145,13 @@ processors:
       for (item in ctx.gitlab.production.params) {
         def key = item.key;
         def value = item.value;
-        def keyValueObject = [key: value];
+        def valueString;
+        if (key == "variables") {
+          valueString = value != null ? value.toString() : "";
+        } else {
+          valueString = value;
+        }
+        def keyValueObject = [key: valueString];
         keyValuePairs.add(keyValueObject)
       }
       ctx.gitlab.production.params = keyValuePairs;
