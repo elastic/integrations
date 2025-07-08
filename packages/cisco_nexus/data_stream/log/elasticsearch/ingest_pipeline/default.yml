@@ -32,7 +32,8 @@ processors:
       tag: 'grok_syslog_line'
       if: ctx.event?.original != null && ctx.event.original != ''
       pattern_definitions:
-        NEXUS_TIMESTAMP_TIMEZONE: '%{YEAR}%{SPACE}%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME}%{SPACE}%{WORD:cisco_nexus.log.timezone}'
+#        NEXUS_TIMESTAMP_TIMEZONE: '%{NEXUS_TIMESTAMP:temp.timestamp_no_tz}%{SPACE}%{WORD:cisco_nexus.log.timezone}'
+        NEXUS_TIMESTAMP_TIMEZONE: '%{NEXUS_TIMESTAMP:temp.timestamp_no_tz}%{SPACE}%{WORD:temp.timezone}'
         NEXUS_TIMESTAMP: '%{YEAR}%{SPACE}%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME}'
         NEXUS_BODY: '(?:%%{WORD:cisco_nexus.log.facility}-(?:(%{INT:cisco_nexus.log.slot_number:long}|%{WORD:cisco_nexus.log.standby})-)?%{INT:cisco_nexus.log.severity:long}-%{WORD:cisco_nexus.log.type}:)?%{DATA:cisco_nexus.log.description}'
       patterns:
@@ -53,6 +54,58 @@ processors:
       if: ctx._conf?.tz_offset != null
       tag: 'rename_tz_offset'
       ignore_missing: true
+  - set:
+      field: temp.tz_override
+      value: true
+      if: ctx.event?.timezone != null && ctx.event?.timezone != ''
+      tag: 'set_tz_override_bool'
+  - set:
+      field: cisco_nexus.log.timezone
+      tag: 'set_cisco_nexus_log_timezone_from_event_timezone'
+      copy_from: event.timezone
+      if: ctx.event?.timezone != null && ctx.event?.timezone != ''
+  - set:
+      field: cisco_nexus.log.timezone
+      tag: 'set_cisco_nexus_log_timezone_from_temp_timezone'
+      copy_from: temp.timezone
+      if: ctx.temp?.timezone != null && ctx.event?.timezone != '' && (ctx.cisco_nexus?.log?.timezone == null || ctx.cisco_nexus?.log?.timezone == '')
+#  - script:
+#      lang: painless
+#      tag: script_tz_mapping_1
+#      if: ctx._conf?.tz_map != null && ctx.temp?.tz_short != null
+#      source: >-
+#        for (def item : ctx._conf.tz_map) {
+#          if (item.tz_short == ctx.temp.tz_short) {
+#            ctx.cisco_nexus.log.timezone = item.tz_long;
+#            ctx.event.timezone = item.tz_long;
+#            ctx.temp.tz_long = item.tz_long;
+#            ctx.temp.tz_override = true;
+#            break;
+#          }
+#        }
+  - date:
+      field: temp.timestamp_no_tz
+      tag: 'date_set_timestamp_event_timezone_override'
+      timezone: '{{{event.timezone}}}'
+      if: ctx.temp?.timestamp_no_tz != null && ctx.temp.timestamp_no_tz != '' && ctx.event?.timezone != null && ctx.event?.timezone != '' && ctx.temp?.tz_override != null && ctx.temp?.tz_override == true
+      formats:
+        - yyyy MMM d HH:mm:ss
+        - yyyy MMM dd HH:mm:ss
+        - yyyy MMM  d HH:mm:ss
+        - yyyy MMM d HH:mm:ss.SSS
+        - yyyy MMM dd HH:mm:ss.SSS
+        - yyyy MMM  d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with XXX {{{temp.timestamp_no_tz}}} tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - date:
       field: cisco_nexus.log.syslog_time
       target_field: cisco_nexus.log.syslog_time
@@ -94,7 +147,7 @@ processors:
   - date:
       field: temp.timestamp
       tag: 'date_set_timestamp'
-      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ((ctx.event?.timezone == null) || (ctx.event?.timezone != null && (ctx.cisco_nexus?.log?.timezone != null && ctx.cisco_nexus.log.timezone != '')))
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ((ctx.event?.timezone == null) || (ctx.cisco_nexus?.log?.timezone != null && ctx.cisco_nexus.log.timezone != '')) && (ctx.temp?.tz_override == null || ctx.temp?.tz_override != true)
       formats:
         - yyyy MMM d HH:mm:ss zzz
         - yyyy MMM dd HH:mm:ss zzz
@@ -122,7 +175,7 @@ processors:
       field: temp.timestamp
       tag: 'date_set_timestamp_timezone'
       timezone: '{{{event.timezone}}}'
-      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null && (ctx.cisco_nexus.log.timezone == null || ctx.cisco_nexus.log.timezone == '')
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null && (ctx.cisco_nexus.log.timezone == null || ctx.cisco_nexus.log.timezone == '') && (ctx.temp?.tz_override == null || ctx.temp?.tz_override != true)
       formats:
         - yyyy MMM d HH:mm:ss zzz
         - yyyy MMM dd HH:mm:ss zzz
