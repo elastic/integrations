@@ -77,7 +77,7 @@ If no resource filter is specified, then all Azure AI Foundry services inside th
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
-#### Logs Reference
+### Logs Reference
 
 An example event for `logs` looks as following:
 
@@ -330,7 +330,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | data_stream.type | Data stream type. | constant_keyword |
 
 
-#### Metrics Reference
+### Metrics Reference
 
 The Azure AI Foundry metrics provide insights into the performance and usage of your AI resources. These metrics help in monitoring and optimizing your deployments.
 
