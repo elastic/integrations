@@ -18,6 +18,9 @@
 {{- $lastSeen := $timestamp | date_modify (print $duration_end) }}
 {
   "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+  "_conf": {
+    "ioc_expiration_duration": "5d"
+  },
   "agent": {
     "id": "{{$agentId}}",
     "name": "{{$hostname}}",
@@ -38,12 +41,12 @@
   "message": "{
     \"id\":\"{{$id}}\",
 {{- if eq $iocType "ip:port" }}
-    \"ioc\":\"{{printf "%s:%s" $iocIp $iocIpPort}}\",
+    \"ioc\":\"{{printf "%s:%d" $iocIp $iocIpPort}}\",
 {{- else if eq $iocType "url"}}
     \"ioc\":\"{{$iocUrl}}\",
 {{- else if eq $iocType "domain"}}
     \"ioc\":\"{{$iocDomain}}\",
-{{- else if eq $iocType "file"}}
+{{- else if or (eq $iocType "md5_hash") (eq $iocType "sha1_hash") (eq $iocType "sha256_hash")}}
     \"ioc\":\"{{$iocFile}}\",
 {{- end}}
     \"threat_type\":\"{{$threatType}}\",
