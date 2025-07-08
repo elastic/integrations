@@ -111,11 +111,11 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-26T07:39:37.683Z",
+    "@timestamp": "2025-07-08T07:37:08.658Z",
     "agent": {
-        "ephemeral_id": "1eb5c026-8daf-479c-8685-e69263ac5497",
-        "id": "0ebaf690-12f1-40a6-bf6a-cc1468818f04",
-        "name": "elastic-agent-77058",
+        "ephemeral_id": "7f31d5a7-c973-41a4-ba12-f4c171672d9b",
+        "id": "4f83caa7-c8e0-429a-b24a-a1c183bd6c96",
+        "name": "elastic-agent-50084",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -130,14 +130,14 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "81472",
+        "namespace": "76825",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0ebaf690-12f1-40a6-bf6a-cc1468818f04",
+        "id": "4f83caa7-c8e0-429a-b24a-a1c183bd6c96",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -153,7 +153,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-06-30T10:07:44.333733Z",
         "id": "da637291085411733957_-1043898914",
-        "ingested": "2025-06-26T07:39:40Z",
+        "ingested": "2025-07-08T07:37:11Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 21,
@@ -200,6 +200,9 @@ An example event for `log` looks as following:
         "name": "WindowsDefenderAv",
         "product": "Defender for Endpoint",
         "vendor": "Microsoft"
+    },
+    "process": {
+        "name": "SB.xsl"
     },
     "related": {
         "hosts": [

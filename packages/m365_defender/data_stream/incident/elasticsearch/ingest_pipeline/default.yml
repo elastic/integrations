@@ -1378,6 +1378,15 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
+      field: file.name
+      if: ctx.file?.name instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: process.name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1909,6 +1918,15 @@ processors:
           value: '{{{_ingest._value.process.creation_datetime}}}'
           allow_duplicates: false
           ignore_failure: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: process.name
+          value: '{{{_ingest._value.imageFile.fileName}}}'
+          allow_duplicates: false
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
