@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule monitors for manual memory dumping via the proc filesystem. The proc filesystem in Linux provides a virtual filesystem that contains information about system processes and their memory mappings. Attackers may use this technique to dump the memory of a process, potentially extracting sensitive information such as credentials or encryption keys.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Manual Memory Dumping via Proc Filesystem",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Manual Memory Dumping via Proc Filesystem\n\nThe proc filesystem in Linux is a virtual interface providing detailed insights into system processes and their memory. Adversaries exploit this by manually dumping memory from processes to extract sensitive data like credentials. The detection rule identifies suspicious activities by monitoring process executions that access memory files within the proc directory, flagging potential credential access attempts.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific process name and command line that triggered the rule, focusing on processes like \"cat\", \"grep\", \"tail\", \"less\", \"more\", \"egrep\", or \"fgrep\" accessing \"/proc/*/mem\".\n- Examine the process execution context, including the parent process and user account associated with the suspicious activity, to determine if the activity is expected or potentially malicious.\n- Check the system logs and historical data for any previous occurrences of similar activities involving the same process names and command lines to assess if this is part of a pattern or anomaly.\n- Investigate the user account's recent activities and permissions to determine if there are any signs of compromise or unauthorized access that could explain the memory dumping attempt.\n- Analyze network traffic and connections from the host to identify any potential data exfiltration attempts or communications with known malicious IP addresses or domains.\n- If necessary, isolate the affected system to prevent further potential data leakage and conduct a deeper forensic analysis to uncover any additional indicators of compromise.\n\n### False positive analysis\n\n- System administrators or automated scripts may legitimately access the proc filesystem for monitoring or debugging purposes. To handle this, identify and whitelist known scripts or administrative tools that frequently access memory files.\n- Security tools or monitoring solutions might access the proc filesystem as part of their regular operations. Review and exclude these processes from the rule to prevent unnecessary alerts.\n- Developers or testers might use commands like cat or grep on proc files during application debugging. Establish a list of approved users or groups who are allowed to perform these actions and exclude their activities from triggering alerts.\n- Backup or system maintenance processes could involve accessing proc files. Document these processes and create exceptions for them to avoid false positives.\n- Regular system health checks might involve accessing memory files. Identify these checks and configure the rule to ignore them by specifying the associated process names or command patterns.\n\n### Response and remediation\n\n- Immediately isolate the affected system to prevent further unauthorized access or data exfiltration. Disconnect the network connection and disable remote access capabilities.\n- Terminate any suspicious processes identified by the detection rule, specifically those accessing memory files within the proc directory using commands like \"cat\", \"grep\", \"tail\", \"less\", \"more\", \"egrep\", or \"fgrep\".\n- Conduct a memory analysis on the isolated system to identify any extracted sensitive data, such as credentials or encryption keys, and assess the extent of the compromise.\n- Change all potentially compromised credentials and encryption keys immediately, prioritizing those associated with critical systems and services.\n- Review and enhance system logging and monitoring configurations to ensure comprehensive visibility into process activities, particularly those involving the proc filesystem.\n- Escalate the incident to the security operations center (SOC) or relevant cybersecurity team for further investigation and to determine if the threat is part of a larger attack campaign.\n- Implement additional security controls, such as restricting access to the proc filesystem and employing application whitelisting, to prevent unauthorized memory dumping activities in the future.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\") and\nprocess.name in (\"cat\", \"grep\", \"tail\", \"less\", \"more\", \"egrep\", \"fgrep\") and process.command_line like \"/proc/*/mem\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.1.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "6505e02e-28dd-41cd-b18f-64e649caa4e2",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.007",
+                                "name": "Proc Filesystem",
+                                "reference": "https://attack.mitre.org/techniques/T1003/007/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1212",
+                        "name": "Exploitation for Credential Access",
+                        "reference": "https://attack.mitre.org/techniques/T1212/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "6505e02e-28dd-41cd-b18f-64e649caa4e2_2",
+    "type": "security-rule"
+}

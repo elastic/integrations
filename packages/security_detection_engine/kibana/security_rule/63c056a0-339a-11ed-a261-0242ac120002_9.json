@@ -1,0 +1,77 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects when a service account makes an unauthorized request for resources from the API server. Service accounts follow a very predictable pattern of behavior. A service account should never send an unauthorized request to the API server. This behavior is likely an indicator of compromise or of a problem within the cluster. An adversary may have gained access to credentials/tokens and this could be an attempt to access or create resources to facilitate further movement or execution within the cluster.",
+        "false_positives": [
+            "Unauthorized requests from service accounts are highly abnormal and more indicative of human behavior or a serious problem within the cluster. This behavior should be investigated further."
+        ],
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Denied Service Account Request",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Kubernetes Denied Service Account Request\n\nKubernetes service accounts are integral for managing pod permissions and accessing the API server. They typically follow strict access patterns. Adversaries may exploit compromised service account credentials to probe or manipulate cluster resources, potentially leading to unauthorized access or lateral movement. The detection rule identifies anomalies by flagging unauthorized API requests from service accounts, signaling possible security breaches or misconfigurations.\n\n### Possible investigation steps\n\n- Review the specific service account involved in the unauthorized request by examining the kubernetes.audit.user.username field to determine which service account was used.\n- Analyze the kubernetes.audit.annotations.authorization_k8s_io/decision field to confirm the request was indeed forbidden and identify the nature of the denied request.\n- Investigate the source of the request by checking the originating pod or node to understand where the unauthorized request was initiated.\n- Examine recent activity logs for the service account to identify any unusual patterns or deviations from its typical behavior.\n- Check for any recent changes or deployments in the cluster that might have affected service account permissions or configurations.\n- Assess whether there have been any recent security incidents or alerts related to the cluster that could be connected to this unauthorized request.\n\n### False positive analysis\n\n- Service accounts used for testing or development may generate unauthorized requests if they are not properly configured. Regularly review and update permissions for these accounts to ensure they align with their intended use.\n- Automated scripts or tools that interact with the Kubernetes API might trigger false positives if they use service accounts with insufficient permissions. Ensure these tools have the necessary permissions or adjust the detection rule to exclude known benign activities.\n- Misconfigured role-based access control (RBAC) settings can lead to legitimate service accounts being denied access. Conduct periodic audits of RBAC policies to verify that service accounts have appropriate permissions.\n- Temporary service accounts created for specific tasks might not have the correct permissions, leading to denied requests. Consider excluding these accounts from the rule if they are known to perform non-threatening activities.\n- Service accounts from third-party integrations or plugins may not have the required permissions, resulting in false positives. Validate the permissions needed for these integrations and adjust the rule to exclude their expected behavior.\n\n### Response and remediation\n\n- Immediately isolate the affected service account by revoking its access tokens and credentials to prevent further unauthorized API requests.\n- Conduct a thorough review of the audit logs to identify any other suspicious activities or unauthorized access attempts associated with the compromised service account.\n- Rotate credentials for the affected service account and any other potentially impacted accounts to mitigate the risk of further exploitation.\n- Assess and remediate any misconfigurations in role-based access control (RBAC) policies that may have allowed the unauthorized request, ensuring that service accounts have the minimum necessary permissions.\n- Escalate the incident to the security operations team for further investigation and to determine if additional containment measures are required.\n- Implement enhanced monitoring and alerting for similar unauthorized access attempts to improve detection and response times for future incidents.\n- Review and update incident response plans to incorporate lessons learned from this event, ensuring readiness for similar threats in the future.",
+        "query": "event.dataset: \"kubernetes.audit_logs\"\n  and kubernetes.audit.user.username: system\\:serviceaccount\\:*\n  and kubernetes.audit.annotations.authorization_k8s_io/decision: \"forbid\"\n",
+        "references": [
+            "https://research.nccgroup.com/2021/11/10/detection-engineering-for-kubernetes-clusters/#part3-kubernetes-detections",
+            "https://kubernetes.io/docs/reference/access-authn-authz/authentication/#service-account-tokens"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.4.1"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.username",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "63c056a0-339a-11ed-a261-0242ac120002",
+        "setup": "The Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 9
+    },
+    "id": "63c056a0-339a-11ed-a261-0242ac120002_9",
+    "type": "security-rule"
+}
