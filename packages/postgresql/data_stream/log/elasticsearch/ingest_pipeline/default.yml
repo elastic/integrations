@@ -29,57 +29,36 @@ processors:
       tag: script_timezone
       description: >-
         Add support to map timezone abbreviations that are not supported by
-        Java manually. If no match is found, it will default to
-        UTC as before.
+        Java manually. If no match is found from the user-specified list, 
+        it will default to the value of event.timezone.
       if: ctx._temp_?.timestamp != null
       source: |-
         String get_timezone(def ctx) {
           if (ctx.event?.timezone != null) {
-            String tz = ctx.event.timezone.trim().toUpperCase();
-
-            // Handle abbreviations (e.g., CEST, EST)
-            if (tz.length() <= 4) {
-              return tz;
+            if (ctx._conf?.tz_map != null) {
+              for (def item : ctx._conf.tz_map) {
+                if (item.tz_short == ctx.event?.timezone) {
+                  return item.tz_long;
+                }
+              }
             }
-
-            // Handle offset formats (+00:00, -00:00, +00, -00)
-            if (tz.startsWith('+') || tz.startsWith('-')) {
-              return tz.length() == 3 ? "UTC" + tz + ":00" : "UTC" + tz;
-            }
-
-            return tz;
+            return ctx.event.timezone;
           }
 
           ctx.event.timezone = 'UTC';
           return 'UTC';
         }
-
+        
         def event_timezone = get_timezone(ctx);
-        boolean isAbbreviation = !(event_timezone.contains('+') || event_timezone.contains('-') || event_timezone.length() > 4);
-
-        if (isAbbreviation) {
-          Map CUSTOM_ZONE_IDS = new HashMap(ZoneId.SHORT_IDS);
-          CUSTOM_ZONE_IDS.put("CEST", "Europe/Paris");
-          CUSTOM_ZONE_IDS.put("CET", "Europe/Paris");
-          CUSTOM_ZONE_IDS.put("BST", "Europe/London");
-          CUSTOM_ZONE_IDS.put("IST", "Asia/Kolkata");
-          CUSTOM_ZONE_IDS.put("EEST", "Europe/Athens");
-          CUSTOM_ZONE_IDS.put("EET", "Europe/Athens");
-          CUSTOM_ZONE_IDS.put("AEST", "Australia/Sydney");
-          CUSTOM_ZONE_IDS.put("AEDT", "Australia/Sydney");
-          CUSTOM_ZONE_IDS.put("ACST", "Australia/Adelaide");
-          CUSTOM_ZONE_IDS.put("ACDT", "Australia/Adelaide");
-          CUSTOM_ZONE_IDS.put("AWST", "Australia/Perth");
-          CUSTOM_ZONE_IDS.put("EST", "America/New_York");
-          CUSTOM_ZONE_IDS.put("EDT", "America/New_York");
-
-
-          // Timezone abbreviation (e.g., CEST) needs to be put inside the timestamp
-          ZoneId zoneId = ZoneId.of(event_timezone, CUSTOM_ZONE_IDS);
-          ctx._temp_.date_timezone = zoneId.getId();
-          ctx?._temp_.timestamp += " " + event_timezone;
+        if (!(event_timezone.contains('+')) && !(event_timezone.contains('-')) && !(event_timezone.length() > 4)) {
+          // timezone abbreviation e.g. CEST need to be put inside the timestamp
+          SimpleDateFormat sdf = new SimpleDateFormat("z");
+          sdf.parse(event_timezone);
+          ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
+          ctx?._temp_.timestamp = ctx?._temp_.timestamp + " " + event_timezone;
         } else {
-          // Timezone is either abbreviation+-offset (e.g., UTC+1) or long representation (e.g., Europe/Athens)
+          // timezone is either abbreviation+-offset e.g. UTC+1 or long representation
+          // e.g. Europe/Athens needs to be put as a ZoneId and *not* inside the timestamp
           ctx._temp_.date_timezone = event_timezone;
         }
 
@@ -170,7 +149,9 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - remove:
-      field: _temp_
+      field:
+       - _temp_
+       - _conf
       ignore_missing: true
   - script:
       lang: painless
