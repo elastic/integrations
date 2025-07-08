@@ -16,48 +16,48 @@ redact:
   fields:
     - api_key
 program: |
-    state.with(
-        request(
-            "GET",
-            state.url.trim_right("/") + "/feed/nod/?" + {
-            "api_username": [state.api_username],
-            "api_key": [state.api_key],
-            "sessionID": [state.session_id],
-            "app_name": [state.app_name],
-            "app_partner": [state.app_partner],
-            "app_version": [state.app_version],
-        }.format_query()
-        ).with(
-            {
-                "Header": {
-                    "Accept": ["application/x-ndjson"],
-                },
-            }
-        ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
-            {
-                "events": string(resp.Body).split("\n").filter(x,x!="").map(e,
-                    {
-                        "message": e,
-                    }
-                ),
-                "want_more": resp.StatusCode == 206
-            }
-        :
-            {
-                "events": {
-                    "error": {
-                        "code": string(resp.StatusCode),
-                        "id": string(resp.Status),
-                        "message": "GET:" +
-                        (
-                            (size(resp.Body) != 0) ?
-                                string(resp.Body)
-                            :
-                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                        ),
-                    },
-                },
-                "want_more": false,
-            }
-        )
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/feed/nod/?" + {
+        "api_username": [state.api_username],
+        "api_key": [state.api_key],
+        "sessionID": [state.session_id],
+        "app_name": [state.app_name],
+        "app_partner": [state.app_partner],
+        "app_version": [state.app_version],
+      }.format_query()
+    ).with(
+      {
+        "Header": {
+          "Accept": ["application/x-ndjson"],
+        },
+      }
+    ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
+      {
+        "events": string(resp.Body).split("\n").map(e, x!="",
+          {
+            "message": e,
+          }
+        ),
+        "want_more": resp.StatusCode == 206
+      }
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET: " +
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
     )
+  )
