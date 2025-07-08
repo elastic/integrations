@@ -180,3 +180,87 @@ Only one certificate can be passed to the `certificate_authorities` parameter.
 The certificates can be passed only as file paths. The files have to be present in the environment where the metricbeat is running.
 
 If `verification_mode` is set to `none`, `TrustServerCertificate` will be set to `true`, otherwise it is `false`.
+
+
+## Metrics reference
+
+### Example
+
+```json
+{
+    "@timestamp": "2025-06-25T07:34:08.850Z",
+    "agent": {
+        "ephemeral_id": "062e1a2d-efcc-495c-9cef-2f4d1ea6bdaa",
+        "id": "81f6c307-e62b-45cd-aa0d-be554deb83b2",
+        "name": "elastic-agent-33528",
+        "type": "metricbeat",
+        "version": "9.1.0"
+    },
+    "data_stream": {
+        "dataset": "sql.sql",
+        "namespace": "72095",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "81f6c307-e62b-45cd-aa0d-be554deb83b2",
+        "snapshot": true,
+        "version": "9.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "sql.sql",
+        "duration": 1311560,
+        "ingested": "2025-06-25T07:34:11Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-33528",
+        "ip": [
+            "192.168.160.2",
+            "172.28.0.4"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-04",
+            "02-42-C0-A8-A0-02"
+        ],
+        "name": "elastic-agent-33528",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-50-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 10000
+    },
+    "service": {
+        "address": "svc-sql_input_mysql:3306",
+        "type": "sql"
+    },
+    "sql": {
+        "driver": "mysql",
+        "metrics": {
+            "delayed_insert_threads": "0",
+            "mysqlx_worker_threads": "2",
+            "mysqlx_worker_threads_active": "0",
+            "slow_launch_threads": "0",
+            "threads_cached": "0",
+            "threads_connected": "1",
+            "threads_created": "1",
+            "threads_running": "2"
+        },
+        "query": [
+            "SHOW STATUS LIKE '%Threads%'"
+        ]
+    }
+}
+```
