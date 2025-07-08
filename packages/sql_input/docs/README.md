@@ -70,19 +70,17 @@ Specifies the driver for which you want to run the queries. These are the suppor
 Receives the list of queries to run. `query` and `response_format` is repeated to get multiple query inputs.
 
 For example:
-
+```
 sql_queries: 
   - query: SHOW GLOBAL STATUS LIKE 'Innodb_system%'
-    
     response_format: variables
+```
 
-response_format: This can be either variables or table
+`response_format`: This can be either `variables` or `table`
 
-variables:
-Expects a two-column table that looks like a key/value result. The left column is considered a key and the right column the value. This mode generates a single event on each fetch operation.
+- `variables`: Expects a two-column table that looks like a key/value result. The left column is considered a key and the right column the value. This mode generates a single event on each fetch operation.
 
-table:
-Expects any number of columns. This mode generates a single event for each row.
+- `table`: Expects any number of columns. This mode generates a single event for each row.
 
 For more examples of response format please refer [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html)
 
@@ -98,13 +96,13 @@ This feature can be enabled using the `merge_results` config.
 However, for queries with a response format as "table", a merge is possible only if each table query produces a single row.
 
 For example, if we have the following queries for PostgreSQL:
-
+```
 sql_queries:
   - query: "SELECT blks_hit,blks_read FROM pg_stat_database LIMIT 1;"
     response_format: table
-
   - query: "SELECT checkpoints_timed,checkpoints_req FROM pg_stat_bgwriter;"
     response_format: table
+```
 
 The `merge_results` feature will create a combined event, where `blks_hit`, `blks_read`, `checkpoints_timed` and `checkpoints_req` are part of the same event.
 
