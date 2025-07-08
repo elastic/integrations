@@ -73,7 +73,7 @@ processors:
         }
 
         void addField(Set entities, String fieldName) {
-          addValue(entities, field(fieldName).get(null));
+          addValue(entities, $(fieldName, null));
         }
 
         boolean addValues(Set entities, List values) {
@@ -173,7 +173,7 @@ processors:
             "json.responseElements.volumeId"
           ]);
 
-          field("json.responseElements.securityGroupRuleSet.items").get([]).stream().forEach(i -> {
+          $("json.responseElements.securityGroupRuleSet.items", []).stream().forEach(i -> {
             addValues(enrichCtx.related, [
               i.groupId,
               i.referencedGroupInfo?.groupId,
@@ -181,19 +181,19 @@ processors:
             ]);
           });
 
-          field("json.responseElements.groupSet.items").get([]).stream().forEach(i -> {
+          $("json.responseElements.groupSet.items", []).stream().forEach(i -> {
             addValue(enrichCtx.related, i.groupId);
           });
 
-          field("json.requestParameters.groupSet.items").get([]).stream().forEach(i -> {
+          $("json.requestParameters.groupSet.items", []).stream().forEach(i -> {
             addValue(enrichCtx.related, i.groupId);
           });
 
-          field("json.requestParameters.instancesSet.items").get([]).stream().forEach(i -> {
+          $("json.requestParameters.instancesSet.items", []).stream().forEach(i -> {
             addValue(enrichCtx.related, i.instanceId);
           });
 
-          field("json.responseElements.instancesSet.items").get([]).stream().forEach(instances -> {
+          $("json.responseElements.instancesSet.items", []).stream().forEach(instances -> {
             addValues(enrichCtx.related, [
               instances.subnetId,
               instances.vpcId,
@@ -223,7 +223,7 @@ processors:
             });
           });
 
-          field("json.requestParameters.revokedSecurityGroupRuleSet.items").get([]).stream().forEach(i -> {
+          $("json.requestParameters.revokedSecurityGroupRuleSet.items", []).stream().forEach(i -> {
             addValues(enrichCtx.related, [
               i.securityGroupRuleId,
               i.groupId
@@ -233,7 +233,7 @@ processors:
           if (eventName == "AuthorizeSecurityGroupIngress"
               || eventName == "AuthorizeSecurityGroupEgress") {
             addField(enrichCtx.target, "json.requestParameters.groupId");
-            field("json.responseElements.securityGroupRuleSet.items").get([]).stream().forEach(f -> addValue(enrichCtx.target, f.securityGroupRuleId));
+            $("json.responseElements.securityGroupRuleSet.items", []).stream().forEach(f -> addValue(enrichCtx.target, f.securityGroupRuleId));
 
           } else if (eventName == "CreateTrafficMirrorFilter") {
             addField(enrichCtx.target, "json.responseElements.CreateTrafficMirrorFilterResponse.trafficMirrorFilter.trafficMirrorFilterId");
@@ -255,7 +255,7 @@ processors:
 
           } else if (eventName == "DeleteNetworkAclEntry") {
             addField(enrichCtx.target, "json.requestParameters.networkAclId");
-            def ruleNumber = field("json.requestParameters.ruleNumber").get(null);
+            def ruleNumber = $("json.requestParameters.ruleNumber", null);
             if (ruleNumber != null) {
               addValue(enrichCtx.target, String.valueOf(ruleNumber));
             }
@@ -395,7 +395,7 @@ processors:
 
           if (eventName == "DisableKey"
             || eventName == "ScheduleKeyDeletion") {
-            field("json.resources").get([]).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
           }
         }
 
@@ -446,7 +446,7 @@ processors:
           }
 
           if (eventName == "DeleteAlarms") {
-            field("json.requestParameters.alarmNames").get([]).stream().forEach(f -> addValue(enrichCtx.target, f));
+            $("json.requestParameters.alarmNames", []).stream().forEach(f -> addValue(enrichCtx.target, f));
 
           }
         }
@@ -465,11 +465,11 @@ processors:
             "json.responseElements.vpcSecurityGroups.vpcSecurityGroupId"
           ]);
 
-          field("json.responseElements.dBSubnetGroup.subnets").get([]).stream().forEach(i -> {
+          $("json.responseElements.dBSubnetGroup.subnets", []).stream().forEach(i -> {
             addValue(enrichCtx.related, i.subnetIdentifier);
           });
 
-          field("json.responseElements.vpcSecurityGroups").get([]).stream().forEach(i -> {
+          $("json.responseElements.vpcSecurityGroups", []).stream().forEach(i -> {
             addValue(enrichCtx.related, i.vpcSecurityGroupId);
           });
 
@@ -538,10 +538,10 @@ processors:
             || eventName == "GetObject"
             || eventName == "DeleteObject"
             || eventName == "DeleteBucket") {
-            field("json.resources").get([]).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
 
           } else if (eventName == "PutBucketReplication") {
-            field("json.resources").get([]).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
             addField(enrichCtx.target, "json.requestParameters.ReplicationConfiguration.Rule.Destination.Bucket");
 
           } else if (eventName == "ListBuckets") {
@@ -556,7 +556,7 @@ processors:
           }
 
           if (eventName == "BatchGetSecretValue") {
-            field("json.requestParameters.secretIdList").get([]).stream().forEach(f -> addValue(enrichCtx.target, f));
+            $("json.requestParameters.secretIdList", []).stream().forEach(f -> addValue(enrichCtx.target, f));
 
           } else if (eventName == "GetSecretValue") {
             addField(enrichCtx.target, "json.requestParameters.secretId");
@@ -583,7 +583,7 @@ processors:
             || eventName == "GetParameters"
             || eventName == "CreateControlChannel"
             || eventName == "OpenControlChannel") {
-            field("json.resources").get([]).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
 
           } else if (eventName == "StartSession") {
             addField(enrichCtx.target, "json.requestParameters.target");
@@ -596,14 +596,14 @@ processors:
             addField(enrichCtx.target, "json.requestParameters.sessionId");
 
           } else if (eventName == "SendCommand") {
-            List instanceIds = field("json.requestParameters.instanceIds").get([]);
+            List instanceIds = $("json.requestParameters.instanceIds", []);
 
             if (instanceIds.isEmpty()) {
-              instanceIds = field("json.requestParameters.targets").get([]).stream().flatMap(target -> target.values.stream()).collect(Collectors.toList());
+              instanceIds = $("json.requestParameters.targets", []).stream().flatMap(target -> target.values.stream()).collect(Collectors.toList());
             }
 
             if (instanceIds.size() == 1 && instanceIds.get(0) == "*") {
-              instanceIds = [ field("json.recipientAccountId").get(null) ]; // if all instances, point to full account
+              instanceIds = [ $("json.recipientAccountId", null) ]; // if all instances, point to full account
             }
 
             addValues(enrichCtx.target, instanceIds);
@@ -628,21 +628,21 @@ processors:
           ]);
 
           if (eventName == "AssumeRole") {
-            def userType = field("json.userIdentity.type").get(null);
+            def userType = $("json.userIdentity.type", null);
 
             if (userType == "AWSService") {
-              enrichCtx.actor = field("json.userIdentity.invokedBy").get(null);
+              enrichCtx.actor = $("json.userIdentity.invokedBy", null);
             } else if (userType == "AssumedRole") {
-              enrichCtx.actor = field("json.userIdentity.sessionContext.sessionIssuer.arn").get(null);
+              enrichCtx.actor = $("json.userIdentity.sessionContext.sessionIssuer.arn", null);
             } else {
-              enrichCtx.actor = field("json.userIdentity.arn").get(null);
+              enrichCtx.actor = $("json.userIdentity.arn", null);
             }
 
             addField(enrichCtx.target, "json.requestParameters.roleArn");
 
           } else if (eventName == "GetCallerIdentity") {
             addField(enrichCtx.target, "json.recipientAccountId");
-            enrichCtx.actor = field("json.userIdentity.arn").get(null);
+            enrichCtx.actor = $("json.userIdentity.arn", null);
 
           }
         }
@@ -715,9 +715,9 @@ processors:
         enrichCtx.related = new TreeSet();
         enrichCtx.target = new TreeSet();
 
-        enrichCtx.actor = field("json.userIdentity.arn").get(null); // default actor value
+        enrichCtx.actor = $("json.userIdentity.arn", null); // default actor value
         if (enrichCtx.actor == null) {
-          enrichCtx.actor = field("json.userIdentity.onBehalfOf.userId").get(null);
+          enrichCtx.actor = $("json.userIdentity.onBehalfOf.userId", null);
         }
 
         addFields(enrichCtx.related, [
@@ -728,10 +728,10 @@ processors:
           "json.userIdentity.sessionContext.sessionIssuer.userName"
         ]);
 
-        field("json.resources").get([]).stream().forEach(f -> addValue(enrichCtx.related, f.ARN));
+        $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.related, f.ARN));
 
-        String eventSource = field("json.eventSource").get(null);
-        String eventName = field("json.eventName").get(null);
+        String eventSource = $("json.eventSource", null);
+        String eventName = $("json.eventName", null);
 
         enrichCloudformation(enrichCtx, eventSource, eventName);
         enrichCloudtrail(enrichCtx, eventSource, eventName);
@@ -1755,7 +1755,7 @@ processors:
         Map flattened = [:];
         int prefix = "aws.cloudtrail.flattened.".length();
         for (String f: params.required_flattened_fields) {
-          def v = field(f).get(null);
+          def v = $(f, null);
           if (v == null) {
             continue;
           }
