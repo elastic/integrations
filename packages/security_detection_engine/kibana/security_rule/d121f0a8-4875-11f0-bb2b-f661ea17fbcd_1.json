@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects suspicious OAuth 2.0 token requests where the Microsoft Authentication Broker (29d9ed98-a469-4536-ade2-f981bc1d605e) requests access to the Device Registration Service (01cb2876-7ebd-4aa4-9cc9-d28bd4d359a9) on behalf of a user principal. The presence of the adrs_access scope in the authentication processing details suggests an attempt to access ADRS, which is atypical for standard user sign-ins. This behavior may reflect an effort to abuse device registration for unauthorized persistence, such as acquiring a Primary Refresh Token (PRT) or establishing a trusted session.",
+        "from": "now-9m",
+        "index": [
+            "filebeat-*",
+            "logs-azure.signinlogs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Suspicious ADRS Token Request by Microsoft Auth Broker",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious ADRS Token Request by Microsoft Auth Broker\n\nDetects suspicious OAuth 2.0 token requests where the Microsoft Authentication Broker (29d9ed98-a469-4536-ade2-f981bc1d605e) requests access to the Device Registration Service (01cb2876-7ebd-4aa4-9cc9-d28bd4d359a9) on behalf of a user principal. The presence of the adrs_access scope in the authentication processing details suggests an attempt to access ADRS, which is atypical for standard user sign-ins. This behavior may reflect an effort to abuse device registration for unauthorized persistence, such as acquiring a Primary Refresh Token (PRT) or establishing a trusted session.\n\n### Possible investigation steps\n- Identify the user principal associated with the request by checking `azure.signinlogs.properties.user_principal_name` or `azure.signinlogs.properties.user_id`.\n- Review the `azure.signinlogs.properties.app_id` and `azure.signinlogs.properties.resource_id` to confirm the request is made by the Microsoft Authentication Broker and targeting the Device Registration Service.\n- Examine the `azure.signinlogs.properties.authentication_processing_details.Oauth Scope Info` for the presence of `adrs_access`, indicating an attempt to access ADRS.\n- Check the `azure.signinlogs.properties.incoming_token_type` to confirm the request is made using a refresh token, which is typical for persistent access scenarios.\n- Review the `azure.signinlogs.properties.user_type` to ensure it is a \"Member\" user, as this behavior is unusual for standard user accounts.\n- Review the `source.address` and `source.geo.country_name` to identify the origin of the request. Look for any anomalies or unexpected locations.\n- Check the `azure.signinlogs.properties.device_detail.operating_system` and `azure.signinlogs.properties.device_detail.browser` to identify the device and browser used for the request. Look for any unusual or unexpected devices for this user.\n- Use the `azure.signinlogs.properties.session_id` to correlate this request with other sign-in events for the same user. Look for any patterns of suspicious activity or multiple requests in a short time frame.\n- Correlate with Entra ID audit logs to identify any recent device registrations or changes to the user's device registration status.\n- Pivot to primary refresh token (PRTs) usage for the same user and/or session ID to identify any potential abuse or unauthorized access attempts.\n\n### False positive analysis\n- Legitimate applications or services that require access to the Device Registration Service may trigger this rule. If this is expected behavior, consider adjusting the rule or adding exceptions for specific applications or user accounts.\n- Users being onboarded or enrolled in new devices may also trigger this rule, especially if they are using the Microsoft Authentication Broker for the first time.\n\n### Response and remediation\n- If the request is confirmed to be suspicious or unauthorized, take immediate action to revoke the access token and prevent further access.\n- Disable the user account temporarily to prevent any potential compromise or unauthorized access.\n- Review the user's recent sign-in activity and access patterns to identify any potential compromise or unauthorized access.\n- If the user account is compromised, initiate a password reset and enforce multi-factor authentication (MFA) for the user.\n- Review the conditional access policies in place to ensure they are sufficient to prevent unauthorized access to sensitive resources.\n- Consider deactivating any newly registered devices associated with the user account until further investigation is complete.\n",
+        "query": "event.dataset: \"azure.signinlogs\" and\n    azure.signinlogs.properties.app_id : \"29d9ed98-a469-4536-ade2-f981bc1d605e\" and\n    azure.signinlogs.properties.resource_id : \"01cb2876-7ebd-4aa4-9cc9-d28bd4d359a9\" and\n    azure.signinlogs.category: \"NonInteractiveUserSignInLogs\" and\n    azure.signinlogs.properties.authentication_processing_details: *adrs_access* and\n    azure.signinlogs.properties.incoming_token_type: \"refreshToken\" and\n    azure.signinlogs.properties.user_type: \"Member\"\n",
+        "references": [
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.authentication_processing_details",
+                "type": "flattened"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.incoming_token_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d121f0a8-4875-11f0-bb2b-f661ea17fbcd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Sign-In Logs",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "d121f0a8-4875-11f0-bb2b-f661ea17fbcd_1",
+    "type": "security-rule"
+}

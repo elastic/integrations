@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects SSH session ID change followed by a suspicious SSHD child process, this may indicate the successful execution of a potentially malicious process through the Pluggable Authentication Module (PAM) utility. PAM is a framework used by Linux systems to authenticate users. Adversaries may create malicious PAM modules that grant them persistence onto the target every time a user logs in by executing a backdoor script or command.",
+        "false_positives": [
+            "Trusted system module updates or allowed Pluggable Authentication Module (PAM) daemon configuration changes."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Backdoor Execution Through PAM_EXEC",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Backdoor Execution Through PAM_EXEC\n\nPAM (Pluggable Authentication Module) is a critical framework in Linux systems for user authentication. Adversaries may exploit PAM by inserting malicious modules that execute backdoor scripts during user logins, ensuring persistent access. The detection rule identifies this threat by monitoring SSH session changes followed by unusual child processes, often indicative of backdoor execution, especially when these processes originate from suspicious directories or use scripting languages.\n\n### Possible investigation steps\n\n- Review the process entity ID associated with the alert to identify the specific SSH session and its related activities.\n- Examine the parent process details, specifically focusing on the SSH or SSHD process, to determine the source and legitimacy of the login attempt.\n- Investigate the child process that was started, paying close attention to its name and executable path, especially if it matches patterns like scripting languages (e.g., perl, python) or suspicious directories (e.g., /tmp, /var/tmp).\n- Check the process arguments count and content to understand the command or script being executed, which may provide insights into the potential backdoor's functionality.\n- Correlate the event timestamp with user login records and system logs to identify any unusual login patterns or unauthorized access attempts.\n- Assess the risk and impact by determining if the process has made any unauthorized changes to the system or if it has established any persistent mechanisms.\n- If a backdoor is confirmed, initiate containment measures such as terminating the malicious process, removing the unauthorized PAM module, and conducting a full system audit to prevent further exploitation.\n\n### False positive analysis\n\n- Legitimate administrative scripts executed via SSH may trigger the rule if they use scripting languages like Perl, Python, or PHP. To handle this, identify and whitelist known administrative scripts and their execution paths.\n- Automated backup or maintenance processes that run from directories like /var/backups or /var/log can be mistaken for malicious activity. Exclude these processes by specifying their exact paths and names in the exception list.\n- Development or testing environments where scripts are frequently executed from temporary directories such as /tmp or /dev/shm may cause false positives. Implement exceptions for these environments by defining specific user accounts or process names that are known to be safe.\n- Custom monitoring or logging tools that spawn child processes from SSH sessions might be flagged. Review these tools and add them to the exclusion list if they are verified as non-threatening.\n- Regular user activities involving the use of scripting languages for legitimate purposes can be misinterpreted. Educate users on best practices and adjust the rule to exclude common benign scripts used in daily operations.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes identified by the detection rule, especially those originating from unusual directories or using scripting languages.\n- Conduct a thorough review of PAM configuration files and modules to identify and remove any unauthorized or malicious entries.\n- Reset credentials for all users on the affected system, prioritizing those with elevated privileges, to mitigate potential credential compromise.\n- Restore the system from a known good backup if malicious modifications are confirmed, ensuring that the backup is free from tampering.\n- Implement enhanced monitoring on the affected system and similar environments to detect any recurrence of the threat, focusing on SSH session changes and unusual child processes.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on other systems within the network.\n",
+        "query": "sequence by process.entity_id with maxspan=3s\n  [process where host.os.type == \"linux\" and event.type == \"change\" and event.action == \"session_id_change\" and process.name in (\"ssh\", \"sshd\")]\n  [process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and process.parent.name in (\"ssh\", \"sshd\") and\n   process.args_count == 2 and (\n     process.name like (\"perl*\", \"python*\", \"php*\", \"ruby*\", \"lua*\") or\n     process.executable like (\n       \"/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"./*\", \"/boot/*\", \"/sys/*\", \"/lost+found/*\", \"/media/*\", \"/proc/*\",\n       \"/var/backups/*\", \"/var/log/*\", \"/var/mail/*\", \"/var/spool/*\") or\n     process.name like \".*\"\n   )]\n",
+        "references": [
+            "https://www.elastic.co/security-labs/approaching-the-summit-on-persistence",
+            "https://www.group-ib.com/blog/pluggable-authentication-module/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "96f29282-ffcc-4ce7-834b-b17aee905568",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 2
+    },
+    "id": "96f29282-ffcc-4ce7-834b-b17aee905568_2",
+    "type": "security-rule"
+}
