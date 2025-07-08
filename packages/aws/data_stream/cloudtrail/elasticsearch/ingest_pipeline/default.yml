@@ -904,25 +904,25 @@ processors:
         if (ctx.json?.requestParameters != null) {
           ctx.aws.cloudtrail.request_parameters = ctx.json.requestParameters.toString();
           if (ctx.aws.cloudtrail.request_parameters.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("request_parameters", ctx.json.requestParameters);
+            ctx.aws.cloudtrail.flattened.request_parameters = ctx.json.requestParameters;
           }
         }
         if (ctx.json?.responseElements != null) {
           ctx.aws.cloudtrail.response_elements = ctx.json.responseElements.toString();
           if (ctx.aws.cloudtrail.response_elements.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("response_elements", ctx.json.responseElements);
+            ctx.aws.cloudtrail.flattened.response_elements = ctx.json.responseElements;
           }
         }
         if (ctx.json?.additionalEventData != null) {
           ctx.aws.cloudtrail.additional_eventdata = ctx.json.additionalEventData.toString();
           if (ctx.aws.cloudtrail.additional_eventdata.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("additional_eventdata", ctx.json.additionalEventData);
+            ctx.aws.cloudtrail.flattened.additional_eventdata = ctx.json.additionalEventData;
           }
         }
         if (ctx.json?.serviceEventDetails != null) {
           ctx.aws.cloudtrail.service_event_details = ctx.json.serviceEventDetails.toString();
           if (ctx.aws.cloudtrail.service_event_details.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("service_event_details", ctx.json.serviceEventDetails);
+            ctx.aws.cloudtrail.flattened.service_event_details = ctx.json.serviceEventDetails;
           }
         }
       ignore_failure: true
@@ -962,10 +962,10 @@ processors:
               Map resource = [:];
               resource.putAll(originalResource);
               if (resource.containsKey('ARN')) {
-                resource['arn'] = resource.remove('ARN');
+                resource.arn = resource.remove('ARN');
               }
               if (resource.containsKey('accountId')) {
-                resource['account_id'] = resource.remove('accountId');
+                resource.account_id = resource.remove('accountId');
               }
               String key = (resource.containsKey('arn') ? resource.arn : '') + '_' +
                            (resource.containsKey('account_id') ? resource.account_id : '') + '_' +
@@ -1016,25 +1016,25 @@ processors:
         Map aed_map = [:];
         if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MobileVersion != null) {
           if (ctx.aws.cloudtrail.flattened.additional_eventdata.MobileVersion == 'No') {
-            aed_map.put("mobile_version", false);
+            aed_map.mobile_version = false;
           } else {
-            aed_map.put("mobile_version", true);
+            aed_map.mobile_version = true;
           }
         }
         if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.LoginTo != null) {
-          aed_map.put("login_to", ctx.aws.cloudtrail.flattened.additional_eventdata.LoginTo);
+          aed_map.login_to = ctx.aws.cloudtrail.flattened.additional_eventdata.LoginTo;
         }
         if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MFAUsed != null) {
           if (ctx.aws.cloudtrail.flattened.additional_eventdata.MFAUsed == 'No') {
-            aed_map.put("mfa_used", false);
+            aed_map.mfa_used = false;
           } else {
-            aed_map.put("mfa_used", true);
+            aed_map.mfa_used = true;
           }
         }
         if (aed_map.size() > 0) {
           Map cl_map = [:];
-          cl_map.put("additional_eventdata", aed_map);
-          ctx.aws.cloudtrail.put("console_login", cl_map);
+          cl_map.additional_eventdata = aed_map;
+          ctx.aws.cloudtrail.console_login = cl_map;
         }
   - script:
       lang: painless
