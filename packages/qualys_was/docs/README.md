@@ -485,8 +485,14 @@ An example event for `vulnerability` looks as following:
                 "id": 987654321,
                 "name": "Description Name",
                 "tags": [
-                    "Tag:1",
-                    "Tag:2"
+                    {
+                        "id": 12348765,
+                        "name": "Tag:1"
+                    },
+                    {
+                        "id": 23459876,
+                        "name": "Tag:2"
+                    }
                 ],
                 "url": "https://web.address.com"
             }
@@ -657,5 +663,6 @@ An example event for `vulnerability` looks as following:
 | qualys_was.vulnerability.wasc_references.url | WASC reference URL. Available in verbose mode. | keyword |
 | qualys_was.vulnerability.web_app.id | Web Application ID. | long |
 | qualys_was.vulnerability.web_app.name | Web Application name. | keyword |
-| qualys_was.vulnerability.web_app.tags | Web Application tags. Available in verbose mode. | keyword |
+| qualys_was.vulnerability.web_app.tags.id | ID of tag. | long |
+| qualys_was.vulnerability.web_app.tags.name | Name of tag | keyword |
 | qualys_was.vulnerability.web_app.url | Web Application base URL. | keyword |
