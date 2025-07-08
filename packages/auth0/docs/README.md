@@ -26,7 +26,7 @@ This integration method is also documented on the Auth0 webpage for the [Elastic
 3. Enter value for **Authorization Token**. This must match the value entered when configuring the "Custom Webhook" in Auth0 cloud.
 4. In the "Advanced options" section, enter settings for **SSL Configuration**. Auth0 requires that webhook requests use HTTPS. So you must either configure the integration with a valid TLS certificate here, or use a separarately configured reverse proxy in front of the agent.
 
-Using the external address of the agent to which the integration is added, and the configured "Listen Port" and "Webhook Path", make a note of the full endpoint URL. It will have the form `https://{AGENT_ADDRESS}:{LISTEN_PORT}{WEBHOOK_PATH}` (for example, `https://agent01.external.example.com:8383/auth0/logs`).
+Using the external address of the agent to which the integration is added, and the configured "Listen Port" and "Webhook Path", make a note of the full endpoint URL. It will have the form `https://{AGENT_ADDRESS}:{LISTEN_PORT}/{WEBHOOK_PATH}` (for example, `https://agent01.external.example.com:8383/auth0/logs`).
 
 ### Creating the stream in Auth0
 
@@ -34,7 +34,7 @@ Using the external address of the agent to which the integration is added, and t
 2. Choose **Custom Webhook**.
 3. Name the new **Event Stream** appropriately (e.g. Elastic) and click **Create**.
 4. In **Payload URL**, enter the endpoint URL set up in the **Configure the Auth0 integration** section.
-5. In **Authorization Token**, enter the **Authorization Token**. This must match the value entered in Step 3 of **Configure the Auth0 integration** section.
+5. In **Authorization Token**, enter the **Authorization Token**. This must match the value entered in Step 3 of the **Configure the Auth0 integration** section.
 6. In **Content Type**, choose  **application/json**.
 7. In **Content Format**, choose **JSON Lines**.
 8. Click **Save**.
