@@ -39,10 +39,10 @@ Please make sure to use the given response formats.
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Netskope.
-3. Select the "Netskope" integration from the search results.
-4. Select the Add Netskope Integration button to add the integration.
+1. In Kibana go to **Management** > **Integrations**.
+2. In "Search for integrations" search bar, type **Netskope**.
+3. Select the **Netskope** integration from the search results.
+4. Select the Add **Netskope** Integration button to add the integration.
 5. While adding the integration, if you want to collect logs via AWS S3, you'll need to provide the following details:
    - Collect logs via S3 Bucket toggled on
    - Access Key ID
