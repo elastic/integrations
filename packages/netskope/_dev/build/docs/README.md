@@ -1,6 +1,6 @@
 # Netskope
 
-This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785) on respective TCP ports.
+This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785) and [Netskope Log Streaming](https://docs.netskope.com/en/log-streaming/). To receive log from Netskope Cloud Log Shipper use TCP input and for Netskope Log Streaming use any of the Cloud based input(AWS, GCS, Azure Blob Storage).
 
 The log message is expected to be in JSON format. The data is mapped to
 ECS fields where applicable and the remaining fields are written under
@@ -8,6 +8,7 @@ ECS fields where applicable and the remaining fields are written under
 
 ## Setup steps
 
+### For receiving log from Netskope Cloud Shipper
 1. Configure this integration with the TCP input in Kibana.
 2. For all Netskope Cloud Exchange configurations refer to the [Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785).
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
@@ -33,6 +34,51 @@ ECS fields where applicable and the remaining fields are written under
 > Note: For detailed steps refer to [Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
 Please make sure to use the given response formats.
 
+### For receiving log from Netskope Log Streaming
+1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). While Configuring make sure compression is set to GZIP as other compression type is not supported.
+
+### Enabling the integration in Elastic:
+
+1. In Kibana go to Management > Integrations
+2. In "Search for integrations" search bar, type Netskope.
+3. Select the "Netskope" integration from the search results.
+4. Select the Add Netskope Integration button to add the integration.
+5. While adding the integration, if you want to collect logs via AWS S3, you'll need to provide the following details:
+   - Collect logs via S3 Bucket toggled on
+   - Access Key ID
+   - Secret Access Key
+   - Bucket ARN
+   - Session Token
+
+   or if you want to collect logs via AWS SQS, you'll need to provide the following details:
+   - Collect logs via S3 Bucket toggled off
+   - Queue URL
+   - Secret Access Key
+   - Access Key ID
+
+   or if you want to collect logs via GCS, you'll need to provide the following details:
+   - Project ID
+   - Buckets
+   - Service Account Key/Service Account Credentials File
+
+   or if you want to collect logs via Azure Blob Storage, you'll need to provide the following details:
+   For OAuth2 (Microsoft Entra ID RBAC):
+   - Toggle on **Collect logs using OAuth2 authentication**
+   - Account Name
+   - Client ID
+   - Client Secret
+   - Tenant ID
+   - Container Details.
+
+   For Service Account Credentials:
+   - Service Account Key or the URI
+   - Account Name
+   - Container Details
+
+   Or if you want to collect logs via TCP, you'll need to provide the following details:
+   - Listen Address
+   - Listen Port
+
 ## Compatibility
 
 This package has been tested against `Netskope version 95.1.0.645` and `Netskope Cloud Exchange version 3.4.0`.
@@ -54,6 +100,12 @@ Default port: _9021_
 {{fields "alerts"}}
 
 {{event "alerts"}}
+
+### Alerts V2
+
+{{fields "alerts_v2"}}
+
+{{event "alerts_v2"}}
 
 ### Events
 
