@@ -34,11 +34,69 @@ processors:
         - '^%{DATA:user.name} :( %{DATA:system.auth.sudo.error} ;)? TTY=%{DATA:system.auth.sudo.tty} ; PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ; COMMAND=%{GREEDYDATA:system.auth.sudo.command}'
         - '^new group: name=%{DATA:group.name}, GID=%{NUMBER:group.id}'
         - '^new user: name=%{DATA:user.name}, UID=%{NUMBER:user.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
+        - '^%{WORD:pam.module}\(%{WORD:pam.service}:%{WORD:pam.facility}\):%{SPACE}%{DATA:pam.message};%{SPACE}%{DATA:_temp.pam_kv}$'
       on_failure:
         - rename:
             description: Leave the unmatched content in message.
             field: _temp.message
             target_field: message
+  - gsub:
+      ignore_missing: true
+      ignore_failure: true
+      field: _temp.pam_kv
+      tag: pam_kv_preparser
+      pattern: "\\s+"
+      replacement: ' '
+  - kv:
+      tag: pam_kv_parser
+      field: _temp.pam_kv
+      ignore_missing: true
+      field_split: ' '
+      value_split: '='
+      trim_key: " "
+      trim_value: " "
+      prefix: pam.data.
+      strip_brackets: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  - rename:
+      tag: rename_user
+      field: pam.data.ruser
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_ruser
+      field: pam.data.user
+      target_field: user.effective.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_euid
+      field: pam.data.euid
+      target_field: user.effective.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_uid
+      field: pam.data.uid
+      target_field: user.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_rhost
+      field: pam.data.rhost
+      target_field: source.address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_category
+      field: pam.data.uid
+      target_field: user.id
+      ignore_missing: true
+      ignore_failure: true
   - append:
       tag: append_category_process
       field: event.category
@@ -60,6 +118,8 @@ processors:
         - 'for user %{QUOTE}?%{DATA:_temp.foruser}%{QUOTE}?$'
         - 'by user %{QUOTE}?%{DATA:_temp.byuser}%{QUOTE}?$'
         - '%{BOUNDARY} user %{QUOTE}%{DATA:_temp.user}%{QUOTE}'
+        - '%{BOUNDARY}user=%{QUOTE}%{DATA:user.effective.name}%{QUOTE}'
+        - '%{BOUNDARY}ruser=%{QUOTE}%{DATA:user.name}%{QUOTE}'
       pattern_definitions:
         QUOTE: "['\"]"
         BOUNDARY: "(?<! )"
@@ -130,7 +190,7 @@ processors:
       field: event.category
       value: authentication
       allow_duplicates: false
-      if: ctx._temp?.category == 'auth'
+      if: ctx._temp?.category == 'auth' || ctx.pam?.facility == 'auth'
   - set:
       tag: set_outcome_success
       field: event.outcome
@@ -140,7 +200,7 @@ processors:
       tag: set_outcome_failure
       field: event.outcome
       value: failure
-      if: ctx.message != null && ctx.message.contains('authentication failure')
+      if: (ctx.message != null && ctx.message.contains('authentication failure')) || (ctx.pam?.message != null && ctx.pam?.message.contains('authentication failure'))
   - append:
       tag: append_category_authentication_2
       field: event.category
@@ -194,6 +254,10 @@ processors:
       tag: remove_temp_2
       field: _temp
       ignore_missing: true
+  - remove:
+      tag: remove_pam
+      field: pam
+      ignore_missing: true
   - convert:
       tag: convert_source-address
       field: source.address
@@ -227,6 +291,7 @@ processors:
       field: system.auth.timestamp
       target_field: '@timestamp'
       formats:
+        - MMM d HH:mm:ss
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
         - ISO8601
