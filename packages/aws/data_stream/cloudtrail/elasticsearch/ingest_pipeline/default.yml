@@ -4,12 +4,12 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      if: 'ctx.event?.original == null'
+      if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
       ignore_missing: true
-      if: 'ctx.event?.original != null'
+      if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
       if: ctx['@timestamp'] != null
@@ -19,7 +19,7 @@ processors:
       field: event.original
       target_field: json
   - pipeline:
-      if: ctx?.json?.preview != null
+      if: ctx.json?.preview != null
       name: '{{ IngestPipeline "third-party" }}'
   - set:
       field: ecs.version
@@ -52,7 +52,7 @@ processors:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
       tag: script_append_related_entity
-      if: "ctx?.json?.eventName != null && ctx?.tags != null && ctx.tags.contains('actor_target_mapping')"
+      if: ctx.json?.eventName != null && ctx.tags != null && ctx.tags.contains('actor_target_mapping')
       on_failure:
         - append:
             field: tags
@@ -67,9 +67,9 @@ processors:
               {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
       source: |
         void addFields(Set entities, List fields) {
-            for (String field : fields) {
-              addField(entities, field);
-            }
+          for (String field : fields) {
+            addField(entities, field);
+          }
         }
 
         void addField(Set entities, String fieldName) {
@@ -77,25 +77,23 @@ processors:
         }
 
         boolean addValues(Set entities, List values) {
-            boolean addedAll = true;
-            for (String value : values) {
-              addedAll = addedAll && addValue(entities, value);
-            }
-
-            return addedAll;
+          boolean addedAll = true;
+          for (String value : values) {
+            addedAll = addedAll && addValue(entities, value);
+          }
+          return addedAll;
         }
 
         boolean addValue(Set entities, String value) {
           if (value == null || value == "") {
             return false;
           }
-
           return entities.add(value);
         }
 
         void enrichCloudformation(def enrichCtx, def eventSource, def eventName) {
           if (eventSource != "cloudformation.amazonaws.com") {
-              return;
+            return;
           }
 
           if (eventName == "CreateStackSet") {
@@ -107,7 +105,7 @@ processors:
 
         void enrichCloudtrail(def enrichCtx, def eventSource, def eventName) {
           if (eventSource != "cloudtrail.amazonaws.com") {
-              return;
+            return;
           }
 
           addFields(enrichCtx.related, [
@@ -131,7 +129,7 @@ processors:
 
         void enrichEc2InstanceConnect(def enrichCtx, def eventSource, def eventName) {
           if (eventSource != "ec2-instance-connect.amazonaws.com") {
-              return;
+            return;
           }
 
           if (eventName == "SendSSHPublicKey"
@@ -284,7 +282,7 @@ processors:
 
         void enrichElasticFileSystem(def enrichCtx, def eventSource, def eventName) {
           if (eventSource != "elasticfilesystem.amazonaws.com") {
-              return;
+            return;
           }
 
           if (eventName == "DeleteFileSystem") {
@@ -296,7 +294,7 @@ processors:
 
         void enrichEvents(def enrichCtx, def eventSource, def eventName) {
           if (eventSource != "events.amazonaws.com") {
-              return;
+            return;
           }
 
           if (eventName == "DeleteRule") {
@@ -840,7 +838,7 @@ processors:
       ignore_failure: true
   - set:
       field: event.action
-      value: '{{json.eventName}}'
+      value: '{{{json.eventName}}}'
       ignore_failure: true
       ignore_empty_value: true
   - rename:
@@ -901,9 +899,9 @@ processors:
       lang: painless
       source: |
         if (ctx.aws.cloudtrail?.flattened == null) {
-            Map map = new HashMap();
-            ctx.aws.cloudtrail.put("flattened", map);
-          }
+          Map map = new HashMap();
+          ctx.aws.cloudtrail.put("flattened", map);
+        }
         if (ctx.json?.requestParameters != null) {
           ctx.aws.cloudtrail.request_parameters = ctx.json.requestParameters.toString();
           if (ctx.aws.cloudtrail.request_parameters.length() < 32766) {
@@ -957,28 +955,27 @@ processors:
       description: 'Drops duplicates where the same combination of ARN, accountId and type is found multiple times in the resources list.'
       lang: painless
       source: >
-        if (ctx.json?.resources instanceof List) {
-              def resources = ctx.json.resources;
-
-              Map uniqueResources = new HashMap();
-              for (def originalResource : resources) {
-                if (originalResource instanceof Map) {
-                  Map resource = new HashMap();
-                  resource.putAll(originalResource);
-                  if (resource.containsKey('ARN')) {
-                    resource['arn'] = resource.remove('ARN');
-                  }
-                  if (resource.containsKey('accountId')) {
-                    resource['account_id'] = resource.remove('accountId');
-                  }
-                  String key = (resource.containsKey('arn') ? resource.arn : '') + '_' +
-                               (resource.containsKey('account_id') ? resource.account_id : '') + '_' +
-                               (resource.containsKey('type') ? resource.type : '');
-                  uniqueResources[key] = resource;
-                }
+          def resources = ctx.json.resources;
+          
+          Map uniqueResources = new HashMap();
+          for (def originalResource : resources) {
+            if (originalResource instanceof Map) {
+              Map resource = new HashMap();
+              resource.putAll(originalResource);
+              if (resource.containsKey('ARN')) {
+                resource['arn'] = resource.remove('ARN');
               }
-             ctx.json.resources = new ArrayList(uniqueResources.values());
+              if (resource.containsKey('accountId')) {
+                resource['account_id'] = resource.remove('accountId');
+              }
+              String key = (resource.containsKey('arn') ? resource.arn : '') + '_' +
+                           (resource.containsKey('account_id') ? resource.account_id : '') + '_' +
+                           (resource.containsKey('type') ? resource.type : '');
+              uniqueResources[key] = resource;
             }
+          }
+          ctx.json.resources = new ArrayList(uniqueResources.values());
+        }
   - rename:
       field: json.resources
       target_field: aws.cloudtrail.resources
@@ -1018,17 +1015,17 @@ processors:
           return;
         }
         Map aed_map = new HashMap();
-        if (ctx?.aws?.cloudtrail?.flattened?.additional_eventdata?.MobileVersion != null) {
+        if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MobileVersion != null) {
           if (ctx.aws.cloudtrail.flattened.additional_eventdata.MobileVersion == 'No') {
             aed_map.put("mobile_version", false);
           } else {
             aed_map.put("mobile_version", true);
           }
         }
-        if (ctx?.aws?.cloudtrail?.flattened?.additional_eventdata?.LoginTo != null) {
+        if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.LoginTo != null) {
           aed_map.put("login_to", ctx.aws.cloudtrail.flattened.additional_eventdata.LoginTo);
         }
-        if (ctx?.aws?.cloudtrail?.flattened?.additional_eventdata?.MFAUsed != null) {
+        if (ctx.aws?.cloudtrail?.flattened?.additional_eventdata?.MFAUsed != null) {
           if (ctx.aws.cloudtrail.flattened.additional_eventdata.MFAUsed == 'No') {
             aed_map.put("mfa_used", false);
           } else {
@@ -1548,22 +1545,22 @@ processors:
         ctx.event.kind = 'event';
         ctx.event.type = ['info'];
 
-        if (ctx?.aws?.cloudtrail?.error_code != null || ctx?.aws?.cloudtrail?.error_message != null) {
-            ctx.event.outcome = 'failure'
+        if (ctx.aws?.cloudtrail?.error_code != null || ctx.aws?.cloudtrail?.error_message != null) {
+          ctx.event.outcome = 'failure'
         } else {
-            ctx.event.outcome = 'success'
+          ctx.event.outcome = 'success'
         }
 
-        if (ctx?.event?.action == null) {
-            return;
+        if (ctx.event?.action == null) {
+          return;
         }
 
-        if (ctx.event.action == 'ConsoleLogin' && ctx?.aws?.cloudtrail?.flattened?.response_elements.ConsoleLogin != null) {
-            ctx.event.outcome = Processors.lowercase(ctx.aws.cloudtrail.flattened.response_elements.ConsoleLogin);
+        if (ctx.event.action == 'ConsoleLogin' && ctx.aws?.cloudtrail?.flattened?.response_elements.ConsoleLogin != null) {
+          ctx.event.outcome = Processors.lowercase(ctx.aws.cloudtrail.flattened.response_elements.ConsoleLogin);
         }
 
         if (params.get(ctx.event.action) == null) {
-            return;
+          return;
         }
 
         def hm = new HashMap(params.get(ctx.event.action));
@@ -1584,7 +1581,7 @@ processors:
         ctx.json?.previousDigestHashAlgorithm != null && ctx.json?.previousDigestHashAlgorithm == 'SHA-256'
   - append:
       field: related.hash
-      value: '{{file.hash.sha256}}'
+      value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
   - rename:
       field: json.logFiles
@@ -1646,27 +1643,27 @@ processors:
       ignore_failure: true
   - set:
       field: group.id
-      value: '{{aws.cloudtrail.flattened.response_elements.group.groupId}}'
+      value: '{{{aws.cloudtrail.flattened.response_elements.group.groupId}}}'
       ignore_empty_value: true
       ignore_failure: true
   - set:
       field: user.target.id
-      value: '{{aws.cloudtrail.flattened.response_elements.user.userId}}'
+      value: '{{{aws.cloudtrail.flattened.response_elements.user.userId}}}'
       ignore_empty_value: true
       ignore_failure: true
   - set:
       field: user.changes.name
-      value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
+      value: '{{{aws.cloudtrail.flattened.request_parameters.newUserName}}}'
       ignore_empty_value: true
       ignore_failure: true
   - set:
       field: group.name
-      value: '{{aws.cloudtrail.flattened.request_parameters.groupName}}'
+      value: '{{{aws.cloudtrail.flattened.request_parameters.groupName}}}'
       ignore_empty_value: true
       ignore_failure: true
   - set:
       field: user.target.name
-      value: '{{aws.cloudtrail.flattened.request_parameters.userName}}'
+      value: '{{{aws.cloudtrail.flattened.request_parameters.userName}}}'
       ignore_empty_value: true
       ignore_failure: true
   - rename:
