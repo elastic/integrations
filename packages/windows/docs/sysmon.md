@@ -497,7 +497,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
-| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.pid | The process ID (PID) of the process that generated/logged the event. This is often the event collector process and not necessarily the process that the event is about. | long |
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
