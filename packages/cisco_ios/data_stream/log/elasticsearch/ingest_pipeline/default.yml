@@ -68,6 +68,7 @@ processors:
       tag: grok_message
       patterns:
         - '^%%{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA}%%{GREEDYDATA:message}$'
         - '^%{GREEDYDATA:_temp_.generic_message}$'
   # Handle all-digit hostnames as sequence numbers
   - grok:
@@ -226,11 +227,22 @@ processors:
       type: long
       tag: convert_sequence
       ignore_missing: true
+  - trim:
+      field: event.code
+      tag: trim_event_code
+      ignore_missing: true
   - dissect:
       field: message
       tag: dissect_gp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
       if: "['IPACCESSLOGP', 'ACCESSLOGP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)"
+      ignore_failure: true
+  - dissect:
+      field: message
+      tag: dissect_gp
+      pattern: "access-list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
+      if: "['IPACCESSLOGP', 'ACCESSLOGP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)"
+      ignore_failure: true
   - dissect:
       field: message
       tag: dissect_gdp
