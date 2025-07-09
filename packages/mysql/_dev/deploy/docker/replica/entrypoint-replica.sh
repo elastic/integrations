@@ -62,7 +62,7 @@ fi
 echo "Resetting the slave..."
 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "STOP SLAVE; RESET SLAVE ALL;" 2>/dev/null || echo "Slave was not running"
 
-# Use here-doc to avoid command line escaping issues
+
 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" <<EOF
 CHANGE MASTER TO 
   MASTER_HOST='$MYSQL_MASTER_HOST',
