@@ -21,7 +21,7 @@ processors:
       patterns:
       - (%{NGINX_HOST} )?"?(?:%{NGINX_ADDRESS_LIST:nginx.access.remote_ip_list}|%{NOTSPACE:source.address})
         - (-|%{DATA:user.name}) \[%{HTTPDATE:nginx.access.time}\] "%{DATA:nginx.access.info}"
-        %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}( %{NUMBER:nginx.access.response_time})?
+        %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}(?:\s%{NUMBER:nginx.access.response_time})?
         "(-|%{DATA:http.request.referrer})" "(-|%{DATA:user_agent.original})"
       pattern_definitions:
         NGINX_HOST: (?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?
