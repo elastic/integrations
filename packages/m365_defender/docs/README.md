@@ -126,9 +126,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-10-20T09:54:07.503Z",
     "agent": {
-        "ephemeral_id": "d28314df-ad7a-40a5-9913-5c06bf49541c",
-        "id": "014c7fea-1f1f-4800-ba49-27a05c9ae09a",
-        "name": "elastic-agent-58800",
+        "ephemeral_id": "d094e4bf-1ad6-4736-9353-29b42b09ac42",
+        "id": "64473222-0837-45a8-9e97-7a1ea893829b",
+        "name": "elastic-agent-96323",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -139,7 +139,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.alert",
-        "namespace": "46990",
+        "namespace": "69828",
         "type": "logs"
     },
     "device": {
@@ -151,7 +151,7 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "014c7fea-1f1f-4800-ba49-27a05c9ae09a",
+        "id": "64473222-0837-45a8-9e97-7a1ea893829b",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -171,7 +171,7 @@ An example event for `alert` looks as following:
         "duration": 2478000000,
         "end": "2023-10-20T09:51:41.993Z",
         "id": "daefa1828b-dd4e-405c-8a3b-aa28596830dd_1",
-        "ingested": "2025-07-08T10:17:11Z",
+        "ingested": "2025-07-09T11:43:01Z",
         "kind": "alert",
         "original": "{\"actorDisplayName\":null,\"additionalData\":null,\"alertPolicyId\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/daefa1828b-dd4e-405c-8a3b-aa28596830dd_1?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"assignedTo\":null,\"category\":\"Execution\",\"classification\":null,\"comments\":[],\"createdDateTime\":\"2023-10-20T09:53:09.8839373Z\",\"description\":\"A suspicious PowerShell activity was observed on the machine. \\nThis behavior may indicate that PowerShell was used during installation, exploration, or in some cases in lateral movement activities which are used by attackers to invoke modules, download external payloads, or get more information about the system. Attackers usually use PowerShell to bypass security protection mechanisms by executing their payload in memory without touching the disk and leaving any trace.\",\"detectionSource\":\"microsoftDefenderForEndpoint\",\"detectorId\":\"7f1c3609-a3ff-40e2-995b-c01770161d68\",\"determination\":null,\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":\"f18bd540-d5e4-46e0-8ddd-3d03a59e4e14\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"defenderAvStatus\":\"notSupported\",\"detailedRoles\":[\"PrimaryDevice\"],\"deviceDnsName\":\"clw555test\",\"firstSeenDateTime\":\"2023-10-20T09:50:17.7383987Z\",\"healthStatus\":\"inactive\",\"ipInterfaces\":[\"192.168.5.65\",\"fe80::cfe4:80b:615c:38fb\",\"127.0.0.1\",\"::1\"],\"loggedOnUsers\":[{\"accountName\":\"CDPUserIS-38411\",\"domainName\":\"AzureAD\"}],\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22621,\"osPlatform\":\"Windows11\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"high\",\"roles\":[],\"tags\":[],\"verdict\":\"unknown\",\"version\":\"22H2\",\"vmMetadata\":null},{\"@odata.type\":\"#microsoft.graph.security.userEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"CDPUserIS-38411\",\"azureAdUserId\":null,\"displayName\":null,\"domainName\":\"AzureAD\",\"userPrincipalName\":null,\"userSid\":\"S-1-12-1-1485667349-1150190949-4065799612-2328216759\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.urlEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"url\":\"http://127.0.0.1/1.exe\",\"verdict\":\"suspicious\"},{\"@odata.type\":\"#microsoft.graph.security.ipEvidence\",\"countryLetterCode\":null,\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"ipAddress\":\"127.0.0.1\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"suspicious\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"powershell.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":491520,\"issuer\":null,\"sha1\":\"a72c41316307889e43fe8605a0dca4a72e72a011\",\"sha256\":\"d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80\",\"signer\":null},\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"parentProcessCreationDateTime\":\"2023-10-20T09:51:19.5064237Z\",\"parentProcessId\":5772,\"parentProcessImageFile\":{\"fileName\":\"cmd.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":323584,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\\\\\test-WDATP-test\\\\\\\\invoice.exe');Start-Process 'C:\\\\\\\\test-WDATP-test\\\\\\\\invoice.exe'\",\"processCreationDateTime\":\"2023-10-20T09:51:39.4997961Z\",\"processId\":8224,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"CDPUserIS-38411\",\"azureAdUserId\":null,\"displayName\":null,\"domainName\":\"AzureAD\",\"userPrincipalName\":null,\"userSid\":\"S-1-12-1-1485667349-1150190949-4065799612-2328216759\"},\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2023-10-20T09:51:39.5154802Z\",\"id\":\"daefa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"incidentId\":\"23\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/23?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"lastActivityDateTime\":\"2023-10-20T09:51:41.9939003Z\",\"lastUpdateDateTime\":\"2023-10-20T09:54:07.5033333Z\",\"mitreTechniques\":[\"T1059.001\"],\"productName\":\"Microsoft Defender for Endpoint\",\"providerAlertId\":\"efa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"recommendedActions\":\"1. Examine the PowerShell command line to understand what commands were executed. Note: the content may need to be decoded if it is Base64-encoded.\\n2. Search the script for more indicators to investigate - for example IP addresses (potential C\\u0026C servers), target computers etc.\\n3. Explore the timeline of this and other related machines for additional suspect activities around the time of the alert.\\n4. Look for the process that invoked this PowerShell run and their origin. Consider submitting any suspect files in the chain for deep analysis for detailed behavior information.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"medium\",\"status\":\"new\",\"tenantId\":\"3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious PowerShell command line\"}",
         "provider": "microsoftDefenderForEndpoint",
@@ -958,9 +958,9 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2021-09-30T09:35:45.113Z",
     "agent": {
-        "ephemeral_id": "1b321d64-b466-4495-bd80-280b6ca19473",
-        "id": "7f6828e9-c162-4da3-8eb9-6f5ed17fd653",
-        "name": "elastic-agent-67897",
+        "ephemeral_id": "66b373e4-662c-4674-bada-9e7e0b0dbebf",
+        "id": "9a72116d-4132-4ab3-87f8-3d7f0be0ca87",
+        "name": "elastic-agent-67003",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -974,14 +974,14 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.incident",
-        "namespace": "57751",
+        "namespace": "72149",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7f6828e9-c162-4da3-8eb9-6f5ed17fd653",
+        "id": "9a72116d-4132-4ab3-87f8-3d7f0be0ca87",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -993,7 +993,7 @@ An example event for `incident` looks as following:
         "created": "2021-08-13T08:43:35.553Z",
         "dataset": "m365_defender.incident",
         "id": "2972395",
-        "ingested": "2025-07-08T10:18:10Z",
+        "ingested": "2025-07-09T11:44:00Z",
         "kind": "alert",
         "original": "{\"@odata.type\":\"#microsoft.graph.security.incident\",\"alerts\":{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}},{\"@odata.type\":\"#microsoft.graph.security.fileEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"fileDetails\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"parentProcessCreationDateTime\":\"2021-08-12T07:39:09.0909239Z\",\"parentProcessId\":668,\"parentProcessImageFile\":{\"fileName\":\"services.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":731744,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"\\\"MsSense.exe\\\"\",\"processCreationDateTime\":\"2021-08-12T12:43:19.0772577Z\",\"processId\":4780,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"SYSTEM\",\"azureAdUserId\":null,\"domainName\":\"NT AUTHORITY\",\"userPrincipalName\":null,\"userSid\":\"S-1-5-18\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.registryKeyEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"registryHive\":\"HKEY_LOCAL_MACHINE\",\"registryKey\":\"SYSTEM\\\\CONTROLSET001\\\\CONTROL\\\\WMI\\\\AUTOLOGGER\\\\SENSEAUDITLOGGER\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-961444813\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"},\"assignedTo\":\"KaiC@contoso.onmicrosoft.com\",\"classification\":\"truePositive\",\"comments\":[{\"comment\":\"Demo incident\",\"createdBy\":\"DavidS@contoso.onmicrosoft.com\",\"createdTime\":\"2021-09-30T12:07:37.2756993Z\"}],\"createdDateTime\":\"2021-08-13T08:43:35.5533333Z\",\"determination\":\"multiStagedAttack\",\"displayName\":\"Multi-stage incident involving Initial access \\u0026 Command and control on multiple endpoints reported by multiple sources\",\"id\":\"2972395\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47\",\"lastUpdateDateTime\":\"2021-09-30T09:35:45.1133333Z\",\"redirectIncidentId\":null,\"severity\":\"medium\",\"status\":\"active\",\"tags\":[\"Demo\"],\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\"}",
         "provider": "microsoftDefenderForEndpoint",
