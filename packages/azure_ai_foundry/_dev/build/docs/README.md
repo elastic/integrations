@@ -12,11 +12,17 @@ These are the supported Azure log categories:
 
 | Data Stream |       Log Category       |
 |:-----------:|:------------------------:|
+|    logs     |          Audit           |
+|    logs     |     RequestResponse      |
 |    logs     | ApiManagementGatewayLogs |
 
 #### Requirements and setup
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+#### Native Logging
+
+The Azure AI Foundry provides native logging and monitoring to track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
 
 #### API Gateway Logs
 
@@ -44,7 +50,7 @@ The metrics data stream collects the cognitive service metrics that is specific 
 **Model HTTP Request Metrics:**
 - `Requests`: Total number of calls made to the model API over a period of time.
 
-**Model HTTP Request Metrics:**
+**Model HTTP Latency Metrics:**
 - `Latency`: Measures time taken to process the first byte of response, last byte of response and the request latency.
 
 **Model Usage Metrics:**
@@ -71,7 +77,7 @@ If no resource filter is specified, then all Azure AI Foundry services inside th
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
-#### Logs Reference
+### Logs Reference
 
 {{event "logs"}}
 
@@ -81,7 +87,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 
 {{fields "logs"}}
 
-#### Metrics Reference
+### Metrics Reference
 
 The Azure AI Foundry metrics provide insights into the performance and usage of your AI resources. These metrics help in monitoring and optimizing your deployments.
 
