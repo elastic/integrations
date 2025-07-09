@@ -45,9 +45,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-08-05T15:41:18.411Z",
     "agent": {
-        "ephemeral_id": "939e6e56-7777-479f-9f50-fdc9aea6a698",
-        "id": "a185cea6-32db-4631-96ae-27fee54a9dd3",
-        "name": "elastic-agent-65458",
+        "ephemeral_id": "1306b1a8-e483-4b73-8a9f-0c9693b0850a",
+        "id": "c92576df-b24c-47aa-bfeb-01fed074d411",
+        "name": "elastic-agent-33100",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -84,14 +84,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "authentik.event",
-        "namespace": "24295",
+        "namespace": "99344",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a185cea6-32db-4631-96ae-27fee54a9dd3",
+        "id": "c92576df-b24c-47aa-bfeb-01fed074d411",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -104,9 +104,8 @@ An example event for `event` looks as following:
         "created": "2024-08-05T15:41:18.411Z",
         "dataset": "authentik.event",
         "id": "d012e8af-cb94-4fa2-9e92-961e4eebc060",
-        "ingested": "2025-07-08T10:41:48Z",
+        "ingested": "2025-07-09T09:38:33Z",
         "kind": "event",
-        "module": "authentik",
         "original": "{\"action\":\"user_write\",\"app\":\"authentik.events.signals\",\"brand\":{\"app\":\"authentik_brands\",\"model_name\":\"brand\",\"name\":\"Default brand\",\"pk\":\"fcba828076b94dedb2d5a6b4c5556fa1\"},\"client_ip\":\"67.43.156.0\",\"context\":{\"attributes\":{\"settings\":{\"locale\":\"\"}},\"created\":false,\"email\":\"root@localhost\",\"http_request\":{\"args\":{\"query\":\"\"},\"method\":\"GET\",\"path\":\"/api/v3/flows/executor/default-user-settings-flow/\"},\"name\":\"authentik Default Admin\",\"username\":\"akadmin\"},\"created\":\"2024-08-05T15:41:18.411017Z\",\"expires\":\"2024-08-06T15:41:18.410276Z\",\"pk\":\"d012e8af-cb94-4fa2-9e92-961e4eebc060\",\"user\":{\"email\":\"root@localhost\",\"pk\":1,\"username\":\"akadmin\"}}",
         "type": [
             "change"
@@ -140,11 +139,8 @@ An example event for `event` looks as following:
             "country_iso_code": "BT",
             "country_name": "Bhutan",
             "location": {
-                "coordinates": [
-                    90.49999997019768,
-                    27.499999995343387
-                ],
-                "type": "Point"
+                "lat": 27.5,
+                "lon": 90.5
             }
         },
         "ip": "67.43.156.0"
