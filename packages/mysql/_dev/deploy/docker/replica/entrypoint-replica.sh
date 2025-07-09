@@ -37,7 +37,7 @@ for i in {1..30}; do
   echo "Debug: CURRENT_LOG = '$CURRENT_LOG'"
   echo "Debug: CURRENT_POS = '$CURRENT_POS'"
 
-  if [ -n "$CURRENT_LOG" ] && [ -n "$CURRENT_POS" ] && [ "$CURRENT_LOG" != "" ] && [ "$CURRENT_POS" != "" ]; then
+  if [ -n "$CURRENT_LOG" ] && [ -n "$CURRENT_POS" ]; then
     MASTER_LOGS_AVAILABLE=true
     break
   else
