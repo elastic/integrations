@@ -10,34 +10,36 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "68df7f63-2492-4d76-ad0f-208a9862b33c": {
+                "01d82166-f5ea-498d-8928-07ba14dac06f": {
                     "explicitInput": {
                         "dataViewId": "1a150a5e650eec8c88b4de9d63ea529cff64cd7976092ce4551fa687b1691c50",
                         "fieldName": "github.security_advisory.cve_id",
-                        "id": "68df7f63-2492-4d76-ad0f-208a9862b33c",
+                        "id": "01d82166-f5ea-498d-8928-07ba14dac06f",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
-                        }
+                        },
+                        "title": "CVE ID"
                     },
                     "grow": false,
                     "order": 1,
                     "type": "optionsListControl",
                     "width": "large"
                 },
-                "98f96443-c6ce-4091-b424-ab6ace03ce75": {
+                "4d20230a-4de3-40b0-b339-42b82e9b2732": {
                     "explicitInput": {
                         "dataViewId": "1a150a5e650eec8c88b4de9d63ea529cff64cd7976092ce4551fa687b1691c50",
                         "fieldName": "github.security_advisory.ghsa_id",
-                        "id": "98f96443-c6ce-4091-b424-ab6ace03ce75",
+                        "id": "4d20230a-4de3-40b0-b339-42b82e9b2732",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
-                        }
+                        },
+                        "title": "GHSA ID"
                     },
                     "grow": false,
                     "order": 0,
@@ -266,7 +268,7 @@
                     "query": {
                         "esql": "FROM logs-github.security_advisories-default\n| STATS COUNT_DISTINCT(github.security_advisory.ghsa_id)"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -311,7 +313,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "9d0655ef-41fd-4e5c-85c8-659b13a9e7f6": {
+                                        "437001e5-3016-436e-9b97-60df3a7faec9": {
                                             "columns": [
                                                 {
                                                     "columnId": "count_distinct",
@@ -337,7 +339,7 @@
                                             ],
                                             "index": "1a150a5e650eec8c88b4de9d63ea529cff64cd7976092ce4551fa687b1691c50",
                                             "query": {
-                                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) by type=github.security_advisory.type \n| SORT type ASC"
+                                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) by type=github.security_advisory.type \n| WHERE count_distinct \u003e 0\n| SORT type ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -347,15 +349,13 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) by type=github.security_advisory.type \n| SORT type ASC"
+                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) by type=github.security_advisory.type \n| WHERE count_distinct \u003e 0\n| SORT type ASC"
                             },
                             "visualization": {
                                 "breakdownByAccessor": "type",
-                                "layerId": "9d0655ef-41fd-4e5c-85c8-659b13a9e7f6",
+                                "layerId": "437001e5-3016-436e-9b97-60df3a7faec9",
                                 "layerType": "data",
-                                "metricAccessor": "count_distinct",
-                                "titlesTextAlign": "left",
-                                "valueFontMode": "default"
+                                "metricAccessor": "count_distinct"
                             }
                         },
                         "title": "Bar vertical stacked",
@@ -368,9 +368,9 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) by type=github.security_advisory.type \n| SORT type ASC"
+                        "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) by type=github.security_advisory.type \n| WHERE count_distinct \u003e 0\n| SORT type ASC"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -524,7 +524,7 @@
                     "query": {
                         "esql": "FROM logs-github.security_advisories-default\n| WHERE github.security_advisory.type == \"reviewed\"\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) BY year = BUCKET(github.security_advisory.github_reviewed_at, 1 year)"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -678,7 +678,7 @@
                     "query": {
                         "esql": "FROM logs-github.security_advisories-default\n| WHERE github.security_advisory.type == \"reviewed\"\n| STATS count_distinct=COUNT_DISTINCT(github.security_advisory.ghsa_id) BY year = BUCKET(github.security_advisory.updated_at, 1 year)"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -723,7 +723,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "a433c6ba-9fd0-4fbe-b4e5-f2d095001d7c": {
+                                        "3f445b5a-915f-41d1-95d0-bd97d1b891aa": {
                                             "columns": [
                                                 {
                                                     "columnId": "count_distinct",
@@ -737,21 +737,21 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "avg",
+                                                    "columnId": "severity_score",
                                                     "customLabel": false,
-                                                    "fieldName": "avg",
+                                                    "fieldName": "severity_score",
                                                     "inMetricDimension": true,
-                                                    "label": "avg",
+                                                    "label": "severity_score",
                                                     "meta": {
-                                                        "esType": "double",
+                                                        "esType": "integer",
                                                         "type": "number"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "severity",
+                                                    "columnId": "vulnerability.severity",
                                                     "customLabel": false,
-                                                    "fieldName": "severity",
-                                                    "label": "severity",
+                                                    "fieldName": "vulnerability.severity",
+                                                    "label": "vulnerability.severity",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -760,7 +760,7 @@
                                             ],
                                             "index": "1a150a5e650eec8c88b4de9d63ea529cff64cd7976092ce4551fa687b1691c50",
                                             "query": {
-                                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id), avg=AVG(vulnerability.score.base) by severity=vulnerability.severity \n| SORT avg DESC"
+                                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id) BY \n    severity_score=CASE(\n        vulnerability.severity == \"critical\", 1,\n        vulnerability.severity == \"high\", 2,\n        vulnerability.severity == \"medium\", 3,\n        vulnerability.severity == \"low\", 4,\n        5\n    ),\n    vulnerability.severity\n| WHERE count_distinct \u003e 0\n| SORT severity_score ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -770,16 +770,16 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id), avg=AVG(vulnerability.score.base) by severity=vulnerability.severity \n| SORT avg DESC"
+                                "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id) BY \n    severity_score=CASE(\n        vulnerability.severity == \"critical\", 1,\n        vulnerability.severity == \"high\", 2,\n        vulnerability.severity == \"medium\", 3,\n        vulnerability.severity == \"low\", 4,\n        5\n    ),\n    vulnerability.severity\n| WHERE count_distinct \u003e 0\n| SORT severity_score ASC"
                             },
                             "visualization": {
-                                "breakdownByAccessor": "severity",
-                                "layerId": "a433c6ba-9fd0-4fbe-b4e5-f2d095001d7c",
+                                "breakdownByAccessor": "vulnerability.severity",
+                                "layerId": "3f445b5a-915f-41d1-95d0-bd97d1b891aa",
                                 "layerType": "data",
                                 "metricAccessor": "count_distinct"
                             }
                         },
-                        "title": "count_distinct \u0026 avg of severity",
+                        "title": "count_distinct \u0026 severity_score of vulnerability.severity",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {
@@ -789,9 +789,9 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id), avg=AVG(vulnerability.score.base) by severity=vulnerability.severity \n| SORT avg DESC"
+                        "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id) BY \n    severity_score=CASE(\n        vulnerability.severity == \"critical\", 1,\n        vulnerability.severity == \"high\", 2,\n        vulnerability.severity == \"medium\", 3,\n        vulnerability.severity == \"low\", 4,\n        5\n    ),\n    vulnerability.severity\n| WHERE count_distinct \u003e 0\n| SORT severity_score ASC"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -882,7 +882,7 @@
                     "query": {
                         "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id)"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -1049,7 +1049,7 @@
                     "query": {
                         "esql": "FROM logs-github.security_advisories-default\n| STATS count_distinct=COUNT_DISTINCT(vulnerability.id) BY year = BUCKET(github.security_advisory.nvd_published_at, 1 year)"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -1257,7 +1257,7 @@
                         "language": "kuery",
                         "query": ""
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -1378,7 +1378,7 @@
                     "query": {
                         "esql": "FROM logs-github.security_advisories-default\n| WHERE github.security_advisory.type == \"reviewed\"\n| STATS count_advisories=COUNT_DISTINCT(vulnerability.id), count_packages=COUNT_DISTINCT(github.security_advisory.vulnerabilities.package.name\n) BY github.security_advisory.vulnerabilities.package.ecosystem\n| SORT count_advisories DESC, count_packages DESC\n| KEEP github.security_advisory.vulnerabilities.package.ecosystem, count_advisories, count_packages"
                     },
-                    "searchSessionId": "ff2f58bf-9603-4e91-bee7-9d5da522a7c0",
+                    "searchSessionId": "8f358d99-bcf7-4327-a9cd-ce10ddcac687",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
@@ -1417,12 +1417,12 @@
         },
         {
             "id": "1a150a5e650eec8c88b4de9d63ea529cff64cd7976092ce4551fa687b1691c50",
-            "name": "controlGroup_4e1aac6f-35e2-4204-9692-83b1d44f5fab:optionsListDataView",
+            "name": "controlGroup_98f96443-c6ce-4091-b424-ab6ace03ce75:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "1a150a5e650eec8c88b4de9d63ea529cff64cd7976092ce4551fa687b1691c50",
-            "name": "controlGroup_a849d683-b415-4a88-8980-e1ed89569c12:optionsListDataView",
+            "name": "controlGroup_68df7f63-2492-4d76-ad0f-208a9862b33c:optionsListDataView",
             "type": "index-pattern"
         }
     ],
