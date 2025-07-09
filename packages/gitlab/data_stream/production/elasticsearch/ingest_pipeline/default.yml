@@ -141,14 +141,11 @@ processors:
     lang: painless
     description: Move the objects in `params.value` to their own key value pairs
     source: |
-      def keyValuePairs = [];
+      Map map = [:];
       for (item in ctx.gitlab.production.params) {
-        def key = item.key;
-        def value = item.value;
-        def keyValueObject = [key: value];
-        keyValuePairs.add(keyValueObject)
+        map[item.key] = item.value;
       }
-      ctx.gitlab.production.params = keyValuePairs;
+      ctx.gitlab.production.params = map;
 - geoip:
     field: source.ip
     tag: geoip_source_ip
@@ -237,7 +234,7 @@ processors:
     value:
     - web
     allow_duplicates: false
-    if: ctx.url?.path.contains("/search/")
+    if: ctx.url?.path != null && ctx.url.path.contains("/search/")
 - append:
     field: event.category
     value:
