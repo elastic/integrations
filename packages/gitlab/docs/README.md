@@ -1168,7 +1168,7 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab.production.graphql.operation_name |  | keyword |
 | gitlab.production.graphql.used_deprecated_fields |  | keyword |
 | gitlab.production.graphql.used_fields |  | keyword |
-| gitlab.production.graphql.variables |  | keyword |
+| gitlab.production.graphql.variables |  | flattened |
 | gitlab.production.location |  | keyword |
 | gitlab.production.mem_bytes |  | long |
 | gitlab.production.mem_mallocs |  | long |
@@ -1186,7 +1186,7 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab.production.params.authenticity_token |  | keyword |
 | gitlab.production.params.graphql.operationName |  | keyword |
 | gitlab.production.params.graphql.query |  | keyword |
-| gitlab.production.params.graphql.variables |  | keyword |
+| gitlab.production.params.graphql.variables |  | flattened |
 | gitlab.production.params.limit |  | keyword |
 | gitlab.production.params.new_user.email |  | keyword |
 | gitlab.production.params.new_user.first_name |  | keyword |
@@ -1197,7 +1197,7 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab.production.params.operationName |  | keyword |
 | gitlab.production.params.query |  | keyword |
 | gitlab.production.params.search |  | keyword |
-| gitlab.production.params.variables |  | keyword |
+| gitlab.production.params.variables |  | flattened |
 | gitlab.production.queue_duration_s |  | float |
 | gitlab.production.rate_limiting_gates |  | keyword |
 | gitlab.production.redis_allowed_cross_slot_calls |  | long |
@@ -1260,22 +1260,22 @@ An example event for `production` looks as following:
 {
     "@timestamp": "2024-04-03T20:44:09.068Z",
     "agent": {
-        "ephemeral_id": "ac0ff4a0-f7eb-487b-81eb-b87840825f16",
-        "id": "edbf2f30-485d-4139-9275-1c504d82968b",
-        "name": "elastic-agent-43768",
+        "ephemeral_id": "b31960dc-fc5a-4a18-8499-e7fb1ac5720f",
+        "id": "893fb885-a041-4dfb-bf6e-4f3c5b689ba9",
+        "name": "elastic-agent-70114",
         "type": "filebeat",
         "version": "8.18.2"
     },
     "data_stream": {
         "dataset": "gitlab.production",
-        "namespace": "88513",
+        "namespace": "29864",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "edbf2f30-485d-4139-9275-1c504d82968b",
+        "id": "893fb885-a041-4dfb-bf6e-4f3c5b689ba9",
         "snapshot": false,
         "version": "8.18.2"
     },
@@ -1285,7 +1285,7 @@ An example event for `production` looks as following:
         "dataset": "gitlab.production",
         "duration": 24200000,
         "id": "0bb7a10d-8da7-4499-8759-99ebe323f4b1",
-        "ingested": "2025-07-08T08:48:57Z",
+        "ingested": "2025-07-09T08:46:19Z",
         "kind": "event",
         "original": "{\"method\":\"GET\",\"path\":\"/\",\"format\":\"html\",\"controller\":\"RootController\",\"action\":\"index\",\"status\":302,\"location\":\"http://example.org/users/sign_in\",\"time\":\"2024-04-03T20:44:09.068Z\",\"params\":[],\"correlation_id\":\"0bb7a10d-8da7-4499-8759-99ebe323f4b1\",\"meta.caller_id\":\"RootController#index\",\"meta.feature_category\":\"groups_and_projects\",\"meta.client_id\":\"ip/\",\"request_urgency\":\"low\",\"target_duration_s\":5,\"redis_calls\":26,\"redis_duration_s\":0.005135,\"redis_read_bytes\":26,\"redis_write_bytes\":4284,\"redis_feature_flag_calls\":26,\"redis_feature_flag_duration_s\":0.005135,\"redis_feature_flag_read_bytes\":26,\"redis_feature_flag_write_bytes\":4284,\"db_count\":13,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":13,\"db_main_count\":13,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.01,\"db_main_duration_s\":0.01,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.047579,\"mem_objects\":32870,\"mem_bytes\":2376584,\"mem_mallocs\":11255,\"mem_total_bytes\":3691384,\"pid\":857,\"worker_id\":\"puma_master\",\"rate_limiting_gates\":[],\"db_duration_s\":0.00158,\"view_duration_s\":0.0,\"duration_s\":0.0242}",
         "provider": "RootController#index",
@@ -1381,10 +1381,10 @@ An example event for `production` looks as following:
     "log": {
         "file": {
             "device_id": "37",
-            "inode": "199",
+            "inode": "264",
             "path": "/tmp/service_logs/test-gitlab-production.log"
         },
-        "offset": 9771
+        "offset": 9793
     },
     "process": {
         "name": "puma_master",
