@@ -56,7 +56,6 @@ mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "$start_slave_stmt" || {
 
 # Verify slave status
 echo "Verifying slave status..."
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "GRANT REPLICATION CLIENT ON *.* TO 'mydb_replica_user'@'%'; FLUSH PRIVILEGES;"
 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "SHOW SLAVE STATUS \G"
 
 # Now, keep the script running to prevent the container from exiting
