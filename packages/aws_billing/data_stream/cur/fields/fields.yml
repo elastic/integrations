@@ -6,263 +6,385 @@
       fields:
         - name: type
           type: keyword
+          description: The type of bill that this report covers
         - name: billing_entity
           type: keyword
+          description: Helps you identify whether your invoices or transactions are for AWS Marketplace or for purchases of other AWS services.
         - name: billing_period_end_date
           type: date
+          description: The end date of the billing period that is covered by this report, in UTC. The format is YYYY-MM-DDTHH:mm:ssZ
         - name: billing_period_start_date
           type: date
+          description: The start date of the billing period that is covered by this report, in UTC. The format is YYYY-MM-DDTHH:mm:ssZ
         - name: invoice_id
           type: keyword
+          description: The ID associated with a specific line item. Until the report is final, the InvoiceId is blank
         - name: invoicing_entity
           type: keyword
+          description: The AWS entity that issues the invoice
         - name: payer_account_id
           type: keyword
+          description: The account ID of the paying account
         - name: payer_account_name
           type: keyword
+          description: The account name of the paying account
     - name: cost_category
       type: keyword
+      description: Cost categories that apply to the line item - a map column containing key-value pairs of the cost categories and their values for a given line item
     - name: cost
       type: group
+      description: Cost-related metrics
       fields:
         - name: amortized_cost
           type: double
+          description: The effective cost of the upfront and monthly reservation fees spread across the billing period
         - name: net_amortized_cost
           type: double
+          description: The actual after-discount amortized cost
     - name: bundled_discount
       type: double
+      description: The bundled discount applied to the line item
     - name: total_discount
       type: double
+      description: The sum of all the discount columns for the corresponding line item
     - name: discount
       type: object
       object_type: keyword
       object_type_mapping_type: "*"
+      description: A map column containing key-value pairs of any specific discounts that apply to this line item
     - name: identity
       type: group
+      description: Data to identify a line item
       fields:
         - name: line_item_id
           type: keyword
+          description: A unique identifier generated for each line item within a given partition. This does not guarantee uniqueness across an entire delivery of the AWS CUR
         - name: time_interval
           type: keyword
+          description: The time interval that this line item applies to, in the format YYYY-MM-DDTHH:mm:ssZ/YYYY-MM-DDTHH:mm:ssZ. The time interval is in UTC and can be either daily or hourly
     - name: line_item
       type: group
       fields:
         - name: availability_zone
           type: keyword
+          description: The Availability Zone that hosts this line item
         - name: blended_cost
           type: double
+          description: The BlendedRate multiplied by the UsageAmount
         - name: blended_rate
           type: double
+          description: The average cost incurred for each SKU across an organization
         - name: currency_code
           type: keyword
+          description: The currency that this line item is shown in
         - name: legal_entity
           type: keyword
+          description: The Seller of Record of a specific product or service
         - name: description
           type: text
+          description: The description of the line item type
         - name: type
           type: keyword
+          description: The type of charge covered by this line item
         - name: net_unblended_cost
           type: double
+          description: The actual after-discount cost that you're paying for the line item
         - name: net_unblended_rate
           type: double
+          description: The actual after-discount rate that you're paying for the line item
         - name: normalization_factor
           type: double
+          description: The normalization factor for the instance size for size-flexible RIs
         - name: normalized_usage_amount
           type: double
+          description: The amount of usage that you incurred, in normalized units, for size-flexible RIs
         - name: operation
           type: keyword
+          description: The specific AWS operation covered by this line item
         - name: product_code
           type: keyword
+          description: The code of the product measured. For example, AmazonEC2 is the product code for Amazon Elastic Compute Cloud
         - name: resource_id
           type: keyword
+          description: If you chose to include individual resource IDs in your report, this column contains the ID of the resource that you provisioned
         - name: tax_type
           type: keyword
+          description: The type of tax that AWS applied to this line item
         - name: unblended_cost
           type: double
+          description: The UnblendedRate multiplied by the UsageAmount
         - name: unblended_cost_str
           type: keyword
+          description: String representation of the unblended cost
         - name: unblended_rate
           type: double
+          description: The rate associated with an individual account's service usage
         - name: usage_account_id
           type: keyword
+          description: The account ID of the account that used this line item
         - name: usage_account_name
           type: keyword
+          description: The name of the account that used this line item
         - name: usage_amount
           type: double
+          description: The amount of usage that you incurred during the specified time period
         - name: usage_end_date
           type: date
+          description: The end date and time for the corresponding line item in UTC, exclusive. The format is YYYY-MM-DDTHH:mm:ssZ
         - name: usage_start_date
           type: date
+          description: The start date and time for the line item in UTC, inclusive. The format is YYYY-MM-DDTHH:mm:ssZ
         - name: usage_type
           type: keyword
+          description: The usage details of the line item
     - name: pricing
       type: group
+      description: Data about the pricing for a line item
       fields:
         - name: currency
           type: keyword
+          description: The currency that the pricing data is shown in
         - name: lease_contract_length
           type: keyword
+          description: The length of time that your RI is reserved for
         - name: offering_class
           type: keyword
+          description: Describes the offering class of the Reserved Instance
         - name: public_on_demand_cost
           type: double
+          description: The total cost for the line item based on public On-Demand Instance rates
         - name: public_on_demand_rate
           type: double
+          description: The public On-Demand Instance rate in this billing period for the specific line item of usage
         - name: purchase_option
           type: keyword
+          description: How you chose to pay for this line item
         - name: rate_code
           type: keyword
+          description: A unique code for a product/offer/pricing-tier combination
         - name: rate_id
           type: keyword
+          description: The ID of the rate for a line item
         - name: term
           type: keyword
+          description: Whether your AWS usage is Reserved or On-Demand
         - name: unit
           type: keyword
+          description: The pricing unit that AWS used for calculating your usage cost
     - name: product
       type: group
       fields:
         - name: product
           type: keyword
+          description: A map column containing key-value pairs of multiple product attributes and their values for a given line item
         - name: comment
           type: text
+          description: A comment regarding the product
         - name: fee_code
           type: keyword
+          description: The code that refers to the fee
         - name: fee_description
           type: text
+          description: The description for the product fee
         - name: from_location
           type: keyword
+          description: Describes the location where the usage originated from
         - name: from_location_type
           type: keyword
+          description: Describes the location type where the usage originated from
         - name: from_region_code
           type: keyword
+          description: Describes the source Region code for the AWS service
         - name: instance_family
           type: keyword
+          description: Describes your Amazon EC2 instance family
         - name: instance_type
           type: keyword
+          description: Describes the instance type, size, and family, which define the CPU, networking, and storage capacity of your instance
         - name: instancesku
           type: keyword
+          description: The SKU of the product instance
         - name: location
           type: keyword
+          description: Describes the Region that your Amazon S3 bucket resides in
         - name: location_type
           type: keyword
+          description: Describes the endpoint of your task
         - name: operation
           type: keyword
+          description: Describes the specific AWS operation that this line item covers
         - name: pricing_unit
           type: keyword
+          description: The smallest billing unit for an AWS service
         - name: family
           type: keyword
+          description: The category for the type of product
         - name: region_code
           type: keyword
+          description: A Region is a physical location around the world where data centers are clustered
         - name: servicecode
           type: keyword
+          description: This identifies the specific AWS service to the customer as a unique short abbreviation
         - name: sku
           type: keyword
+          description: A unique code for a product
         - name: to_location
           type: keyword
+          description: Describes the location usage destination
         - name: to_location_type
           type: keyword
+          description: Describes the destination location of the service usage
         - name: to_region_code
           type: keyword
+          description: Describes the destination Region code for the AWS service
         - name: usagetype
           type: keyword
+          description: Describes the usage details of the line item
     - name: reservation
       type: group
       fields:
         - name: amortized_upfront_cost_for_usage
           type: double
+          description: The initial upfront payment for all upfront RIs and partial upfront RIs amortized for usage time
         - name: amortized_upfront_fee_for_billing_period
           type: double
+          description: Describes how much of the upfront fee for this reservation is costing you for the billing period
         - name: availability_zone
           type: keyword
+          description: The Availability Zone of the resource that is associated with this line item
         - name: effective_cost
           type: double
+          description: The sum of both the upfront and hourly rate of your RI, averaged into an effective hourly rate
         - name: end_time
           type: date
+          description: The end date of the associated RI lease term
         - name: modification_status
           type: keyword
+          description: Shows whether the RI lease was modified or if it is unaltered.
         - name: net_amortized_upfront_cost_for_usage
           type: double
+          description: The initial upfront payment for All Upfront RIs and Partial Upfront RIs amortized for usage time, if applicable
         - name: net_amortized_upfront_fee_for_billing_period
           type: double
+          description: The cost of the reservation's upfront fee for the billing period with discounts applied
         - name: net_effective_cost
           type: double
+          description: The sum of both the upfront fee and the hourly rate of your RI, averaged into an effective hourly rate with discounts
         - name: net_recurring_fee_for_usage
           type: double
+          description: The after-discount cost of the recurring usage fee
         - name: net_unused_amortized_upfront_fee_for_billing_period
           type: double
+          description: The net unused amortized upfront fee for the billing period with discounts applied
         - name: net_unused_recurring_fee
           type: double
+          description: The recurring fees associated with unused reservation hours for Partial Upfront and No Upfront RIs after discounts
         - name: net_upfront_value
           type: double
+          description: The upfront value of the RI with discounts applied
         - name: normalized_units_per_reservation
           type: double
+          description: The number of normalized units for each instance of a reservation subscription
         - name: number_of_reservations
           type: double
+          description: The number of reservations that are covered by this subscription
         - name: recurring_fee_for_usage
           type: double
+          description: The recurring fee amortized for usage time, for partial upfront RIs and no upfront RIs
         - name: a_r_n
           type: keyword
+          description: The Amazon Resource Name (ARN) of the RI that this line item benefited from. Also called the RI Lease ID
         - name: start_time
           type: date
+          description: The start date of the term of the associated Reserved Instance
         - name: subscription_id
           type: keyword
+          description: A unique identifier that maps a line item with the associated offer
         - name: total_reserved_normalized_units
           type: double
+          description: The total number of reserved normalized units for all instances for a reservation subscription
         - name: total_reserved_units
           type: double
+          description: For Fee line items - total units reserved for the entire term
         - name: units_per_reservation
           type: double
+          description: For Fee line items - total units reserved for the subscription term
         - name: unused_amortized_upfront_fee_for_billing_period
           type: double
+          description: The amortized portion of the initial upfront fee for all upfront RIs and partial upfront RIs
         - name: unused_normalized_unit_quantity
           type: double
+          description: The number of unused normalized units for a size-flexible Regional RI that you didn't use during this billing period
         - name: unused_quantity
           type: double
+          description: The number of RI hours that you didn't use during this billing period
         - name: unused_recurring_fee
           type: double
+          description: The recurring fees associated with your unused reservation hours for partial upfront and no upfront RIs
         - name: upfront_value
           type: double
+          description: The upfront price paid for your AWS Reserved Instance
     - name: resource_tags
       type: keyword
+      description: A map column containing key-value pairs of resource tags and their values for a given line item
     - name: resource
       type: group
       fields:
         - name: tags
           type: keyword
+          description: Resource tags that apply to the line item
     - name: savings_plan
       type: group
+      description: Data about savings plans that apply to the line item
       fields:
         - name: amortized_upfront_commitment_for_billing_period
           type: double
+          description: The amount of upfront fee a Savings Plan subscription is costing you for the billing period
         - name: end_time
           type: date
+          description: The expiration date for the Savings Plan agreement
         - name: instance_type_family
           type: keyword
+          description: The instance family that is associated with the specified usage
         - name: net_amortized_upfront_commitment_for_billing_period
           type: double
+          description: The cost of a Savings Plan subscription upfront fee for the billing period with discounts applied
         - name: net_recurring_commitment_for_billing_period
           type: double
+          description: The net unblended cost of the Savings Plan fee with discounts applied
         - name: net_effective_cost
           type: double
+          description: The effective cost for Savings Plans with discounts applied, which is your usage divided by the fees
         - name: offering_type
           type: keyword
+          description: Describes the type of Savings Plan purchased
         - name: payment_option
           type: keyword
+          description: The payment options available for your Savings Plan
         - name: purchase_term
           type: keyword
+          description: Describes the duration, or term, of the Savings Plan
         - name: recurring_commitment_for_billing_period
           type: double
+          description: The monthly recurring fee for your Savings Plan subscriptions
         - name: region
           type: keyword
+          description: The AWS Region (geographic area) that hosts your AWS services
         - name: a_r_n
           type: keyword
+          description: The unique Savings Plan identifier
         - name: effective_cost
           type: double
+          description: The proportion of the Savings Plan monthly commitment amount allocated to each usage line
         - name: rate
           type: double
+          description: The Savings Plan rate for the usage
         - name: start_time
           type: date
+          description: The start date of the Savings Plan agreement
         - name: total_commitment_to_date
           type: double
+          description: The total amortized upfront commitment and recurring commitment to date, for that hour
         - name: used_commitment
           type: double
+          description: The total dollar amount of the Savings Plan commitment used (SavingsPlanRate multiplied by usage)
