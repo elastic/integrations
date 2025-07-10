@@ -1,84 +1,20 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
+# Custom WMI (Windows Management Instrumentation) Input Package
 
-# WMI (Windows Management Instrumentation) Input Package
+The Custom WMI Input integration is used to ingest data from the Windows Management Instrumentation (WMI) classes.
+You can use this input to collect instances of any WMI class.
 
-<!-- The WMI (Windows Management Instrumentation) Input Package integration allows you to monitor {name of service}. {name of service} is {describe service}.
+## Configuration
 
-Use the WMI (Windows Management Instrumentation) Input Package integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
+The extensive documentation for the input is currently available [here](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-metricset-wmi). We highly encourage users to become familiar with the linked documentation.
 
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
-
-## Data streams
-
-<!-- The WMI (Windows Management Instrumentation) Input Package integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
-
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+The most commonly used configuration options are available on the main integration page, while more advanced and customizable options currently resides under the "Advanced options" part of the integration settings page.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+This integration requires Elastic-Agent 8.19.0 or 9.1.0 and above.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
+This integration is only available on Windows. We refer to the Metricbeat input for the [Compatibility](https://docs-v3-preview.elastic.dev/elastic/beats/pull/45068/reference/metricbeat/metricbeat-metricset-windows-wmi#compatibility).
 
-## Setup
+###  Date Fields Mapping
 
-<!-- Any prerequisite instructions -->
-
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
-<!-- Additional set up instructions -->
-
-<!-- If applicable -->
-<!-- ## Logs reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
-<!-- If applicable -->
-<!-- ## Metrics reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
+Elastic-Agent converts WMI properties of type "datetime" to timestamps, but these are serialized as strings in the output. Since date detection is disabled by default, these fields will be stored as strings unless explicitly mapped as dates. To ensure proper mapping, we recommend explicitly setting the mapping in the @custom template.
