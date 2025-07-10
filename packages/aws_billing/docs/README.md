@@ -208,12 +208,11 @@ An example event for `cur` looks as following:
 | aws_billing.cur.bill.payer_account_id |  | keyword |
 | aws_billing.cur.bill.payer_account_name |  | keyword |
 | aws_billing.cur.bill.type |  | keyword |
+| aws_billing.cur.bundled_discount |  | double |
 | aws_billing.cur.cost.amortized_cost |  | double |
 | aws_billing.cur.cost.net_amortized_cost |  | double |
 | aws_billing.cur.cost_category |  | keyword |
-| aws_billing.cur.discount.bundled_discount |  | double |
-| aws_billing.cur.discount.discount |  | object |
-| aws_billing.cur.discount.total_discount |  | double |
+| aws_billing.cur.discount |  | object |
 | aws_billing.cur.identity.line_item_id |  | keyword |
 | aws_billing.cur.identity.time_interval |  | keyword |
 | aws_billing.cur.line_item.availability_zone |  | keyword |
@@ -318,6 +317,7 @@ An example event for `cur` looks as following:
 | aws_billing.cur.savings_plan.start_time |  | date |
 | aws_billing.cur.savings_plan.total_commitment_to_date |  | double |
 | aws_billing.cur.savings_plan.used_commitment |  | double |
+| aws_billing.cur.total_discount |  | double |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
