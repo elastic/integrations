@@ -783,9 +783,9 @@ processors:
             - UNIX
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           on_failure:
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.details.awsEc2Instance.launchedAt
+                ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
@@ -1111,11 +1111,13 @@ processors:
         if (resources.size() == 1){
           def res = resources[0];
 
+          ctx.resource.id = res.id;
+          ctx.resource.name = res.tags?.Name;
+          ctx.resource.type = res.type;
+          ctx.cloud.region = res.region;
+
           if (res.type == 'AWS_EC2_INSTANCE') {
-            ctx.resource.id = res.id;
-            ctx.resource.name = res.tags?.Name;
             ctx.cloud.instance.id = res.id;
-            ctx.cloud.region = res.region;
             ctx.cloud.machine.type = res.details?.aws?.ec2_instance?.type;
             ctx.host.id = res.id;
             ctx.host.name = res.tags?.Name;
@@ -1175,11 +1177,13 @@ processors:
         ctx.cloud.region = ctx.cloud.region ?: [];
 
         for (res in resources) {
+          ctx.resource.id.add(res.id);
+          ctx.resource.name.add(res.tags?.Name);
+          ctx.resource.type.add(res.type);
+          ctx.cloud.region.add(res.region);
+
           if (res.type == 'AWS_EC2_INSTANCE') {
-            ctx.resource.id.add(res.id);
-            ctx.resource.name.add(res.tags?.Name);
             ctx.cloud.instance.id.add(res.id);
-            ctx.cloud.region.add(res.region);
             ctx.cloud.machine.type.add(res.details?.aws?.ec2_instance?.type);
             ctx.host.id.add(res.id);
             ctx.host.name.add(res.tags?.Name);
