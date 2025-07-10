@@ -312,8 +312,15 @@ processors:
       copy_from: microsoft_dnsserver.analytical.xid
       ignore_empty_value: true
       tag: set_dns_id
-  - registered_domain:
+  - gsub:
       field: microsoft_dnsserver.analytical.question_name
+      target_field: _temp.question_name
+      tag: gsub_trim_trailing_dot
+      pattern: \.$
+      replacement: ""
+      ignore_missing: true
+  - registered_domain:
+      field: _temp.question_name
       tag: registered_domain_question_name
       target_field: dns.question
       ignore_missing: true
@@ -373,6 +380,7 @@ processors:
       tag: append_dns_header_flag_TC
   - remove:
       field:
+        - _temp.question_name
         - microsoft_dnsserver.analytical.AA
         - microsoft_dnsserver.analytical.AD
         - microsoft_dnsserver.analytical.RD

@@ -282,8 +282,15 @@ processors:
       copy_from: microsoft_dnsserver.audit.ttl
       ignore_empty_value: true
       tag: set_dns_answers_ttl
-  - registered_domain:
+  - gsub:
       field: microsoft_dnsserver.audit.question_name
+      target_field: _temp.question_name
+      tag: gsub_trim_trailing_dot
+      pattern: \.$
+      replacement: ""
+      ignore_missing: true
+  - registered_domain:
+      field: _temp.question_name
       tag: registered_domain_question_name
       target_field: dns.question
       ignore_missing: true
@@ -317,6 +324,10 @@ processors:
       copy_from: microsoft_dnsserver.audit.bytes_sent
       ignore_empty_value: true
       tag: set_network_bytes
+  - remove:
+      field: _temp.question_name
+      ignore_missing: true
+      tag: remove_temp_question_name
 
 # Source IP
   - convert:
