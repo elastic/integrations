@@ -12,13 +12,30 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - script:
+      description: Drops null/empty values in json recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
   - date:
       field: json.LogTimestamp
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-      if: ctx.json?.LogTimestamp != null && ctx.json.LogTimestamp != ''
+      if: ctx.json?.LogTimestamp != null 
       on_failure:
         - remove:
             field: json.LogTimestamp
@@ -200,7 +217,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.request.receive.start
       formats:
         - ISO8601
-      if: ctx.json?.TimestampRequestReceiveStart != null && ctx.json.TimestampRequestReceiveStart != ''
+      if: ctx.json?.TimestampRequestReceiveStart != null 
       on_failure:
         - remove:
             field: json.TimestampRequestReceiveStart
@@ -212,7 +229,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.request.receive.header_finish
       formats:
         - ISO8601
-      if: ctx.json?.TimestampRequestReceiveHeaderFinish != null && ctx.json.TimestampRequestReceiveHeaderFinish != ''
+      if: ctx.json?.TimestampRequestReceiveHeaderFinish != null 
       on_failure:
         - remove:
             field: json.TimestampRequestReceiveHeaderFinish
@@ -224,7 +241,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.request.receive.finish
       formats:
         - ISO8601
-      if: ctx.json?.TimestampRequestReceiveFinish != null && ctx.json.TimestampRequestReceiveFinish != ''
+      if: ctx.json?.TimestampRequestReceiveFinish != null 
       on_failure:
         - remove:
             field: json.TimestampRequestReceiveFinish
@@ -236,7 +253,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.request.transmit.start
       formats:
         - ISO8601
-      if: ctx.json?.TimestampRequestTransmitStart != null && ctx.json.TimestampRequestTransmitStart != ''
+      if: ctx.json?.TimestampRequestTransmitStart != null 
       on_failure:
         - remove:
             field: json.TimestampRequestTransmitStart
@@ -248,7 +265,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.request.transmit.finish
       formats:
         - ISO8601
-      if: ctx.json?.TimestampRequestTransmitFinish != null && ctx.json.TimestampRequestTransmitFinish != ''
+      if: ctx.json?.TimestampRequestTransmitFinish != null 
       on_failure:
         - remove:
             field: json.TimestampRequestTransmitFinish
@@ -260,7 +277,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.response.receive.start
       formats:
         - ISO8601
-      if: ctx.json?.TimestampResponseReceiveStart != null && ctx.json.TimestampResponseReceiveStart != ''
+      if: ctx.json?.TimestampResponseReceiveStart != null 
       on_failure:
         - remove:
             field: json.TimestampResponseReceiveStart
@@ -272,7 +289,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.response.receive.finish
       formats:
         - ISO8601
-      if: ctx.json?.TimestampResponseReceiveFinish != null && ctx.json.TimestampResponseReceiveFinish != ''
+      if: ctx.json?.TimestampResponseReceiveFinish != null 
       on_failure:
         - remove:
             field: json.TimestampResponseReceiveFinish
@@ -284,7 +301,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.response.transmit.start
       formats:
         - ISO8601
-      if: ctx.json?.TimestampResponseTransmitStart != null && ctx.json.TimestampResponseTransmitStart != ''
+      if: ctx.json?.TimestampResponseTransmitStart != null 
       on_failure:
         - remove:
             field: json.TimestampResponseTransmitStart
@@ -296,7 +313,7 @@ processors:
       target_field: zscaler_zpa.browser_access.timestamp.response.transmit.finish
       formats:
         - ISO8601
-      if: ctx.json?.TimestampResponseTransmitFinish != null && ctx.json.TimestampResponseTransmitFinish != ''
+      if: ctx.json?.TimestampResponseTransmitFinish != null 
       on_failure:
         - remove:
             field: json.TimestampResponseTransmitFinish

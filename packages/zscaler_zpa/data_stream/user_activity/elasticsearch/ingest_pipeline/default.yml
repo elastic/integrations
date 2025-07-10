@@ -12,13 +12,30 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - script:
+      description: Drops null/empty values in json recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
   - date:
       field: json.LogTimestamp
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-      if: ctx.json?.LogTimestamp != null && ctx.json.LogTimestamp != ''
+      if: ctx.json?.LogTimestamp != null 
       on_failure:
         - remove:
             field: json.LogTimestamp
@@ -301,7 +318,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.connection.start
       formats:
         - ISO8601
-      if: ctx.json?.TimestampConnectionStart != null && ctx.json.TimestampConnectionStart != ''
+      if: ctx.json?.TimestampConnectionStart != null 
       on_failure:
         - remove:
             field: json.TimestampConnectionStart
@@ -313,7 +330,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.connection.end
       formats:
         - ISO8601
-      if: ctx.json?.TimestampConnectionEnd != null && ctx.json.TimestampConnectionEnd != ''
+      if: ctx.json?.TimestampConnectionEnd != null 
       on_failure:
         - remove:
             field: json.TimestampConnectionEnd
@@ -325,7 +342,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.ca.tx
       formats:
         - ISO8601
-      if: ctx.json?.TimestampCATx != null && ctx.json.TimestampCATx != ''
+      if: ctx.json?.TimestampCATx != null 
       on_failure:
         - remove:
             field: json.TimestampCATx
@@ -337,7 +354,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.ca.rx
       formats:
         - ISO8601
-      if: ctx.json?.TimestampCARx != null && ctx.json.TimestampCARx != ''
+      if: ctx.json?.TimestampCARx != null 
       on_failure:
         - remove:
             field: json.TimestampCARx
@@ -349,7 +366,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.app_learn_start
       formats:
         - ISO8601
-      if: ctx.json?.TimestampAppLearnStart != null && ctx.json.TimestampAppLearnStart != ''
+      if: ctx.json?.TimestampAppLearnStart != null 
       on_failure:
         - remove:
             field: json.TimestampAppLearnStart
@@ -361,7 +378,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.rx.first
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENFirstRxClient != null && ctx.json.TimestampZENFirstRxClient != ''
+      if: ctx.json?.TimestampZENFirstRxClient != null 
       on_failure:
         - remove:
             field: json.TimestampZENFirstRxClient
@@ -373,7 +390,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.tx.first
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENFirstTxClient != null && ctx.json.TimestampZENFirstTxClient != ''
+      if: ctx.json?.TimestampZENFirstTxClient != null 
       on_failure:
         - remove:
             field: json.TimestampZENFirstTxClient
@@ -385,7 +402,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.rx.last
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENLastRxClient != null && ctx.json.TimestampZENLastRxClient != ''
+      if: ctx.json?.TimestampZENLastRxClient != null 
       on_failure:
         - remove:
             field: json.TimestampZENLastRxClient
@@ -397,7 +414,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.client.tx.last
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENLastTxClient != null && ctx.json.TimestampZENLastTxClient != ''
+      if: ctx.json?.TimestampZENLastTxClient != null 
       on_failure:
         - remove:
             field: json.TimestampZENLastTxClient
@@ -409,7 +426,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.connector_zen.setup_complete
       formats:
         - ISO8601
-      if: ctx.json?.TimestampConnectorZENSetupComplete != null && ctx.json.TimestampConnectorZENSetupComplete != ''
+      if: ctx.json?.TimestampConnectorZENSetupComplete != null 
       on_failure:
         - remove:
             field: json.TimestampConnectorZENSetupComplete
@@ -421,7 +438,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.rx.first
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENFirstRxConnector != null && ctx.json.TimestampZENFirstRxConnector != ''
+      if: ctx.json?.TimestampZENFirstRxConnector != null 
       on_failure:
         - remove:
             field: json.TimestampZENFirstRxConnector
@@ -433,7 +450,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.tx.first
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENFirstTxConnector != null && ctx.json.TimestampZENFirstTxConnector != ''
+      if: ctx.json?.TimestampZENFirstTxConnector != null 
       on_failure:
         - remove:
             field: json.TimestampZENFirstTxConnector
@@ -445,7 +462,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.rx.last
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENLastRxConnector != null && ctx.json.TimestampZENLastRxConnector != ''
+      if: ctx.json?.TimestampZENLastRxConnector != null 
       on_failure:
         - remove:
             field: json.TimestampZENLastRxConnector
@@ -457,7 +474,7 @@ processors:
       target_field: zscaler_zpa.user_activity.timestamp.zen.connector.tx.last
       formats:
         - ISO8601
-      if: ctx.json?.TimestampZENLastTxConnector != null && ctx.json.TimestampZENLastTxConnector != ''
+      if: ctx.json?.TimestampZENLastTxConnector != null 
       on_failure:
         - remove:
             field: json.TimestampZENLastTxConnector
