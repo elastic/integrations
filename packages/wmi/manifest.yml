@@ -1,13 +1,14 @@
-format_version: 3.1.3
+format_version: 3.1.5
 name: wmi
-title: "WMI Input Package"
+title: "Custom WMI Input Package"
 version: 0.0.1
 source:
   license: "Elastic-2.0"
-description: "WMI Input Package"
+description: "Custom WMI Input Package"
 type: input
 categories:
   - observability
+  - custom
 conditions:
   kibana:
     version: "^8.19.0 || ^9.1.0"
@@ -26,7 +27,7 @@ icons:
 policy_templates:
   - name: wmi
     type: metrics
-    title: Collect the Windows metrics via WMI
+    title: Custom WMI Input
     description: Collect the Windows metrics via WMI
     input: windows/metrics
     template_path: input.yml.hbs
@@ -34,21 +35,39 @@ policy_templates:
       - name: period
         type: text
         title: Period
-        default: 60s
+        default: 10m
+        show_user: true
       - name: wmi.namespace
         type: text
         title: Namespace
         multi: false
         required: true
         show_user: true
+        description: >
+          The default WMI namespace used for queries. This can be overridden per query.
         default: "root\\cimv2"
       - name: wmi.warning_threshold
         type: text
-        title: Warning Threshold (TBD)
+        title: Warning Threshold
         multi: false
         required: false
         show_user: true
-      - name: wmi.incude_null
+      - name: wmi.include_query_class
+        type: bool
+        title: Include Query Class
+        description: >
+          Whether to include the queries in the final documents or not
+        multi: false
+        required: false
+        default: true
+      - name: wmi.include_queries
+        type: bool
+        title: Include Queries
+        multi: false
+        required: false
+        show_user: false
+        description: If enabled the query gets added to the document.
+      - name: wmi.include_null_properties
         type: bool
         title: Include Null Properties
         description: >
@@ -56,91 +75,47 @@ policy_templates:
         multi: false
         required: false
         default: false
-      - name: wmi.include_queries
+      - name: wmi.include_empty_strings_properties
         type: bool
-        title: Include Queries
-        description: >
-          Whether to include the queries in the final documents or not
-        multi: false
-        required: false
-        default: false
-      - name: wmi.include_empty_string
-        type: bool
-        title: Include Empty String
+        title: Include Empty Strings Properties
         description: >
           Whether to include empty string properties in the final documents or not
         multi: false
         required: false
         default: false
+      - name: wmi.max_rows_per_query
+        type: integer
+        title: Max Rows Per Query
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Limits the number of rows returned by a single WMI query.
+          The default value is 0, which is a special value indicating that all fetched results should be returned without a row limit.
+      - name: wmi.schema_cache_size
+        type: integer
+        title: Schema Cache Size
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The maximum number of WMI class x properties pairs that can be cached per single query.
       - name: wmi.queries
         type: yaml
         title: WMI Queries
+        description: >
+          Each item in the queries list specifies a WMI query to perform.
+          See the [Metricset Configuration](https://docs-v3-preview.elastic.dev/elastic/beats/pull/45068/reference/metricbeat/metricbeat-metricset-windows-wmi#query-configuration) for more details.
         multi: false
         required: true
         show_user: true
         default: |
          # - class: Win32_OperatingSystem
-         #   fields:
+         #   properties:
          #   - FreePhysicalMemory
          #   - FreeSpaceInPagingFiles
          #   - NumberOfUsers
          #   where: ""
-      - name: wmi.warning_threshold
-        type: text
-        title: Warning Threshold
-        multi: false
-        required: false
-        show_user: false 
-      - name: wmi.host
-        type: text
-        title: Hostname
-        multi: false
-        required: false
-        show_user: false     
-        description: The host for the remote WMI Connection. Default value is localhost. 
-      - name: wmi.domain
-        type: text
-        title: Domain
-        multi: false
-        required: false
-        show_user: false     
-        description: The domain for the remote WMI Connection. Default value is empty string.  
-      - name: wmi.username
-        type: text
-        title: Username
-        multi: false
-        required: false
-        show_user: false     
-        description: The username for the remote WMI Connection. Default value empty string. 
-      - name: wmi.password
-        type: text
-        title: Password
-        multi: false
-        required: false
-        show_user: false  
-        secret: true   
-        description: The password for the remote WMI Connection. Default value empty string  
-      - name: wmi.include_queries
-        type: bool
-        title: Include Queries
-        multi: false
-        required: false
-        show_user: false     
-        description: If enabled the query gets added to the document.   
-      - name: wmi.include_null
-        type: bool
-        title: Include Null Values
-        multi: false
-        required: false
-        show_user: false     
-        description: If enabled the properties with null values gets added to the  document. 
-      - name: wmi.include_empty_strings
-        type: bool
-        title: Include Empty Strings
-        multi: false
-        required: false
-        show_user: false     
-        description: If enabled the properties having empty strings gets added to the  document. 
       - name: data_stream.dataset
         type: text
         title: 'Datastream Dataset name'
@@ -156,7 +131,14 @@ policy_templates:
         required: false
         show_user: false
         description: >
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.  
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default: []
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic
