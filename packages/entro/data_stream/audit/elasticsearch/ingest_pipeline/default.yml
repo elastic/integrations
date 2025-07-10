@@ -3,10 +3,29 @@ description: Pipeline for processing and enriching Entro audit logs according to
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
-  - set:
-      field: '@timestamp'
-      copy_from: date
+      tag: set_ecs_version
+      value: '8.17.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - date:
+      field: date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      timezone: UTC
+      tag: date_parse_timestamp
+      if: ctx.date != null
+      on_failure:
+        - remove:
+            field: date
+        - append:
+            field: error.message
+            value: >-
+                Processor '{{{ _ingest.on_failure_processor_type }}}'
+                {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+                {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - fingerprint:
       fields:
         - request_id
@@ -59,5 +78,16 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      

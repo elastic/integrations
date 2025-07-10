@@ -27,14 +27,19 @@ program: |
     // This program queries the API day-by-day, starting from an "initial_interval" in the past,
     // until the cursor catches up to the current date.
     // Note: The API's date format is dd/mm/yyyy.
-    state.?cursor.?last_timestamp.orValue(now - duration(state.initial_interval)).as(raw_start_value,
+    state.?cursor.?last_timestamp.orValue(
+      now - duration(state.initial_interval)
+    ).as(raw_start_value,
       ((type(raw_start_value) == string) ? timestamp(raw_start_value) : raw_start_value).as(start_time,
         state.with(
           request(
             "GET",
             state.url.trim_right("/") + "/v1/scan/auditLogs" + "?" + {
               "from": [start_time.format("02/01/2006")],
-              "to": (start_time.format("02/01/2006") == now.format("02/01/2006")) ? [""] : [(start_time + duration("24h")).format("02/01/2006")],
+              ?"to": (start_time.format("02/01/2006") == now.format("02/01/2006")) ?
+                optional.none()
+              :
+                optional.of([(start_time + duration("24h")).format("02/01/2006")]),
             }.format_query()
           ).with(
             {
@@ -79,7 +84,7 @@ program: |
                     "error": {
                       "code": string(resp.StatusCode),
                       "id": string(resp.Status),
-                      "message": "GET:" + (
+                      "message": "GET: " + (
                         (size(resp.Body) != 0) ?
                           string(resp.Body)
                         :
