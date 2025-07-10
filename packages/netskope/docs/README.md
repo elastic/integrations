@@ -36,49 +36,54 @@ ECS fields where applicable and the remaining fields are written under
 Please make sure to use the given response formats.
 
 ### For receiving log from Netskope Log Streaming
-1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). While Configuring make sure compression is set to GZIP as other compression type is not supported.
+1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). While Configuring make sure compression is set to GZIP as other compression types are not supported.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to **Management** > **Integrations**.
-2. In "Search for integrations" search bar, type **Netskope**.
+2. In "Search for integrations" top bar, search for `Netskope`.
 3. Select the **Netskope** integration from the search results.
-4. Select the Add **Netskope** Integration button to add the integration.
-5. While adding the integration, if you want to collect logs via AWS S3, you will need to provide the following details:
-   - Collect logs via S3 Bucket toggled on
-   - Access Key ID
-   - Secret Access Key
-   - Bucket ARN
-   - Session Token
+4. Select "Add Netskope" to add the integration.
+5. While adding the integration, there are different options to collect logs; 
+    
+    To collect logs via AWS S3 when adding the integration, you must provide the following details::
+    - Collect logs via S3 Bucket toggled on
+    - Access Key ID
+    - Secret Access Key
+    - Bucket ARN
+    - Session Token
 
-   or if you want to collect logs via AWS SQS, you will need to provide the following details:
-   - Collect logs via S3 Bucket toggled off
-   - Queue URL
-   - Secret Access Key
-   - Access Key ID
+    To collect logs via AWS SQS when adding the integration, you must provide the following details:
+    - Collect logs via S3 Bucket toggled off
+    - Queue URL
+    - Secret Access Key
+    - Access Key ID
 
-   or if you want to collect logs via GCS, you will need to provide the following details:
-   - Project ID
-   - Buckets
-   - Service Account Key/Service Account Credentials File
+    To collect logs via GCS when adding the integration, you must provide the following details:
+    - Project ID
+    - Buckets
+    - Service Account Key/Service Account Credentials File
 
-   or if you want to collect logs via Azure Blob Storage, you will need to provide the following details:
-   For OAuth2 (Microsoft Entra ID RBAC):
-   - Toggle on **Collect logs using OAuth2 authentication**
-   - Account Name
-   - Client ID
-   - Client Secret
-   - Tenant ID
-   - Container Details.
+    To collect logs via Azure Blob Storage when adding the integration, you must provide the following details:
 
-   For Service Account Credentials:
-   - Service Account Key or the URI
-   - Account Name
-   - Container Details
+    - For OAuth2 (Microsoft Entra ID RBAC):
+        - Toggle on **Collect logs using OAuth2 authentication**
+        - Account Name
+        - Client ID
+        - Client Secret
+        - Tenant ID
+        - Container Details.
 
-   Or if you want to collect logs via TCP, you will need to provide the following details:
-   - Listen Address
-   - Listen Port
+    - For Service Account Credentials:
+        - Service Account Key or the URI
+        - Account Name
+        - Container Details
+        
+
+    To collect logs via TCP when adding the integration, you must provide the following details:
+    - Listen Address
+    - Listen Port
+6. Save the integration.
 
 ## Compatibility
 
