@@ -110,7 +110,7 @@ processors:
       field: event.action
       tag: join_event_action
       separator: '-'
-      if: ctx.event?.action != '' && ctx.event?.action != null
+      if: ctx.event?.action != null && ctx.event.action != ''
       on_failure:
         - append:
             field: error.message
@@ -738,15 +738,26 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: set_event_severity_from_alert_v2_severity
       lang: painless
-      if: ctx.netskope?.alert_v2?.severity != null
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.netskope?.alert_v2?.severity != null && ctx.netskope.alert_v2.severity instanceof String
       source: |-
-        def severity_map = ['informational': 0, 'low': 1, 'medium': 2, 'high': 3, 'critical': 4];
-        def severity = ctx.netskope.alert_v2.severity.toLowerCase();
-        if (severity_map.containsKey(severity)) {
-          ctx.event.severity = severity_map[severity];
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.netskope.alert_v2.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
         }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: netskope.alert_v2.end_time
       tag: date_end_time
