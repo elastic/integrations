@@ -15,7 +15,7 @@ To start collecting logs from Cisco Umbrella, you'll need to configure an S3 buc
 
 - For a self-managed S3 bucket, follow these [step-by-step instructions](https://docs.umbrella.com/deployment-umbrella/docs/setting-up-an-amazon-s3-bucket).
 
-**Note:** Make sure to disable the `Include Optional Log Headers in S3 Export` toggle to prevent optional headers from appearing in the S3 log management report.  See [reference](https://docs.umbrella.com/deployment-umbrella/docs/log-formats-and-versioning#view-your-headers).
+**Note:** Make sure to disable the `Include Optional Log Headers in S3 Export` toggle to prevent optional headers from appearing in the S3 log management report. See [reference](https://docs.umbrella.com/deployment-umbrella/docs/log-formats-and-versioning#view-your-headers).
 
 ## Logs
 
