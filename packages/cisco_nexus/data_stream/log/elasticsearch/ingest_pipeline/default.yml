@@ -74,6 +74,9 @@ processors:
       copy_from: temp.timezone
       if: ctx.temp?.timezone != null && ctx.temp?.timezone != '' && (ctx.cisco_nexus?.log?.timezone == null || ctx.cisco_nexus?.log?.timezone == '')
   - date:
+      # Run this processor if there is a tz_map entry that matched the grokked temp.timezone value.
+      # This processor uses the "timezone:" field, and doesn't have any formats that include the timezone 'zzz'
+      # since that would cause the processor to use the 'zzz' short timezone name instead of the "timezone:" field.
       field: temp.timestamp_no_tz
       tag: 'date_set_timestamp_event_timezone_override'
       timezone: '{{{event.timezone}}}'
@@ -95,7 +98,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
   - date:
       field: cisco_nexus.log.syslog_time
       target_field: cisco_nexus.log.syslog_time
@@ -137,7 +139,7 @@ processors:
   - date:
       field: temp.timestamp
       tag: 'date_set_timestamp'
-      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ((ctx.event?.timezone == null) || (ctx.cisco_nexus?.log?.timezone != null && ctx.cisco_nexus.log.timezone != '')) && (ctx.temp?.tz_override == null || ctx.temp?.tz_override != true)
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ((ctx.event?.timezone == null) || (ctx.event?.timezone != null && (ctx.cisco_nexus?.log?.timezone != null && ctx.cisco_nexus.log.timezone != ''))) && (ctx.temp?.tz_override == null || ctx.temp?.tz_override != true)
       formats:
         - yyyy MMM d HH:mm:ss zzz
         - yyyy MMM dd HH:mm:ss zzz
