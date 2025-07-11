@@ -32,7 +32,6 @@ processors:
       tag: 'grok_syslog_line'
       if: ctx.event?.original != null && ctx.event.original != ''
       pattern_definitions:
-#        NEXUS_TIMESTAMP_TIMEZONE: '%{NEXUS_TIMESTAMP:temp.timestamp_no_tz}%{SPACE}%{WORD:cisco_nexus.log.timezone}'
         NEXUS_TIMESTAMP_TIMEZONE: '%{NEXUS_TIMESTAMP:temp.timestamp_no_tz}%{SPACE}%{WORD:temp.timezone}'
         NEXUS_TIMESTAMP: '%{YEAR}%{SPACE}%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME}'
         NEXUS_BODY: '(?:%%{WORD:cisco_nexus.log.facility}-(?:(%{INT:cisco_nexus.log.slot_number:long}|%{WORD:cisco_nexus.log.standby})-)?%{INT:cisco_nexus.log.severity:long}-%{WORD:cisco_nexus.log.type}:)?%{DATA:cisco_nexus.log.description}'
@@ -69,6 +68,8 @@ processors:
           }
         }
   - set:
+      # This field is being set from the temp.timezone value instead of in the NEXUS_TIMESTAMP_TIMEZONE pattern.
+      # That is to allow for better logical separation of time and timezone when there's a tz_map override.
       field: cisco_nexus.log.timezone
       tag: 'set_cisco_nexus_log_timezone_from_temp_timezone'
       copy_from: temp.timezone
