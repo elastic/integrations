@@ -1,0 +1,204 @@
+---
+description: Pipeline for Swimlane Audit Logs
+processors:
+  - set:
+      field: event.original
+      copy_from: message
+  - json:
+      field: message
+      target_field: json
+      ignore_failure: true
+  - drop:
+      if: ctx.json == null || !(ctx.json instanceof Map)
+  - remove:
+      field: 
+        - message
+        - input
+        - log
+      ignore_missing: true
+  - rename:
+      field: json
+      target_field: swimlane.audit_log
+      ignore_missing: true
+  - drop:
+      if: >-
+        ctx.swimlane?.audit_log?.description != null &&
+        (
+          ctx.swimlane.audit_log.description.toLowerCase().contains('read') ||
+          ctx.swimlane.audit_log.description.toLowerCase().contains('created a new record')
+        )
+  - json:
+      field: swimlane.audit_log.newValue
+      if: ctx.swimlane?.audit_log?.newValue != null
+      ignore_failure: true
+  - rename:
+      field: swimlane.audit_log.user
+      target_field: user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - rename:
+      field: swimlane.audit_log.accountId
+      target_field: cloud.origin.account.id
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.tenantId
+      target_field: cloud.origin.project.id
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.logLevel
+      target_field: log.level
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.path
+      target_field: url.path
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Normalize SourceIp to a single value
+      source: >-
+        def src = ctx.swimlane?.audit_log?.sourceIp;
+        if (src != null) {
+            if (src instanceof List && src.size() > 0) {
+                ctx.swimlane.audit_log.sourceIp = src[0];
+            } else if (src instanceof String) {
+                ctx.swimlane.audit_log.sourceIp = src;
+            }
+        }
+  - grok:
+      field: swimlane.audit_log.sourceIp
+      patterns:
+        - '::ffff:%{IPV4:source.ip}'
+        - '%{IPV4:source.ip}'
+        - '%{IPV6:source.ip}' 
+      ignore_failure: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.tenant
+      target_field: cloud.origin.tenant.id
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.category
+      target_field: log.category
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.logFeatureCategory
+      target_field: log.feature_category
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.logSource
+      target_field: log.source
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.logType
+      target_field: log.type
+      ignore_missing: true
+  - rename:
+      field: swimlane.audit_log.description
+      target_field: message
+      ignore_missing: true
+  - set:
+      field: message
+      value: '{{{message}}}'
+      if: ctx.message != null && ctx.message != ''
+  - rename:
+      field: swimlane.audit_log.userId
+      target_field: user.id
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: Add ECS categorization
+      params:
+        Create:
+          type:
+            - creation
+        Read:
+          type:
+            - access
+        Update:
+          type:
+            - change
+        Delete:
+          type:
+            - deletion
+        Login:
+          type:
+            - start
+        Logout:
+          type:
+            - end
+      source: >-
+        ctx.event.kind = 'event';
+        ctx.event.type = ['info'];
+        if (ctx.swimlane?.audit_log?.ActionType == null) {
+            return;
+        }
+        if (params.get(ctx.swimlane?.audit_log?.ActionType) == null) {
+            return;
+        }
+        def hm = new HashMap(params.get(ctx.swimlane?.audit_log?.ActionType));
+        hm.forEach((k, v) -> ctx.event[k] = v);
+  - rename:
+      field: swimlane.audit_log.category
+      target_field: log.category
+      ignore_missing: true
+  - grok:
+      field: swimlane.audit_log.endpoint
+      patterns:
+        - '%{GREEDYDATA:url.path}'
+      ignore_missing: true
+  - drop:
+      description: Drop events related to the hubs/record endpoint
+      if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().contains('hubs/record')
+  - drop:
+      description: Drop events related to any record updates
+      if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().endsWith('/values')
+  - rename:
+      field: swimlane.audit_log.eventOutcome
+      target_field: event.outcome
+      ignore_missing: true
+  - lowercase:
+      field: event.outcome
+      ignore_missing: true
+  - set:
+      field: user.roles
+      value: ['administrator']
+      if: ctx.swimlane?.audit_log?.isAdmin == 'True'
+  - rename:
+      field: swimlane.audit_log.authenticationType
+      target_field: user.authentication.type
+      ignore_missing: true
+  - lowercase:
+      field: user.authentication.type
+      ignore_missing: true
+  - user_agent:
+      field: swimlane.audit_log.userAgent
+      ignore_missing: true
+  - date:
+      field: swimlane.audit_log.eventTime
+      target_field: '@timestamp'
+      formats: 
+        - ISO8601
+  - remove:
+      field: swimlane
+      ignore_missing: false
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

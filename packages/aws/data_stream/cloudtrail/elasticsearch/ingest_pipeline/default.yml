@@ -134,7 +134,7 @@ processors:
               return;
           }
 
-          if (eventName == "SendSSHPublicKey" 
+          if (eventName == "SendSSHPublicKey"
             || eventName == "SendSerialConsoleSSHPublicKey") {
             addField(enrichCtx.target, "json.requestParameters.instanceId");
           }
@@ -147,7 +147,7 @@ processors:
 
           addField(enrichCtx.related, "json.requestParameters.configurationRecorderName");
 
-          if (eventName == "StopConfigurationRecorder" 
+          if (eventName == "StopConfigurationRecorder"
                   || eventName == "StartConfigurationRecorder") {
             addField(enrichCtx.target, "json.requestParameters.configurationRecorderName");
           }
@@ -174,7 +174,7 @@ processors:
             "json.responseElements.snapshotId",
             "json.responseElements.volumeId"
           ]);
-          
+
           field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
             addValues(enrichCtx.related, [
               i.groupId,
@@ -227,12 +227,12 @@ processors:
 
           field("json.requestParameters.revokedSecurityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
             addValues(enrichCtx.related, [
-              i.securityGroupRuleId, 
+              i.securityGroupRuleId,
               i.groupId
             ]);
           });
 
-          if (eventName == "AuthorizeSecurityGroupIngress" 
+          if (eventName == "AuthorizeSecurityGroupIngress"
               || eventName == "AuthorizeSecurityGroupEgress") {
             addField(enrichCtx.target, "json.requestParameters.groupId");
             field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(f -> addValue(enrichCtx.target, f.securityGroupRuleId));
@@ -267,7 +267,7 @@ processors:
 
           } else if (eventName == "ModifyImageAttribute") {
             addField(enrichCtx.target, "json.requestParameters.imageId");
-            
+
           } else if (eventName == "ModifySnapshotAttribute") {
             addField(enrichCtx.target, "json.requestParameters.snapshotId");
 
@@ -318,7 +318,7 @@ processors:
             addField(enrichCtx.target, "json.responseElements.detectorId");
           } else if (eventName == "DeleteDetector") {
             addField(enrichCtx.target, "json.requestParameters.detectorId");
-          } 
+          }
         }
 
         void enrichIam(def enrichCtx, def eventSource, def eventName) {
@@ -360,7 +360,7 @@ processors:
 
           } else if (eventName == "CreateAccessKey") {
             addFields(enrichCtx.target, [
-              "json.responseElements.accessKey.accessKeyId", 
+              "json.responseElements.accessKey.accessKeyId",
               "json.requestParameters.userName"
             ]);
 
@@ -373,10 +373,10 @@ processors:
 
           } else if (eventName == "GetPolicy") {
             addField(enrichCtx.target, "json.requestParameters.policyArn");
-            
+
           } else if (eventName == "CreatePolicy") {
             addField(enrichCtx.target, "json.responseElements.policy.arn");
-            
+
           } else if (eventName == "ListRoles"
                     || eventName == "ListUsers") {
             addField(enrichCtx.target, "json.recipientAccountId");
@@ -395,7 +395,7 @@ processors:
             "json.responseElements.keyMetadata.keyId"
           ]);
 
-          if (eventName == "DisableKey" 
+          if (eventName == "DisableKey"
             || eventName == "ScheduleKeyDeletion") {
             field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
           }
@@ -449,7 +449,7 @@ processors:
 
           if (eventName == "DeleteAlarms") {
             field("json.requestParameters.alarmNames").get(new ArrayList()).stream().forEach(f -> addValue(enrichCtx.target, f));
-            
+
           }
         }
 
@@ -475,27 +475,27 @@ processors:
             addValue(enrichCtx.related, i.vpcSecurityGroupId);
           });
 
-          if (eventName == "DeleteDBCluster" 
+          if (eventName == "DeleteDBCluster"
             || eventName == "ModifyDBCluster"
             || eventName == "StopDBCluster") {
             addField(enrichCtx.target, "json.responseElements.dBClusterArn");
-          
-          } else if (eventName == "DeleteDBInstance" 
-                  || eventName == "ModifyDBInstance" 
+
+          } else if (eventName == "DeleteDBInstance"
+                  || eventName == "ModifyDBInstance"
                   || eventName == "RestoreDBInstanceFromDBSnapshot"
                   || eventName == "RestoreDBInstanceFromS3"
                   || eventName == "StopDBInstance") {
             addField(enrichCtx.target, "json.responseElements.dBInstanceArn");
-          
+
           } else if (eventName == "DeleteGlobalCluster") {
             addField(enrichCtx.target, "json.responseElements.globalClusterArn");
 
           } else if (eventName == "ModifyDBClusterSnapshotAttribute") {
             addField(enrichCtx.target, "json.responseElements.dBClusterSnapshotIdentifier");
-            
+
           } else if (eventName == "ModifyDBSnapshotAttribute") {
             addField(enrichCtx.target, "json.responseElements.dBSnapshotIdentifier");
-            
+
           } else if (eventName == "DescribeDBInstances") {
             addField(enrichCtx.target, "json.recipientAccountId");
 
@@ -509,7 +509,7 @@ processors:
 
           if (eventName == "CreateTrustAnchor") {
             addField(enrichCtx.target, "json.responseElements.trustAnchor.trustAnchorArn");
-            
+
           }
         }
 
@@ -530,7 +530,7 @@ processors:
 
           addField(enrichCtx.related, "json.requestParameters.bucketName");
 
-          if (eventName == "CopyObject" 
+          if (eventName == "CopyObject"
             || eventName == "PutBucketLogging"
             || eventName == "PutBucketVersioning"
             || eventName == "PutObject"
@@ -589,7 +589,7 @@ processors:
 
           } else if (eventName == "StartSession") {
             addField(enrichCtx.target, "json.requestParameters.target");
-            
+
           } else if (eventName == "CreateDocument") {
             addField(enrichCtx.target, "json.requestParameters.name");
 
@@ -676,7 +676,7 @@ processors:
                     || eventName == "Publish") {
             addField(enrichCtx.target, "json.requestParameters.topicArn");
           }
-          
+
         }
 
         void enrichBedrock(def enrichCtx, def eventSource, def eventName) {
@@ -761,7 +761,7 @@ processors:
         enrichBedrock(enrichCtx, eventSource, eventName);
         enrichElasticLoadBalancing(enrichCtx, eventSource, eventName);
         enrichDynamoDB(enrichCtx, eventSource, eventName);
-        
+
         if (!enrichCtx.target.isEmpty()) {
           field("target.entity.id").set(enrichCtx.target);
           enrichCtx.related.addAll(enrichCtx.target);
@@ -770,7 +770,7 @@ processors:
         field("actor.entity.id").set([ enrichCtx.actor ]);
 
         field("related.entity").set(enrichCtx.related);
-        
+
   - rename:
       field: json.eventVersion
       target_field: aws.cloudtrail.event_version
@@ -779,11 +779,6 @@ processors:
       field: json.userIdentity.type
       target_field: aws.cloudtrail.user_identity.type
       ignore_failure: true
-  - append:
-      field: related.user
-      value: '{{json.userIdentity.userName}}'
-      allow_duplicates: false
-      if: ctx.json?.userIdentity?.userName != null
   - rename:
       field: json.userIdentity.userName
       target_field: user.name
@@ -964,7 +959,7 @@ processors:
       source: >
         if (ctx.json?.resources instanceof List) {
               def resources = ctx.json.resources;
-              
+
               Map uniqueResources = new HashMap();
               for (def originalResource : resources) {
                 if (originalResource instanceof Map) {
@@ -1010,6 +1005,11 @@ processors:
       value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
       allow_duplicates: false
       if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.newUserName != null
+  - append:
+      field: related.user
+      value: '{{aws.cloudtrail.flattened.response_elements.user.userId}}'
+      allow_duplicates: false
+      if: ctx.aws?.cloudtrail?.flattened?.response_elements?.user?.userId != null
   - script:
       lang: painless
       ignore_failure: true
@@ -1458,22 +1458,22 @@ processors:
         GetPolicy:
           category:
             - iam
-          type: 
-            - info                
+          type:
+            - info
         CreatePolicy:
           category:
             - iam
-          type: 
+          type:
             - creation
         ListAttachedRolePolicies:
           category:
             - iam
-          type: 
+          type:
             - info
         AttachRolePolicy:
           category:
             - iam
-          type: 
+          type:
             - change
         Converse:
           category:
@@ -1482,67 +1482,67 @@ processors:
         CreateDocument:
           category:
             - file
-          type: 
-            - creation  
+          type:
+            - creation
         StartSession:
           category:
             - session
-          type: 
-            - start 
+          type:
+            - start
         CreateControlChannel:
           category:
             - session
-          type: 
-            - start 
+          type:
+            - start
         OpenControlChannel:
           category:
             - session
-          type: 
-            - start 
+          type:
+            - start
         CreateDataChannel:
           category:
             - session
-          type: 
-            - start 
+          type:
+            - start
         OpenDataChannel:
           category:
             - session
-          type: 
+          type:
             - start
         TerminateSession:
           category:
             - session
-          type: 
-            - end 
+          type:
+            - end
         ListObjects:
           category:
             - file
-          type: 
+          type:
             - info
         HeadObject:
           category:
             - file
-          type: 
+          type:
             - info
         GetObject:
           category:
             - file
-          type: 
+          type:
             - info
         PutObject:
           category:
             - file
-          type: 
+          type:
             - change
         DeleteTrail:
           category:
             - configuration
-          type: 
+          type:
             - deletion
         DeleteObject:
           category:
             - file
-          type: 
+          type:
             - delete
       source: >-
         ctx.event.kind = 'event';
@@ -1677,10 +1677,17 @@ processors:
       field: aws.cloudtrail.insight_details
       target_field: aws.cloudtrail.flattened.insight_details
       ignore_missing: true
+  - remove:
+      field: json.tlsDetails
+      if: ctx.json?.tlsDetails?.tlsVersion == 'tlsVersion'
   - dissect:
       field: json.tlsDetails.tlsVersion
       pattern: "%{tls.version_protocol}v%{tls.version}"
       ignore_missing: true
+      on_failure:
+        - rename:
+            field: json.tlsDetails.tlsVersion
+            target_field: tls.version
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
@@ -1692,9 +1699,114 @@ processors:
       field: json.tlsDetails.clientProvidedHostHeader
       target_field: tls.client.server_name
       ignore_missing: true
+  # Standardize user fields
+  - set:
+      field: user.email
+      copy_from: user.name
+      tag: set_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  # Don't dissect the user email into <user.name>@<user.domain>
+  # as the parts are meaningless on their own
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+
+  # Remove the fields that the user does not want.
+  # TODO: This is unpleasantly inefficient. It would be ideal if we had not
+  # populated the fields in the first place, but the current state of the
+  # pipeline makes that non-trivial as both the flattened fields and the
+  # non-flattened origin fields are referred to throughout the pipeline,
+  # making it difficult to disentangle them. This the TODO to be done.
+  - script:
+      if: ctx._conf?.retain == 'minimal' && ctx.aws?.cloudtrail?.flattened != null
+      tag: script_retain_minimal_flattened
+      params:
+        # This list of fields is determined by enumerating all fields containing
+        # the string "cloudtrail.flattened" that are in .attributes.required_fields of the
+        # rules in security_detection_engine/kibana/security_rule.
+        # It must be kept up to date with the rules.
+        required_flattened_fields:
+          - aws.cloudtrail.flattened.additional_eventdata.SSEApplied
+          - aws.cloudtrail.flattened.request_parameters.cidrIp
+          - aws.cloudtrail.flattened.request_parameters.dryRun
+          - aws.cloudtrail.flattened.request_parameters.fromPort
+          - aws.cloudtrail.flattened.request_parameters.includeDeprecated
+          - aws.cloudtrail.flattened.request_parameters.policyArn
+          - aws.cloudtrail.flattened.request_parameters.serialNumber
+          - aws.cloudtrail.flattened.request_parameters.withDecryption
+          - aws.cloudtrail.flattened.request_parameters.x-amz-server-side-encryption-customer-algorithm
+      source: |-
+        def set(Map root, String path, def v) {
+          String[] elems = path.splitOnToken('.');
+          def dst = root;
+          for (int i = 0; i < elems.length-1; i++) {
+            dst = dst.computeIfAbsent(elems[i], _ -> new HashMap());
+          }
+          dst[elems[elems.length-1]] = v;
+        }
+        Map flattened = [:];
+        int prefix = "aws.cloudtrail.flattened.".length();
+        for (String f: params.required_flattened_fields) {
+          def v = field(f).get(null);
+          if (v == null) {
+            continue;
+          }
+          set(flattened, f.substring(prefix), v);
+        }
+        ctx.aws.cloudtrail.flattened = flattened;
   - remove:
-      field: json
+      field:
+        - aws.cloudtrail.flattened
       ignore_missing: true
+      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'flattened' && ctx._conf.retain != 'minimal'
+  - remove:
+      field:
+        - aws.cloudtrail.response_elements
+        - aws.cloudtrail.request_parameters
+        - aws.cloudtrail.additional_eventdata
+      ignore_missing: true
+      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'keyword' && ctx._conf.retain != 'minimal'
+  - remove:
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: remove_nulls
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null/empty values.
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
 on_failure:
   - set:
       field: event.kind

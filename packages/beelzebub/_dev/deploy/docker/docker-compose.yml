@@ -1,0 +1,15 @@
+services:
+  test-filestream:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  test-http_endpoint:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:10002/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/logs-ndjson.log

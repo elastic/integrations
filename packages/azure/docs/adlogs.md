@@ -96,6 +96,7 @@ An example event for `signinlogs` looks as following:
             "provider": "Microsoft.aadiam"
         },
         "signinlogs": {
+            "caller_ip_address": "81.2.69.144",
             "category": "SignInLogs",
             "identity": "Test LTest",
             "operation_name": "Sign-in activity",
@@ -109,7 +110,6 @@ An example event for `signinlogs` looks as following:
                 "created_at": "2019-10-18T04:45:48.0729893-05:00",
                 "device_detail": {
                     "browser": "Chrome 77.0.3865",
-                    "device_id": "",
                     "operating_system": "MacOs"
                 },
                 "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
@@ -120,11 +120,9 @@ An example event for `signinlogs` looks as following:
                 "risk_level_aggregated": "none",
                 "risk_level_during_signin": "none",
                 "risk_state": "none",
-                "service_principal_id": "",
                 "status": {
                     "error_code": 50140
                 },
-                "token_issuer_name": "",
                 "token_issuer_type": "AzureAD",
                 "user_display_name": "Test LTest",
                 "user_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
@@ -137,7 +135,7 @@ An example event for `signinlogs` looks as following:
         "tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
     },
     "client": {
-        "ip": "1.1.1.1"
+        "ip": "81.2.69.144"
     },
     "cloud": {
         "provider": "azure"
@@ -152,9 +150,8 @@ An example event for `signinlogs` looks as following:
         ],
         "duration": 0,
         "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "ingested": "2021-09-14T17:20:47.736433526Z",
         "kind": "event",
-        "original": "{\"Level\":\"4\",\"callerIpAddress\":\"1.1.1.1\",\"category\":\"SignInLogs\",\"correlationId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"durationMs\":0,\"identity\":\"Test LTest\",\"location\":\"FR\",\"operationName\":\"Sign-in activity\",\"operationVersion\":\"1.0\",\"properties\":{\"appDisplayName\":\"Office 365\",\"appId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"clientAppUsed\":\"Browser\",\"conditionalAccessStatus\":\"notApplied\",\"correlationId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"createdDateTime\":\"2019-10-18T04:45:48.0729893-05:00\",\"deviceDetail\":{\"browser\":\"Chrome 77.0.3865\",\"deviceId\":\"\",\"operatingSystem\":\"MacOs\"},\"id\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"ipAddress\":\"1.1.1.1\",\"isInteractive\":false,\"location\":{\"city\":\"Champs-Sur-Marne\",\"countryOrRegion\":\"FR\",\"geoCoordinates\":{\"latitude\":48.12341234,\"longitude\":2.12341234},\"state\":\"Seine-Et-Marne\"},\"originalRequestId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"processingTimeInMilliseconds\":239,\"riskDetail\":\"none\",\"riskLevelAggregated\":\"none\",\"riskLevelDuringSignIn\":\"none\",\"riskState\":\"none\",\"servicePrincipalId\":\"\",\"status\":{\"errorCode\":50140,\"failureReason\":\"This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.\"},\"tokenIssuerName\":\"\",\"tokenIssuerType\":\"AzureAD\",\"userDisplayName\":\"Test LTest\",\"userId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"userPrincipalName\":\"test@elastic.co\"},\"resourceId\":\"/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam\",\"resultDescription\":\"This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.\",\"resultSignature\":\"None\",\"resultType\":\"50140\",\"tenantId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"time\":\"2019-10-18T09:45:48.0729893Z\"}",
+        "original": "{\"Level\":\"4\",\"callerIpAddress\":\"81.2.69.144\",\"category\":\"SignInLogs\",\"correlationId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"durationMs\":0,\"identity\":\"Test LTest\",\"location\":\"FR\",\"operationName\":\"Sign-in activity\",\"operationVersion\":\"1.0\",\"properties\":{\"appDisplayName\":\"Office 365\",\"appId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"clientAppUsed\":\"Browser\",\"conditionalAccessStatus\":\"notApplied\",\"correlationId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"createdDateTime\":\"2019-10-18T04:45:48.0729893-05:00\",\"deviceDetail\":{\"browser\":\"Chrome 77.0.3865\",\"deviceId\":\"\",\"operatingSystem\":\"MacOs\"},\"id\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"ipAddress\":\"81.2.69.144\",\"isInteractive\":false,\"location\":{\"city\":\"Champs-Sur-Marne\",\"countryOrRegion\":\"FR\",\"geoCoordinates\":{\"latitude\":48.12341234,\"longitude\":2.12341234},\"state\":\"Seine-Et-Marne\"},\"originalRequestId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"processingTimeInMilliseconds\":239,\"riskDetail\":\"none\",\"riskLevelAggregated\":\"none\",\"riskLevelDuringSignIn\":\"none\",\"riskState\":\"none\",\"servicePrincipalId\":\"\",\"status\":{\"errorCode\":50140,\"failureReason\":\"This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.\"},\"tokenIssuerName\":\"\",\"tokenIssuerType\":\"AzureAD\",\"userDisplayName\":\"Test LTest\",\"userId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"userPrincipalName\":\"test@elastic.co\"},\"resourceId\":\"/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam\",\"resultDescription\":\"This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.\",\"resultSignature\":\"None\",\"resultType\":\"50140\",\"tenantId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"time\":\"2019-10-18T09:45:48.0729893Z\"}",
         "outcome": "failure",
         "type": [
             "info"
@@ -163,48 +160,53 @@ An example event for `signinlogs` looks as following:
     "geo": {
         "city_name": "Champs-Sur-Marne",
         "country_iso_code": "FR",
-        "country_name": "Seine-Et-Marne",
         "location": {
             "lat": 48.12341234,
             "lon": 2.12341234
-        }
+        },
+        "region_name": "Seine-Et-Marne"
     },
     "log": {
         "level": "4"
     },
     "message": "This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.",
     "related": {
+        "entity": [
+            "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+        ],
         "ip": [
-            "1.1.1.1"
+            "81.2.69.144"
+        ],
+        "user": [
+            "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+            "test@elastic.co",
+            "Test LTest"
         ]
     },
     "source": {
-        "address": "1.1.1.1",
-        "as": {
-            "number": 13335,
-            "organization": {
-                "name": "Cloudflare, Inc."
-            }
-        },
+        "address": "81.2.69.144",
         "geo": {
-            "continent_name": "Oceania",
-            "country_iso_code": "AU",
-            "country_name": "Australia",
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
             "location": {
-                "lat": -33.494,
-                "lon": 143.2104
-            }
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
         },
-        "ip": "1.1.1.1"
+        "ip": "81.2.69.144"
     },
     "tags": [
         "preserve_original_event"
     ],
     "user": {
-        "domain": "elastic.co",
+        "email": "test@elastic.co",
         "full_name": "Test LTest",
         "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "name": "test"
+        "name": "test@elastic.co"
     }
 }
 ```
@@ -334,6 +336,7 @@ An example event for `identity_protection` looks as following:
                 "detection_timing_type": "realtime",
                 "id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47",
                 "ip_address": "67.43.156.42",
+                "last_updated_datetime": "2022-08-22T18:07:16.894Z",
                 "location": {
                     "city": "Dresden",
                     "countryOrRegion": "DE",
@@ -347,7 +350,6 @@ An example event for `identity_protection` looks as following:
                 "request_id": "e1b6d9d7-5fc0-4638-ae1a-e0abceb92200",
                 "risk_detail": "none",
                 "risk_event_type": "anonymizedIPAddress",
-                "risk_last_updated_datetime": "2022-08-22T18:07:16.894Z",
                 "risk_level": "high",
                 "risk_state": "atRisk",
                 "risk_type": "anonymizedIPAddress",
@@ -355,7 +357,7 @@ An example event for `identity_protection` looks as following:
                 "token_issuer_type": "AzureAD",
                 "user_display_name": "Joe Danger",
                 "user_id": "51e26eae-d07b-44e5-bb0b-249f49569a8c",
-                "user_principal_name": "joe.danger@contoso.onmicrosoft.com",
+                "user_principal_name": "joe.danger@mauriziobrancaoutlook.onmicrosoft.com",
                 "user_type": "member"
             },
             "result_signature": "None"
@@ -375,7 +377,8 @@ An example event for `identity_protection` looks as following:
     "event": {
         "action": "User Risk Detection",
         "duration": 0,
-        "kind": "event"
+        "kind": "event",
+        "original": "{\"time\":\"8/22/2022 6:07:16 PM\",\"resourceId\":\"/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/microsoft.aadiam\",\"operationName\":\"User Risk Detection\",\"operationVersion\":\"1.0\",\"category\":\"UserRiskEvents\",\"tenantId\":\"5611623b-9128-461e-9d7f-a0d9c270ead2\",\"resultSignature\":\"None\",\"durationMs\":0,\"callerIpAddress\":\"67.43.156.42\",\"correlationId\":\"ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47\",\"identity\":\"joe danger\",\"Level\":4,\"location\":\"de\",\"properties\":{\"id\":\"ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47\",\"requestId\":\"e1b6d9d7-5fc0-4638-ae1a-e0abceb92200\",\"correlationId\":\"266133c2-fabb-492f-9ebf-bdf12317b817\",\"riskType\":\"anonymizedIPAddress\",\"riskEventType\":\"anonymizedIPAddress\",\"riskState\":\"atRisk\",\"riskLevel\":\"high\",\"riskDetail\":\"none\",\"source\":\"IdentityProtection\",\"detectionTimingType\":\"realtime\",\"activity\":\"signin\",\"ipAddress\":\"67.43.156.42\",\"location\":{\"city\":\"Dresden\",\"state\":\"Sachsen\",\"countryOrRegion\":\"DE\",\"geoCoordinates\":{\"altitude\":0,\"latitude\":51.0714,\"longitude\":13.7399}},\"activityDateTime\":\"2022-08-22T18:05:06.133Z\",\"detectedDateTime\":\"2022-08-22T18:05:06.133Z\",\"lastUpdatedDateTime\":\"2022-08-22T18:07:16.894Z\",\"userId\":\"51e26eae-d07b-44e5-bb0b-249f49569a8c\",\"userDisplayName\":\"Joe Danger\",\"userPrincipalName\":\"joe.danger@mauriziobrancaoutlook.onmicrosoft.com\",\"additionalInfo\":\"[{\\\"Key\\\":\\\"userAgent\\\",\\\"Value\\\":\\\"Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0\\\"}]\",\"tokenIssuerType\":\"AzureAD\",\"resourceTenantId\":null,\"homeTenantId\":\"5611623b-9128-461e-9d7f-a0d9c270ead2\",\"userType\":\"member\",\"crossTenantAccessType\":\"none\"}}"
     },
     "source": {
         "as": {
@@ -391,6 +394,19 @@ An example event for `identity_protection` looks as following:
             }
         },
         "ip": "67.43.156.42"
+    },
+    "related": {
+        "user": [
+            "51e26eae-d07b-44e5-bb0b-249f49569a8c",
+            "joe.danger@mauriziobrancaoutlook.onmicrosoft.com",
+            "Joe Danger"
+        ]
+    },
+    "user": {
+        "email": "joe.danger@mauriziobrancaoutlook.onmicrosoft.com",
+        "full_name": "Joe Danger",
+        "id": "51e26eae-d07b-44e5-bb0b-249f49569a8c",
+        "name": "joe.danger@mauriziobrancaoutlook.onmicrosoft.com"
     }
 }
 ```

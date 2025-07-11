@@ -15,11 +15,18 @@ processors:
       field: event.action
       value: user_activity_audit_event
       tag: set_user_activity_audit_event
-  - rename:
+  - grok:
       field: crowdstrike.event.UserId
-      target_field: user.name
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
       ignore_missing: true
-      tag: rename_user_id
+      ignore_failure: true
+  - set:
+      field: user.email
+      copy_from: crowdstrike.event.UserId
+      tag: copy_user_email
+      if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - rename:
       field: crowdstrike.event.OperationName
       target_field: message     
