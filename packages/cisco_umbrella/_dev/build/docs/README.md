@@ -9,7 +9,7 @@ datasets for receiving logs from an AWS S3 bucket using an SQS notification queu
 
 ### Collect data from Cisco Umbrella
 
-To start collecting logs from Cisco Umbrella, you'll need to configure an S3 bucket where the logs will be exported. Depending on your setup, you can choose between a Cisco-managed or a self-managed S3 bucket. Follow the appropriate guide below to complete the setup:
+To start collecting logs from Cisco Umbrella, you will need to configure an S3 bucket where the logs will be exported. Depending on your setup, you can choose between a Cisco-managed or a self-managed S3 bucket. Follow the appropriate guide below to complete the setup:
 
 - For a Cisco-managed S3 bucket, follow these [step-by-step instructions](https://docs.umbrella.com/deployment-umbrella/docs/cisco-managed-s3-bucket).
 
