@@ -1,37 +1,43 @@
-title: Collect AWS Inspector logs from AWS
+title: Collect Amazon Inspector logs from AWS
 type: logs
 streams:
   - input: httpjson
-    title: Collect AWS Inspector Findings from AWS
-    description: Collect AWS Inspector Findings from AWS.
+    title: Collect Amazon Inspector Findings from AWS
+    description: Collect Amazon Inspector Findings from AWS.
     template_path: httpjson.yml.hbs
     vars:
       - name: interval
         type: text
         title: Interval
-        description: 'Interval to fetch AWS Inspector Findings from AWS. NOTE: Supported units for this parameter are h/m/s.'
-        required: true
-        show_user: true
-        default: 1m
-      - name: enable_request_tracer
-        type: bool
-        title: Enable request tracing
-        multi: false
-        required: false
-        show_user: false
-        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
-      - name: initial_interval
-        type: text
-        title: Initial Interval
-        description: 'How far back to pull the AWS Inspector Findings from AWS. NOTE: Supported units for this parameter are h/m/s.'
-        multi: false
+        description: Interval to fetch Amazon Inspector Findings from AWS. Supported units for this parameter are h/m/s.
         required: true
         show_user: true
         default: 24h
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)
+          for details.
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the Amazon Inspector Findings from AWS. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 2160h
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
-        description: 'Duration of the time limit on HTTP requests. Note: Valid time units are ns, us, ms, s, m, h.'
+        description: Duration of the time limit on HTTP requests. Valid time units are ns, us, ms, s, m, h.
         multi: false
         required: true
         show_user: true
