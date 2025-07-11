@@ -79,12 +79,11 @@ processors:
       if: ctx.event?.timezone == null
       tag: "rename_temp_timezone"
       ignore_missing: true
-  # If no timestamp from the vendor is present we override it with the syslog timestamp.
   - date:
       field: cisco_nexus.log.syslog_time
-      target_field: temp.timestamp
+      target_field: cisco_nexus.log.syslog_time
       tag: "date_set_syslog_time_output"
-      if: ctx.cisco_nexus?.log?.syslog_time != null && ctx.temp?.timestamp == null
+      if: ctx.cisco_nexus?.log?.syslog_time != null
       output_format: yyyy MMM dd HH:mm:ss.SSS
       formats:
         - MMM  d HH:mm:ss
@@ -97,6 +96,13 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  # If no timestamp from the vendor is present we override it with the syslog timestamp.
+  - set:
+      field: temp.timestamp
+      copy_from: cisco_nexus.log.syslog_time
+      tag: "set_temp_timestamp"
+      if: ctx.cisco_nexus?.log?.syslog_time != null && ctx.temp?.timestamp == null
+      ignore_empty_value: true
 
   # Sets the @timestamp field from the vendor provided timestamp without timezone.
   - date:
@@ -156,11 +162,29 @@ processors:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
 
-  # To prevent another date processor from running just for this field to be removed at the end
+  # To prevent another date processor from running just for these 3 field to be removed at the end
   - set:
       field: cisco_nexus.log.time
       copy_from: cisco_nexus.log.syslog_time
       tag: "set_cisco_nexus_log_time"
+      if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields')
+      ignore_empty_value: true
+  - set:
+      field: cisco_nexus.log.time
+      copy_from: "@timestamp"
+      tag: "set_cisco_nexus_log_time"
+      if: ctx.cisco_nexus?.log?.time == null && ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields')
+      ignore_empty_value: true
+  - set:
+      field: cisco_nexus.log.timezone
+      copy_from: event.timezone
+      tag: "set_cisco_nexus_log_timezone"
+      if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields')
+      ignore_empty_value: true
+  - set:
+      field: cisco_nexus.log.timezone
+      copy_from: event.timezone
+      tag: "set_cisco_nexus_log_timezone"
       if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_empty_value: true
   - set:
@@ -268,7 +292,6 @@ processors:
   - remove:
       field:
         - cisco_nexus.log.time
-        - cisco_nexus.log.syslog_time
         - cisco_nexus.log.description
         - cisco_nexus.log.type
         - cisco_nexus.log.severity
