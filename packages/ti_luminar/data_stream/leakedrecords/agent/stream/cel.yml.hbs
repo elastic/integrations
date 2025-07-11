@@ -1,0 +1,151 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
+    feed_name: "Leaked Records"
+    feed_reference: "www.cyberluminar.com"
+
+state:
+  url: {{url}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  account_id: {{account_id}}
+  initial_interval: {{initial_interval}}
+  limit: 9999
+  token_url: {{url}}/externalApi/v2/realm/{{account_id}}/token
+  collection_url: {{url}}/externalApi/taxii/collections/849a4652-807c-48e6-bb53-93b219c29a5f/objects
+
+redact:
+  fields:
+    - client_id
+    - client_secret
+    - account_id
+    - token.access_token
+
+program: |
+  state.with(
+    (
+      (has(state.?token.expires) && now < timestamp(state.token.expires)) ?
+        state.token :
+        post_request(
+          state.token_url,
+          "application/x-www-form-urlencoded",
+          {
+            "client_id": [state.client_id],
+            "client_secret": [state.client_secret],
+            "grant_type": ["client_credentials"],
+            "scope": ["externalAPI/stix.readonly"]
+          }.format_query()
+        ).do_request().as(auth, auth.StatusCode == 200 ?
+          bytes(auth.Body).decode_json().as(auth_body,
+            auth_body.with({
+              "expires": now + duration(string(int(auth_body.expires_in) - 60) + "s"),
+            })
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(auth.StatusCode),
+                "id": string(auth.Status),
+                "message": "POST /token: " + (
+                  size(auth.Body) != 0 ?
+                    string(auth.Body)
+                  :
+                    string(auth.Status) + " (" + string(auth.StatusCode) + ")"
+                )
+              }
+            },
+            "want_more": false
+          }
+        )
+    ).as(token, !has(token.access_token) ? token :
+      request(
+        "GET",
+        state.?want_more.orValue(false) ?
+            state.next_url
+        : (has(state.initial_interval) && state.initial_interval != "") ?
+            (
+                state.collection_url + "/?" + {
+                    "added_after":[state.?cursor.last_timestamp.orValue((now() - duration(state.initial_interval)).format("2006-01-02T15:04:05.000000Z"))],
+                    "limit": [string(state.limit)],
+                }.format_query()
+            )
+            :
+              state.url
+      ).with({
+        "Header": {
+          "Content-Type": ["application/json"],
+          "Authorization": ["Bearer " + token.access_token]
+        }
+      }).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
+        bytes(resp.Body).decode_json().as(body,
+          {
+            "events": body.objects.map(e, {"message": e.encode_json(),"fetch_time": state.?cursor.last_timestamp.orValue((now() - duration(state.initial_interval)).format("2006-01-02T15:04:05.000000Z"))}),
+            "want_more": has(body.next) && body.next != null && body.next != "",
+            "next_url": (has(body.next) && body.next != null && body.next != "") ?
+                        (
+                            state.collection_url + "/?" + {
+                                "next": [string(body.next)],
+                                "limit": [string(state.limit)],
+                            }.format_query()
+                        )
+                    :
+                        state.url,
+            "cursor": {
+              ?"last_timestamp":resp.Header[?"X-TAXII-Date-Added-Last"]
+            },
+            "token": {
+              "access_token": token.access_token,
+              "expires": token.expires
+            }
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              )
+            }
+          },
+          "want_more": false
+        }
+      )
+    )
+  )
+
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
