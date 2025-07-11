@@ -1,0 +1,76 @@
+---
+description: Pipeline for processing Atlas Notifications logs.
+processors:
+  - rename:
+      field: cef.extensions.deviceEventCategory
+      tag: rename_cef_extensions_deviceEventCategory
+      target_field: infoblox_threat_defense.event.device.event_category
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.message
+      tag: rename_cef_extensions_message
+      target_field: infoblox_threat_defense.event.message
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.status
+      tag: rename_cef_extensions_status
+      target_field: infoblox_threat_defense.event.status
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxNotificationType
+      tag: rename_cef_extensions_InfobloxNotificationType
+      target_field: infoblox_threat_defense.event.infoblox.notification.type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxNotificationSubType
+      tag: rename_cef_extensions_InfobloxNotificationSubType
+      target_field: infoblox_threat_defense.event.infoblox.notification.sub_type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxOnPremHostName
+      tag: rename_cef_extensions_InfobloxOnPremHostName
+      target_field: infoblox_threat_defense.event.infoblox.on_prem_host_name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_event_infoblox_on_prem_host_name
+      copy_from: infoblox_threat_defense.event.infoblox.on_prem_host_name
+      ignore_empty_value: true
+      if: ctx.infoblox_threat_defense.event.infoblox.on_prem_host_name != '(none)'   
+  - append:
+      field: related.hosts
+      tag: append_InfobloxOnPremHostName_into_related_hosts
+      value: '{{{infoblox_threat_defense.event.infoblox.on_prem_host_name}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.infoblox?.on_prem_host_name != null && ctx.infoblox_threat_defense.event.infoblox.on_prem_host_name != '(none)'
+  - date:
+      field: cef.extensions.InfobloxEventOccurredTime
+      tag: date_cef_extensions_InfobloxEventOccurredTime
+      target_field: infoblox_threat_defense.event.infoblox.event.occurred_time
+      formats:
+        - UNIX
+      if: ctx.cef?.extensions?.InfobloxEventOccurredTime != null && ctx.cef.extensions.InfobloxEventOccurredTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_infoblox_event_occurred_time
+      copy_from: infoblox_threat_defense.event.infoblox.event.occurred_time
+      ignore_empty_value: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

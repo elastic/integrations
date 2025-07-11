@@ -1,0 +1,156 @@
+---
+description: Pipeline for processing SOC insight logs.
+processors:
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - rename:
+      field: cef.extensions.deviceEventCategory
+      tag: rename_cef_extensions_deviceEventCategory
+      target_field: infoblox_threat_defense.event.device.event_category
+      ignore_missing: true
+  - date:
+      field: cef.extensions.InfobloxEventOccurredTime
+      tag: date_cef_extensions_InfobloxEventOccurredTime
+      target_field: infoblox_threat_defense.event.infoblox.event.occurred_time
+      formats:
+        - UNIX
+      if: ctx.cef?.extensions?.InfobloxEventOccurredTime != null && ctx.cef.extensions.InfobloxEventOccurredTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_infoblox_event_occurred_time
+      copy_from: infoblox_threat_defense.event.infoblox.event.occurred_time
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: '@timestamp'  
+  - rename:
+      field: cef.extensions.InfobloxInsightDescription
+      tag: rename_cef_extensions_InfobloxInsightDescription
+      target_field: infoblox_threat_defense.event.infoblox.insight.description
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxInsightFeedSource
+      tag: rename_cef_extensions_InfobloxInsightFeedSource
+      target_field: infoblox_threat_defense.event.infoblox.insight.feed_source
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxInsightId
+      tag: rename_cef_extensions_InfobloxInsightId
+      target_field: infoblox_threat_defense.event.infoblox.insight.id
+      ignore_missing: true
+  - append:
+      field: threat.indicator.id
+      tag: append_infoblox_threat_defense_event_infoblox_insight_id_into_threat_indicator_id
+      value: '{{{infoblox_threat_defense.event.infoblox.insight.id}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_threat_defense?.event?.infoblox?.insight?.id != null
+  - set:
+      field: infoblox_threat_defense.event.infoblox.insight.status
+      tag: set_from_InfobloxInsightStatus
+      copy_from: cef.extensions.InfobloxInsightStatus
+      ignore_empty_value: true
+  - set:
+      field: infoblox_threat_defense.event.infoblox.insight.status
+      tag: set_from_status
+      copy_from: cef.extensions.status
+      override: false
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.InfobloxInsightThreatType
+      tag: rename_cef_extensions_InfobloxInsightThreatType
+      target_field: infoblox_threat_defense.event.infoblox.insight.threat_type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxInsightUserComment
+      tag: rename_cef_extensions_InfobloxInsightUserComment
+      target_field: infoblox_threat_defense.event.infoblox.insight.user_comment
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxEventsBlockedCount
+      tag: rename_cef_extensions_InfobloxEventsBlockedCount
+      target_field: infoblox_threat_defense.event.infoblox.stats.events_blocked_count
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxEventsNotBlockedCount
+      tag: rename_cef_extensions_InfobloxEventsNotBlockedCount
+      target_field: infoblox_threat_defense.event.infoblox.stats.events_not_blocked_count
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxThreatClass
+      tag: rename_cef_extensions_InfobloxThreatClass
+      target_field: infoblox_threat_defense.event.infoblox.threat.class
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.InfobloxThreatConfidence
+      tag: convert_cef_extensions_InfobloxThreatConfidence_to_long
+      target_field: infoblox_threat_defense.event.infoblox.threat.confidence
+      type: long
+      ignore_missing: true
+      if: ctx.cef?.extensions?.InfobloxThreatConfidence != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cef.extensions.InfobloxThreatLevel
+      tag: convert_cef_extensions_InfobloxThreatLevel_to_long
+      target_field: infoblox_threat_defense.event.infoblox.threat.level
+      type: long
+      ignore_missing: true
+      if: ctx.cef?.extensions?.InfobloxThreatLevel != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.InfobloxThreatFamily
+      tag: rename_cef_extensions_InfobloxThreatFamily
+      target_field: infoblox_threat_defense.event.infoblox.threat.family
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.message
+      tag: rename_cef_extensions_message
+      target_field: infoblox_threat_defense.event.message
+      ignore_missing: true
+  - set:
+      field: threat.indicator.description
+      tag: set_threat_indicator_description_from_event_message
+      copy_from: infoblox_threat_defense.event.message
+      ignore_empty_value: true
+  - convert:
+      field: cef.extensions.baseEventCount
+      tag: convert_cef_extensions_baseEventCount_to_long
+      target_field: infoblox_threat_defense.event.stats.base_event_count
+      type: long
+      ignore_missing: true
+      if: ctx.cef?.extensions?.baseEventCount != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
