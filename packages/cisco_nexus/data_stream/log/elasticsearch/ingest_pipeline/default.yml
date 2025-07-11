@@ -79,22 +79,6 @@ processors:
       if: ctx.event?.timezone == null
       tag: "rename_temp_timezone"
       ignore_missing: true
-  - date:
-      field: cisco_nexus.log.syslog_time
-      target_field: cisco_nexus.log.syslog_time
-      tag: "date_set_syslog_time_output"
-      if: ctx.cisco_nexus?.log?.syslog_time != null
-      formats:
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
-        - MMM d HH:mm:ss
-        - MMM  d HH:mm:ss.SSS
-        - MMM dd HH:mm:ss.SSS
-        - MMM d HH:mm:ss.SSS
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   # If no timestamp from the vendor is present we override it with the syslog timestamp.
   - set:
       field: temp.timestamp
@@ -150,6 +134,23 @@ processors:
         - yyyy MMM d HH:mm:ss.SSS
         - yyyy MMM dd HH:mm:ss.SSS
         - yyyy MMM  d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  # To parse the syslog timestamp into the correct format
+  - date:
+      field: cisco_nexus.log.syslog_time
+      target_field: cisco_nexus.log.syslog_time
+      tag: "date_set_syslog_time_output"
+      if: ctx.cisco_nexus?.log?.syslog_time != null
+      formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
