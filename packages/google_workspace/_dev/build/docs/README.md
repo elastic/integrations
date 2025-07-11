@@ -53,6 +53,80 @@ Click the Advanced option of Google Workspace Audit Reports. The default value o
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
+# Google Workspace Gmail Logs
+
+The integration collects and parses Gmail log data received form the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) using CEL input.
+
+## Compatibility
+
+- Gmail Data Stream has been tested against `BigQuery API (v2)`.
+
+## Requirements
+
+In order to ingest data from the Google BigQuery API, you must:
+
+1. Enable BigQuery API if not already
+
+- In the [Google Cloud console](https://console.cloud.google.com), navigate to **APIs & Services** > **Library**.
+- Search for **BigQuery API** and select it.
+- Click **Enable**.
+
+2. Create a service account:
+
+- In the [Google Cloud console](https://console.cloud.google.com), navigate to **APIs & Services > Credentials**.
+- Click Create **Credentials > Service account**.
+- In the setup:
+  - Enter a name for the service account.
+  - Click **Create and Continue**.
+  - (Optional) Grant project access.
+  - Click **Continue**.
+  - (Optional) Grant user access.
+  - Click **Done**.
+- Copy email address of the service account which will be required in upcoming steps.
+
+3. Generate a JSON Key:
+
+- From the **Credentials** page, click on the name of your new service account.
+- Go to the **Keys** tab.
+- Click **Add Key > Create new key**.
+- Choose **JSON** format and click **Create**.
+- Save the downloaded JSON key securely.
+
+4. Grant IAM Role:
+
+- Go to **IAM & Admin > IAM** in the Cloud Console.
+- Click **Grant access**.
+- Paste the service account email in the **New principals** field.
+- Click **Select a role**, search for and select **BigQuery Job User**.
+- Click **Save**.
+
+5. Enable Gmail Logs Export in Admin Console:
+
+- Sign in to your [Google Admin console](admin.google.com).
+- Navigate to **Apps > Google Workspace > Gmail > Setup**.
+- Click Email **Logs in BigQuery > Enable**.
+- Choose the same Google Cloud project used for the service account.
+- Optionally, specify a custom name for the dataset.
+- Click **Save**.
+
+6. Grant Dataset Permissions:
+
+- Go to [Google Cloud console](https://console.cloud.google.com) and search for **BigQuery**.
+- Click your Google Cloud project on the left pane.
+- Locate the dataset (e.g., gmail_logs_dataset), click the **three-dot menu > Share > Manage Permissions**.
+- Click **Add principal**.
+- Paste the service account email in **New principals**.
+- Select **BigQuery Data Viewer** as the role.
+- Click **Save**.
+
+This integration will make use of the following *oauth2 scope*:
+
+- `https://www.googleapis.com/auth/bigquery.readonly`
+
+Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration for collecting Gmail logs.
+
+>  NOTE: For Gmail data stream, the default value of "BigQuery API Host" is `https://bigquery.googleapis.com`. The BigQuery API Host will be used for collecting gmail logs only.
+
 # Google Workspace Alert
 
 The [Google Workspace](https://developers.google.com/admin-sdk/alertcenter) Integration collects and parses data received from the Google Workspace Alert Center API using HTTP JSON Input.
@@ -319,3 +393,11 @@ This is the `keep` dataset.
 {{event "keep"}}
 
 {{fields "keep"}}
+
+### Gmail
+
+This is the `gmail` dataset.
+
+{{event "gmail"}}
+
+{{fields "gmail"}}

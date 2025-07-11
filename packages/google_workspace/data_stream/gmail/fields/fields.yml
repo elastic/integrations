@@ -1,0 +1,433 @@
+- name: google_workspace
+  type: group
+  fields:
+    - name: gmail
+      type: group
+      fields:
+        - name: event_info
+          type: group
+          fields:
+            - name: client_context
+              type: group
+              fields:
+                - name: client_type
+                  type: keyword
+                  description: The type of client or device where the action occurred, including WEB, IOS, ANDROID, IMAP, POP3, and API.
+                - name: session_context
+                  type: group
+                  fields:
+                    - name: delegate_user_email
+                      type: keyword
+                      description: Email address of the delegated user who performed the action on the account owner's behalf.
+                    - name: dusi
+                      type: keyword
+                      description: Identifier for a user's session on a specific device.
+            - name: elapsed_time_usec
+              type: long
+              description: Total time duration of the event, in microseconds.
+            - name: mail_event_type
+              type: keyword
+              description: Logged event type. The event type corresponds to the Event attribute in Gmail log events in Security Investigation Tool.
+            - name: success
+              type: boolean
+              description: True if the event was successful, otherwise false. For example, the value is false if the message was rejected by a policy.
+            - name: timestamp_usec
+              type: date
+              description: Time when this event started, in the form of a UNIX timestamp, in microseconds.
+        - name: message_info
+          type: group
+          fields:
+            - name: action_type
+              type: keyword
+              description: The message delivery action that the event represents.
+            - name: attachment
+              type: group
+              fields:
+                - name: file_extension_type
+                  type: keyword
+                  description: File extension (not mime part type), not including the period.
+                - name: file_name
+                  type: keyword
+                  description: File attachment name.
+                - name: malware_family
+                  type: keyword
+                  description: Malware category, if detected when the message is handled. This field is unset if no malware is detected.
+                - name: sha256
+                  type: keyword
+                  description: SHA256 hash of the attachment.
+            - name: confidential_mode_info
+              type: group
+              fields:
+                - name: is_confidential_mode
+                  type: boolean
+                  description: Indicates whether the message was sent in confidential mode.
+            - name: connection_info
+              type: group
+              fields:
+                - name: authenticated_domain
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Authenticated domain name.
+                    - name: type
+                      type: keyword
+                      description: Message authentication type (for example, SPF, DKIM).
+                - name: client_host_zone
+                  type: keyword
+                  description: Client host zone of the mail sender.
+                - name: client_ip
+                  type: ip
+                  description: IP address of the mail client that started the message.
+                - name: dkim_pass
+                  type: boolean
+                  description: Indicates if the message was authenticated using at least one DKIM signature.
+                - name: dmarc_pass
+                  type: boolean
+                  description: Indicates if the message passed DMARC policy evaluation.
+                - name: dmarc_published_domain
+                  type: keyword
+                - name: failed_smtp_out_connect_ip
+                  type: ip
+                  description: List of all IPs in the remote MX record that Gmail attempted to connect to but failed.
+                - name: ip_geo_city
+                  type: keyword
+                  description: Nearest city computed based on the relay IP.
+                - name: ip_geo_country
+                  type: keyword
+                  description: ISO country code based on the relay IP.
+                - name: is_internal
+                  type: boolean
+                  description: Indicates if the message was sent within domains owned by the customer.
+                - name: is_intra_domain
+                  type: boolean
+                  description: Indicates if the message was sent within the same domain.
+                - name: smtp_in_connect_ip
+                  type: ip
+                  description: Remote IP address for MTA client connections (inbound SMTP to Gmail).
+                - name: smtp_out_connect_ip
+                  type: ip
+                  description: Remote IP address for SMTP connections from Gmail.
+                - name: smtp_out_remote_host
+                  type: keyword
+                  description: For outgoing SMTP connections, the domain the message started from; the destination domain or the smarthost.
+                - name: smtp_reply_code
+                  type: long
+                  description: SMTP reply code for inbound and outbound SMTP connections. Usually 2xx, 4xx, or 5xx.
+                - name: smtp_response_reason
+                  type: keyword
+                  description: Detailed reason for the SMTP reply code for inbound connections.
+                - name: smtp_tls_cipher
+                  type: keyword
+                  description: Name of the TLS cipher being used for secure connections to the SMTP server.
+                - name: smtp_tls_state
+                  type: keyword
+                  description: Type of connection made to the SMTP server. Only set for logs of events that explicitly handle SMTP connections.
+                - name: smtp_tls_version
+                  type: keyword
+                  description: TLS version used for secure connections to the SMTP server. For example, TLSv1.2.
+                - name: smtp_user_agent_ip
+                  type: ip
+                  description: IP address of the mail user agent for inbound SMTP connections.
+                - name: spf_pass
+                  type: boolean
+                  description: Indicates if the message was authenticated with SP.
+                - name: tls_required_but_unavailable
+                  type: boolean
+                  description: TLS is required for an outbound SMTP connection, but no valid certificate was present.
+            - name: description
+              type: keyword
+              description: Human-readable description of what happened to the message.
+            - name: destination
+              type: group
+              fields:
+                - name: address
+                  type: keyword
+                  description: Recipient email address.
+                - name: rcpt_response
+                  type: keyword
+                  description: Response of the SMTP RCPT command.
+                - name: selector
+                  type: keyword
+                  description: Subcategory for each service.
+                - name: service
+                  type: keyword
+                  description: The service at the message destination.
+                - name: smime_decryption_success
+                  type: boolean
+                  description: For inbound messages only. When set, indicates that S/MIME decryption was attempted for this recipient.The value indicates the completion status. Not set if skipped.
+                - name: smime_extraction_success
+                  type: boolean
+                  description: For inbound messages only. When set, indicates that S/MIME extraction was attempted for this recipient. The value indicates the completion status. Not set if skipped.
+                - name: smime_parsing_success
+                  type: boolean
+                  description: For inbound messages only. When set, indicates that S/MIME parsing was attempted for this recipient. The value indicates the completion status. Not set if skipped.
+                - name: smime_signature_verification_success
+                  type: boolean
+                  description: For inbound messages only. When set, indicates that S/MIME signature verification was attempted for this recipient. The value indicates the completion status. Not set if skipped.
+            - name: flattened_destinations
+              type: keyword
+              description: |-
+                String that has information of all recipient information flattened, in this format:  `service_for_recipient1:selector_for_recipient1:address_for_recipient1,
+                service_for_recipient2:selector_for_recipient2:address_for_recipient2`.
+            - name: flattened_triggered_rule_info
+              type: keyword
+              description: String that has information of all triggered rules, in JSON format.
+            - name: is_policy_check_for_sender
+              type: boolean
+              description: True if the policy rules were evaluated for the sender (the message was processed for outbound delivery). False if the policy rules were evaluated for the recipient (the message was processed for inbound delivery).
+            - name: is_spam
+              type: boolean
+              description: True if the message was classified as spam.
+            - name: link_domain
+              type: keyword
+              description: Domains extracted from link URLs in the message body.
+            - name: message_set
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: Message set type that the message belongs to.
+            - name: num_message_attachments
+              type: long
+              description: Number of message attachments.
+            - name: payload_size
+              type: long
+              description: Size of the message payload, in bytes.
+            - name: post_delivery_info
+              type: group
+              fields:
+                - name: action_type
+                  type: keyword
+                  description: Post-delivery action type.
+                - name: data_classification
+                  type: group
+                  fields:
+                    - name: classified_entity
+                      type: keyword
+                      description: Entity type that was classified.
+                    - name: event_type
+                      type: keyword
+                      description: Classification event type.
+                    - name: labels
+                      type: group
+                      fields:
+                        - name: field_value_display_name
+                          type: keyword
+                          description: Label display name.
+                    - name: previous_labels
+                      type: group
+                      fields:
+                        - name: field_value_display_name
+                          type: keyword
+                          description: Previous label's display name.
+                - name: interaction
+                  type: group
+                  fields:
+                    - name: attachment
+                      type: group
+                      fields:
+                        - name: file_extension_type
+                          type: keyword
+                          description: File extension (not MIME part type), not including the period.
+                        - name: file_name
+                          type: keyword
+                          description: Attachment file name.
+                        - name: malware_family
+                          type: keyword
+                          description: Malware type, if malware is detected during message handling. If no malware is detected, this field is not set.
+                        - name: sha256
+                          type: keyword
+                          description: SHA256 hash of the attachment.
+                    - name: drive_id
+                      type: keyword
+                      description: The unique ID of the Google Drive item associated with the interaction. This ID is used to access the item in Drive. This field is set only for Drive attachment interactions.
+                    - name: link_url
+                      type: keyword
+                      description: The URL associated with the interaction, which is set set only for link click interactions.
+            - name: rfc2822_message_id
+              type: keyword
+              description: RFC 2822 message ID for the message. To see this, select Show Original for the Gmail message.
+            - name: smime_content_type
+              type: keyword
+              description: 'The top-level S/MIME type of a message, indicated by the Content-Type: header.'
+            - name: smime_encrypt_message
+              type: boolean
+              description: For outbound messages only. When set and true, indicates the message should be encrypted.
+            - name: smime_extraction_success
+              type: boolean
+              description: When set, indicates that inbound S/MIME processing occurred. Not set if skipped. The value indicates the completion status.
+            - name: smime_packaging_success
+              type: boolean
+              description: For outbound messages only. When set, indicates that S/MIME packaging was attempted. Not set if skipped. The value indicates the completion status.
+            - name: smime_sign_message
+              type: boolean
+              description: For outbound messages only. When set and true, indicates message should be signed.
+            - name: smtp_relay_error
+              type: keyword
+              description: If Gmail rejects an SMTP relay request, this error code provides information about the cause of the rejection.
+            - name: source
+              type: group
+              fields:
+                - name: address
+                  type: keyword
+                  description: Email address of the sender.
+                - name: from_header_address
+                  type: keyword
+                  description: 'From: header address as it appears in the message headers.'
+                - name: from_header_displayname
+                  type: keyword
+                  description: 'From: header display name as it appears in the message headers, for example, John Doe. This field might be truncated if the log is too long or if there are too many triggered rules (triggered_rule_info) in the log.'
+                - name: selector
+                  type: keyword
+                  description: A subcategory of the source server. For value descriptions, go to message_info.source.service.
+                - name: service
+                  type: keyword
+                  description: The source service for the message.
+            - name: spam_info
+              type: group
+              fields:
+                - name: classification_reason
+                  type: keyword
+                  description: Reason the message was classified as spam, phishing, or other classification.
+                - name: classification_timestamp_usec
+                  type: date
+                  description: Message spam classification timestamp.
+                - name: disposition
+                  type: keyword
+                  description: The outcome of the Gmail spam classification.
+                - name: ip_whitelist_entry
+                  type: keyword
+                  description: The IP whitelist entry that informed the classification, when the message is classified by a custom rule in Gmail settings.
+            - name: structured_policy_log_info
+              type: group
+              fields:
+                - name: detected_file_types
+                  type: group
+                  fields:
+                    - name: category
+                      type: keyword
+                      description: MIME type category.
+                    - name: mime_type
+                      type: keyword
+                      description: File MIME type.
+                - name: exchange_journal_info
+                  type: group
+                  fields:
+                    - name: recipients
+                      type: keyword
+                      description: Domain recipients for the journaled message known to Google.
+                    - name: rfc822_message_id
+                      type: keyword
+                      description: RFC 822 message ID of the journaled message.
+                    - name: timestamp
+                      type: date
+                      description: The timestamp of the journaled message, in seconds.
+                    - name: unknown_recipients
+                      type: keyword
+                      description: Domain recipients unknown to Google for the journaled message.
+            - name: subject
+              type: keyword
+              description: Message subject.This field may be truncated if the log is too long, or the number of triggered rules (triggered_rule_info) in the log is too big.
+            - name: triggered_rule_info
+              type: group
+              fields:
+                - name: consequence
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: Action taken for the consequence.
+                    - name: reason
+                      type: keyword
+                      description: Reason the consequence was applied. Usually contains the unique description of a rule that triggered the consequence.
+                    - name: subconsequence
+                      type: group
+                      fields:
+                        - name: action
+                          type: keyword
+                          description: Action taken for the sub-consequence. Go to consequence action for a description of possible values.
+                        - name: reason
+                          type: keyword
+                          description: Reason the sub-consequence was applied. Usually contains the unique description of a rule that triggered the consequence.
+                - name: policy_holder_address
+                  type: keyword
+                  description: Email address of the policyholder whose policy triggered the rules.
+                - name: rule_name
+                  type: keyword
+                  description: Custom rule description entered in the Admin console.
+                - name: rule_type
+                  type: keyword
+                  description: Custom rule type.
+                - name: spam_label_modifier
+                  type: keyword
+                  description: Describes the custom rule spam classification results.
+                - name: string_match
+                  type: group
+                  fields:
+                    - name: attachment_name
+                      type: keyword
+                      description: 'Name of the attachment where a matching string was found in the text extracted from a binary file. Note: This field is currently not populated.'
+                    - name: match_expression
+                      type: keyword
+                      description: Match expression set in the Admin console. This field may be truncated if the log is too long, or the number of triggered rules (triggered_rule_info) in the log is too big.
+                    - name: matched_string
+                      type: keyword
+                      description: String that triggered the rule. Sensitive information is hidden by * or . This field might be truncated if the log is too long, or the number of triggered rules (triggered_rule_info) in the log is too large.
+                    - name: predefined_detector_name
+                      type: keyword
+                      description: If this was a match of predefined detectors, indicates the name of the predefined detector.
+                    - name: source
+                      type: keyword
+                      description: Location of the string matched in the message.
+                    - name: type
+                      type: keyword
+                      description: Type of match.
+            - name: upload_error_category
+              type: keyword
+              description: Error encountered while uploading the message to the destination.
+        - name: resource_details
+          type: group
+          fields:
+            - name: applied_labels
+              type: group
+              fields:
+                - name: field_values
+                  type: group
+                  fields:
+                    - name: display_name
+                      type: keyword
+                      description: Field display name.
+                    - name: id
+                      type: keyword
+                      description: Field ID.
+                    - name: selection_value
+                      type: group
+                      fields:
+                        - name: badged
+                          type: boolean
+                          description: Indicates whether the choice is badged.
+                        - name: display_name
+                          type: keyword
+                          description: Choice display name.
+                        - name: id
+                          type: keyword
+                          description: Choice ID.
+                    - name: type
+                      type: keyword
+                      description: Always SELECTION because Gmail currently supports only a selection field.
+                - name: id
+                  type: keyword
+                  description: Label ID.
+                - name: title
+                  type: keyword
+                  description: Label title.
+            - name: id
+              type: keyword
+              description: RFC 2822 message ID of the message. Set only when the message has labels.
+            - name: title
+              type: keyword
+              description: Message subject. Set only set when the message has labels.
+            - name: type
+              type: keyword
+              description: Always EMAIL for Gmail events.
