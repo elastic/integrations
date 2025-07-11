@@ -1175,7 +1175,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date == DATE_TRUNC(1 month , NOW())\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.resource_tags.aws_created_by, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
+                        "esql": "FROM aws_billing.cur_latest\n| WHERE aws_billing.cur.line_item.type == \"Usage\" and aws_billing.cur.bill.billing_period_start_date \u003e= DATE_TRUNC(1 month, NOW() - 2 months)\n| STATS sum_line_item_unblended_cost = SUM(aws_billing.cur.line_item.unblended_cost) by aws_billing.cur.resource_tags.aws_created_by, aws_billing.cur.bill.billing_period_start_date  \n| SORT sum_line_item_unblended_cost DESC\n| rename sum_line_item_unblended_cost as `Unblended Cost`"
                     },
                     "syncColors": false,
                     "syncCursor": true,
