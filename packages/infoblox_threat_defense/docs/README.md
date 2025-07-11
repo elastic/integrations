@@ -30,29 +30,7 @@ The Infoblox Threat Defense integration collects the following types of events.
 
 ## Requirements
 
-### Agent-based deployment
-
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the TCP/UDP and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-#### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -87,15 +65,15 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-03-03T11:57:45.000Z",
     "agent": {
-        "ephemeral_id": "945c7a8d-35a7-428a-ac86-b6213adeeffd",
-        "id": "656258d1-9f8f-48d2-ab95-7f84c772172e",
-        "name": "elastic-agent-47713",
+        "ephemeral_id": "7abd4432-6ec9-40f6-bda3-273b38b55c88",
+        "id": "64c9d588-6e7c-45ba-8c8b-4d41b6665cba",
+        "name": "elastic-agent-49246",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "infoblox_threat_defense.event",
-        "namespace": "94352",
+        "namespace": "13231",
         "type": "logs"
     },
     "destination": {
@@ -111,9 +89,9 @@ An example event for `event` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "656258d1-9f8f-48d2-ab95-7f84c772172e",
+        "id": "64c9d588-6e7c-45ba-8c8b-4d41b6665cba",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "delete",
@@ -124,10 +102,10 @@ An example event for `event` looks as following:
         "code": "DHCP-LEASE-DELETE",
         "created": "2021-03-03T11:57:45.000Z",
         "dataset": "infoblox_threat_defense.event",
-        "ingested": "2025-06-20T08:30:19Z",
+        "ingested": "2025-07-11T07:33:55Z",
         "kind": "event",
         "original": "CEF:0|Infoblox|Data Connector|2.1.3|DHCP-LEASE-DELETE|DHCP Lease Delete|1|src=175.16.199.0 InfobloxClientID=01:00:1A:2B:3C:4D:5E InfobloxHostID=dhcp/host/1516583 InfobloxFingerprintPr=true InfobloxRangeEnd=67.43.156.10 InfobloxRangeStart=67.43.156.0 smac=00:1A:2B:3C:4D:5E InfobloxIPSpace=ipam/ip_space/1f99d3a6-2982-11f0-b65e-fe20d626f7e6 InfobloxSubnet=175.16.199.0/24 InfobloxFingerprint=VMware::Windows: shost= InfobloxLeaseUUID=a91838a3-4679-11f0-b018-ee5154718d37 InfobloxLifetime=3600 InfobloxLeaseOp=Delete app=DHCP cat=DHCP Lease Delete InfobloxDUID= InfobloxHost= dst=1.128.0.1",
-        "severity": 1,
+        "severity": 21,
         "type": [
             "info"
         ]
@@ -192,11 +170,11 @@ An example event for `event` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.252.3:33602"
+            "address": "192.168.246.3:38218"
         }
     },
     "network": {
