@@ -1,0 +1,68 @@
+metricsets: ["jmx"]
+period: {{period}}
+http_method: "GET"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+namespace: {{namespace}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+  # Server ReplicaManager MBeans
+  - mbean: 'kafka.server:type=ReplicaManager,name=AtMinIsrPartitionCount'
+    attributes:
+      - attr: Value
+        field: replica_manager.at_min_isr_partition_count
+  - mbean: 'kafka.server:type=ReplicaManager,name=FailedIsrUpdatesPerSec'
+    attributes:
+      - attr: OneMinuteRate
+        field: replica_manager.failed_isr_updates_per_sec
+  - mbean: 'kafka.server:type=ReplicaManager,name=IsrExpandsPerSec'
+    attributes:
+      - attr: OneMinuteRate
+        field: replica_manager.isr_expands_per_sec
+  - mbean: 'kafka.server:type=ReplicaManager,name=IsrShrinksPerSec'
+    attributes:
+      - attr: OneMinuteRate
+        field: replica_manager.isr_shrinks_per_sec
+  - mbean: 'kafka.server:type=ReplicaManager,name=LeaderCount'
+    attributes:
+      - attr: Value
+        field: replica_manager.leader_count
+  - mbean: 'kafka.server:type=ReplicaManager,name=OfflineReplicaCount'
+    attributes:
+      - attr: Value
+        field: replica_manager.offline_replica_count
+  - mbean: 'kafka.server:type=ReplicaManager,name=PartitionCount'
+    attributes:
+      - attr: Value
+        field: replica_manager.partition_count
+  - mbean: 'kafka.server:type=ReplicaManager,name=PartitionsWithLateTransactionsCount'
+    attributes:
+      - attr: Value
+        field: replica_manager.partitions_with_late_transactions_count
+  - mbean: 'kafka.server:type=ReplicaManager,name=ProducerIdCount'
+    attributes:
+      - attr: Value
+        field: replica_manager.producer_id_count
+  - mbean: 'kafka.server:type=ReplicaManager,name=ReassigningPartitions'
+    attributes:
+      - attr: Value
+        field: replica_manager.reassigning_partitions
+  - mbean: 'kafka.server:type=ReplicaManager,name=UnderMinIsrPartitionCount'
+    attributes:
+      - attr: Value
+        field: replica_manager.under_min_isr_partition_count
+  - mbean: 'kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions'
+    attributes:
+      - attr: Value
+        field: replica_manager.under_replicated_partitions

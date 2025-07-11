@@ -1,0 +1,100 @@
+metricsets: ["jmx"]
+period: {{period}}
+http_method: "GET"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+namespace: {{namespace}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+  # Log MBeans
+  - mbean: 'kafka.log:type=Log,name=LogEndOffset'
+    attributes:
+      - attr: Value
+        field: log.log_end_offset
+  - mbean: 'kafka.log:type=Log,name=LogStartOffset'
+    attributes:
+      - attr: Value
+        field: log.log_start_offset
+  - mbean: 'kafka.log:type=Log,name=NumLogSegments'
+    attributes:
+      - attr: Value
+        field: log.num_log_segments
+  - mbean: 'kafka.log:type=Log,name=Size'
+    attributes:
+      - attr: Value
+        field: log.size
+        
+  # Log Cleaner MBeans
+  - mbean: 'kafka.log:type=LogCleaner,name=CleanerRecopyPercent'
+    attributes:
+      - attr: Value
+        field: log_cleaner.cleaner_recopy_percent
+  - mbean: 'kafka.log:type=LogCleaner,name=DeadThreadCount'
+    attributes:
+      - attr: Value
+        field: log_cleaner.dead_thread_count
+  - mbean: 'kafka.log:type=LogCleaner,name=MaxBufferUtilizationPercent'
+    attributes:
+      - attr: Value
+        field: log_cleaner.max_buffer_utilization_percent
+  - mbean: 'kafka.log:type=LogCleaner,name=MaxCleanTimeSecs'
+    attributes:
+      - attr: Value
+        field: log_cleaner.max_clean_time_secs
+  - mbean: 'kafka.log:type=LogCleaner,name=MaxCompactionDelaySecs'
+    attributes:
+      - attr: Value
+        field: log_cleaner.max_compaction_delay_secs
+        
+  # Log Cleaner Manager MBeans
+  - mbean: 'kafka.log:type=LogCleanerManager,name=MaxDirtyPercent'
+    attributes:
+      - attr: Value
+        field: log_cleaner_manager.max_dirty_percent
+  - mbean: 'kafka.log:type=LogCleanerManager,name=TimeSinceLastRunMs'
+    attributes:
+      - attr: Value
+        field: log_cleaner_manager.time_since_last_run_ms
+  - mbean: 'kafka.log:type=LogCleanerManager,name=UncleanableBytes'
+    attributes:
+      - attr: Value
+        field: log_cleaner_manager.uncleanable_bytes
+  - mbean: 'kafka.log:type=LogCleanerManager,name=UncleanablePartitionsCount'
+    attributes:
+      - attr: Value
+        field: log_cleaner_manager.uncleanable_partitions_count
+        
+  # Log Flush Stats MBeans
+  - mbean: 'kafka.log:type=LogFlushStats,name=LogFlushRateAndTimeMs'
+    attributes:
+      - attr: OneMinuteRate
+        field: log_flush_stats.log_flush_rate_and_time_ms
+        
+  # Log Manager MBeans
+  - mbean: 'kafka.log:type=LogManager,name=LogDirectoryOffline'
+    attributes:
+      - attr: Value
+        field: log_manager.log_directory_offline
+  - mbean: 'kafka.log:type=LogManager,name=OfflineLogDirectoryCount'
+    attributes:
+      - attr: Value
+        field: log_manager.offline_log_directory_count
+  - mbean: 'kafka.log:type=LogManager,name=RemainingLogsToRecover'
+    attributes:
+      - attr: Value
+        field: log_manager.remaining_logs_to_recover
+  - mbean: 'kafka.log:type=LogManager,name=RemainingSegmentsToRecover'
+    attributes:
+      - attr: Value
+        field: log_manager.remaining_segments_to_recover
