@@ -1,0 +1,780 @@
+---
+description: "Pipeline for AWS Billing CUR data stream"
+processors:
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: ["web"]
+  - set:
+      field: cloud.provider
+      value: aws
+  - rename:
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - drop:
+      if: ctx.event?.original?.startsWith('bill_bill_type')
+      description: "Drop if logline contains header(s), which startswith `bill_bill_type`"
+  - csv:
+      description: Parse AWS billing CSV row (without resource IDs)
+      field: event.original
+      separator: ","
+      target_fields:
+        - _tmp.bill_bill_type
+        - _tmp.bill_billing_entity
+        - _tmp.bill_billing_period_end_date
+        - _tmp.bill_billing_period_start_date
+        - _tmp.bill_invoice_id
+        - _tmp.bill_invoicing_entity
+        - _tmp.bill_payer_account_id
+        - _tmp.bill_payer_account_name
+        - _tmp.cost_category
+        - _tmp.discount
+        - _tmp.discount_bundled_discount
+        - _tmp.discount_total_discount
+        - _tmp.identity_line_item_id
+        - _tmp.identity_time_interval
+        - _tmp.line_item_availability_zone
+        - _tmp.line_item_blended_cost
+        - _tmp.line_item_blended_rate
+        - _tmp.line_item_currency_code
+        - _tmp.line_item_legal_entity
+        - _tmp.line_item_line_item_description
+        - _tmp.line_item_line_item_type
+        - _tmp.line_item_net_unblended_cost
+        - _tmp.line_item_net_unblended_rate
+        - _tmp.line_item_normalization_factor
+        - _tmp.line_item_normalized_usage_amount
+        - _tmp.line_item_operation
+        - _tmp.line_item_product_code
+        - _tmp.line_item_tax_type
+        - _tmp.line_item_unblended_cost
+        - _tmp.line_item_unblended_rate
+        - _tmp.line_item_usage_account_id
+        - _tmp.line_item_usage_account_name
+        - _tmp.line_item_usage_amount
+        - _tmp.line_item_usage_end_date
+        - _tmp.line_item_usage_start_date
+        - _tmp.line_item_usage_type
+        - _tmp.pricing_currency
+        - _tmp.pricing_lease_contract_length
+        - _tmp.pricing_offering_class
+        - _tmp.pricing_public_on_demand_cost
+        - _tmp.pricing_public_on_demand_rate
+        - _tmp.pricing_purchase_option
+        - _tmp.pricing_rate_code
+        - _tmp.pricing_rate_id
+        - _tmp.pricing_term
+        - _tmp.pricing_unit
+        - _tmp.product
+        - _tmp.product_comment
+        - _tmp.product_fee_code
+        - _tmp.product_fee_description
+        - _tmp.product_from_location
+        - _tmp.product_from_location_type
+        - _tmp.product_from_region_code
+        - _tmp.product_instance_family
+        - _tmp.product_instance_type
+        - _tmp.product_instancesku
+        - _tmp.product_location
+        - _tmp.product_location_type
+        - _tmp.product_operation
+        - _tmp.product_pricing_unit
+        - _tmp.product_product_family
+        - _tmp.product_region_code
+        - _tmp.product_servicecode
+        - _tmp.product_sku
+        - _tmp.product_to_location
+        - _tmp.product_to_location_type
+        - _tmp.product_to_region_code
+        - _tmp.product_usagetype
+        - _tmp.reservation_amortized_upfront_cost_for_usage
+        - _tmp.reservation_amortized_upfront_fee_for_billing_period
+        - _tmp.reservation_availability_zone
+        - _tmp.reservation_effective_cost
+        - _tmp.reservation_end_time
+        - _tmp.reservation_modification_status
+        - _tmp.reservation_net_amortized_upfront_cost_for_usage
+        - _tmp.reservation_net_amortized_upfront_fee_for_billing_period
+        - _tmp.reservation_net_effective_cost
+        - _tmp.reservation_net_recurring_fee_for_usage
+        - _tmp.reservation_net_unused_amortized_upfront_fee_for_billing_period
+        - _tmp.reservation_net_unused_recurring_fee
+        - _tmp.reservation_net_upfront_value
+        - _tmp.reservation_normalized_units_per_reservation
+        - _tmp.reservation_number_of_reservations
+        - _tmp.reservation_recurring_fee_for_usage
+        - _tmp.reservation_reservation_a_r_n
+        - _tmp.reservation_start_time
+        - _tmp.reservation_subscription_id
+        - _tmp.reservation_total_reserved_normalized_units
+        - _tmp.reservation_total_reserved_units
+        - _tmp.reservation_units_per_reservation
+        - _tmp.reservation_unused_amortized_upfront_fee_for_billing_period
+        - _tmp.reservation_unused_normalized_unit_quantity
+        - _tmp.reservation_unused_quantity
+        - _tmp.reservation_unused_recurring_fee
+        - _tmp.reservation_upfront_value
+        - _tmp.resource_tags
+        - _tmp.savings_plan_amortized_upfront_commitment_for_billing_period
+        - _tmp.savings_plan_end_time
+        - _tmp.savings_plan_instance_type_family
+        - _tmp.savings_plan_net_amortized_upfront_commitment_for_billing_period
+        - _tmp.savings_plan_net_recurring_commitment_for_billing_period
+        - _tmp.savings_plan_net_savings_plan_effective_cost
+        - _tmp.savings_plan_offering_type
+        - _tmp.savings_plan_payment_option
+        - _tmp.savings_plan_purchase_term
+        - _tmp.savings_plan_recurring_commitment_for_billing_period
+        - _tmp.savings_plan_region
+        - _tmp.savings_plan_savings_plan_a_r_n
+        - _tmp.savings_plan_savings_plan_effective_cost
+        - _tmp.savings_plan_savings_plan_rate
+        - _tmp.savings_plan_start_time
+        - _tmp.savings_plan_total_commitment_to_date
+        - _tmp.savings_plan_used_commitment
+  - convert:
+      tag: convert_discount_total_discount_to_double
+      field: _tmp.discount_total_discount
+      target_field: aws_billing.cur.total_discount
+      type: double
+      ignore_missing: true
+      if: ctx._tmp.discount_total_discount != null
+  - convert:
+      tag: convert_line_item_blended_cost_to_double
+      field: _tmp.line_item_blended_cost
+      target_field: aws_billing.cur.line_item.blended_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_blended_rate_to_double
+      field: _tmp.line_item_blended_rate
+      target_field: aws_billing.cur.line_item.blended_rate
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_net_unblended_cost_to_double
+      field: _tmp.line_item_net_unblended_cost
+      target_field: aws_billing.cur.line_item.net_unblended_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_net_unblended_rate_to_double
+      field: _tmp.line_item_net_unblended_rate
+      target_field: aws_billing.cur.line_item.net_unblended_rate
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_normalized_usage_amount_to_double
+      field: _tmp.line_item_normalized_usage_amount
+      target_field: aws_billing.cur.line_item.normalized_usage_amount
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_unblended_cost_to_double
+      field: _tmp.line_item_unblended_cost
+      target_field: aws_billing.cur.line_item.unblended_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_normalization_factor_to_double
+      field: _tmp.line_item_normalization_factor
+      target_field: aws_billing.cur.line_item.normalization_factor
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_unblended_rate_to_double
+      field: _tmp.line_item_unblended_rate
+      target_field: aws_billing.cur.line_item.unblended_rate
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_line_item_usage_amount_to_double
+      field: _tmp.line_item_usage_amount
+      target_field: aws_billing.cur.line_item.usage_amount
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_pricing_public_on_demand_cost_to_double
+      field: _tmp.pricing_public_on_demand_cost
+      target_field: aws_billing.cur.pricing.public_on_demand_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_amortized_upfront_cost_for_usage_to_double
+      field: _tmp.reservation_amortized_upfront_cost_for_usage
+      target_field: aws_billing.cur.reservation.amortized_upfront_cost_for_usage
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_pricing_public_on_demand_rate_to_double
+      field: _tmp.pricing_public_on_demand_rate
+      target_field: aws_billing.cur.pricing.public_on_demand_rate
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_net_amortized_upfront_cost_for_usage_to_double
+      field: _tmp.reservation_net_amortized_upfront_cost_for_usage
+      target_field: aws_billing.cur.reservation.net_amortized_upfront_cost_for_usage
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_unused_quantity_to_double
+      field: _tmp.reservation_unused_quantity
+      target_field: aws_billing.cur.reservation.unused_quantity
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_net_effective_cost_to_double
+      field: _tmp.reservation_net_effective_cost
+      target_field: aws_billing.cur.reservation.net_effective_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_net_amortized_upfront_fee_for_billing_period_to_double
+      field: _tmp.reservation_net_amortized_upfront_fee_for_billing_period
+      target_field: aws_billing.cur.reservation.net_amortized_upfront_fee_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_net_upfront_value_to_double
+      field: _tmp.reservation_net_upfront_value
+      target_field: aws_billing.cur.reservation.net_upfront_value
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_net_recurring_fee_for_usage_to_double
+      field: _tmp.reservation_net_recurring_fee_for_usage
+      target_field: aws_billing.cur.reservation.net_recurring_fee_for_usage
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_effective_cost_to_double
+      field: _tmp.reservation_effective_cost
+      target_field: aws_billing.cur.reservation.effective_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_net_unused_amortized_upfront_fee_for_billing_period_to_double
+      field: _tmp.reservation_net_unused_amortized_upfront_fee_for_billing_period
+      target_field: aws_billing.cur.reservation.net_unused_amortized_upfront_fee_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_unused_normalized_unit_quantity_to_double
+      field: _tmp.reservation_unused_normalized_unit_quantity
+      target_field: aws_billing.cur.reservation.unused_normalized_unit_quantity
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_unused_amortized_upfront_fee_for_billing_period_to_double
+      field: _tmp.reservation_unused_amortized_upfront_fee_for_billing_period
+      target_field: aws_billing.cur.reservation.unused_amortized_upfront_fee_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_recurring_fee_for_usage_to_double
+      field: _tmp.reservation_recurring_fee_for_usage
+      target_field: aws_billing.cur.reservation.recurring_fee_for_usage
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_net_unused_recurring_fee_to_double
+      field: _tmp.reservation_net_unused_recurring_fee
+      target_field: aws_billing.cur.reservation.net_unused_recurring_fee
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_amortized_upfront_fee_for_billing_period_to_double
+      field: _tmp.reservation_amortized_upfront_fee_for_billing_period
+      target_field: aws_billing.cur.reservation.amortized_upfront_fee_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_unused_recurring_fee_to_double
+      field: _tmp.reservation_unused_recurring_fee
+      target_field: aws_billing.cur.reservation.unused_recurring_fee
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_amortized_upfront_commitment_for_billing_period_to_double
+      field: _tmp.savings_plan_amortized_upfront_commitment_for_billing_period
+      target_field: aws_billing.cur.savings_plan.amortized_upfront_commitment_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_savings_plan_effective_cost_to_double
+      field: _tmp.savings_plan_savings_plan_effective_cost
+      target_field: aws_billing.cur.savings_plan.effective_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_net_amortized_upfront_commitment_for_billing_period_to_double
+      field: _tmp.savings_plan_net_amortized_upfront_commitment_for_billing_period
+      target_field: aws_billing.cur.savings_plan.net_amortized_upfront_commitment_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_net_savings_plan_effective_cost_to_double
+      field: _tmp.savings_plan_net_savings_plan_effective_cost
+      target_field: aws_billing.cur.savings_plan.net_effective_cost
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_net_recurring_commitment_for_billing_period_to_double
+      field: _tmp.savings_plan_net_recurring_commitment_for_billing_period
+      target_field: aws_billing.cur.savings_plan.net_recurring_commitment_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_savings_plan_rate_to_double
+      field: _tmp.savings_plan_savings_plan_rate
+      target_field: aws_billing.cur.savings_plan.rate
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_recurring_commitment_for_billing_period_to_double
+      field: _tmp.savings_plan_recurring_commitment_for_billing_period
+      target_field: aws_billing.cur.savings_plan.recurring_commitment_for_billing_period
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_total_commitment_to_date_to_double
+      field: _tmp.savings_plan_total_commitment_to_date
+      target_field: aws_billing.cur.savings_plan.total_commitment_to_date
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_savings_plan_used_commitment_to_double
+      field: _tmp.savings_plan_used_commitment
+      target_field: aws_billing.cur.savings_plan.used_commitment
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_upfront_value_to_double
+      field: _tmp.reservation_upfront_value
+      target_field: aws_billing.cur.reservation.upfront_value
+      type: double
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_bill_type
+      target_field: aws_billing.cur.bill.type
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_billing_entity
+      target_field: aws_billing.cur.bill.billing_entity
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_billing_period_end_date
+      target_field: aws_billing.cur.bill.billing_period_end_date
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_billing_period_start_date
+      target_field: aws_billing.cur.bill.billing_period_start_date
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_invoice_id
+      target_field: aws_billing.cur.bill.invoice_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_invoicing_entity
+      target_field: aws_billing.cur.bill.invoicing_entity
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_payer_account_id
+      target_field: aws_billing.cur.bill.payer_account_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.bill_payer_account_name
+      target_field: aws_billing.cur.bill.payer_account_name
+      ignore_missing: true
+  - rename:
+      field: _tmp.discount_bundled_discount
+      target_field: aws_billing.cur.bundled_discount
+      ignore_missing: true
+  - rename:
+      field: _tmp.identity_line_item_id
+      target_field: aws_billing.cur.identity.line_item_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.identity_time_interval
+      target_field: aws_billing.cur.identity.time_interval
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_availability_zone
+      target_field: aws_billing.cur.line_item.availability_zone
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_currency_code
+      target_field: aws_billing.cur.line_item.currency_code
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_legal_entity
+      target_field: aws_billing.cur.line_item.legal_entity
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_line_item_description
+      target_field: aws_billing.cur.line_item.description
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_line_item_type
+      target_field: aws_billing.cur.line_item.type
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_operation
+      target_field: aws_billing.cur.line_item.operation
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_product_code
+      target_field: aws_billing.cur.line_item.product_code
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_tax_type
+      target_field: aws_billing.cur.line_item.tax_type
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_usage_account_id
+      target_field: aws_billing.cur.line_item.usage_account_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_usage_account_name
+      target_field: aws_billing.cur.line_item.usage_account_name
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_usage_end_date
+      target_field: aws_billing.cur.line_item.usage_end_date
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_usage_start_date
+      target_field: aws_billing.cur.line_item.usage_start_date
+      ignore_missing: true
+  - rename:
+      field: _tmp.line_item_usage_type
+      target_field: aws_billing.cur.line_item.usage_type
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_currency
+      target_field: aws_billing.cur.pricing.currency
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_lease_contract_length
+      target_field: aws_billing.cur.pricing.lease_contract_length
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_offering_class
+      target_field: aws_billing.cur.pricing.offering_class
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_purchase_option
+      target_field: aws_billing.cur.pricing.purchase_option
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_rate_code
+      target_field: aws_billing.cur.pricing.rate_code
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_rate_id
+      target_field: aws_billing.cur.pricing.rate_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_term
+      target_field: aws_billing.cur.pricing.term
+      ignore_missing: true
+  - rename:
+      field: _tmp.pricing_unit
+      target_field: aws_billing.cur.pricing.unit
+      ignore_missing: true
+  - rename:
+      field: _tmp.product
+      target_field: aws_billing.cur.product.product
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_comment
+      target_field: aws_billing.cur.product.comment
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_fee_code
+      target_field: aws_billing.cur.product.fee_code
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_fee_description
+      target_field: aws_billing.cur.product.fee_description
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_from_location
+      target_field: aws_billing.cur.product.from_location
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_from_location_type
+      target_field: aws_billing.cur.product.from_location_type
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_from_region_code
+      target_field: aws_billing.cur.product.from_region_code
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_instance_family
+      target_field: aws_billing.cur.product.instance_family
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_instance_type
+      target_field: aws_billing.cur.product.instance_type
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_instancesku
+      target_field: aws_billing.cur.product.instancesku
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_location
+      target_field: aws_billing.cur.product.location
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_location_type
+      target_field: aws_billing.cur.product.location_type
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_operation
+      target_field: aws_billing.cur.product.operation
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_pricing_unit
+      target_field: aws_billing.cur.product.pricing_unit
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_product_family
+      target_field: aws_billing.cur.product.family
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_region_code
+      target_field: aws_billing.cur.product.region_code
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_servicecode
+      target_field: aws_billing.cur.product.servicecode
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_sku
+      target_field: aws_billing.cur.product.sku
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_to_location
+      target_field: aws_billing.cur.product.to_location
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_to_location_type
+      target_field: aws_billing.cur.product.to_location_type
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_to_region_code
+      target_field: aws_billing.cur.product.to_region_code
+      ignore_missing: true
+  - rename:
+      field: _tmp.product_usagetype
+      target_field: aws_billing.cur.product.usagetype
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_availability_zone
+      target_field: aws_billing.cur.reservation.availability_zone
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_end_time
+      target_field: aws_billing.cur.reservation.end_time
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_modification_status
+      target_field: aws_billing.cur.reservation.modification_status
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_normalized_units_per_reservation
+      target_field: aws_billing.cur.reservation.normalized_units_per_reservation
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_upfront_value_to_double
+      field: _tmp.reservation_number_of_reservations
+      target_field: aws_billing.cur.reservation.number_of_reservations
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_reservation_upfront_value_to_double
+      field: _tmp.reservation_units_per_reservation
+      target_field: aws_billing.cur.reservation.units_per_reservation
+      type: double
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_reservation_a_r_n
+      target_field: aws_billing.cur.reservation.a_r_n
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_start_time
+      target_field: aws_billing.cur.reservation.start_time
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_subscription_id
+      target_field: aws_billing.cur.reservation.subscription_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_total_reserved_normalized_units
+      target_field: aws_billing.cur.reservation.total_reserved_normalized_units
+      ignore_missing: true
+  - rename:
+      field: _tmp.reservation_total_reserved_units
+      target_field: aws_billing.cur.reservation.total_reserved_units
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_end_time
+      target_field: aws_billing.cur.savings_plan.end_time
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_instance_type_family
+      target_field: aws_billing.cur.savings_plan.instance_type_family
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_offering_type
+      target_field: aws_billing.cur.savings_plan.offering_type
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_payment_option
+      target_field: aws_billing.cur.savings_plan.payment_option
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_purchase_term
+      target_field: aws_billing.cur.savings_plan.purchase_term
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_region
+      target_field: aws_billing.cur.savings_plan.region
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_savings_plan_a_r_n
+      target_field: aws_billing.cur.savings_plan.a_r_n
+      ignore_missing: true
+  - rename:
+      field: _tmp.savings_plan_start_time
+      target_field: aws_billing.cur.savings_plan.start_time
+      ignore_missing: true
+  - json:
+      tag: tags_to_json
+      field: _tmp.resource_tags
+      target_field: temp_tags_obj
+      ignore_failure: true
+  - set:
+      tag: set_product_region_code_if_null
+      field: aws_billing.cur.product.region_code
+      if: ctx.aws_billing?.cur?.product?.region_code == null
+      value: "No region"
+  - script:
+      tag: sort_tags_alphabetically
+      lang: painless
+      description: "Sorts map keys alphabetically and converts back to a string"
+      if: "ctx.temp_tags_obj != null"
+      source: >-
+        Map sortedTags = new TreeMap();
+        sortedTags.putAll(ctx.temp_tags_obj);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+
+        Iterator it = sortedTags.entrySet().iterator();
+        while (it.hasNext()) {
+          Map.Entry pair = (Map.Entry)it.next();
+          sb.append('"');
+          sb.append(pair.getKey());
+          sb.append('"');
+          sb.append(':');
+          sb.append('"');
+          sb.append(pair.getValue());
+          sb.append('"');
+          if (it.hasNext()) {
+            sb.append(',');
+          }
+        }
+
+        sb.append('}');
+        ctx.aws_billing.cur.resource_tags = sb.toString();
+  - remove:
+      field:
+        - temp_tags_obj
+      ignore_failure: true
+  - json:
+      tag: cost_category_to_json
+      field: _tmp.cost_category
+      target_field: temp_cost_category_obj
+      ignore_failure: true
+  - script:
+      tag: sort_cost_categories_alphabetically
+      lang: painless
+      if: "ctx.temp_cost_category_obj != null"
+      description: "Sorts map keys alphabetically and converts back to a string"
+      source: >-
+        Map sortedCostCategories = new TreeMap();
+        sortedCostCategories.putAll(ctx.temp_cost_category_obj);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+
+        Iterator it = sortedCostCategories.entrySet().iterator();
+        while (it.hasNext()) {
+          Map.Entry pair = (Map.Entry)it.next();
+          sb.append('"');
+          sb.append(pair.getKey());
+          sb.append('"');
+          sb.append(':');
+          sb.append('"');
+          sb.append(pair.getValue());
+          sb.append('"');
+          if (it.hasNext()) {
+            sb.append(',');
+          }
+        }
+
+        sb.append('}');
+        ctx.aws_billing.cur.cost_category = sb.toString();
+  - remove:
+      field:
+        - temp_cost_category_obj
+      ignore_failure: true
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - script:
+      description: Remove massive event.original if it was wanted.
+      if: ctx.event?.original instanceof String && ctx.event.original.length() > 32766
+      lang: painless
+      source: |
+        ctx.event.original = 'sha1-'+ctx.event.original.sha1()+':'+ctx.event.original.length().toString();
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
