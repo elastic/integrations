@@ -81,6 +81,12 @@ processors:
       ignore_missing: true
   # If no timestamp from the vendor is present we override it with the syslog timestamp.
   - set:
+      field: temp.syslog_timestamp_used
+      value: true
+      tag: "set_temp_timestamp_used"
+      if: ctx.cisco_nexus?.log?.syslog_time != null && ctx.temp?.timestamp == null
+      ignore_empty_value: true
+  - set:
       field: temp.timestamp
       copy_from: cisco_nexus.log.syslog_time
       tag: "set_temp_timestamp"
@@ -166,20 +172,14 @@ processors:
   - set:
       field: cisco_nexus.log.time
       copy_from: cisco_nexus.log.syslog_time
-      tag: "set_cisco_nexus_log_time"
-      if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields')
+      tag: "set_cisco_nexus_log_time_from_syslog"
+      if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields') && ctx.temp?.syslog_timestamp_used == true
       ignore_empty_value: true
   - set:
       field: cisco_nexus.log.time
       copy_from: "@timestamp"
-      tag: "set_cisco_nexus_log_time"
-      if: ctx.cisco_nexus?.log?.time == null && ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields')
-      ignore_empty_value: true
-  - set:
-      field: cisco_nexus.log.timezone
-      copy_from: event.timezone
-      tag: "set_cisco_nexus_log_timezone"
-      if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields')
+      tag: "set_cisco_nexus_log_time_from_timestamp"
+      if: ctx.tags != null && ctx.tags.contains('preserve_duplicate_custom_fields') && ctx.cisco_nexus?.log?.time == null
       ignore_empty_value: true
   - set:
       field: cisco_nexus.log.timezone
