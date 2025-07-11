@@ -19,7 +19,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Setup
 
-### Before setting up the integration, you will need credentials to connect to the Entro Security API.
+### Collect data from the Entro Security API
 
 Log in to your Entro Security platform and generate an API Token. Note keep this token private and secure.
 
@@ -43,22 +43,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-05-27T20:12:44.000Z",
     "agent": {
-        "ephemeral_id": "02e0b0b3-0669-46e0-9595-9cebc4e47721",
-        "id": "e5b2169f-6a42-482f-b8dc-5f55da82499d",
-        "name": "elastic-agent-82489",
+        "ephemeral_id": "342840a0-6a1a-4caa-b0dc-59ecea6d0709",
+        "id": "16f5e042-d3f4-40f9-a0ea-20917399dcbd",
+        "name": "elastic-agent-15525",
         "type": "filebeat",
         "version": "8.17.4"
     },
     "data_stream": {
         "dataset": "entro.audit",
-        "namespace": "29645",
+        "namespace": "87243",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e5b2169f-6a42-482f-b8dc-5f55da82499d",
+        "id": "16f5e042-d3f4-40f9-a0ea-20917399dcbd",
         "snapshot": false,
         "version": "8.17.4"
     },
@@ -69,14 +69,14 @@ An example event for `audit` looks as following:
         ],
         "dataset": "entro.audit",
         "id": "105d6a3d-6468-4fcc-994e-f525011c53cf",
-        "ingested": "2025-07-08T17:25:00Z",
+        "ingested": "2025-07-10T18:29:08Z",
         "kind": "event",
         "type": [
             "info"
         ]
     },
     "host": {
-        "name": "elastic-agent-82489"
+        "name": "elastic-agent-15525"
     },
     "input": {
         "type": "cel"
