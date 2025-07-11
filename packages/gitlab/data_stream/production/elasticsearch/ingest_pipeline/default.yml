@@ -143,9 +143,45 @@ processors:
     source: |
       Map map = [:];
       for (item in ctx.gitlab.production.params) {
-        map[item.key] = item.value;
+        def key = item.key;
+        def value = item.value;
+        if (key == "variables" && value instanceof Map) {
+          map[key] = Json.dump(value);
+        } else {
+          map[key] = value;
+        }
       }
       ctx.gitlab.production.params = map;
+- script:
+    tag: convert_graphql_variables
+    lang: painless
+    description: Convert graphql variables field if contains an object
+    if: >
+      ctx.gitlab?.production?.graphql != null
+    source: |
+      if (ctx.gitlab?.production?.graphql instanceof List) {
+        for (int i = 0; i < ctx.gitlab.production.graphql.size(); i++) {
+          def item = ctx.gitlab.production.graphql[i];
+          if (item.containsKey("variables") && item.variables instanceof Map) {
+            item.variables = Json.dump(item.variables);
+          }
+        }
+      } else if (ctx.gitlab.production.graphql instanceof Map) {
+        def vars = ctx.gitlab.production.graphql.variables;
+        if (vars instanceof Map) {
+          ctx.gitlab.production.graphql.variables = Json.dump(vars);
+        }
+      }
+- script:
+    tag: convert_params_graphql_variables
+    lang: painless
+    description: Convert params graphql variables field if contains an object
+    if: >
+      ctx.gitlab?.production?.params?.graphql?.variables != null &&
+      ctx.gitlab.production.params.graphql.variables instanceof Map
+    source: |
+      def vars = ctx.gitlab.production.params.graphql.variables;
+      ctx.gitlab.production.params.graphql.variables = Json.dump(vars);
 - geoip:
     field: source.ip
     tag: geoip_source_ip

@@ -2,9 +2,10 @@
 description: Pipeline for processing STIX 2.1 IOCs
 processors:
   # Fail if error during the CEL program evaluation
-  - fail:
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null
-      message: "Error during CEL program evaluation"
+      description: error message set and no data to process.
 
   - set:
       field: ecs.version
