@@ -24,16 +24,16 @@ redact:
   fields:
     - access_token
 program: |
-  state.with({
-    "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006010215"))
-  }).as(state, state.with(
+  state.?cursor.last_timestamp.orValue(
+    (now - duration(state.initial_interval)).format("2006010215")
+  ).as(start_time, state.with(
     request(
       "GET",
-      state.url.trim_right("/") + "/api/v3/threat_lists/phishing/" + state.start_time + "?" + {
+      state.url.trim_right("/") + "/api/v3/threat_lists/phishing/" + start_time + "?" + {
         ?"query": has(state.query) ? optional.of([state.query]) : optional.none(),
         "limit": ["4000"],
         "x-tool": ["Elastic"],
-        "User-Agent": ["v0.1.0"],  // Include integration version here; used for identifying and monitoring requests
+        "User-Agent": ["v0.4.0"], // Keep this in sync with 'version' in package level manifest.yml.
       }.format_query()
     ).with({
       "Header": {
@@ -50,9 +50,9 @@ program: |
             [{"message": "retry"}]
         ),
         "cursor": {
-          "last_timestamp": (state.start_time.parse_time("2006010215") + duration("1h")).format("2006010215"),
+          "last_timestamp": (start_time.parse_time("2006010215") + duration("1h")).format("2006010215"),
         },
-        "want_more": (state.start_time.parse_time("2006010215") + duration("1h")) < (now.format("2006010215")).parse_time("2006010215")
+        "want_more": (start_time.parse_time("2006010215") + duration("1h")) < (now.format("2006010215")).parse_time("2006010215")
       })
     :
       {
