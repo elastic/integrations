@@ -2109,22 +2109,22 @@ An example event for `phishing` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "aa8e549c-1b3b-46bb-82f9-2d1e8774855c",
-        "id": "9290b5e7-1f17-4574-8901-ef79cfdaf1f5",
-        "name": "elastic-agent-14333",
+        "ephemeral_id": "6f5163e0-0ea9-4f65-83e4-125298bcd2fa",
+        "id": "c07b0a67-6b28-4107-8025-c909449ed07f",
+        "name": "elastic-agent-58845",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.phishing",
-        "namespace": "66881",
+        "namespace": "30421",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9290b5e7-1f17-4574-8901-ef79cfdaf1f5",
+        "id": "c07b0a67-6b28-4107-8025-c909449ed07f",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -2134,7 +2134,7 @@ An example event for `phishing` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.phishing",
-        "ingested": "2025-06-03T07:15:49Z",
+        "ingested": "2025-07-07T12:05:08Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -2197,7 +2197,12 @@ An example event for `phishing` looks as following:
     ],
     "threat": {
         "feed": {
-            "name": "Phishing"
+            "dashboard_id": [
+                "ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a",
+                "ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531",
+                "ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e"
+            ],
+            "name": "GTI Phishing"
         },
         "indicator": {
             "id": [
