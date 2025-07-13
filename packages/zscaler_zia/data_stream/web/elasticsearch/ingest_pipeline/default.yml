@@ -54,8 +54,8 @@ processors:
         pkg_version: 3.12.0
         data_stream: web-log
         expect:
-          fields: action|appclass|applayerprotocol|appname|appriskscore|apprulelabel|b64referer|b64url|bamd5|bandwidthclassname|bandwidthrulename|bwthrottle|bypassedtime|bypassedtraffic|cloudname|cltintip|cltip|cltpubip|cltsourceport|cltsslcipher|cltsslfailcount|cltsslfailreason|cltsslsessreuse|clttlsversion|company|contenttype|datacenter|datacentercity|datacentercountry|day|day_of_month|dept|deviceappversion|devicehostname|devicemodel|devicename|deviceostype|deviceosversion|deviceowner|devicetype|df_hosthead|df_hostname|dlpdict|dlpdicthitcount|dlpeng|dlpidentifier|dlpmd5|dlprulename|eedone|epochtime|external_devid|externalsslpolicyreason|fileclass|filename|filesubtype|filetype|flow_type|forward_gateway_ip|forward_gateway_name|forward_type|host|hour|is_sslexpiredca|is_sslselfsigned|is_ssluntrustedca|keyprotectiontype|location|login|malwarecategory|malwareclass|minute|mobappcategory|mobappname|mobdevtype|module|month|month_of_year|nssserviceip|oapprulelabel|obwclassname|ocip|ocpubip|odevicehostname|odevicename|odeviceowner|odlpdict|odlpeng|odlprulename|ofwd_gw_name|ologin|ordr_rulename|ourlcat|ourlfilterrulelabel|ozpa_app_seg_name|productversion|proto|rdr_rulename|reason|recordid|refererhost|reqdatasize|reqheadersize|reqmethod|reqsize|reqversion|respcode|respdatasize|respheadersize|respsize|respversion|riskscore|rulelabel|ruletype|second|serverip|serversslsessreuse|sha256|srvcertchainvalpass|srvcertvalidationtype|srvcertvalidityperiod|srvocspresult|srvsslcipher|srvtlsversion|srvwildcardcert|ssldecrypted|threatname|threatseverity|throttlereqsize|throttlerespsize|time|totalsize|trafficredirectmethod|tz|unscannabletype|upload_doctypename|upload_fileclass|upload_filename|upload_filesubtype|upload_filetype|urlcatmethod|urlclass|urlfilterrulelabel|urlsubcat|urlsupercat|useragent|useragentclass|useragenttoken|userlocationname|year|zpa_app_seg_name|ztunnelversion
-          version: v9
+          fields: action|appclass|applayerprotocol|appname|appriskscore|apprulelabel|b64referer|b64url|bamd5|bandwidthclassname|bandwidthrulename|bwthrottle|bypassedtime|bypassedtraffic|cloudname|cltintip|cltip|cltpubip|cltsourceport|cltsslcipher|cltsslfailcount|cltsslfailreason|cltsslsessreuse|clttlsversion|company|contenttype|datacenter|datacentercity|datacentercountry|day|day_of_month|dept|deviceappversion|devicehostname|devicemodel|devicename|deviceostype|deviceosversion|deviceowner|devicetype|df_hosthead|df_hostname|dlpdict|dlpdicthitcount|dlpeng|dlpidentifier|dlpmd5|dlprulename|eedone|epochtime|external_devid|externalsslpolicyreason|fileclass|filename|filesubtype|filetype|flow_type|forward_gateway_ip|forward_gateway_name|forward_type|host|hour|is_dst_cntry_risky|is_src_cntry_risky|is_sslexpiredca|is_sslselfsigned|is_ssluntrustedca|keyprotectiontype|location|login|malwarecategory|malwareclass|minute|mobappcategory|mobappname|mobdevtype|module|month|month_of_year|nssserviceip|oapprulelabel|obwclassname|ocip|ocpubip|odevicehostname|odevicename|odeviceowner|odlpdict|odlpeng|odlprulename|ofwd_gw_name|ologin|ordr_rulename|ourlcat|ourlfilterrulelabel|ozpa_app_seg_name|productversion|prompt_req|proto|rdr_rulename|reason|recordid|refererhost|reqdatasize|reqheadersize|reqmethod|reqsize|reqversion|respcode|respdatasize|respheadersize|respsize|respversion|riskscore|rulelabel|ruletype|second|serverip|serversslsessreuse|sha256|srvcertchainvalpass|srvcertvalidationtype|srvcertvalidityperiod|srvocspresult|srvsslcipher|srvtlsversion|srvwildcardcert|ssldecrypted|threatname|threatseverity|throttlereqsize|throttlerespsize|time|totalsize|trafficredirectmethod|tz|unscannabletype|upload_doctypename|upload_fileclass|upload_filename|upload_filesubtype|upload_filetype|urlcatmethod|urlclass|urlfilterrulelabel|urlsubcat|urlsupercat|useragent|useragentclass|useragenttoken|userlocationname|year|zpa_app_seg_name|ztunnelversion
+          version: v10
       if: ctx.json != null && ctx._conf?.strict_fields == true
       source: |-
         if (ctx.resp?.version == null) {
@@ -731,6 +731,16 @@ processors:
       target_field: zscaler_zia.web.is_ssl_certificate_untrusted
       ignore_missing: true
   - rename:
+      field: json.is_src_cntry_risky
+      tag: rename_is_src_cntry_risky
+      target_field: zscaler_zia.web.is_src_cntry_risky
+      ignore_missing: true
+  - rename:
+      field: json.is_dst_cntry_risky
+      tag: rename_is_dst_cntry_risky
+      target_field: zscaler_zia.web.is_dst_cntry_risky
+      ignore_missing: true
+  - rename:
       field: json.keyprotectiontype
       tag: rename_keyprotectiontype
       target_field: zscaler_zia.web.key_protection_type
@@ -971,6 +981,11 @@ processors:
       field: json.productversion
       tag: rename_productversion
       target_field: zscaler_zia.web.product_version
+      ignore_missing: true
+  - rename:
+      field: json.prompt_req
+      tag: rename_prompt_req
+      target_field: zscaler_zia.web.prompt_req
       ignore_missing: true
   - rename:
       field: json.proto
