@@ -70,21 +70,27 @@ processors:
         } else if (ctx.infoblox_threat_defense.event.severity >=9 && ctx.infoblox_threat_defense.event.severity <=10) {
           ctx.event.severity = 99;
         }
+  - script:
+      lang: painless
+      tag: 'script_to_remove_quotes_from_begining_and_end_from_message'
+      description: Script to remove quotes from begining and end from message field.
+      source: |
+        if (ctx.cef.extensions.containsKey('message') && ctx.cef.extensions.message != null && ctx.cef.extensions.message instanceof String) {
+          if (ctx.cef.extensions.message.startsWith('"') && ctx.cef.extensions.message.endsWith('"') && ctx.cef.extensions.message.length() >= 2) {
+            ctx.cef.extensions.message = ctx.cef.extensions.message.substring(1, ctx.cef.extensions.message.length() - 1);
+          }
+        }
+      params:
+        double_quote: "\""
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: message
       tag: set_message
       copy_from: cef.extensions.message
       ignore_empty_value: true
-  - gsub:
-      field: message
-      tag: gsub_message_unqoute
-      pattern: '\"'
-      replacement: ''
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
       tag: append_host_name_into_related_hosts
