@@ -104,7 +104,7 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "e5d372c7-9d33-4bcf-b57a-43a768d1d1c8",
+                                "name": "indexpattern-datasource-layer-67d8bcfe-6463-4117-9e3d-f8aa267aa4a8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -112,33 +112,32 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
                                             "columnOrder": [
                                                 "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0",
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X1"
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
                                             ],
                                             "columns": {
                                                 "4524a05f-df5f-472f-9e2f-e84cc310a932": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Average Processing Time (Milliseconds)",
+                                                    "label": "Total Bytes Received",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "format": {
-                                                            "id": "number",
+                                                            "id": "bytes",
                                                             "params": {
-                                                                "compact": true,
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "divide(last_value(filebeat_input.cel_processing_time.histogram.mean), 1000000)",
+                                                        "formula": "last_value(filebeat_input.received_bytes_total)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "4524a05f-df5f-472f-9e2f-e84cc310a932X1"
+                                                        "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
                                                     ],
                                                     "scale": "ratio"
                                                 },
@@ -147,45 +146,86 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"filebeat_input.cel_processing_time.histogram.mean\": *"
+                                                        "query": "\"filebeat_input.received_bytes_total\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Average Processing Time (Milliseconds)",
+                                                    "label": "Part of Total Bytes Received",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "filebeat_input.cel_processing_time.histogram.mean"
-                                                },
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Average Processing Time (Milliseconds)",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0",
-                                                                1000000
-                                                            ],
-                                                            "location": {
-                                                                "max": 78,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "divide(last_value(filebeat_input.cel_processing_time.histogram.mean), 1000000)",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
-                                                    ],
-                                                    "scale": "ratio"
+                                                    "sourceField": "filebeat_input.received_bytes_total"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        },
+                                        "67d8bcfe-6463-4117-9e3d-f8aa267aa4a8": {
+                                            "columnOrder": [
+                                                "4a00c4b7-9b63-421b-a67a-947b54adc99c",
+                                                "9bc625bb-0713-4e5a-b53c-d8c84ccbd4e9",
+                                                "9bc625bb-0713-4e5a-b53c-d8c84ccbd4e9X0"
+                                            ],
+                                            "columns": {
+                                                "4a00c4b7-9b63-421b-a67a-947b54adc99c": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9bc625bb-0713-4e5a-b53c-d8c84ccbd4e9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Bytes Received",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "last_value(filebeat_input.received_bytes_total)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "9bc625bb-0713-4e5a-b53c-d8c84ccbd4e9X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "9bc625bb-0713-4e5a-b53c-d8c84ccbd4e9X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"filebeat_input.received_bytes_total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Bytes Received",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.received_bytes_total"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "linkToLayers": [
+                                                "04ad5f81-ed36-48ba-8ba7-a9d797498250"
+                                            ],
                                             "sampling": 1
                                         }
                                     }
@@ -203,17 +243,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "filebeat_input.input",
-                                        "index": "e5d372c7-9d33-4bcf-b57a-43a768d1d1c8",
+                                        "index": "f10e262d-c151-4f74-9ca1-a579384b1f43",
                                         "key": "filebeat_input.input",
                                         "negate": false,
                                         "params": {
-                                            "query": "cel"
+                                            "query": "streaming"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "filebeat_input.input": "cel"
+                                            "filebeat_input.input": "streaming"
                                         }
                                     }
                                 }
@@ -228,7 +268,12 @@
                                 "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
                                 "layerType": "data",
                                 "metricAccessor": "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                "subtitle": "Since last restart"
+                                "showBar": false,
+                                "subtitle": "Since last restart",
+                                "trendlineLayerId": "67d8bcfe-6463-4117-9e3d-f8aa267aa4a8",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "9bc625bb-0713-4e5a-b53c-d8c84ccbd4e9",
+                                "trendlineTimeAccessor": "4a00c4b7-9b63-421b-a67a-947b54adc99c"
                             }
                         },
                         "title": "",
@@ -236,17 +281,17 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 7,
-                    "i": "e496e805-d9b4-416f-904d-df35967ed171",
-                    "w": 6,
+                    "h": 6,
+                    "i": "0c0f65f2-c7d3-463a-994d-fb422b7c6c19",
+                    "w": 11,
                     "x": 7,
                     "y": 0
                 },
-                "panelIndex": "e496e805-d9b4-416f-904d-df35967ed171",
-                "title": "[Elastic Agent] Average Processing Time",
+                "panelIndex": "0c0f65f2-c7d3-463a-994d-fb422b7c6c19",
+                "title": "Write Control Errors",
                 "type": "lens"
             },
             {
@@ -258,39 +303,44 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9277b9d4-adc1-4118-ac4f-6328f638b401",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
                                             "columnOrder": [
                                                 "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0",
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X1"
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
                                             ],
                                             "columns": {
                                                 "4524a05f-df5f-472f-9e2f-e84cc310a932": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Average Batch Processing Time (Milliseconds)",
+                                                    "label": "CEL Evaluation Errors",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "compact": true,
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "divide(last_value(filebeat_input.batch_processing_time.histogram.mean), 1000000)",
+                                                        "formula": "last_value(filebeat_input.cel_eval_errors)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "4524a05f-df5f-472f-9e2f-e84cc310a932X1"
+                                                        "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
                                                     ],
                                                     "scale": "ratio"
                                                 },
@@ -299,45 +349,291 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"filebeat_input.batch_processing_time.histogram.mean\": *"
+                                                        "query": "\"filebeat_input.cel_eval_errors\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Average Batch Processing Time (Milliseconds)",
+                                                    "label": "Part of CEL Evaluation Errors",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "filebeat_input.batch_processing_time.histogram.mean"
+                                                    "sourceField": "filebeat_input.cel_eval_errors"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        },
+                                        "9277b9d4-adc1-4118-ac4f-6328f638b401": {
+                                            "columnOrder": [
+                                                "6448aa8c-3216-4c90-bbaf-f17e1eb40637",
+                                                "805337a8-fcc7-46a6-9a6c-ab089e50f337",
+                                                "805337a8-fcc7-46a6-9a6c-ab089e50f337X0"
+                                            ],
+                                            "columns": {
+                                                "6448aa8c-3216-4c90-bbaf-f17e1eb40637": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
                                                 },
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X1": {
+                                                "805337a8-fcc7-46a6-9a6c-ab089e50f337": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Average Batch Processing Time (Milliseconds)",
-                                                    "operationType": "math",
+                                                    "label": "CEL Evaluation Errors",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0",
-                                                                1000000
-                                                            ],
-                                                            "location": {
-                                                                "max": 80,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "divide(last_value(filebeat_input.batch_processing_time.histogram.mean), 1000000)",
-                                                            "type": "function"
-                                                        }
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "last_value(filebeat_input.cel_eval_errors)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "805337a8-fcc7-46a6-9a6c-ab089e50f337X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "805337a8-fcc7-46a6-9a6c-ab089e50f337X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"filebeat_input.cel_eval_errors\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CEL Evaluation Errors",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.cel_eval_errors"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "linkToLayers": [
+                                                "04ad5f81-ed36-48ba-8ba7-a9d797498250"
+                                            ],
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "f10e262d-c151-4f74-9ca1-a579384b1f43",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "streaming"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "streaming"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
+                                "layerType": "data",
+                                "metricAccessor": "4524a05f-df5f-472f-9e2f-e84cc310a932",
+                                "showBar": false,
+                                "subtitle": "Since last restart",
+                                "trendlineLayerId": "9277b9d4-adc1-4118-ac4f-6328f638b401",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "805337a8-fcc7-46a6-9a6c-ab089e50f337",
+                                "trendlineTimeAccessor": "6448aa8c-3216-4c90-bbaf-f17e1eb40637"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "a1eb5f58-c2c3-4dda-afb0-69d358e44574",
+                    "w": 10,
+                    "x": 18,
+                    "y": 0
+                },
+                "panelIndex": "a1eb5f58-c2c3-4dda-afb0-69d358e44574",
+                "title": "CEL Evaluation Errors",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-3ca258cf-54ec-40ba-a568-1c68c70991a3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
+                                            "columnOrder": [
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932",
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
+                                            ],
+                                            "columns": {
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Write Control Errors",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "last_value(filebeat_input.write_control_errors)",
+                                                        "isFormulaBroken": false
                                                     },
                                                     "references": [
                                                         "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
                                                     ],
                                                     "scale": "ratio"
+                                                },
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"filebeat_input.write_control_errors\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Write Control Errors",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.write_control_errors"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        },
+                                        "3ca258cf-54ec-40ba-a568-1c68c70991a3": {
+                                            "columnOrder": [
+                                                "347f9fe5-fb0d-4dd4-9859-8907572004a1",
+                                                "558baf51-7a6a-4425-a3a6-6bca84335067",
+                                                "558baf51-7a6a-4425-a3a6-6bca84335067X0"
+                                            ],
+                                            "columns": {
+                                                "347f9fe5-fb0d-4dd4-9859-8907572004a1": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "558baf51-7a6a-4425-a3a6-6bca84335067": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Write Control Errors",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "last_value(filebeat_input.write_control_errors)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "558baf51-7a6a-4425-a3a6-6bca84335067X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "558baf51-7a6a-4425-a3a6-6bca84335067X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"filebeat_input.write_control_errors\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Write Control Errors",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.write_control_errors"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "linkToLayers": [
+                                                "04ad5f81-ed36-48ba-8ba7-a9d797498250"
+                                            ],
                                             "sampling": 1
                                         }
                                     }
@@ -355,17 +651,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "filebeat_input.input",
-                                        "index": "dbcff2fb-092d-4bdf-a7e2-a394921c65d8",
+                                        "index": "f10e262d-c151-4f74-9ca1-a579384b1f43",
                                         "key": "filebeat_input.input",
                                         "negate": false,
                                         "params": {
-                                            "query": "cel"
+                                            "query": "streaming"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "filebeat_input.input": "cel"
+                                            "filebeat_input.input": "streaming"
                                         }
                                     }
                                 }
@@ -380,7 +676,12 @@
                                 "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
                                 "layerType": "data",
                                 "metricAccessor": "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                "subtitle": "Since last restart"
+                                "showBar": false,
+                                "subtitle": "Since last restart",
+                                "trendlineLayerId": "3ca258cf-54ec-40ba-a568-1c68c70991a3",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "558baf51-7a6a-4425-a3a6-6bca84335067",
+                                "trendlineTimeAccessor": "347f9fe5-fb0d-4dd4-9859-8907572004a1"
                             }
                         },
                         "title": "",
@@ -388,17 +689,17 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 7,
-                    "i": "24e7357a-a513-49c8-a226-046e807c817a",
-                    "w": 7,
-                    "x": 13,
+                    "h": 6,
+                    "i": "4f513f8b-7687-469d-b705-d88db404eda3",
+                    "w": 10,
+                    "x": 28,
                     "y": 0
                 },
-                "panelIndex": "24e7357a-a513-49c8-a226-046e807c817a",
-                "title": "[Elastic Agent] Average Batch Processing Time",
+                "panelIndex": "4f513f8b-7687-469d-b705-d88db404eda3",
+                "title": "Write Control Errors",
                 "type": "lens"
             },
             {
@@ -413,7 +714,7 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "4d57dfc6-15ea-42c3-b609-90425cd7f41a",
+                                "name": "indexpattern-datasource-layer-c02ae1e0-bc91-4151-99cc-5286c1410aa4",
                                 "type": "index-pattern"
                             }
                         ],
@@ -421,36 +722,122 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
                                             "columnOrder": [
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932"
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932",
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
                                             ],
                                             "columns": {
                                                 "4524a05f-df5f-472f-9e2f-e84cc310a932": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.batches_published_total\": *"
-                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Batches Published",
-                                                    "operationType": "last_value",
+                                                    "label": "Total Errors",
+                                                    "operationType": "formula",
                                                     "params": {
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
+                                                                "compact": true,
                                                                 "decimals": 0
                                                             }
                                                         },
+                                                        "formula": "last_value(filebeat_input.errors_total)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "4524a05f-df5f-472f-9e2f-e84cc310a932X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "4524a05f-df5f-472f-9e2f-e84cc310a932X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"filebeat_input.errors_total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Errors",
+                                                    "operationType": "last_value",
+                                                    "params": {
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "filebeat_input.batches_published_total"
+                                                    "sourceField": "filebeat_input.errors_total"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        },
+                                        "c02ae1e0-bc91-4151-99cc-5286c1410aa4": {
+                                            "columnOrder": [
+                                                "6047d97a-3c01-4c35-8e54-0c87682cdc15",
+                                                "b5568d29-76f4-404a-b784-276538e076c2",
+                                                "b5568d29-76f4-404a-b784-276538e076c2X0"
+                                            ],
+                                            "columns": {
+                                                "6047d97a-3c01-4c35-8e54-0c87682cdc15": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "b5568d29-76f4-404a-b784-276538e076c2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Errors",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "last_value(filebeat_input.errors_total)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "b5568d29-76f4-404a-b784-276538e076c2X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "b5568d29-76f4-404a-b784-276538e076c2X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"filebeat_input.errors_total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Errors",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.errors_total"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "linkToLayers": [
+                                                "04ad5f81-ed36-48ba-8ba7-a9d797498250"
+                                            ],
                                             "sampling": 1
                                         }
                                     }
@@ -468,17 +855,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "filebeat_input.input",
-                                        "index": "4d57dfc6-15ea-42c3-b609-90425cd7f41a",
+                                        "index": "f10e262d-c151-4f74-9ca1-a579384b1f43",
                                         "key": "filebeat_input.input",
                                         "negate": false,
                                         "params": {
-                                            "query": "cel"
+                                            "query": "streaming"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "filebeat_input.input": "cel"
+                                            "filebeat_input.input": "streaming"
                                         }
                                     }
                                 }
@@ -493,7 +880,12 @@
                                 "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
                                 "layerType": "data",
                                 "metricAccessor": "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                "subtitle": "Since last restart"
+                                "showBar": false,
+                                "subtitle": "Since last restart",
+                                "trendlineLayerId": "c02ae1e0-bc91-4151-99cc-5286c1410aa4",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "b5568d29-76f4-404a-b784-276538e076c2",
+                                "trendlineTimeAccessor": "6047d97a-3c01-4c35-8e54-0c87682cdc15"
                             }
                         },
                         "title": "",
@@ -501,346 +893,17 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 7,
-                    "i": "d8bdbfa1-cbd3-43db-8455-306613b548a7",
-                    "w": 7,
-                    "x": 20,
+                    "h": 6,
+                    "i": "e496e805-d9b4-416f-904d-df35967ed171",
+                    "w": 10,
+                    "x": 38,
                     "y": 0
                 },
-                "panelIndex": "d8bdbfa1-cbd3-43db-8455-306613b548a7",
-                "title": "[Elastic Agent] Batches Published",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "5efb69c7-ec2c-4d55-aa66-17db99c8788b",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
-                                            "columnOrder": [
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932"
-                                            ],
-                                            "columns": {
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.batches_received_total\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Batches Received",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "filebeat_input.batches_received_total"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "filebeat_input.input",
-                                        "index": "5efb69c7-ec2c-4d55-aa66-17db99c8788b",
-                                        "key": "filebeat_input.input",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "cel"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "filebeat_input.input": "cel"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
-                                "layerType": "data",
-                                "metricAccessor": "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                "subtitle": "Since last restart"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "29ab324e-a8a1-45d8-b8b8-a1515a212fa8",
-                    "w": 7,
-                    "x": 27,
-                    "y": 0
-                },
-                "panelIndex": "29ab324e-a8a1-45d8-b8b8-a1515a212fa8",
-                "title": "[Elastic Agent] Batches Received",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
-                                            "columnOrder": [
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932"
-                                            ],
-                                            "columns": {
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.events_received_total\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Events Received",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "filebeat_input.events_received_total"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "filebeat_input.input",
-                                        "index": "5efb69c7-ec2c-4d55-aa66-17db99c8788b",
-                                        "key": "filebeat_input.input",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "cel"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "filebeat_input.input": "cel"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
-                                "layerType": "data",
-                                "metricAccessor": "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                "subtitle": "Since last restart"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "cc57e586-bdc9-45d7-afa9-e69ad8b33847",
-                    "w": 7,
-                    "x": 34,
-                    "y": 0
-                },
-                "panelIndex": "cc57e586-bdc9-45d7-afa9-e69ad8b33847",
-                "title": "[Elastic Agent] Events Received",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
-                                            "columnOrder": [
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932"
-                                            ],
-                                            "columns": {
-                                                "4524a05f-df5f-472f-9e2f-e84cc310a932": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.events_published_total\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Events Published",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "filebeat_input.events_published_total"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "filebeat_input.input",
-                                        "index": "5efb69c7-ec2c-4d55-aa66-17db99c8788b",
-                                        "key": "filebeat_input.input",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "cel"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "filebeat_input.input": "cel"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
-                                "layerType": "data",
-                                "metricAccessor": "4524a05f-df5f-472f-9e2f-e84cc310a932",
-                                "subtitle": "Since last restart"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "8e83419f-c2a2-4d5f-9809-1ff783177aa5",
-                    "w": 7,
-                    "x": 41,
-                    "y": 0
-                },
-                "panelIndex": "8e83419f-c2a2-4d5f-9809-1ff783177aa5",
-                "title": "[Elastic Agent] Events Published",
+                "panelIndex": "e496e805-d9b4-416f-904d-df35967ed171",
+                "title": "Total Errors",
                 "type": "lens"
             },
             {
@@ -852,10 +915,163 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
                                 "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "a8a13eb3-f72a-489e-ae05-756974d96446": {
+                                            "columnOrder": [
+                                                "fe75381c-cc94-469a-b33f-c653997b477c",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                                "22917af9-fdbd-47f8-8066-e6298ea83705"
+                                            ],
+                                            "columns": {
+                                                "22917af9-fdbd-47f8-8066-e6298ea83705": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Published",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.batches_published_total"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Received",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.batches_received_total",
+                                                    "timeScale": "m"
+                                                },
+                                                "fe75381c-cc94-469a-b33f-c653997b477c": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": " ",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
                             },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "329fed8a-20d4-4c53-ad3a-a3c1769acf9e",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "streaming"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "streaming"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                            "22917af9-fdbd-47f8-8066-e6298ea83705"
+                                        ],
+                                        "layerId": "a8a13eb3-f72a-489e-ae05-756974d96446",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "fe75381c-cc94-469a-b33f-c653997b477c"
+                                    }
+                                ],
+                                "legend": {
+                                    "horizontalAlignment": "right",
+                                    "isInside": true,
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "verticalAlignment": "bottom"
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "xTitle": "",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": "Batches"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "31b72ac6-e9bb-454d-8e4f-d8578dcb0447",
+                    "w": 21,
+                    "x": 7,
+                    "y": 6
+                },
+                "panelIndex": "31b72ac6-e9bb-454d-8e4f-d8578dcb0447",
+                "title": "Batches Received and Published, Cumulative",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "ce387034-5a39-4523-a690-c06d6ed3af9a",
+                                "name": "indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
                                 "type": "index-pattern"
                             }
                         ],
@@ -863,6 +1079,273 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "a8a13eb3-f72a-489e-ae05-756974d96446": {
+                                            "columnOrder": [
+                                                "fe75381c-cc94-469a-b33f-c653997b477c",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                                "22917af9-fdbd-47f8-8066-e6298ea83705"
+                                            ],
+                                            "columns": {
+                                                "22917af9-fdbd-47f8-8066-e6298ea83705": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Published",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.events_published_total"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Received",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.events_received_total",
+                                                    "timeScale": "m"
+                                                },
+                                                "fe75381c-cc94-469a-b33f-c653997b477c": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": " ",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "329fed8a-20d4-4c53-ad3a-a3c1769acf9e",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "streaming"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "streaming"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                            "22917af9-fdbd-47f8-8066-e6298ea83705"
+                                        ],
+                                        "layerId": "a8a13eb3-f72a-489e-ae05-756974d96446",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "fe75381c-cc94-469a-b33f-c653997b477c"
+                                    }
+                                ],
+                                "legend": {
+                                    "horizontalAlignment": "right",
+                                    "isInside": true,
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "verticalAlignment": "bottom"
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "xTitle": "",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": "Events"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "161a44d6-6a5a-4f04-8406-e31f58bb8121",
+                    "w": 20,
+                    "x": 28,
+                    "y": 6
+                },
+                "panelIndex": "161a44d6-6a5a-4f04-8406-e31f58bb8121",
+                "title": "Events Received and Published, Cumulative",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "04ad5f81-ed36-48ba-8ba7-a9d797498250": {
+                                            "columnOrder": [
+                                                "4538e5ca-f8ff-4c5c-9451-3163117a9ab7"
+                                            ],
+                                            "columns": {
+                                                "4538e5ca-f8ff-4c5c-9451-3163117a9ab7": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"filebeat_input.url\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "URL (Last Value)",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "filebeat_input.url"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "9b8db1ae-50df-4a66-8743-a41bc2d5cb6f",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "streaming"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "streaming"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "4538e5ca-f8ff-4c5c-9451-3163117a9ab7",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "04ad5f81-ed36-48ba-8ba7-a9d797498250",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "c45a50d2-3b75-4a58-b1d3-837a6cc8c59a",
+                    "w": 41,
+                    "x": 7,
+                    "y": 15
+                },
+                "panelIndex": "c45a50d2-3b75-4a58-b1d3-837a6cc8c59a",
+                "title": "URL (Last Value)",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "a8a13eb3-f72a-489e-ae05-756974d96446": {
                                             "columnOrder": [
@@ -882,7 +1365,7 @@
                                                     "label": "99th Percentile",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "divide(last_value(filebeat_input.batch_processing_time.histogram.p99), 1000000)",
+                                                        "formula": "median(filebeat_input.batch_processing_time.histogram.p99)/1000000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -893,15 +1376,11 @@
                                                 "4d0d4eae-7fa0-4017-987f-631faba347b9X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.batch_processing_time.histogram.p99\": *"
-                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Batch 99th Percentile",
-                                                    "operationType": "last_value",
+                                                    "label": "Part of 99th Percentile",
+                                                    "operationType": "median",
                                                     "params": {
-                                                        "sortField": "@timestamp"
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "filebeat_input.batch_processing_time.histogram.p99"
@@ -910,7 +1389,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Batch 99th Percentile",
+                                                    "label": "Part of 99th Percentile",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -919,11 +1398,11 @@
                                                                 1000000
                                                             ],
                                                             "location": {
-                                                                "max": 79,
+                                                                "max": 66,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "divide(last_value(filebeat_input.batch_processing_time.histogram.p99), 1000000)",
+                                                            "text": "median(filebeat_input.batch_processing_time.histogram.p99)/1000000",
                                                             "type": "function"
                                                         }
                                                     },
@@ -936,10 +1415,10 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Average",
+                                                    "label": "Mean",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "divide(last_value(filebeat_input.batch_processing_time.histogram.mean), 1000000)",
+                                                        "formula": "median(filebeat_input.batch_processing_time.histogram.mean)/1000000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -950,15 +1429,11 @@
                                                 "b64b3a64-5db5-489c-8da3-cd6578d5763fX0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.batch_processing_time.histogram.mean\": *"
-                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Batch Average",
-                                                    "operationType": "last_value",
+                                                    "label": "Part of Mean",
+                                                    "operationType": "median",
                                                     "params": {
-                                                        "sortField": "@timestamp"
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "filebeat_input.batch_processing_time.histogram.mean"
@@ -967,7 +1442,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Batch Average",
+                                                    "label": "Part of Mean",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -976,11 +1451,11 @@
                                                                 1000000
                                                             ],
                                                             "location": {
-                                                                "max": 80,
+                                                                "max": 67,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "divide(last_value(filebeat_input.batch_processing_time.histogram.mean), 1000000)",
+                                                            "text": "median(filebeat_input.batch_processing_time.histogram.mean)/1000000",
                                                             "type": "function"
                                                         }
                                                     },
@@ -990,9 +1465,10 @@
                                                     "scale": "ratio"
                                                 },
                                                 "fe75381c-cc94-469a-b33f-c653997b477c": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": " ",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": false,
@@ -1004,6 +1480,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1021,17 +1498,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "filebeat_input.input",
-                                        "index": "ce387034-5a39-4523-a690-c06d6ed3af9a",
+                                        "index": "329fed8a-20d4-4c53-ad3a-a3c1769acf9e",
                                         "key": "filebeat_input.input",
                                         "negate": false,
                                         "params": {
-                                            "query": "cel"
+                                            "query": "streaming"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "filebeat_input.input": "cel"
+                                            "filebeat_input.input": "streaming"
                                         }
                                     }
                                 }
@@ -1056,19 +1533,20 @@
                                         "layerId": "a8a13eb3-f72a-489e-ae05-756974d96446",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "area",
+                                        "seriesType": "line",
                                         "showGridlines": false,
                                         "xAccessor": "fe75381c-cc94-469a-b33f-c653997b477c"
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "area",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "yTitle": "Processing Time (Milliseconds)"
+                                "yTitle": "Time in Milliseconds"
                             }
                         },
                         "title": "",
@@ -1079,14 +1557,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 15,
+                    "h": 9,
                     "i": "fcc664ff-eaa1-4861-a9e1-500a1f616008",
-                    "w": 41,
+                    "w": 21,
                     "x": 7,
-                    "y": 7
+                    "y": 19
                 },
                 "panelIndex": "fcc664ff-eaa1-4861-a9e1-500a1f616008",
-                "title": "[Elastic Agent] Cel Batch Processing Time (Milliseconds)",
+                "title": "Batch Processing Time",
                 "type": "lens"
             },
             {
@@ -1104,6 +1582,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "a8a13eb3-f72a-489e-ae05-756974d96446": {
                                             "columnOrder": [
@@ -1123,7 +1602,7 @@
                                                     "label": "99th Percentile",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "divide(last_value(filebeat_input.cel_processing_time.histogram.p99), 1000000)",
+                                                        "formula": "median(filebeat_input.cel_processing_time.histogram.p99)/1000000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1134,15 +1613,11 @@
                                                 "4d0d4eae-7fa0-4017-987f-631faba347b9X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.cel_processing_time.histogram.p99\": *"
-                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of 99th Percentile",
-                                                    "operationType": "last_value",
+                                                    "operationType": "median",
                                                     "params": {
-                                                        "sortField": "@timestamp"
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "filebeat_input.cel_processing_time.histogram.p99"
@@ -1160,11 +1635,11 @@
                                                                 1000000
                                                             ],
                                                             "location": {
-                                                                "max": 77,
+                                                                "max": 64,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "divide(last_value(filebeat_input.cel_processing_time.histogram.p99), 1000000)",
+                                                            "text": "median(filebeat_input.cel_processing_time.histogram.p99)/1000000",
                                                             "type": "function"
                                                         }
                                                     },
@@ -1177,10 +1652,10 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Average",
+                                                    "label": "Mean",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "divide(last_value(filebeat_input.cel_processing_time.histogram.mean), 1000000)",
+                                                        "formula": "median(filebeat_input.cel_processing_time.histogram.mean)/1000000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1191,15 +1666,11 @@
                                                 "b64b3a64-5db5-489c-8da3-cd6578d5763fX0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"filebeat_input.cel_processing_time.histogram.mean\": *"
-                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Average",
-                                                    "operationType": "last_value",
+                                                    "label": "Part of Mean",
+                                                    "operationType": "median",
                                                     "params": {
-                                                        "sortField": "@timestamp"
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "filebeat_input.cel_processing_time.histogram.mean"
@@ -1208,7 +1679,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Average",
+                                                    "label": "Part of Mean",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -1217,11 +1688,11 @@
                                                                 1000000
                                                             ],
                                                             "location": {
-                                                                "max": 78,
+                                                                "max": 65,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "divide(last_value(filebeat_input.cel_processing_time.histogram.mean), 1000000)",
+                                                            "text": "median(filebeat_input.cel_processing_time.histogram.mean)/1000000",
                                                             "type": "function"
                                                         }
                                                     },
@@ -1231,9 +1702,10 @@
                                                     "scale": "ratio"
                                                 },
                                                 "fe75381c-cc94-469a-b33f-c653997b477c": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": " ",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": false,
@@ -1245,6 +1717,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1262,17 +1735,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "filebeat_input.input",
-                                        "index": "ce387034-5a39-4523-a690-c06d6ed3af9a",
+                                        "index": "329fed8a-20d4-4c53-ad3a-a3c1769acf9e",
                                         "key": "filebeat_input.input",
                                         "negate": false,
                                         "params": {
-                                            "query": "cel"
+                                            "query": "streaming"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "filebeat_input.input": "cel"
+                                            "filebeat_input.input": "streaming"
                                         }
                                     }
                                 }
@@ -1297,19 +1770,20 @@
                                         "layerId": "a8a13eb3-f72a-489e-ae05-756974d96446",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "area",
+                                        "seriesType": "line",
                                         "showGridlines": false,
                                         "xAccessor": "fe75381c-cc94-469a-b33f-c653997b477c"
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "area",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "yTitle": "Processing Time (Milliseconds)"
+                                "yTitle": "Time in Milliseconds"
                             }
                         },
                         "title": "",
@@ -1320,14 +1794,488 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "f2296d78-a699-4ec0-bfce-6edcefa2087c",
-                    "w": 41,
-                    "x": 7,
-                    "y": 22
+                    "h": 9,
+                    "i": "d7aaa001-eaa9-4023-bddc-b72c12fb77c0",
+                    "w": 20,
+                    "x": 28,
+                    "y": 19
                 },
-                "panelIndex": "f2296d78-a699-4ec0-bfce-6edcefa2087c",
-                "title": "[Elastic Agent] Cel Event Processing Time (Milliseconds)",
+                "panelIndex": "d7aaa001-eaa9-4023-bddc-b72c12fb77c0",
+                "title": "CEL Processing Time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "a8a13eb3-f72a-489e-ae05-756974d96446": {
+                                            "columnOrder": [
+                                                "fe75381c-cc94-469a-b33f-c653997b477c",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX0",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX1",
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9",
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X0",
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X1"
+                                            ],
+                                            "columns": {
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "99th Percentile",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "median(filebeat_input.ping_message_send_time.histogram.p99)/1000000",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "4d0d4eae-7fa0-4017-987f-631faba347b9X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of 99th Percentile",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.ping_message_send_time.histogram.p99"
+                                                },
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of 99th Percentile",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 67,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "median(filebeat_input.ping_message_send_time.histogram.p99)/1000000",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "4d0d4eae-7fa0-4017-987f-631faba347b9X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Mean",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "median(filebeat_input.ping_message_send_time.histogram.mean)/1000000",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "b64b3a64-5db5-489c-8da3-cd6578d5763fX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Mean",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.ping_message_send_time.histogram.mean"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Mean",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 68,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "median(filebeat_input.ping_message_send_time.histogram.mean)/1000000",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "b64b3a64-5db5-489c-8da3-cd6578d5763fX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "fe75381c-cc94-469a-b33f-c653997b477c": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": " ",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "329fed8a-20d4-4c53-ad3a-a3c1769acf9e",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "streaming"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "streaming"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                            "4d0d4eae-7fa0-4017-987f-631faba347b9"
+                                        ],
+                                        "layerId": "a8a13eb3-f72a-489e-ae05-756974d96446",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "fe75381c-cc94-469a-b33f-c653997b477c"
+                                    }
+                                ],
+                                "legend": {
+                                    "isInside": true,
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": "Time in Milliseconds"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "6d6cb321-5f7c-4105-928c-f49cef785eae",
+                    "w": 21,
+                    "x": 7,
+                    "y": 28
+                },
+                "panelIndex": "6d6cb321-5f7c-4105-928c-f49cef785eae",
+                "title": "Ping Message Send Time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "a8a13eb3-f72a-489e-ae05-756974d96446": {
+                                            "columnOrder": [
+                                                "fe75381c-cc94-469a-b33f-c653997b477c",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX0",
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX1",
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9",
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X0",
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X1"
+                                            ],
+                                            "columns": {
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "99th Percentile",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "median(filebeat_input.pong_message_received_time.histogram.p99)/1000000",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "4d0d4eae-7fa0-4017-987f-631faba347b9X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of 99th Percentile",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.pong_message_received_time.histogram.p99"
+                                                },
+                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of 99th Percentile",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "4d0d4eae-7fa0-4017-987f-631faba347b9X0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 71,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "median(filebeat_input.pong_message_received_time.histogram.p99)/1000000",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "4d0d4eae-7fa0-4017-987f-631faba347b9X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Mean",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "median(filebeat_input.pong_message_received_time.histogram.mean)/1000000",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "b64b3a64-5db5-489c-8da3-cd6578d5763fX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Mean",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.pong_message_received_time.histogram.mean"
+                                                },
+                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Mean",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "b64b3a64-5db5-489c-8da3-cd6578d5763fX0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 72,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "median(filebeat_input.pong_message_received_time.histogram.mean)/1000000",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "b64b3a64-5db5-489c-8da3-cd6578d5763fX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "fe75381c-cc94-469a-b33f-c653997b477c": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": " ",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "329fed8a-20d4-4c53-ad3a-a3c1769acf9e",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "streaming"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "streaming"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b64b3a64-5db5-489c-8da3-cd6578d5763f",
+                                            "4d0d4eae-7fa0-4017-987f-631faba347b9"
+                                        ],
+                                        "layerId": "a8a13eb3-f72a-489e-ae05-756974d96446",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "fe75381c-cc94-469a-b33f-c653997b477c"
+                                    }
+                                ],
+                                "legend": {
+                                    "isInside": true,
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": "Time in Milliseconds"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "f8d50bcc-a0f6-4b28-82a1-6457ad5be531",
+                    "w": 20,
+                    "x": 28,
+                    "y": 28
+                },
+                "panelIndex": "f8d50bcc-a0f6-4b28-82a1-6457ad5be531",
+                "title": "Pong Message Receive Time",
                 "type": "lens"
             }
         ],
@@ -1336,9 +2284,39 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-07-14T07:42:42.637Z",
+    "created_at": "2025-07-16T15:22:26.332Z",
     "id": "elastic_agent-b7719f90-6081-11f0-89d2-bb7ceae5af7f",
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "0c0f65f2-c7d3-463a-994d-fb422b7c6c19:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "0c0f65f2-c7d3-463a-994d-fb422b7c6c19:indexpattern-datasource-layer-67d8bcfe-6463-4117-9e3d-f8aa267aa4a8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "a1eb5f58-c2c3-4dda-afb0-69d358e44574:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "a1eb5f58-c2c3-4dda-afb0-69d358e44574:indexpattern-datasource-layer-9277b9d4-adc1-4118-ac4f-6328f638b401",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4f513f8b-7687-469d-b705-d88db404eda3:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4f513f8b-7687-469d-b705-d88db404eda3:indexpattern-datasource-layer-3ca258cf-54ec-40ba-a568-1c68c70991a3",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "e496e805-d9b4-416f-904d-df35967ed171:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
@@ -1346,42 +2324,22 @@
         },
         {
             "id": "metrics-*",
-            "name": "e496e805-d9b4-416f-904d-df35967ed171:e5d372c7-9d33-4bcf-b57a-43a768d1d1c8",
+            "name": "e496e805-d9b4-416f-904d-df35967ed171:indexpattern-datasource-layer-c02ae1e0-bc91-4151-99cc-5286c1410aa4",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "24e7357a-a513-49c8-a226-046e807c817a:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+            "name": "31b72ac6-e9bb-454d-8e4f-d8578dcb0447:indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "d8bdbfa1-cbd3-43db-8455-306613b548a7:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+            "name": "161a44d6-6a5a-4f04-8406-e31f58bb8121:indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "d8bdbfa1-cbd3-43db-8455-306613b548a7:4d57dfc6-15ea-42c3-b609-90425cd7f41a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "29ab324e-a8a1-45d8-b8b8-a1515a212fa8:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "29ab324e-a8a1-45d8-b8b8-a1515a212fa8:5efb69c7-ec2c-4d55-aa66-17db99c8788b",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "cc57e586-bdc9-45d7-afa9-e69ad8b33847:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "8e83419f-c2a2-4d5f-9809-1ff783177aa5:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
+            "name": "c45a50d2-3b75-4a58-b1d3-837a6cc8c59a:indexpattern-datasource-layer-04ad5f81-ed36-48ba-8ba7-a9d797498250",
             "type": "index-pattern"
         },
         {
@@ -1391,12 +2349,17 @@
         },
         {
             "id": "metrics-*",
-            "name": "fcc664ff-eaa1-4861-a9e1-500a1f616008:ce387034-5a39-4523-a690-c06d6ed3af9a",
+            "name": "d7aaa001-eaa9-4023-bddc-b72c12fb77c0:indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "f2296d78-a699-4ec0-bfce-6edcefa2087c:indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
+            "name": "6d6cb321-5f7c-4105-928c-f49cef785eae:indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f8d50bcc-a0f6-4b28-82a1-6457ad5be531:indexpattern-datasource-layer-a8a13eb3-f72a-489e-ae05-756974d96446",
             "type": "index-pattern"
         },
         {
