@@ -38,7 +38,72 @@ Please make sure to use the given response formats.
 ### For receiving log from Netskope Log Streaming
 1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). While Configuring make sure compression is set to GZIP as other compression types are not supported.
 
-### Enabling the integration in Elastic:
+#### Collect data from an AWS S3 bucket
+
+Considering you already have an AWS S3 bucket setup, to configure it with Netskope, follow [these steps](https://docs.netskope.com/en/stream-logs-to-amazon-s3) to enable the log streaming.
+
+#### Collect data from Azure Blob Storage
+
+1. If you already have an Azure storage container setup, configure it with Netskope via log streaming.
+2. Enable the Netskope log streaming by following [these instructions](https://docs.netskope.com/en/stream-logs-to-azure-blob).
+3. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options. For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
+
+- How to setup the `auth.oauth2` credentials can be found in the Azure documentation [here]( https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- For more details about the Azure Blob Storage input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
+
+Note:
+- The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
+- We recommend assigning either the **Storage Blob Data Reader** or **Storage Blob Data Owner** role. The **Storage Blob Data Reader** role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The **Storage Blob Data Owner** role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
+
+#### Collect data from a GCS bucket
+
+1. If you already have a GCS bucket setup, configure it with Netskope via log streaming.
+2. Enable the Netskope log streaming by following [these instructions](https://docs.netskope.com/en/stream-logs-to-gcp-cloud-storage).
+3. Configure the integration with your GCS project ID, Bucket name and Service Account Key/Service Account Credentials File.
+
+For more details about the GCS input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).
+
+#### The GCS credentials key file:
+
+Once you have added a key to GCP service account, you will get a JSON key file that can only be downloaded once.
+If you're new to GCS bucket creation, follow these steps:
+
+1. Make sure you have a service account available, if not follow the steps below:
+   - Navigate to 'APIs & Services' > 'Credentials'
+   - Click on 'Create credentials' > 'Service account'
+2. Once the service account is created, you can navigate to the 'Keys' section and attach/generate your service account key.
+3. Make sure to download the JSON key file once prompted.
+4. Use this JSON key file either inline (JSON string object), or by specifying the path to the file on the host machine, where the agent is running.
+
+A sample JSON Credentials file looks as follows:
+```json
+{
+  "type": "dummy_service_account",
+  "project_id": "dummy-project",
+  "private_key_id": "dummy-private-key-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nDummyPrivateKey\n-----END PRIVATE KEY-----\n",
+  "client_email": "dummy-service-account@example.com",
+  "client_id": "12345678901234567890",
+  "auth_uri": "https://dummy-auth-uri.com",
+  "token_uri": "https://dummy-token-uri.com",
+  "auth_provider_x509_cert_url": "https://dummy-auth-provider-cert-url.com",
+  "client_x509_cert_url": "https://dummy-client-cert-url.com",
+  "universe_domain": "dummy-universe-domain.com"
+}
+```
+
+
+#### Collect data from AWS SQS
+
+1. If you've already set up a connection to push data into the AWS bucket; if not, refer to the section above.
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+   - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in Symantec.
+3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+   - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
+
+For more details about the AWS-S3 input settings, check this [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
+
+### Enable the integration in Elastic
 
 1. In Kibana go to **Management** > **Integrations**.
 2. In "Search for integrations" top bar, search for `Netskope`.
