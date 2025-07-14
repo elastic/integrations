@@ -97,7 +97,7 @@ A sample JSON Credentials file looks as follows:
 
 1. If you've already set up a connection to push data into the AWS bucket; if not, refer to the section above.
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
-   - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in Symantec.
+   - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in Netskope.
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
