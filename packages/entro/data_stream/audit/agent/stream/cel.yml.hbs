@@ -27,10 +27,17 @@ program: |
     // This program queries the API day-by-day, starting from an "initial_interval" in the past,
     // until the cursor catches up to the current date.
     // Note: The API's date format is dd/mm/yyyy.
+    // TODO: Use time.round when kibana.version is ^8.19.0 instead of the format-based
+    // tests that are used here.
     state.?cursor.?last_timestamp.orValue(
       now - duration(state.initial_interval)
     ).as(raw_start_value,
-      ((type(raw_start_value) == string) ? timestamp(raw_start_value) : raw_start_value).as(start_time,
+      (
+        type(raw_start_value) == string ?
+          timestamp(raw_start_value)
+        :
+          raw_start_value
+      ).as(start_time,
         state.with(
           request(
             "GET",
@@ -49,7 +56,7 @@ program: |
               },
             }
           ).do_request().as(resp,
-            (resp.StatusCode == 200) ?
+            resp.StatusCode == 200 ?
               resp.Body.decode_json().as(body,
                 {
                   "events": body.map(e,
@@ -72,7 +79,12 @@ program: |
                       ]
                   ).flatten(),
                   "cursor": {
-                    "last_timestamp": (start_time.format("02/01/2006") != now.format("02/01/2006")) ? (start_time + duration("24h")) : start_time,
+                    "last_timestamp": start_time + (
+                      start_time.format("02/01/2006") != now.format("02/01/2006") ?
+                        duration("24h")
+                      :
+                        duration("0")
+                    ),
                   },
                   "want_more": start_time.format("02/01/2006") != now.format("02/01/2006"),
                 }
