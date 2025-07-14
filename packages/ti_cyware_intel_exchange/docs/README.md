@@ -63,22 +63,22 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2025-06-30T10:28:16.273Z",
     "agent": {
-        "ephemeral_id": "65d9f572-baab-4336-bf93-305a34d5fbad",
-        "id": "e11d0432-f19f-46fd-bb22-3a620ce85101",
-        "name": "elastic-agent-22963",
+        "ephemeral_id": "fe17ea4c-74d9-4b10-89c6-0fa3d8128c68",
+        "id": "51f69556-f10d-4e36-b5ce-11fce32e3768",
+        "name": "elastic-agent-84239",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ti_cyware_intel_exchange.indicator",
-        "namespace": "99673",
+        "namespace": "32196",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e11d0432-f19f-46fd-bb22-3a620ce85101",
+        "id": "51f69556-f10d-4e36-b5ce-11fce32e3768",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -90,7 +90,7 @@ An example event for `indicator` looks as following:
         "created": "2025-05-27T14:04:51.651Z",
         "dataset": "ti_cyware_intel_exchange.indicator",
         "id": "f36749f2-776f-4153-b840-08bad5fb18b1",
-        "ingested": "2025-07-14T09:11:02Z",
+        "ingested": "2025-07-14T09:47:43Z",
         "kind": "enrichment",
         "original": "{\"analyst_score\":null,\"analyst_tlp\":null,\"country\":null,\"created\":1746812972,\"ctix_created\":1748354691.651628,\"ctix_modified\":1751279296.273555,\"ctix_score\":90,\"ctix_tlp\":null,\"custom_scores\":null,\"id\":\"f36749f2-776f-4153-b840-08bad5fb18b1\",\"indicator_type\":{\"attribute_field\":\"MD5\",\"type\":\"file\"},\"ioc_type\":\"file\",\"is_actioned\":false,\"is_deprecated\":false,\"is_false_positive\":false,\"is_reviewed\":false,\"is_revoked\":false,\"is_whitelist\":false,\"modified\":1748354676.716103,\"name\":\"e8c5c5829b630dcf61b55f271ac6c085\",\"sdo_name\":\"e8c5c5829b630dcf61b55f271ac6c085\",\"sdo_type\":\"indicator\",\"severity\":\"UNKNOWN\",\"source_tlp\":\"NONE\",\"sources\":[{\"first_seen\":1746812972,\"last_seen\":null,\"name\":\"Vault\",\"score\":100,\"tlp\":\"WHITE\"}],\"tags\":[\"brand impersonation\",\"cryptocurrency\",\"Apple\"],\"valid_from\":1746812972,\"valid_until\":null}",
         "type": [
@@ -207,20 +207,6 @@ An example event for `indicator` looks as following:
 | ti_cyware_intel_exchange.indicator.is_whitelist | Returns a value to indicate if the threat data object is whitelisted. | boolean |
 | ti_cyware_intel_exchange.indicator.modified |  | date |
 | ti_cyware_intel_exchange.indicator.name |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.created |  | date |
-| ti_cyware_intel_exchange.indicator.relations.field_name |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.id |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.modified |  | date |
-| ti_cyware_intel_exchange.indicator.relations.relationship_type |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.source_name |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.source_ref |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.source_sub_type |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.source_type |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.target_name |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.target_ref |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.target_sub_type |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.target_type |  | keyword |
-| ti_cyware_intel_exchange.indicator.relations.unique_hash |  | keyword |
 | ti_cyware_intel_exchange.indicator.report_types |  | keyword |
 | ti_cyware_intel_exchange.indicator.sdo_ip |  | ip |
 | ti_cyware_intel_exchange.indicator.sdo_name |  | keyword |
