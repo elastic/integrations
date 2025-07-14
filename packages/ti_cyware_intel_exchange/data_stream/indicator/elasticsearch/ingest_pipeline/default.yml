@@ -1,0 +1,617 @@
+---
+description: Pipeline for processing Indicator logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Cyware
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Threat Intelligence Management
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+  - fingerprint:
+      fields:
+        - json.id
+        - json.ctix_modified
+      tag: fingerprint_indicator
+      target_field: _id
+  - rename:
+      field: json.analyst_description
+      tag: rename_analyst_description
+      target_field: ti_cyware_intel_exchange.indicator.analyst_description
+      ignore_missing: true
+  - convert:
+      field: json.analyst_score
+      tag: convert_analyst_score_to_long
+      target_field: ti_cyware_intel_exchange.indicator.analyst_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.analyst_tlp
+      tag: rename_analyst_tlp
+      target_field: ti_cyware_intel_exchange.indicator.analyst_tlp
+      ignore_missing: true
+  - rename:
+      field: json.country
+      tag: rename_country
+      target_field: ti_cyware_intel_exchange.indicator.country
+      ignore_missing: true
+  - set:
+      field: threat.indicator.geo.country_name
+      tag: set_threat_indicator_geo_country_name_from_indicator_country
+      copy_from: ti_cyware_intel_exchange.indicator.country
+      ignore_empty_value: true
+  - date:
+      field: json.created
+      tag: date_created
+      target_field: ti_cyware_intel_exchange.indicator.created
+      formats:
+        - UNIX
+      if: ctx.json?.created != null && ctx.json.created != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.ctix_created
+      tag: date_ctix_created
+      target_field: ti_cyware_intel_exchange.indicator.ctix_created
+      formats:
+        - UNIX
+      if: ctx.json?.ctix_created != null && ctx.json.ctix_created != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_indicator_ctix_created
+      copy_from: ti_cyware_intel_exchange.indicator.ctix_created
+      ignore_empty_value: true
+  - date:
+      field: json.ctix_modified
+      tag: date_ctix_modified
+      target_field: ti_cyware_intel_exchange.indicator.ctix_modified
+      formats:
+        - UNIX
+      if: ctx.json?.ctix_modified != null && ctx.json.ctix_modified != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_indicator_ctix_modified
+      copy_from: ti_cyware_intel_exchange.indicator.ctix_modified
+      ignore_empty_value: true
+  - convert:
+      field: json.ctix_score
+      tag: convert_ctix_score_to_long
+      target_field: ti_cyware_intel_exchange.indicator.ctix_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ctix_tlp
+      tag: rename_ctix_tlp
+      target_field: ti_cyware_intel_exchange.indicator.ctix_tlp
+      ignore_missing: true
+  - rename:
+      field: json.custom_attributes
+      tag: rename_custom_attributes
+      target_field: ti_cyware_intel_exchange.indicator.custom_attributes
+      ignore_missing: true
+  - convert:
+      field: json.custom_scores
+      tag: convert_custom_scores_to_long
+      target_field: ti_cyware_intel_exchange.indicator.custom_scores
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.external_references
+      tag: rename_external_references
+      target_field: ti_cyware_intel_exchange.indicator.external_references
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: ti_cyware_intel_exchange.indicator.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_indicator_id
+      copy_from: ti_cyware_intel_exchange.indicator.id
+      ignore_empty_value: true
+  - rename:
+      field: json.indicator_type.attribute_field
+      tag: rename_indicator_type_attribute_field
+      target_field: ti_cyware_intel_exchange.indicator.indicator_type.attribute_field
+      ignore_missing: true
+  - rename:
+      field: json.indicator_type.type
+      tag: rename_indicator_type_type
+      target_field: ti_cyware_intel_exchange.indicator.indicator_type.type
+      ignore_missing: true
+  - rename:
+      field: json.ioc_type
+      tag: rename_ioc_type
+      target_field: ti_cyware_intel_exchange.indicator.ioc_type
+      ignore_missing: true
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_from_indicator_ioc_type
+      copy_from: ti_cyware_intel_exchange.indicator.ioc_type
+      ignore_empty_value: true
+  - convert:
+      field: json.name
+      tag: convert_name_to_ip
+      target_field: ti_cyware_intel_exchange.indicator.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.name != ''
+      on_failure:
+        - rename:
+            field: json.name
+            target_field: ti_cyware_intel_exchange.indicator.name
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_indicator_ip_into_related_ip
+      value: '{{{ti_cyware_intel_exchange.indicator.ip}}}'
+      allow_duplicates: false
+      if: ctx.ti_cyware_intel_exchange?.indicator?.ip != null
+  - convert:
+      field: json.is_actioned
+      tag: convert_is_actioned_to_boolean
+      target_field: ti_cyware_intel_exchange.indicator.is_actioned
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.is_deprecated
+      tag: convert_is_deprecated_to_boolean
+      target_field: ti_cyware_intel_exchange.indicator.is_deprecated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.is_false_positive
+      tag: convert_is_false_positive_to_boolean
+      target_field: ti_cyware_intel_exchange.indicator.is_false_positive
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.is_reviewed
+      tag: convert_is_reviewed_to_boolean
+      target_field: ti_cyware_intel_exchange.indicator.is_reviewed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.is_revoked
+      tag: convert_is_revoked_to_boolean
+      target_field: ti_cyware_intel_exchange.indicator.is_revoked
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.is_whitelist
+      tag: convert_is_whitelist_to_boolean
+      target_field: ti_cyware_intel_exchange.indicator.is_whitelist
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.modified
+      tag: date_modified
+      target_field: ti_cyware_intel_exchange.indicator.modified
+      formats:
+        - UNIX
+      if: ctx.json?.modified != null && ctx.json.modified != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_indicator_modified
+      copy_from: ti_cyware_intel_exchange.indicator.modified
+      ignore_empty_value: true
+  - foreach:
+      field: json.relations
+      tag: foreach_relations_created
+      if: ctx.json?.relations instanceof List
+      processor:
+        date:
+          field: _ingest._value.created
+          tag: date_relations_created
+          target_field: _ingest._value.created
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.created
+                ignore_missing: true
+  - foreach:
+      field: json.relations
+      tag: foreach_relations_modified
+      if: ctx.json?.relations instanceof List
+      processor:
+        date:
+          field: _ingest._value.modified
+          tag: date_relations_modified
+          target_field: _ingest._value.modified
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.modified
+                ignore_missing: true
+  - foreach:
+      field: json.relations
+      tag: foreach_relations_unique_hash
+      if: ctx.json?.relations instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_relations_unique_hash_into_related_hash
+          value: '{{{_ingest._value.unique_hash}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.relations
+      tag: rename_relations
+      target_field: ti_cyware_intel_exchange.indicator.relations
+      ignore_missing: true
+  - rename:
+      field: json.report_types
+      tag: rename_report_types
+      target_field: ti_cyware_intel_exchange.indicator.report_types
+      ignore_missing: true
+  - convert:
+      field: json.sdo_name
+      tag: convert_sdo_name_to_ip
+      target_field: ti_cyware_intel_exchange.indicator.sdo_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.sdo_name != ''
+      on_failure:
+        - rename:
+            field: json.sdo_name
+            target_field: ti_cyware_intel_exchange.indicator.sdo_name
+            ignore_missing: true
+  - append:
+      field: threat.indicator.name
+      tag: append_ti_cyware_intel_exchange_indicator_sdo_name_into_threat_indicator_name
+      value: '{{{ti_cyware_intel_exchange.indicator.sdo_name}}}'
+      allow_duplicates: false
+      if: ctx.ti_cyware_intel_exchange?.indicator?.sdo_name != null
+  - append:
+      field: threat.indicator.ip
+      tag: append_ti_cyware_intel_exchange_indicator_sdo_ip_into_threat_indicator_ip
+      value: '{{{ti_cyware_intel_exchange.indicator.sdo_ip}}}'
+      allow_duplicates: false
+      if: ctx.ti_cyware_intel_exchange?.indicator?.sdo_ip != null
+  - append:
+      field: related.ip
+      tag: append_indicator_sdo_ip_into_related_ip
+      value: '{{{ti_cyware_intel_exchange.indicator.sdo_ip}}}'
+      allow_duplicates: false
+      if: ctx.ti_cyware_intel_exchange?.indicator?.sdo_ip != null
+  - rename:
+      field: json.sdo_type
+      tag: rename_sdo_type
+      target_field: ti_cyware_intel_exchange.indicator.sdo_type
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: ti_cyware_intel_exchange.indicator.severity
+      ignore_missing: true
+  - rename:
+      field: json.source_description
+      tag: rename_source_description
+      target_field: ti_cyware_intel_exchange.indicator.source_description
+      ignore_missing: true
+  - set:
+      field: threat.indicator.description
+      tag: set_threat_indicator_description_from_indicator_source_description
+      copy_from: ti_cyware_intel_exchange.indicator.source_description
+      ignore_empty_value: true
+  - rename:
+      field: json.source_tlp
+      tag: rename_source_tlp
+      target_field: ti_cyware_intel_exchange.indicator.source_tlp
+      ignore_missing: true
+  - foreach:
+      field: json.sources
+      tag: foreach_sources_first_seen
+      if: ctx.json?.sources instanceof List
+      processor:
+        date:
+          field: _ingest._value.first_seen
+          tag: date_sources_first_seen
+          target_field: _ingest._value.first_seen
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.first_seen
+                ignore_missing: true
+  - foreach:
+      field: json.sources
+      tag: foreach_sources_first_seen
+      if: ctx.json?.sources instanceof List
+      processor:
+        append:
+          field: threat.indicator.first_seen
+          tag: append_sources_first_seen_into_threat_indicator_first_seen
+          value: '{{{_ingest._value.first_seen}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.sources
+      tag: foreach_sources_last_seen
+      if: ctx.json?.sources instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_seen
+          tag: date_sources_last_seen
+          target_field: _ingest._value.last_seen
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.last_seen
+                ignore_missing: true
+  - foreach:
+      field: json.sources
+      tag: foreach_sources_last_seen
+      if: ctx.json?.sources instanceof List
+      processor:
+        append:
+          field: threat.indicator.last_seen
+          tag: append_sources_last_seen_into_threat_indicator_last_seen
+          value: '{{{_ingest._value.last_seen}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.sources
+      tag: foreach_sources_name
+      if: ctx.json?.sources instanceof List
+      processor:
+        append:
+          field: threat.indicator.provider
+          tag: append_sources_name_into_threat_indicator_provider
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.sources
+      tag: foreach_sources_score
+      if: ctx.json?.sources instanceof List
+      processor:
+        convert:
+          field: _ingest._value.score
+          tag: convert_sources_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.sources
+      tag: foreach_sources_tlp
+      if: ctx.json?.sources instanceof List
+      processor:
+        append:
+          field: threat.indicator.marking.tlp
+          tag: append_sources_tlp_into_threat_indicator_marking_tlp
+          value: '{{{_ingest._value.tlp}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.sources
+      tag: rename_sources
+      target_field: ti_cyware_intel_exchange.indicator.sources
+      ignore_missing: true
+  - rename:
+      field: json.tags
+      tag: rename_tags_to_tags_list
+      target_field: ti_cyware_intel_exchange.indicator.tags_list
+      if: ctx.json?.tags instanceof List
+      ignore_missing: true
+  - rename:
+      field: json.tags
+      tag: rename_tags_to_tags_object
+      target_field: ti_cyware_intel_exchange.indicator.tags_object
+      ignore_missing: true
+      if: ctx.json?.tags instanceof Map
+  - foreach:
+      field: ti_cyware_intel_exchange.indicator.tags_list
+      tag: foreach_ti_cyware_intel_exchange_indicator_tags_list
+      if: ctx.ti_cyware_intel_exchange?.indicator?.tags_list instanceof List
+      processor:
+        append:
+          field: tags
+          tag: append_tags_list_into_tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.tlp_value
+      tag: rename_tlp_value
+      target_field: ti_cyware_intel_exchange.indicator.tlp_value
+      ignore_missing: true
+  - date:
+      field: json.valid_from
+      tag: date_valid_from
+      target_field: ti_cyware_intel_exchange.indicator.valid_from
+      formats:
+        - UNIX
+      if: ctx.json?.valid_from != null && ctx.json.valid_from != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.valid_until
+      tag: date_valid_until
+      target_field: ti_cyware_intel_exchange.indicator.valid_until
+      formats:
+        - UNIX
+      if: ctx.json?.valid_until != null && ctx.json.valid_until != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ti_cyware_intel_exchange.indicator.sources
+      tag: foreach_ti_cyware_intel_exchange_indicator_sources_/
+      if: ctx.ti_cyware_intel_exchange?.indicator?.sources instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.tlp
+            - _ingest._value.name
+            - _ingest._value.last_seen
+            - _ingest._value.first_seen
+          tag: remove_custom_duplicate_fields_from_ti_cyware_intel_exchange_indicator_sources
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - ti_cyware_intel_exchange.indicator.country
+        - ti_cyware_intel_exchange.indicator.ctix_created
+        - ti_cyware_intel_exchange.indicator.ctix_modified
+        - ti_cyware_intel_exchange.indicator.external_references
+        - ti_cyware_intel_exchange.indicator.id
+        - ti_cyware_intel_exchange.indicator.ioc_type
+        - ti_cyware_intel_exchange.indicator.modified
+        - ti_cyware_intel_exchange.indicator.source_description
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
