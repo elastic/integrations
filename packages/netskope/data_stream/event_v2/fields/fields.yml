@@ -1,0 +1,500 @@
+- name: netskope
+  type: group
+  fields:
+    - name: event_v2
+      type: group
+      fields:
+        - name: _id
+          type: keyword
+          description: Unique id - hexadecimal string.
+        - name: access_method
+          type: keyword
+          description: Cloud app traffic can be steered to the Netskope cloud using different deployment methods such as Client (Netskope Client), Secure Forwarder etc. Administrators can also upload firewall and/or proxy logs for log analytics. This field shows the actual access method that triggered the event.For log uploads this shows the actual log type such as PAN, Websense, etc.
+        - name: acting_user
+          type: keyword
+          description: Acting User is the user responsible for the violation.
+        - name: action
+          type: keyword
+          description: Action taken on the event for the policy.
+        - name: activity
+          type: keyword
+          description: Description of the user performed activity.
+        - name: alert
+          type: keyword
+          description: Indicates whether alert is generated or not and its populated as yes for all alerts.
+        - name: alert_name
+          type: keyword
+          description: Indicates the alert is raised and the carries the name of the alert raised.
+        - name: alert_type
+          type: keyword
+          description: Indicates the alert is raised and the carries the type of the alert raised.
+        - name: app
+          type: keyword
+          description: Specific cloud application used by the user.
+        - name: appact
+          type: keyword
+          description: UBA service detect app activities performed by the end user like Download, Upload etc.
+        - name: app_session_id
+          type: keyword
+          description: Unique App/Site Session ID for traffic_type = CloudApp and Web. An app session starts when a user starts using a cloud app/site on and ends once they have been inactive for a certain period of time(15 minutes). Use app_session_id to check all the user activities in a single app session. app_session_id is unique for a user, device, browser and domain.
+        - name: appcategory
+          type: keyword
+          description: The application category.
+        - name: appsuite
+          type: keyword
+          description: 'The SAAS application suite ( Ex : Microsoft Office / Google Docs  etc ).'
+        - name: assignee
+          type: keyword
+          description: Represents the username to whom the incident is assigned to.
+        - name: audit_type
+          type: keyword
+          description: The sub category in audit according to SaaS / IaaS apps.
+        - name: bcc
+          type: keyword
+          description: Breach target references for compromised credentials or BCC users information in the case of SMTP DLP incident.
+        - name: browser
+          type: keyword
+          description: Shows the actual browser from where the cloud app was accessed.A native browser refers to Safari (iOS), Chrome (Android), or the default browser on the user's laptop.
+        - name: browser_session_id
+          type: keyword
+          description: Browser Session Id.
+        - name: cc
+          type: keyword
+          description: SMTP Proxy will parse the cc field in the email and send them to DLP in the event object. The cc recipients from the e-mail header, up to 1KB.
+        - name: cci
+          type: long
+          description: Cloud confidence Index value as Integer.
+        - name: ccl
+          type: keyword
+          description: 'Cloud Confidence Level. CCL measures the enterprise readiness of the cloud apps taking into consideration those apps security, auditability and business continuity.Each app is assigned one of five cloud confidence levels: excellent, high, medium, low, or poor. Useful for querying if users are accessing a cloud app with a lower CCL.'
+        - name: client_bytes
+          type: long
+          description: Total number of bytes uploaded from client to server.
+        - name: client_packets
+          type: long
+          description: Total number of packets uploaded from client to server.
+        - name: computer_name
+          type: keyword
+          description: Computer name of the end point.
+        - name: conn_duration
+          type: long
+          description: Duration of the connection in milliseconds. Useful for querying long-lived sessions.
+        - name: conn_endtime
+          type: date
+          description: Connection end time.
+        - name: conn_starttime
+          type: date
+          description: Connection start time.
+        - name: connection_id
+          type: keyword
+          description: Each connection has a unique ID. Shows the ID for the connection event.
+        - name: connection_type
+          type: keyword
+          description: EndPoint DLP connection mode.
+        - name: destination_file_directory
+          type: keyword
+          description: The directory and filename of the destination file on the endpoint.
+        - name: destination_file_name
+          type: keyword
+          description: Endpoint DLP destination file name.
+        - name: destination_file_path
+          type: keyword
+          description: Endpoint DLP destination file path.
+        - name: device
+          type: keyword
+          description: Device type from where the user accessed the cloud app. It could be Macintosh Windows device, iPad etc.
+        - name: device_classification
+          type: keyword
+          description: Designation of device as determined by the Netskope Client as to whether the device is managed or not.
+        - name: device_sn
+          type: keyword
+          description: Device serial number.
+        - name: device_type
+          type: keyword
+          description: Device type.
+        - name: dlp_file
+          type: keyword
+          description: File/Object name extracted from the file/object.
+        - name: dlp_incident_id
+          type: keyword
+          description: Incident ID associated with sub-file in DLP scans. In the case of main file, this is same as the parent incident ID.
+        - name: dlp_is_unique_count
+          type: boolean
+          description: True or false depending upon if rule is unique counted per rule data.
+        - name: dlp_match_info
+          type: keyword
+          description: DLP match info carries the details about DLP profile and rule info along with the violation count information.
+        - name: dlp_parent_id
+          type: keyword
+          description: Incident ID associated with main container (or non-container) file that was scanned.
+        - name: dlp_profile
+          type: keyword
+          description: DLP profile name.
+        - name: dlp_profile_name
+          type: keyword
+          description: DLP profile name.
+        - name: dlp_rule
+          type: keyword
+          description: DLP rule that triggered the scans.
+        - name: dlp_rule_count
+          type: long
+          description: Count of dlp rule hits.
+        - name: dlp_rule_severity
+          type: keyword
+          description: Severity of DLP rule.
+        - name: dlp_unique_count
+          type: long
+          description: Integer value of number of unique matches seen per rule data. Only present if rule is uniquely counted.
+        - name: dns_profile
+          type: keyword
+          description: DNS profiles allow you to control, inspect, and log all or blocked DNS traffic. When configuring a DNS profile, you can configure the actions taken for specific domain categories and choose to allow or block specific domains. This field contains the configuration file name.
+        - name: domain
+          type: keyword
+          description: Domain value. This will hold the host header value or SNI or extracted from absolute URI.
+        - name: domain_ip
+          type: ip
+          description: Domain IP address.
+        - name: driver
+          type: keyword
+          description: Driver name used by endpoint device.
+        - name: dst_country
+          type: keyword
+          description: Application's two-letter country code as determined by the Maxmind or IP2Location Geo Database.
+        - name: dst_geoip_src
+          type: long
+          description: Source from where the location of Destination IP was derived.
+        - name: dst_latitude
+          type: double
+          description: Latitude of the Application as determined by the Maxmind or IP2Location Geo Database.
+        - name: dst_latitude_keyword
+          type: keyword
+        - name: dst_location
+          type: keyword
+          description: Application's city as determined by the Maxmind or IP2Location Geo database.
+        - name: dst_longitude
+          type: double
+          description: Longitude of the Application as determined by the Maxmind or IP2Location Geo Database.
+        - name: dst_longitude_keyword
+          type: keyword
+        - name: dst_region
+          type: keyword
+          description: Application's state or region as determined by the Maxmind or IP2Location Geo Database.
+        - name: dst_timezone
+          type: keyword
+          description: Destination timezone.
+        - name: dst_zipcode
+          type: keyword
+          description: Application's zip code as determined by the Maxmind or IP2Location Geo Database.
+        - name: dsthost
+          type: keyword
+          description: Destination host.
+        - name: dstip
+          type: ip
+          description: IP address where the destination app is hosted.
+        - name: dstport
+          type: long
+          description: Destination port.
+        - name: end_time
+          type: date
+          description: When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence.
+        - name: executable_hash
+          type: keyword
+          description: Flag to indicate if executable_hash is signed or not.
+        - name: executable_signed
+          type: boolean
+          description: Flag to indicate if executable_hash is signed or not.
+        - name: file_origin
+          type: keyword
+          description: File origin source location.
+        - name: file_path
+          type: keyword
+          description: Path of the file in the application.
+        - name: file_size
+          type: long
+          description: Size of the file in bytes.
+        - name: file_type
+          type: keyword
+          description: File type as detected by Netskope Solutions.
+        - name: from_user
+          type: keyword
+          description: Email address used to login to the SAAS app.
+        - name: hostname
+          type: keyword
+          description: User's Host name.
+        - name: incident_id
+          type: keyword
+          description: Unique Incident ID associated with main container (or non-container) file that was scanned.
+        - name: inline_dlp_match_info
+          type: keyword
+          description: Inline DLP match info carries the details about DLP profile and rule info along with the violation count information.
+        - name: instance
+          type: keyword
+          description: Instance associated with an organization application instance.
+        - name: instance_id
+          type: keyword
+          description: Unique ID associated with an organization application instance.
+        - name: ip_protocol
+          type: keyword
+          description: Assigned Internet Protocol Number.
+        - name: latest_incident_id
+          type: keyword
+          description: Latest incident ID captured by DLP backend services.
+        - name: location
+          type: keyword
+          description: A string that specifies the physical location of the printer (for example, Bldg. 38, Room 1164).
+        - name: managed_app
+          type: keyword
+          description: Whether or not the app in question is managed.
+        - name: managementID
+          type: keyword
+          description: Field value is attached to Devices Host Info Object.
+        - name: md5
+          type: keyword
+          description: MD5 value of the file content.
+        - name: mime_type
+          type: keyword
+          description: A media type (also known as a Multipurpose Internet Mail Extensions or MIME type) indicates the nature and format of a document, file, or assortment of bytes.
+        - name: netskope_pop
+          type: keyword
+          description: Netskope Data Plane name.
+        - name: network_session_id
+          type: keyword
+          description: Network session ID used by NPA services.
+        - name: nsdeviceuid
+          type: keyword
+          description: Device ID attached to Devices Host Info Object.
+        - name: numbytes
+          type: long
+          description: Total number of bytes that were transmitted for the connection - numbytes = client_bytes + server_bytes.
+        - name: oauth
+          type: keyword
+          description: Oauth is a standard that allows applications to access a user's data without the user needing to share their password. This field holds value if it was used or not.
+        - name: object
+          type: keyword
+          description: Name of the object which is being acted on. It could be a filename, folder name, report name, document name, etc.Incident object name and the value of the field represents the object details of the incident triggered.
+        - name: object_id
+          type: keyword
+          description: Unique ID associated with an object.
+        - name: object_type
+          type: keyword
+          description: Type of the object which is being acted on. Object type could be a file, folder, report, document, message, etc.
+        - name: org
+          type: keyword
+          description: Search for events from a specific organization. Organization name is derived from the user ID.
+        - name: organization_unit
+          type: keyword
+          description: Org Units for which the event correlates to. This ties to user information extracted from Active Directory using the Directory Importer/AD Connector application.
+        - name: os
+          type: keyword
+          description: Operating system of the host who generated the event.
+        - name: os_details
+          type: keyword
+          description: Detailed OS version string.
+        - name: os_family
+          type: keyword
+          description: Operating system type of the end user's device.
+        - name: os_user_name
+          type: keyword
+          description: Username on the local machine that performs action.
+        - name: os_version
+          type: keyword
+          description: OS version of the host.
+        - name: owner
+          type: keyword
+          description: Owner or the user information of the file object in DLP.
+        - name: owner_pdl
+          type: keyword
+          description: File's owner Preferred Data Location derived from owner uid(OneDrive) and site URL(SharePoint).
+        - name: page
+          type: keyword
+          description: The URL of the originating page.
+        - name: parent_id
+          type: keyword
+          description: Parent ID ( event_id ) of an alert.
+        - name: pid
+          type: long
+          description: 'Process ID that is doing file processing ex: A process that trigger the evaluation.'
+        - name: policy
+          type: keyword
+          description: Name of the policy configured by an admin.
+        - name: policy_action
+          type: keyword
+          description: Endpoint DLP Policy action planned according to the policy. User can override the planned action or actual enforcement action might not be implemented.
+        - name: policy_name
+          type: keyword
+          description: Endpoint DLP Name of matching policy.
+        - name: policy_name_enforced
+          type: keyword
+          description: Actual policy name used by Endpoint DLP Policy.
+        - name: policy_version
+          type: keyword
+          description: Endpoint DLP Policy name configured version number.
+        - name: pop_id
+          type: keyword
+          description: Netskope MPs/DPs unique id.
+        - name: port
+          type: keyword
+          description: A string that identifies the port(s) used to transmit data to the printer. If a printer is connected to more than one port, the names of each port must be separated by commas (for example, LPT1:,LPT2:,LPT3:).
+        - name: process_cert_subject
+          type: keyword
+          description: the subject of the certificate that signed the process.
+        - name: process_name
+          type: keyword
+          description: 'Endpoint process Name For example: native application for Printer on User''s Laptop.'
+        - name: process_path
+          type: keyword
+          description: The path to the process that performed the action on the endpoint.
+        - name: product_id
+          type: keyword
+          description: It's Part of USB specification. Used to identify a USB device.
+        - name: publisher_cn
+          type: keyword
+          description: The publisher CName.
+        - name: record_type
+          type: keyword
+          description: Indicate the event type of the record.
+        - name: referer
+          type: keyword
+          description: Referer URL associated with an activity in a cloud app.Referer URL of the application(with http) that the user visited as provided by the log or data plane traffic.
+        - name: req_cnt
+          type: long
+          description: Total number of HTTP requests (equal to number of transaction events for this page event) sent from client to server over one underlying TCP connection.
+        - name: request_id
+          type: keyword
+          description: Unique id attached to proxy activity events and dlp activity events.
+        - name: resp_cnt
+          type: long
+          description: Total number of HTTP responses (equal to number of transaction events for this page event) from server to client.
+        - name: response_time
+          type: long
+          description: Response time in milliseconds from the server/app as captured by NPA solution.
+        - name: sanctioned_instance
+          type: keyword
+          description: A sanctioned instance is a company owned account in an external application. A value of yes indicates that the company has granted    access for the specific SaaS / IaaS account to Netskope. A value of no    represents a personal user account or an enterprise account not    authorized by the enterprise Administrator.
+        - name: server_bytes
+          type: long
+          description: Total number of downloaded bytes from server to client.
+        - name: server_packets
+          type: long
+          description: Total number of server packet from server to client.
+        - name: session_duration
+          type: long
+          description: Session duration of a session.
+        - name: severity
+          type: keyword
+          description: Severity used by watchlist and malware alerts. Severity of the incident.
+        - name: sha256
+          type: keyword
+          description: Sha256 value of a file.
+        - name: shared_with
+          type: keyword
+          description: Email ids with whom a document is shared with.
+        - name: site
+          type: keyword
+          description: For traffic_type = CloudApp, site = app and for traffic_type = Web, it will be the second level domain name + top-level domain name. For example, in www.cnn.com, it is cnn.com.
+        - name: smtp_to
+          type: keyword
+          description: SMTP Proxy will parse the smtp_to field in the email and send them to DLP in the event object. List contains the The recipients from the SMTP envelope.
+        - name: src_country
+          type: keyword
+          description: User's country's two-letter Country Code as determined by the Maxmind or IP2Location Geo Database.
+        - name: src_geoip_src
+          type: long
+          description: Source from where the location of Source IP was derived.
+        - name: src_latitude
+          type: double
+          description: Latitude of the user as determined by the Maxmind or IP2Location Geo database.
+        - name: src_latitude_keyword
+          type: keyword
+        - name: src_location
+          type: keyword
+          description: User's city as determined by the Maxmind or IP2Location Geo Database.
+        - name: src_longitude
+          type: double
+          description: Longitude of the user as determined by the Maxmind or IP2Location Geo database.
+        - name: src_longitude_keyword
+          type: keyword
+        - name: src_region
+          type: keyword
+          description: Source state or region as determined by the Maxmind or IP2Location Geo database.
+        - name: src_timezone
+          type: keyword
+          description: Source timezone for the location at which the event is created. Shows the long format timezone designation.
+        - name: src_zipcode
+          type: keyword
+          description: Source zip code for the location at which the event is created as determined by the Maxmind or IP2Location Geo Database.
+        - name: srcip
+          type: ip
+          description: IP address of source/user where event is created.
+        - name: srcport
+          type: long
+          description: Port used by the source/user where event is created. It is used by NPA applications.
+        - name: start_time
+          type: date
+          description: Capture NPA user's session start time.
+        - name: status
+          type: keyword
+          description: Specific status name used by the enduser for DLP incidents.
+        - name: telemetry_app
+          type: keyword
+          description: Typically SaaS app web sites use web analytics code within the pages to gather analytic data.When a SaaS app action or page is shown, there is subsequent traffic generated to tracking apps such as doubleclick.net, Optimizely, etc. These tracking apps are listed if applicable in theTelemetry App field.
+        - name: threat_type
+          type: keyword
+          description: Type of threat detected.
+        - name: timestamp
+          type: date
+          description: Timestamp when the event/alert happened. Event timestamp in Unix epoch format.
+        - name: to_user
+          type: keyword
+          description: Used when a file is moved from user A to user B. Shows the email address of user B.
+        - name: total_packets
+          type: long
+          description: Total value of Server Packets + Client Packets.
+        - name: traffic_type
+          type: keyword
+          description: 'Type of the traffic: CloudApp or Web. CloudApp indicates CASB and web indicates HTTP traffic. Web traffic is only captured for inline access method. It is currently not captured for Risk Insights.'
+        - name: transaction_id
+          type: keyword
+          description: Unique ID for a given request/response.
+        - name: tss_mode
+          type: keyword
+          description: Malware scanning mode, specifies whether it's Real-time Protection or API Data Protection.
+        - name: tunnel_id
+          type: keyword
+          description: Shows the Client installation ID. Only available for the Client steering configuration.
+        - name: type
+          type: keyword
+          description: Shows if it is an application event or a connection event. Application events are recorded to track user events inside a cloud app. Connection events shows the actual HTTP connection.
+        - name: unc_path
+          type: keyword
+          description: The Universal Naming Convention path of the network file share, or printer.
+        - name: ur_normalized
+          type: keyword
+          description: All lower case user email.
+        - name: url
+          type: wildcard
+          description: URL of the application that the user visited as provided by the log or data plane traffic.
+        - name: user
+          type: keyword
+          description: User email.
+        - name: user_confidence_index
+          type: long
+          description: UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user\u2019s behavior is. The lower UCI is, the more risky the user behavior is. The UCI starts from an initial value and is deducted an amount when the user\u2019s behavior is detected to be anomaly by UEBA engine. The user\u2019s UCI is daily-based, i.e. UEBA engine will create the new UCI with an initial score for users when an UTC day starts. Each user is supposed to start from 1000, but his/her previous day performance will rollover to current day and therefore impact the initial UCI.
+        - name: user_confidence_level
+          type: keyword
+          description: UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user\u2019s behavior is. User confidence level field holds risk level values.
+        - name: user_id
+          type: keyword
+          description: User email.
+        - name: useragent
+          type: keyword
+          description: The User-Agent request header value.
+        - name: userip
+          type: ip
+          description: IP address of User.
+        - name: userkey
+          type: keyword
+          description: User ID or email.
+        - name: vendor_id
+          type: keyword
+          description: Netskope's Vendor id.
