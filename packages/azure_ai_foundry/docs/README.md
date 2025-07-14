@@ -6,9 +6,7 @@ Azure AI Foundry provides a comprehensive suite of AI services that enable devel
 
 ### Logs
 
-The Azure AI Foundry logs data stream captures the gateway log events.
-
-These are the supported Azure log categories:
+The Azure AI Foundry logs data stream captures the gateway log events. These are the supported Azure log categories:
 
 | Data Stream |       Log Category       |
 |:-----------:|:------------------------:|
@@ -20,11 +18,11 @@ These are the supported Azure log categories:
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
 
-#### Native Logging
+#### Native logging
 
-The Azure AI Foundry provides native logging and monitoring to track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
+The Azure AI Foundry provides native logging and monitoring to track the telemetry of the service. The `Audit` and `RequestResponse` log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
 
-#### API Gateway Logs
+#### API Gateway logs
 
 The API Management services provide the advanced logging capabilities. The `ApiManagementGatewayLogs` category comes under the advanced logging. This is not directly available in the Azure AI Foundry service itself. You have to set up the API Management services in Azure to access the Azure AI Foundry models. When the setup is complete, add the diagnostic setting for the API Management service.
 
@@ -32,7 +30,7 @@ For more information on how to implement the comprehensive solution using API Ma
 
 **Diagnostic settings**
 
-- Enable the category `Logs related to ApiManagement Gateway` to stream the logs to the event hub.
+Enable the category `Logs related to ApiManagement Gateway` to stream the logs to the event hub.
 
 ```text
    ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
@@ -45,7 +43,7 @@ For more information on how to implement the comprehensive solution using API Ma
 
 The metrics data stream collects the cognitive service metrics that is specific to the Azure AI Foundry service.
 
-#### Key Metrics
+#### Key metrics
 
 **Model HTTP Request Metrics:**
 - `Requests`: Total number of calls made to the model API over a period of time.
@@ -66,10 +64,9 @@ Follow these [step-by-step instructions](https://docs.elastic.co/integrations/az
 
 #### Data stream specific configuration notes
 
-`Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `azure_ai_foundry` should have a value of `300s` or multiple of `300s`for relevant results.
+`Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option for `azure_ai_foundry` should have a value of `300s` or multiple of `300s`for relevant results.
 
-`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
-Should return a list of resources.
+`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`. Should return a list of resources.
 
 `Resource Groups`:: (_[]string_) This option will return all Azure AI Foundry services inside the resource group.
 
@@ -77,7 +74,7 @@ If no resource filter is specified, then all Azure AI Foundry services inside th
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
-### Logs Reference
+### Logs reference
 
 An example event for `logs` looks as following:
 
@@ -330,7 +327,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | data_stream.type | Data stream type. | constant_keyword |
 
 
-### Metrics Reference
+### Metrics reference
 
 The Azure AI Foundry metrics provide insights into the performance and usage of your AI resources. These metrics help in monitoring and optimizing your deployments.
 
