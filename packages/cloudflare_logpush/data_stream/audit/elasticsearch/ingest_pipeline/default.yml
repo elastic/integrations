@@ -59,9 +59,9 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-      - append:
-          field: error.message
-          value: "{{{_ingest.on_failure_message}}}"
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - set:
       tag: set_cloudflare_logpush_audit_timestamp
       field: cloudflare_logpush.audit.timestamp
@@ -223,22 +223,23 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-        description: Drops null/empty values recursively.
-        lang: painless
-        source: |
-          boolean dropEmptyFields(Object object) {
-            if (object == null || object == "") {
-              return true;
-            } else if (object instanceof Map) {
-              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-              return (((Map) object).size() == 0);
-            } else if (object instanceof List) {
-              ((List) object).removeIf(value -> dropEmptyFields(value));
-              return (((List) object).length == 0);
-            }
-            return false;
+      tag: script_drops_null_empty_values_recursively
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
           }
-          dropEmptyFields(ctx);
+          return false;
+        }
+        dropEmptyFields(ctx);
 on_failure:
   - append:
       tag: append_error_message
