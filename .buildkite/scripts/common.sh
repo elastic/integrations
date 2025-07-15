@@ -636,7 +636,7 @@ get_from_changeset() {
 
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
-            from="origin/${BUILDKITE_BRANCH}^"
+            from=$(git rev-parse "origin/${BUILDKITE_BRANCH}^")
         fi
     fi
 
@@ -648,7 +648,7 @@ get_to_changeset() {
     local to="${BUILDKITE_COMMIT}"
 
     if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
-        to="origin/${BUILDKITE_BRANCH}"
+        to=$(git rev-parse "origin/${BUILDKITE_BRANCH}")
     fi
     echo "${to}"
 }
@@ -804,7 +804,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^elastic_package_registry$'
 }
 
 check_package() {

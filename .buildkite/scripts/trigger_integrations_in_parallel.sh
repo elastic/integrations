@@ -38,6 +38,11 @@ if [[ "${to}" == "" ]]; then
 fi
 
 echo "Checking with commits: from: '${from}' to: '${to}'"
+echo "Files modified between ${from} and ${to}:"
+git diff --name-only "${from}" "${to}"
+
+echo "Files modified between e4a55d5f5c6ceb5947a6539a3a0a4f3c63fcb010 and origin/main:"
+git diff --name-only "e4a55d5f5c6ceb5947a6539a3a0a4f3c63fcb010" "origin/main"
 
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
