@@ -7,6 +7,8 @@ It has the following data streams:
 - **`intelligence`** Indicators retrieved from the Anomali ThreatStream API's intelligence endpoint.
 - **`threatstream`** Indicators received from the Anomali ThreatStream Elastic Extension, which is additional software. This is deprecated.
 
+If you run in the cloud (Cloud Hosted of Serverless), this integration is available [agentless](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) from cluster version 8.17 onward - if this criteria is met, you don't need to install an Elastic Agent to gather these metrics.
+
 ## Logs
 
 ### Expiration of Indicators of Compromise (IOCs)
