@@ -35,11 +35,13 @@ BUILDKITE_API_TOKEN_PATH=kv/ci-shared/platform-ingest/buildkite_token
 
 EC_DATA_PATH=secret/ci/elastic-integrations/ec_data
 
-# variables required for terraform
+export JOB_GCS_BUCKET_INTERNAL="ecosystem-ci-internal"
+
+# ---- start variables required by terrafrom ------
+# https://github.com/elastic/elastic-package/blob/f8f2f15a04bcc25eca00887fb147bd7f8a0f32b3/internal/servicedeployer/_static/terraform_deployer.yml#L8
+
 export ENVIRONMENT="ci"
 export REPO="${REPO_NAME}"
-
-export JOB_GCS_BUCKET_INTERNAL="ecosystem-ci-internal"
 
 branch_name_label() {
     local branch="$1"
@@ -67,6 +69,15 @@ export BUILD_ID="${BUILDKITE_BUILD_NUMBER}"
 # CREATED_DATE = "${new Date().getTime()}"
 CREATED_DATE=$(date +%s%3N)
 export CREATED_DATE
+
+if [[ "${ELASTIC_PACKAGE_CUSTOMIZE_TERRAFORM_RUN_ID}" == "true" ]]; then
+    # Required to customize the RunID value to use in terraform resources
+    # Get the latest 4 digits of the BUILDKITE_STEP_ID
+    export ELASTIC_PACKAGE_PREFIX_TERRAFORM_RUN_ID="${BUILDKITE_STEP_ID: -4}"
+    echo "Using Terraform prefix RunID: ${ELASTIC_PACKAGE_PREFIX_TERRAFORM_RUN_ID}"
+fi
+
+# ----end variables required by terrafrom ------
 
 if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     # first upload pipeline does not have the environment variables defined in the YAML

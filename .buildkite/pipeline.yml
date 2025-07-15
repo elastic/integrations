@@ -30,9 +30,12 @@ env:
   ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI: "${ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI:-false}"
   # Disable checking for newer versions
   ELASTIC_PACKAGE_CHECK_UPDATE_DISABLED: "true"
-  # Add prefix to the terraform Run ID used by elastic-package
-  # ELASTIC_PACKAGE_PREFIX_TERRAFORM_RUN_ID: "${BUILDKITE_COMMIT:0:4}"
+  # Customize terraform Run ID used by elastic-package
+  # It requires to be customized in .buildkite/hooks/pre-command
+  # Defining here an expression like this:
   # ELASTIC_PACKAGE_PREFIX_TERRAFORM_RUN_ID: "${BUILDKITE_STEP_ID: -4}"
+  # It always gets the value "BUILDKITE_STEP_ID" from the "Upload pipeline" step
+  ELASTIC_PACKAGE_CUSTOMIZE_TERRAFORM_RUN_ID: "true"
   # Force to use a specific RunID in system tests based on terraform deployer
   # ELASTIC_PACKAGE_SET_TERRAFORM_RUN_ID: "78346"
 
@@ -42,9 +45,6 @@ steps:
     command: "echo 'Get reference from main'"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
-    env:
-      ELASTIC_PACKAGE_PREFIX_TERRAFORM_RUN_ID: "${BUILDKITE_STEP_ID: -4}"
-      
 
   - label: ":white_check_mark: Check go sources"
     key: "check"
