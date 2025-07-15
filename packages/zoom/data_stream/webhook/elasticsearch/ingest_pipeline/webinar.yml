@@ -89,6 +89,10 @@ processors:
     value: '{{{zoom.participant.user_name}}}'
     ignore_empty_value: true
     if: ctx.zoom?.participant != null
+- set:
+    field: user.email
+    copy_from: zoom.participant.email
+    ignore_empty_value: true
 
 #
 # set user.* from registrant
@@ -141,6 +145,51 @@ processors:
     value: "{{{zoom.participant.id}}}"
     allow_duplicates: false
     if: ctx.zoom?.participant?.id != null
+- append:
+    field: related.user
+    value: "{{{zoom.participant.user_id}}}"
+    allow_duplicates: false
+    if: ctx.zoom?.participant?.user_id != null
+- append:
+    field: related.user
+    value: "{{{zoom.participant.participant_uuid}}}"
+    allow_duplicates: false
+    if: ctx.zoom?.participant?.participant_uuid != null
+
+- convert:
+    field: zoom.participant.public_ip
+    target_field: source.ip
+    type: ip
+    if: ctx.zoom?.participant?.public_ip != null && ctx.zoom.participant.public_ip != ''
+    ignore_failure: true
+- append:
+    field: related.ip
+    value: '{{{source.ip}}}'
+    if: ctx.source?.ip != null
+    allow_duplicates: false
+- remove:
+    field: zoom.participant.public_ip
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+      - asn
+      - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
 
 on_failure:
   - set:
