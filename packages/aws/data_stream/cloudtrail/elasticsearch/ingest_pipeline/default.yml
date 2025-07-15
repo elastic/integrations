@@ -897,12 +897,13 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
+      tag: script_cache_flattened_duplicates_configuration
       source: |-
         ctx._conf = ctx._conf ?: [:];
         ctx._conf.keep_flattened_duplicates = ctx._conf.retain == null ||
           ctx._conf.retain.contains('all') ||
           ctx._conf.retain.contains('flattened') ||
-          ctx._conf.retain.contains('minimal')
+          ctx._conf.retain.contains('minimal');
   - script:
       description: >
         Set values in aws.cloudtrail.request_parameters, aws.cloudtrail.response_elements, and
@@ -914,6 +915,7 @@ processors:
         sub-fields of these field MUST NEVER be renamed or otherwise mutated, that is, they
         MUST NEVER be an LHS in any processor.
       lang: painless
+      tag: script_duplicate_rules_fields
       source: |-
         if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail?.flattened == null) {
           ctx.aws.cloudtrail.flattened = [:];
@@ -973,7 +975,7 @@ processors:
       source: >
         if (ctx.json?.resources instanceof List) {
           def resources = ctx.json.resources;
-          
+
           Map uniqueResources = [:];
           for (def originalResource : resources) {
             if (originalResource instanceof Map) {
