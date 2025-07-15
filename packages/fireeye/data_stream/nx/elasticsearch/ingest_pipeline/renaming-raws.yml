@@ -12,7 +12,20 @@ processors:
   - rename:
       field: rawmsg.app_proto
       target_field: network.protocol
+      if: ctx.rawmsg.app_proto != null && !['failed','succeded'].contains(ctx.rawmsg.app_proto.toLowerCase())
       ignore_missing: true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.rawmsg?.app_proto != null && ['failed'].contains(ctx.rawmsg.app_proto.toLowerCase())
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.rawmsg?.app_proto != null && ['succeded'].contains(ctx.rawmsg.app_proto.toLowerCase())
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx.event?.outcome == null
   - rename:
       field: rawmsg.flow_id
       target_field: fireeye.nx.flow_id
@@ -45,10 +58,18 @@ processors:
       field: rawmsg.dest_port
       target_field: destination.port
       ignore_missing: true
-  - rename:
-      field: meta_sip4
-      target_field: fireeye.nx.device_ip
-      ignore_missing: true
+  - append:
+      field: observer.ip
+      tag: append_observer_ip_from_meta_sip4
+      value: "{{{json.meta_sip4}}}"
+      allow_duplicates: false
+      if: ctx.json?.meta_sip4 != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_from_meta_sip4
+      value: "{{{json.meta_sip4}}}"
+      allow_duplicates: false
+      if: ctx.json?.meta_sip4 != null
   - rename:
       field: meta_oml
       target_field: fireeye.nx.device_oml
@@ -58,9 +79,15 @@ processors:
       target_field: fireeye.nx.deviceid
       ignore_missing: true
   - rename:
-      field: meta_cbname
-      target_field: fireeye.nx.hostname
+      field: json.meta_cbname
+      target_field: observer.hostname
       ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_from_observer_hostname
+      value: "{{{observer.hostname}}}"
+      allow_duplicates: false
+      if: ctx.url?.domain != null
   # flow event type fields
   - rename:
       field: rawmsg.proto_number
@@ -112,6 +139,11 @@ processors:
       target_field: fireeye.nx.flow.reason
       if: ctx?.event?.type == 'flow'
       ignore_missing: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_flow_reason
+      copy_from: fireeye.nx.flow.reason
+      ignore_empty_value: true
   - rename:
       field: rawmsg.flow.alerted
       target_field: fireeye.nx.flow.alerted
@@ -148,6 +180,11 @@ processors:
       target_field: fireeye.nx.fileinfo.filename
       if: ctx?.event?.type == 'fileinfo'
       ignore_missing: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_fileinfo_filename
+      copy_from: fireeye.nx.fileinfo.filename
+      ignore_empty_value: true
   - rename:
       field: rawmsg.fileinfo.magic
       target_field: fireeye.nx.fileinfo.magic
@@ -158,11 +195,21 @@ processors:
       target_field: fireeye.nx.fileinfo.md5
       if: ctx?.event?.type == 'fileinfo'
       ignore_missing: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_hostname
+      copy_from: fireeye.nx.fileinfo.md5
+      ignore_empty_value: true
   - rename:
       field: rawmsg.fileinfo.size
       target_field: fireeye.nx.fileinfo.size
       if: ctx?.event?.type == 'fileinfo'
       ignore_missing: true
+  - set:
+      field: file.size
+      tag: set_file_size_from_fileinfo_size
+      copy_from: fireeye.nx.fileinfo.size
+      ignore_empty_value: true
   - rename:
       field: rawmsg.fileinfo.state
       target_field: fireeye.nx.fileinfo.state
@@ -280,6 +327,12 @@ processors:
       target_field: url.domain
       if: ctx?.event?.type == 'http'
       ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_from_url_domain
+      value: "{{{url.domain}}}"
+      allow_duplicates: false
+      if: ctx.url?.domain != null
   - rename:
       field: rawmsg.http.http_content_type
       target_field: http.request.mime_type
@@ -438,6 +491,17 @@ processors:
       target_field: tls.client.server_name
       if: ctx?.event?.type == 'tls'
       ignore_missing: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_server_name
+      copy_from: tls.client.server_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_from_destination_domain
+      value: "{{{destination.domain}}}"
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
   - rename:
       field: rawmsg.tls.subject
       target_field: tls.client.subject
