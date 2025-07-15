@@ -139,7 +139,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.annotations.pod-security_kubernetes_io/audit-violations |  | text |
 | kubernetes.audit.apiVersion | Audit event api version | keyword |
 | kubernetes.audit.auditID | Unique audit ID, generated for each request | keyword |
-| kubernetes.audit.impersonatedUser.extra | Any additional information provided by the authenticator | object |
+| kubernetes.audit.impersonatedUser.extra.\* | Any additional information provided by the authenticator | object |
 | kubernetes.audit.impersonatedUser.groups | The names of groups this user is a part of | keyword |
 | kubernetes.audit.impersonatedUser.uid | A unique value that identifies this user across time. If this user is deleted and another user by the same name is added, they will have different UIDs | keyword |
 | kubernetes.audit.impersonatedUser.username | The name that uniquely identifies this user among all active users | keyword |
