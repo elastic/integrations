@@ -28,27 +28,6 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - This data stream doesn't support setting a Role ARN.
   - Ensure your IAM has the `inspector2:ListFindings` permission granted. Without this permission, API requests will be denied.
 
-## Troubleshooting
-
-### Breaking Changes
-
-#### Support for Elastic Vulnerability Findings page.
-
-Version `4.0.0` of the AWS integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of AWS integration to ingest their enriched vulnerabilities from Amazon Inspector platform into Elastic and get insights directly from Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
-This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-aws.inspector-*` into new destination indices matching the pattern `security_solution-aws.vulnerability_latest-*`. The Elastic Vulnerability Findings page will display vulnerabilities based on the destination indices.
-
-For existing users of AWS integration, before upgrading to `4.0.0` please ensure following requirements are met:
-
-1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
-2. To use transforms, users must have:
-   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
-   - management features visible in the Kibana space, and
-   - security privileges that:
-     - grant use of transforms, and
-     - grant access to source and destination indices
-   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
-3. Because the latest copy of vulnerabilities is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
-
 ## Logs
 
 ### Inspector
@@ -61,9 +40,9 @@ An example event for `inspector` looks as following:
 {
     "@timestamp": "2025-06-05T23:23:16.162Z",
     "agent": {
-        "ephemeral_id": "2554ae5a-1388-4d83-9544-0c6003d0f29e",
-        "id": "15be52d9-92e5-402a-95e9-cff6f6cd7064",
-        "name": "elastic-agent-30265",
+        "ephemeral_id": "788993b6-dba1-4abf-a351-971772a30ab3",
+        "id": "f39725b1-2457-4583-bd15-dc0a928f195e",
+        "name": "elastic-agent-65036",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -298,14 +277,14 @@ An example event for `inspector` looks as following:
     },
     "data_stream": {
         "dataset": "aws.inspector",
-        "namespace": "58062",
+        "namespace": "64174",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "15be52d9-92e5-402a-95e9-cff6f6cd7064",
+        "id": "f39725b1-2457-4583-bd15-dc0a928f195e",
         "snapshot": true,
         "version": "8.19.0"
     },
@@ -314,10 +293,10 @@ An example event for `inspector` looks as following:
         "category": [
             "vulnerability"
         ],
-        "created": "2025-07-10T13:37:11.021Z",
+        "created": "2025-07-15T04:04:32.124Z",
         "dataset": "aws.inspector",
         "id": "CVE-2025-22872|i-0fabcdefabcdef50b|{0=golang.org/x/net, 1=nerdctl}|{0=v0.1.0, 1=v0.30.0, 2=2.0.4}|2025-06-05T23:23:16.162Z",
-        "ingested": "2025-07-10T13:37:13Z",
+        "ingested": "2025-07-15T04:04:35Z",
         "kind": "event",
         "original": "{\"awsAccountId\":\"123456789012\",\"description\":\"The tokenizer incorrectly interprets tags with unquoted attribute values that end with a solidus character (/) as self-closing. When directly using Tokenizer, this can result in such tags incorrectly being marked as self-closing, and when using the Parse functions, this can result in content following such tags as being placed in the wrong scope during DOM construction, but only when tags are in foreign content (e.g. \\u003cmath\\u003e, \\u003csvg\\u003e, etc contexts).\",\"epss\":{\"score\":0.00024},\"exploitAvailable\":\"NO\",\"findingArn\":\"arn:aws:inspector2:us-east-2:123456789012:finding/fb6294abcdef0123456789abcdef8123\",\"firstObservedAt\":1748539687.919,\"fixAvailable\":\"YES\",\"inspectorScore\":6.5,\"inspectorScoreDetails\":{\"adjustedCvss\":{\"adjustments\":[],\"cvssSource\":\"NVD\",\"score\":6.5,\"scoreSource\":\"NVD\",\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"version\":\"3.1\"}},\"lastObservedAt\":1749165796.162,\"packageVulnerabilityDetails\":{\"cvss\":[{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"},{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"}],\"referenceUrls\":[\"https://groups.google.com/g/golang-announce/c/ezSKR9vqbqA\",\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-981.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-064.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-980.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-063.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-979.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\",\"https://alas.aws.amazon.com/AL2/ALAS-2025-2863.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\"],\"relatedVulnerabilities\":[],\"source\":\"NVD\",\"sourceUrl\":\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"vendorCreatedAt\":1744827364,\"vendorSeverity\":\"MEDIUM\",\"vendorUpdatedAt\":1747437319,\"vulnerabilityId\":\"CVE-2025-22872\",\"vulnerablePackages\":[{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.1.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/kubelet\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"arch\":\"X86_64\",\"epoch\":0,\"fixedInVersion\":\"0:2.0.5-1.amzn2.0.1\",\"name\":\"nerdctl\",\"packageManager\":\"OS\",\"release\":\"1.amzn2.0.1\",\"remediation\":\"yum update nerdctl\",\"version\":\"2.0.4\"}]},\"remediation\":{\"recommendation\":{\"text\":\"None Provided\"}},\"resources\":[{\"details\":{\"awsEc2Instance\":{\"iamInstanceProfileArn\":\"arn:aws:iam::123456789012:instance-profile/eks-0012345a-1234-5678-1234-6c1abcdef012\",\"imageId\":\"ami-0e0f0123456789abd\",\"ipV4Addresses\":[\"10.90.1.245\",\"10.90.1.45\",\"10.90.1.168\",\"10.90.1.157\",\"1.128.0.1\",\"10.90.1.103\",\"10.90.1.197\",\"10.90.1.220\",\"10.90.1.86\",\"10.90.1.29\",\"10.90.1.18\",\"10.90.1.181\",\"10.90.1.161\",\"10.90.1.229\",\"10.90.1.108\",\"10.90.1.219\",\"10.90.1.9\",\"10.90.1.106\",\"10.90.1.206\"],\"ipV6Addresses\":[],\"launchedAt\":1748534768,\"platform\":\"AMAZON_LINUX_2\",\"subnetId\":\"subnet-0ababcdefabcdef8b\",\"type\":\"t3.medium\",\"vpcId\":\"vpc-04ab0123456789123\"}},\"id\":\"i-0fabcdefabcdef50b\",\"partition\":\"aws\",\"region\":\"us-east-2\",\"tags\":{\"aws:autoscaling:groupName\":\"eks-sei_demo_prod_linux-00c12345-abcd-1234-5678-601234567896\",\"aws:ec2launchtemplate:version\":\"6\",\"aws:eks:cluster-name\":\"sei_demo_prod\",\"eks:cluster-name\":\"sei_demo_prod\",\"eks:nodegroup-name\":\"sei_demo_prod_linux\",\"k8s.io/cluster-autoscaler/enabled\":\"true\",\"k8s.io/cluster-autoscaler/sei_demo_prod\":\"owned\",\"kubernetes.io/cluster/sei_demo_prod\":\"owned\"},\"type\":\"AWS_EC2_INSTANCE\"}],\"severity\":\"MEDIUM\",\"status\":\"ACTIVE\",\"title\":\"CVE-2025-22872 - golang.org/x/net, golang.org/x/net and 4 more\",\"type\":\"PACKAGE_VULNERABILITY\",\"updatedAt\":1749165796.162}",
         "type": [
