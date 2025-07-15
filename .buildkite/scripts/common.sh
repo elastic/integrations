@@ -636,7 +636,7 @@ get_from_changeset() {
 
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
-            from=$(git rev-parse "origin/${BUILDKITE_BRANCH}^")
+            from="origin/${BUILDKITE_BRANCH}^"
         fi
     fi
 
@@ -648,7 +648,7 @@ get_to_changeset() {
     local to="${BUILDKITE_COMMIT}"
 
     if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
-        to=$(git rev-parse "origin/${BUILDKITE_BRANCH}")
+        to="origin/${BUILDKITE_BRANCH}"
     fi
     echo "${to}"
 }
@@ -740,7 +740,12 @@ is_pr_affected() {
         return 0
     fi
 
+    local commit_merge=""
     commit_merge=$(git merge-base "${from}" "${to}")
+    if [[ "${to}" =~ ^origin/ ]]; then
+        # If the to is a branch, it is better to use the commit hash
+        to=$(git rev-parse "${to}")
+    fi
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
     # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
     # Example:
