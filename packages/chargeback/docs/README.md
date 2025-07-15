@@ -4,6 +4,11 @@ _Technical preview: This module is developed by Elastic's Customer Engineering t
 
 The Chargeback module provides FinOps visibility into Elastic usage across tenants. By integrating data from the [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) and [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integrations, it enables the determination of the value provided by each deployment, data stream, and tier. This functionality allows Centre of Excellence (CoE) teams to accurately allocate costs back to the appropriate tenant.
 
+## Setup
+
+1. Install the integration
+2. Start the transforms.
+
 ## What is FinOps?
 
 FinOps is an operational framework and cultural practice aimed at maximizing the business value of cloud usage. It facilitates timely, data-driven decision-making and promotes financial accountability through collaboration among engineering, finance, and business teams.
