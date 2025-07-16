@@ -27,7 +27,17 @@ visualizing and managing it. You can use our hosted Elasticsearch Service on
 Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your
 own hardware.
 
-Before using this integration, ensure the following:
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, please take a look at the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
+
+To collect AWS CUR reports, you would need specific AWS permissions to access the necessary data. Here's a list of permissions required for an IAM user to collect AWS CUR metrics:
+
+- `s3:GetObject`
+- `s3:ListBucket`
 
 ### AWS Cost and Usage Report (CUR) Export
 
@@ -62,16 +72,6 @@ CUR 2.0 reports are cumulative, meaning they are overwritten daily with the full
 
 Learn more:
 🔗 [Understanding CUR Overwrite Behavior](https://docs.aws.amazon.com/cur/latest/userguide/what-is-data-exports.html)
-
-### AWS Permissions
-
-The credentials used by the Elastic Agent must have appropriate AWS IAM permissions, such as:
-
-* `s3:GetObject`
-* `s3:ListBucket`
-* (optional if using role assumption) `sts:AssumeRole`
-
-Refer to the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements) for more details on required permissions and credential setup.
 
 ### Elastic Agent
 
