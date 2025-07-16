@@ -1,0 +1,322 @@
+---
+description: Pipeline for processing Ubiquiti UniFi "CEF" logs
+processors:
+
+- set:
+    field: log.level
+    copy_from: cef.severity
+    ignore_empty_value: true
+    override: false
+    tag: set_log_level_from_cef_severity
+
+#########################
+### Event Information ###
+#########################
+
+- script:
+    description: "High level default assignments based on subCategory"
+    if: ctx.cef?.extensions?.UNIFIsubCategory != null
+    lang: painless
+    params:
+      "Admin":                {"kind": "event", "type": ["info"], "category": ["host","network"]}
+      "Intrusion Prevention": {"kind": "alert", "type": ["info"], "category": ["network","intrusion_detection"]}
+      "Honeypot":             {"kind": "alert", "type": ["access","info"], "category": ["network","intrusion_detection"]}
+      "WiFi":                 {"kind": "event", "type": ["info"], "category": ["network"]}
+      "Wired":                {"kind": "event", "type": ["info"], "category": ["network"]}
+      "Devices":              {"kind": "event", "type": ["info"], "category": ["network"]}
+    source: >
+      def schemaId = ctx.cef.extensions.UNIFIsubCategory.toString();
+      def schema = params[schemaId];
+      if (schema != null) {
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.kind = schema.kind;
+        ctx.event.type = schema.type;
+        ctx.event.category = schema.category;
+      }
+    tag: set_event_kind_type_category_script_from_cef_unifisubcategory
+
+- set:
+    field: event.action
+    copy_from: cef.name
+    ignore_empty_value: true
+
+- script:
+    description: "More specific assignments based on action description"
+    if: ctx.event?.action != null
+    lang: painless
+    params:
+      "Admin Accessed UniFi Network": {"type": ["access","info"], "category": ["host","network"]}
+      "Admin Made Config Changes":    {"type": ["change","info"], "category": ["host","configuration","network"]}
+      "Admin Created New Config":     {"type": ["change","info"], "category": ["host","configuration","network"]}
+      "Admin Removed Config":         {"type": ["change","info"], "category": ["host","configuration","network"]}
+      "WiFi Client Connected":        {"type": ["access","connection","start","info"], "category": ["network"]}
+      "WiFi Client Disconnected":     {"type": ["access","connection","end","info"], "category": ["network"]}
+      "WiFi Client Roamed":           {"type": ["access","connection","change","info"], "category": ["network"]}
+      "AP Channel Change":            {"type": ["change","info"], "category": ["network"]}
+      "Device Offline":               {"type": ["info"], "category": ["network"]}
+      "Device Reconnected":           {"type": ["access","info"], "category": ["network"]}
+      "Device Updated":               {"type": ["change","info"], "category": ["network"]}
+      "Multiple Devices Reconnected": {"type": ["connection","info"], "category": ["network"]}
+      "Wired Client Connected":       {"type": ["connection","start","info"], "category": ["network"]}
+      "Wired Client Disconnected":    {"type": ["connection","end","info"], "category": ["network"]}
+      "VPN Client Connected":         {"type": ["connection","start","info"], "category": ["network"]}
+      "VPN Client Disconnected":      {"type": ["connection","end","info"], "category": ["network"]}
+      "Threat Detected and Blocked":  {"type": ["denied","info"], "category": ["network","intrusion_detection"]}
+      "Honeypot Triggered":           {"type": ["access","info"], "category": ["network","intrusion_detection"]}
+    source: >
+      def schemaId = ctx.event.action.toString();
+      def schema = params[schemaId];
+      if (schema != null) {
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.type = schema.type;
+        ctx.event.category = schema.category;
+      }
+    tag: set_event_type_category_script_from_cef_event_action
+
+# if there's changes of some kind adjust event.type to include "change" instead of "access"
+# this may have been superceded by the above, but I'm not sure I've captured all common cef.name/event.action's as yet...
+- set:
+    if: ctx.cef?.extensions?.UNIFIsettingsChanges != null && ctx.cef.extensions.UNIFIsettingsChanges != ""
+    field: event.type
+    value: ["change","info"]
+    tag: set_event_type_to_change_info_from_cef_unifisettingschanges
+
+- set:
+    if: (ctx.cef?.extensions?.UNIFIsubCategory == "Honeypot" || ctx.cef?.extensions?.UNIFIsubCategory == "Intrusion Prevention") && ctx.cef.extensions.UNIFIipsSignature != null
+    field: event.reason
+    value: "{{{cef.extensions.UNIFIipsSignature}}}"
+    tag: set_event_reason_from_cef_unifisignature
+
+- script:
+    if: ctx.cef?.extensions?.UNIFIrisk != null
+    lang: painless
+    params:
+      "low":    {"static_level": "Low", "static_score": 25.0, "static_score_norm": 25.0}
+      "medium": {"static_level": "Medium", "static_score": 50.0, "static_score_norm": 50.0}
+      "high":   {"static_level": "High", "static_score": 75.0, "static_score_norm": 75.0}
+    source: >
+      def schemaId = ctx.cef.extensions.UNIFIrisk.toString();
+      def schema = params[schemaId];
+      if (schema != null) {
+        ctx.risk = schema;
+      }
+    tag: set_risk_from_cef_unifirisk
+
+- set:
+    field: event.url
+    copy_from: cef.extensions.UNIFIreference
+    ignore_empty_value: true
+    override: false
+    tag: set_event_url_from_cef_unifireference
+
+# fix taken from existing cef integration. May not be relevant to Ubiquiti UniFi?
+- convert:
+    field: event.id
+    ignore_missing: true
+    tag: convert event.id
+    type: string
+
+#########################
+### Host Information ###
+#########################
+
+- set:
+    field: host.hostname
+    copy_from: cef.extensions.UNIFIhost
+    ignore_empty_value: true
+    override: false
+    tag: set_host_hostname_from_cef_unifihost
+
+########################
+### User Information ###
+########################
+
+- set:
+    field: user.full_name
+    copy_from: cef.extensions.UNIFIadmin
+    ignore_empty_value: true
+    override: false
+    tag: set_user_full_name_from_cef_unifiadmin
+
+##########################
+### Client/Server Information ###
+##########################
+
+# The situations in which these fields may be set are highly variable :-( 
+#   cef.extensions.UNIFIclient* + cef.extensions.UNIFIdevice* == client -> server
+#   cef.extensions.UNIFIclient* + cef.extensions.UNIFIconnectedToDevice* == client -> server
+#   cef.extensions.UNIFIdevice* + cef.extensions.UNIFIconnectedToDevice* == client -> server
+
+- set:
+    field: client.address
+    copy_from: cef.extensions.UNIFIclientIp
+    ignore_empty_value: true
+    override: false
+    tag: set_client_address_from_cef_unificlientip
+
+- set:
+    field: client.mac
+    copy_from: cef.extensions.UNIFIclientMac
+    ignore_empty_value: true
+    override: false
+    tag: set_client_mac_from_cef_unificlientmac
+
+- set:
+    field: client.domain
+    copy_from: cef.extensions.UNIFIclientHostname
+    ignore_empty_value: true
+    override: false
+    tag: set_client_domain_from_cef_unificlienthostname
+
+- set:
+    if: ctx.cef?.extensions?.UNIFIclientIp == null && ctx.cef?.extensions?.UNIFIconnectedToDeviceIp != null
+    field: client.address
+    copy_from: cef.extensions.UNIFIdeviceIp
+    ignore_empty_value: true
+    override: false
+    tag: set_client_address_from_cef_unifideviceip
+
+- set:
+    if: ctx.cef?.extensions?.UNIFIclientMac == null && ctx.cef?.extensions?.UNIFIconnectedToDeviceMac != null
+    field: client.mac
+    copy_from: cef.extensions.UNIFIdeviceMac
+    ignore_empty_value: true
+    override: false
+    tag: set_client_mac_from_cef_unifidevicemac
+
+- set:
+    if: ctx.cef?.extensions?.UNIFIclientHostname == null && ctx.cef?.extensions?.UNIFIconnectedToDeviceName != null
+    field: client.domain
+    copy_from: cef.extensions.UNIFIdeviceName
+    ignore_empty_value: true
+    override: false
+    tag: set_client_domain_from_cef_unifidevicename
+
+- set:
+    if: ctx.cef?.extensions?.UNIFIclientIp != null && ctx.cef?.extensions?.UNIFIconnectedToDeviceIp == null
+    field: server.address
+    copy_from: cef.extensions.UNIFIdeviceIp
+    ignore_empty_value: true
+    override: false
+    tag: set_server_address_from_cef_unifideviceip
+
+- set:
+    if: ctx.cef?.extensions?.UNIFIclientMac != null && ctx.cef?.extensions?.UNIFIconnectedToDeviceMac == null
+    field: server.mac
+    copy_from: cef.extensions.UNIFIdeviceMac
+    ignore_empty_value: true
+    override: false
+    tag: set_server_mac_from_cef_unifidevicemac
+
+- set:
+    if: ctx.cef?.extensions?.UNIFIclientHostname != null && ctx.cef?.extensions?.UNIFIconnectedToDeviceName == null
+    field: server.domain
+    copy_from: cef.extensions.UNIFIdeviceName
+    ignore_empty_value: true
+    override: false
+    tag: set_server_domain_from_cef_unifidevicename
+
+- set:
+    field: server.address
+    copy_from: cef.extensions.UNIFIconnectedToDeviceIp
+    ignore_empty_value: true
+    override: false
+    tag: set_server_address_from_cef_unificonnectedtodeviceip
+
+- set:
+    field: server.mac
+    copy_from: cef.extensions.UNIFIconnectedToDeviceMac
+    ignore_empty_value: true
+    override: false
+    tag: set_server_mac_from_cef_unificonnectedtodevicemac
+
+- set:
+    field: server.domain
+    copy_from: cef.extensions.UNIFIconnectedToDeviceName
+    ignore_empty_value: true
+    override: false
+    tag: set_server_domain_from_cef_unificonnectedtodevicename
+
+###########################
+### Source IP Inference ###
+###########################
+
+- set:
+    field: source.address
+    copy_from: cef.extensions.admin_ip
+    ignore_empty_value: true
+    override: false
+    tag: set_source_address_from_cef_admin_ip
+
+################################
+### Destination IP Inference ###
+################################
+
+- convert:
+    description: "Use log.syslog.hostname as destination.ip, if source.ip already exists, as in some cases UniFi is logging an event about itself and source, but it doesn't provide itself as a destination yet includes it's IP in a way that winds up in log.syslog.hostname. Ignore failures in case it's not IP and rather a hostname."
+    if: ctx.source?.address != null || ctx.source?.ip != null
+    field: log.syslog.hostname
+    target_field: destination.address
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+
+###############
+### Cleanup ###
+###############
+
+- remove:
+    if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.cef?.name != null && ctx.cef.name == ctx.message
+    description: Remove cef.name as we have the same content in message
+    field: cef.name
+
+- remove:
+    if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+    description: "Remove ECS mapped fields, duplicated data, and those that have no meaningful value to the events"
+    tag: remove_fields_if_not_preserve_duplicate_custom_fields
+    field:
+    - cef.device.event_class_id # event.code
+    - cef.device.product # observer.product
+    - cef.device.vendor  # observer.vendor
+    - cef.device.version # observer.version
+    - cef.extensions.admin_ip # source.address
+    - cef.version # not useful
+    - cef.extensions.signature_type # rule.ruleset
+    - cef.extensions.signature_id # rule.id
+    - cef.severity # log.level / event.severity
+    - cef.extensions.UNIFIreference # event.url
+    - cef.extensions.UNIFIrisk # risk.level
+    - cef.extensions.admin_ip # source.address
+    - cef.extensions.UNIFIclientIp # client.address
+    - cef.extensions.UNIFIclientMac # client.mac
+    - cef.extensions.UNIFIclientHostname # client.domain
+    - cef.extensions.UNIFIdeviceIp # client.address
+    - cef.extensions.UNIFIdeviceMac # client.mac
+    - cef.extensions.UNIFIdeviceName # client.domain
+    - cef.extensions.UNIFIconnectedToDeviceIp # server.address
+    - cef.extensions.UNIFIconnectedToDeviceMac # server.mac
+    - cef.extensions.UNIFIconnectedToDeviceName # server.domain
+    - cef.extensions.UNIFIadmin # user.full_name
+    - cef.extensions.UNIFIhost # host.hostname
+    ignore_missing: true
+
+######################
+## Failure Handling ##
+######################
+
+on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

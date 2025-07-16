@@ -1,0 +1,273 @@
+---
+description: Pipeline for processing Ubiquiti Unifi Network Firewall logs. Heavily based on the original iptables integration pipeline yet slightly different because Ubiquiti.
+processors:
+
+# Examples,
+# [VPN_LAN-D-10004] DESCR=\"Block VPN to Internal - Other\" IN=wgsrv1 OUT=br3 MAC= SRC=192.168.0.167 DST=192.168.1.2 LEN=64 TOS=00 PREC=0x00 TTL=253 ID=0 DF PROTO=TCP SPT=51523 DPT=80 SEQ=3925309497 ACK=0 WINDOW=65535 SYN URGP=0 MARK=1a0000 
+# [LOCAL_CUSTOM2-A-2147483647] DESCR=\\\"[LOCAL_CUSTOM2]Allow All T\\\" IN= OUT=br999 MAC= SRC=192.168.0.1 DST=255.255.255.255 LEN=32 TOS=00 PREC=0x00 TTL=64 ID=5692 DF PROTO=UDP SPT=45148 DPT=10001 LEN=12 UID=0 GID=0 MARK=1a0000 
+# [WAN_LAN-D-2147483647] DESCR=\\\"[WAN_LAN]Block All Traffic\\\" IN=eth7 OUT=br5 MAC=d0:21:f9:89:c2:4a:ea:04:fe:a2:00:82:86:dd:60:05:85:34 SRC=2a02:cf40:5b54:f902:3f0e:1126:568a:75d9 DST=2a02:cf40:5503:de01:3dba:d6d6:5949:f36e LEN=56 TC=0 HOPLIMIT=246 FLOWLBL=361780 PROTO=ICMPv6 TYPE=128 CODE=0 ID=1 SEQ=1 MARK=1a0000 
+# [LAN_VPN-A-2147483647] DESCR=\"[LAN_VPN]Allow All Traffic\" IN=br2 OUT=wgsrv1 MAC=d0:21:f9:89:c2:4b:58:47:ca:7c:4d:01:08:00 SRC=192.168.1.32 DST=192.168.0.2 LEN=28 TOS=00 PREC=0x00 TTL=2 ID=60827 DF PROTO=ICMP TYPE=8 CODE=0 ID=50973 SEQ=60615 MARK=1a0000 
+
+- grok:
+    field: event.original
+    patterns:
+        - '%{GREEDYDATA}%{UBIQUITI_UNIFI_LOGS}%{GREEDYDATA}'
+        - '%{GREEDYDATA}%{IPTABLES}%{GREEDYDATA}'
+        - '%{GREEDYDATA}%{UBIQUITI_UNIFI_LOGS}'
+        - '%{GREEDYDATA}%{IPTABLES}'
+    pattern_definitions:
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority>'
+        IPTABLES_HOSTNAME: '%{HOSTNAME:observer.name}%{SPACE}(%{NOTSPACE}%{SPACE})?kernel:'
+        IPTABLES_ACTION: '(:?%{WORD:event.action}:|%{IPTABLES_HOSTNAME}%{SPACE}iptables%{SPACE}%{WORD:event.action}|%{IPTABLES_HOSTNAME})'
+        UNSIGNED_INT: '[0-9]+'
+        ETHTYPE: (?:[A-Fa-f0-9]{2}):(?:[A-Fa-f0-9]{2})
+        ETHTYPE_DISCARD: (?::[A-Fa-f0-9]{2})*
+        NETFILTERMAC: (?:%{MAC:destination.mac}:%{MAC:source.mac}:%{ETHTYPE:iptables.ether_type}?%{ETHTYPE_DISCARD}|%{MAC:destination.mac}%{ETHTYPE_DISCARD}:%{ETHTYPE:iptables.ether_type}|[^\s]*?)
+        IPTABLES_ETHERNET: '(?:IN=%{DATA:observer.ingress.interface.name})? (?:OUT=%{DATA:observer.egress.interface.name})? (?:MAC=%{NETFILTERMAC})?'
+        IPTABLES_PORT_PAIR: SPT=%{UNSIGNED_INT:source.port:int} DPT=%{UNSIGNED_INT:destination.port:int}
+        IPTABLES_TCP_FLAGS: (CWR |ECE |URG |ACK |PSH |RST |SYN |FIN )*
+        IPTABLES_TCP_SEQ: SEQ=%{UNSIGNED_INT:iptables.tcp.seq:long} ACK=%{UNSIGNED_INT:iptables.tcp.ack:long}
+        IPTABLES_TCP_URGP: URGP=%{DATA:iptables.tcp.urgp}
+        IPTABLES_TCP_RESERVED_BITS: RES=0x%{BASE16NUM:iptables.tcp_reserved_bits}
+        IPTABLES_TCP_WINDOW: WINDOW=%{UNSIGNED_INT:iptables.tcp.window:int}
+        IPTABLES_MARK: MARK=%{NOTSPACE:iptables.mark}
+        IPTABLES_TCP_DETAILS: (?:%{IPTABLES_TCP_SEQ} )?%{IPTABLES_TCP_WINDOW} (?:IPTABLES_TCP_RESERVED_BITS} )?%{IPTABLES_TCP_FLAGS:iptables.tcp.flags}(?:%{IPTABLES_TCP_URGP})?
+        IPTABLES_INCOMPLETE_PACKET: INCOMPLETE \[%{UNSIGNED_INT:iptables.incomplete_bytes:int} bytes\]
+        IPTABLES_UDP_DETAILS: (?:LEN=%{UNSIGNED_INT:iptables.udp.length:int})?
+        IPTABLES_ICMP_EXTRA_ECHO: ID=%{UNSIGNED_INT:iptables.icmp.id:int} SEQ=%{UNSIGNED_INT:iptables.icmp.seq:long}
+        IPTABLES_ICMP_EXTRA_PARAM: PARAMETER=%{UNSIGNED_INT:iptables.icmp.parameter:int}
+        IPTABLES_ICMP_EXTRA_REDIRECT: GATEWAY=%{IP:iptables.icmp.redirect}
+        IPTABLES_ICMP_EXTRA: ( (?:%{IPTABLES_ICMP_EXTRA_ECHO}|%{IPTABLES_ICMP_EXTRA_PARAM}|%{IPTABLES_ICMP_EXTRA_REDIRECT}))*
+        IPTABLES_ICMP_DETAILS: TYPE=%{UNSIGNED_INT:iptables.icmp.type:int} CODE=%{UNSIGNED_INT:iptables.icmp.code:int}((%{IPTABLES_INCOMPLETE_PACKET})|%{IPTABLES_ICMP_EXTRA})
+        IPTABLES_COMMON_EXTRAS: ((UID=%{NOTSPACE:iptables.uid} )?(GID=%{NOTSPACE:iptables.gid} ))?(%{IPTABLES_MARK} )?
+        IPTABLES_PROTOCOL: PROTO=(?<network.transport>[a-zA-Z0-9]+)
+        IPTABLES_IP_PAYLOAD: '%{IPTABLES_PROTOCOL}( %{IPTABLES_PORT_PAIR})?( (%{IPTABLES_TCP_DETAILS}|%{IPTABLES_UDP_DETAILS}|%{IPTABLES_ICMP_DETAILS}|%{IPTABLES_INCOMPLETE_PACKET}) )?(?:%{IPTABLES_COMMON_EXTRAS})?'
+        IPTABLES_IP_FRAGFLAG: ((?<= )(CE|DF|MF))*
+        IPTABLES_IP_START: 'SRC=%{IPV4:source.ip} DST=%{IPV4:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int} TOS=(?:0x)?%{BASE16NUM:iptables.tos} PREC=0x%{BASE16NUM:iptables.precedence_bits} TTL=%{UNSIGNED_INT:iptables.ttl:int} ID=%{UNSIGNED_INT:iptables.id:int}(?: %{IPTABLES_IP_FRAGFLAG:iptables.fragment_flags})?(?: FRAG: %{UNSIGNED_INT:iptables.fragment_offset:int})?'
+        IPTABLES_IP: '%{IPTABLES_IP_START} %{IPTABLES_IP_PAYLOAD}'
+        IPTABLES_IPV6_START: SRC=%{IPV6:source.ip} DST=%{IPV6:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int} TC=%{UNSIGNED_INT:iptables.tos} HOPLIMIT=%{UNSIGNED_INT:iptables.ttl:int} FLOWLBL=%{UNSIGNED_INT:iptables.flow_label:int}
+        IPTABLES_IPV6: '%{IPTABLES_IPV6_START} %{IPTABLES_IP_PAYLOAD}'
+        IPTABLES: '%{IPTABLES_ETHERNET} (:?%{IPTABLES_IP}|%{IPTABLES_IPV6})'
+        UBIQUITI_FIELD: '[^-\]]*'
+        UBIQUITI_RULESET_NAME: '[^\]]*'
+        UBIQUITI_UNIFI_RULE_NAME: '%{UBIQUITI_RULESET_NAME:iptables.ubiquiti.rule_set}-%{UBIQUITI_FIELD:event.action}-%{UBIQUITI_FIELD:iptables.ubiquiti.rule_number}'
+        UBIQUITI_UNIFI_LOGS: '\[%{UBIQUITI_UNIFI_RULE_NAME:iptables.ubiquiti.rule_name}\]%{SPACE}DESCR=\\*"*%{DATA:iptables.ubiquiti.rule_description}\\*"*%{SPACE}%{IPTABLES}'
+
+- grok:
+    field: iptables.ubiquiti.rule_set
+    ignore_missing: true
+    ignore_failure: true
+    patterns:
+        - '%{UBIQUITI_FIELD:observer.ingress.zone}-%{UBIQUITI_FIELD:observer.egress.zone}'
+        - '%{UBIQUITI_FIELD:observer.ingress.zone}_%{UBIQUITI_FIELD:observer.egress.zone}'
+    pattern_definitions:
+        UBIQUITI_FIELD: '[^-]*'
+
+- rename:
+    description: Rename network.transport to network.iana_number if it is a number.
+    if: ctx.network?.iana_number == null && ctx.network.transport != null && ctx.network.transport.chars().allMatch(Character::isDigit)
+    field: network.transport
+    target_field: network.iana_number
+    ignore_missing: true
+
+- lowercase:
+    field: network.transport
+    ignore_missing: true
+
+- lowercase:
+    field: event.action
+    ignore_missing: true
+
+- script:
+    description: Enrich event with ECS fields.
+    lang: painless
+    params:
+      mappings:
+        - source:
+            object: iptables
+            key: ether_type
+          destination:
+            object: network
+            key: type
+          map:
+            08:00: ipv4
+            86:dd: ipv6
+        - source:
+            object: event
+            key: action
+          destination:
+            object: event
+            key: action
+          map:
+            d: drop
+            a: accept
+            r: reject
+        - source:
+            object: event
+            key: action
+          destination:
+            object: event
+            key: type
+          map:
+            drop: denied
+            accept: allowed
+            deny: denied
+            drop_input: denied
+            reject: denied
+        - source:
+            object: network
+            key: transport
+          destination:
+            object: network
+            key: transport
+          map:
+            icmpv6: ipv6-icmp
+    source: >-
+        for (action in params.mappings) {
+            def src = ctx[action.source.object];
+            if (src != null) {
+            Map map = action.map;
+            String key = src[action.source.key];
+            String mapping = map[key];
+            if (mapping != null) {
+                Map dst = ctx[action.destination.object];
+                if (dst == null) {
+                    dst = new HashMap();
+                    ctx[action.destination.object] = dst;
+                }
+                dst[action.destination.key] = mapping;
+            }
+            }
+        }
+
+- community_id:
+    ignore_missing: true
+    ignore_failure: true
+    icmp_type: iptables.icmp.type
+    icmp_code: iptables.icmp.code
+
+- script:
+    description: Convert bit fields to numbers.
+    lang: painless
+    params:
+      hex_fields_to_convert:
+        - ether_type
+        - tos
+        - precedence_bits
+        - tcp_reserved_bits
+    source: >-
+        def iptables = ctx['iptables'];
+        if (iptables != null) {
+            for (key in params.hex_fields_to_convert) {
+            long value = 0;
+            def field = iptables[key];
+            if (field == null) continue;
+            char[] hex = field.toLowerCase().toCharArray();
+            for (chr in hex) {
+                long v = -1;
+                if (chr >= (char) 'a' && chr <= (char) 'f') v = (long) chr - (char) 'a' + 10;
+                else if (chr >= (char) '0' && chr <= (char) '9') v = (long) chr - (char) '0';
+                if (v >= 0) {
+                value = value * 16 + v;
+                }
+                iptables[key] = value;
+            }
+            }
+        }
+- set:
+    field: event.kind
+    value: event
+
+- append:
+    field: event.category
+    value: network
+
+- append:
+    field: event.type
+    value: connection
+    if: ctx?.source?.ip != null && ctx?.destination?.ip != null
+
+- rename:
+    field: iptables.tcp_reserved_bits
+    target_field: iptables.tcp.reserved_bits
+    ignore_missing: true
+
+- split:
+    field: iptables.tcp.flags
+    separator: "\\s+"
+    ignore_missing: true
+
+- split:
+    field: iptables.fragment_flags
+    separator: "\\s+"
+    ignore_missing: true
+
+- set:
+    if: ctx?.iptables?.ubiquiti?.rule_number != null
+    field: rule.id
+    copy_from: iptables.ubiquiti.rule_number
+
+- set:
+    if: ctx?.iptables?.ubiquiti?.rule_set != null
+    field: rule.ruleset
+    copy_from: iptables.ubiquiti.rule_set
+
+- set:
+    if: ctx?.iptables?.ubiquiti?.rule_name != null
+    field: rule.name
+    copy_from: iptables.ubiquiti.rule_name
+
+- set:
+    if: ctx?.iptables?.ubiquiti?.rule_description != null
+    field: rule.description
+    copy_from: iptables.ubiquiti.rule_description
+
+- network_direction:
+    description: Use default internal networks to determine network direction
+    if: ctx._config?.internal_networks == null
+    tag: network_direction
+    ignore_missing: true
+    internal_networks:
+    - loopback
+    - private
+    - unspecified
+
+- network_direction:
+    description: Use supplied field of internal networks to determine network direction
+    if: ctx._config?.internal_networks != null
+    tag: network_direction
+    ignore_missing: true
+    internal_networks_field: _config.internal_networks
+
+#########################################
+## Clean Up "iptables" specific fields ##
+#########################################
+
+- remove:
+    if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+    description: "Remove ECS mapped fields, duplicated data, and those that have no meaningful value to the events"
+    tag: remove_fields_if_not_preserve_duplicate_custom_fields
+    field:
+    - message # parsed to various fields if we arrived here successfully...
+    - iptables.ubiquiti.rule_number # rule.id
+    - iptables.ubiquiti.rule_set # rule.ruleset
+    - iptables.ubiquiti.rule_name # rule.name
+    - iptables.ubiquiti.rule_description # rule.description
+    ignore_missing: true
+
+######################
+## Failure Handling ##
+######################
+
+on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

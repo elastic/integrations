@@ -1,0 +1,56 @@
+---
+description: Pipeline for processing Ubiquiti Unifi Network "other" logs
+processors:
+
+- append:
+    description: Add a tag to the event so we can identify it as a UniFi "other" log
+    field: tags
+    value: ubnt-unifi-other
+    allow_duplicates: false
+
+- grok:
+    description: Grok fields from more generic syslog messages so we can try and do more useful things with them later on
+    if: ctx?.tags == null || !(ctx.tags.contains('ubnt-unifi-cef') || ctx.tags.contains('ubnt-unifi-iptables'))
+    field: message
+    ignore_missing: true
+    ignore_failure: true
+    patterns:
+        - '%{GREEDYDATA}kernel: %{GREEDYDATA:message}'
+        - '%{GREEDYDATA}%{WORD:process.parent.name}\[%{POSINT:process.parent.pid:int}\]: %{WORD:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
+        - '%{GREEDYDATA}stahtd: %{WORD:process.name}\[%{POSINT:process.pid:int}\]: \[STA-TRACKER\].stahtd_dump_event\(\): %{GREEDYDATA:message}'
+        - '%{GREEDYDATA}%{WORD:process.parent.name}: %{WORD:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
+        - '%{GREEDYDATA}%{WORD:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
+
+- json:
+    description: Parse JSON format stahtd event dump
+    if: ctx.process?.name == "stahtd" && ctx.message != null
+    field: message
+    target_field: ubnt.unifi.stahtd.dump
+    ignore_failure: true
+
+######################################
+## Clean Up "other" specific fields ##
+######################################
+
+- remove:
+    description: Remove JSON text message if we just parsed it successfully
+    if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.process?.name == "stahtd" && ctx.ubnt?.unifi?.stahtd?.dump != null
+    field: message
+    ignore_missing: true
+
+######################
+## Failure Handling ##
+######################
+
+on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
