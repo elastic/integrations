@@ -59,15 +59,17 @@ processors:
       description: Script to set event_severity.
       tag: set_event_severity
       if: ctx.infoblox_threat_defense?.event?.severity != null
+#     We have mapped the severity based on the information provided in the following documentation:
+#     https://docs.infoblox.com/space/BloxOneThreatDefense/35437944/DNS+Event
       source: |-
         ctx.event = ctx.event ?: [:];
-        if (ctx.infoblox_threat_defense.event.severity >=0 && ctx.infoblox_threat_defense.event.severity <=3 ) {
+        if (ctx.infoblox_threat_defense.event.severity >= 0 && ctx.infoblox_threat_defense.event.severity <= 3 ) { // Severity level - 0,1,2,3 denotes Low severity
           ctx.event.severity = 21;
-        } else if (ctx.infoblox_threat_defense.event.severity >=4 && ctx.infoblox_threat_defense.event.severity <=6) {
+        } else if (ctx.infoblox_threat_defense.event.severity >= 4 && ctx.infoblox_threat_defense.event.severity <= 6) { // Severity level - 4,5,6 denotes Medium severity
           ctx.event.severity = 47;
-        } else if (ctx.infoblox_threat_defense.event.severity >=7 && ctx.infoblox_threat_defense.event.severity <=8) {
+        } else if (ctx.infoblox_threat_defense.event.severity == 7 || ctx.infoblox_threat_defense.event.severity == 8) { // Severity level - 7 and 8 denotes High severity
           ctx.event.severity = 73;
-        } else if (ctx.infoblox_threat_defense.event.severity >=9 && ctx.infoblox_threat_defense.event.severity <=10) {
+        } else if (ctx.infoblox_threat_defense.event.severity == 9 || ctx.infoblox_threat_defense.event.severity == 10) { // Severity level - 9 and 10 denotes Critical severity
           ctx.event.severity = 99;
         }
   - script:
@@ -154,7 +156,6 @@ processors:
         - infoblox_threat_defense.event.infoblox.rpz.rule
         - infoblox_threat_defense.event.infoblox.service_id
         - infoblox_threat_defense.event.message
-        - infoblox_threat_defense.event.severity
         - infoblox_threat_defense.event.source.address
         - infoblox_threat_defense.event.source.mac_address
         - infoblox_threat_defense.event.source.port
