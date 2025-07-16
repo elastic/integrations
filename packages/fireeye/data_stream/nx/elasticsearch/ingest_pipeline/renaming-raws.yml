@@ -12,7 +12,10 @@ processors:
   - rename:
       field: rawmsg.app_proto
       target_field: network.protocol
-      if: ctx.rawmsg.app_proto != null && !['failed','succeded'].contains(ctx.rawmsg.app_proto.toLowerCase())
+      if: >-
+        ctx.rawmsg?.app_proto != null
+        && ctx.rawmsg.app_proto.toLowerCase() != 'failed'
+        && ctx.rawmsg.app_proto.toLowerCase() != 'succeeded'
       ignore_missing: true
   - set:
       field: event.outcome
@@ -21,7 +24,7 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx.rawmsg?.app_proto != null && ['succeded'].contains(ctx.rawmsg.app_proto.toLowerCase())
+      if: ctx.rawmsg?.app_proto?.equalsIgnoreCase('succeeded') == true
   - set:
       field: event.outcome
       value: unknown
