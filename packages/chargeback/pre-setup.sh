@@ -1,24 +1,24 @@
 # The usage transforms can work on both Cloud Stack monitoring data, or Elasticsearch Integration data
 
 # Check to see which of the sources you have available.
-# Stack Monitoring
-GET .monitoring-es-8-mb/_count 
 # ES Integration
 GET monitoring-indices/_count
+# Stack Monitoring
+GET .monitoring-es-8-mb/_count 
 
-# If you have Stack monitoring in place and do not have the Elasticsearch Integration running, create this alias.
-POST _aliases
-{
-  "actions": [
-    { "add": { "index": ".monitoring-es-8-mb", "alias": "chargeback-monitoring-read", "is_write_index": false }}
-  ]
-}
-
-# If you do have the Elasticsearch Integration running, create this alias.
+# If you do have the Elasticsearch Integration running, create this alias. It is preferable to use the Elasticsearch Integration as it is more performant.
 POST _aliases
 {
   "actions": [
     { "add": { "index": "monitoring-indices", "alias": "chargeback-monitoring-read", "is_write_index": false }}
+  ]
+}
+
+# If you cannot use the Elasticsearch Integration, but have Stack monitoring in place, create this alias.
+POST _aliases
+{
+  "actions": [
+    { "add": { "index": ".monitoring-es-8-mb", "alias": "chargeback-monitoring-read", "is_write_index": false }}
   ]
 }
 
