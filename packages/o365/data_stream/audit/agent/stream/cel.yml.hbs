@@ -66,6 +66,7 @@ state:
     tenant_id: "{{azure_tenant_id}}"
     list_contents_start_time: "{{initial_interval}}"
     batch_interval: "{{batch_interval}}"
+    maximum_age: "{{maximum_age}}"
     content_types: "{{content_types}}"
 
 redact:
@@ -112,9 +113,8 @@ program: |-
   									content_type_state[0].content_created_at.as(content_type_state_created_at,
   										// if saved time inside state is more than 7 days old, then change it to 7 days.
   										max(
-  											// The 168h (7d) API age limit is expressed as 167h55m to prevent API call
-  											// delay from causing a call to fail.
-  											now() - duration("167h55m"),
+                        // Enforce the maximum age limit.
+  											now() - duration(state.base.maximum_age),
   											content_type_state_created_at.parse_time(time_layout.RFC3339)
   										).as(state_created_at_calc,
   											state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?" +
@@ -158,12 +158,12 @@ program: |-
   												{
   													"events_per_content_type": contents,
   													"content_type": content_type,
-  													// if 'contentCreated' is older than 167h55m, change it to 167h55m.
+  													// if 'contentCreated' is older than the maximum age, change it to the maximum age.
   													"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
-  														(temp_max.parse_time(time_layout.RFC3339) > now() - duration("167h55m")) ?
+  														(temp_max.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
   															temp_max
   														:
-  															(now() - duration("167h55m")).format(time_layout.RFC3339)
+  															(now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
   													),
   													"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   														(list_contents_resp.Header.NextPageUri[0])
@@ -185,10 +185,10 @@ program: |-
   												"events_per_content_type": [],
   												"content_type": content_type,
   												"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
-  													(temp_max.parse_time(time_layout.RFC3339) > now() - duration("167h55m")) ?
+  													(temp_max.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
   														temp_max
   													:
-  														(now() - duration("167h55m")).format(time_layout.RFC3339)
+  														(now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
   												),
   												"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   													(list_contents_resp.Header.NextPageUri[0])
@@ -203,10 +203,10 @@ program: |-
   										"events_per_content_type": [],
   										"content_type": content_type,
   										"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
-  											(temp_max.parse_time(time_layout.RFC3339) > now() - duration("167h55m")) ?
+  											(temp_max.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
   												temp_max
   											:
-  												(now() - duration("167h55m")).format(time_layout.RFC3339)
+  												(now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
   										),
   										"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   											(list_contents_resp.Header.NextPageUri[0])
