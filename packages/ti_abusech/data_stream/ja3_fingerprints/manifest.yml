@@ -1,0 +1,74 @@
+type: logs
+title: AbuseCH JA3 Fingerprint logs
+ilm_policy: logs-ti_abusech.ja3_fingerprints-default_policy
+streams:
+  - input: cel
+    enabled: true
+    vars:
+      - name: url
+        type: text
+        title: AbuseCH JA3 Fingerprint API
+        description: Active JA3 Fingerprint API fetches malicious JA3 fingerprints identified by SSLBL.
+        multi: false
+        required: true
+        show_user: false
+        default: https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+        description: Interval for polling indicators from AbuseCH data dump. As data dump is generated every 5 minutes, it should be greater than 5 minutes. Default `1h`.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        multi: false
+        required: false
+        show_user: false
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - abusech-ja3_fingerprints
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: cel.yml.hbs
+    title: AbuseCH JA3 Fingerprint logs using Elastic Agent
+    description: Collect AbuseCH JA3 Fingerprint logs using Elastic Agent
