@@ -1,8 +1,14 @@
 # CockroachDB Integration
 
-This integration collects metrics from [CockroachDB](https://www.cockroachlabs.com/docs/stable/developer-guide-overview.html). It includes the following datasets for receiving logs:
+This integration collects metrics from [CockroachDB](https://www.cockroachlabs.com/docs/stable/developer-guide-overview.html) and the logs from server instances.
+
+It includes the following datasets for receiving metrics:
 
 - `status` datastream: consists of status metrics
+
+And the following datasets for receiving logs:
+
+- `log` datastream: the server logs
 
 ## Compatibility
 
@@ -1712,3 +1718,30 @@ An example event for `status` looks as following:
 }
 ```
 
+
+### log
+
+The Cockroachdb logs, typically found under `/var/log/cockroachdb/cockroachdb*.log`.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cockroacdb.cluster_id | Unique identifier for the CockroachDB node. | keyword |
+| cockroacdb.instance_id | Unique identifier for the CockroachDB instance. | keyword |
+| cockroacdb.node_id | Unique identifier for the CockroachDB node. | keyword |
+| cockroachdb.event | CockroachDB version. | flattened |
+| cockroachdb.redactable | Indicates if the log message is redactable. | boolean |
+| cockroachdb.tenant_id | Data stream type. | keyword |
+| cockroachdb.version | CockroachDB version. | version |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+
+
+An example event for `log` looks as following:
+
+```json
+{}
+```

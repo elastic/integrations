@@ -1,0 +1,42 @@
+title: "CockroachDB Logs"
+type: logs
+release: experimental
+streams:
+  - input: filestream
+    enabled: false
+    title: Log
+    description: Collect CockroachDB logs with the filestream input
+    template_path: filestream.yml.hbs
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        default:
+          - /var/log/cockroach/cockroach*.log
+      - name: experimental_conversion
+        type: bool
+        title: Enable experimental conversion
+        description: >-
+          Enables additional experimental conversion of the `cockroachdb` fields to ECS.
+          This is an experimental feature and may change in future releases.
+        default: false
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the
+          event with metadata. This executes in the agent before the logs are parsed. See
+          [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering
+
