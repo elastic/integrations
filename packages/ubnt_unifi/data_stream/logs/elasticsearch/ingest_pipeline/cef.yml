@@ -270,11 +270,6 @@ processors:
 ###############
 
 - remove:
-    if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.cef?.name != null && ctx.cef.name == ctx.message
-    description: Remove cef.name as we have the same content in message
-    field: cef.name
-
-- remove:
     if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
     description: "Remove ECS mapped fields, duplicated data, and those that have no meaningful value to the events"
     tag: remove_fields_if_not_preserve_duplicate_custom_fields
@@ -283,25 +278,28 @@ processors:
     - cef.device.product # observer.product
     - cef.device.vendor  # observer.vendor
     - cef.device.version # observer.version
-    - cef.extensions.admin_ip # source.address
-    - cef.version # not useful
-    - cef.extensions.signature_type # rule.ruleset
-    - cef.extensions.signature_id # rule.id
-    - cef.severity # log.level / event.severity
-    - cef.extensions.UNIFIreference # event.url
-    - cef.extensions.UNIFIrisk # risk.level
-    - cef.extensions.admin_ip # source.address
+    - cef.extensions.UNIFIadmin # user.full_name
     - cef.extensions.UNIFIclientIp # client.address
     - cef.extensions.UNIFIclientMac # client.mac
     - cef.extensions.UNIFIclientHostname # client.domain
-    - cef.extensions.UNIFIdeviceIp # client.address
-    - cef.extensions.UNIFIdeviceMac # client.mac
-    - cef.extensions.UNIFIdeviceName # client.domain
     - cef.extensions.UNIFIconnectedToDeviceIp # server.address
     - cef.extensions.UNIFIconnectedToDeviceMac # server.mac
     - cef.extensions.UNIFIconnectedToDeviceName # server.domain
-    - cef.extensions.UNIFIadmin # user.full_name
+    - cef.extensions.UNIFIdeviceIp # client.address
+    - cef.extensions.UNIFIdeviceMac # client.mac
+    - cef.extensions.UNIFIdeviceName # client.domain
     - cef.extensions.UNIFIhost # host.hostname
+    - cef.extensions.UNIFIreference # event.url
+    - cef.extensions.UNIFIrisk # risk.level
+    - cef.extensions.admin_ip # source.address
+    - cef.extensions.message # message
+    - cef.extensions.signature_type # rule.ruleset
+    - cef.extensions.signature_id # rule.id
+    - cef.extensions.sourceAddress # source.address
+    - cef.extensions.sourceUserName # source.user.name
+    - cef.name # event.action
+    - cef.severity # log.level / event.severity
+    - cef.version # not useful
     ignore_missing: true
 
 ######################

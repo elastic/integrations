@@ -15,17 +15,47 @@ processors:
     ignore_missing: true
     ignore_failure: true
     patterns:
-        - '%{GREEDYDATA}kernel: %{GREEDYDATA:message}'
-        - '%{GREEDYDATA}%{WORD:process.parent.name}\[%{POSINT:process.parent.pid:int}\]: %{WORD:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
-        - '%{GREEDYDATA}stahtd: %{WORD:process.name}\[%{POSINT:process.pid:int}\]: \[STA-TRACKER\].stahtd_dump_event\(\): %{GREEDYDATA:message}'
-        - '%{GREEDYDATA}%{WORD:process.parent.name}: %{WORD:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
-        - '%{GREEDYDATA}%{WORD:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
+        - 'stahtd: %{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: \[STA-TRACKER\].stahtd_dump_event\(\): %{GREEDYDATA:message}'
+        - 'mcad: %{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: wireless_agg_stats.log_sta_anomalies\(\): %{GREEDYDATA:message}'
+        - '%{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: %{DATA:ubnt.unifi.linkcheck.function}\(\): resultUrl: %{GREEDYDATA:ubnt.unifi.linkcheck.resultUrl}'
+        - '%{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: %{DATA:ubnt.unifi.linkcheck.function}\(\): Completed: Downlink %{NUMBER:ubnt.unifi.linkcheck.downlink.speed:float} %{WORD:ubnt.unifi.linkcheck.downlink.rate}, Uplink %{NUMBER:ubnt.unifi.linkcheck.uplink.speed:float} %{WORD:ubnt.unifi.linkcheck.uplink.rate}'
+        - '%{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: (?<ubnt.unifi.linkcheck.function>speedtest\.ui_speedtest_log_results)\(\): (?<message>(.|\r|\n)*)'
+        - '%{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: mem avail:%{SPACE}%{POSINT:ubnt.unifi.earlyoom.memory.used:int}%{SPACE}of%{SPACE}%{POSINT:ubnt.unifi.earlyoom.memory.total:int}%{SPACE}MiB%{SPACE}\(%{NUMBER:ubnt.unifi.earlyoom.memory.used_pct:float}%\),%{SPACE}swap free:%{SPACE}%{POSINT:ubnt.unifi.earlyoom.swap.used:int}%{SPACE}of%{SPACE}%{POSINT:ubnt.unifi.earlyoom.swap.total:int}%{SPACE}MiB%{SPACE}\(%{NUMBER:ubnt.unifi.earlyoom.swap.used_pct:float}%\)%{GREEDYDATA}'
+        - '%{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: DHCP%{DATA:ubnt.unifi.dhcp.message}\(%{DATA:ubnt.unifi.dhcp.interface}\) %{IP:ubnt.unifi.dhcp.ip} %{MAC:ubnt.unifi.dhcp.mac} %{GREEDYDATA:ubnt.unifi.dhcp.name}'
+        - '%{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: DHCP%{DATA:ubnt.unifi.dhcp.message}\(%{DATA:ubnt.unifi.dhcp.interface}\) %{IP:ubnt.unifi.dhcp.ip} %{MAC:ubnt.unifi.dhcp.mac}'
+        - '%{PROCESS_NAME:process.parent.name}\[%{POSINT:process.parent.pid:int}\]: %{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
+        - '%{PROCESS_NAME:process.parent.name}\[%{POSINT:process.parent.pid:int}\]: %{PROCESS_NAME:process.name}: %{GREEDYDATA:message}'
+        - '%{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
+        - '%{PROCESS_NAME:process.parent.name}: %{PROCESS_NAME:process.name}\[%{POSINT:process.pid:int}\]: %{GREEDYDATA:message}'
+        - '%{PROCESS_NAME:process.parent.name}: %{PROCESS_NAME:process.name}: %{GREEDYDATA:message}'
+        - '%{PROCESS_NAME:process.name}: %{GREEDYDATA:message}'
+    pattern_definitions:
+      PROCESS_NAME: "[^:\\[\\]\ ]+"
 
 - json:
-    description: Parse JSON format stahtd event dump
+    description: Attempt to parse JSON format stahtd event dump
     if: ctx.process?.name == "stahtd" && ctx.message != null
     field: message
     target_field: ubnt.unifi.stahtd.dump
+    ignore_failure: true
+
+- kv:
+    description: Attempt to parse KVP mcad wireless_agg_stats.log_sta_anomalies output
+    if: ctx.process?.name == "mcad" && ctx.message != null
+    field: message
+    ignore_missing: true
+    field_split: ' '
+    value_split: '='
+    trim_key: '\s\t'
+    trim_value: '\s\t'
+    target_field: ubnt.unifi.mcad.wireless_agg_stats.log_sta_anomalies
+    ignore_failure: true
+
+- json:
+    description: Attempt to parse JSON format linkcheck output
+    if: ctx.process?.name == "linkcheck" && ctx.message != null
+    field: message
+    target_field: ubnt.unifi.linkcheck
     ignore_failure: true
 
 ######################################
@@ -35,6 +65,30 @@ processors:
 - remove:
     description: Remove JSON text message if we just parsed it successfully
     if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.process?.name == "stahtd" && ctx.ubnt?.unifi?.stahtd?.dump != null
+    field: message
+    ignore_missing: true
+
+- remove:
+    description: Remove JSON text message if we just parsed it successfully
+    if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.process?.name == "mcad" && ctx.ubnt?.unifi?.mcad?.wireless_agg_stats?.log_sta_anomalies != null
+    field: message
+    ignore_missing: true
+
+- remove:
+    description: Remove JSON text message if we just parsed it successfully
+    if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.process?.name == "linkcheck" && ctx.ubnt?.unifi?.linkcheck != null
+    field: message
+    ignore_missing: true
+
+- remove:
+    description: Remove message if we extracted the earlyoom values
+    if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.process?.name == "earlyoom" && ctx.ubnt?.unifi?.earlyoom != null
+    field: message
+    ignore_missing: true
+
+- remove:
+    description: Remove message if we extracted DHCP info
+    if: (ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))) && ctx.process?.name == "dnsmasq-dhcp" && ctx.ubnt?.unifi?.dhcp != null
     field: message
     ignore_missing: true
 
