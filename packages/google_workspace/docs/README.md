@@ -4252,6 +4252,6 @@ An example event for `gmail` looks as following:
 | google_workspace.gmail.resource_details.type | Always EMAIL for Gmail events. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| observer.product |  | constant_keyword |
-| observer.vendor |  | constant_keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 
