@@ -72,6 +72,27 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 5. Add all the required integration configuration parameters.
 6. Select "Save and continue" to save the integration.
 
+The default syslog based log collection configuration is likely suitable for most environments, e.g.
+
+![Default Integration Configuration](../img/add-integration-defaults.png)
+
+### Enabling SIEM integration in Ubiquiti UniFi:
+
+Logging for UnifiOS and Unifi applications can be configured via,
+
+1. Login to your Unifi system, navigate to Settings, typically found via the gear icon in the menu bar to the left
+2. Click on "Control Plane" in the second level menu to the left of the screen
+3. Click on "Integrations" in the third level menu near the top of the screen
+4. Select "SIEM Server" next to "Activity Logging (Syslog)"
+5. Select Activity Log Categories as appropriate, note that "UniFi OS" categories will be for admin activity and other system events, while "Network" categories can be used to enable traffic logging including logging of traffic that matches the default firewally policy.
+6. Enter the IP address and port that your Elastic Agent Ubiquiti UniFi syslog integration listener has been configured to use
+7. Optionally click "Send Test Event" and ensure ingest to Elastic is occurring
+8. Click "Save" to save the configuration
+
+Additional logging options may be available via other screens.
+
+![Control Plane SIEM Integration Configuration](../img/configure-unifi-siem-integration.png)
+
 ## Logs
 
 ### Ubiquiti UniFi Logs
