@@ -124,7 +124,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| KEEP @timestamp, deployment_name.keyword, total_ecu, total_ecu_value"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| KEEP @timestamp, deployment_name.keyword, total_ecu, total_ecu_value | LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -134,7 +134,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| KEEP @timestamp, deployment_name.keyword, total_ecu, total_ecu_value"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| KEEP @timestamp, deployment_name.keyword, total_ecu, total_ecu_value | LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -206,7 +206,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| KEEP @timestamp, deployment_name.keyword, total_ecu, total_ecu_value"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate\n| KEEP @timestamp, deployment_name.keyword, total_ecu, total_ecu_value | LIMIT 5000"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -888,9 +888,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -900,7 +900,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        datastream_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        datastream_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -910,7 +910,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        datastream_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        datastream_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -955,7 +955,7 @@
                                         "layerId": "1a2f8269-f56f-4c02-8506-76b723acc828",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
-                                        "splitAccessor": "datastream.keyword",
+                                        "splitAccessor": "datastream",
                                         "xAccessor": "@timestamp"
                                     }
                                 ],
@@ -983,7 +983,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        datastream_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        datastream_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -1217,9 +1217,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1248,7 +1248,7 @@
                                             ],
                                             "index": "3db0d6b31d8afd75067c7a445bb4f066a52d9d451e8237e51956bd0d7e1ecb52",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1258,7 +1258,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1303,7 +1303,7 @@
                                         "layerId": "d5520b0e-567f-4f0a-b424-fc79eb79e2cc",
                                         "layerType": "data",
                                         "seriesType": "bar_percentage_stacked",
-                                        "splitAccessor": "datastream.keyword",
+                                        "splitAccessor": "datastream",
                                         "xAccessor": "@timestamp"
                                     }
                                 ],
@@ -1331,7 +1331,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -1893,9 +1893,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "inMetricDimension": true,
                                                     "label": "Data stream",
                                                     "meta": {
@@ -1906,7 +1906,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot,\n        ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream.keyword,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot,\n        ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1916,7 +1916,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot,\n        ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream.keyword,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot,\n        ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1950,14 +1950,14 @@
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "datastream.keyword"
+                                            "datastream"
                                         ]
                                     }
                                 ],
                                 "shape": "donut"
                             }
                         },
-                        "title": "agg_blended of datastream.keyword",
+                        "title": "agg_blended of datastream",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {
@@ -1967,7 +1967,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot,\n        ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream.keyword,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot,\n        ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -2036,9 +2036,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2048,7 +2048,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2058,7 +2058,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -2092,7 +2092,7 @@
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "datastream.keyword"
+                                            "datastream"
                                         ]
                                     }
                                 ],
@@ -2109,7 +2109,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -2178,9 +2178,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2190,7 +2190,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2200,7 +2200,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -2234,7 +2234,7 @@
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "datastream.keyword"
+                                            "datastream"
                                         ]
                                     }
                                 ],
@@ -2251,7 +2251,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -2320,9 +2320,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2332,7 +2332,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2342,7 +2342,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -2376,7 +2376,7 @@
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "datastream.keyword"
+                                            "datastream"
                                         ]
                                     }
                                 ],
@@ -2393,7 +2393,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -2703,10 +2703,10 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": false,
-                                                    "fieldName": "datastream.keyword",
-                                                    "label": "datastream.keyword",
+                                                    "fieldName": "datastream",
+                                                    "label": "datastream",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -2715,7 +2715,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream.keyword\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2725,7 +2725,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream.keyword\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2770,7 +2770,7 @@
                                         "layerId": "52906f25-a114-4d45-b425-f0ff154f4ac1",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
-                                        "splitAccessor": "datastream.keyword",
+                                        "splitAccessor": "datastream",
                                         "xAccessor": "@timestamp"
                                     }
                                 ],
@@ -2798,7 +2798,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream.keyword\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -2877,9 +2877,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2889,7 +2889,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2899,7 +2899,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2944,7 +2944,7 @@
                                         "layerId": "b72a0ab5-dbf5-4fd2-bdef-c855fe354bee",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
-                                        "splitAccessor": "datastream.keyword",
+                                        "splitAccessor": "datastream",
                                         "xAccessor": "@timestamp"
                                     }
                                 ],
@@ -2972,7 +2972,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -3051,9 +3051,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -3063,7 +3063,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3073,7 +3073,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3118,7 +3118,7 @@
                                         "layerId": "91bcc41e-3a2c-434d-8df7-29c01340e712",
                                         "layerType": "data",
                                         "seriesType": "bar_percentage_stacked",
-                                        "splitAccessor": "datastream.keyword",
+                                        "splitAccessor": "datastream",
                                         "xAccessor": "@timestamp"
                                     }
                                 ],
@@ -3146,7 +3146,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -3225,9 +3225,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -3237,7 +3237,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3247,7 +3247,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3292,7 +3292,7 @@
                                         "layerId": "b72a0ab5-dbf5-4fd2-bdef-c855fe354bee",
                                         "layerType": "data",
                                         "seriesType": "bar_percentage_stacked",
-                                        "splitAccessor": "datastream.keyword",
+                                        "splitAccessor": "datastream",
                                         "xAccessor": "@timestamp"
                                     }
                                 ],
@@ -3320,7 +3320,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -3404,7 +3404,7 @@
                                                 {
                                                     "columnId": "57d5389c-1311-460d-afe2-cecc4a8d16f4",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -3417,7 +3417,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream.keyword,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3427,7 +3427,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream.keyword,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3500,7 +3500,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream.keyword,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size > 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size > 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
@@ -3759,9 +3759,9 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datastream.keyword",
+                                                    "columnId": "datastream",
                                                     "customLabel": true,
-                                                    "fieldName": "datastream.keyword",
+                                                    "fieldName": "datastream",
                                                     "label": "Data stream",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -3771,7 +3771,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3781,7 +3781,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3826,7 +3826,7 @@
                                         "layerId": "0ee24895-1496-4b23-96ec-ec09a8f49332",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
-                                        "splitAccessor": "datastream.keyword",
+                                        "splitAccessor": "datastream",
                                         "xAccessor": "@timestamp"
                                     }
                                 ],
@@ -3854,7 +3854,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream.keyword\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,

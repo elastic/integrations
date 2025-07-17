@@ -34,7 +34,7 @@ PUT chargeback_conf_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.3" }
+      "package": { "name": "chargeback", "version": "0.1.4" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
@@ -68,7 +68,7 @@ PUT billing_cluster_cost_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.3" }
+      "package": { "name": "chargeback", "version": "0.1.4" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -101,7 +101,7 @@ PUT cluster_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.3" }
+      "package": { "name": "chargeback", "version": "0.1.4" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -110,7 +110,7 @@ PUT cluster_datastream_contribution_lookup
       "config_join_key": { "type": "keyword" },
       "cluster_name": { "type": "keyword" },
       "deployment_id": { "type": "keyword" },
-      "datastream_name": { "type": "keyword" },
+      "datastream": { "type": "keyword" },
       "datastream_sum_indexing_time": { "type": "double" },
       "datastream_sum_query_time": { "type": "double" },
       "datastream_sum_store_size": { "type": "double" },
@@ -128,7 +128,7 @@ PUT cluster_deployment_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.3" }
+      "package": { "name": "chargeback", "version": "0.1.4" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -153,7 +153,7 @@ PUT cluster_tier_and_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.3" }
+      "package": { "name": "chargeback", "version": "0.1.4" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -181,7 +181,7 @@ PUT cluster_tier_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.3" }
+      "package": { "name": "chargeback", "version": "0.1.4" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
