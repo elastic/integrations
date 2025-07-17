@@ -1731,8 +1731,9 @@ The Cockroachdb logs, typically found under `/var/log/cockroachdb/cockroachdb*.l
 | cockroacdb.cluster_id | Unique identifier for the CockroachDB node. | keyword |
 | cockroacdb.instance_id | Unique identifier for the CockroachDB instance. | keyword |
 | cockroacdb.node_id | Unique identifier for the CockroachDB node. | keyword |
-| cockroachdb.event | CockroachDB version. | flattened |
+| cockroachdb.event | CockroachDB structured event data ([More Information](https://www.cockroachlabs.com/docs/v25.2/eventlog)) |  |
 | cockroachdb.redactable | Indicates if the log message is redactable. | boolean |
+| cockroachdb.tags | CockroachDB context tags. | flattened |
 | cockroachdb.tenant_id | Data stream type. | keyword |
 | cockroachdb.version | CockroachDB version. | version |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
