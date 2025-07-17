@@ -20,6 +20,25 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null_from_ocsf
+      if: ctx.ocsf instanceof Map
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx.ocsf);
   - script: 
       description: Recursively traverses the ocsf object to convert suspected timestamps to milliseconds.
       tag: convert_timestamps_to_milliseconds
@@ -64,19 +83,18 @@ processors:
           return null;
         }
         processFields(ctx.ocsf);
-    
   - rename:
       field: ocsf.resource
       target_field: ocsf.resources
       tag: rename_resource_to_resources
       ignore_missing: true
-      if : ctx.ocsf?.resources == null
+      if: ctx.ocsf?.resources == null
   - rename:
       field: ocsf.finding_info_list
       target_field: ocsf.finding_info
       tag: rename_finding_info_list_to_finding_info
       ignore_missing: true
-      if : ctx.ocsf?.finding_info == null
+      if: ctx.ocsf?.finding_info == null
   - convert:
       field: ocsf.class_uid
       tag: convert_class_uid_to_string
@@ -465,6 +483,7 @@ processors:
       target_field: ocsf.end_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.end_time_dt != null && ctx.ocsf.end_time_dt != ''
       on_failure:
         - remove:
@@ -502,6 +521,7 @@ processors:
       tag: date_timestamp_from_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.time_dt != null && ctx.ocsf.time_dt != ''
       on_failure:
         - remove:
@@ -529,6 +549,7 @@ processors:
       target_field: ocsf.time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.time_dt != null && ctx.ocsf.time_dt != ''
       on_failure:
         - remove:
@@ -557,6 +578,7 @@ processors:
       target_field: ocsf.metadata.logged_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.metadata?.logged_time_dt != null && ctx.ocsf.metadata.logged_time_dt != ''
       on_failure:
         - remove:
@@ -585,6 +607,7 @@ processors:
       target_field: ocsf.metadata.modified_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.metadata?.modified_time_dt != null && ctx.ocsf.metadata.modified_time_dt != ''
       on_failure:
         - remove:
@@ -613,6 +636,7 @@ processors:
       target_field: ocsf.metadata.processed_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.metadata?.processed_time_dt != null && ctx.ocsf.metadata.processed_time_dt != ''
       on_failure:
         - remove:
@@ -695,6 +719,7 @@ processors:
       target_field: ocsf.start_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.start_time_dt != null && ctx.ocsf.start_time_dt != ''
       on_failure:
         - remove:
