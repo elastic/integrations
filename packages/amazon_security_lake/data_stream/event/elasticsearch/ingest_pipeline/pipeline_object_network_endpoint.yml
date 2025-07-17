@@ -88,12 +88,15 @@ processors:
           tag: append_source_domain_into_related_hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - remove:
+      field: ocsf.src_endpoint.ip
+      tag: remove_empty_src_endpoint_ip
+      if: ctx.ocsf?.src_endpoint?.ip == '' || ctx.ocsf?.src_endpoint?.ip == '-'
   - convert:
       field: ocsf.src_endpoint.ip
       tag: convert_src_endpoint_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.ocsf?.src_endpoint?.ip != '' || ctx.ocsf.src_endpoint.ip != '-'
       on_failure:
         - remove:
             field: ocsf.src_endpoint.ip
@@ -112,6 +115,11 @@ processors:
       tag: set_source_ip
       copy_from: ocsf.src_endpoint.ip
       ignore_empty_value: true
+  - script:
+      tag: drop_empty_src_endpoint_intermediate_ips_ip
+      if: ctx.ocsf?.src_endpoint?.intermediate_ips instanceof List
+      source: |-
+        ((List) ctx.ocsf.src_endpoint.intermediate_ips).removeIf(v -> v == '-');
   - foreach:
       field: ocsf.src_endpoint.intermediate_ips
       if: ctx.ocsf?.src_endpoint?.intermediate_ips instanceof List
@@ -275,12 +283,15 @@ processors:
           tag: append_destination_domain_into_related_hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - remove:
+      field: ocsf.dst_endpoint.ip
+      tag: remove_empty_dst_endpoint_ip
+      if: ctx.ocsf?.dst_endpoint?.ip == '' || ctx.ocsf?.dst_endpoint?.ip == '-'
   - convert:
       field: ocsf.dst_endpoint.ip
       tag: convert_dst_endpoint_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.ocsf?.dst_endpoint?.ip != '' || ctx.ocsf.dst_endpoint.ip != '-'
       on_failure:
         - remove:
             field: ocsf.dst_endpoint.ip
@@ -299,6 +310,11 @@ processors:
       tag: set_destination_ip
       copy_from: ocsf.dst_endpoint.ip
       ignore_empty_value: true
+  - script:
+      tag: drop_empty_dst_endpoint_intermediate_ips_ip
+      if: ctx.ocsf?.dst_endpoint?.intermediate_ips instanceof List
+      source: |-
+        ((List) ctx.ocsf.dst_endpoint.intermediate_ips).removeIf(v -> v == '-');
   - foreach:
       field: ocsf.dst_endpoint.intermediate_ips
       if: ctx.ocsf?.dst_endpoint?.intermediate_ips instanceof List
