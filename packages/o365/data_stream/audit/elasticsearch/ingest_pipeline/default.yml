@@ -730,6 +730,22 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset == "MalwareFamily"'
   # DLP Schema
+  - script:
+      lang: painless
+      description: Construct a message from operation, user and subject fields for 'ComplianceDLPExchange' events
+      if: 'ctx.event?.code != null && ctx.event?.code == "ComplianceDLPExchange"'
+      source: >
+        def operation = ctx.event?.action != null ? ctx.event.action : ctx.o365audit?.Operation;
+        def user = ctx.user?.id != null ? ctx.user.id : ctx.o365audit?.UserId;
+        def subject = ctx.o365audit?.ExchangeMetaData?.Subject != null ? ctx.o365audit.ExchangeMetaData.Subject : (ctx.email?.subject != null ? ctx.email.subject : '');
+        ctx.message = "Office365 Alert: " + operation + " detected in email sent by " + user + " with subject '" + subject + "'";
+      on_failure:
+        - set:
+            field: message
+            value: 'DLP Alert: Unable to construct message due to script failure.'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set: 
       field: event.kind
       value: alert
@@ -775,11 +791,6 @@ processors:
   - rename:
       field: o365audit.ExchangeMetaData.From
       target_field: source.user.email
-      ignore_missing: true
-      if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
-  - rename:
-      field: o365audit.ExchangeMetaData.Subject
-      target_field: message
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
