@@ -65,15 +65,15 @@ An example event for `nx` looks as following:
 {
     "@timestamp": "2020-09-22T08:34:44.991Z",
     "agent": {
-        "ephemeral_id": "dff6c436-37c3-4536-bdf9-08aed3ed94bd",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "96bd6f72-99f6-4840-818f-5d1be61e78f7",
+        "id": "4f744ee0-88a4-454c-9b91-7d471e019662",
+        "name": "elastic-agent-23482",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "fireeye.nx",
-        "namespace": "ep",
+        "namespace": "55889",
         "type": "logs"
     },
     "destination": {
@@ -87,9 +87,9 @@ An example event for `nx` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "4f744ee0-88a4-454c-9b91-7d471e019662",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -97,8 +97,10 @@ An example event for `nx` looks as following:
             "network"
         ],
         "dataset": "fireeye.nx",
-        "ingested": "2023-09-25T20:05:32Z",
-        "original": "{\"rawmsg\":\"{\\\"timestamp\\\":\\\"2020-09-22T08:34:44.991339+0000\\\",\\\"flow_id\\\":721570461162990,\\\"event_type\\\":\\\"flow\\\",\\\"src_ip\\\":\\\"fe80:0000:0000:0000:feec:daff:fe31:b706\\\",\\\"src_port\\\":45944,\\\"dest_ip\\\":\\\"ff02:0000:0000:0000:0000:0000:0000:0001\\\",\\\"dest_port\\\":10001,\\\"proto\\\":\\\"UDP\\\",\\\"proto_number\\\":17,\\\"ip_tc\\\":0,\\\"app_proto\\\":\\\"failed\\\",\\\"flow\\\":{\\\"pkts_toserver\\\":8,\\\"pkts_toclient\\\":0,\\\"bytes_toserver\\\":1680,\\\"bytes_toclient\\\":0,\\\"start\\\":\\\"2020-09-22T08:34:12.761326+0000\\\",\\\"end\\\":\\\"2020-09-22T08:34:12.761348+0000\\\",\\\"age\\\":0,\\\"state\\\":\\\"new\\\",\\\"reason\\\":\\\"timeout\\\",\\\"alerted\\\":false}}\\n\",\"meta_sip4\":\"192.168.1.99\",\"meta_oml\":520,\"deviceid\":\"860665216674\",\"meta_cbname\":\"fireeye-7e0de1\"}",
+        "ingested": "2025-07-03T10:48:44Z",
+        "kind": "event",
+        "outcome": "failure",
+        "reason": "timeout",
         "timezone": "+00:00",
         "type": [
             "info"
@@ -117,49 +119,30 @@ An example event for `nx` looks as following:
             "flow_id": 721570461162990
         }
     },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "28da52b32df94b50aff67dfb8f1be3d6",
-        "ip": [
-            "192.168.80.5"
-        ],
-        "mac": [
-            "02-42-C0-A8-50-05"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
     "input": {
-        "type": "log"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/fireeye-nx.log"
-        },
-        "offset": 0
+        "source": {
+            "address": "192.168.249.3:42005"
+        }
     },
     "network": {
         "community_id": "1:McNAQcsUcKZYOHHZYm0sD8JiBLc=",
         "iana_number": "17",
-        "protocol": "failed",
         "transport": "udp"
     },
     "observer": {
+        "hostname": "fireeye-7e0de1",
+        "ip": [
+            "192.168.1.99"
+        ],
         "product": "NX",
         "vendor": "Fireeye"
     },
     "related": {
         "ip": [
+            "192.168.1.99",
             "fe80:0000:0000:0000:feec:daff:fe31:b706",
             "ff02:0000:0000:0000:0000:0000:0000:0001"
         ]
@@ -172,7 +155,8 @@ An example event for `nx` looks as following:
         "port": 45944
     },
     "tags": [
-        "fireeye-nx"
+        "fireeye-nx",
+        "forwarded"
     ]
 }
 ```
