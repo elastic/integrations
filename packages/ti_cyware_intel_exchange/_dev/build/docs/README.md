@@ -1,4 +1,4 @@
-# Cyware Intel Exchange (CTIX)
+# Cyware Intel Exchange
 
 ## Overview
 

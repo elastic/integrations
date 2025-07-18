@@ -1,4 +1,4 @@
-# Cyware Intel Exchange (CTIX)
+# Cyware Intel Exchange
 
 ## Overview
 
@@ -63,22 +63,22 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2025-06-30T10:28:16.273Z",
     "agent": {
-        "ephemeral_id": "fe17ea4c-74d9-4b10-89c6-0fa3d8128c68",
-        "id": "51f69556-f10d-4e36-b5ce-11fce32e3768",
-        "name": "elastic-agent-84239",
+        "ephemeral_id": "751c79ce-98e4-4341-ba93-91f131896885",
+        "id": "ff30387c-91f0-4c7d-b81b-496c6f23179a",
+        "name": "elastic-agent-78627",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ti_cyware_intel_exchange.indicator",
-        "namespace": "32196",
+        "namespace": "10992",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "51f69556-f10d-4e36-b5ce-11fce32e3768",
+        "id": "ff30387c-91f0-4c7d-b81b-496c6f23179a",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -90,9 +90,10 @@ An example event for `indicator` looks as following:
         "created": "2025-05-27T14:04:51.651Z",
         "dataset": "ti_cyware_intel_exchange.indicator",
         "id": "f36749f2-776f-4153-b840-08bad5fb18b1",
-        "ingested": "2025-07-14T09:47:43Z",
+        "ingested": "2025-07-18T08:58:04Z",
         "kind": "enrichment",
         "original": "{\"analyst_score\":null,\"analyst_tlp\":null,\"country\":null,\"created\":1746812972,\"ctix_created\":1748354691.651628,\"ctix_modified\":1751279296.273555,\"ctix_score\":90,\"ctix_tlp\":null,\"custom_scores\":null,\"id\":\"f36749f2-776f-4153-b840-08bad5fb18b1\",\"indicator_type\":{\"attribute_field\":\"MD5\",\"type\":\"file\"},\"ioc_type\":\"file\",\"is_actioned\":false,\"is_deprecated\":false,\"is_false_positive\":false,\"is_reviewed\":false,\"is_revoked\":false,\"is_whitelist\":false,\"modified\":1748354676.716103,\"name\":\"e8c5c5829b630dcf61b55f271ac6c085\",\"sdo_name\":\"e8c5c5829b630dcf61b55f271ac6c085\",\"sdo_type\":\"indicator\",\"severity\":\"UNKNOWN\",\"source_tlp\":\"NONE\",\"sources\":[{\"first_seen\":1746812972,\"last_seen\":null,\"name\":\"Vault\",\"score\":100,\"tlp\":\"WHITE\"}],\"tags\":[\"brand impersonation\",\"cryptocurrency\",\"Apple\"],\"valid_from\":1746812972,\"valid_until\":null}",
+        "severity": 99,
         "type": [
             "indicator"
         ]
@@ -149,7 +150,6 @@ An example event for `indicator` looks as following:
             "name": "e8c5c5829b630dcf61b55f271ac6c085",
             "sdo_name": "e8c5c5829b630dcf61b55f271ac6c085",
             "sdo_type": "indicator",
-            "severity": "UNKNOWN",
             "source_tlp": "NONE",
             "sources": [
                 {

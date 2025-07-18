@@ -138,6 +138,22 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event_severity.
+      tag: set_event_severity
+      if: ctx.ti_cyware_intel_exchange?.indicator?.ctix_score != null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        if (ctx.ti_cyware_intel_exchange.indicator.ctix_score <= 21 ) {
+          ctx.event.severity = 21;
+        } else if (ctx.ti_cyware_intel_exchange.indicator.ctix_score >= 22 && ctx.ti_cyware_intel_exchange.indicator.ctix_score <= 47) {
+          ctx.event.severity = 47;
+        } else if (ctx.ti_cyware_intel_exchange.indicator.ctix_score >= 48 && ctx.ti_cyware_intel_exchange.indicator.ctix_score <= 73) {
+          ctx.event.severity = 73;
+        } else if (ctx.ti_cyware_intel_exchange.indicator.ctix_score >= 74 && ctx.ti_cyware_intel_exchange.indicator.ctix_score <= 100) {
+          ctx.event.severity = 99;
+        }
   - rename:
       field: json.ctix_tlp
       tag: rename_ctix_tlp
@@ -326,11 +342,6 @@ processors:
       field: json.sdo_type
       tag: rename_sdo_type
       target_field: ti_cyware_intel_exchange.indicator.sdo_type
-      ignore_missing: true
-  - rename:
-      field: json.severity
-      tag: rename_severity
-      target_field: ti_cyware_intel_exchange.indicator.severity
       ignore_missing: true
   - rename:
       field: json.source_description
