@@ -353,6 +353,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_workspace.device.LAST_SYNC_AUDIT_DATE
+      tag: date_last_sync_audit_date
+      target_field: google_workspace.device.last_sync_audit_date
+      formats:
+        - UNIX_MS
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx.google_workspace?.device?.LAST_SYNC_AUDIT_DATE != null && ctx.google_workspace.device.LAST_SYNC_AUDIT_DATE != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_workspace.device.APPLICATION_REPORT_SEVERITY
       target_field: google_workspace.device.application.report.severity
@@ -527,6 +544,7 @@ processors:
         - google_workspace.device.APPLICATION_REPORT_TIMESTAMP
         - google_workspace.device.FAILED_PASSWD_ATTEMPTS
         - google_workspace.device.SECURITY_EVENT_ID
+        - google_workspace.device.LAST_SYNC_AUDIT_DATE
       ignore_missing: true
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
