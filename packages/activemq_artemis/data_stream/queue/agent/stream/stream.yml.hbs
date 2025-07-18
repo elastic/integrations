@@ -1,0 +1,59 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{ period }}
+username: {{username}}
+password: {{password}}
+namespace: activemq_artemis
+http_method: "GET"
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+    - mbean: 'org.apache.activemq.artemis:broker=*,component=addresses,address=*,subcomponent=queues,routing-type=*,queue=*'
+      attributes:
+        - attr: MessageCount
+          field: messages.count
+        - attr: MessagesAdded
+          field: messages.added
+        - attr: MessagesAcknowledged
+          field: messages.acknowledged
+        - attr: MessagesExpired
+          field: messages.expired
+        - attr: MessagesKilled
+          field: messages.killed
+        - attr: ConsumerCount
+          field: consumers.count
+        - attr: DeliveringCount
+          field: delivering.count
+        - attr: MessagesAddedPerSecond
+          field: messages.added_rate
+        - attr: MessagesAcknowledgedPerSecond
+          field: messages.acknowledged_rate
+        - attr: Paused
+          field: paused
+        - attr: Temporary
+          field: temporary
+        - attr: AutoCreated
+          field: auto_created
+        - attr: Retroactive
+          field: retroactive
+        - attr: Durable
+          field: durable
+        - attr: PurgeOnNoConsumers
+          field: purge_on_no_consumers
+        - attr: MaxConsumers
+          field: consumers.max
+        - attr: User
+          field: user

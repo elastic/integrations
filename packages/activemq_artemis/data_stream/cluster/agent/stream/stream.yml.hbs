@@ -1,0 +1,55 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{ period }}
+username: {{username}}
+password: {{password}}
+namespace: activemq_artemis
+http_method: "GET"
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+    - mbean: 'org.apache.activemq.artemis:broker=*,component=cluster-connections,name=*'
+      attributes:
+        - attr: NodeID
+          field: node.id
+        - attr: Topology
+          field: topology
+        - attr: Started
+          field: started
+        - attr: MessagesPendingAcknowledgment
+          field: messages.pending_acknowledgment
+        - attr: MessagesReceived
+          field: messages.received
+        - attr: StaticConnectors
+          field: connectors.static
+        - attr: DiscoveryGroupName
+          field: discovery.group_name
+        - attr: Address
+          field: address
+        - attr: MaxHops
+          field: max_hops
+        - attr: CallTimeout
+          field: call_timeout
+        - attr: RetryInterval
+          field: retry_interval
+        - attr: RetryIntervalMultiplier
+          field: retry_interval_multiplier
+        - attr: MaxRetryInterval
+          field: max_retry_interval
+        - attr: ReconnectAttempts
+          field: reconnect_attempts
+        - attr: Bridge
+          field: bridge
