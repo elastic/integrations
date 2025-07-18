@@ -46,8 +46,10 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
-  key    = "event.csv.gz"
-  source = "./files/event.csv.gz"
+  key    = "events.csv.gz"
+  content_base64   = base64gzip(file("./files/events.csv"))
+  content_encoding = "gzip"
+  content_type     = "text/csv"
 
   depends_on = [aws_sqs_queue.queue]
 }
