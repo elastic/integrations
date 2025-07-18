@@ -2967,38 +2967,36 @@ An example event for `vulnerability_weaponization` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "456f14c2-91ee-4f1d-8985-cec7648ab016",
-        "id": "0bd7d79b-026b-4395-aa57-f9d869dc3fc5",
-        "name": "elastic-agent-33042",
+        "ephemeral_id": "ae562fa4-f11b-4ad0-b1a3-0ba04a439b53",
+        "id": "0009e6ce-0fff-4f64-ac72-0214a777560c",
+        "name": "elastic-agent-69051",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.vulnerability_weaponization",
-        "namespace": "21766",
+        "namespace": "31396",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0bd7d79b-026b-4395-aa57-f9d869dc3fc5",
+        "id": "0009e6ce-0fff-4f64-ac72-0214a777560c",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "threat",
-            "vulnerability"
+            "threat"
         ],
         "dataset": "ti_google_threat_intelligence.vulnerability_weaponization",
-        "ingested": "2025-07-07T12:08:29Z",
+        "ingested": "2025-07-18T12:31:41Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
-            "indicator",
-            "info"
+            "indicator"
         ]
     },
     "gti": {
