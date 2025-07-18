@@ -1,0 +1,225 @@
+---
+description: Pipeline for processing Event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.17.0'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+  - set:
+      field: infoblox_threat_defense.event.created
+      tag: set_custom_event_created
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - rename:
+      field: log.syslog
+      tag: rename_log_syslog
+      target_field: infoblox_threat_defense.event.syslog
+      ignore_missing: true
+  - rename:
+      field: cef.name
+      tag: rename_cef_name
+      target_field: infoblox_threat_defense.event.name
+      ignore_missing: true
+  - rename:
+      field: cef.version
+      tag: rename_cef_version
+      target_field: infoblox_threat_defense.event.version
+      ignore_missing: true
+  - rename:
+      field: cef.device
+      tag: rename_cef_device
+      target_field: infoblox_threat_defense.event.device
+      ignore_missing: true
+  - convert:
+      field: cef.severity
+      tag: convert_severity_to_long
+      target_field: infoblox_threat_defense.event.severity
+      type: long
+      ignore_missing: true
+      if: ctx.cef?.severity != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event_severity.
+      tag: set_event_severity
+      if: ctx.infoblox_threat_defense?.event?.severity != null
+#     We have mapped the severity based on the information provided in the following documentation:
+#     https://docs.infoblox.com/space/BloxOneThreatDefense/35437944/DNS+Event
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        if (ctx.infoblox_threat_defense.event.severity >= 0 && ctx.infoblox_threat_defense.event.severity <= 3 ) { // Severity level - 0,1,2,3 denotes Low severity
+          ctx.event.severity = 21;
+        } else if (ctx.infoblox_threat_defense.event.severity >= 4 && ctx.infoblox_threat_defense.event.severity <= 6) { // Severity level - 4,5,6 denotes Medium severity
+          ctx.event.severity = 47;
+        } else if (ctx.infoblox_threat_defense.event.severity == 7 || ctx.infoblox_threat_defense.event.severity == 8) { // Severity level - 7 and 8 denotes High severity
+          ctx.event.severity = 73;
+        } else if (ctx.infoblox_threat_defense.event.severity == 9 || ctx.infoblox_threat_defense.event.severity == 10) { // Severity level - 9 and 10 denotes Critical severity
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: 'script_to_remove_quotes_from_begining_and_end_from_message'
+      description: Script to remove quotes from begining and end from message field.
+      source: |
+        if (ctx.cef.extensions.containsKey('message') && ctx.cef.extensions.message != null && ctx.cef.extensions.message instanceof String) {
+          if (ctx.cef.extensions.message.startsWith('"') && ctx.cef.extensions.message.endsWith('"') && ctx.cef.extensions.message.length() >= 2) {
+            ctx.cef.extensions.message = ctx.cef.extensions.message.substring(1, ctx.cef.extensions.message.length() - 1);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: message
+      tag: set_message
+      copy_from: cef.extensions.message
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_audit" }}'
+      tag: pipeline_audit
+      if: ctx.event?.code == 'BloxOne-Audit-Log'
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_service" }}'
+      tag: pipeline_service
+      if: ctx.event?.code == 'BloxOne-Service-Log'
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_dhcp_lease" }}'
+      tag: pipeline_dhcp_lease
+      if: ctx.event?.code != null && ctx.event?.code.contains('DHCP-LEASE')
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_dns_response" }}'
+      tag: pipeline_dns_response
+      if: ctx.event?.code == 'DNS Response'
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_atlas_notification" }}'
+      tag: pipeline_atlas_notification
+      if: ctx.event?.code == 'BloxOne-Notifications-Log'
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_soc_insight" }}'
+      tag: pipeline_soc_insight
+      if: ctx.event?.code == 'BloxOne-InsightsNotification-Log'
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_rpz" }}'
+      tag: pipeline_rpz
+      if: ctx.event?.code != null && ctx.event?.code.contains('RPZ')
+      ignore_missing_pipeline: true
+  - remove:
+      field:
+        - infoblox_threat_defense.event.application_protocol
+        - infoblox_threat_defense.event.destination.address
+        - infoblox_threat_defense.event.device.address
+        - infoblox_threat_defense.event.device.event_class_id
+        - infoblox_threat_defense.event.device.product
+        - infoblox_threat_defense.event.device.vendor
+        - infoblox_threat_defense.event.device.version
+        - infoblox_threat_defense.event.infoblox.b1.region
+        - infoblox_threat_defense.event.infoblox.b1.src_os_version
+        - infoblox_threat_defense.event.infoblox.b1.threat.indicator
+        - infoblox_threat_defense.event.infoblox.dns_q.class
+        - infoblox_threat_defense.event.infoblox.dns_q.type
+        - infoblox_threat_defense.event.infoblox.dns_r_code
+        - infoblox_threat_defense.event.infoblox.event.occurred_time
+        - infoblox_threat_defense.event.infoblox.host_id
+        - infoblox_threat_defense.event.infoblox.insight.id
+        - infoblox_threat_defense.event.infoblox.lease.op
+        - infoblox_threat_defense.event.infoblox.on_prem_host_name
+        - infoblox_threat_defense.event.infoblox.resource.id
+        - infoblox_threat_defense.event.infoblox.rpz.rule
+        - infoblox_threat_defense.event.infoblox.service_id
+        - infoblox_threat_defense.event.message
+        - infoblox_threat_defense.event.source.address
+        - infoblox_threat_defense.event.source.mac_address
+        - infoblox_threat_defense.event.source.port
+        - infoblox_threat_defense.event.source.user_name
+        - infoblox_threat_defense.event.transport_protocol
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: cef
+      tag: remove_cef
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
