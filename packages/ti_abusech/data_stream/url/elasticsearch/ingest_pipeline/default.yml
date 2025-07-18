@@ -1,6 +1,10 @@
 ---
 description: Pipeline for parsing Abuse.ch URL Threat Intel
 processors:
+  - terminate:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - remove:
       field:
         - organization
