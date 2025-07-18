@@ -10,20 +10,49 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "7c58e6cc-2a56-4fdd-8ea5-5ed2bb3fe116": {
+                "7ee4d45b-c560-49df-9a9c-ad7eb9085750": {
                     "explicitInput": {
-                        "dataViewId": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
+                        "dataViewId": "logs-*",
+                        "exclude": null,
+                        "existsSelected": null,
                         "fieldName": "vulnerability.description",
-                        "id": "7c58e6cc-2a56-4fdd-8ea5-5ed2bb3fe116",
+                        "hideActionBar": null,
+                        "hideExclude": null,
+                        "hideExists": null,
+                        "hideSort": null,
+                        "id": "7ee4d45b-c560-49df-9a9c-ad7eb9085750",
+                        "placeholder": null,
+                        "runPastTimeout": null,
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
+                        "singleSelect": null,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Type of Exposed Secret"
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "c07c9747-ad5b-4657-a4d7-635cae51ccd3": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "fieldName": "vulnerability.category",
+                        "id": "c07c9747-ad5b-4657-a4d7-635cae51ccd3",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [
+                            "Secret"
+                        ],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
                         }
                     },
                     "grow": false,
-                    "order": 0,
+                    "order": 1,
                     "type": "optionsListControl",
                     "width": "medium"
                 }
@@ -39,56 +68,20 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": "vulnerability.category : \"Secret\" ",
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "query",
-                            "negate": false,
-                            "type": "custom"
-                        },
-                        "query": {
-                            "bool": {
-                                "filter": [
-                                    {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "term": {
-                                                        "vulnerability.category": {
-                                                            "value": "Secret"
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                ],
-                                "must": [],
-                                "must_not": [],
-                                "should": []
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "vulnerability.category",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "vulnerability.category",
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "Secret"
+                                "query": "entro.audit"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "vulnerability.category": "Secret"
+                                "data_stream.dataset": "entro.audit"
                             }
                         }
                     }
@@ -112,8 +105,8 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
-                                "name": "indexpattern-datasource-layer-ff99bb91-9263-478b-ad46-7dd95632403a",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8aaf7ee0-1870-4194-a2ec-e4d9df7e6430",
                                 "type": "index-pattern"
                             }
                         ],
@@ -121,21 +114,18 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "ff99bb91-9263-478b-ad46-7dd95632403a": {
+                                        "8aaf7ee0-1870-4194-a2ec-e4d9df7e6430": {
                                             "columnOrder": [
-                                                "8d5b7c06-5ece-4db4-9bb1-99da360cfe4e"
+                                                "8bd06b79-1886-4c88-92d1-efd93943c868"
                                             ],
                                             "columns": {
-                                                "8d5b7c06-5ece-4db4-9bb1-99da360cfe4e": {
+                                                "8bd06b79-1886-4c88-92d1-efd93943c868": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "vulnerability.category : \"Secret\" "
-                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Number of Secrets Exposed",
+                                                    "label": "Total Number of Exposed Secrets",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -145,6 +135,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -164,9 +155,9 @@
                             },
                             "visualization": {
                                 "color": "#E7664C",
-                                "layerId": "ff99bb91-9263-478b-ad46-7dd95632403a",
+                                "layerId": "8aaf7ee0-1870-4194-a2ec-e4d9df7e6430",
                                 "layerType": "data",
-                                "metricAccessor": "8d5b7c06-5ece-4db4-9bb1-99da360cfe4e"
+                                "metricAccessor": "8bd06b79-1886-4c88-92d1-efd93943c868"
                             }
                         },
                         "title": "",
@@ -176,13 +167,13 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 13,
-                    "i": "c0b0118f-9b83-47c4-be97-9d741a687367",
-                    "w": 5,
+                    "h": 15,
+                    "i": "5717706f-b29b-49ab-89fc-a945cc596c7d",
+                    "w": 6,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "c0b0118f-9b83-47c4-be97-9d741a687367",
+                "panelIndex": "5717706f-b29b-49ab-89fc-a945cc596c7d",
                 "type": "lens"
             },
             {
@@ -190,8 +181,8 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
-                                "name": "indexpattern-datasource-layer-ce7eced1-449c-42d8-8b03-1e030b3d4937",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d51e3e46-fcae-4ceb-a51a-acf8376de9c8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -199,26 +190,15 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "ce7eced1-449c-42d8-8b03-1e030b3d4937": {
+                                        "d51e3e46-fcae-4ceb-a51a-acf8376de9c8": {
                                             "columnOrder": [
-                                                "1767c743-82d0-46c5-803b-196c26f02b5d",
-                                                "1520748d-db68-4b34-8337-5561797f5722"
+                                                "20b50884-6f1f-4e84-b4b4-ce973005acb9",
+                                                "2a985907-7f54-46dd-a3fc-1f23ce74905b"
                                             ],
                                             "columns": {
-                                                "1520748d-db68-4b34-8337-5561797f5722": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Number of Exposed Secrets",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "1767c743-82d0-46c5-803b-196c26f02b5d": {
+                                                "20b50884-6f1f-4e84-b4b4-ce973005acb9": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
                                                     "label": "Top 5 values of vulnerability.description",
@@ -230,7 +210,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "1520748d-db68-4b34-8337-5561797f5722",
+                                                            "columnId": "2a985907-7f54-46dd-a3fc-1f23ce74905b",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -242,9 +222,22 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "vulnerability.description"
+                                                },
+                                                "2a985907-7f54-46dd-a3fc-1f23ce74905b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Number of Exposed Secrets",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -263,10 +256,10 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "breakdownByAccessor": "1767c743-82d0-46c5-803b-196c26f02b5d",
-                                "layerId": "ce7eced1-449c-42d8-8b03-1e030b3d4937",
+                                "breakdownByAccessor": "20b50884-6f1f-4e84-b4b4-ce973005acb9",
+                                "layerId": "d51e3e46-fcae-4ceb-a51a-acf8376de9c8",
                                 "layerType": "data",
-                                "metricAccessor": "1520748d-db68-4b34-8337-5561797f5722",
+                                "metricAccessor": "2a985907-7f54-46dd-a3fc-1f23ce74905b",
                                 "palette": {
                                     "name": "status",
                                     "params": {
@@ -306,13 +299,13 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 13,
-                    "i": "ff3887be-6e2b-4749-b3f6-80f94d3425fb",
-                    "w": 16,
-                    "x": 5,
+                    "h": 15,
+                    "i": "4065b32b-defa-45a5-934f-5b29e21b779e",
+                    "w": 17,
+                    "x": 6,
                     "y": 0
                 },
-                "panelIndex": "ff3887be-6e2b-4749-b3f6-80f94d3425fb",
+                "panelIndex": "4065b32b-defa-45a5-934f-5b29e21b779e",
                 "type": "lens"
             },
             {
@@ -321,7 +314,8 @@
                         "columns": [
                             "vulnerability.category",
                             "vulnerability.description",
-                            "vulnerability.value"
+                            "vulnerability.value",
+                            "event.id"
                         ],
                         "description": "",
                         "grid": {},
@@ -340,7 +334,7 @@
                                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                                 "query": {
                                     "language": "kuery",
-                                    "query": "vulnerability.category : \"Secret\" "
+                                    "query": ""
                                 },
                                 "sort": [
                                     {
@@ -357,7 +351,7 @@
                         },
                         "references": [
                             {
-                                "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
+                                "id": "logs-*",
                                 "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
                                 "type": "index-pattern"
                             }
@@ -375,55 +369,55 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 22,
-                    "i": "289f6de5-a15a-45d8-9cca-ee108455d8e6",
-                    "w": 21,
+                    "h": 19,
+                    "i": "19556aab-1d90-42b2-a0db-311b2572da98",
+                    "w": 23,
                     "x": 0,
-                    "y": 13
+                    "y": 15
                 },
-                "panelIndex": "289f6de5-a15a-45d8-9cca-ee108455d8e6",
+                "panelIndex": "19556aab-1d90-42b2-a0db-311b2572da98",
                 "title": "[Entro Security] Audit Logs Saved Search",
                 "type": "search"
             }
         ],
         "timeRestore": false,
-        "title": "[Entro Security] Audit Logs Dashboard",
+        "title": "[Entro Security] Audit Dashboard",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-07-08T14:41:06.156Z",
+    "created_at": "2025-07-17T19:04:06.112Z",
     "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
-    "id": "entro-14e06003-3dc0-4b07-bb53-85a87ed0fefe",
+    "id": "entro-9fc7e45e-e6b9-4f07-bd52-92636ecc22e0",
     "managed": false,
     "references": [
         {
-            "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
+            "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "id": "logs-*",
+            "name": "5717706f-b29b-49ab-89fc-a945cc596c7d:indexpattern-datasource-layer-8aaf7ee0-1870-4194-a2ec-e4d9df7e6430",
             "type": "index-pattern"
         },
         {
-            "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
-            "name": "c0b0118f-9b83-47c4-be97-9d741a687367:indexpattern-datasource-layer-ff99bb91-9263-478b-ad46-7dd95632403a",
+            "id": "logs-*",
+            "name": "4065b32b-defa-45a5-934f-5b29e21b779e:indexpattern-datasource-layer-d51e3e46-fcae-4ceb-a51a-acf8376de9c8",
             "type": "index-pattern"
         },
         {
-            "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
-            "name": "ff3887be-6e2b-4749-b3f6-80f94d3425fb:indexpattern-datasource-layer-ce7eced1-449c-42d8-8b03-1e030b3d4937",
+            "id": "logs-*",
+            "name": "19556aab-1d90-42b2-a0db-311b2572da98:kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
         },
         {
-            "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
-            "name": "289f6de5-a15a-45d8-9cca-ee108455d8e6:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "id": "logs-*",
+            "name": "controlGroup_29ff13db-9986-4393-925e-baad9da2a964:optionsListDataView",
             "type": "index-pattern"
         },
         {
-            "id": "d71d00af-e6fb-4f9e-b178-c93b559dd816",
-            "name": "controlGroup_51c7a586-b989-44be-8aaa-54f12dd18020:optionsListDataView",
+            "id": "logs-*",
+            "name": "controlGroup_126549dc-e199-4fa0-9345-906a37158059:optionsListDataView",
             "type": "index-pattern"
         }
     ],
