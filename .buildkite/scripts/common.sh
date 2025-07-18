@@ -739,26 +739,36 @@ is_pr_affected() {
         echo "[${package}] PR is affected: \"force_check_all\" parameter enabled"
         return 0
     fi
+    
+    local commit_merge
+    if ! commit_merge=$(git merge-base "${from}" "${to}" 2>/dev/null); then
+        echoerr "FATAL: 'git merge-base' failed. Check if '${from}' and '${to}' are valid refs."
+        return 1
+    fi
 
-    commit_merge=$(git merge-base "${from}" "${to}")
+    local diff_output
+    # 1. Run 'git diff' only ONCE and handle potential fatal errors.
+    if ! diff_output=$(git diff --name-only "${commit_merge}" "${to}" 2>/tmp/git_error.log); then
+        echoerr "--- FATAL: 'git diff' command failed ---"
+        echoerr "The error was:"
+        cat /tmp/git_error.log
+        return 1
+    fi
+
+    # 2. Check for non-package files using the stored output.
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
-    # Example:
-    # https://buildkite.com/elastic/integrations/builds/25606
-    # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
+    if echo "${diff_output}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))'; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
+
+    # 3. Check for this specific package's files using the SAME stored output.
     echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
-    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
-    # Example:
-    # https://buildkite.com/elastic/integrations/builds/25606
-    # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
+    if echo "${diff_output}" | grep -q -E "^packages/${package}/"; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
+
     echo "[${package}] PR is not affected"
     return 1
 }
@@ -805,6 +815,86 @@ teardown_test_package() {
 
 list_all_directories() {
     find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+}
+
+# Get all PR-affected packages from the packages directory
+# Parameters:
+#   $1: from - from commit/changeset
+#   $2: to - to commit/changeset
+# Returns:
+#   Outputs list of affected packages to stdout
+#   Writes skip reasons to stderr
+get_all_pr_affected_packages() {
+    local from="${1}"
+    local to="${2}"
+    local skipped_packages_file="${3:-}"
+    
+    local affected_packages=()
+    local any_package_failing=0
+    
+    for package in $(list_all_directories); do
+        echo "--- [$package] check if it is required to be tested"
+        pushd "${package}" > /dev/null
+        skip_package=false
+        failure=false
+        if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
+            skip_package=true
+            if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
+                failure=true
+            fi
+        fi
+        popd > /dev/null
+        
+        if [[ "${failure}" == "true" ]]; then
+            echo "Unexpected failure checking ${package}"
+            any_package_failing=1
+            continue
+        fi
+
+        echo "${reason}"
+        if [[ "${skip_package}" == "true" ]] ; then
+            # Write to skipped packages file if provided
+            if [[ -n "${skipped_packages_file}" ]]; then
+                echo "- ${reason}" >> "${skipped_packages_file}"
+            fi
+            continue
+        fi
+        
+        affected_packages+=("${package}")
+        
+        # Check for packages that have linked files referencing this package
+        echo "--- [$package] check for packages with linked files"
+        local linked_packages
+        if linked_packages=$(get_linked_packages "${package}"); then
+            if [[ -n "${linked_packages}" ]]; then
+                echo "[$package] Found linked packages: $(echo "${linked_packages}" | tr '\n' ' ')"
+                # Add linked packages to the affected list if they're not already included
+                while IFS= read -r linked_package; do
+                    if [[ -n "${linked_package}" ]]; then
+                        # Check if the linked package is not already in the affected list
+                        local already_included=false
+                        for existing_pkg in "${affected_packages[@]}"; do
+                            if [[ "${existing_pkg}" == "${linked_package}" ]]; then
+                                already_included=true
+                                break
+                            fi
+                        done
+                        
+                        if [[ "${already_included}" == "false" ]]; then
+                            echo "[$package] Adding linked package: ${linked_package}"
+                            affected_packages+=("${linked_package}")
+                        fi
+                    fi
+                done <<< "${linked_packages}"
+            fi
+        fi
+    done
+    
+    # Output affected packages
+    printf '%s\n' "${affected_packages[@]}"
+    
+    # Return failure status if any package had a fatal error
+    return $any_package_failing
 }
 
 check_package() {
@@ -1124,4 +1214,48 @@ inline_link() {
     fi
 
     printf '\033]1339;%s\a\n' "$link"
+}
+
+# Get packages that have linked files referencing content from the given package directory
+# This helps identify packages that might be affected by changes to shared files
+# Parameters:
+#   $1: package - package directory name
+# Returns:
+#   Outputs list of package names (one per line) that have links to files in the given package
+get_linked_packages() {
+    local package="${1}"
+    
+    # Change to the package directory
+    pushd "${package}" > /dev/null
+    
+    # Use elastic-package links list --packages to get packages that reference files from this directory
+    local linked_packages=""
+    if linked_packages=$(${ELASTIC_PACKAGE_BIN} links list --packages 2>/dev/null); then
+        # Filter out empty lines and the current package itself
+        echo "${linked_packages}" | grep -v "^$" | grep -v "^${package}$" || true
+    fi
+    
+    popd > /dev/null
+}
+
+# Check if a package has any linked files that reference other packages
+# This is useful to understand dependencies between packages
+# Parameters:
+#   $1: package - package directory name
+# Returns:
+#   0 if package has linked files, 1 otherwise
+package_has_linked_files() {
+    local package="${1}"
+    
+    # Change to the package directory
+    pushd "${package}" > /dev/null
+    
+    # Check if there are any .link files in the package
+    if find . -name "*.link" -type f | head -1 | grep -q "\.link$"; then
+        popd > /dev/null
+        return 0
+    fi
+    
+    popd > /dev/null
+    return 1
 }

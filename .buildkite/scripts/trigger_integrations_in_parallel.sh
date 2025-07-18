@@ -51,28 +51,14 @@ fi
 
 packages_to_test=0
 
-for package in ${PACKAGE_LIST}; do
-    # check if needed to create an step for this package
-    echo "--- [$package] check if it is required to be tested"
-    pushd "packages/${package}" > /dev/null
-    skip_package="false"
-    failure="false"
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        skip_package="true"
-        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
-            failure=true
-        fi
-    fi
-    popd > /dev/null
-    if [[ "${failure}" == "true" ]]; then
-        echo "Unexpected failure checking ${package}"
-        exit 1
-    fi
+pushd packages > /dev/null
+if ! affected_packages=$(get_all_pr_affected_packages "${from}" "${to}"); then
+    echo "Error getting affected packages"
+    exit 1
+fi
+popd > /dev/null
 
-    echoerr "${reason}"
-    if [[ "${skip_package}" == "true" ]] ; then
-        continue
-    fi
+for package in ${affected_packages}; do
 
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
