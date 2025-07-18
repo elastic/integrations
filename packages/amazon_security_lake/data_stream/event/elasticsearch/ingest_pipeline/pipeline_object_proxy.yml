@@ -14,12 +14,15 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: ocsf.proxy.ip
+      tag: remove_empty_proxy_ip
+      if: ctx.ocsf?.proxy?.ip == '' || ctx.ocsf?.proxy?.ip == '-'
   - convert:
       field: ocsf.proxy.ip
       tag: convert_proxy_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.ocsf?.proxy?.ip != '' || ctx.ocsf.proxy.ip != '-'
       on_failure:
         - remove:
             field: ocsf.proxy.ip
@@ -62,6 +65,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: drop_empty_proxy_intermediate_ips
+      if: ctx.ocsf?.proxy?.intermediate_ips instanceof List
+      source: |-
+        ((List) ctx.ocsf.proxy.intermediate_ips).removeIf(v -> v == '-');
   - foreach:
       field: ocsf.proxy.intermediate_ips
       if: ctx.ocsf?.proxy?.intermediate_ips instanceof List
