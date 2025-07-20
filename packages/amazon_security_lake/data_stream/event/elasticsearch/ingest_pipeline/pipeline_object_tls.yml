@@ -55,20 +55,20 @@ processors:
       tag: drop_empty_json_tls_sans_name_ips
       if: ctx.json?.tls?.sans instanceof List
       source: |-
-        boolean drop(Object object) {
+        boolean dropDash(Object object) {
           if (object == '-') {
             // We do not need to handle null or ' ' since they were done in default.
             return true;
           } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(v -> drop(v));
+            ((Map) object).values().removeIf(v -> dropDash(v));
             return (((Map) object).size() == 0);
           } else if (object instanceof List) {
-            ((List) object).removeIf(v -> drop(v));
+            ((List) object).removeIf(v -> dropDash(v));
             return (((List) object).length == 0);
           }
           return false;
         }
-        drop(ctx.ocsf);
+        dropDash(ctx.ocsf);
   - foreach:
       field: json.tls.sans
       if: ctx.json?.tls?.sans instanceof List
