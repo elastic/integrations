@@ -13,10 +13,7 @@ Reference for [REST APIs](https://docs.threatconnect.com/en/latest/rest_api/rest
 ## Compatibility
 
 This module has been tested against the **ThreatConnect API Version v3**.
-The minimum **kibana.version** required is **8.11.0**.
-The minimum required versions for the Elastic Stack is **8.12.0**.
 The minimum required ThreatConnect Platform version is **7.3.1**.
-This integration module uses the ThreatConnect V3 API.
 
 ## Requirements
 

@@ -45,11 +45,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-08-05T15:41:18.411Z",
     "agent": {
-        "ephemeral_id": "edde0bc1-0e59-44d9-b1bb-abbd7475a28a",
-        "id": "e55a97d9-f895-45b2-8fca-cb45755f60cd",
-        "name": "elastic-agent-86888",
+        "ephemeral_id": "1306b1a8-e483-4b73-8a9f-0c9693b0850a",
+        "id": "c92576df-b24c-47aa-bfeb-01fed074d411",
+        "name": "elastic-agent-33100",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "authentik": {
         "event": {
@@ -84,16 +84,16 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "authentik.event",
-        "namespace": "62208",
+        "namespace": "99344",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e55a97d9-f895-45b2-8fca-cb45755f60cd",
+        "id": "c92576df-b24c-47aa-bfeb-01fed074d411",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "action": "user-write",
@@ -104,7 +104,7 @@ An example event for `event` looks as following:
         "created": "2024-08-05T15:41:18.411Z",
         "dataset": "authentik.event",
         "id": "d012e8af-cb94-4fa2-9e92-961e4eebc060",
-        "ingested": "2024-08-21T12:04:25Z",
+        "ingested": "2025-07-09T09:38:33Z",
         "kind": "event",
         "original": "{\"action\":\"user_write\",\"app\":\"authentik.events.signals\",\"brand\":{\"app\":\"authentik_brands\",\"model_name\":\"brand\",\"name\":\"Default brand\",\"pk\":\"fcba828076b94dedb2d5a6b4c5556fa1\"},\"client_ip\":\"67.43.156.0\",\"context\":{\"attributes\":{\"settings\":{\"locale\":\"\"}},\"created\":false,\"email\":\"root@localhost\",\"http_request\":{\"args\":{\"query\":\"\"},\"method\":\"GET\",\"path\":\"/api/v3/flows/executor/default-user-settings-flow/\"},\"name\":\"authentik Default Admin\",\"username\":\"akadmin\"},\"created\":\"2024-08-05T15:41:18.411017Z\",\"expires\":\"2024-08-06T15:41:18.410276Z\",\"pk\":\"d012e8af-cb94-4fa2-9e92-961e4eebc060\",\"user\":{\"email\":\"root@localhost\",\"pk\":1,\"username\":\"akadmin\"}}",
         "type": [
@@ -266,13 +266,13 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-21T12:06:54.045Z",
+    "@timestamp": "2025-07-08T10:42:33.381Z",
     "agent": {
-        "ephemeral_id": "131ab180-e0d2-4054-8ae7-06cc8f2c1d56",
-        "id": "48ae0a0f-a7dc-4d47-b458-48c79d5d118e",
-        "name": "elastic-agent-38018",
+        "ephemeral_id": "4b426494-b60b-4a12-b26d-371de0e70570",
+        "id": "7e087d11-bca0-40d1-9322-dbe06d6900e6",
+        "name": "elastic-agent-25925",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "authentik": {
         "group": {
@@ -300,16 +300,16 @@ An example event for `group` looks as following:
     },
     "data_stream": {
         "dataset": "authentik.group",
-        "namespace": "24575",
+        "namespace": "58753",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "48ae0a0f-a7dc-4d47-b458-48c79d5d118e",
+        "id": "7e087d11-bca0-40d1-9322-dbe06d6900e6",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -317,8 +317,9 @@ An example event for `group` looks as following:
             "iam"
         ],
         "dataset": "authentik.group",
-        "ingested": "2024-08-21T12:06:57Z",
+        "ingested": "2025-07-08T10:42:36Z",
         "kind": "asset",
+        "module": "authentik",
         "original": "{\"attributes\":{\"ldap_uniq\":\"S-1-5-21-1234567890-1234567890-1234567890-1234\"},\"is_superuser\":false,\"name\":\"AllUsers\",\"num_pk\":55003,\"parent\":null,\"parent_name\":null,\"pk\":\"29613be9-2db3-4488-9338-60ec7762f60d\",\"roles\":[],\"roles_obj\":[],\"users\":[12,14,15,7,9,13,8,16,11,6,4],\"users_obj\":null}",
         "type": [
             "group",
@@ -411,13 +412,13 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-21T12:09:24.375Z",
+    "@timestamp": "2025-07-08T10:43:23.594Z",
     "agent": {
-        "ephemeral_id": "5a57d88f-c696-4acf-bf3f-9d9e2a1fed79",
-        "id": "584b670d-b9d7-43d3-879e-0da908afc09a",
-        "name": "elastic-agent-32864",
+        "ephemeral_id": "e97d8aba-29ee-47eb-8a1e-68aa62bc843f",
+        "id": "d49b6eed-3475-4699-ab32-ed8324592fcf",
+        "name": "elastic-agent-69318",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "authentik": {
         "user": {
@@ -441,16 +442,16 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "authentik.user",
-        "namespace": "15430",
+        "namespace": "29617",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "584b670d-b9d7-43d3-879e-0da908afc09a",
+        "id": "d49b6eed-3475-4699-ab32-ed8324592fcf",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -458,8 +459,9 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "authentik.user",
-        "ingested": "2024-08-21T12:09:27Z",
+        "ingested": "2025-07-08T10:43:26Z",
         "kind": "asset",
+        "module": "authentik",
         "original": "{\"attributes\":{},\"avatar\":\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NHB4IiBoZWlnaHQ9IjY0cHgiIHZpZXdCb3g9IjAgMCA2NCA2NCIgdmVyc2lvbj0iMS4xIj48cmVjdCBmaWxsPSIjMzc3YjM3IiBjeD0iMzIiIGN5PSIzMiIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByPSIzMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBzdHlsZT0iY29sb3I6ICNmZmY7IGxpbmUtaGVpZ2h0OiAxOyBmb250LWZhbWlseTogJ1JlZEhhdFRleHQnLCdPdmVycGFzcycsb3ZlcnBhc3MsaGVsdmV0aWNhLGFyaWFsLHNhbnMtc2VyaWY7ICIgZmlsbD0iI2ZmZiIgYWxpZ25tZW50LWJhc2VsaW5lPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI0MDAiIGR5PSIuMWVtIj5BQTwvdGV4dD48L3N2Zz4=\",\"email\":\"root123@example.com\",\"groups\":[\"722c1c38-3f82-4b58-9f2f-bed1c7f16f84\",\"9eeda44b-9bd3-474e-84f9-39c661427772\"],\"groups_obj\":null,\"is_active\":true,\"is_superuser\":true,\"last_login\":\"2024-08-13T05:33:54.801600Z\",\"name\":\"authentik Default Admin\",\"path\":\"users\",\"pk\":4,\"type\":\"internal\",\"uid\":\"0abfaa5432568967abcdef895517d6d9b012345677899abcde78befef4f5cd4e99\",\"username\":\"akadmin\",\"uuid\":\"abcdef12-1234-5678-1725-abcdefabcdef\"}",
         "type": [
             "user",
