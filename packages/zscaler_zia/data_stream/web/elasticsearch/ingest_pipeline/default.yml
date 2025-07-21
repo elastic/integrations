@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Web logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -37,6 +48,33 @@ processors:
       tag: rename_resp_event
       target_field: json
       ignore_missing: true
+  - script:
+      tag: check_template_version
+      params:
+        pkg_version: 3.15.1
+        data_stream: web-log
+        expect:
+          fields: action|appclass|applayerprotocol|appname|appriskscore|apprulelabel|b64referer|b64url|bamd5|bandwidthclassname|bandwidthrulename|bwthrottle|bypassedtime|bypassedtraffic|cloudname|cltintip|cltip|cltpubip|cltsourceport|cltsslcipher|cltsslfailcount|cltsslfailreason|cltsslsessreuse|clttlsversion|company|contenttype|datacenter|datacentercity|datacentercountry|day|day_of_month|dept|deviceappversion|devicehostname|devicemodel|devicename|deviceostype|deviceosversion|deviceowner|devicetype|df_hosthead|df_hostname|dlpdict|dlpdicthitcount|dlpeng|dlpidentifier|dlpmd5|dlprulename|eedone|epochtime|external_devid|externalsslpolicyreason|fileclass|filename|filesubtype|filetype|flow_type|forward_gateway_ip|forward_gateway_name|forward_type|host|hour|is_dst_cntry_risky|is_src_cntry_risky|is_sslexpiredca|is_sslselfsigned|is_ssluntrustedca|keyprotectiontype|location|login|malwarecategory|malwareclass|minute|mobappcategory|mobappname|mobdevtype|module|month|month_of_year|nssserviceip|oapprulelabel|obwclassname|ocip|ocpubip|odevicehostname|odevicename|odeviceowner|odlpdict|odlpeng|odlprulename|ofwd_gw_name|ologin|ordr_rulename|ourlcat|ourlfilterrulelabel|ozpa_app_seg_name|productversion|prompt_req|proto|rdr_rulename|reason|recordid|refererhost|reqdatasize|reqheadersize|reqmethod|reqsize|reqversion|respcode|respdatasize|respheadersize|respsize|respversion|riskscore|rulelabel|ruletype|second|serverip|serversslsessreuse|sha256|srvcertchainvalpass|srvcertvalidationtype|srvcertvalidityperiod|srvocspresult|srvsslcipher|srvtlsversion|srvwildcardcert|ssldecrypted|threatname|threatseverity|throttlereqsize|throttlerespsize|time|totalsize|trafficredirectmethod|tz|unscannabletype|upload_doctypename|upload_fileclass|upload_filename|upload_filesubtype|upload_filetype|urlcatmethod|urlclass|urlfilterrulelabel|urlsubcat|urlsupercat|useragent|useragentclass|useragenttoken|userlocationname|year|zpa_app_seg_name|ztunnelversion
+          version: v10
+      if: ctx.json != null && ctx._conf?.strict_fields == true
+      source: |-
+        if (ctx.resp?.version == null) {
+          def fields = [];
+          for (e in ctx.json.entrySet()) {
+            fields.add(e.getKey());
+          }
+          Collections.sort(fields);
+          String signature = String.join("|", fields);
+          if (signature != params.expect.fields) {
+            ctx.error = ctx.error ?: [:];
+            ctx.error.message = ctx.error.message ?: [];
+            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+          }
+        } else if (ctx.resp.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+        }
   - remove:
       field: resp
       tag: remove_resp
@@ -693,6 +731,16 @@ processors:
       target_field: zscaler_zia.web.is_ssl_certificate_untrusted
       ignore_missing: true
   - rename:
+      field: json.is_src_cntry_risky
+      tag: rename_is_src_cntry_risky
+      target_field: zscaler_zia.web.is_src_cntry_risky
+      ignore_missing: true
+  - rename:
+      field: json.is_dst_cntry_risky
+      tag: rename_is_dst_cntry_risky
+      target_field: zscaler_zia.web.is_dst_cntry_risky
+      ignore_missing: true
+  - rename:
       field: json.keyprotectiontype
       tag: rename_keyprotectiontype
       target_field: zscaler_zia.web.key_protection_type
@@ -933,6 +981,11 @@ processors:
       field: json.productversion
       tag: rename_productversion
       target_field: zscaler_zia.web.product_version
+      ignore_missing: true
+  - rename:
+      field: json.prompt_req
+      tag: rename_prompt_req
+      target_field: zscaler_zia.web.prompt_req
       ignore_missing: true
   - rename:
       field: json.proto
@@ -1570,8 +1623,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field: json
-      tag: remove_json
+      field:
+        - json
+        - _conf
+      tag: remove_unused
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values

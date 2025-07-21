@@ -4,8 +4,42 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
+Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
+
+## Threat List API Feeds
+
+The Threat List API provides the following types of threat feeds:
+
+- **Cryptominers**
+- **First Stage Delivery Vectors**
+- **Infostealers**
+- **Internet of Things (IoT)**
+- **Linux**
+- **Malicious Network Infrastructure**
+- **Malware**
+- **Mobile**
+- **OS X**
+
+## GTI Subscription Tiers
+
+Customers can access a subset of the available threat lists based on their **Google Threat Intelligence (GTI) tier**:
+
+- **GTI Standard**: Ransomware, Malicious Network Infrastructure
+- **GTI Enterprise**: Ransomware, Malicious Network Infrastructure, Malware, Threat Actor, Daily Top Trending
+- **GTI Enterprise+**: Access to all available threat lists
+
+## Data Streams
+
+Data collection is available for all nine feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `linux`, `malicious_network_infrastructure`, `malware`, `mobile` and `osx`, each with a separate data stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+
 ## Requirements
 
+### Agentless-enabled integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
@@ -39,7 +73,7 @@ To keep the collected data up to date, **Transforms** are used.
 
 Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
 
-Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` and `IOC Stream Overview` dashboards.
+Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` dashboard.
 
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
 
@@ -114,10 +148,10 @@ The following is one transform along with its associated pipeline to filter rele
 4. Under the **Destination configuration** section, set the **Ingest Pipeline**:
    - Each transform in the **Google Threat Intelligence** integration has a corresponding ingest pipeline.
    - Refer to the **Transforms table** above for the appropriate pipeline name associated with transform.
-   - Prefix the pipeline name with the integration version.  
-     For example:  
+   - Prefix the pipeline name with the integration version.
+     For example:
      ```
-     0.1.0-ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline
+     {package_version}-ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline
      ```
    - Click **Update** to save the changes.
 5. Click the **three dots** again next to the transform and select **Start** to activate it.
@@ -142,6 +176,36 @@ The following is one transform along with its associated pipeline to filter rele
 
 ## Logs Reference
 
+### Cryptominers
+
+This is the `Cryptominer` dataset.
+
+#### Example
+
+{{event "cryptominer"}}
+
+{{fields "cryptominer"}}
+
+### First Stage Delivery Vectors
+
+This is the `First Stage Delivery Vectors` dataset.
+
+#### Example
+
+{{event "first_stage_delivery_vectors"}}
+
+{{fields "first_stage_delivery_vectors"}}
+
+### Infostealers
+
+This is the `Infostealers` dataset.
+
+#### Example
+
+{{event "infostealer"}}
+
+{{fields "infostealer"}}
+
 ### IOC Stream
 
 This is the `IOC Stream` dataset.
@@ -151,3 +215,63 @@ This is the `IOC Stream` dataset.
 {{event "ioc_stream"}}
 
 {{fields "ioc_stream"}}
+
+### Internet of Things
+
+This is the `Internet of Things` dataset.
+
+#### Example
+
+{{event "iot"}}
+
+{{fields "iot"}}
+
+### Linux
+
+This is the `Linux` dataset.
+
+#### Example
+
+{{event "linux"}}
+
+{{fields "linux"}}
+
+### Malicious Network Infrastructure
+
+This is the `Malicious Network Infrastructure` dataset.
+
+#### Example
+
+{{event "malicious_network_infrastructure"}}
+
+{{fields "malicious_network_infrastructure"}}
+
+### Malware
+
+This is the `Malware` dataset.
+
+#### Example
+
+{{event "malware"}}
+
+{{fields "malware"}}
+
+### Mobile
+
+This is the `Mobile` dataset.
+
+#### Example
+
+{{event "mobile"}}
+
+{{fields "mobile"}}
+
+### OS X
+
+This is the `OS X` dataset.
+
+#### Example
+
+{{event "osx"}}
+
+{{fields "osx"}}

@@ -1033,6 +1033,11 @@ processors:
     ignore_missing: true
     if: ctx.bitdefender?.event?.user?.userName != null && ctx.bitdefender?.event?.user?.userName != ""
 
+- set:
+    field: user.email
+    copy_from: bitdefender.event.user.userName
+    if: ctx.user?.email == null && ctx.bitdefender?.event?.user?.userName != null && ctx.bitdefender.event.user.userName.indexOf("@") > 0
+
 - append:
     field: related.user
     value:
@@ -1049,6 +1054,11 @@ processors:
       - '%{GREEDYDATA:user.name}'
     ignore_missing: true
     if: ctx.user?.name == null && ctx.bitdefender?.event?.user?.name != null && ctx.bitdefender?.event?.user?.name != ""
+
+- set:
+    field: user.email
+    copy_from: bitdefender.event.user.name
+    if: ctx.user?.email == null && ctx.bitdefender?.event?.user?.name != null && ctx.bitdefender.event.user.name.indexOf("@") > 0
 
 - append:
     field: related.user
@@ -1067,6 +1077,11 @@ processors:
     ignore_missing: true
     if: ctx.user?.name == null && ctx.bitdefender?.event?.username != null && ctx.bitdefender?.event?.username != ""
 
+- set:
+    field: user.email
+    copy_from: bitdefender.event.username
+    if: ctx.user?.email == null && ctx.bitdefender?.event?.username != null && ctx.bitdefender.event.username.indexOf("@") > 0
+
 - append:
     field: related.user
     value:
@@ -1083,6 +1098,11 @@ processors:
       - '%{GREEDYDATA:user.name}'
     ignore_missing: true
     if: ctx.user?.name == null && ctx.bitdefender?.event?.detection_username != null && ctx.bitdefender?.event?.detection_username != ""
+
+- set:
+    field: user.email
+    copy_from: bitdefender.event.detection_username
+    if: ctx.user?.email == null && ctx.bitdefender?.event?.detection_username != null && ctx.bitdefender.event.detection_username.indexOf("@") > 0
 
 - append:
     field: related.user

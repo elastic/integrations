@@ -26,34 +26,14 @@ This module has been tested against `Tenable Vulnerability Management release` [
 
 ## Requirements
 
-- Elastic Agent must be installed _or_ use [Agentless integration](#agentless-enabled-integration).
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-**Note:**
+**Notes:**
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
   - If any long-running export jobs are stuck in the "PROCESSING" state and reach the user-provided timeout, the export job will be terminated, allowing for the initiation of a new export job after the specified interval.
 
-## Agentless Enabled Integration
+## Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
@@ -61,10 +41,10 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Setup
 
-### To collect data from the Tenable Vulnerability Management REST APIs, follow the below steps:
+### Collect data from the Tenable Vulnerability Management REST APIs
 
-  1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
-  2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
+1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
+2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
 
 **Note:**
   - For the Tenable Vulnerability Management asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
@@ -72,14 +52,34 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - For the Tenable Vulnerability Management audit, **ADMINISTRATOR [64]** user permissions are required in created user's access key and secret key.
   - For more details related to permissions, refer to the link [here](https://developer.tenable.com/docs/permissions).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Tenable Vulnerability Management.
-3. Click on the "Tenable Vulnerability Management" integration from the search results.
-4. Click on the "Add Tenable Vulnerability Management" button to add the integration.
-5. Add all the required integration configuration parameters according to the enabled input type.
-6. Click on "Save and Continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Tenable Vulnerability Management**.
+3. Select the **Tenable Vulnerability Management** integration and add it.
+4. Add all the required integration configuration parameters according to the enabled input type.
+5. Save the integration.
+
+## Troubleshooting
+
+### Breaking Changes
+
+#### Support for Elastic Vulnerability Findings page.
+
+Version `4.0.0` of the Tenable Vulnerability Management integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of Tenable Vulnerability Management integration to ingest their enriched asset vulnerabilities from Tenable platform into Elastic and get insights directly from Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
+This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-tenable_io.vulnerability-*` into new destination indices matching the pattern `security_solution-tenable_io.vulnerability_latest-*`. The Elastic Vulnerability Findings page will display vulnerabilities based on the destination indices.
+
+For existing users of Tenable Vulnerability Management integration, before upgrading to `4.0.0` please ensure following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
 
 ## Logs reference
 

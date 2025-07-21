@@ -33,11 +33,18 @@ processors:
       value: deletion
       tag: append_deletion_type
       if: ctx.crowdstrike?.event?.OperationName != null && ctx.crowdstrike.event.OperationName == "deleteUser"
-  - rename:
+  - grok:
       field: crowdstrike.event.UserId
-      target_field: user.name
-      tag: rename_user_id
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
       ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.email
+      copy_from: crowdstrike.event.UserId
+      tag: copy_user_email
+      if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - append:
       field: event.action
       value: '{{{crowdstrike.event.OperationName}}}'

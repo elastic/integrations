@@ -366,6 +366,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: ses.module.url
+      target_field: ses.module.url.text
+      tag: rename_ses_module_url_to_text
+      if: ctx.ses?.module?.url instanceof String
+      ignore_missing: true
   - foreach:
       field: ses.module.url.category_ids
       if: ctx.ses?.module?.url?.category_ids instanceof List
