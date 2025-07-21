@@ -87,6 +87,12 @@ processors:
     field: user.email
     value: '{{{zoom.operator}}}'
     ignore_empty_value: true
+    if: ctx.zoom?.operator instanceof String && ctx.zoom.operator.contains('@')
+- set:
+    field: user.email
+    copy_from: zoom.user.email
+    ignore_empty_value: true
+    override: false
 
 #
 # set user.* from user object when there's no operator.
