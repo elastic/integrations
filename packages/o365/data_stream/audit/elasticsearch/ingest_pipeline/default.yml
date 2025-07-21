@@ -740,13 +740,6 @@ processors:
         def user = ctx.user?.id;
         def subject = ctx.o365audit?.ExchangeMetaData?.Subject != null ? ctx.o365audit.ExchangeMetaData.Subject : (ctx.email?.subject != null ? ctx.email.subject : '');
         ctx.message = "Office365 Alert: " + operation + " detected in email sent by " + user + " with subject '" + subject + "'";
-      on_failure:
-        - set:
-            field: message
-            value: 'DLP Alert: Unable to construct message due to script failure.'
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set: 
       field: event.kind
       value: alert
