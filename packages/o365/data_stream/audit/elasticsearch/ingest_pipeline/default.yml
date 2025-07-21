@@ -733,10 +733,11 @@ processors:
   - script:
       lang: painless
       description: Construct a message from operation, user and subject fields for 'ComplianceDLPExchange' events
-      if: 'ctx.event?.code != null && ctx.event?.code == "ComplianceDLPExchange"'
+      tag: construct_message_for_compliance_dlp_exchange_events
+      if: ctx.event?.code == "ComplianceDLPExchange"
       source: >
-        def operation = ctx.event?.action != null ? ctx.event.action : ctx.o365audit?.Operation;
-        def user = ctx.user?.id != null ? ctx.user.id : ctx.o365audit?.UserId;
+        def operation = ctx.event?.action;
+        def user = ctx.user?.id;
         def subject = ctx.o365audit?.ExchangeMetaData?.Subject != null ? ctx.o365audit.ExchangeMetaData.Subject : (ctx.email?.subject != null ? ctx.email.subject : '');
         ctx.message = "Office365 Alert: " + operation + " detected in email sent by " + user + " with subject '" + subject + "'";
       on_failure:
