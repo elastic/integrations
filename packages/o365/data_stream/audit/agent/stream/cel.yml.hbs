@@ -171,13 +171,17 @@ program: |-
   														(list_contents_resp.Header.Nextpageuri[0])
   													:
   														"",
-  													// keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
+  													// keep fetching more if (nextpageuri exists) or (the request time range ends within one batch duration of now)
   													"want_more_content": has(list_contents_resp.Header) &&
   													(
   														has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ||
-  														has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0
-  													) || {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split("T").as(t, t.size() > 1 &&
-  													t[0] != now().format("2006-01-02")),
+  														has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0 ||
+  														list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().as(reqQuery,
+  														  reqQuery.?endTime[?0].optMap(endTime,
+  														    (now() - endTime.parse_time(time_layout.RFC3339)) >= duration(state.base.batch_interval)
+  														  ).orValue(false)
+  														)
+  													)
   												}
   											)
   										:
@@ -244,8 +248,9 @@ program: |-
   										"want_more_content": (
   											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
   											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 &&
-  											reqQuery.endTime[0].split("T").as(t, t.size() > 0 &&
-  											t[0] != now().format("2006-01-02"))
+  											reqQuery.endTime[0].parse_time(time_layout.RFC3339).as(endTime,
+  											  (now() - endTime) >= duration(state.base.batch_interval)
+  											)
   										),
   									},
   								]
