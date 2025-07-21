@@ -65,10 +65,10 @@ processors:
         CISCO_TZ: '[a-zA-Z]{1,7}([+-]\d{1,2}|[+-]\d{2}:\d{2})?'
   - grok:
       field: _temp_.message
-      tag: grok_message
+      tag: grok_message_at_top_level
       patterns:
         - '^%%{GREEDYDATA:message}$'
-        - '^%{GREEDYDATA}%%{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA}%%{GREEDYDATA:message}$' # Extract part after % in message
         - '^%{GREEDYDATA:_temp_.generic_message}$'
   # Handle all-digit hostnames as sequence numbers
   - grok:
@@ -239,7 +239,7 @@ processors:
       ignore_failure: true
   - dissect:
       field: message
-      tag: dissect_gp
+      tag: dissect_gp_access_list
       pattern: "access-list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
       if: "['IPACCESSLOGP', 'ACCESSLOGP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)"
       ignore_failure: true
