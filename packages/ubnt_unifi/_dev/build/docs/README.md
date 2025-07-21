@@ -67,7 +67,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 
 1. In Kibana navigate to Management > Integrations.
 2. In "Search for integrations" top bar, search for `Ubiquiti UniFi`.
-3. Select the "Ubiquiti UniFinary" integration from the search results.
+3. Select the "Ubiquiti UniFi" integration from the search results.
 4. Select "Add Ubiquiti UniFi" to add the integration.
 5. Add all the required integration configuration parameters.
 6. Select "Save and continue" to save the integration.

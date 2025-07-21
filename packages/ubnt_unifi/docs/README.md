@@ -67,7 +67,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 
 1. In Kibana navigate to Management > Integrations.
 2. In "Search for integrations" top bar, search for `Ubiquiti UniFi`.
-3. Select the "Ubiquiti UniFinary" integration from the search results.
+3. Select the "Ubiquiti UniFi" integration from the search results.
 4. Select "Add Ubiquiti UniFi" to add the integration.
 5. Add all the required integration configuration parameters.
 6. Select "Save and continue" to save the integration.
@@ -331,6 +331,38 @@ An example event for `logs` looks as following:
 | log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address |  | keyword |
+| ubnt.unifi.dhcp.interface | The interface name associated with the DHCP event | keyword |
+| ubnt.unifi.dhcp.ip | The IP address associated to the source | keyword |
+| ubnt.unifi.dhcp.mac | The MAC address associated to the source | keyword |
+| ubnt.unifi.dhcp.message | The message associated to the DHCP event | keyword |
+| ubnt.unifi.dhcp.name | The name of the device associated to the DHCP event | keyword |
+| ubnt.unifi.earlyoom.memory.total | The total amount of memory available | integer |
+| ubnt.unifi.earlyoom.memory.used | The amount of memory used | integer |
+| ubnt.unifi.earlyoom.memory.used_pct | The percentage of memory used | float |
+| ubnt.unifi.earlyoom.swap.total | The total amount of swap available | integer |
+| ubnt.unifi.earlyoom.swap.used | The amount of swap used | integer |
+| ubnt.unifi.earlyoom.swap.used_pct | The percentage of swap used | float |
+| ubnt.unifi.linkcheck.city | The city associated with the link check | keyword |
+| ubnt.unifi.linkcheck.country | The country associated with the link check | keyword |
+| ubnt.unifi.linkcheck.countryCode | The country code associated with the link check | keyword |
+| ubnt.unifi.linkcheck.downlink.rate | The rate associated with the downlink | keyword |
+| ubnt.unifi.linkcheck.downlink.speed | The speed associated with the downlink | float |
+| ubnt.unifi.linkcheck.function | The function associated with the link check | keyword |
+| ubnt.unifi.linkcheck.latitude | The latitude associated with the link check | float |
+| ubnt.unifi.linkcheck.longitude | The longitude associated with the link check | float |
+| ubnt.unifi.linkcheck.provider | The provider associated with the link check | keyword |
+| ubnt.unifi.linkcheck.providerUrl | The URL associated with the provider | keyword |
+| ubnt.unifi.linkcheck.resultUrl | The WifiMan speed test result URL | keyword |
+| ubnt.unifi.linkcheck.speedMbps | The speed in Mbps associated with the link check | float |
+| ubnt.unifi.linkcheck.uplink.rate | The rate associated with the uplink | keyword |
+| ubnt.unifi.linkcheck.uplink.speed | The speed associated with the uplink | float |
+| ubnt.unifi.linkcheck.url | The URL associated with the link check | keyword |
+| ubnt.unifi.mcad.wireless_agg_stats.log_sta_anomalies.anomalies | The anomalies associated with the wireless aggregate stats | keyword |
+| ubnt.unifi.mcad.wireless_agg_stats.log_sta_anomalies.bssid | The BSSID associated with the wireless aggregate stats | keyword |
+| ubnt.unifi.mcad.wireless_agg_stats.log_sta_anomalies.radio | The radio associated with the wireless aggregate stats | keyword |
+| ubnt.unifi.mcad.wireless_agg_stats.log_sta_anomalies.satisfaction_now | The satisfaction now associated with the wireless aggregate stats | keyword |
+| ubnt.unifi.mcad.wireless_agg_stats.log_sta_anomalies.sta | The STA associated with the wireless aggregate stats | keyword |
+| ubnt.unifi.mcad.wireless_agg_stats.log_sta_anomalies.vap | The VAP associated with the wireless aggregate stats | keyword |
 | ubnt.unifi.stahtd.dump.arp_reply_gw_seen |  | keyword |
 | ubnt.unifi.stahtd.dump.assoc_delta |  | keyword |
 | ubnt.unifi.stahtd.dump.assoc_status |  | keyword |
