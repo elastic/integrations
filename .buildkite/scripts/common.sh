@@ -288,6 +288,9 @@ create_kind_cluster() {
 }
 
 delete_kind_cluster() {
+    if ! command -v kind > /dev/null 2>&1 ; then
+        return
+    fi
     echo "--- Delete kind cluster"
     kind delete cluster || true
 }
