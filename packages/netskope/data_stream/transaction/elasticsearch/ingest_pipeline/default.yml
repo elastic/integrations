@@ -4,7 +4,7 @@ processors:
   - set:
       tag: set_ecs_version
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
   - set:
       tag: set_event_kind
       field: event.kind
@@ -255,6 +255,11 @@ processors:
       tag: set_client_geo_postal_code_from_transaction_x_c_zipcode
       copy_from: netskope.transaction.x_c_zipcode
       ignore_empty_value: true
+  - set:
+      field: source.geo
+      tag: copy_source_geo_from_client_geo
+      copy_from: client.geo
+      ignore_empty_value: true
   - convert:
         field: netskope.transaction.rs_status
         tag: convert_netskope_transaction_rs_status_to_long
@@ -465,6 +470,11 @@ processors:
       field: destination.geo.postal_code
       tag: set_destination_geo_postal_code_from_transaction_x_s_zipcode
       copy_from: netskope.transaction.x_s_zipcode
+      ignore_empty_value: true
+  - set:
+      field: server.geo
+      tag: copy_server_geo_from_destination_geo
+      copy_from: destination.geo
       ignore_empty_value: true
   - convert:
         field: netskope.transaction.cs_uri_port
