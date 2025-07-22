@@ -801,32 +801,32 @@ An example event for `source` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-03T06:32:03.193Z",
+    "@timestamp": "2025-07-22T07:00:31.509Z",
     "agent": {
-        "ephemeral_id": "498f9d2e-09a7-4616-8ee1-8c60809852c3",
-        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "deb5d3f5-f06b-4716-aa57-6c31f8b7cc53",
+        "id": "22a83b2f-a58f-491d-957b-7dbf9e6cc68c",
+        "name": "elastic-agent-91002",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_scc.source",
-        "namespace": "ep",
+        "namespace": "57739",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
+        "id": "22a83b2f-a58f-491d-957b-7dbf9e6cc68c",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-07-03T06:32:03.193Z",
+        "created": "2025-07-22T07:00:31.509Z",
         "dataset": "google_scc.source",
-        "ingested": "2023-07-03T06:32:06Z",
+        "ingested": "2025-07-22T07:00:34Z",
         "kind": "event",
         "original": "{\"canonicalName\":\"organizations/595779152576/sources/10134421585261057824\",\"description\":\"Extend your security view from the edge.\",\"displayName\":\"Cloudflare Security Events\",\"name\":\"organizations/595779152576/sources/10134421585261057824\"}"
     },
