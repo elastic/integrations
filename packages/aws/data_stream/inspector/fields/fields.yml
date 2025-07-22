@@ -4,9 +4,63 @@
     - name: aws_account_id
       type: keyword
       description: The AWS account ID associated with the finding.
+    - name: code_vulnerability_details
+      type: group
+      fields:
+        - name: cwes
+          type: keyword
+          description: The Common Weakness Enumeration (CWE) item associated with the detected vulnerability.
+        - name: detector_id
+          type: keyword
+          description: The ID for the Amazon CodeGuru detector associated with the finding. For more information on detectors see Amazon CodeGuru Detector Library.
+        - name: detector_name
+          type: keyword
+          description: The name of the detector used to identify the code vulnerability. For more information on detectors see CodeGuru Detector Library.
+        - name: detector_tags
+          type: keyword
+          description: The detector tag associated with the vulnerability. Detector tags group related vulnerabilities by common themes or tactics. For a list of available tags by programming language, see Java tags, or Python tags.
+        - name: file_path
+          type: group
+          fields:
+            - name: end_line
+              type: long
+              description: The line number of the last line of code that a vulnerability was found in.
+            - name: name
+              type: keyword
+              description: The name of the file the code vulnerability was found in.
+            - name: path
+              type: keyword
+              description: The file path to the code that a vulnerability was found in.
+            - name: start_line
+              type: long
+              description: The line number of the first line of code that a vulnerability was found in.
+        - name: reference_urls
+          type: keyword
+          description: A URL containing supporting documentation about the code vulnerability detected.
+        - name: rule_id
+          type: keyword
+          description: The identifier for a rule that was used to detect the code vulnerability.
+        - name: source_lambda_layer_arn
+          type: keyword
+          description: The Amazon Resource Name (ARN) of the Lambda layer that the code vulnerability was detected in.
     - name: description
       type: text
       description: The description of the finding.
+    - name: epss
+      type: group
+      fields:
+        - name: score
+          type: double
+          description: The EPSS score.
+    - name: exploitability_details
+      type: group
+      fields:
+        - name: last_known_exploit_at
+          type: date
+          description: The date and time of the last exploit associated with a finding discovered in your environment.
+    - name: exploit_available
+      type: keyword
+      description: If a finding discovered in your environment has an exploit available.
     - name: finding_arn
       type: keyword
       description: The Amazon Resource Number (ARN) of the finding.
@@ -67,6 +121,9 @@
                 - name: component
                   type: group
                   fields:
+                    - name: arn
+                      type: keyword
+                      description: The component ARN. The ARN can be null and is not displayed in the AWS console.
                     - name: id
                       type: keyword
                       description: The component ID.
@@ -85,6 +142,42 @@
         - name: protocol
           type: keyword
           description: The protocol associated with a finding.
+    - name: package_nested
+      type: nested
+      fields:
+        - name: arch
+          type: keyword
+          description: The architecture of the vulnerable package.
+        - name: epoch
+          type: long
+          description: The epoch of the vulnerable package.
+        - name: file_path
+          type: keyword
+          description: The file path of the vulnerable package.
+        - name: fixed_in_version
+          type: keyword
+          description: The version of the package that contains the vulnerability fix.
+        - name: name
+          type: keyword
+          description: The name of the vulnerable package.
+        - name: package_manager
+          type: keyword
+          description: The package manager of the vulnerable package.
+        - name: release
+          type: keyword
+          description: The release of the vulnerable package.
+        - name: remediation
+          type: keyword
+          description: The code to run in your environment to update packages with a fix available.
+        - name: source_lambda_layer_arn
+          type: keyword
+          description: The Amazon Resource Number (ARN) of the AWS Lambda function affected by a finding.
+        - name: source_layer_hash
+          type: keyword
+          description: The source layer hash of the vulnerable package.
+        - name: version
+          type: keyword
+          description: The version of the vulnerable package.
     - name: package_vulnerability_details
       type: group
       fields:
@@ -163,7 +256,7 @@
             - name: file_path
               type: keyword
               description: The file path of the vulnerable package.
-            - name: fixed_inversion
+            - name: fixed_in_version
               type: keyword
               description: The version of the package that contains the vulnerability fix.
             - name: name
@@ -175,6 +268,12 @@
             - name: release
               type: keyword
               description: The release of the vulnerable package.
+            - name: remediation
+              type: keyword
+              description: The code to run in your environment to update packages with a fix available.
+            - name: source_lambda_layer_arn
+              type: keyword
+              description: The Amazon Resource Number (ARN) of the AWS Lambda function affected by a finding.
             - name: source_layer_hash
               type: keyword
               description: The source layer hash of the vulnerable package.
@@ -271,6 +370,12 @@
                         - name: tags
                           type: keyword
                           description: The image tags attached to the Amazon ECR container image.
+                    - name: in_use_count
+                      type: long
+                      description: The number of Amazon ECS tasks or Amazon EKS pods where the Amazon ECR container image is in use.
+                    - name: last_in_use_at
+                      type: date
+                      description: The last time an Amazon ECR image was used in an Amazon ECS task or Amazon EKS pod.
                     - name: platform
                       type: keyword
                       description: The platform of the Amazon ECR container image.
@@ -283,6 +388,60 @@
                     - name: repository_name
                       type: keyword
                       description: The name of the repository the Amazon ECR container image resides in.
+                - name: lambda_function
+                  type: group
+                  fields:
+                    - name: architectures
+                      type: keyword
+                      description: The instruction set architecture that the AWS Lambda function supports. Architecture is a string array with one of the valid values. The default architecture value is x86_64.
+                    - name: code_sha256
+                      type: keyword
+                      description: The SHA256 hash of the AWS Lambda function's deployment package.
+                    - name: execution_role_arn
+                      type: keyword
+                      description: The AWS Lambda function's execution role.
+                    - name: function_name
+                      type: keyword
+                      description: The name of the AWS Lambda function.
+                    - name: last_modified_at
+                      type: date
+                      description: The date and time that a user last updated the configuration, in ISO 8601 format.
+                    - name: layers
+                      type: keyword
+                      description: The AWS Lambda function's layers. A Lambda function can have up to five layers.
+                    - name: package_type
+                      type: keyword
+                      description: The type of deployment package. Set to Image for container image and set Zip for .zip file archive.
+                    - name: runtime
+                      type: keyword
+                      description: The runtime environment for the AWS Lambda function.
+                    - name: version
+                      type: keyword
+                      description: The version of the AWS Lambda function.
+                    - name: vpc_config
+                      type: group
+                      fields:
+                        - name: security_group_ids
+                          type: keyword
+                          description: The VPC security groups and subnets that are attached to an AWS Lambda function. For more information, see VPC Settings.
+                        - name: subnet_ids
+                          type: keyword
+                          description: A list of VPC subnet IDs.
+                        - name: vpc_id
+                          type: keyword
+                          description: The ID of the VPC.
+            - name: code_repository
+              type: group
+              fields:
+                - name: integration_arn
+                  type: keyword
+                  description: The Amazon Resource Name (ARN) of the code security integration associated with the repository.
+                - name: project_name
+                  type: keyword
+                  description: The name of the project in the code repository.
+                - name: provider_type
+                  type: keyword
+                  description: The type of repository provider (such as GitHub, GitLab, etc.).
         - name: id
           type: keyword
           description: The ID of the resource.
@@ -307,6 +466,8 @@
     - name: title
       type: keyword
       description: The title of the finding.
+    - name: transform_unique_id
+      type: keyword
     - name: type
       type: keyword
       description: The type of the finding.

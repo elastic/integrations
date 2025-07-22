@@ -1,0 +1,43 @@
+---
+description: Pipeline for processing service logs.
+processors:
+  - rename:
+      field: cef.extensions.InfobloxLogName
+      tag: rename_InfobloxLogName
+      target_field: infoblox_threat_defense.event.infoblox.log_name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxPoolId
+      tag: rename_InfobloxPoolId
+      target_field: infoblox_threat_defense.event.infoblox.pool_id
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.InfobloxServiceId
+      tag: rename_InfobloxServiceId
+      target_field: infoblox_threat_defense.event.infoblox.service_id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_event_infoblox_service_id
+      copy_from: infoblox_threat_defense.event.infoblox.service_id
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.message
+      tag: rename_message
+      target_field: infoblox_threat_defense.event.message
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
