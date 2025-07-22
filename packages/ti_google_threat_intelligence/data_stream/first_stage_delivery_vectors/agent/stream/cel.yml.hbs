@@ -24,8 +24,8 @@ redact:
   fields:
     - access_token
 program: |
-  (
-    state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006010215"))
+  state.?cursor.last_timestamp.orValue(
+    (now - duration(state.initial_interval)).format("2006010215")
   ).as(start_time, state.with(
     request(
       "GET",
@@ -33,7 +33,7 @@ program: |
         ?"query": has(state.query) ? optional.of([state.query]) : optional.none(),
         "limit": ["4000"],
         "x-tool": ["Elastic"],
-        "User-Agent": ["v0.1.0"], // Keep this in sync with 'version' in package level manifest.yml.
+        "User-Agent": ["v0.5.0"], // Keep this in sync with 'version' in package level manifest.yml.
       }.format_query()
     ).with({
       "Header": {
