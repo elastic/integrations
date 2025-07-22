@@ -296,7 +296,7 @@ delete_kind_cluster() {
 }
 
 is_stack_running() {
-    services=$(elastic-package stack status 2>&1 |grep running | wc -l)
+    services=$(elastic-package stack status 2>&1 | grep -c running)
     if [ "${services}" -gt 0 ]; then
         return 0
     fi
@@ -806,7 +806,7 @@ teardown_test_package() {
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
     if ! is_stack_running ; then
-        echo "Skip dump logs and stack down process"
+        echo "No stack running. Skip dump logs and run stack down process."
         return
     fi
 
