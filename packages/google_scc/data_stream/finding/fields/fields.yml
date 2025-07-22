@@ -718,7 +718,7 @@
                       type: keyword
                       description: This metric measures the impact to the availability of the impacted component resulting from a successfully exploited vulnerability.
                     - name: base_score
-                      type: long
+                      type: double
                       description: The base score is a function of the base metric scores.
                     - name: confidentiality_impact
                       type: keyword
@@ -735,9 +735,24 @@
                     - name: user_interaction
                       type: keyword
                       description: This metric captures the requirement for a human user, other than the attacker, to participate in the successful compromise of the vulnerable component.
+                - name: exploitation_activity
+                  type: keyword
+                  description: The exploitation activity of the vulnerability in the wild.
+                - name: exploit_release_date
+                  type: date
+                  description: Date the first publicly available exploit or PoC was released.
+                - name: first_exploitation_date
+                  type: date
+                  description: Date of the earliest known exploitation.
                 - name: id
                   type: keyword
                   description: The unique identifier for the vulnerability, for example, CVE-2021-34527.
+                - name: impact
+                  type: keyword
+                  description: The potential impact of the vulnerability if it was to be exploited.
+                - name: observed_in_the_wild
+                  type: boolean
+                  description: Whether or not the vulnerability has been observed in the wild.
                 - name: references
                   type: group
                   fields:
@@ -750,3 +765,69 @@
                 - name: upstream_fix_available
                   type: boolean
                   description: Whether upstream fix is available for the CVE.
+                - name: zero_day
+                  type: boolean
+                  description: Whether or not the vulnerability was zero day when the finding was published.
+            - name: cwes
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The CWE identifier.
+                - name: references
+                  type: group
+                  fields:
+                    - name: source
+                      type: keyword
+                      description: Source of the reference.
+                    - name: uri
+                      type: keyword
+                      description: Uri for the mentioned source.
+            - name: fixed_package
+              type: group
+              fields:
+                - name: cpe_uri
+                  type: keyword
+                  description: The CPE URI where the vulnerability was detected.
+                - name: package_name
+                  type: keyword
+                  description: The name of the package where the vulnerability was detected.
+                - name: package_type
+                  type: keyword
+                  description: Type of package, for example, os, maven, or go.
+                - name: package_version
+                  type: keyword
+                  description: The version of the package.
+            - name: offending_package
+              type: group
+              fields:
+                - name: cpe_uri
+                  type: keyword
+                  description: The CPE URI where the vulnerability was detected.
+                - name: package_name
+                  type: keyword
+                  description: The name of the package where the vulnerability was detected.
+                - name: package_type
+                  type: keyword
+                  description: Type of package, for example, os, maven, or go.
+                - name: package_version
+                  type: keyword
+                  description: The version of the package.
+            - name: provider_risk_score
+              type: long
+              description: Provider provided risk_score based on multiple factors. The higher the risk score, the more risky the vulnerability is.
+            - name: reachable
+              type: boolean
+              description: Represents whether the vulnerability is reachable (detected via static analysis).
+            - name: security_bulletin
+              type: group
+              fields:
+                - name: bulletin_id
+                  type: keyword
+                  description: ID of the bulletin corresponding to the vulnerability.
+                - name: submission_time
+                  type: date
+                  description: Submission time of this Security Bulletin.
+                - name: suggested_upgrade_version
+                  type: keyword
+                  description: This represents a version that the cluster receiving this notification should be upgraded to, based on its current version.

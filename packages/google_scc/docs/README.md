@@ -494,48 +494,51 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "3595a791-e9ba-4a51-9eb2-18219952e440",
-        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a9a0a3db-ff56-40e1-b324-4ad9ff501509",
+        "id": "39c156c2-79a3-4f0b-8edc-df08caf36ce0",
+        "name": "elastic-agent-83941",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_scc.finding",
-        "namespace": "ep",
+        "namespace": "71507",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
+        "id": "39c156c2-79a3-4f0b-8edc-df08caf36ce0",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
-        "id": "67d5908d21-1",
-        "ingested": "2023-07-03T06:30:14Z",
-        "kind": "event"
+        "ingested": "2025-07-22T06:28:25Z",
+        "kind": "event",
+        "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}"
     },
     "google_scc": {
         "finding": {
             "canonical_name": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
             "category": "application",
+            "create_time": "2020-02-19T13:37:43.858Z",
+            "event_time": "2023-06-02T05:17:41.936Z",
             "external_systems": {
                 "test": {
                     "assignees": [
                         "primary"
                     ],
-                    "externalSystemUpdateTime": "2022-01-05T05:00:35.674Z",
-                    "externalUid": "test_scc_finding_2",
+                    "external_system_update_time": "2022-01-05T05:00:35.674Z",
+                    "external_uid": "test_scc_finding_2",
                     "name": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test",
                     "status": "updated1"
                 }
             },
+            "external_uri": "http://www.adwait.com",
             "mute": {
                 "initiator": "Unmuted by john@gmail.com",
                 "state": "UNMUTED",
@@ -543,9 +546,6 @@ An example event for `finding` looks as following:
             },
             "name": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
             "parent": "organizations/515665165161/sources/98481484454154454545",
-            "resource": {
-                "name": "//cloudresourcemanager.googleapis.com/projects/45455445554"
-            },
             "resource_name": "//cloudresourcemanager.googleapis.com/projects/45455445554",
             "security_marks": {
                 "name": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks"
@@ -556,12 +556,14 @@ An example event for `finding` looks as following:
         }
     },
     "input": {
-        "type": "gcp-pubsub"
+        "type": "httpjson"
     },
     "organization": {
         "id": "515665165161"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_scc-finding"
     ],
@@ -753,16 +755,38 @@ An example event for `finding` looks as following:
 | google_scc.finding.vulnerability.cve.cvssv3.attack.complexity | This metric describes the conditions beyond the attacker's control that must exist in order to exploit the vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.attack.vector | Base Metrics Represents the intrinsic characteristics of a vulnerability that are constant over time and across user environments. This metric reflects the context by which vulnerability exploitation is possible. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.availability_impact | This metric measures the impact to the availability of the impacted component resulting from a successfully exploited vulnerability. | keyword |
-| google_scc.finding.vulnerability.cve.cvssv3.base_score | The base score is a function of the base metric scores. | long |
+| google_scc.finding.vulnerability.cve.cvssv3.base_score | The base score is a function of the base metric scores. | double |
 | google_scc.finding.vulnerability.cve.cvssv3.confidentiality_impact | This metric measures the impact to the confidentiality of the information resources managed by a software component due to a successfully exploited vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.integrity_impact | This metric measures the impact to integrity of a successfully exploited vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.privileges_required | This metric describes the level of privileges an attacker must possess before successfully exploiting the vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.scope | The Scope metric captures whether a vulnerability in one vulnerable component impacts resources in components beyond its security scope. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.user_interaction | This metric captures the requirement for a human user, other than the attacker, to participate in the successful compromise of the vulnerable component. | keyword |
+| google_scc.finding.vulnerability.cve.exploit_release_date | Date the first publicly available exploit or PoC was released. | date |
+| google_scc.finding.vulnerability.cve.exploitation_activity | The exploitation activity of the vulnerability in the wild. | keyword |
+| google_scc.finding.vulnerability.cve.first_exploitation_date | Date of the earliest known exploitation. | date |
 | google_scc.finding.vulnerability.cve.id | The unique identifier for the vulnerability, for example, CVE-2021-34527. | keyword |
+| google_scc.finding.vulnerability.cve.impact | The potential impact of the vulnerability if it was to be exploited. | keyword |
+| google_scc.finding.vulnerability.cve.observed_in_the_wild | Whether or not the vulnerability has been observed in the wild. | boolean |
 | google_scc.finding.vulnerability.cve.references.source | Source of the reference, for example, NVD. | keyword |
 | google_scc.finding.vulnerability.cve.references.uri | URI for the source, for example, https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34527. | keyword |
 | google_scc.finding.vulnerability.cve.upstream_fix_available | Whether upstream fix is available for the CVE. | boolean |
+| google_scc.finding.vulnerability.cve.zero_day | Whether or not the vulnerability was zero day when the finding was published. | boolean |
+| google_scc.finding.vulnerability.cwes.id | The CWE identifier. | keyword |
+| google_scc.finding.vulnerability.cwes.references.source | Source of the reference. | keyword |
+| google_scc.finding.vulnerability.cwes.references.uri | Uri for the mentioned source. | keyword |
+| google_scc.finding.vulnerability.fixed_package.cpe_uri | The CPE URI where the vulnerability was detected. | keyword |
+| google_scc.finding.vulnerability.fixed_package.package_name | The name of the package where the vulnerability was detected. | keyword |
+| google_scc.finding.vulnerability.fixed_package.package_type | Type of package, for example, os, maven, or go. | keyword |
+| google_scc.finding.vulnerability.fixed_package.package_version | The version of the package. | keyword |
+| google_scc.finding.vulnerability.offending_package.cpe_uri | The CPE URI where the vulnerability was detected. | keyword |
+| google_scc.finding.vulnerability.offending_package.package_name | The name of the package where the vulnerability was detected. | keyword |
+| google_scc.finding.vulnerability.offending_package.package_type | Type of package, for example, os, maven, or go. | keyword |
+| google_scc.finding.vulnerability.offending_package.package_version | The version of the package. | keyword |
+| google_scc.finding.vulnerability.provider_risk_score | Provider provided risk_score based on multiple factors. The higher the risk score, the more risky the vulnerability is. | long |
+| google_scc.finding.vulnerability.reachable | Represents whether the vulnerability is reachable (detected via static analysis). | boolean |
+| google_scc.finding.vulnerability.security_bulletin.bulletin_id | ID of the bulletin corresponding to the vulnerability. | keyword |
+| google_scc.finding.vulnerability.security_bulletin.submission_time | Submission time of this Security Bulletin. | date |
+| google_scc.finding.vulnerability.security_bulletin.suggested_upgrade_version | This represents a version that the cluster receiving this notification should be upgraded to, based on its current version. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
