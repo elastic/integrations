@@ -298,8 +298,8 @@ delete_kind_cluster() {
 is_stack_running() {
     local services=0
     ${ELASTIC_PACKAGE_BIN} stack status
-    ${ELASTIC_PACKAGE_BIN} stack status 2>&1 | grep -c running
-    services=$(${ELASTIC_PACKAGE_BIN} stack status 2>&1 | grep -c running)
+    ${ELASTIC_PACKAGE_BIN} stack status 2>&1 | grep -v "No service running" | grep -c running
+    services=$(${ELASTIC_PACKAGE_BIN} stack status 2>&1 | grep -v "No service running" | grep -c running)
     echo "Number of services running: ${services}"
     if [ "${services}" -gt 0 ]; then
         return 0
