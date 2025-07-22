@@ -1,0 +1,68 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies excessive secret or key retrieval operations from Azure Key Vault. This rule detects when a user principal retrieves secrets or keys from Azure Key Vault multiple times within a short time frame, which may indicate potential abuse or unauthorized access attempts. The rule focuses on high-frequency retrieval operations that deviate from normal user behavior, suggesting possible credential harvesting or misuse of sensitive information.",
+        "false_positives": [
+            "Service accounts or applications that frequently access Azure Key Vault for configuration or operational purposes may trigger this rule.",
+            "Automated scripts or processes that retrieve secrets or keys for legitimate purposes, such as secret rotation or application configuration, may also lead to false positives.",
+            "Security teams performing routine audits or assessments that involve retrieving keys or secrets from Key Vaults may trigger this rule if they perform multiple retrievals in a short time frame."
+        ],
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Excessive Secret or Key Retrieval from Azure Key Vault",
+        "note": "## Triage and analysis\n\n### Investigating Excessive Secret or Key Retrieval from Azure Key Vault\n\nAzure Key Vault is a cloud service that safeguards encryption keys and secrets like certificates, connection strings, and passwords. It is crucial for managing sensitive data in Azure environments. Unauthorized modifications to Key Vaults can lead to data breaches or service disruptions. This rule detects excessive secret or key retrieval operations from Azure Key Vault, which may indicate potential abuse or unauthorized access attempts.\n\n### Possible investigation steps\n- Review the `azure.platformlogs.identity.claim.upn` field to identify the user principal making the retrieval requests. This can help determine if the activity is legitimate or suspicious.\n- Check the `azure.platformlogs.identity.claim.appid` or `azure.platformlogs.identity.claim.appid_display_name` to identify the application or service making the requests. If the application is not recognized or authorized, it may indicate a potential security incident. It is plausible that the application is a FOCI compliant application, which are commonly abused by adversaries to evade security controls or conditional access policies.\n- Analyze the `azure.platformlogs.resource.name` field to determine which Key Vault is being accessed. This can help assess the impact of the retrieval operations and whether they target sensitive resources.\n- Review the `event.action` field to confirm the specific actions being performed, such as `KeyGet`, `SecretGet`, or `CertificateGet`. These actions indicate retrieval of keys, secrets, or certificates from the Key Vault.\n- Check the `source.ip` or `geo.*` fields to identify the source of the retrieval requests. Look for unusual or unexpected IP addresses, especially those associated with known malicious activity or geographic locations that do not align with the user's typical behavior.\n- Use the `time_window` field to analyze the frequency of retrieval operations. If multiple retrievals occur within a short time frame (e.g., within a few minutes), it may indicate excessive or suspicious activity.\n- Correlate the retrieval operations with other security events or alerts in the environment to identify any patterns or related incidents.\n- Triage the user with Entra ID sign-in logs to gather more context about their authentication behavior and any potential anomalies.\n\n### False positive analysis\n- Routine administrative tasks or automated scripts may trigger excessive retrievals, especially in environments where Key Vaults are heavily utilized for application configurations or secrets management. If this is expected behavior, consider adjusting the rule or adding exceptions for specific applications or user principals.\n- Legitimate applications or services may perform frequent retrievals of keys or secrets for operational purposes, such as configuration updates or secret rotation. If this is expected behavior, consider adjusting the rule or adding exceptions for specific applications or user principals.\n- Security teams may perform periodic audits or assessments that involve retrieving keys or secrets from Key Vaults. If this is expected behavior, consider adjusting the rule or adding exceptions for specific user principals or applications.\n- Some applications may require frequent access to keys or secrets for normal operation, leading to high retrieval counts. If this is expected behavior, consider adjusting the rule or adding exceptions for specific applications or user principals.\n\n### Response and remediation\n- Investigate the user principal making the excessive retrieval requests to determine if they are authorized to access the Key Vault and its contents. If the user is not authorized, take appropriate actions to block their access and prevent further unauthorized retrievals.\n- Review the application or service making the requests to ensure it is legitimate and authorized to access the Key Vault. If the application is unauthorized or suspicious, consider blocking it and revoking its permissions to access the Key Vault.\n- Assess the impact of the excessive retrieval operations on the Key Vault and its contents. Determine if any sensitive data was accessed or compromised during the retrievals.\n- Implement additional monitoring and alerting for the Key Vault to detect any further suspicious activity or unauthorized access attempts.\n- Consider implementing stricter access controls or policies for Key Vaults to limit excessive retrievals and ensure that only authorized users and applications can access sensitive keys and secrets.\n- Educate users and administrators about the risks associated with excessive retrievals from Key Vaults and encourage them to follow best practices for managing keys and secrets in Azure environments.\n",
+        "query": "FROM logs-azure.platformlogs-* METADATA _id, _index\n\n// Filter for Azure Key Vault read operations\n| WHERE event.dataset == \"azure.platformlogs\"\n  AND event.action IN (\n    \"VaultGet\",\n    \"KeyGet\",\n    \"KeyList\",\n    \"KeyListVersions\",\n    \"KeyGetDeleted\",\n    \"KeyListDeleted\",\n    \"SecretGet\",\n    \"SecretList\",\n    \"SecretListVersions\",\n    \"SecretGetDeleted\",\n    \"SecretListDeleted\",\n    \"CertificateGet\",\n    \"CertificateList\",\n    \"CertificateListVersions\",\n    \"CertificateGetDeleted\",\n    \"CertificateListDeleted\",\n    \"CertificatePolicyGet\",\n    \"CertificateContactsGet\",\n    \"CertificateIssuerGet\",\n    \"CertificateIssuersList\"\n  )\n\n// Truncate timestamps into 1-minute windows\n| EVAL Esql.time_window.date_trunc = DATE_TRUNC(1 minute, @timestamp)\n\n// Aggregate identity, geo, resource, and activity info\n| STATS\n    Esql.azure.platformlogs.identity.claim.upn.values = VALUES(azure.platformlogs.identity.claim.upn),\n    Esql.azure.platformlogs.identity.claim.upn.count_unique = COUNT_DISTINCT(azure.platformlogs.identity.claim.upn),\n    Esql.azure.platformlogs.identity.claim.appid.values = VALUES(azure.platformlogs.identity.claim.appid),\n    Esql.azure.platformlogs.identity.claim.objectid.values = VALUES(azure.platformlogs.identity.claim.objectid),\n\n    Esql.source.ip.values = VALUES(source.ip),\n    Esql.geo.city.values = VALUES(geo.city_name),\n    Esql.geo.region.values = VALUES(geo.region_name),\n    Esql.geo.country.values = VALUES(geo.country_name),\n    Esql.network.as_org.values = VALUES(source.as.organization.name),\n\n    Esql.event.actions.values = VALUES(event.action),\n    Esql.event.count = COUNT(*),\n    Esql.event.action.count_distinct = COUNT_DISTINCT(event.action),\n    Esql.azure.resource.name.count_distinct = COUNT_DISTINCT(azure.resource.name),\n    Esql.azure.resource.name.values = VALUES(azure.resource.name),\n    Esql.azure.platformlogs.result_type.values = VALUES(azure.platformlogs.result_type),\n    Esql.cloud.region.values = VALUES(cloud.region),\n\n    Esql.agent.name.values = VALUES(agent.name),\n    Esql.azure.subscription_id.values = VALUES(azure.subscription_id),\n    Esql.azure.resource_group.values = VALUES(azure.resource.group),\n    Esql.azure.resource_id.values = VALUES(azure.resource.id)\n\nBY Esql.time_window.date_trunc, azure.platformlogs.identity.claim.upn\n\n// Keep relevant fields\n| KEEP\n    Esql.time_window.date_trunc,\n    Esql.azure.platformlogs.identity.claim.upn.values,\n    Esql.azure.platformlogs.identity.claim.upn.count_unique,\n    Esql.azure.platformlogs.identity.claim.appid.values,\n    Esql.azure.platformlogs.identity.claim.objectid.values,\n    Esql.source.ip.values,\n    Esql.geo.city.values,\n    Esql.geo.region.values,\n    Esql.geo.country.values,\n    Esql.network.as_org.values,\n    Esql.event.actions.values,\n    Esql.event.count,\n    Esql.event.action.count_distinct,\n    Esql.azure.resource.name.count_distinct,\n    Esql.azure.resource.name.values,\n    Esql.azure.platformlogs.result_type.values,\n    Esql.cloud.region.values,\n    Esql.agent.name.values,\n    Esql.azure.subscription_id.values,\n    Esql.azure.resource_group.values,\n    Esql.azure.resource_id.values\n\n// Filter for suspiciously high volume of distinct Key Vault reads by a single actor\n| WHERE Esql.azure.platformlogs.identity.claim.upn.count_unique == 1 AND Esql.event.count >= 10 AND Esql.event.action.count_distinct >= 2\n\n| SORT Esql.time_window.date_trunc DESC\n",
+        "references": [
+            "https://www.inversecos.com/2022/05/detection-and-compromise-azure-key.html"
+        ],
+        "risk_score": 43,
+        "rule_id": "c07f7898-5dc3-11f0-9f27-f661ea17fbcd",
+        "setup": "#### Required Azure Key Vault Diagnostic Logs\n\nTo ensure this rule functions correctly, the following diagnostic logs must be enabled for Azure Key Vault:\n- AuditEvent: This log captures all read and write operations performed on the Key Vault, including secret, key, and certificate retrievals. These logs should be streamed to the Event Hub used for the Azure integration configuration.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Storage",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Azure Key Vault",
+            "Use Case: Threat Detection",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/",
+                        "subtechnique": [
+                            {
+                                "id": "T1555.006",
+                                "name": "Cloud Secrets Management Stores",
+                                "reference": "https://attack.mitre.org/techniques/T1555/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c07f7898-5dc3-11f0-9f27-f661ea17fbcd_1",
+    "type": "security-rule"
+}
