@@ -1029,6 +1029,8 @@ process_package() {
 
     if ! run_tests_package "${package}" ; then
         exit_code=1
+        # Ensure that the group where the failure happened is opened.
+        echo "^^^ +++"
         echo "[${package}] run_tests_package failed"
         if [[ "${failed_packages_file}" != "" ]]; then
             echo "- ${package}" >> "${failed_packages_file}"
