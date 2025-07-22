@@ -300,7 +300,7 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 
 #### Example
 
-An example event for `domaindiscovery` looks as following:
+An example event for `domaindiscovery_feed` looks as following:
 
 ```json
 {
@@ -321,7 +321,7 @@ An example event for `domaindiscovery` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "logs",
-        "dataset": "ti_domaintools.domaindiscovery"
+        "dataset": "ti_domaintools.domaindiscovery_feed"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -410,14 +410,14 @@ An example event for `domaindiscovery` looks as following:
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
 
-### Domain RDAP
+### Domain RDAP Feed
 
 The `domainrdap feed` data stream provides events from [DomainTools Domain RDAP](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
 
-An example event for `domainrdap` looks as following:
+An example event for `domainrdap_feed` looks as following:
 
 ```json
 {
@@ -438,7 +438,7 @@ An example event for `domainrdap` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "logs",
-        "dataset": "ti_domaintools.domainrdap"
+        "dataset": "ti_domaintools.domainrdap_feed"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -527,7 +527,7 @@ An example event for `domainrdap` looks as following:
         "type": [
             "indicator"
         ],
-        "dataset": "ti_domaintools.domainrdap"
+        "dataset": "ti_domaintools.domainrdap_feed"
     }
 }
 ```

@@ -70,17 +70,17 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 
 #### Example
 
-{{event "domaindiscovery"}}
+{{event "domaindiscovery_feed"}}
 
-{{fields "domaindiscovery"}}
+{{fields "domaindiscovery_feed"}}
 
-### Domain RDAP
+### Domain RDAP Feed
 
 The `domainrdap feed` data stream provides events from [DomainTools Domain RDAP](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
 
-{{event "domainrdap"}}
+{{event "domainrdap_feed"}}
 
-{{fields "domainrdap"}}
+{{fields "domainrdap_feed"}}
