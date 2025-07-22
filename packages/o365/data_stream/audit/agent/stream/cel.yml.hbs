@@ -171,16 +171,15 @@ program: |-
   														(list_contents_resp.Header.Nextpageuri[0])
   													:
   														"",
-  													// keep fetching more if (nextpageuri exists) or (the request time range ends within one batch duration of now)
+  													// keep fetching more if (nextpageuri exists) or
+  													// (the end of the request range is one batch interval or longer before the current time)
   													"want_more_content": has(list_contents_resp.Header) &&
   													(
   														has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ||
   														has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0 ||
-  														list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().as(reqQuery,
-  														  reqQuery.?endTime[?0].optMap(endTime,
-  														    (now() - endTime.parse_time(time_layout.RFC3339)) >= duration(state.base.batch_interval)
-  														  ).orValue(false)
-  														)
+  														list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().?endTime[0].optMap(endTime,
+  														  (now() - endTime.parse_time(time_layout.RFC3339)) >= duration(state.base.batch_interval)
+  														).orValue(false)
   													)
   												}
   											)
