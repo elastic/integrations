@@ -786,7 +786,7 @@ teardown_serverless_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
@@ -797,12 +797,12 @@ teardown_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
 
-    echo "Take down the Elastic stack"
+    echo "--- Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
 }
 
