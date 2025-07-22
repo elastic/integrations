@@ -62,8 +62,8 @@ processors:
       value: 8.17.0
   - set:
       field: event.kind
-      tag: set_event_kind_to_enrichment
-      value: enrichment
+      tag: set_event_kind_to_event
+      value: event
   - append:
       field: event.category
       tag: append_event_category
@@ -123,7 +123,13 @@ processors:
   - set:
       field: threat.feed.name
       tag: set_threat_feed_name
-      value: IOC Stream
+      copy_from: gti.threat.indicator.feed.name
+      ignore_empty_value: true
+  - set:
+      field: threat.feed.dashboard_id
+      tag: set_threat_feed_dashboard_id
+      copy_from: gti.threat.indicator.feed.dashboard_id
+      ignore_empty_value: true
   - set:
       field: threat.indicator.url.full
       tag: set_threat_indicator_url_full_from_url_original
@@ -198,12 +204,8 @@ processors:
         ip_address: ipv4-addr
         url: url
       source: |-
-        if (ctx.threat == null) {
-          ctx.threat = new HashMap();
-        }
-        if (ctx.threat.indicator == null) {
-          ctx.threat.indicator = new HashMap();
-        }
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
         ctx.threat.indicator.type = params[ctx.gti.threat.indicator.type];
       on_failure:
         - append:

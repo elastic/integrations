@@ -827,22 +827,22 @@ An example event for `ioc_stream` looks as following:
 {
     "@timestamp": "2024-12-16T07:54:23.000Z",
     "agent": {
-        "ephemeral_id": "85362b3c-cc74-4502-871c-537f732aa018",
-        "id": "b53f2b07-826a-4e4d-8e82-533e8a7a095d",
-        "name": "elastic-agent-85156",
+        "ephemeral_id": "0ad00193-b257-4f2f-8806-bd1c3036f102",
+        "id": "a9ed7bec-e243-4005-b683-7df84309f053",
+        "name": "elastic-agent-92986",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "namespace": "57866",
+        "namespace": "92671",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "b53f2b07-826a-4e4d-8e82-533e8a7a095d",
+        "id": "a9ed7bec-e243-4005-b683-7df84309f053",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -852,7 +852,7 @@ An example event for `ioc_stream` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "ingested": "2025-06-03T07:05:32Z",
+        "ingested": "2025-07-21T16:14:11Z",
         "kind": "enrichment",
         "original": "{\"attributes\":{\"available_tools\":[],\"downloadable\":true,\"exiftool\":{\"FileType\":\"TXT\",\"FileTypeExtension\":\"txt\",\"LineCount\":\"1\",\"MIMEEncoding\":\"us-ascii\",\"MIMEType\":\"text/plain\",\"Newlines\":\"(none)\",\"WordCount\":\"1\"},\"first_seen_itw_date\":1707511993,\"first_submission_date\":1648544390,\"gti_assessment\":{\"contributing_factors\":{\"associated_actor\":[\"source\",\"javascript\",\"js\"],\"mandiant_association_actor\":true,\"mandiant_confidence_score\":75},\"description\":\"This indicator did not match our detection criteria and there is currently no evidence of malicious activity.\",\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1648544390,\"last_analysis_stats\":{\"confirmed-timeout\":0,\"failure\":0,\"harmless\":0,\"malicious\":0,\"suspicious\":0,\"timeout\":0,\"type-unsupported\":16,\"undetected\":57},\"last_modification_date\":1734335663,\"last_seen_itw_date\":1707512002,\"last_submission_date\":1648544390,\"magic\":\"ASCII text, with no line terminators\",\"mandiant_ic_score\":75,\"md5\":\"1e1d23c4e7524bc15a0b3ced0caf9ffc\",\"meaningful_name\":\"Password[1].htm\",\"names\":[\"Password[1].htm\"],\"reputation\":0,\"sha1\":\"4e234b019b77a4f04c168734a60e0b1883989215\",\"sha256\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"size\":11,\"ssdeep\":\"3:EsaM:t\",\"tags\":[\"javascript\"],\"times_submitted\":1,\"total_votes\":{\"harmless\":0,\"malicious\":0},\"type_description\":\"JavaScript\",\"type_extension\":\"js\",\"type_tag\":\"javascript\",\"type_tags\":[\"source\",\"javascript\",\"js\"],\"unique_sources\":1,\"vhash\":\"9eecb7db59d16c80417c72d1e1f4fbf1\"},\"context_attributes\":{\"hunting_info\":null,\"notification_date\":1742528463,\"notification_id\":\"21769600967\",\"origin\":\"subscriptions\",\"sources\":[{\"id\":\"threat-actor--bfd69ac3-0158-57d3-a101-42496712ddae\",\"label\":\"UNC4515\",\"type\":\"collection\"}],\"tags\":[]},\"id\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\"},\"type\":\"file\"}",
         "type": [
@@ -984,7 +984,11 @@ An example event for `ioc_stream` looks as following:
     ],
     "threat": {
         "feed": {
-            "name": "IOC Stream"
+            "dashboard_id": [
+                "ti_google_threat_intelligence-55f5f53b-343e-4095-b61f-1089a5273d84",
+                "ti_google_threat_intelligence-fb3daf8e-b45b-4fd9-bf94-dbaf96fcfb67"
+            ],
+            "name": "GTI IOC Stream"
         },
         "indicator": {
             "file": {
