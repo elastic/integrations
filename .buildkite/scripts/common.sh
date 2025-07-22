@@ -295,6 +295,14 @@ delete_kind_cluster() {
     kind delete cluster || true
 }
 
+is_stack_running() {
+    services=$(elastic-package stack status 2>&1 |grep running | wc -l)
+    if [ "${services}" -gt 0 ]; then
+        return 0
+    fi
+    return 1
+}
+
 kibana_version_manifest() {
     local kibana_version=""
     if ! kibana_version=$(mage -d "${WORKSPACE}" -w . kibanaConstraintPackage) ; then
@@ -797,6 +805,11 @@ teardown_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
+    if ! is_stack_running ; then
+        echo "Skip dump logs and stack down process"
+        return
+    fi
+
     echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
@@ -1052,6 +1065,8 @@ process_package() {
     else
         if ! teardown_test_package "${package}" ; then
             exit_code=1
+            # Ensure that the group where the failure happened is opened.
+            echo "^^^ +++"
             echo "[${package}] teardown_test_package failed"
         fi
     fi
