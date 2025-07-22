@@ -169,9 +169,9 @@ An example event for `nod_feed` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | message | The feed. | match_only_text |
-| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
-| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
+| threat.feed.description | Display the feed description. | constant_keyword |
+| threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.feed.reference | Display the feed reference. | constant_keyword |
 | threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
@@ -286,9 +286,9 @@ An example event for `nad_feed` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | message | The feed. | match_only_text |
-| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
-| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
+| threat.feed.description | Display the feed description. | constant_keyword |
+| threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.feed.reference | Display the feed reference. | constant_keyword |
 | threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
@@ -403,9 +403,9 @@ An example event for `domaindiscovery` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | message | The feed from DomainTools Feed API. | match_only_text |
-| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
-| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
+| threat.feed.description | Display the feed description. | constant_keyword |
+| threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.feed.reference | Display the feed reference. | constant_keyword |
 | threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
