@@ -733,316 +733,65 @@
     fields:
     - name: ancestry
       type: keyword
-  - name: args_count
-    type: long
-  - name: command_line
-    type: keyword
-  - name: entity_id
-    type: keyword
-  - name: entry_leader
-    type: group
-    fields:
-    - name: args
-      type: keyword
-    - name: args_count
-      type: long
-    - name: entity_id
-      type: keyword
-    - name: entry_meta
-      type: group
-      fields:
-      - name: type
-        type: keyword
-    - name: executable
-      type: keyword
-    - name: group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: interactive
-      type: boolean
-    - name: name
-      type: keyword
-    - name: parent
-      type: group
-      fields:
-      - name: entity_id
-        type: keyword
-      - name: pid
-        type: long
-      - name: start
-        type: keyword
-    - name: pid
-      type: long
-    - name: real_group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: real_user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: same_as_process
-      type: boolean
-    - name: start
-      type: keyword
-    - name: user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: working_directory
-      type: keyword
-  - name: executable
-    type: keyword
-  - name: group
-    type: group
-    fields:
-    - name: id
-      type: long
-    - name: name
-      type: keyword
+  # The below process-specific fields are not using external: ecs because they appear as arrays of objects,
+  # which differs from the ECS definitions. Therefore, we need to define them explicitly here.
   - name: group_leader
     type: group
     fields:
-    - name: args
-      type: keyword
-    - name: args_count
-      type: long
-    - name: entity_id
-      type: keyword
-    - name: executable
-      type: keyword
-    - name: group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: interactive
-      type: boolean
-    - name: name
-      type: keyword
-    - name: pid
-      type: long
-    - name: real_group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: real_user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: same_as_process
-      type: boolean
-    - name: start
-      type: keyword
-    - name: supplemental_groups
-      type: group
-      fields:
-        - name: id
-          type: long
-        - name: name
-          type: keyword
-    - name: user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: working_directory
-      type: keyword
-  - name: hash
-    type: group
-    fields:
-    - name: md5
-      type: keyword
-    - name: sha1
-      type: keyword
-    - name: sha256
-      type: keyword
-  - name: interactive
-    type: boolean
-  - name: name
-    type: keyword
+      - name: supplemental_groups
+        type: group
+        fields:
+          - name: id
+            type: keyword
+            description: Unique identifier for the group on the system/platform.
+          - name: name
+            type: keyword
+            description: Name of the group.
   - name: parent
     type: group
     fields:
-    - name: args
-      type: keyword
-    - name: args_count
-      type: long
-    - name: command_line
-      type: keyword
-    - name: entity_id
-      type: keyword
-    - name: executable
-      type: keyword
-    - name: group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: interactive
-      type: boolean
-    - name: name
-      type: keyword
-    - name: pid
-      type: long
-    - name: real_group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: real_user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: start
-      type: keyword
-    - name: supplemental_groups
-      type: group
-      fields:
-        - name: id
-          type: long
-        - name: name
-          type: keyword
-    - name: user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: working_directory
-      type: keyword
-  - name: pid
-    type: long
+      - name: supplemental_groups
+        type: group
+        fields:
+          - name: id
+            type: keyword
+            description: Unique identifier for the group on the system/platform.
+          - name: name
+            type: keyword
+            description: Name of the group.
   - name: previous
     type: group
     fields:
       - name: args
         type: keyword
+        description: Array of process arguments, starting with the absolute path to the executable.
       - name: args_count
         type: long
+        description: "Length of the process.args array."
       - name: executable
         type: keyword
-  - name: real_group
-    type: group
-    fields:
-    - name: id
-      type: long
-    - name: name
-      type: keyword
-  - name: real_user
-    type: group
-    fields:
-    - name: id
-      type: long
-    - name: name
-      type: keyword
+        description: Absolute path to the process executable.
   - name: session_leader
     type: group
     fields:
-    - name: args
-      type: keyword
-    - name: args_count
-      type: long
-    - name: entity_id
-      type: keyword
-    - name: executable
-      type: keyword
-    - name: group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: interactive
-      type: boolean
-    - name: name
-      type: keyword
-    - name: pid
-      type: long
-    - name: real_group
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: real_user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: same_as_process
-      type: boolean
-    - name: start
-      type: keyword
-    - name: supplemental_groups
-      type: group
-      fields:
-        - name: id
-          type: long
-        - name: name
-          type: keyword
-    - name: user
-      type: group
-      fields:
-      - name: id
-        type: long
-      - name: name
-        type: keyword
-    - name: working_directory
-      type: keyword
-  - name: start
-    type: keyword
+      - name: supplemental_groups
+        type: group
+        fields:
+          - name: id
+            type: keyword
+            description: Unique identifier for the group on the system/platform.
+          - name: name
+            type: keyword
+            description: Name of the group.
   - name: supplemental_groups
     type: group
     fields:
       - name: id
-        type: long
+        type: keyword
+        description: Unique identifier for the group on the system/platform.
       - name: name
         type: keyword
-  - name: user
-    type: group
-    fields:
-    - name: id
-      type: long
-    - name: name
-      type: keyword
-  - name: working_directory
-    type: keyword
+        description: Name of the group.
 - name: source_metadata
   type: group
   fields:
@@ -1065,6 +814,8 @@
               type: long
             - name: name
               type: keyword
+  # The below threat-specific fields are not using external: ecs because they appear as arrays of objects,
+  # which differs from the ECS definitions. Therefore, we need to define them explicitly here.
 - name: threat
   type: group
   fields:
@@ -1073,25 +824,34 @@
       fields:
         - name: id
           type: keyword
+          description: "The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ )"
         - name: reference
           type: keyword
+          description: "The reference url of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ )"
         - name: name
           type: keyword
+          description: "Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/)"
     - name: technique
       type: group
       fields:
         - name: id
           type: keyword
+          description: "The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/)"
         - name: name
           type: keyword
+          description: "The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/)"
         - name: reference
           type: keyword
+          description: "The reference url of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/)"
         - name: subtechnique
           type: group
           fields:
             - name: id
               type: keyword
+              description: "The full id of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/)"
             - name: name
               type: keyword
+              description: "The name of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/)"
             - name: reference
               type: keyword
+              description: "The reference url of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/)"
