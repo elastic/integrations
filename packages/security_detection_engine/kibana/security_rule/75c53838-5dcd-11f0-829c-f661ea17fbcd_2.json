@@ -15,7 +15,7 @@
             "filebeat-*",
             "logs-azure.platformlogs-*"
         ],
-        "language": "esql",
+        "language": "kuery",
         "license": "Elastic License v2",
         "name": "Azure Key Vault Secret Key Usage by Unusual Identity",
         "new_terms_fields": [
@@ -26,6 +26,40 @@
         "query": "event.dataset : \"azure.platformlogs\" and\nevent.outcome: \"success\" and\nevent.action : (\n    \"VaultGet\" or\n    \"KeyGet\" or\n    \"KeyList\" or\n    \"KeyListVersions\" or\n    \"KeyGetDeleted\" or\n    \"KeyListDeleted\" or\n    \"SecretGet\" or\n    \"SecretList\" or\n    \"SecretListVersions\" or\n    \"SecretGetDeleted\" or\n    \"SecretListDeleted\" or\n    \"CertificateGet\" or\n    \"CertificateList\" or\n    \"CertificateListVersions\" or\n    \"CertificateGetDeleted\" or\n    \"CertificateListDeleted\" or\n    \"CertificatePolicyGet\" or\n    \"CertificateContactsGet\" or\n    \"CertificateIssuerGet\" or\n    \"CertificateIssuersList\"\n) and azure.platformlogs.identity.claim.upn: * and azure.platformlogs.properties.id: *\n",
         "references": [
             "https://www.inversecos.com/2022/05/detection-and-compromise-azure-key.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.identity.claim.upn",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.id",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
         ],
         "risk_score": 43,
         "rule_id": "75c53838-5dcd-11f0-829c-f661ea17fbcd",
@@ -69,8 +103,8 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "new_terms",
-        "version": 1
+        "version": 2
     },
-    "id": "75c53838-5dcd-11f0-829c-f661ea17fbcd_1",
+    "id": "75c53838-5dcd-11f0-829c-f661ea17fbcd_2",
     "type": "security-rule"
 }
