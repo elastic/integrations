@@ -296,7 +296,9 @@ delete_kind_cluster() {
 }
 
 is_stack_running() {
+    local services=0
     services=$(elastic-package stack status 2>&1 | grep -c running)
+    echo "Number of services running: ${services}"
     if [ "${services}" -gt 0 ]; then
         return 0
     fi
