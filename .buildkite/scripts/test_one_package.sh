@@ -4,6 +4,18 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+show_error_logs() {
+    local r=$?
+    if [ "${r}" -ne 0 ]; then
+        # Ensure that the group where the failure happened is opened.
+        echo "^^^ +++"
+    fi
+    exit $r
+}
+
+trap show_error_logs EXIT
+
+
 # package name
 package="$1"
 
