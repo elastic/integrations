@@ -1511,6 +1511,16 @@ processors:
           value: '{{{_ingest._value.file_details.name}}}'
           allow_duplicates: false
   - foreach:
+      field: file.name
+      tag: foreach_file_name
+      if: ctx.file?.name instanceof List
+      processor:
+        append:
+          field: process.name
+          tag: append_file_name_to_process_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
       field: json.evidence
       tag: foreach_evidence_rename_fileDetails_filePath
       if: ctx.json?.evidence instanceof List
@@ -2064,6 +2074,16 @@ processors:
           field: process.start
           tag: append_foreach_evidence_processCreationDateTime
           value: '{{{_ingest._value.process.creation_datetime}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_process_name
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: process.name
+          tag: append_evidence_imageFile_to_process_name
+          value: '{{{_ingest._value.imageFile.fileName}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
