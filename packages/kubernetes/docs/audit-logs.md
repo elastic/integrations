@@ -1,6 +1,6 @@
 # audit-logs
 
-Audit logs integration collects and parses Kubernetes audit logs.
+Audit-logs integration collects and parses Kubernetes audit logs.
 
 Audit logs can be collected from managed Kubernetes services in cloud providers:
 
