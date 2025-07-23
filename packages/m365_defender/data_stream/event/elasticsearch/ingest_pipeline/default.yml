@@ -128,6 +128,20 @@ processors:
       tag: set_process_parent_entity_id
       value: '{{{process.parent.pid}}}'
       ignore_empty_value: true
+  - set:
+      field: process.name
+      tag: set_process_name_from_file_name
+      copy_from: file.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.process?.command_line != null
+  - set:
+      field: process.name
+      tag: set_process_name_from_threat_indicator_file_name
+      copy_from: threat.indicator.file.name
+      ignore_empty_value: true
+      override: false
+      if: ctx.process?.command_line != null
 
   # cloud.instance.id is used for the M365 Defender response action.
   - set:

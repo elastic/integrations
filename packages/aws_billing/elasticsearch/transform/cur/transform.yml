@@ -1,0 +1,111 @@
+source:
+  index:
+    - "metrics-*"
+  query:
+    bool:
+      filter:
+        - range:
+            '@timestamp':
+              gte: now-24h
+        - term:
+            'data_stream.dataset': "aws_billing.cur"
+dest:
+  index: "aws_billing.cur-v1"
+  pipeline: "metrics-aws_billing.cur-0.1.0-pipeline_extract_metadata"
+  aliases:
+    - alias: "aws_billing.cur_latest"
+      move_on_creation: true
+pivot:
+  aggregations:
+    aws_billing.cur.line_item.unblended_cost:
+      sum:
+        field: aws_billing.cur.line_item.unblended_cost
+  group_by:
+    aws_billing.cur.line_item.operation:
+      terms:
+        field: aws_billing.cur.line_item.operation
+        missing_bucket: true
+    aws_billing.cur.bill.billing_entity:
+      terms:
+        field: aws_billing.cur.bill.billing_entity
+        missing_bucket: true
+    aws_billing.cur.line_item.legal_entity:
+      terms:
+        field: aws_billing.cur.line_item.legal_entity
+        missing_bucket: true
+    aws_billing.cur.pricing.purchase_option:
+      terms:
+        field: aws_billing.cur.pricing.purchase_option
+        missing_bucket: true
+    aws_billing.cur.line_item.availability_zone:
+      terms:
+        field: aws_billing.cur.line_item.availability_zone
+        missing_bucket: true
+    aws_billing.cur.line_item.usage_type:
+      terms:
+        field: aws_billing.cur.line_item.usage_type
+        missing_bucket: true
+    aws_billing.cur.line_item.usage_account_name:
+      terms:
+        field: aws_billing.cur.line_item.usage_account_name
+        missing_bucket: true
+    aws_billing.cur.line_item.usage_account_id:
+      terms:
+        field: aws_billing.cur.line_item.usage_account_id
+        missing_bucket: true
+    aws_billing.cur.line_item.type:
+      terms:
+        field: aws_billing.cur.line_item.type
+        missing_bucket: true
+    aws_billing.cur.product.instance_type:
+      terms:
+        field: aws_billing.cur.product.instance_type
+        missing_bucket: true
+    cloud.region:
+      terms:
+        field: cloud.region
+        missing_bucket: true
+    aws_billing.cur.product.servicecode:
+      terms:
+        field: aws_billing.cur.product.servicecode
+        missing_bucket: true
+    aws_billing.cur.line_item.product_code:
+      terms:
+        field: aws_billing.cur.line_item.product_code
+        missing_bucket: true
+    aws_billing.cur.bill.billing_period_end_date:
+      terms:
+        field: aws_billing.cur.bill.billing_period_end_date
+        missing_bucket: true
+    aws_billing.cur.bill.billing_period_start_date:
+      terms:
+        field: aws_billing.cur.bill.billing_period_start_date
+        missing_bucket: true
+    aws_billing.cur.product.region_code:
+      terms:
+        field: aws_billing.cur.product.region_code
+        missing_bucket: true
+    resource_tags:
+      terms:
+        field: aws_billing.cur.resource_tags
+        missing_bucket: true
+    aws_billing.cur.line_item.currency_code:
+      terms:
+        field: aws_billing.cur.line_item.currency_code
+        missing_bucket: true
+    cost_category:
+      terms:
+        field: aws_billing.cur.cost_category
+        missing_bucket: true
+description: Hourly transform aggregating AWS billing data by key CUR dimensions for cost analysis and reporting.
+frequency: 1h
+settings:
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "@timestamp"
+    delay: 60s
+_meta:
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
