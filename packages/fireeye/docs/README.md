@@ -65,15 +65,15 @@ An example event for `nx` looks as following:
 {
     "@timestamp": "2020-09-22T08:34:44.991Z",
     "agent": {
-        "ephemeral_id": "96bd6f72-99f6-4840-818f-5d1be61e78f7",
-        "id": "4f744ee0-88a4-454c-9b91-7d471e019662",
-        "name": "elastic-agent-23482",
+        "ephemeral_id": "29a00621-9074-4b14-bcbb-db252f6203c3",
+        "id": "7740d13f-75db-41df-89ee-b1cb3b873df4",
+        "name": "elastic-agent-93841",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "fireeye.nx",
-        "namespace": "55889",
+        "namespace": "68601",
         "type": "logs"
     },
     "destination": {
@@ -87,7 +87,7 @@ An example event for `nx` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4f744ee0-88a4-454c-9b91-7d471e019662",
+        "id": "7740d13f-75db-41df-89ee-b1cb3b873df4",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -97,9 +97,8 @@ An example event for `nx` looks as following:
             "network"
         ],
         "dataset": "fireeye.nx",
-        "ingested": "2025-07-03T10:48:44Z",
+        "ingested": "2025-07-23T06:50:57Z",
         "kind": "event",
-        "outcome": "failure",
         "reason": "timeout",
         "timezone": "+00:00",
         "type": [
@@ -124,12 +123,13 @@ An example event for `nx` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.249.3:42005"
+            "address": "192.168.245.3:36580"
         }
     },
     "network": {
         "community_id": "1:McNAQcsUcKZYOHHZYm0sD8JiBLc=",
         "iana_number": "17",
+        "protocol": "failed",
         "transport": "udp"
     },
     "observer": {

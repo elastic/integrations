@@ -12,23 +12,7 @@ processors:
   - rename:
       field: rawmsg.app_proto
       target_field: network.protocol
-      if: >-
-        ctx.rawmsg?.app_proto != null
-        && ctx.rawmsg.app_proto.equalsIgnoreCase('failed') == false
-        && ctx.rawmsg.app_proto.equalsIgnoreCase('succeeded') == false
       ignore_missing: true
-  - set:
-      field: event.outcome
-      value: failure
-      if: ctx.rawmsg?.app_proto?.equalsIgnoreCase('failed') == true
-  - set:
-      field: event.outcome
-      value: success
-      if: ctx.rawmsg?.app_proto?.equalsIgnoreCase('succeeded') == true
-  - set:
-      field: event.outcome
-      value: unknown
-      if: ctx.event?.outcome == null
   - rename:
       field: rawmsg.flow_id
       target_field: fireeye.nx.flow_id
