@@ -8,6 +8,12 @@ Jamf Pro is a comprehensive management solution designed to help organizations d
 - **`inventory`** Provides Inventory data for computers. Includes: hardware, OS, etc. Saves each device as a separate log record.  
 This data stream utilizes the Jamf Pro API's `/v1/computers-inventory` endpoint.
 
+  **Asset Inventory Support**: The inventory data stream includes entity fields to support Asset Inventory functionality:
+  - `entity.id` - Mapped from `jamf_pro.inventory.general.management_id`
+  - `entity.name` - Mapped from `jamf_pro.inventory.general.name`
+  - `entity.type` - Set to "Host"
+  - `entity.sub_type` - Set to "JAMF managed Host"
+
 - **`events`** Receives events sent by [Jamf Pro Webhooks](https://developer.jamf.com/developer-guide/docs/webhooks).  
 This data stream requires opening a port on the Elastic Agent host.
 
