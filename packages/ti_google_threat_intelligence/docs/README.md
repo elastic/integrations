@@ -86,7 +86,7 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are available for IOC stream data stream.
+Currently, four transforms are available across all 14 data streams.
 
 The following are four transforms along with their associated pipelines:
 
