@@ -6,7 +6,7 @@ The Prometheus Input package allows you to collect metrics from [Prometheus Expo
 
 #### Collect metrics from a Prometheus exporter
 
-To collect metrics from a Prometheus exporter, configure the `hosts` setting to it and append the <metrics_path> from which you are collecting your metrics, using the following format: 
+To collect metrics from a Prometheus exporter, configure the `hosts` setting to it and append the <metrics_path> from which you are collecting your metrics (`/metrics` by default), by using the following format: 
 - `http[s]://<hostname>:<port>/<metrics_path>`
 
 This is an example of host configuration: `http://localhost:9090/metrics`
