@@ -968,8 +968,6 @@ upload_safe_logs() {
     local source="$2"
     local target="$3"
 
-    echo "--- Uploading safe logs to GCP bucket ${bucket}"
-
     if ! ls ${source} 2>&1 > /dev/null ; then
         echo "upload_safe_logs: artifacts files not found, nothing will be archived"
         return
@@ -998,6 +996,8 @@ upload_safe_logs_from_package() {
     local build_directory=$2
 
     local parent_folder="insecure-logs"
+
+    echo "--- Uploading safe logs to GCP bucket ${JOB_GCS_BUCKET_INTERNAL}"
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
