@@ -926,8 +926,8 @@ processors:
       field: "message"
       description: "746012, 746013"
       patterns:
-        - "Add IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} Succeeded - VPN user"
-        - "Delete IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} Succeeded - VPN user logout"
+        - "user-identity: Add IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} %{DATA:_temp_.operation.status} - %{GREEDYDATA:event.reason}$"
+        - "user-identity: Delete IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} %{DATA:_temp_.operation.status} - %{GREEDYDATA:event.reason}$"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
@@ -1024,9 +1024,17 @@ processors:
       field: "event.outcome"
       value: "failure"
   - set:
-      if: '["713120", "746012", "746013"].contains(ctx._temp_.cisco.message_id)'
+      if: '["713120"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
       value: "success"
+  - set:
+      if: '["746012", "746013"].contains(ctx._temp_.cisco.message_id) && ctx._temp_.operation.status == "Succeeded"'
+      field: "event.outcome"
+      value: "success"
+  - set:
+      if: '["746012", "746013"].contains(ctx._temp_.cisco.message_id) && ctx._temp_.operation.status != "Succeeded"'
+      field: "event.outcome"
+      value: "failure"
   - set:
       if: '["113004", "113008", "113009", "113012"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
