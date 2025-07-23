@@ -295,10 +295,10 @@ delete_kind_cluster() {
     kind delete cluster || true
 }
 
-is_stack_running() {
-    local services=0
-    services=$(${ELASTIC_PACKAGE_BIN} stack status 2>&1 | grep -v "No service running" | grep -c running)
-    if [ "${services}" -gt 0 ]; then
+is_stack_created() {
+    local files=0
+    files=$(find ~/.elastic-package -type f -name "docker-compose.yml" | wc -l)
+    if [ "${files}" -gt 0 ]; then
         return 0
     fi
     return 1
@@ -806,7 +806,7 @@ teardown_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    if ! is_stack_running ; then
+    if ! is_stack_created; then
         echo "No stack running. Skip dump logs and run stack down process."
         return
     fi
