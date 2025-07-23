@@ -269,6 +269,16 @@ use_elastic_package() {
     go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
+elastic_package_verbosity() {
+    local opts="-v"
+    if [[ "${GITHUB_PR_TRIGGER_COMMENT:-""}" =~ ^/test[[:space:]]+verbose ]]; then
+        opts="${opts}v"
+    fi
+    echo "${opts}"
+}
+
+ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
+
 is_already_published() {
     local packageZip=$1
 
@@ -821,7 +831,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|apache|nginx|zoom)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
 check_package() {
@@ -860,7 +870,7 @@ skip_installation_step() {
 install_package() {
     local package=$1
     echo "Install package: ${package}"
-    if ! ${ELASTIC_PACKAGE_BIN} install -v ; then
+    if ! ${ELASTIC_PACKAGE_BIN} install "${ELASTIC_PACKAGE_VERBOSITY}" ; then
         return 1
     fi
     echo ""
@@ -869,11 +879,11 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="--report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test "${ELASTIC_PACKAGE_VERBOSITY}" ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -884,7 +894,7 @@ test_package_in_local_stack() {
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="${ELASTIC_PACKAGE_VERBOSITY} --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
@@ -1053,7 +1063,7 @@ process_package() {
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
-            ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+            ${ELASTIC_PACKAGE_BIN} benchmark pipeline "${ELASTIC_PACKAGE_VERBOSITY}" --report-format json --report-output file
         fi
     fi
 
