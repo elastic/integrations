@@ -234,6 +234,27 @@ processors:
     field: event.kind
     value: asset
 
+#############################
+# Entity fields for Asset Inventory #
+#############################
+
+- set:
+    field: entity.id
+    copy_from: jamf_pro.inventory.general.management_id
+    ignore_empty_value: true
+- set:
+    field: entity.name
+    copy_from: jamf_pro.inventory.general.name
+    ignore_empty_value: true
+- set:
+    field: entity.type
+    value: "Host"
+    if: ctx.jamf_pro?.inventory?.general?.management_id != null || ctx.jamf_pro?.inventory?.general?.name != null
+- set:
+    field: entity.sub_type
+    value: "JAMF managed Host"
+    if: ctx.jamf_pro?.inventory?.general?.management_id != null || ctx.jamf_pro?.inventory?.general?.name != null
+
 - append:
     field: event.type
     value: user
