@@ -107,7 +107,7 @@ certificate_authorities:
     -----END CERTIFICATE-----
 ```
 
-For the list of all supported SSL configuration options, refer the documentation [here](https://www.elastic.co/docs/reference/beats/metricbeat/configuration-ssl#ssl-client-config).
+For the list of all supported SSL configuration options, check the [Client configuration options](https://www.elastic.co/docs/reference/beats/metricbeat/configuration-ssl#ssl-client-config).
 
 
 ### Datastream Dataset Name
