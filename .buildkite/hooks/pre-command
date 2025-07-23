@@ -35,11 +35,14 @@ BUILDKITE_API_TOKEN_PATH=kv/ci-shared/platform-ingest/buildkite_token
 
 EC_DATA_PATH=secret/ci/elastic-integrations/ec_data
 
-# variables required for terraform
+export JOB_GCS_BUCKET_INTERNAL="ecosystem-ci-internal"
+
+# -------------
+# variables required by packages using Terraform as a service deployer
+# https://github.com/elastic/elastic-package/blob/f8f2f15a04bcc25eca00887fb147bd7f8a0f32b3/internal/servicedeployer/_static/terraform_deployer.yml#L8
+
 export ENVIRONMENT="ci"
 export REPO="${REPO_NAME}"
-
-export JOB_GCS_BUCKET_INTERNAL="ecosystem-ci-internal"
 
 branch_name_label() {
     local branch="$1"
@@ -68,6 +71,15 @@ export BUILD_ID="${BUILDKITE_BUILD_NUMBER}"
 CREATED_DATE=$(date +%s%3N)
 export CREATED_DATE
 
+# -------------
+
+if [[ "${ELASTIC_PACKAGE_CUSTOMIZE_SERVICE_TEST_RUN_ID:-"false"}" == "true" ]]; then
+    # Required to customize the RunID value mainly for those packages creating resources in cloud providers
+    # via the terraform service deployer.
+    # Get the latest 4 digits of the BUILDKITE_STEP_ID
+    export ELASTIC_PACKAGE_PREFIX_SERVICE_TEST_RUN_ID="${BUILDKITE_STEP_ID: -4}"
+fi
+
 if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     # first upload pipeline does not have the environment variables defined in the YAML
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
@@ -78,7 +90,7 @@ if [[ ( "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$
     # This step MUST be the first one and not run in parallel with any other step to ensure
     # that there is just one value for this variable
     if is_pr ; then
-        git fetch -v origin ${BUILDKITE_PULL_REQUEST_BASE_BRANCH}
+        git fetch -v origin "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
         commit_main=$(git rev-parse --verify FETCH_HEAD)
         buildkite-agent meta-data set "REPOSITORY_TARGET_BRANCH_COMMIT" "${commit_main}"
     fi
@@ -100,8 +112,6 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$ ]
     if [[ "${BUILDKITE_STEP_KEY}" == "publish-benchmarks" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
-        GITHUB_TOKEN=$VAULT_GITHUB_TOKEN
-        export GITHUB_TOKEN
     fi
 
     if [[ "${BUILDKITE_STEP_KEY}" =~ ^test-integrations- ]]; then
@@ -120,19 +130,3 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-serverless" ]]; then
         export EC_REGION_SECRET
     fi
 fi
-
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" ]]; then
-  if [[ "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
-    GITHUB_USERNAME="elastic-vault-github-plugin-prod"
-    GITHUB_EMAIL="elasticmachine@elastic.co"
-    GITHUB_TOKEN=$VAULT_GITHUB_TOKEN
-    export GITHUB_TOKEN GITHUB_EMAIL GITHUB_USERNAME
-  fi
-fi
-
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations" || "$BUILDKITE_PIPELINE_SLUG" == "integrations-serverless" ]]; then
-  if [[ "$BUILDKITE_STEP_KEY" == "report-failed-tests" ]]; then
-    export GITHUB_TOKEN="${VAULT_GITHUB_TOKEN}"
-  fi
-fi
-
