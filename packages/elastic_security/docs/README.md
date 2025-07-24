@@ -781,14 +781,14 @@ An example event for `alert` looks as following:
 | sort |  | long |
 | source_metadata._id |  | keyword |
 | source_metadata._index |  | keyword |
-| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
-| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
-| threat.tactic.reference | The reference url of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
-| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
-| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
-| threat.technique.reference | The reference url of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
-| threat.technique.subtechnique.id | The full id of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/) | keyword |
-| threat.technique.subtechnique.name | The name of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/) | keyword |
-| threat.technique.subtechnique.reference | The reference url of subtechnique used by this threat. You can use a MITRE ATT&CK® subtechnique, for example. (ex. https://attack.mitre.org/techniques/T1059/001/) | keyword |
+| threat.tactic.id | The id of tactic used by this threat. | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. | keyword |
+| threat.tactic.reference | The reference url of tactic used by this threat. | keyword |
+| threat.technique.id | The id of technique used by this threat. | keyword |
+| threat.technique.name | The name of technique used by this threat. | keyword |
+| threat.technique.reference | The reference url of technique used by this threat. | keyword |
+| threat.technique.subtechnique.id | The full id of subtechnique used by this threat. | keyword |
+| threat.technique.subtechnique.name | The name of subtechnique used by this threat. | keyword |
+| threat.technique.subtechnique.reference | The reference url of subtechnique used by this threat. | keyword |
 | user.Ext.real.id |  | long |
 | user.Ext.real.name |  | keyword |
