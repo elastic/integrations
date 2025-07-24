@@ -44,6 +44,11 @@ steps:
     command: "echo 'Get reference from main'"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false"
+
+  - wait: ~
+    continue_on_failure: false
 
   - label: ":white_check_mark: Check go sources"
     key: "check"
@@ -52,9 +57,6 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
-    depends_on:
-      - step: "reference-target-branch"
-        allow_failure: false
 
   - label: "Trigger integrations"
     key: "test-integrations"
