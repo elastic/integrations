@@ -22,9 +22,9 @@ The integration provides a breakdown of Elastic Consumption Units (ECUs) per:
 - Day
 
 Currently, Chargeback calculations consider only Elasticsearch data nodes. Contributions from other assets, like Kibana or ML nodes, are assumed to be shared proportionally among tenants. To incorporate indexing, querying, and storage in a weighted manner, a blended value is created using the following default weights (modifiable):
-- Indexing: 20 (applicable only to the hot tier)
-- Querying: 20
-- Storage: 40
+- Indexing: `20` (applicable only to the hot tier)
+- Querying: `20`
+- Storage: `40`
 
 This default weighting means storage contributes most to the blended cost calculation, with indexing considered only on the hot tier. Adjust these weights based on your organisation's needs and best judgment.
 
