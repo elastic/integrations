@@ -23,6 +23,8 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| fireeye.nx.device_oml | Device OML (Object Management Layer) identifier. | long |
+| fireeye.nx.deviceid | Device ID of the event. | keyword |
 | fireeye.nx.fileinfo.filename | File name. | keyword |
 | fireeye.nx.fileinfo.magic | Fileinfo magic. | keyword |
 | fireeye.nx.fileinfo.md5 | File hash. | keyword |
@@ -36,6 +38,7 @@ The `nx` integration ingests network security logs from FireEye NX through TCP/U
 | fireeye.nx.flow.starttime | Flow start time. | date |
 | fireeye.nx.flow.state | Flow state. | keyword |
 | fireeye.nx.flow_id | Flow ID of the event. | long |
+| fireeye.nx.hostname | Hostname of the event. | keyword |
 | fireeye.nx.tcp.ack | TCP acknowledgement. | boolean |
 | fireeye.nx.tcp.psh | TCP PSH. | boolean |
 | fireeye.nx.tcp.state | TCP connectin state. | keyword |

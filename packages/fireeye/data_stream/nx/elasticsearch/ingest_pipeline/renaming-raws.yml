@@ -58,17 +58,21 @@ processors:
       allow_duplicates: false
       if: ctx.json?.meta_sip4 != null
   - rename:
-      field: meta_oml
+      field: json.meta_oml
       target_field: fireeye.nx.device_oml
       ignore_missing: true
   - rename:
-      field: deviceid
+      field: json.deviceid
       target_field: fireeye.nx.deviceid
       ignore_missing: true
   - rename:
       field: json.meta_cbname
-      target_field: observer.hostname
+      target_field: fireeye.nx.hostname
       ignore_missing: true
+  - set:
+      field: observer.hostname
+      copy_from: fireeye.nx.hostname
+      ignore_empty_value: true
   - append:
       field: related.hosts
       tag: append_related_hosts_from_observer_hostname
@@ -168,7 +172,7 @@ processors:
       if: ctx?.event?.type == 'fileinfo'
       ignore_missing: true
   - set:
-      field: file.path
+      field: file.name
       tag: set_file_path_from_fileinfo_filename
       copy_from: fireeye.nx.fileinfo.filename
       ignore_empty_value: true
