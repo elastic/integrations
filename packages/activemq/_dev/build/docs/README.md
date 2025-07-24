@@ -6,7 +6,7 @@ Apache [ActiveMQ](https://activemq.apache.org) is the most popular open-source, 
 
 Use the ActiveMQ integration to:
 
-- Collect logs related to the audit and ActiveMQ instance and collect metrics related to the broker, queue and topic.
+- Collect logs related to the audit and ActiveMQ instance and collect metrics  related to the broker, queue and topic.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
