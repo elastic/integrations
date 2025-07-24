@@ -3030,11 +3030,41 @@ processors:
       separator: ",\\s?"
       ignore_missing: true
       ignore_failure: true
-  - split:
-      field: crowdstrike.Tags
-      separator: ",\\s?"
-      ignore_missing: true
-      ignore_failure: true
+  - script:
+      tag: convert-Tags
+      description: Convert tags for indexing as keyword.
+      lang: painless
+      if : ctx.crowdstrike?.Tags != null
+      source: |
+          def result = [];
+
+          if (ctx.crowdstrike.Tags instanceof String) {
+            def parts = ctx.crowdstrike.Tags.splitOnToken(",");
+            for (def part : parts) {
+              def trimmed = part.trim();
+              if (trimmed != "") {
+                result.add(trimmed);
+              }
+            }
+
+          } else if (ctx.crowdstrike.Tags instanceof Map) {
+            for (def entry : ctx.crowdstrike.Tags.entrySet()) {
+              result.add(entry.getKey() + ": " + entry.getValue());
+            }
+
+          } else if (ctx.crowdstrike.Tags instanceof List) {
+            for (def tag : ctx.crowdstrike.Tags) {
+              if (tag instanceof Map) {
+                // this format is seen in the falcon data stream
+                result.add(tag["Key"] + ": " + tag["ValueString"]);
+              } else if (tag instanceof String) {
+                // this isn't expected but avoid throwing away indexable data
+                result.add(tag);
+              }
+            }
+          }
+
+          ctx.crowdstrike.Tags = result;
   - split:
       field: crowdstrike.CallStackModuleNames
       separator: "\\|"
