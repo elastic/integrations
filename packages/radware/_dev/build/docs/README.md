@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT**
+>
+> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+
 # Radware integration
 
 This integration is for Radware device's logs. It includes the following

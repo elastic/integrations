@@ -88,7 +88,7 @@ streams:
         type: bool
         title: Recursive Glob
         description: |
-          Enable expanding ** into recursive glob patterns. With this feature enabled, the rightmost ** in each path is expanded into a fixed number of glob patterns. For example: /foo/** expands to /foo, /foo/*, /foo/*/*, and so on. If enabled it expands a single ** into a 8-level deep * pattern.
+          Enable expanding `**` into recursive glob patterns. With this feature enabled, the rightmost `**` in each path is expanded into a fixed number of glob patterns. For example: `/foo/**` expands to `/foo`, `/foo/*`, `/foo/*/*`, and so on. If enabled it expands a single `**` into a 8-level deep `*` pattern.
           This feature is enabled by default. Set prospector.scanner.recursive_glob to false to disable it.
         required: false
         show_user: false
@@ -98,7 +98,7 @@ streams:
         title: Enable symlinks
         description: |
           The symlinks option allows Elastic Agent to harvest symlinks in addition to regular files. When harvesting symlinks, Elastic Agent opens and reads the original file even though it reports the path of the symlink.
-          ** Because this option may lead to data loss, it is disabled by default. **
+          **Because this option may lead to data loss, it is disabled by default.**
         required: false
         show_user: false
       - name: resend_on_touch
@@ -112,7 +112,7 @@ streams:
         type: text
         title: Check Interval
         description: |
-          How often Elastic Agent checks for new files in the paths that are specified for harvesting. For example Specify 1s to scan the directory as frequently as possible without causing Elastic Agent to scan too frequently. ** We do not recommend to set this value <1s. **
+          How often Elastic Agent checks for new files in the paths that are specified for harvesting. For example Specify 1s to scan the directory as frequently as possible without causing Elastic Agent to scan too frequently. **We do not recommend to set this value <1s.**
         required: false
         show_user: false
       - name: ignore_older
@@ -142,7 +142,7 @@ streams:
         type: bool
         title: Close on State Changed Renamed
         description: |
-          ** Only use this option if you understand that data loss is a potential side effect. **
+          **Only use this option if you understand that data loss is a potential side effect.**
           When this option is enabled, Elastic Agent closes the file handler when a file is renamed. This happens, for example, when rotating files. By default, the harvester stays open and keeps reading the file because the file handler does not depend on the file name.
         required: false
         show_user: false
@@ -157,7 +157,7 @@ streams:
         type: bool
         title: Close Reader EOF
         description: |
-          ** Only use this option if you understand that data loss is a potential side effect. **
+          **Only use this option if you understand that data loss is a potential side effect.**
           When this option is enabled, Elastic Agent closes a file as soon as the end of a file is reached. This is useful when your files are only written once and not updated from time to time. For example, this happens when you are writing every single log event to a new file. This option is disabled by default.
         required: false
         show_user: false
@@ -165,7 +165,7 @@ streams:
         type: text
         title: Close Reader After Interval
         description: |
-          ** Only use this option if you understand that data loss is a potential side effect. Another side effect is that multiline events might not be completely sent before the timeout expires. **
+          **Only use this option if you understand that data loss is a potential side effect. Another side effect is that multiline events might not be completely sent before the timeout expires.**
           This option is particularly useful in case the output is blocked, which makes Elastic Agent keep open file handlers even for files that were deleted from the disk.
           For more information see the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#filebeat-input-filestream-close-timeout).
         required: false
@@ -175,7 +175,7 @@ streams:
         title: Clean Inactive
         default: -1
         description: |
-          ** Only use this option if you understand that data loss is a potential side effect. **
+          **Only use this option if you understand that data loss is a potential side effect.**
           When this option is enabled, Elastic Agent removes the state of a file after the specified period of inactivity has elapsed.
           E.g: "30m", Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". By default cleaning inactive states is disabled, -1 is used to disable it.
         required: false
@@ -185,7 +185,7 @@ streams:
         title: Clean Removed
         description: |
           When this option is enabled, Elastic Agent cleans files from the registry if they cannot be found on disk anymore under the last known name.
-          ** You must disable this option if you also disable Close Removed. **
+          **You must disable this option if you also disable Close Removed.**
         required: false
         show_user: false
       - name: harvester_limit
@@ -209,23 +209,26 @@ streams:
         title: Backoff Max
         description: |
           The maximum time for Elastic Agent to wait before checking a file again after EOF is reached. The default is 10s.
-          ** Requirement: Set Backoff Max to be greater than or equal to Backoff Init and less than or equal to Check Interval (Backoff Init <= Backoff Max <= Check Interval). **
+          **Requirement: Set Backoff Max to be greater than or equal to Backoff Init and less than or equal to Check Interval (Backoff Init <= Backoff Max <= Check Interval).**
         required: false
         show_user: false
       - name: fingerprint
-        title: Fingerprint file identity
+        title: "File identity: Fingerprint"
         type: bool
         default: true
         description: |
-          ** Changing file_identity methods between runs may result in
-          duplicated events in the output. **
+          **Changing file_identity methods between runs may result in
+          duplicated events in the output.**
           Uses a fingerprint generated from the first few bytes (1k is
           the default, this can be configured via Fingerprint offset
           and length) to identify a file instead inode + device ID.
           Refer to https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_file_identity_2
-          for more details.
+          for more details. If this option is disabled (and 'Native
+          file identity is not enabled'), Elastic-Agent < 9.0.0 will
+          use Native as the file identity, and >= 9.0.0 will use
+          Fingerprint with the default offset and length.
       - name: fingerprint_offset
-        title: Fingerprint offset
+        title: "File identity: Fingerprint offset"
         type: integer
         default: 0
         description: |
@@ -235,7 +238,7 @@ streams:
         required: false
         show_user: false
       - name: fingerprint_length
-        title: Fingerprint length
+        title: "File identity: Fingerprint length"
         type: integer
         default: 1024
         description: |
@@ -244,6 +247,21 @@ streams:
           identity is selected.
         required: false
         show_user: false
+      - name: file_identity_native
+        title: "File identity: Native"
+        type: bool
+        default: false
+        show_user: false
+        description: |
+          **Changing file_identity methods between runs may result in
+          duplicated events in the output.**
+          Uses a native identifier for files, on most Unix-like
+          file systems this is the inode + device ID. On file systems
+          that do not support inode, the native equivalent is used.
+          If you enable this option you **MUST disable Fingerprint
+          file identity**. Refer to
+          https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream
+          for more details.
       - name: rotation_external_strategy_copytruncate
         type: yaml
         title: Rotation Strategy

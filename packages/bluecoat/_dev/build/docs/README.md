@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT**
+>
+> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+
 # Bluecoat integration
 
 This integration is for Bluecoat device's logs. It includes the following

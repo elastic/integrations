@@ -219,6 +219,7 @@ An example event for `audit` looks as following:
 | o365.audit.AlertType |  | keyword |
 | o365.audit.AppAccessContext.\* |  | object |
 | o365.audit.AppId |  | keyword |
+| o365.audit.Application |  | keyword |
 | o365.audit.ApplicationDisplayName |  | keyword |
 | o365.audit.ApplicationId |  | keyword |
 | o365.audit.Approver |  | keyword |
@@ -312,6 +313,7 @@ An example event for `audit` looks as following:
 | o365.audit.Description |  | match_only_text |
 | o365.audit.DetectionMethod |  | keyword |
 | o365.audit.DetectionType |  | keyword |
+| o365.audit.DeviceName |  | keyword |
 | o365.audit.Directionality |  | keyword |
 | o365.audit.EffectiveOrganization |  | keyword |
 | o365.audit.EndTimeUtc |  | date |
@@ -331,6 +333,8 @@ An example event for `audit` looks as following:
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExtendedProperties.RequestType |  | keyword |
 | o365.audit.ExternalAccess |  | boolean |
+| o365.audit.FileExtension |  | keyword |
+| o365.audit.FileSize |  | keyword |
 | o365.audit.FileSizeBytes |  | long |
 | o365.audit.FilteringDate |  | date |
 | o365.audit.GroupName |  | keyword |
@@ -384,6 +388,7 @@ An example event for `audit` looks as following:
 | o365.audit.OrganizationId |  | keyword |
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginalDeliveryLocation |  | keyword |
+| o365.audit.OriginatingDomain |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
 | o365.audit.P1Sender |  | keyword |
 | o365.audit.P1SenderDomain |  | keyword |
@@ -397,6 +402,7 @@ An example event for `audit` looks as following:
 | o365.audit.Parameters.Enabled |  | keyword |
 | o365.audit.Parameters.ForwardAsAttachmentTo |  | keyword |
 | o365.audit.Parameters.ForwardTo |  | keyword |
+| o365.audit.Parameters.From |  | keyword |
 | o365.audit.Parameters.RedirectTo |  | keyword |
 | o365.audit.PhishConfidenceLevel |  | keyword |
 | o365.audit.Platform |  | keyword |
@@ -420,6 +426,8 @@ An example event for `audit` looks as following:
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
 | o365.audit.Severity |  | keyword |
+| o365.audit.Sha1 |  | keyword |
+| o365.audit.Sha256 |  | keyword |
 | o365.audit.SharePointMetaData.\* |  | object |
 | o365.audit.Site |  | keyword |
 | o365.audit.SiteUrl |  | keyword |
@@ -448,6 +456,7 @@ An example event for `audit` looks as following:
 | o365.audit.Target.ID |  | keyword |
 | o365.audit.Target.Type |  | keyword |
 | o365.audit.TargetContextId |  | keyword |
+| o365.audit.TargetFilePath |  | keyword |
 | o365.audit.TargetUserOrGroupName |  | keyword |
 | o365.audit.TargetUserOrGroupType |  | keyword |
 | o365.audit.TeamGuid |  | keyword |

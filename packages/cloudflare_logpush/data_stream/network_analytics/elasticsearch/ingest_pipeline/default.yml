@@ -824,21 +824,36 @@ processors:
       field: json.TCPOptions
       target_field: cloudflare_logpush.network_analytics.tcp.options
       ignore_missing: true
+  - split:
+      field: json.TCPSACKBlocks
+      separator: ', *'
+      if: ctx.json?.TCPSACKBlocks instanceof String && ctx.json.TCPSACKBlocks != ''
   - rename:
       field: json.TCPSACKBlocks
       target_field: cloudflare_logpush.network_analytics.tcp.sack.blocks
-      if: ctx.json?.TCPSACKBlocks != null && ctx.json.TCPSACKBlocks != ''
       ignore_missing: true
-  - append:
-      field: cloudflare_logpush.network_analytics.tcp.sack.blocks
-      value: '{{{json.TCPSackBlocks}}}'
-      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.blocks != null && ctx.json?.TCPSackBlocks != ctx.cloudflare_logpush?.network_analytics.tcp.sack.blocks
-      allow_duplicates: false
-  - rename:
+  - split:
       field: json.TCPSackBlocks
-      target_field: cloudflare_logpush.network_analytics.tcp.sack.blocks
-      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.blocks == null && ctx.json?.TCPSackBlocks != null && ctx.json.TCPSackBlocks != ''
-      ignore_missing: true
+      separator: ', *'
+      if: ctx.json?.TCPSackBlocks instanceof String && ctx.json.TCPSACKBlocks != ''
+  - script:
+      tag: script_raise_non_string_tcp_sack_blocks_to_array
+      source: |-
+        if (ctx.json?.TCPSACKBlocks != null && !(ctx.json.TCPSACKBlocks instanceof List)) {
+          ctx.json.TCPSACKBlocks = [ctx.json.TCPSACKBlocks];
+        }
+        if (ctx.json?.TCPSackBlocks != null && !(ctx.json.TCPSackBlocks instanceof List)) {
+          ctx.json.TCPSackBlocks = [ctx.json.TCPSackBlocks];
+        }
+  - foreach:
+      tag: 
+      field: json.TCPSackBlocks
+      if: ctx.json?.TCPSackBlocks instanceof List
+      processor:
+        append:
+          field: cloudflare_logpush.network_analytics.tcp.sack.blocks
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - convert:
       tag: convert_tcp_sack_blocks
       field: cloudflare_logpush.network_analytics.tcp.sack.blocks

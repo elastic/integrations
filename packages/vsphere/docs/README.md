@@ -1220,15 +1220,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.alert.names | List of all the alerts on this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz. | long |  | gauge |
 | vsphere.virtualmachine.cpu.total.mhz | Total Reserved CPU in Mhz. | long |  | counter |
+| vsphere.virtualmachine.cpu.usage.percent | CPU usage as a percentage. | scaled_float |  |  |
 | vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz. | long |  | gauge |
 | vsphere.virtualmachine.custom_fields | Custom fields. | object |  |  |
 | vsphere.virtualmachine.datastore.count | Number of datastores associated to this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.datastore.names | Names of the datastore associated to this virtualmachine. | keyword |  |  |
+| vsphere.virtualmachine.disk.average.bytes | Aggregated disk I/O rate. | long |  |  |
+| vsphere.virtualmachine.disk.numberRead.count | Number of times data was read. | long |  |  |
+| vsphere.virtualmachine.disk.numberWrite.count | Number of disk writes. | long |  |  |
+| vsphere.virtualmachine.disk.read.average.bytes | Rate at which data is read from each virtual disk on the virtual machine. | long |  |  |
+| vsphere.virtualmachine.disk.write.average.bytes | Rate at which data is written to each virtual disk on the virtual machine. | long |  |  |
 | vsphere.virtualmachine.host.hostname | Hostname of the host. | keyword |  |  |
 | vsphere.virtualmachine.host.id | Host id. | keyword |  |  |
 | vsphere.virtualmachine.id | Unique virtual machine ID. | keyword |  |  |
 | vsphere.virtualmachine.memory.free.guest.bytes | Free memory of Guest in bytes. | long | byte | gauge |
 | vsphere.virtualmachine.memory.total.guest.bytes | Total memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.usage.percent | Memory usage as percent of total configured or available memory. | scaled_float |  |  |
 | vsphere.virtualmachine.memory.used.guest.bytes | Used memory of Guest in bytes. | long | byte | gauge |
 | vsphere.virtualmachine.memory.used.host.bytes | Used memory of Host in bytes. | long | byte | gauge |
 | vsphere.virtualmachine.name | Virtual machine name. | keyword |  |  |
