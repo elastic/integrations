@@ -37,6 +37,7 @@ env:
   # All steps will have the same value, since it always gets the value
   # "BUILDKITE_STEP_ID" from the first "Upload pipeline" step.
   ELASTIC_PACKAGE_CUSTOMIZE_SERVICE_TEST_RUN_ID: "true"
+  STACK_VERSION: 9.2.0-SNAPSHOT
 
 steps:
   - label: "Get reference from target branch"
@@ -101,14 +102,15 @@ steps:
       build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
 
   - label: ":junit: Junit annotate"
+    agents:
+      # requires at least "bash", "curl" and "git"
+      image: "ruby:3.4.5-bookworm@sha256:64b669025ed6f2f2697a7fc15fc5a59d7b47d190619f3b1147b875815deb2a5f"
     plugins:
-      - junit-annotate#v2.5.0:
+      - junit-annotate#v2.7.0:
           artifacts: "build/test-results/*.xml"
           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
           report-skipped: true
           always-annotate: true
-    agents:
-      provider: "gcp"  # junit plugin requires docker
 
   - label: ":github: Report failed tests"
     key: report-failed-tests
