@@ -1,0 +1,406 @@
+title: "Transaction Events"
+type: logs
+streams:
+  - input: gcs
+    enabled: false
+    description: Collect Netskope transaction logs via GCS.
+    title: Collect Netskope Transaction logs via GCS
+    template_path: gcs.yml.hbs
+    vars:
+      - name: project_id
+        type: text
+        title: Project ID
+        description: It is a required parameter to collect logs via GCS.
+        required: true
+        show_user: true
+        default: my-project-id
+      - name: service_account_key
+        type: password
+        title: Service Account Key
+        description: |
+          The json service account credentials string, which can be generated from the google cloud console, ref [Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+          This should be the entire JSON object that is present in the credentials.json file. Required if a Service Account Credentials File is not provided.
+        required: false
+        show_user: true
+        secret: true
+      - name: service_account_file
+        type: text
+        title: Service Account Credentials File
+        description: |
+          Path to a file containing the service account key text to authenticate to the data store, which can be generated from the google cloud console, ref [Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+          Required if a Service Account Key is not provided.
+        required: false
+        show_user: true
+      - name: number_of_workers
+        type: integer
+        title: Maximum number of workers
+        multi: false
+        required: false
+        show_user: true
+        default: 3
+        description: Determines how many workers are spawned per bucket.
+      - name: poll
+        type: bool
+        title: Polling
+        multi: false
+        required: false
+        show_user: true
+        default: true
+        description: Determines if the bucket will be continuously polled for new documents.
+      - name: poll_interval
+        type: text
+        title: Polling interval
+        multi: false
+        required: false
+        show_user: true
+        default: 15s
+        description: Determines the time interval between polling operations.
+      - name: retry
+        type: yaml
+        title: Retry
+        description: "This attribute can be used to configure a list of sub attributes that directly control how the input should behave when a download for a file/object fails or gets interrupted.\nFor more information about each attribute, please see the relevant [Documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-gcs#attrib-retry-gcs).\n"
+        required: false
+        show_user: false
+        default: |
+          # You can change values for below attributes.
+
+          max_attempts: 3
+          initial_backoff_duration: 1s
+          max_backoff_duration: 30s
+          backoff_multiplier: 2
+      - name: buckets
+        type: yaml
+        title: Buckets
+        description: "This attribute contains the details about a specific bucket like name, max_workers, poll and poll_interval. The attribute name is specific to a bucket as it describes the bucket name, while the fields max_workers, poll and poll_interval can exist both at the bucket level and the root level. \nIt is internally represented as an array, so multiple buckets can be provided.\nFor more information about each attribute, please see the relevant [Documentation](https://www.elastic.co/guide/en/beats/filebeat/8.18/filebeat-input-gcs.html#attrib-buckets).\n"
+        required: true
+        show_user: true
+        default: |
+          # You can define as many buckets as you want here.
+
+          - name: transaction_logs
+          - name: transaction_logs_2
+
+          # The config below is an example of how to override the global config.
+
+          #- name: transaction_logs_3
+          #  number_of_workers: 3
+          #  poll: true
+          #  poll_interval: 10s
+      - name: file_selectors
+        type: yaml
+        title: "[GCS] File Selectors"
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # - regex: "transaction/"
+        description: If the GCS bucket will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which is made up of regex patters. The regex should match the GCS bucket filepath. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.
+      - name: timestamp_epoch
+        type: integer
+        title: Timestamp Epoch
+        multi: false
+        required: false
+        show_user: false
+        description: Defines the epoch time in seconds, which is used to filter out objects/files that are older than the specified timestamp.
+      - name: csv_comma
+        type: text
+        title: CSV Separator Character
+        multi: false
+        required: false
+        show_user: false
+        default: " "
+        description: The field separator character used by the CSV format.
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve panw_cortex_xdr.event fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        required: true
+        default:
+          - forwarded
+          - netskope-transaction
+        multi: true
+        show_user: false
+  - input: azure-blob-storage
+    description: Collect Netskope Transaction logs via Azure Blob Storage.
+    title: Collect Netskope Transaction logs via Azure Blob Storage
+    template_path: abs.yml.hbs
+    enabled: false
+    vars:
+      - name: account_name
+        type: text
+        title: Account Name
+        description: |
+          This attribute is required for various internal operations with respect to authentication, creating service clients and blob clients which are used internally for various processing purposes.
+        required: true
+        show_user: true
+      - name: client_id
+        type: text
+        title: Client ID (OAuth2)
+        description: Client ID of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+        required: false
+        show_user: true
+        secret: true
+      - name: client_secret
+        type: password
+        title: Client Secret (OAuth2)
+        description: Client Secret of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+        required: false
+        show_user: true
+        secret: true
+      - name: tenant_id
+        type: text
+        title: Tenant ID (OAuth2)
+        description: Tenant ID of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+        multi: false
+        required: false
+        show_user: true
+      - name: service_account_key
+        type: password
+        title: Service Account Key
+        description: |
+          This attribute contains the access key, found under the Access keys section on Azure Cloud, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common access key.
+        required: false
+        show_user: true
+        secret: true
+      - name: service_account_uri
+        type: text
+        title: Service Account URI
+        description: |
+          This attribute contains the connection string, found under the Access keys section on Azure Cloud, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common connection string.
+        required: false
+        show_user: false
+      - name: storage_url
+        type: text
+        title: Storage URL
+        description: |
+          Use this attribute to specify a custom storage URL if required. By default it points to azure cloud storage. Only use this if there is a specific need to connect to a different environment where blob storage is available.
+          URL format : {{protocol}}://{{account_name}}.{{storage_uri}}.
+        required: false
+        show_user: false
+      - name: number_of_workers
+        type: integer
+        title: Maximum number of workers
+        multi: false
+        required: false
+        show_user: true
+        default: 3
+        description: Determines how many workers are spawned per container. Maximum allowed value is 5000.
+      - name: poll
+        type: bool
+        title: Polling
+        multi: false
+        required: false
+        show_user: true
+        default: true
+        description: Determines if the container will be continuously polled for new documents.
+      - name: poll_interval
+        type: text
+        title: Polling interval
+        multi: false
+        required: false
+        show_user: true
+        default: 15s
+        description: Determines the time interval between polling operations.
+      - name: containers
+        type: yaml
+        title: Containers
+        description: "This attribute contains the details about a specific container like, name, number_of_workers, poll, poll_interval etc. \nThe attribute 'name' is specific to a container as it describes the container name, while the fields number_of_workers, poll, poll_interval can exist both at the container level and at the global level. \nIf you have already defined the attributes globally, then you can only specify the container name in this yaml config. \nIf you want to override any specific attribute for a container, then, you can define it here. \nAny attribute defined in the yaml will override the global definitions. Please see the relevant [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html#attrib-containers) for further information.\n"
+        required: true
+        show_user: true
+        default: |
+          #- name: azure-container1
+          #   max_workers: 3
+          #   poll: true
+          #   poll_interval: 15s
+          #- name: azure-container2
+          #  max_workers: 3
+          #  poll: true
+          #  poll_interval: 10s
+      - name: file_selectors
+        type: yaml
+        title: File Selectors
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # - regex: "transaction/"
+        description: "If the container will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which is made up of regex patters. \nThe regex should match the container filepath. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.\n"
+      - name: timestamp_epoch
+        type: integer
+        title: Timestamp Epoch
+        multi: false
+        required: false
+        description: "This attribute can be used to filter out files/blobs which have a timestamp older than the specified value. The value of this attribute should be in unix epoch (seconds) format."
+        show_user: false
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: csv_comma
+        type: text
+        title: CSV Separator Character
+        multi: false
+        required: false
+        show_user: false
+        default: " "
+        description: The field separator character used by the CSV format.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        required: true
+        default:
+          - forwarded
+          - netskope-transaction
+        multi: true
+        show_user: false
+  - input: aws-s3
+    template_path: aws-s3.yml.hbs
+    title: Collect Netskope Transaction logs via AWS S3 or SQS
+    description: Collect Netskope Transaction logs via AWS S3 or SQS input.
+    enabled: false
+    vars:
+      - name: bucket_arn
+        type: text
+        title: '[S3] Bucket ARN'
+        multi: false
+        required: false
+        show_user: true
+        description: ARN of the AWS S3 bucket that will be polled for list operation. It is a required parameter for collecting logs via the AWS S3.
+      - name: bucket_list_prefix
+        type: text
+        title: '[S3] Bucket Prefix'
+        multi: false
+        required: false
+        show_user: true
+        description: Prefix to apply for the list request to the S3 bucket.
+      - name: interval
+        type: text
+        title: '[S3] Interval'
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: Listing of the S3 bucket will be polled according to the time interval defined by bucket_list_interval config. Default value is 120 secs. Supported units for this parameter are h/m/s.
+      - name: number_of_workers
+        type: integer
+        title: '[S3] Number of Workers'
+        multi: false
+        required: false
+        show_user: true
+        default: 5
+        description: Number of workers that will process the S3 objects listed.
+      - name: queue_url
+        type: text
+        title: '[SQS] Queue URL'
+        multi: false
+        required: false
+        show_user: true
+        description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+      - name: visibility_timeout
+        type: text
+        title: '[SQS] Visibility Timeout'
+        multi: false
+        required: false
+        show_user: true
+        default: 300s
+        description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. The maximum is 12 hours. Supported units for this parameter are h/m/s.
+      - name: api_timeout
+        type: text
+        title: '[SQS] API Timeout'
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value. Supported units for this parameter are h/m/s.
+      - name: file_selectors
+        type: yaml
+        title: '[SQS] File Selectors'
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
+      - name: external_id
+        type: text
+        title: External ID
+        multi: false
+        required: false
+        show_user: false
+        description: External ID to use when assuming a role in another account.
+      - name: csv_comma
+        type: text
+        title: CSV Separator Character
+        multi: false
+        required: false
+        show_user: false
+        default: " "
+        description: The field separator character used by the CSV format.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - netskope-transaction
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve netskope.transaction fields that were mapped to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
