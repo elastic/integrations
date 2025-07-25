@@ -1,0 +1,132 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  batch_size: {{batch_size}}
+  username: {{username}}
+  password: {{password}}
+  asset_id: 0
+redact:
+  fields:
+    - password
+program: |
+  (
+    has(state.expiry) && timestamp(state.expiry) > now ?
+      {
+        "access_token": state.access_token,
+        "expiry": state.expiry
+      }
+    :
+      post_request(
+        state.url.trim_right("/") + "/auth",
+        "application/x-www-form-urlencoded",
+        {"username":[state.username],"password":[state.password]}.format_query()
+      ).do_request().as(resp, resp.StatusCode == 201 ?
+        {
+          "access_token": string(resp.Body),
+          // Include 30s grace period to manage session expiry.
+          "expiry": (now() + duration("4h") - duration("30s")).format(time_layout.RFC3339),
+        }
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST: "+ state.url.trim_right("/") + "/auth" + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+  ).as(token,
+    has(token.events) ? token : // Exit early due to failure.
+      state.with(
+        request(
+          "POST",
+          state.url.trim_right("/") + "/rest/2.0/search/am/asset?" + {
+            "pageSize": [string(state.batch_size)],
+            "lastSeenAssetId": [string(int(state.asset_id))]
+          }.format_query()
+        ).with({
+          "Header":{
+            "Authorization": ["Bearer " + token.access_token],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "events": body.assetListData.asset.map(e,{
+              "message": e.encode_json(),
+            }),
+            "want_more": body.hasMore != 0,
+            "access_token": token.access_token,
+            "expiry": token.expiry,
+            "asset_id": body.hasMore != 0 ? body.assetListData.asset.map(e, e.assetId).max() : 0,
+          })
+        :
+          (resp.StatusCode == 204) ?
+            // 204 No Content - Terminate Pagination and Publish Empty Event.
+            {
+              "events": [],
+              "want_more": false,
+              "access_token": token.access_token,
+              "expiry": token.expiry,
+              "asset_id": 0,
+            }
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST: "+ state.url.trim_right("/") + "/rest/2.0/search/am/asset" + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#if hide_sensitive}}
+  - hide_sensitive
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
