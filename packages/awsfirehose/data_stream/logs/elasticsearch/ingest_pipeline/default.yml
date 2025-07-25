@@ -9,16 +9,25 @@ processors:
         if (ctx.message == null) {
             return;
         }
+        // Initialize event object if it doesn't exist
+        if (ctx.event == null) {
+            ctx.event = [:];
+        }
+        
         // AWS WAF Logs
-        if ((ctx['aws.kinesis.name'] != null and ctx['aws.kinesis.name'].contains('aws-waf-logs-')) or
-            (ctx['aws.cloudwatch.log_group'] != null and ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-')) or
-            (ctx.message.contains('webaclld') and ctx.message.contains('terminatingRule') and
-             ctx.message.contains('httpSource') and ctx.message.contains('ruleGroupList') and ctx.message.contains('rateBasedRuleList') and
-             ctx.message.contains('nonTerminatingMatchingRules') and ctx.message.contains('httpRequest') and ctx.message.contains('labels'))) {
+        if (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-')) {
+            ctx.event.dataset = 'aws.waf';
+        }
+        else if (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-')) {
+            ctx.event.dataset = 'aws.waf';
+        }
+        else if (ctx.message.contains('webaclld') && ctx.message.contains('terminatingRule') &&
+                 ctx.message.contains('httpSource') && ctx.message.contains('ruleGroupList') && ctx.message.contains('rateBasedRuleList') &&
+                 ctx.message.contains('nonTerminatingMatchingRules') && ctx.message.contains('httpRequest') && ctx.message.contains('labels')) {
             ctx.event.dataset = 'aws.waf';
         }
         // AWS CloudTrail Logs
-        else if (ctx['aws.cloudwatch.log_stream'] != null and ctx['aws.cloudwatch.log_stream'].contains('CloudTrail')) {
+        else if (ctx['aws.cloudwatch.log_stream'] != null && ctx['aws.cloudwatch.log_stream'].contains('CloudTrail')) {
             ctx.event.dataset = 'aws.cloudtrail';
         }
         // AWS VPC Flow Logs
@@ -26,92 +35,59 @@ processors:
             ctx.event.dataset = 'aws.vpcflow';
         }
         // AWS Firewall Logs
-        else if (ctx.message.contains('firewall_name') and ctx.message.contains('availability_zone') and
-                 ctx.message.contains('event_timestamp') and ctx.message.contains('event')) {
+        else if (ctx.message.contains('firewall_name') && ctx.message.contains('availability_zone') &&
+                 ctx.message.contains('event_timestamp') && ctx.message.contains('event')) {
             ctx.event.dataset = 'aws.firewall_logs';
         }
         // AWS Route53 Resolver Logs
-        else if (ctx.message.contains('version') and ctx.message.contains('account_id') and ctx.message.contains('region') and
-                 ctx.message.contains('vpc_id') and ctx.message.contains('query_timestamp') and ctx.message.contains('query_name') and
-                 ctx.message.contains('query_type') and ctx.message.contains('query_class') and ctx.message.contains('rcode') and
-                 ctx.message.contains('answers') and ctx.message.contains('srcaddr') and ctx.message.contains('srcport') and
-                 ctx.message.contains('transport') and ctx.message.contains('srcids')) {
+        else if (ctx.message.contains('version') && ctx.message.contains('account_id') && ctx.message.contains('region') &&
+                 ctx.message.contains('vpc_id') && ctx.message.contains('query_timestamp') && ctx.message.contains('query_name') &&
+                 ctx.message.contains('query_type') && ctx.message.contains('query_class') && ctx.message.contains('rcode') &&
+                 ctx.message.contains('answers') && ctx.message.contains('srcaddr') && ctx.message.contains('srcport') &&
+                 ctx.message.contains('transport') && ctx.message.contains('srcids')) {
             ctx.event.dataset = 'aws.route53_resolver_logs';
         }
-        // AWS S3 Access Logs
+        // AWS S3 Access Logs - simplified token counting
         else if (ctx.message.length() > 0) {
-            int tokenCount = 0;
-            StringBuilder currentToken = new StringBuilder();
-            String hostHeader = null;
-            boolean insideQuotes = false;
-            char[] chars = ctx.message.toCharArray();
-
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
-                if (c == ' ' and !insideQuotes) {
-                    tokenCount++;
-                    if (tokenCount == 23) {
-                        hostHeader = currentToken.toString();
-                    }
-                    currentToken.setLength(0);
-                } else if (c == '"') {
-                    insideQuotes = !insideQuotes;
-                } else {
-                    currentToken.append(c);
+            String[] tokens = ctx.message.splitOnToken(' ');
+            if (tokens.length >= 24) {
+                String hostHeader = tokens.length > 23 ? tokens[23] : "";
+                if (hostHeader.contains('s3') && hostHeader.contains('amazonaws.com')) {
+                    ctx.event.dataset = 'aws.s3access';
                 }
-            }
-            if (currentToken.length() > 0) {
-                tokenCount++;
-                if (tokenCount == 24) {
-                    hostHeader = currentToken.toString();
+                else if (tokens.length == 25) {
+                    ctx.event.dataset = 'aws.s3access';
                 }
-            }
-            if ((hostHeader != null and hostHeader.contains('s3') and hostHeader.contains('amazonaws.com')) or tokenCount == 25) {
-                ctx.event.dataset = 'aws.s3access';
             }
         }
         // AWS API Gateway Logs
-        else if (ctx.message.contains('requestId') and ctx.message.contains('ip') and
-                 ((ctx.message.contains('requestTime') and ctx.message.contains('httpMethod') and ctx.message.contains('routeKey') and
-                   ctx.message.contains('status') and ctx.message.contains('protocol') and ctx.message.contains('responseLength')) or
-                  (ctx.message.contains('caller') and ctx.message.contains('user') and ctx.message.contains('requestTime') and ctx.message.contains('httpMethod') and
-                   ctx.message.contains('resourcePath') and ctx.message.contains('status') and ctx.message.contains('protocol') and
-                   ctx.message.contains('responseLength')) or // Corrected from && to 'and', and || to 'or'
-                  (ctx.message.contains('caller') and ctx.message.contains('user') and ctx.message.contains('requestTime') and ctx.message.contains('eventType') and // Corrected from && to 'and'
-                   ctx.message.contains('routeKey') and ctx.message.contains('status') and ctx.message.contains('connectionId')))) { // Corrected from && to 'and'
-            ctx.event.dataset = 'aws.apigateway_logs';
-        }
-        // AWS CloudFront Logs
-        else if (ctx.message.length() > 0) {
-            int tokenCount = 1;
-            boolean insideQuotes = false;
-            char[] chars = ctx.message.toCharArray();
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
-                if (c == ' ' and !insideQuotes) {
-                    tokenCount++;
-                } else if (c == '"') {
-                    insideQuotes = !insideQuotes;
-                }
+        else if (ctx.message.contains('requestId') && ctx.message.contains('ip')) {
+            if (ctx.message.contains('requestTime') && ctx.message.contains('httpMethod') && ctx.message.contains('routeKey') &&
+                ctx.message.contains('status') && ctx.message.contains('protocol') && ctx.message.contains('responseLength')) {
+                ctx.event.dataset = 'aws.apigateway_logs';
             }
-            if (tokenCount == 33 and ctx.message =~ /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\s[a-zA-Z0-9-]+\s\d+\s(\d+\.\d+\.\d+\.\d+|[a-fA-F0-9:]+)/) { // Corrected from && to 'and'
+            else if (ctx.message.contains('caller') && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod') &&
+                     ctx.message.contains('resourcePath') && ctx.message.contains('status') && ctx.message.contains('protocol') &&
+                     ctx.message.contains('responseLength')) {
+                ctx.event.dataset = 'aws.apigateway_logs';
+            }
+            else if (ctx.message.contains('caller') && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('eventType') &&
+                     ctx.message.contains('routeKey') && ctx.message.contains('status') && ctx.message.contains('connectionId')) {
+                ctx.event.dataset = 'aws.apigateway_logs';
+            }
+        }
+        // AWS CloudFront Logs - simplified token counting
+        else if (ctx.message.length() > 0) {
+            String[] tokens = ctx.message.splitOnToken(' ');
+            if (tokens.length == 33 && ctx.message =~ /^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\s[a-zA-Z0-9-]+\\s\\d+\\s(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|[a-fA-F0-9:]+)/) {
                 ctx.event.dataset = 'aws.cloudfront_logs';
             }
         }
-        // AWS ELB Logs
+        // AWS ELB Logs - simplified token counting
         else if (ctx.message.length() > 0) {
-            int tokenCount = 1;
-            boolean insideQuotes = false;
-            char[] chars = ctx.message.toCharArray();
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
-                if (c == ' ' and !insideQuotes) { // Corrected from && to 'and'
-                    tokenCount++;
-                } else if (c == '"') {
-                    insideQuotes = !insideQuotes;
-                }
-            }
-            if ((tokenCount == 15 or tokenCount == 29 or tokenCount == 22) and (ctx.message =~ /.*\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})|([0-9a-fA-F:.]+:\d{1,5})\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})|([0-9a-fA-F:.]+:\d{1,5})\s-?\d+(\.\d+)?\s/)) { // Corrected from && to 'and', and || to 'or'
+            String[] tokens = ctx.message.splitOnToken(' ');
+            if ((tokens.length == 15 || tokens.length == 29 || tokens.length == 22) && 
+                ctx.message =~ /.*\\s(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{1,5})|([0-9a-fA-F:.]+:\\d{1,5})\\s(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{1,5})|([0-9a-fA-F:.]+:\\d{1,5})\\s-?\\d+(\\.\\d+)?\\s/) {
                 ctx.event.dataset = 'aws.elb_logs';
             }
         }
@@ -121,12 +97,12 @@ processors:
             if (split_log_stream_name.length == 2) {
                 def hosted_zone_id = split_log_stream_name[0];
                 def edge_location_id = split_log_stream_name[1];
-                if (ctx.message != null and ctx.message.contains(hosted_zone_id) and ctx.message.contains(edge_location_id)) {
+                if (ctx.message != null && ctx.message.contains(hosted_zone_id) && ctx.message.contains(edge_location_id)) {
                     ctx.event.dataset = 'aws.route53_public_logs';
                 }
             }
         }
-      ignore_failure: true
+    ignore_failure: true
 
 on_failure:
   - set:
