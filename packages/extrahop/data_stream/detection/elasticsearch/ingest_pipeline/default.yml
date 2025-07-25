@@ -1,0 +1,575 @@
+---
+description: Pipeline for processing detection logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.id
+        - json.mod_time
+      tag: fingerprint_extrahop_detection
+      target_field: _id
+      ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - convert:
+      field: json.appliance_id
+      tag: convert_appliance_id_to_string
+      target_field: extrahop.detection.appliance_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: device.id
+      tag: set_device_id_from_detection_appliance_id
+      copy_from: extrahop.detection.appliance_id
+      ignore_empty_value: true
+  - rename:
+      field: json.assignee
+      tag: rename_assignee
+      target_field: extrahop.detection.assignee
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_detection_assignee
+      copy_from: extrahop.detection.assignee
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_detection_assignee_into_related_user
+      value: '{{{extrahop.detection.assignee}}}'
+      allow_duplicates: false
+      if: ctx.extrahop?.detection?.assignee != null
+  - rename:
+      field: json.categories
+      tag: rename_categories
+      target_field: extrahop.detection.categories
+      ignore_missing: true
+  - date:
+      field: json.create_time
+      tag: date_create_time
+      target_field: extrahop.detection.create_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.create_time != null && ctx.json.create_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_detection_create_time
+      copy_from: extrahop.detection.create_time
+      ignore_empty_value: true
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: extrahop.detection.description
+      ignore_missing: true
+  - set:
+      field: threat.indicator.description
+      tag: set_threat_indicator_description_from_detection_description
+      copy_from: extrahop.detection.description
+      ignore_empty_value: true
+  - convert:
+      field: json.id
+      tag: convert_id_to_string
+      target_field: extrahop.detection.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_detection_id_and_mod_time
+      value: '{{extrahop.detection.id}}-{{json.mod_time}}'
+      if: ctx.extrahop?.detection?.id != null && ctx.json?.mod_time != null
+  - convert:
+      field: json.is_user_created
+      tag: convert_is_user_created_to_boolean
+      target_field: extrahop.detection.is_user_created
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.mitre_tactics
+      tag: foreach_mitre_tactics_id
+      if: ctx.json?.mitre_tactics instanceof List
+      processor:
+        append:
+          field: threat.tactic.id
+          tag: append_mitre_tactics_id_into_threat_tactic_id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.mitre_tactics
+      tag: foreach_mitre_tactics_name
+      if: ctx.json?.mitre_tactics instanceof List
+      processor:
+        append:
+          field: threat.tactic.name
+          tag: append_mitre_tactics_name_into_threat_tactic_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.mitre_tactics
+      tag: foreach_mitre_tactics_url
+      if: ctx.json?.mitre_tactics instanceof List
+      processor:
+        append:
+          field: threat.tactic.reference
+          tag: append_mitre_tactics_url_into_threat_tactic_reference
+          value: '{{{_ingest._value.url}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.mitre_tactics
+      tag: rename_mitre_tactics
+      target_field: extrahop.detection.mitre_tactics
+      ignore_missing: true
+  - foreach:
+      field: json.mitre_techniques
+      tag: foreach_mitre_techniques_id
+      if: ctx.json?.mitre_techniques instanceof List
+      processor:
+        append:
+          field: threat.technique.id
+          tag: append_mitre_techniques_id_into_threat_technique_id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.mitre_techniques
+      tag: foreach_mitre_techniques_name
+      if: ctx.json?.mitre_techniques instanceof List
+      processor:
+        append:
+          field: threat.technique.name
+          tag: append_mitre_techniques_name_into_threat_technique_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.mitre_techniques
+      tag: foreach_mitre_techniques_url
+      if: ctx.json?.mitre_techniques instanceof List
+      processor:
+        append:
+          field: threat.technique.reference
+          tag: append_mitre_techniques_url_into_threat_technique_reference
+          value: '{{{_ingest._value.url}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.mitre_techniques
+      tag: rename_mitre_techniques
+      target_field: extrahop.detection.mitre_techniques
+      ignore_missing: true
+  - date:
+      field: json.mod_time
+      tag: date_mod_time
+      target_field: extrahop.detection.mod_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.mod_time != null && ctx.json.mod_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_detection_mod_time
+      copy_from: extrahop.detection.mod_time
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_detection_mod_time
+      copy_from: extrahop.detection.mod_time
+      ignore_empty_value: true
+  - foreach:
+      field: json.participants
+      tag: foreach_participants_external
+      if: ctx.json?.participants instanceof List
+      processor:    
+        convert:
+          field: _ingest._value.external
+          tag: convert_participants_external_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.external
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.participants
+      tag: foreach_participants_hostname
+      if: ctx.json?.participants instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_participants_hostname_into_related_hosts
+          value: '{{{_ingest._value.hostname}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.participants
+      tag: foreach_participants_id
+      if: ctx.json?.participants instanceof List
+      processor:    
+        convert:
+          field: _ingest._value.id
+          tag: convert_participants_id_to_keyword
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.object_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.participants
+      tag: foreach_participants_object_id
+      if: ctx.json?.participants instanceof List
+      processor:    
+        convert:
+          field: _ingest._value.object_id
+          tag: convert_participants_object_id_to_keyword
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.object_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.participants
+      tag: foreach_participants_object_value
+      if: ctx.json?.participants instanceof List
+      processor:
+        convert:
+          field: _ingest._value.object_value
+          tag: convert_participants_object_value_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.object_value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.participants
+      tag: foreach_participants_object_value
+      if: ctx.json?.participants instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_participants_object_value_into_related_ip
+          value: '{{{_ingest._value.object_value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.participants
+      tag: foreach_participants_username
+      if: ctx.json?.participants instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_participants_username_into_related_user
+          value: '{{{_ingest._value.username}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.participants
+      tag: rename_participants
+      target_field: extrahop.detection.participants
+      ignore_missing: true
+  - rename:
+      field: json.properties.certificate
+      tag: rename_properties_certificate
+      target_field: extrahop.detection.properties.certificate
+      ignore_missing: true
+  - convert:
+      field: json.properties.client_port
+      tag: convert_properties_client_port_to_long
+      target_field: extrahop.detection.properties.client_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_detection_properties_client_port
+      copy_from: extrahop.detection.properties.client_port
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.hacking_tool_name
+      tag: rename_properties_hacking_tool_name
+      target_field: extrahop.detection.properties.hacking_tool_name
+      ignore_missing: true
+  - convert:
+      field: json.properties.server_port
+      tag: convert_properties_server_port_to_long
+      target_field: extrahop.detection.properties.server_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_detection_properties_server_port
+      copy_from: extrahop.detection.properties.server_port
+      ignore_empty_value: true
+  - convert:
+      field: json.recommended
+      tag: convert_recommended_to_boolean
+      target_field: extrahop.detection.recommended
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.recommended_factors
+      tag: rename_recommended_factors
+      target_field: extrahop.detection.recommended_factors
+      ignore_missing: true
+  - rename:
+      field: json.resolution
+      tag: rename_resolution
+      target_field: extrahop.detection.resolution
+      ignore_missing: true
+  - convert:
+      field: json.risk_score
+      tag: convert_risk_score_to_long
+      target_field: extrahop.detection.risk_score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score_from_detection_risk_score
+      copy_from: extrahop.detection.risk_score
+      ignore_empty_value: true
+  - date:
+      field: json.start_time
+      tag: date_start_time
+      target_field: extrahop.detection.start_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.start_time != null && ctx.json.start_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_detection_start_time
+      copy_from: extrahop.detection.start_time
+      ignore_empty_value: true
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: extrahop.detection.status
+      ignore_missing: true
+  - convert:
+      field: json.ticket_id
+      tag: convert_ticket_id_to_string
+      target_field: extrahop.detection.ticket_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.ticket_url
+      tag: rename_ticket_url
+      target_field: extrahop.detection.ticket_url
+      ignore_missing: true
+  - rename:
+      field: json.title
+      tag: rename_title
+      target_field: extrahop.detection.title
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_detection_title
+      copy_from: extrahop.detection.title
+      ignore_empty_value: true
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: extrahop.detection.type
+      ignore_missing: true
+  - date:
+      field: json.update_time
+      tag: date_update_time
+      target_field: extrahop.detection.update_time
+      formats:
+        - UNIX_MS
+      if: ctx.json?.update_time != null && ctx.json.update_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.url
+      tag: rename_url
+      target_field: extrahop.detection.url
+      ignore_missing: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_detection_url
+      copy_from: extrahop.detection.url
+      ignore_empty_value: true
+  - foreach:
+      field: extrahop.detection.mitre_tactics
+      tag: foreach_extrahop_detection_mitre_tactics
+      if: ctx.extrahop?.detection?.mitre_tactics instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.name
+            - _ingest._value.url
+          tag: remove_custom_duplicate_fields_from_extrahop_detection_mitre_tactics
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - foreach:
+      field: extrahop.detection.mitre_techniques
+      tag: foreach_extrahop_detection_mitre_techniques
+      if: ctx.extrahop?.detection?.mitre_techniques instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.name
+            - _ingest._value.url
+          tag: remove_custom_duplicate_fields_from_extrahop_detection_mitre_techniques
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - extrahop.detection.appliance_id
+        - extrahop.detection.assignee
+        - extrahop.detection.create_time
+        - extrahop.detection.description
+        - extrahop.detection.mod_time
+        - extrahop.detection.properties.client_port
+        - extrahop.detection.properties.server_port
+        - extrahop.detection.risk_score
+        - extrahop.detection.start_time
+        - extrahop.detection.title
+        - extrahop.detection.url
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
