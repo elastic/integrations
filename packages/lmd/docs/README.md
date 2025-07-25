@@ -2,6 +2,8 @@
 
 The Lateral movement detection model package contains assets that detect lateral movement based on file transfer activity and Windows RDP events. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
+This package leverages event logs. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information. The transform only supports Linux and Windows. The **Anomaly Detection Jobs** section outlines platform support for each job.
+
 For more detailed information refer to the following blogs:
 - [Detecting Lateral Movement activity: A new Kibana integration](https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration)
 - [Identifying malicious Remote Desktop Protocol (RDP) connections with Elastic Security](https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security)
@@ -16,7 +18,7 @@ For more detailed information refer to the following blogs:
     1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml-rdp-lmd`, and copy the same in the **Name** field.
     1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
     1. Use the new data view (`logs-*, ml-rdp-lmd`) to create anomaly detection jobs for this package.
-1. **Add preconfigured anomaly detection jobs**: In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for **Lateral Movement Detection**. When you select the card, you will see pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment. **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [lmd-ml file](https://github.com/elastic/integrations/blob/main/packages/lmd/kibana/ml_module/lmd-ml.json#L10). For example, this would be available in `logs-endpoint.events.*` if you used Elastic Defend to collect events.
+1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see **Lateral Movement Detection**. When you select the card, you will see pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [lmd-ml file](https://github.com/elastic/integrations/blob/main/packages/lmd/kibana/ml_module/lmd-ml.json#L10). For example, this would be available in `logs-endpoint.events.*` if you used Elastic Defend to collect events.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana.
     1. You have started the above anomaly detection jobs.
     1. You have **read** access to `.ml-anomalies-shared` index or are assigned the `machine_learning_user` role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
@@ -102,24 +104,24 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
 
-| Job                                               | Description                                                                                     |
-|---------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| lmd_high_count_remote_file_transfer                   | Detects unusually high file transfers to a remote host in the network.                          | 
-| lmd_high_file_size_remote_file_transfer               | Detects unusually high size of files shared with a remote host in the network.                  |
-| lmd_rare_file_extension_remote_transfer               | Detects rare file extensions shared with a remote host in the network.                          |
-| lmd_rare_file_path_remote_transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             |
- | lmd_high_mean_rdp_session_duration                    | Detects unusually high mean of RDP session duration.                                            |
-| lmd_high_var_rdp_session_duration                     | Detects unusually high variance in RDP session duration.                                        |
- | lmd_high_sum_rdp_number_of_processes                  | Detects unusually high number of processes started in a single RDP session.                     |
- | lmd_unusual_time_weekday_rdp_session_start            | Detects an RDP session started at an usual time or weekday.                                     |
- | lmd_high_rdp_distinct_count_source_ip_for_destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       |
- | lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. |
- | lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           |
+| Job                                                   | Description                                                                                     | Supported Platform    |
+|-------------------------------------------------------|-------------------------------------------------------------------------------------------------| --------------------- |
+| lmd_high_count_remote_file_transfer                   | Detects unusually high file transfers to a remote host in the network.                          | Linux, macOS, Windows |
+| lmd_high_file_size_remote_file_transfer               | Detects unusually high size of files shared with a remote host in the network.                  | Linux, macOS, Windows |
+| lmd_rare_file_extension_remote_transfer               | Detects rare file extensions shared with a remote host in the network.                          | macOS, Windows        |
+| lmd_rare_file_path_remote_transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             | macOS, Windows        |
+| lmd_high_mean_rdp_session_duration                    | Detects unusually high mean of RDP session duration.                                            | Windows               |
+| lmd_high_var_rdp_session_duration                     | Detects unusually high variance in RDP session duration.                                        | Windows               |
+| lmd_high_sum_rdp_number_of_processes                  | Detects unusually high number of processes started in a single RDP session.                     | Windows               |
+| lmd_unusual_time_weekday_rdp_session_start            | Detects an RDP session started at an usual time or weekday.                                     | Windows               |
+| lmd_high_rdp_distinct_count_source_ip_for_destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       | Windows               |
+| lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               |
+| lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               |
 
 ## v2.0.0 and beyond
 
 v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to Lateral Movement Detection, we recommend upgrading to v2.0.0 after doing the following:
-- Delete existing ML jobs: Navigate to **Machine Learning > Anomaly Detection** and delete jobs corresponding to the following IDs:
+- Delete existing ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete jobs corresponding to the following IDs:
     - high-count-remote-file-transfer
     - high-file-size-remote-file-transfer
     - rare-file-extension-remote-transfer

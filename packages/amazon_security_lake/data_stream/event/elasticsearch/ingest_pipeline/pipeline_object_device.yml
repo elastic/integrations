@@ -76,12 +76,15 @@ processors:
       copy_from: ocsf.device.uid
       tag: set_host_id
       ignore_empty_value: true
+  - remove:
+      field: ocsf.device.ip
+      tag: remove_empty_device_ip
+      if: ctx.ocsf?.device?.ip == '' || ctx.ocsf?.device?.ip == '-'
   - convert:
       field: ocsf.device.ip
       tag: convert_device_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.ocsf?.device?.ip != '' || ctx.ocsf.device.ip != '-'
       on_failure:
         - remove:
             field: ocsf.device.ip
@@ -217,6 +220,7 @@ processors:
       target_field: ocsf.device.created_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.device?.created_time_dt != null && ctx.ocsf.device.created_time_dt != ''
       on_failure:
         - remove:
@@ -245,6 +249,7 @@ processors:
       target_field: ocsf.device.first_seen_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.device?.first_seen_time_dt != null && ctx.ocsf.device.first_seen_time_dt != ''
       on_failure:
         - remove:
@@ -465,6 +470,7 @@ processors:
       target_field: ocsf.device.last_seen_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.device?.last_seen_time_dt != null && ctx.ocsf.device.last_seen_time_dt != ''
       on_failure:
         - remove:
@@ -505,6 +511,7 @@ processors:
       target_field: ocsf.device.modified_time_dt
       formats:
         - ISO8601
+        - UNIX_MS
       if: ctx.ocsf?.device?.modified_time_dt != null && ctx.ocsf.device.modified_time_dt != ''
       on_failure:
         - remove:
