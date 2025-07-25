@@ -327,6 +327,7 @@ An example event for `audit` looks as following:
 | o365.audit.ExchangeMetaData.CC |  | keyword |
 | o365.audit.ExchangeMetaData.MessageID |  | keyword |
 | o365.audit.ExchangeMetaData.Sent |  | date |
+| o365.audit.ExchangeMetaData.Subject |  | keyword |
 | o365.audit.ExchangeMetaData.To |  | keyword |
 | o365.audit.ExchangeMetaData.UniqueID |  | keyword |
 | o365.audit.Experience |  | keyword |
