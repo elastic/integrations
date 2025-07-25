@@ -1,0 +1,55 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{ period }}
+username: {{username}}
+password: {{password}}
+namespace: activemq_artemis
+http_method: "GET"
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+    - mbean: 'org.apache.activemq.artemis:broker=*'
+      attributes:
+        - attr: ConnectionCount
+          field: connections.active
+        - attr: TotalConnectionCount  
+          field: connections.total
+        - attr: TotalMessageCount
+          field: messages.count
+        - attr: TotalMessagesAdded
+          field: messages.added
+        - attr: TotalMessagesAcknowledged
+          field: messages.acknowledged
+        - attr: AddressMemoryUsage
+          field: memory.address.used
+        - attr: AddressMemoryUsagePercentage
+          field: memory.address.used_pct
+        - attr: MaxDiskUsage
+          field: disk.max
+        - attr: DiskStoreUsage
+          field: disk.store.used
+        - attr: GlobalMaxSize
+          field: memory.global.max
+        - attr: AddressCount
+          field: addresses.count
+        - attr: QueueCount
+          field: queues.count
+        - attr: ClusterConnectionCount
+          field: cluster.connections.count
+        - attr: HAPolicy
+          field: ha.policy
+        - attr: Version
+          field: version
