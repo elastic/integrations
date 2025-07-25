@@ -39,6 +39,9 @@ To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://d
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -118,71 +121,111 @@ To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://d
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
 
 
 An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-11-18T17:05:48.837Z",
+    "@timestamp": "2023-10-29T11:40:00.000Z",
     "agent": {
-        "ephemeral_id": "e422bd43-ded6-4afa-8af1-07165e8555e7",
-        "id": "078a54a8-5f77-45fb-a22a-f7414d1895a0",
-        "name": "elastic-agent-15787",
+        "ephemeral_id": "8d29c1cd-cb6c-4cb6-84fe-e9fe846678c6",
+        "id": "2d6e7a58-eccc-44b1-b49a-b0c9c1824cdd",
+        "name": "elastic-agent-43537",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.18.0"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-github-audit-bucket-43960",
+                "name": "elastic-package-github-audit-bucket-43960"
+            },
+            "object": {
+                "key": "test-audit.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "98676",
+        "namespace": "38998",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "078a54a8-5f77-45fb-a22a-f7414d1895a0",
+        "id": "2d6e7a58-eccc-44b1-b49a-b0c9c1824cdd",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.18.0"
     },
     "event": {
-        "action": "repo.destroy",
+        "action": "user.login",
         "agent_id_status": "verified",
         "category": [
             "configuration",
             "web"
         ],
-        "created": "2025-07-09T06:53:42.986Z",
         "dataset": "github.audit",
-        "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-07-09T06:53:44Z",
+        "ingested": "2025-07-25T09:25:54Z",
         "kind": "event",
-        "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
+        "original": "{\"@timestamp\": 1698579600000, \"action\": \"user.login\", \"active\": true, \"actor\": \"john_doe\", \"actor_id\": 12345, \"actor_location\": {\"country_name\": \"USA\", \"ip\": \"192.168.1.1\"}, \"org_id\": 67890, \"org\": \"tech-corp\", \"user_id\": 12345, \"business_id\": 56789, \"business\": \"tech-enterprise\", \"message\": \"User logged in successfully.\", \"name\": \"John Doe\", \"device\": \"laptop\", \"login_method\": \"password\"}",
         "type": [
             "change"
         ]
     },
     "github": {
-        "category": "repo",
-        "org": "mona-org",
-        "repo": "mona-org/mona-test-repo",
-        "visibility": "private"
+        "active": true,
+        "actor_id": "12345",
+        "actor_location": {
+            "country_name": "USA",
+            "ip": "192.168.1.1"
+        },
+        "business": "tech-enterprise",
+        "business_id": "56789",
+        "category": "user",
+        "device": "laptop",
+        "login_method": "password",
+        "message": "User logged in successfully.",
+        "name": "John Doe",
+        "org": "tech-corp",
+        "org_id": "67890",
+        "user_id": "12345"
     },
     "input": {
-        "type": "httpjson"
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-github-audit-bucket-43960.s3.us-east-1.amazonaws.com/test-audit.log"
+        },
+        "offset": 0
     },
     "related": {
+        "ip": [
+            "192.168.1.1"
+        ],
         "user": [
-            "monalisa"
+            "john_doe",
+            "12345"
         ]
     },
     "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
         "forwarded",
-        "github-audit",
-        "preserve_original_event"
+        "github.audit"
     ],
     "user": {
-        "name": "monalisa"
+        "id": "12345",
+        "name": "john_doe",
+        "target": {
+            "id": "12345"
+        }
     }
 }
 ```
