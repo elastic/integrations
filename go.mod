@@ -245,4 +245,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace github.com/elastic/package-spec/v3 => github.com/animehart/package-spec/v3 v3.0.0-20250725230752-a03c08760fd2
+replace github.com/elastic/package-spec/v3 => github.com/animehart/package-spec/v3 v3.0.0-20250726014845-00289012db95
