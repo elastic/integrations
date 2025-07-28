@@ -80,7 +80,8 @@ chain:
         target: body.findings
 cursor:
   last_execution_datetime:
-    value: '[[if (ne (len .last_response.body.findings) 50)]][[.last_event.updatedAt]][[end]]'
+    value: '[[with $f := (index .last_response.body "findings")]][[if (ne (len $f) 50)]][[.last_event.updatedAt]][[end]][[end]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
