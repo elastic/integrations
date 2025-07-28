@@ -55,12 +55,12 @@ To configure the integration to pull threat intelligence from an ISAC feed, foll
 1. Ensure ISAC Membership: Confirm that you are a member of the desired ISAC (e.g., MS-ISAC, FS-ISAC) and have access to its TAXII server credentials. Some ISACs require registration and approval before providing TAXII feed access.
 
 2. Obtain the following information from your ISAC:
-    - Server URL: The endpoint for the ISAC’s TAXII server (e.g. https://example-isac.org/taxii/).
+    - Server URL: The endpoint for the ISAC’s TAXII server (e.g. <EXAMPLE_ISAC_ORG>/taxii/).
     - Collection Name: The specific collection containing the threat intelligence you want to retrieve.
     - Authentication Credentials: Username, password, API Key, or client certificate, as required by the ISAC.
 
 3. Set up the integration:
-    - The server URL and collection name should be used to build the URL as follows: `https://{base_url}/{api-root}/collections/{name}/objects/`
+    - The server URL and collection name should be used to build the URL as follows: `<BASE_URL>/{api-root}/collections/{name}/objects/`
     - Provide the username/password, API Key or upload a client certificate, depending on the ISAC’s requirements.
     - Set how often the integration should pull updates (e.g. every hour). You can also set the time range to search for indicators when the agent runs for the first time with the Initial Interval.
 
