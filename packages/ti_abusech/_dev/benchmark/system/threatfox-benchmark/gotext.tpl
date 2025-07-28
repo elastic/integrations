@@ -1,0 +1,4 @@
+{{- $timestamp := generate "timestamp" -}}
+{{- $formattedTimestamp := $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" -}}
+{{- $ioc_type := generate "IocType" -}}
+{"id":"841537","ioc":"wizzy.hopto.org","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"{{$ioc_type}}","ioc_type_desc":"Domain that is used for botnet Command&control (C&C)","malware":"win.asyncrat","malware_printable":"AsyncRAT","malware_alias":null,"malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat","confidence_level":100,"first_seen":"{{$formattedTimestamp}}","last_seen":"{{$formattedTimestamp}}","reference":"https://tria.ge/220805-w57pxsgae2","reporter":"AndreGironda","tags":["asyncrat"]}
