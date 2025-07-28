@@ -1,5 +1,6 @@
 ARG SERVICE_VERSION=${SERVICE_VERSION:-2.4.46}
 FROM httpd:$SERVICE_VERSION
+# Updated APT sources to use the Debian archive as the service image is now archived.
 RUN sed -i 's/deb.debian/archive.debian/' /etc/apt/sources.list && \
     sed -i 's/security.debian/archive.debian/' /etc/apt/sources.list && \
     sed -i "/buster-updates/d" /etc/apt/sources.list
