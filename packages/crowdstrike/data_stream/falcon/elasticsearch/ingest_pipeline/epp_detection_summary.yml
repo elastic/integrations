@@ -52,6 +52,25 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      field: crowdstrike.FilesAccessed
+      tag: convert_crowdstrike_filesaccessed_timestamp_array
+      if: ctx.crowdstrike?.FilesAccessed instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_filesaccessed_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
       field: crowdstrike.event.FilesWritten
       tag: convert_crowdstrike_fileswritten_timestamp_array
       if: ctx.crowdstrike?.event?.FilesWritten instanceof List
