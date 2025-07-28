@@ -120,7 +120,7 @@ Detection Rules match the user's Elastic environment data with GTI data, generat
 2. Search for **Google Threat Intelligence** to find prebuilt Elastic detection rules.
 3. Four detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
 
-To tailor a rule based on elastic Environment:
+To tailor a rule based on Elastic environment:
 
 1. Click the three dots on the right side of any detection rule.
 2. Select **Duplicate Rule**.
