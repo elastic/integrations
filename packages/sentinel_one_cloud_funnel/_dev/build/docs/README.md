@@ -71,13 +71,13 @@ A sample JSON Credentials file looks as follows:
   "project_id": "dummy-project",
   "private_key_id": "dummy-private-key-id",
   "private_key": "-----BEGIN PRIVATE KEY-----\nDummyPrivateKey\n-----END PRIVATE KEY-----\n",
-  "client_email": "dummy-service-account@example.com",
+  "client_email": "<SERVICE_ACCOUNT>@example.com",
   "client_id": "12345678901234567890",
-  "auth_uri": "https://dummy-auth-uri.com",
-  "token_uri": "https://dummy-token-uri.com",
-  "auth_provider_x509_cert_url": "https://dummy-auth-provider-cert-url.com",
-  "client_x509_cert_url": "https://dummy-client-cert-url.com",
-  "universe_domain": "dummy-universe-domain.com"
+  "auth_uri": "<AUTH_URI>",
+  "token_uri": "<TOKEN_URI>",
+  "auth_provider_x509_cert_url": "<AUTH_PROVIDER_CERT_URL>",
+  "client_x509_cert_url": "<CLIENT_x509_CERT_URL>",
+  "universe_domain": "<UNIVERSE_DOMAIN>.com"
 }
 ```
 
