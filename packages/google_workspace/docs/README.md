@@ -1125,11 +1125,13 @@ An example event for `drive` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| google_workspace.actor.application_name | Name of the application used to perform the action. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.drive.accessed_url | The URLs that were accessed. | keyword |
 | google_workspace.drive.actor_is_collaborator_account | Whether the actor is a collaborator account. | boolean |
 | google_workspace.drive.added_role | Added membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.api_method | The API method used to generate the event. | keyword |
 | google_workspace.drive.billable | Whether this activity is billable. | boolean |
 | google_workspace.drive.copy_type | Indicates whether the original item and new item are owned by the same organization. | keyword |
 | google_workspace.drive.deletion_reason | The reason an item was deleted. | keyword |
