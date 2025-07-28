@@ -11,6 +11,7 @@ Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustot
 The Threat List API provides the following types of threat feeds:
 
 - **Cryptominers**
+- **Daily Top Trending**
 - **First Stage Delivery Vectors**
 - **Infostealers**
 - **Internet of Things (IoT)**
@@ -19,6 +20,10 @@ The Threat List API provides the following types of threat feeds:
 - **Malware**
 - **Mobile**
 - **OS X**
+- **Phishing**
+- **Ransomware**
+- **Threat Actor**
+- **Vulnerability Weaponization**
 
 ## GTI Subscription Tiers
 
@@ -30,10 +35,16 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-Data collection is available for all nine feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `linux`, `malicious_network_infrastructure`, `malware`, `mobile` and `osx`, each with a separate data stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+Data collection is available for all threat feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `linux`, `malicious_network_infrastructure`, `malware`, `mobile`, `osx`, `phishing`, `ransomware`, `threat_actor`, `trending` and `vulnerability_weaponization`, each with a separate data stream. By default, **Ransomware**  and **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
+### Agentless-enabled integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
@@ -75,7 +86,7 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are available across all 9 data streams.
+Currently, four transforms are available across all 14 data streams.
 
 The following are four transforms along with their associated pipelines:
 
@@ -145,7 +156,7 @@ The following transform and its associated pipelines are used to filter relevant
    - Prefix the pipeline name with the integration version.
      For example:
      ```
-     0.2.0-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
+     {package_version}-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
      ```
    - Click **Update** to save the changes.
 5. Click the **three dots** again next to the transform and select **Start** to activate it.
@@ -2087,6 +2098,1071 @@ An example event for `osx` looks as following:
 | gti.osx.relationships.vulnerabilities.id | Unique identifier for the vulnerability associated with the entity. | keyword |
 | gti.osx.relationships.vulnerabilities.type | The category of relationship. | keyword |
 | gti.osx.type | Specifies the nature of the entity, such as file, domain, IP, or URL. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+
+
+### Phishing
+
+This is the `Phishing` dataset.
+
+#### Example
+
+An example event for `phishing` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-27T19:51:31.000Z",
+    "agent": {
+        "ephemeral_id": "6f5163e0-0ea9-4f65-83e4-125298bcd2fa",
+        "id": "c07b0a67-6b28-4107-8025-c909449ed07f",
+        "name": "elastic-agent-58845",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.phishing",
+        "namespace": "30421",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "c07b0a67-6b28-4107-8025-c909449ed07f",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_google_threat_intelligence.phishing",
+        "ingested": "2025-07-07T12:05:08Z",
+        "kind": "enrichment",
+        "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "gti": {
+        "phishing": {
+            "attributes": {
+                "first_submission_date": "2020-02-27T15:24:10.000Z",
+                "gti_assessment": {
+                    "severity": "SEVERITY_NONE",
+                    "threat_score": 1,
+                    "verdict": "VERDICT_UNDETECTED"
+                },
+                "last_analysis_date": "2020-02-27T15:24:10.000Z",
+                "last_analysis_stats": {
+                    "harmless": 55,
+                    "malicious": 8,
+                    "undetected": 8
+                },
+                "last_http_response_code": 200,
+                "last_modification_date": "2025-01-27T19:51:31.000Z",
+                "last_submission_date": "2020-02-27T15:24:10.000Z",
+                "positives": 8,
+                "times_submitted": 1,
+                "top_level_domain": [
+                    "ru"
+                ],
+                "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url"
+        }
+    },
+    "http": {
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Threat Intelligence",
+        "vendor": "Google"
+    },
+    "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-phishing"
+    ],
+    "threat": {
+        "feed": {
+            "dashboard_id": [
+                "ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a",
+                "ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531",
+                "ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e"
+            ],
+            "name": "GTI Phishing"
+        },
+        "indicator": {
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
+            "last_seen": "2020-02-27T15:24:10.000Z",
+            "modified_at": "2025-01-27T19:51:31.000Z",
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url",
+            "url": {
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+                "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            }
+        }
+    },
+    "url": {
+        "domain": "securepasswel.ru",
+        "extension": "bin",
+        "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+        "path": "/files/grapes_encrypted_87ed10f.bin",
+        "scheme": "http"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| gti.phishing.attributes.as_number | The autonomous system number to which the IP belongs. | long |
+| gti.phishing.attributes.as_owner | The owner of the autonomous system to which the IP belongs. | keyword |
+| gti.phishing.attributes.categories | Categories based on the predefined criteria. | keyword |
+| gti.phishing.attributes.continent | The continent where the IP is placed (ISO-3166 continent code). | keyword |
+| gti.phishing.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
+| gti.phishing.attributes.creation_date | The date when the IOC was created. | date |
+| gti.phishing.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.phishing.attributes.gti_assessment.severity | The threat severity level. | keyword |
+| gti.phishing.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
+| gti.phishing.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
+| gti.phishing.attributes.jarm | A JARM hash representing the entity's TLS fingerprint, used for identifying and classifying servers. | keyword |
+| gti.phishing.attributes.last_analysis_date | The most recent scan date. | date |
+| gti.phishing.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
+| gti.phishing.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.phishing.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
+| gti.phishing.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
+| gti.phishing.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
+| gti.phishing.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.phishing.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
+| gti.phishing.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
+| gti.phishing.attributes.last_http_response_code | The HTTP response code of the last response. | long |
+| gti.phishing.attributes.last_modification_date | The date when the object itself was last modified. | date |
+| gti.phishing.attributes.last_submission_date | The most recent date the entity was submitted for analysis. | date |
+| gti.phishing.attributes.md5 | The file's MD5 hash. | keyword |
+| gti.phishing.attributes.meaningful_name | The most interesting name out of all file's names. | keyword |
+| gti.phishing.attributes.names | All file names associated with the file. | keyword |
+| gti.phishing.attributes.network | The IPv4 network range to which the IP belongs. | keyword |
+| gti.phishing.attributes.outgoing_links | Containing links to different domains. | keyword |
+| gti.phishing.attributes.positives | The number of security engines that flagged the entity as malicious. | long |
+| gti.phishing.attributes.regional_internet_registry | One of the current RIRs. | keyword |
+| gti.phishing.attributes.tags | A list of representative attributes. | keyword |
+| gti.phishing.attributes.times_submitted | The number of times the entity has been submitted for analysis. | long |
+| gti.phishing.attributes.title | The webpage title. | keyword |
+| gti.phishing.attributes.top_level_domain | The highest level of the domain name (e.g., .com, .org). | keyword |
+| gti.phishing.attributes.type_tags | The broader tags related to the specific file type. | keyword |
+| gti.phishing.attributes.url | The original URL to be scanned. | keyword |
+| gti.phishing.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.phishing.id | The unique ID associated with the entity. | keyword |
+| gti.phishing.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.phishing.relationships.campaigns.attributes.name | Campaign's name. | keyword |
+| gti.phishing.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
+| gti.phishing.relationships.campaigns.type | The category of relationship. | keyword |
+| gti.phishing.relationships.collections.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.phishing.relationships.collections.attributes.name | Collection's name. | keyword |
+| gti.phishing.relationships.collections.id | Unique identifier for the collection grouping related entities. | keyword |
+| gti.phishing.relationships.collections.type | The category of relationship. | keyword |
+| gti.phishing.relationships.malware_families.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.phishing.relationships.malware_families.attributes.name | Malware family's name. | keyword |
+| gti.phishing.relationships.malware_families.id | Unique identifier for the malware family associated with the entity. | keyword |
+| gti.phishing.relationships.malware_families.type | The category of relationship. | keyword |
+| gti.phishing.relationships.reports.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.phishing.relationships.reports.attributes.name | Report's title. | keyword |
+| gti.phishing.relationships.reports.id | Unique identifier for the report detailing the entity's analysis. | keyword |
+| gti.phishing.relationships.reports.type | The category of relationship. | keyword |
+| gti.phishing.relationships.software_toolkits.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.phishing.relationships.software_toolkits.attributes.name | Software or toolkit's name. | keyword |
+| gti.phishing.relationships.software_toolkits.id | Unique identifier for the software or toolkit associated with the entity. | keyword |
+| gti.phishing.relationships.software_toolkits.type | The category of relationship. | keyword |
+| gti.phishing.relationships.threat_actors.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.phishing.relationships.threat_actors.attributes.name | Threat actor's name. | keyword |
+| gti.phishing.relationships.threat_actors.id | Unique identifier for the threat actor associated with the entity. | keyword |
+| gti.phishing.relationships.threat_actors.type | The category of relationship. | keyword |
+| gti.phishing.relationships.vulnerabilities.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.phishing.relationships.vulnerabilities.attributes.name | Vulnerability's name. | keyword |
+| gti.phishing.relationships.vulnerabilities.id | Unique identifier for the vulnerability associated with the entity. | keyword |
+| gti.phishing.relationships.vulnerabilities.type | The category of relationship. | keyword |
+| gti.phishing.type | Specifies the nature of the entity, such as file, domain, IP, or URL. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+
+
+### Ransomware
+
+This is the `Ransomware` dataset.
+
+#### Example
+
+An example event for `ransomware` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-27T19:51:31.000Z",
+    "agent": {
+        "ephemeral_id": "b521b823-c29b-4382-87fe-aa705d48c440",
+        "id": "f0ca06d2-600e-43a4-814e-0c44d855be6f",
+        "name": "elastic-agent-66036",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.ransomware",
+        "namespace": "15402",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f0ca06d2-600e-43a4-814e-0c44d855be6f",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_google_threat_intelligence.ransomware",
+        "ingested": "2025-07-07T12:05:58Z",
+        "kind": "enrichment",
+        "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "gti": {
+        "ransomware": {
+            "attributes": {
+                "first_submission_date": "2020-02-27T15:24:10.000Z",
+                "gti_assessment": {
+                    "severity": "SEVERITY_NONE",
+                    "threat_score": 1,
+                    "verdict": "VERDICT_UNDETECTED"
+                },
+                "last_analysis_date": "2020-02-27T15:24:10.000Z",
+                "last_analysis_stats": {
+                    "harmless": 55,
+                    "malicious": 8,
+                    "undetected": 8
+                },
+                "last_http_response_code": 200,
+                "last_modification_date": "2025-01-27T19:51:31.000Z",
+                "last_submission_date": "2020-02-27T15:24:10.000Z",
+                "positives": 8,
+                "times_submitted": 1,
+                "top_level_domain": [
+                    "ru"
+                ],
+                "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url"
+        }
+    },
+    "http": {
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Threat Intelligence",
+        "vendor": "Google"
+    },
+    "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-ransomware"
+    ],
+    "threat": {
+        "feed": {
+            "dashboard_id": [
+                "ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a",
+                "ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531",
+                "ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e"
+            ],
+            "name": "GTI Ransomware"
+        },
+        "indicator": {
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
+            "last_seen": "2020-02-27T15:24:10.000Z",
+            "modified_at": "2025-01-27T19:51:31.000Z",
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url",
+            "url": {
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+                "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            }
+        }
+    },
+    "url": {
+        "domain": "securepasswel.ru",
+        "extension": "bin",
+        "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+        "path": "/files/grapes_encrypted_87ed10f.bin",
+        "scheme": "http"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| gti.ransomware.attributes.as_number | The autonomous system number to which the IP belongs. | long |
+| gti.ransomware.attributes.as_owner | The owner of the autonomous system to which the IP belongs. | keyword |
+| gti.ransomware.attributes.categories | Categories based on the predefined criteria. | keyword |
+| gti.ransomware.attributes.continent | The continent where the IP is placed (ISO-3166 continent code). | keyword |
+| gti.ransomware.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
+| gti.ransomware.attributes.creation_date | The date when the IOC was created. | date |
+| gti.ransomware.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.ransomware.attributes.gti_assessment.severity | The threat severity level. | keyword |
+| gti.ransomware.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
+| gti.ransomware.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
+| gti.ransomware.attributes.jarm | A JARM hash representing the entity's TLS fingerprint, used for identifying and classifying servers. | keyword |
+| gti.ransomware.attributes.last_analysis_date | The most recent scan date. | date |
+| gti.ransomware.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
+| gti.ransomware.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.ransomware.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
+| gti.ransomware.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
+| gti.ransomware.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
+| gti.ransomware.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.ransomware.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
+| gti.ransomware.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
+| gti.ransomware.attributes.last_http_response_code | The HTTP response code of the last response. | long |
+| gti.ransomware.attributes.last_modification_date | The date when the object itself was last modified. | date |
+| gti.ransomware.attributes.last_submission_date | The most recent date the entity was submitted for analysis. | date |
+| gti.ransomware.attributes.md5 | The file's MD5 hash. | keyword |
+| gti.ransomware.attributes.meaningful_name | The most interesting name out of all file's names. | keyword |
+| gti.ransomware.attributes.names | All file names associated with the file. | keyword |
+| gti.ransomware.attributes.network | The IPv4 network range to which the IP belongs. | keyword |
+| gti.ransomware.attributes.outgoing_links | Containing links to different domains. | keyword |
+| gti.ransomware.attributes.positives | The number of security engines that flagged the entity as malicious. | long |
+| gti.ransomware.attributes.regional_internet_registry | One of the current RIRs. | keyword |
+| gti.ransomware.attributes.tags | A list of representative attributes. | keyword |
+| gti.ransomware.attributes.times_submitted | The number of times the entity has been submitted for analysis. | long |
+| gti.ransomware.attributes.title | The webpage title. | keyword |
+| gti.ransomware.attributes.top_level_domain | The highest level of the domain name (e.g., .com, .org). | keyword |
+| gti.ransomware.attributes.type_tags | The broader tags related to the specific file type. | keyword |
+| gti.ransomware.attributes.url | The original URL to be scanned. | keyword |
+| gti.ransomware.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.ransomware.id | The unique ID associated with the entity. | keyword |
+| gti.ransomware.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.ransomware.relationships.campaigns.attributes.name | Campaign's name. | keyword |
+| gti.ransomware.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
+| gti.ransomware.relationships.campaigns.type | The category of relationship. | keyword |
+| gti.ransomware.relationships.collections.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.ransomware.relationships.collections.attributes.name | Collection's name. | keyword |
+| gti.ransomware.relationships.collections.id | Unique identifier for the collection grouping related entities. | keyword |
+| gti.ransomware.relationships.collections.type | The category of relationship. | keyword |
+| gti.ransomware.relationships.malware_families.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.ransomware.relationships.malware_families.attributes.name | Malware family's name. | keyword |
+| gti.ransomware.relationships.malware_families.id | Unique identifier for the malware family associated with the entity. | keyword |
+| gti.ransomware.relationships.malware_families.type | The category of relationship. | keyword |
+| gti.ransomware.relationships.reports.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.ransomware.relationships.reports.attributes.name | Report's title. | keyword |
+| gti.ransomware.relationships.reports.id | Unique identifier for the report detailing the entity's analysis. | keyword |
+| gti.ransomware.relationships.reports.type | The category of relationship. | keyword |
+| gti.ransomware.relationships.software_toolkits.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.ransomware.relationships.software_toolkits.attributes.name | Software or toolkit's name. | keyword |
+| gti.ransomware.relationships.software_toolkits.id | Unique identifier for the software or toolkit associated with the entity. | keyword |
+| gti.ransomware.relationships.software_toolkits.type | The category of relationship. | keyword |
+| gti.ransomware.relationships.threat_actors.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.ransomware.relationships.threat_actors.attributes.name | Threat actor's name. | keyword |
+| gti.ransomware.relationships.threat_actors.id | Unique identifier for the threat actor associated with the entity. | keyword |
+| gti.ransomware.relationships.threat_actors.type | The category of relationship. | keyword |
+| gti.ransomware.relationships.vulnerabilities.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.ransomware.relationships.vulnerabilities.attributes.name | Vulnerability's name. | keyword |
+| gti.ransomware.relationships.vulnerabilities.id | Unique identifier for the vulnerability associated with the entity. | keyword |
+| gti.ransomware.relationships.vulnerabilities.type | The category of relationship. | keyword |
+| gti.ransomware.type | Specifies the nature of the entity, such as file, domain, IP, or URL. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+
+
+### Threat Actor
+
+This is the `Threat Actor` dataset.
+
+#### Example
+
+An example event for `threat_actor` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-27T19:51:31.000Z",
+    "agent": {
+        "ephemeral_id": "d634884c-d263-419d-bd24-0e8c425ed585",
+        "id": "c03a36e8-d7ca-42fb-bb34-a703ddd99198",
+        "name": "elastic-agent-41621",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.threat_actor",
+        "namespace": "89315",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "c03a36e8-d7ca-42fb-bb34-a703ddd99198",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_google_threat_intelligence.threat_actor",
+        "ingested": "2025-07-07T12:06:48Z",
+        "kind": "enrichment",
+        "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "gti": {
+        "threat_actor": {
+            "attributes": {
+                "first_submission_date": "2020-02-27T15:24:10.000Z",
+                "gti_assessment": {
+                    "severity": "SEVERITY_NONE",
+                    "threat_score": 1,
+                    "verdict": "VERDICT_UNDETECTED"
+                },
+                "last_analysis_date": "2020-02-27T15:24:10.000Z",
+                "last_analysis_stats": {
+                    "harmless": 55,
+                    "malicious": 8,
+                    "undetected": 8
+                },
+                "last_http_response_code": 200,
+                "last_modification_date": "2025-01-27T19:51:31.000Z",
+                "last_submission_date": "2020-02-27T15:24:10.000Z",
+                "positives": 8,
+                "times_submitted": 1,
+                "top_level_domain": [
+                    "ru"
+                ],
+                "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url"
+        }
+    },
+    "http": {
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Threat Intelligence",
+        "vendor": "Google"
+    },
+    "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-threat_actor"
+    ],
+    "threat": {
+        "feed": {
+            "dashboard_id": [
+                "ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a",
+                "ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531",
+                "ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e"
+            ],
+            "name": "GTI Threat Actor"
+        },
+        "indicator": {
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
+            "last_seen": "2020-02-27T15:24:10.000Z",
+            "modified_at": "2025-01-27T19:51:31.000Z",
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url",
+            "url": {
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+                "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            }
+        }
+    },
+    "url": {
+        "domain": "securepasswel.ru",
+        "extension": "bin",
+        "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+        "path": "/files/grapes_encrypted_87ed10f.bin",
+        "scheme": "http"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| gti.threat_actor.attributes.as_number | The autonomous system number to which the IP belongs. | long |
+| gti.threat_actor.attributes.as_owner | The owner of the autonomous system to which the IP belongs. | keyword |
+| gti.threat_actor.attributes.categories | Categories based on the predefined criteria. | keyword |
+| gti.threat_actor.attributes.continent | The continent where the IP is placed (ISO-3166 continent code). | keyword |
+| gti.threat_actor.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
+| gti.threat_actor.attributes.creation_date | The date when the IOC was created. | date |
+| gti.threat_actor.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.threat_actor.attributes.gti_assessment.severity | The threat severity level. | keyword |
+| gti.threat_actor.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
+| gti.threat_actor.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
+| gti.threat_actor.attributes.jarm | A JARM hash representing the entity's TLS fingerprint, used for identifying and classifying servers. | keyword |
+| gti.threat_actor.attributes.last_analysis_date | The most recent scan date. | date |
+| gti.threat_actor.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
+| gti.threat_actor.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.threat_actor.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
+| gti.threat_actor.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
+| gti.threat_actor.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
+| gti.threat_actor.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.threat_actor.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
+| gti.threat_actor.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
+| gti.threat_actor.attributes.last_http_response_code | The HTTP response code of the last response. | long |
+| gti.threat_actor.attributes.last_modification_date | The date when the object itself was last modified. | date |
+| gti.threat_actor.attributes.last_submission_date | The most recent date the entity was submitted for analysis. | date |
+| gti.threat_actor.attributes.md5 | The file's MD5 hash. | keyword |
+| gti.threat_actor.attributes.meaningful_name | The most interesting name out of all file's names. | keyword |
+| gti.threat_actor.attributes.names | All file names associated with the file. | keyword |
+| gti.threat_actor.attributes.network | The IPv4 network range to which the IP belongs. | keyword |
+| gti.threat_actor.attributes.outgoing_links | Containing links to different domains. | keyword |
+| gti.threat_actor.attributes.positives | The number of security engines that flagged the entity as malicious. | long |
+| gti.threat_actor.attributes.regional_internet_registry | One of the current RIRs. | keyword |
+| gti.threat_actor.attributes.tags | A list of representative attributes. | keyword |
+| gti.threat_actor.attributes.times_submitted | The number of times the entity has been submitted for analysis. | long |
+| gti.threat_actor.attributes.title | The webpage title. | keyword |
+| gti.threat_actor.attributes.top_level_domain | The highest level of the domain name (e.g., .com, .org). | keyword |
+| gti.threat_actor.attributes.type_tags | The broader tags related to the specific file type. | keyword |
+| gti.threat_actor.attributes.url | The original URL to be scanned. | keyword |
+| gti.threat_actor.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.threat_actor.id | The unique ID associated with the entity. | keyword |
+| gti.threat_actor.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.threat_actor.relationships.campaigns.attributes.name | Campaign's name. | keyword |
+| gti.threat_actor.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
+| gti.threat_actor.relationships.campaigns.type | The category of relationship. | keyword |
+| gti.threat_actor.relationships.collections.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.threat_actor.relationships.collections.attributes.name | Collection's name. | keyword |
+| gti.threat_actor.relationships.collections.id | Unique identifier for the collection grouping related entities. | keyword |
+| gti.threat_actor.relationships.collections.type | The category of relationship. | keyword |
+| gti.threat_actor.relationships.malware_families.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.threat_actor.relationships.malware_families.attributes.name | Malware family's name. | keyword |
+| gti.threat_actor.relationships.malware_families.id | Unique identifier for the malware family associated with the entity. | keyword |
+| gti.threat_actor.relationships.malware_families.type | The category of relationship. | keyword |
+| gti.threat_actor.relationships.reports.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.threat_actor.relationships.reports.attributes.name | Report's title. | keyword |
+| gti.threat_actor.relationships.reports.id | Unique identifier for the report detailing the entity's analysis. | keyword |
+| gti.threat_actor.relationships.reports.type | The category of relationship. | keyword |
+| gti.threat_actor.relationships.software_toolkits.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.threat_actor.relationships.software_toolkits.attributes.name | Software or toolkit's name. | keyword |
+| gti.threat_actor.relationships.software_toolkits.id | Unique identifier for the software or toolkit associated with the entity. | keyword |
+| gti.threat_actor.relationships.software_toolkits.type | The category of relationship. | keyword |
+| gti.threat_actor.relationships.threat_actors.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.threat_actor.relationships.threat_actors.attributes.name | Threat actor's name. | keyword |
+| gti.threat_actor.relationships.threat_actors.id | Unique identifier for the threat actor associated with the entity. | keyword |
+| gti.threat_actor.relationships.threat_actors.type | The category of relationship. | keyword |
+| gti.threat_actor.relationships.vulnerabilities.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.threat_actor.relationships.vulnerabilities.attributes.name | Vulnerability's name. | keyword |
+| gti.threat_actor.relationships.vulnerabilities.id | Unique identifier for the vulnerability associated with the entity. | keyword |
+| gti.threat_actor.relationships.vulnerabilities.type | The category of relationship. | keyword |
+| gti.threat_actor.type | Specifies the nature of the entity, such as file, domain, IP, or URL. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+
+
+### Daily Top trending
+
+This is the `Daily Top trending` dataset.
+
+#### Example
+
+An example event for `trending` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-27T19:51:31.000Z",
+    "agent": {
+        "ephemeral_id": "483a075d-e421-451f-95d3-34501669ae03",
+        "id": "0ec014b6-7e68-4b1f-bdeb-809f0325f193",
+        "name": "elastic-agent-89324",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.trending",
+        "namespace": "75558",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "0ec014b6-7e68-4b1f-bdeb-809f0325f193",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_google_threat_intelligence.trending",
+        "ingested": "2025-07-07T12:07:39Z",
+        "kind": "enrichment",
+        "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "gti": {
+        "trending": {
+            "attributes": {
+                "first_submission_date": "2020-02-27T15:24:10.000Z",
+                "gti_assessment": {
+                    "severity": "SEVERITY_NONE",
+                    "threat_score": 1,
+                    "verdict": "VERDICT_UNDETECTED"
+                },
+                "last_analysis_date": "2020-02-27T15:24:10.000Z",
+                "last_analysis_stats": {
+                    "harmless": 55,
+                    "malicious": 8,
+                    "undetected": 8
+                },
+                "last_http_response_code": 200,
+                "last_modification_date": "2025-01-27T19:51:31.000Z",
+                "last_submission_date": "2020-02-27T15:24:10.000Z",
+                "positives": 8,
+                "times_submitted": 1,
+                "top_level_domain": [
+                    "ru"
+                ],
+                "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url"
+        }
+    },
+    "http": {
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Threat Intelligence",
+        "vendor": "Google"
+    },
+    "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-trending"
+    ],
+    "threat": {
+        "feed": {
+            "dashboard_id": [
+                "ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a",
+                "ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531",
+                "ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e"
+            ],
+            "name": "GTI Daily Top trending"
+        },
+        "indicator": {
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
+            "last_seen": "2020-02-27T15:24:10.000Z",
+            "modified_at": "2025-01-27T19:51:31.000Z",
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url",
+            "url": {
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+                "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            }
+        }
+    },
+    "url": {
+        "domain": "securepasswel.ru",
+        "extension": "bin",
+        "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+        "path": "/files/grapes_encrypted_87ed10f.bin",
+        "scheme": "http"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| gti.trending.attributes.as_number | The autonomous system number to which the IP belongs. | long |
+| gti.trending.attributes.as_owner | The owner of the autonomous system to which the IP belongs. | keyword |
+| gti.trending.attributes.categories | Categories based on the predefined criteria. | keyword |
+| gti.trending.attributes.continent | The continent where the IP is placed (ISO-3166 continent code). | keyword |
+| gti.trending.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
+| gti.trending.attributes.creation_date | The date when the IOC was created. | date |
+| gti.trending.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.trending.attributes.gti_assessment.severity | The threat severity level. | keyword |
+| gti.trending.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
+| gti.trending.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
+| gti.trending.attributes.jarm | A JARM hash representing the entity's TLS fingerprint, used for identifying and classifying servers. | keyword |
+| gti.trending.attributes.last_analysis_date | The most recent scan date. | date |
+| gti.trending.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
+| gti.trending.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.trending.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
+| gti.trending.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
+| gti.trending.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
+| gti.trending.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.trending.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
+| gti.trending.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
+| gti.trending.attributes.last_http_response_code | The HTTP response code of the last response. | long |
+| gti.trending.attributes.last_modification_date | The date when the object itself was last modified. | date |
+| gti.trending.attributes.last_submission_date | The most recent date the entity was submitted for analysis. | date |
+| gti.trending.attributes.md5 | The file's MD5 hash. | keyword |
+| gti.trending.attributes.meaningful_name | The most interesting name out of all file's names. | keyword |
+| gti.trending.attributes.names | All file names associated with the file. | keyword |
+| gti.trending.attributes.network | The IPv4 network range to which the IP belongs. | keyword |
+| gti.trending.attributes.outgoing_links | Containing links to different domains. | keyword |
+| gti.trending.attributes.positives | The number of security engines that flagged the entity as malicious. | long |
+| gti.trending.attributes.regional_internet_registry | One of the current RIRs. | keyword |
+| gti.trending.attributes.tags | A list of representative attributes. | keyword |
+| gti.trending.attributes.times_submitted | The number of times the entity has been submitted for analysis. | long |
+| gti.trending.attributes.title | The webpage title. | keyword |
+| gti.trending.attributes.top_level_domain | The highest level of the domain name (e.g., .com, .org). | keyword |
+| gti.trending.attributes.type_tags | The broader tags related to the specific file type. | keyword |
+| gti.trending.attributes.url | The original URL to be scanned. | keyword |
+| gti.trending.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.trending.id | The unique ID associated with the entity. | keyword |
+| gti.trending.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.trending.relationships.campaigns.attributes.name | Campaign's name. | keyword |
+| gti.trending.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
+| gti.trending.relationships.campaigns.type | The category of relationship. | keyword |
+| gti.trending.relationships.collections.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.trending.relationships.collections.attributes.name | Collection's name. | keyword |
+| gti.trending.relationships.collections.id | Unique identifier for the collection grouping related entities. | keyword |
+| gti.trending.relationships.collections.type | The category of relationship. | keyword |
+| gti.trending.relationships.malware_families.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.trending.relationships.malware_families.attributes.name | Malware family's name. | keyword |
+| gti.trending.relationships.malware_families.id | Unique identifier for the malware family associated with the entity. | keyword |
+| gti.trending.relationships.malware_families.type | The category of relationship. | keyword |
+| gti.trending.relationships.reports.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.trending.relationships.reports.attributes.name | Report's title. | keyword |
+| gti.trending.relationships.reports.id | Unique identifier for the report detailing the entity's analysis. | keyword |
+| gti.trending.relationships.reports.type | The category of relationship. | keyword |
+| gti.trending.relationships.software_toolkits.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.trending.relationships.software_toolkits.attributes.name | Software or toolkit's name. | keyword |
+| gti.trending.relationships.software_toolkits.id | Unique identifier for the software or toolkit associated with the entity. | keyword |
+| gti.trending.relationships.software_toolkits.type | The category of relationship. | keyword |
+| gti.trending.relationships.threat_actors.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.trending.relationships.threat_actors.attributes.name | Threat actor's name. | keyword |
+| gti.trending.relationships.threat_actors.id | Unique identifier for the threat actor associated with the entity. | keyword |
+| gti.trending.relationships.threat_actors.type | The category of relationship. | keyword |
+| gti.trending.relationships.vulnerabilities.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.trending.relationships.vulnerabilities.attributes.name | Vulnerability's name. | keyword |
+| gti.trending.relationships.vulnerabilities.id | Unique identifier for the vulnerability associated with the entity. | keyword |
+| gti.trending.relationships.vulnerabilities.type | The category of relationship. | keyword |
+| gti.trending.type | Specifies the nature of the entity, such as file, domain, IP, or URL. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+
+
+### Vulnerability Weaponization
+
+This is the `Vulnerability Weaponization` dataset.
+
+#### Example
+
+An example event for `vulnerability_weaponization` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-27T19:51:31.000Z",
+    "agent": {
+        "ephemeral_id": "ae562fa4-f11b-4ad0-b1a3-0ba04a439b53",
+        "id": "0009e6ce-0fff-4f64-ac72-0214a777560c",
+        "name": "elastic-agent-69051",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.vulnerability_weaponization",
+        "namespace": "31396",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "0009e6ce-0fff-4f64-ac72-0214a777560c",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_google_threat_intelligence.vulnerability_weaponization",
+        "ingested": "2025-07-18T12:31:41Z",
+        "kind": "enrichment",
+        "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "gti": {
+        "vulnerability_weaponization": {
+            "attributes": {
+                "first_submission_date": "2020-02-27T15:24:10.000Z",
+                "gti_assessment": {
+                    "severity": "SEVERITY_NONE",
+                    "threat_score": 1,
+                    "verdict": "VERDICT_UNDETECTED"
+                },
+                "last_analysis_date": "2020-02-27T15:24:10.000Z",
+                "last_analysis_stats": {
+                    "harmless": 55,
+                    "malicious": 8,
+                    "undetected": 8
+                },
+                "last_http_response_code": 200,
+                "last_modification_date": "2025-01-27T19:51:31.000Z",
+                "last_submission_date": "2020-02-27T15:24:10.000Z",
+                "positives": 8,
+                "times_submitted": 1,
+                "top_level_domain": [
+                    "ru"
+                ],
+                "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url"
+        }
+    },
+    "http": {
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Threat Intelligence",
+        "vendor": "Google"
+    },
+    "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-vulnerability_weaponization"
+    ],
+    "threat": {
+        "feed": {
+            "dashboard_id": [
+                "ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a",
+                "ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531",
+                "ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e"
+            ],
+            "name": "GTI Vulnerability Weaponization"
+        },
+        "indicator": {
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
+            "last_seen": "2020-02-27T15:24:10.000Z",
+            "modified_at": "2025-01-27T19:51:31.000Z",
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "type": "url",
+            "url": {
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+                "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
+            }
+        }
+    },
+    "url": {
+        "domain": "securepasswel.ru",
+        "extension": "bin",
+        "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
+        "path": "/files/grapes_encrypted_87ed10f.bin",
+        "scheme": "http"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| gti.vulnerability_weaponization.attributes.as_number | The autonomous system number to which the IP belongs. | long |
+| gti.vulnerability_weaponization.attributes.as_owner | The owner of the autonomous system to which the IP belongs. | keyword |
+| gti.vulnerability_weaponization.attributes.categories | Categories based on the predefined criteria. | keyword |
+| gti.vulnerability_weaponization.attributes.continent | The continent where the IP is placed (ISO-3166 continent code). | keyword |
+| gti.vulnerability_weaponization.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
+| gti.vulnerability_weaponization.attributes.creation_date | The date when the IOC was created. | date |
+| gti.vulnerability_weaponization.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.vulnerability_weaponization.attributes.gti_assessment.severity | The threat severity level. | keyword |
+| gti.vulnerability_weaponization.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
+| gti.vulnerability_weaponization.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
+| gti.vulnerability_weaponization.attributes.jarm | A JARM hash representing the entity's TLS fingerprint, used for identifying and classifying servers. | keyword |
+| gti.vulnerability_weaponization.attributes.last_analysis_date | The most recent scan date. | date |
+| gti.vulnerability_weaponization.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
+| gti.vulnerability_weaponization.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
+| gti.vulnerability_weaponization.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
+| gti.vulnerability_weaponization.attributes.last_http_response_code | The HTTP response code of the last response. | long |
+| gti.vulnerability_weaponization.attributes.last_modification_date | The date when the object itself was last modified. | date |
+| gti.vulnerability_weaponization.attributes.last_submission_date | The most recent date the entity was submitted for analysis. | date |
+| gti.vulnerability_weaponization.attributes.md5 | The file's MD5 hash. | keyword |
+| gti.vulnerability_weaponization.attributes.meaningful_name | The most interesting name out of all file's names. | keyword |
+| gti.vulnerability_weaponization.attributes.names | All file names associated with the file. | keyword |
+| gti.vulnerability_weaponization.attributes.network | The IPv4 network range to which the IP belongs. | keyword |
+| gti.vulnerability_weaponization.attributes.outgoing_links | Containing links to different domains. | keyword |
+| gti.vulnerability_weaponization.attributes.positives | The number of security engines that flagged the entity as malicious. | long |
+| gti.vulnerability_weaponization.attributes.regional_internet_registry | One of the current RIRs. | keyword |
+| gti.vulnerability_weaponization.attributes.tags | A list of representative attributes. | keyword |
+| gti.vulnerability_weaponization.attributes.times_submitted | The number of times the entity has been submitted for analysis. | long |
+| gti.vulnerability_weaponization.attributes.title | The webpage title. | keyword |
+| gti.vulnerability_weaponization.attributes.top_level_domain | The highest level of the domain name (e.g., .com, .org). | keyword |
+| gti.vulnerability_weaponization.attributes.type_tags | The broader tags related to the specific file type. | keyword |
+| gti.vulnerability_weaponization.attributes.url | The original URL to be scanned. | keyword |
+| gti.vulnerability_weaponization.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.vulnerability_weaponization.id | The unique ID associated with the entity. | keyword |
+| gti.vulnerability_weaponization.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.vulnerability_weaponization.relationships.campaigns.attributes.name | Campaign's name. | keyword |
+| gti.vulnerability_weaponization.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
+| gti.vulnerability_weaponization.relationships.campaigns.type | The category of relationship. | keyword |
+| gti.vulnerability_weaponization.relationships.collections.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.vulnerability_weaponization.relationships.collections.attributes.name | Collection's name. | keyword |
+| gti.vulnerability_weaponization.relationships.collections.id | Unique identifier for the collection grouping related entities. | keyword |
+| gti.vulnerability_weaponization.relationships.collections.type | The category of relationship. | keyword |
+| gti.vulnerability_weaponization.relationships.malware_families.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.vulnerability_weaponization.relationships.malware_families.attributes.name | Malware family's name. | keyword |
+| gti.vulnerability_weaponization.relationships.malware_families.id | Unique identifier for the malware family associated with the entity. | keyword |
+| gti.vulnerability_weaponization.relationships.malware_families.type | The category of relationship. | keyword |
+| gti.vulnerability_weaponization.relationships.reports.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.vulnerability_weaponization.relationships.reports.attributes.name | Report's title. | keyword |
+| gti.vulnerability_weaponization.relationships.reports.id | Unique identifier for the report detailing the entity's analysis. | keyword |
+| gti.vulnerability_weaponization.relationships.reports.type | The category of relationship. | keyword |
+| gti.vulnerability_weaponization.relationships.software_toolkits.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.vulnerability_weaponization.relationships.software_toolkits.attributes.name | Software or toolkit's name. | keyword |
+| gti.vulnerability_weaponization.relationships.software_toolkits.id | Unique identifier for the software or toolkit associated with the entity. | keyword |
+| gti.vulnerability_weaponization.relationships.software_toolkits.type | The category of relationship. | keyword |
+| gti.vulnerability_weaponization.relationships.threat_actors.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.vulnerability_weaponization.relationships.threat_actors.attributes.name | Threat actor's name. | keyword |
+| gti.vulnerability_weaponization.relationships.threat_actors.id | Unique identifier for the threat actor associated with the entity. | keyword |
+| gti.vulnerability_weaponization.relationships.threat_actors.type | The category of relationship. | keyword |
+| gti.vulnerability_weaponization.relationships.vulnerabilities.attributes.collection_type | Identifies the type of the object. | keyword |
+| gti.vulnerability_weaponization.relationships.vulnerabilities.attributes.name | Vulnerability's name. | keyword |
+| gti.vulnerability_weaponization.relationships.vulnerabilities.id | Unique identifier for the vulnerability associated with the entity. | keyword |
+| gti.vulnerability_weaponization.relationships.vulnerabilities.type | The category of relationship. | keyword |
+| gti.vulnerability_weaponization.type | Specifies the nature of the entity, such as file, domain, IP, or URL. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |

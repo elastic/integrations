@@ -11,6 +11,7 @@ Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustot
 The Threat List API provides the following types of threat feeds:
 
 - **Cryptominers**
+- **Daily Top Trending**
 - **First Stage Delivery Vectors**
 - **Infostealers**
 - **Internet of Things (IoT)**
@@ -19,6 +20,10 @@ The Threat List API provides the following types of threat feeds:
 - **Malware**
 - **Mobile**
 - **OS X**
+- **Phishing**
+- **Ransomware**
+- **Threat Actor**
+- **Vulnerability Weaponization**
 
 ## GTI Subscription Tiers
 
@@ -30,10 +35,16 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-Data collection is available for all nine feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `linux`, `malicious_network_infrastructure`, `malware`, `mobile` and `osx`, each with a separate data stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+Data collection is available for all threat feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `linux`, `malicious_network_infrastructure`, `malware`, `mobile`, `osx`, `phishing`, `ransomware`, `threat_actor`, `trending` and `vulnerability_weaponization`, each with a separate data stream. By default, **Ransomware**  and **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
+### Agentless-enabled integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
@@ -75,7 +86,7 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are available across all 9 data streams.
+Currently, four transforms are available across all 14 data streams.
 
 The following are four transforms along with their associated pipelines:
 
@@ -145,7 +156,7 @@ The following transform and its associated pipelines are used to filter relevant
    - Prefix the pipeline name with the integration version.
      For example:
      ```
-     0.2.0-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
+     {package_version}-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
      ```
    - Click **Update** to save the changes.
 5. Click the **three dots** again next to the transform and select **Start** to activate it.
@@ -260,3 +271,53 @@ This is the `OS X` dataset.
 {{event "osx"}}
 
 {{fields "osx"}}
+
+### Phishing
+
+This is the `Phishing` dataset.
+
+#### Example
+
+{{event "phishing"}}
+
+{{fields "phishing"}}
+
+### Ransomware
+
+This is the `Ransomware` dataset.
+
+#### Example
+
+{{event "ransomware"}}
+
+{{fields "ransomware"}}
+
+### Threat Actor
+
+This is the `Threat Actor` dataset.
+
+#### Example
+
+{{event "threat_actor"}}
+
+{{fields "threat_actor"}}
+
+### Daily Top trending
+
+This is the `Daily Top trending` dataset.
+
+#### Example
+
+{{event "trending"}}
+
+{{fields "trending"}}
+
+### Vulnerability Weaponization
+
+This is the `Vulnerability Weaponization` dataset.
+
+#### Example
+
+{{event "vulnerability_weaponization"}}
+
+{{fields "vulnerability_weaponization"}}
