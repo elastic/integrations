@@ -1,12 +1,12 @@
-# Abnormal Security
+# Abnormal AI
 
-Abnormal Security is a behavioral AI-based email security platform that learns the behavior of every identity in a cloud email environment and analyzes the risk of every event to block even the most sophisticated attacks.
+Abnormal AI is a behavioral AI-based email security platform that learns the behavior of every identity in a cloud email environment and analyzes the risk of every event to block even the most sophisticated attacks.
 
-The Abnormal Security integration collects data for AI Security Mailbox (formerly known as Abuse Mailbox), Audit, Case, and Threat logs using REST API.
+The Abnormal AI integration collects data for AI Security Mailbox (formerly known as Abuse Mailbox), Audit, Case, and Threat logs using REST API.
 
 ## Data streams
 
-The Abnormal Security integration collects six types of logs:
+The Abnormal AI integration collects six types of logs:
 
 - **[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of AI Security Mailbox.
 
@@ -22,49 +22,35 @@ The Abnormal Security integration collects six types of logs:
 
 ## Requirements
 
-You need to have Elastic Agent installed. For detailed guidance, refer to the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent
-
-There are several options for installing and managing Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended)
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users)
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Before installing the Elastic Agent, check the [minimum requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect data from the Abnormal Security Client API:
+### To collect data from the Abnormal AI Client API:
 
 #### Step 1: Go to Portal
-* Visit the [Abnormal Security Portal](https://portal.abnormalsecurity.com/home/settings/integrations) and click on the `Abnormal REST API` setting.
+* Visit the [Abnormal AI Portal](https://portal.abnormalsecurity.com/home/settings/integrations) and click on the `Abnormal REST API` setting.
 
 #### Step 2: Generating the authentication token
-* Retrieve your authentication token. This token will be used further in the Elastic integration setup to authenticate and access different Abnormal Security Logs.
+* Retrieve your authentication token. This token will be used further in the Elastic integration setup to authenticate and access different Abnormal AI Logs.
 
 #### Step 3: IP allowlisting
-* Abnormal Security requires you to restrict API access based on source IP. So in order for the integration to work, user needs to update the IP allowlisting to include the external source IP of the endpoint running the integration via Elastic Agent.
+* Abnormal AI requires you to restrict API access based on source IP. So in order for the integration to work, user needs to update the IP allowlisting to include the external source IP of the endpoint running the integration via Elastic Agent.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Abnormal Security`.
-3. Select the "Abnormal Security" integration from the search results.
-4. Select "Add Abnormal Security" to add the integration.
+2. In "Search for integrations" top bar, search for `Abnormal AI`.
+3. Select the "Abnormal AI" integration from the search results.
+4. Select "Add Abnormal AI" to add the integration.
 5. Add all the required integration configuration parameters, including Access Token, Interval, Initial Interval and Page Size to enable data collection.
 6. Select "Save and continue" to save the integration.
 
-**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL changes based on location so find your own base URL.
+**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal AI Base URL changes based on location so find your own base URL.
+
+### Enabling enrichment for Threat events
+
+Introduced in version 1.8.0, the Abnormal AI integration includes a new option called `Enable Attachments and Links enrichment` for the Threat data stream. When enabled, this feature enriches incoming threat events with additional details about any attachments and links included in the original message.
 
 ## Logs reference
 
@@ -684,9 +670,13 @@ An example event for `threat` looks as following:
     "@timestamp": "2024-07-17T23:25:38.000Z",
     "abnormal_security": {
         "threat": {
-            "abx_message_id": "2260288475997441000",
+            "abx_message_id": "2260288475997441028",
             "abx_portal_url": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
             "attachment_count": 0,
+            "attachment_names": [
+                "attachment1.txt",
+                "attachment2.txt"
+            ],
             "attack": {
                 "strategy": "Unknown Sender",
                 "type": "Spam",
@@ -700,6 +690,22 @@ An example event for `threat` looks as following:
             "impersonated_party": "None / Others",
             "internet_message_id": "<AZz8NUMEST-qmuz77_koic@example>",
             "is_read": false,
+            "links": [
+                {
+                    "display_text": "This is not a spoof!",
+                    "domain": "lamronba.com",
+                    "source": "body",
+                    "type": "html href",
+                    "url": "http://spoof.lamronba.com"
+                },
+                {
+                    "display_text": "This is not a spoof!",
+                    "domain": "lamronba2.com",
+                    "source": "body",
+                    "type": "html href",
+                    "url": "http://spoof.lamronba2.com"
+                }
+            ],
             "post_remediated": false,
             "received_time": "2024-07-17T23:25:38.000Z",
             "recipient_address": "bob@example.com",
@@ -727,26 +733,40 @@ An example event for `threat` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "900a737b-86e9-4b31-8902-9e933e02c4bc",
-        "id": "16312af4-ae1e-4ca5-855f-6cb7e433a5a4",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "021dbd0a-1980-4dce-b34a-e17fa36bd368",
+        "id": "4d67d2b3-ec2b-471b-bcb6-247a08f9ec92",
+        "name": "elastic-agent-17870",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "abnormal_security.threat",
-        "namespace": "81591",
+        "namespace": "20873",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "16312af4-ae1e-4ca5-855f-6cb7e433a5a4",
+        "id": "4d67d2b3-ec2b-471b-bcb6-247a08f9ec92",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.17.3"
     },
     "email": {
+        "attachments": [
+            {
+                "file": {
+                    "extension": "txt",
+                    "name": "attachment1.txt"
+                }
+            },
+            {
+                "file": {
+                    "extension": "txt",
+                    "name": "attachment2.txt"
+                }
+            }
+        ],
         "delivery_timestamp": "2024-07-17T23:25:38.000Z",
         "from": {
             "address": [
@@ -769,10 +789,10 @@ An example event for `threat` looks as following:
             "email"
         ],
         "dataset": "abnormal_security.threat",
-        "id": "2260288475997441000",
-        "ingested": "2024-09-03T05:30:00Z",
+        "id": "2260288475997441028",
+        "ingested": "2025-05-20T06:55:26Z",
         "kind": "enrichment",
-        "original": "{\"abxMessageId\":2260288475997441000,\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
+        "original": "{\"abxMessageId\":2260288475997441000,\"abxMessageIdStr\":\"2260288475997441028\",\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attachments\":[\"attachment1.txt\",\"attachment2.txt\"],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"links\":[{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba.com\"},{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba2.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba2.com\"}],\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
         "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
         "type": [
             "indicator",
@@ -854,9 +874,9 @@ An example event for `threat` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abnormal_security.threat.abx_message_id | A unique identifier for an individual message within a threat (i.e email campaign). | keyword |
-| abnormal_security.threat.abx_portal_url | The URL at which the specific message details are viewable in Abnormal Security's Portal web interface. | keyword |
+| abnormal_security.threat.abx_portal_url | The URL at which the specific message details are viewable in Abnormal AI's Portal web interface. | keyword |
 | abnormal_security.threat.attachment_count | Number of attachments in email (only available for IESS customers). | long |
-| abnormal_security.threat.attachment_names | List of attachment names, if any. | keyword |
+| abnormal_security.threat.attachment_names | List of attachment names, if any. Attachments retrieved from the attachments endpoint are appended to this field if enrichment is enabled. | keyword |
 | abnormal_security.threat.attack.strategy |  | keyword |
 | abnormal_security.threat.attack.type | The type of threat the message represents. | keyword |
 | abnormal_security.threat.attack.vector | The attack medium. | keyword |
@@ -869,6 +889,11 @@ An example event for `threat` looks as following:
 | abnormal_security.threat.impersonated_party | Impersonated party, if any. | keyword |
 | abnormal_security.threat.internet_message_id | The internet message ID, per RFC 822. | keyword |
 | abnormal_security.threat.is_read | Whether an email has been read. | boolean |
+| abnormal_security.threat.links.display_text | The link's display text. | keyword |
+| abnormal_security.threat.links.domain | The domain name of the link. | keyword |
+| abnormal_security.threat.links.source | The location in the email where the link may be found. | keyword |
+| abnormal_security.threat.links.type | The type of link in the email. | keyword |
+| abnormal_security.threat.links.url | The URL of the link. | keyword |
 | abnormal_security.threat.post_remediated | Indicates whether Abnormal remediated the campaign at a later time, after landing in the user's Inbox. Note``:`` Abnormal has retained this field and the autoRemediated field to support prior integrations, but in newly created integrations, you should capture this information from the remediationStatus field. | boolean |
 | abnormal_security.threat.received_time | The timestamp at which this message arrived. | date |
 | abnormal_security.threat.recipient_address | the email address of the user who actually received the message. | keyword |

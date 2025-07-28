@@ -1,0 +1,253 @@
+- name: vectra_rux
+  type: group
+  fields:
+    - name: health
+      type: group
+      fields:
+        - name: connectivity
+          type: group
+          fields:
+            - name: sensors
+              type: group
+              fields:
+                - name: output
+                  type: flattened
+                - name: affected_metadata_hours
+                  type: keyword
+                  description: Field not present if status is 'OK'.
+                - name: error
+                  type: keyword
+                - name: ip_address
+                  type: ip
+                - name: luid
+                  type: keyword
+                - name: name
+                  type: keyword
+                - name: serial_number
+                  type: keyword
+                - name: status
+                  type: keyword
+                  description: Status can be OK, WARNING, CRITICAL, or UNKNOWN.
+        - name: cpu
+          type: group
+          fields:
+            - name: idle_percent
+              type: double
+              description: 'Percentage of CPU idle.'
+            - name: nice_percent
+              type: double
+              description: 'Percentage of CPU processing higher prioritized tasks.'
+            - name: system_percent
+              type: double
+              description: 'Percentage of CPU processing system specific tasks.'
+            - name: updated_at
+              type: date
+            - name: user_percent
+              type: double
+              description: 'Percentage of CPU processing tasks.'
+        - name: detection
+          type: group
+          fields:
+            - name: check_results
+              type: flattened
+              description: One entry per failing detection model, or exactly one entry if all detection models are healthy.
+            - name: detection_type
+              type: keyword
+            - name: message
+              type: keyword
+            - name: name
+              type: keyword
+            - name: status
+              type: keyword
+              description: Status can be OK or CRITICAL.
+            - name: updated_at
+              type: date
+        - name: disk
+          type: group
+          fields:
+            - name: degraded_raid_volume
+              type: group
+              fields:
+                - name: error
+                  type: keyword
+                - name: output
+                  type: keyword
+                - name: status
+                  type: keyword
+            - name: disk_raid
+              type: group
+              fields:
+                - name: error
+                  type: keyword
+                - name: output
+                  type: keyword
+                - name: status
+                  type: keyword
+            - name: disk_utilization
+              type: group
+              fields:
+                - name: free_bytes
+                  type: long
+                - name: total_bytes
+                  type: long
+                - name: usage_percent
+                  type: double
+                - name: used_bytes
+                  type: long
+            - name: raid_disks_missing
+              type: group
+              fields:
+                - name: error
+                  type: keyword
+                - name: output
+                  type: keyword
+                - name: status
+                  type: keyword
+            - name: updated_at
+              type: date
+        - name: event_timestamp
+          type: date
+        - name: hostid
+          type: group
+          fields:
+            - name: artifact_counts
+              type: object
+              object_type: double
+            - name: ip_always_percent
+              type: double
+            - name: ip_never_percent
+              type: double
+            - name: ip_sometimes_percent
+              type: double
+            - name: updated_at
+              type: date
+        - name: memory
+          type: group
+          fields:
+            - name: free_bytes
+              type: long
+            - name: total_bytes
+              type: long
+            - name: updated_at
+              type: date
+            - name: usage_percent
+              type: double
+            - name: used_bytes
+              type: long
+        - name: network
+          type: group
+          fields:
+            - name: interfaces
+              type: flattened
+            - name: traffic
+              type: flattened
+            - name: updated_at
+              type: date
+            - name: vlans
+              type: group
+              fields:
+                - name: count
+                  type: long
+                - name: vlan_ids
+                  type: keyword
+        - name: power
+          type: group
+          fields:
+            - name: power_supplies
+              type: flattened
+            - name: error
+              type: keyword
+            - name: status
+              type: keyword
+            - name: updated_at
+              type: date
+        - name: sensors
+          type: group
+          fields:
+            - name: headend_ip
+              type: ip
+            - name: headend_url
+              type: keyword
+            - name: id
+              type: keyword
+            - name: ip_address
+              type: ip
+            - name: last_seen
+              type: date
+            - name: location
+              type: keyword
+            - name: luid
+              type: keyword
+            - name: mode
+              type: keyword
+            - name: name
+              type: keyword
+            - name: original_version
+              type: keyword
+            - name: product_name
+              type: keyword
+            - name: public_key
+              type: keyword
+            - name: serial_number
+              type: keyword
+            - name: ssh_tunnel_port
+              type: keyword
+            - name: status
+              type: keyword
+            - name: update_count
+              type: long
+            - name: version
+              type: keyword
+        - name: system
+          type: group
+          fields:
+            - name: serial_number
+              type: keyword
+            - name: updated_at
+              type: date
+            - name: uptime
+              type: keyword
+            - name: version
+              type: group
+              fields:
+                - name: cloud_bridge
+                  type: boolean
+                - name: gmt
+                  type: date
+                - name: last_update
+                  type: date
+                - name: last_update_utc
+                  type: date
+                - name: mode
+                  type: keyword
+                - name: model
+                  type: keyword
+                - name: vectra_instance_type
+                  type: keyword
+                - name: vectra_version
+                  type: keyword
+                - name: vm_type
+                  type: keyword
+        - name: trafficdrop
+          type: group
+          fields:
+            - name: sensors
+              type: group
+              fields:
+                - name: output
+                  type: flattened
+                - name: error
+                  type: keyword
+                - name: ip_address
+                  type: ip
+                - name: luid
+                  type: keyword
+                - name: name
+                  type: keyword
+                - name: serial_number
+                  type: keyword
+                - name: status
+                  type: keyword
+                  description: Status can be OK, WARNING, UNKNOWN, or SKIP.
+            - name: updated_at
+              type: date

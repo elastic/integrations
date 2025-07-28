@@ -1,15 +1,15 @@
-format_version: 3.3.1
+format_version: 3.4.0
 name: ti_greynoise
 title: GreyNoise
-version: 0.2.0
+version: 0.4.0
 description: Collect Threat Intelligence Indicators from GreyNoise using Elastic Agent, and perform enrichment on Elasticsearch by correlating Indicators of Compromise (IOCs).
 type: integration
 categories:
-  - custom
   - threat_intel
+  - security
 conditions:
   kibana:
-    version: "^8.17.0"
+    version: ^8.17.0 || ^9.0.0
   elastic:
     subscription: "basic"
     capabilities:
@@ -24,14 +24,18 @@ screenshots:
     title: GreyNoise Threat Feed Overview Dashboard
     size: 600x600
     type: image/png
-  - src: /img/greynoise_threat_intelligence_dashboard.png
-    title: GreyNoise Threat Intelligence Dashboard
-    size: 600x600
-    type: image/png
 policy_templates:
   - name: ti_greynoise
     title: GreyNoise events
-    description: Collect GreyNoise events
+    description: Collect GreyNoise events.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: cel
         title: Collect GreyNoise events via API
@@ -91,4 +95,4 @@ policy_templates:
               #    -----END CERTIFICATE-----
 owner:
   github: elastic/security-service-integrations
-  type: partner
+  type: community

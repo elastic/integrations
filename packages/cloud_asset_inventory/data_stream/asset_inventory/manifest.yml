@@ -49,6 +49,12 @@ streams:
           value: cloud_formation
         - name: aws.account_type
           value: single-account
+      cloud_connectors:
+        - name: aws.credentials.type
+          value: cloud_connectors
+        - name: aws.account_type
+        - name: aws.role_arn
+        - name: aws.credentials.external_id
     vars:
       - name: aws.account_type
         title: Account type
@@ -79,6 +85,8 @@ streams:
             value: temporary_keys
           - text: Shared Credentials (Manual)
             value: shared_credentials
+          - text: Cloud Connectors
+            value: cloud_connectors
       - name: aws.access_key_id
         type: text
         title: Access Key ID
@@ -124,6 +132,20 @@ streams:
         required: false
         show_user: false
         description: Required when using Assume Role
+      - name: aws.supports_cloud_connectors
+        type: bool
+        title: Supports Cloud Connectors
+        multi: false
+        required: false
+        show_user: false
+        secret: false
+      - name: aws.credentials.external_id
+        type: password
+        title: External ID
+        multi: false
+        required: false
+        show_user: false
+        secret: true
   - input: cloudbeat/asset_inventory_azure
     title: Azure Asset Discovery
     description: Asset Discovery Discovery for Azure
@@ -260,42 +282,34 @@ streams:
           value: organization-account
         - name: gcp.credentials.type
           value: credentials-none
-        - name: gcp.organization_id
-        - name: gcp.project_id
       organization_account_manual_file:
         - name: gcp.account_type
           value: organization-account
         - name: gcp.credentials.type
           value: credentials-file
-        - name: gcp.organization_id
-        - name: gcp.project_id
         - name: gcp.credentials.file
       organization_account_manual_json:
         - name: gcp.account_type
           value: organization-account
         - name: gcp.credentials.type
           value: credentials-json
-        - name: gcp.organization_id
         - name: gcp.credentials.json
       single_account_cloud_shell:
         - name: gcp.account_type
           value: single-account
         - name: gcp.credentials.type
           value: credentials-none
-        - name: gcp.project_id
       single_account_manual_file:
         - name: gcp.account_type
           value: single-account
         - name: gcp.credentials.type
           value: credentials-file
-        - name: gcp.project_id
         - name: gcp.credentials.file
       single_account_manual_json:
         - name: gcp.account_type
           value: single-account
         - name: gcp.credentials.type
           value: credentials-json
-        - name: gcp.project_id
         - name: gcp.credentials.json
     vars:
       - name: gcp.account_type

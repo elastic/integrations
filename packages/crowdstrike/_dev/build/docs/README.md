@@ -29,36 +29,22 @@ For Rest API support, this module has been tested against the **CrowdStrike API 
 
 ## Requirements
 
-### Agentless Enabled Integration
+### Agentless enabled integration
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent Based Installation
-- Elastic Agent must be installed
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent based installation
 
-#### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+You can install only one Elastic Agent per host.
+Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Setup
-### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
+
+### Collect data from CrowdStrike REST API 
+
+The following parameters from your CrowdStrike instance are required:
 
 1. Client ID
 2. Client Secret
@@ -72,7 +58,9 @@ There are some minimum requirements for running Elastic Agent and for more infor
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
 
-### To collect data from CrowdStrike Event Stream, the following parameters from your CrowdStrike instance are required:
+### Collect data from CrowdStrike Event Stream
+
+The following parameters from your CrowdStrike instance are required:
 
 1. Client ID
 2. Client Secret
@@ -262,6 +250,27 @@ The option `Enable Data Deduplication` allows you to avoid consuming duplicate e
 
 If duplicate events are ingested, to help find them, the integration `event.id` field is populated by concatenating a few Crowdstrike fields that uniquely identifies the event. These fields are `id`, `aid`, and `cid` from the Crowdstrike event. The fields are separated with pipe `|`.
 For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
+
+#### Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name              | `event.severity` |
+|----------------------------|:----------------:|
+| Low, Info or Informational | 21               |
+| Medium                     | 47               |
+| High                       | 73               |
+| Critical                   | 99               |
+
+If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
+
+| Crowdstrike `severity` | Severity Name |
+|------------------------|:-------------:|
+| 0 - 19                 | info          |
+| 20 - 39                | low           |
+| 40 - 59                | medium        |
+| 60 - 79                | high          |
+| 80 - 100               | critical      |
 
 #### Example
 

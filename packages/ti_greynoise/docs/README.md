@@ -2,131 +2,81 @@
 
 ## Overview
 
-[GreyNoise](https://www.greynoise.io/) is a cybersecurity platform that helps security teams filter out "internet noise" — essentially, background internet scanning activity that’s not necessarily targeted or malicious. It collects, analyzes, and labels massive amounts of data from internet-wide scans, often coming from bots, security researchers, or compromised systems.
+[GreyNoise](https://www.greynoise.io/) is a cybersecurity platform that helps security teams filter out "internet noise" — background internet scanning activity that's not necessarily targeted or malicious. It collects, analyzes, and labels massive amounts of data from internet-wide scans, typically originating from bots, security researchers, or compromised systems.
 
-## Pre-requisites for GreyNoise
+## Prerequisites for GreyNoise
 
-Customers must have access to **Enterprise API** in order to fetch data from GreyNoise. Customers can check their API key access [here](https://viz.greynoise.io/account/api-key).
+Customers must have access to the **Enterprise API** to fetch data from GreyNoise. You can verify your API key access [here](https://viz.greynoise.io/account/api-key).
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agentless-enabled integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-### Installing and managing an Elastic Agent:
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+### Agent-based installation
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### To Collect Logs Through REST API
 
-- After logging in to GreyNoise, navigate to your [account page](https://viz.greynoise.io/account/api-key).
-- Click on "View API Key" to display and copy your unique API key.
+1. After logging in to GreyNoise, navigate to your [account page](https://viz.greynoise.io/account/api-key).
+2. Click "View API Key" to display and copy your unique API key.
 
-### Enabling the integration in Elastic:
+### Enabling the Integration in Elastic
 
 1. In Kibana, go to **Management > Integrations**.
 2. In the "Search for integrations" search bar, type **GreyNoise**.
-3. Click on the **GreyNoise** integration from the search results.
-4. Click on the **Add GreyNoise** button to add the integration.
-5. While adding the integration, to collect logs via REST API, provide the following details:
-   - Access Token
+3. Click the **GreyNoise** integration from the search results.
+4. Click the **Add GreyNoise** button to add the integration.
+5. While adding the integration, provide the following details to collect logs via REST API:
+   - API Key
    - Interval
-   - (Optional) Query to add custom query filtering.
-6. Click on **Save and Continue** to save the integration.
-**Note:** Please make sure the "last_seen" field should not be included in the query, as it is predefined with a fixed value of "1d".
+   - (Optional) Query for custom query filtering
+6. Click **Save and Continue** to save the integration.
+
+**Note:** The "last_seen" field should not be included in the query as it is predefined with a fixed value of "1d".
 
 ## Transforming Data for Up-to-Date Insights
 
 To keep the collected data up to date, **Transforms** are used.
 
-Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
+You can view transforms by navigating to **Management > Stack Management > Transforms**.
 
-Here, users can see continuously running transforms and also view the latest transformed GreyNoise data in the **Discover** section.
+Here, you can see continuously running transforms and view the latest transformed GreyNoise data in the **Discover** section.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, one transform is running for IP datastream:
+Currently, one transform is running for the IP datastream:
 
-| Transform Name                                                                        | Description                                              |
-| ------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| IP Transform (ID: `logs-ti_greynoise.ip`)                        | Keeps IP entity type data up to date.                    |
+| Transform Name | Description |
+|----------------|-------------|
+| IP Transform (ID: `logs-ti_greynoise.ip`) | Keeps IP entity type data up to date |
 
 For example:
+- The query `event.module: ti_greynoise and labels.is_transform_source: true` shows logs from the **source index**
+- The query `event.module: ti_greynoise and labels.is_transform_source: false` shows logs from the **transformed index**
 
-- The query `event.module: ti_greynoise and labels.is_transform_source: true` indicates that the logs originate from the **source index**.
-- The query `event.module: ti_greynoise and labels.is_transform_source: false` indicates that the logs originate from the **transformed index**.
+A **retention policy** removes data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines).
 
-A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](<https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines>).
-
-In this integration, IP data stream has a **retention period of 7 days**.
-
-### Enrichment with Detection Rules
-
-Detection Rules match the user's Elastic environment data with GreyNoise data, generating an alert if a match is found. To access detection rules:
-
-1. Navigate to **Security > Rules > Detection Rules** and click on **Add Elastic Rules**.
-2. Search for **GreyNoise** to find prebuilt Elastic detection rule.
-3. One detection rule is available for **IP**. Users can install and enable rule as needed.
-
-To tailor a rule based on Elastic environment:
-
-1. Click the three dots on the right side of any detection rule.
-2. Select **Duplicate Rule**.
-3. Modify the duplicated rule to tailor it to your Elastic environment:
-   - **Index Pattern**: Add the index pattern relevant to your data. Keeping this specific ensures optimal performance.
-   - **Custom Query**: Further refine rule conditions.
-   - **Indicator Mapping**: Map relevant fields from your Elastic environment to GreyNoise fields. Do not modify the **indicator index field**.
-   - **Schedule Rules**:
-     - **Set Runs Every** - Defines how frequently the rule runs.
-     - **Additional Lookback Time** - Specifies how far back to check for matches.
-
-Once saved, successfully executed rules will generate alerts. Users can view these alerts in the **Alerts** section.
-
-**Note:** One transform runs in the background to filter relevant data from alerts. The `data_stream.dataset: ti_greynoise.enriched_ioc` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
-
-The following is the name of the one sample rule:
-
-| Sample Rule Name                                             | Description                                                                                                                           |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| GreyNoise IP Address IOC Correlation        | Detects and alerts on matches between IP Address IOCs collected by GreyNoise data with user's selected Elastic environment data.            |
-
-1. If an event contains multiple matching mappings (e.g., two IP fields within the same event match GreyNoise data), only one alert per detection rule will be generated for that event.
-2. If an IOC from the user's Elasticsearch index is enriched with GreyNoise information, and the GreyNoise information is updated later, the changes are not reflected in the dashboards because Elastic detection rules only run on live data.
+In this integration, the IP data stream has a default **retention period of 7 days**.
 
 ## Troubleshooting
 
-1. If any latency issues occur during data collection, consider increasing the `HTTP Client Timeout` configuration parameter.
-2. If any server-side errors occur, consider reducing the `Page Size` configuration parameter.
-   **Note:** Please avoid setting the `Page Size` too low, as this may increase the number of API requests, potentially leading to processing issues.
-3. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
-4. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
-   **Note:** More events in index patterns means more time needed for detection rules to run.
-5. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields) are accurately configured.
+1. If you experience latency issues during data collection, consider increasing the `HTTP Client Timeout` configuration parameter.
+2. If server-side errors occur, consider reducing the `Page Size` configuration parameter.
+   **Note:** Avoid setting the `Page Size` too low, as this may increase the number of API requests, potentially causing processing issues.
+3. If events are not appearing in the transformed index, check if transforms are running without errors. For issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
 
 ## Logs Reference
 
 ### IP
 
-This is the `IP` dataset. It uses [GNQL Endpoint](https://docs.greynoise.io/reference/gnqlquery-1) to fetch data from GreyNoise with "last_seen:1d". It uses version v3 of the API to collect indicators. Currently [Triage](https://docs.greynoise.io/docs/intelligence-module-triage) and [Business Services](https://docs.greynoise.io/docs/intelligence-module-business-services) Intelligence Modules are being collected through this data stream.
+This is the `IP` dataset. It uses the [GNQL Endpoint](https://docs.greynoise.io/reference/gnqlquery-1) to fetch data from GreyNoise with "last_seen:1d". It uses version v3 of the API to collect indicators. Currently, the [Triage](https://docs.greynoise.io/docs/intelligence-module-triage) and [Business Services](https://docs.greynoise.io/docs/intelligence-module-business-services) Intelligence Modules are being collected through this data stream.
 
 #### Example
 
@@ -134,26 +84,26 @@ An example event for `ip` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-24T12:23:52.930Z",
+    "@timestamp": "2025-05-30T12:55:33.381Z",
     "agent": {
-        "ephemeral_id": "f1cbcb6c-54b6-47a0-b9b7-450872102bc2",
-        "id": "f5413e8b-b3ce-442f-bfc7-c977594ccd6f",
-        "name": "elastic-agent-91288",
+        "ephemeral_id": "f00c4032-2cd5-4ba7-ac74-1eeaecf7b82b",
+        "id": "e02d601f-5175-4894-b432-6aec71fb67cf",
+        "name": "elastic-agent-83925",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "ti_greynoise.ip",
-        "namespace": "84030",
+        "namespace": "37673",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f5413e8b-b3ce-442f-bfc7-c977594ccd6f",
+        "id": "e02d601f-5175-4894-b432-6aec71fb67cf",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -161,9 +111,9 @@ An example event for `ip` looks as following:
             "threat"
         ],
         "dataset": "ti_greynoise.ip",
-        "ingested": "2025-04-24T12:23:55Z",
+        "ingested": "2025-05-30T12:55:36Z",
         "kind": "enrichment",
-        "original": "{\"business_service_intelligence\":{\"category\":\"public_dns\",\"description\":\"Google's global domain name system (DNS) resolution service.\",\"explanation\":\"Public DNS services are used as alternatives to ISP's name servers. You may see devices on your network communicating with Google Public DNS over port 53/TCP or 53/UDP to resolve DNS lookups.\",\"found\":true,\"last_updated\":\"2021-11-24T11:42:37Z\",\"name\":\"Google Public DNS\",\"reference\":\"https://developers.google.com/speed/public-dns/docs/isp#alternative\",\"trust_level\":\"1\"},\"internet_scanner_intelligence\":{\"actor\":\"unknown\",\"bot\":false,\"classification\":\"unknown\",\"cves\":[],\"first_seen\":\"\",\"found\":true,\"last_seen\":\"2025-04-22\",\"metadata\":{\"asn\":\"AS269415\",\"carrier\":\"\",\"category\":\"isp\",\"datacenter\":\"\",\"destination_asns\":[],\"destination_cities\":[],\"destination_countries\":[\"Iran\",\"Kazakhstan\"],\"destination_country_codes\":[\"IR\",\"KZ\"],\"domain\":\"clicknetfibra.net.br\",\"latitude\":0,\"longitude\":0,\"mobile\":false,\"organization\":\"CLICKNET FIBRA LTDA\",\"os\":\"\",\"rdns\":\"speedtest.clicknetfibra.net.br\",\"rdns_parent\":\"clicknetfibra.net.br\",\"rdns_validated\":false,\"region\":\"Mato Grosso do Sul\",\"sensor_count\":0,\"sensor_hits\":0,\"single_destination\":false,\"source_city\":\"Dourados\",\"source_country\":\"Brazil\",\"source_country_code\":\"BR\"},\"source\":{\"bytes\":0},\"spoofable\":true,\"ssh\":{\"key\":[]},\"tags\":[],\"tls\":{\"cipher\":[],\"ja4\":[]},\"tor\":false,\"vpn\":false,\"vpn_service\":\"\"},\"ip\":\"1.128.0.0\",\"last_seen_timestamp\":\"2025-04-22 00:26:29\"}",
+        "original": "{\"business_service_intelligence\":{\"category\":\"public_dns\",\"description\":\"Google's global domain name system (DNS) resolution service.\",\"explanation\":\"Public DNS services are used as alternatives to ISP's name servers. You may see devices on your network communicating with Google Public DNS over port 53/TCP or 53/UDP to resolve DNS lookups.\",\"found\":true,\"last_updated\":\"2021-11-24T11:42:37Z\",\"name\":\"Google Public DNS\",\"reference\":\"https://developers.google.com/speed/public-dns/docs/isp#alternative\",\"trust_level\":\"1\"},\"internet_scanner_intelligence\":{\"actor\":\"unknown\",\"bot\":false,\"classification\":\"malicious\",\"cves\":[],\"first_seen\":\"\",\"found\":true,\"last_seen\":\"2025-04-22\",\"metadata\":{\"asn\":\"AS269415\",\"carrier\":\"\",\"category\":\"isp\",\"datacenter\":\"\",\"destination_asns\":[],\"destination_cities\":[],\"destination_countries\":[\"Iran\",\"Kazakhstan\"],\"destination_country_codes\":[\"IR\",\"KZ\"],\"domain\":\"clicknetfibra.net.br\",\"latitude\":0,\"longitude\":0,\"mobile\":false,\"organization\":\"CLICKNET FIBRA LTDA\",\"os\":\"\",\"rdns\":\"speedtest.clicknetfibra.net.br\",\"rdns_parent\":\"clicknetfibra.net.br\",\"rdns_validated\":false,\"region\":\"Mato Grosso do Sul\",\"sensor_count\":0,\"sensor_hits\":0,\"single_destination\":false,\"source_city\":\"Dourados\",\"source_country\":\"Brazil\",\"source_country_code\":\"BR\"},\"source\":{\"bytes\":0},\"spoofable\":true,\"ssh\":{\"key\":[]},\"tags\":[],\"tls\":{\"cipher\":[],\"ja4\":[]},\"tor\":false,\"vpn\":false,\"vpn_service\":\"\"},\"ip\":\"1.128.0.0\",\"last_seen_timestamp\":\"2025-04-22 00:26:29\"}",
         "type": [
             "indicator"
         ]
@@ -186,7 +136,7 @@ An example event for `ip` looks as following:
             "internet_scanner_intelligence": {
                 "actor": "unknown",
                 "bot": false,
-                "classification": "unknown",
+                "classification": "malicious",
                 "found": true,
                 "last_seen": "2025-04-22T00:00:00.000Z",
                 "metadata": {
@@ -239,7 +189,7 @@ An example event for `ip` looks as following:
                     "name": "CLICKNET FIBRA LTDA"
                 }
             },
-            "description": "1.128.0.0 IP has been observed mass scanning the internet by GreyNoise with a classification of unknown",
+            "description": "1.128.0.0 IP has been observed mass scanning the internet by GreyNoise with a classification of malicious",
             "geo": {
                 "city_name": "Dourados",
                 "country_iso_code": "BR",

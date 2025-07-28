@@ -1,6 +1,17 @@
 ---
 description: Pipeline for Office 365 Audit logs
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - rename:
       field: message
       target_field: event.original
@@ -34,6 +45,78 @@ processors:
         - o365audit.Id
       target_field: "_id"
       ignore_missing: true
+
+  # Miscellaneous
+
+  - set:
+      field: file.extension
+      copy_from: o365audit.FileExtension
+      ignore_empty_value: true
+
+  - set:
+      field: file.hash.sha1
+      copy_from: o365audit.Sha1
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      copy_from: o365audit.Sha256
+      ignore_empty_value: true
+
+  - set:
+      field: file.path
+      copy_from: o365audit.FilePath
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      copy_from: o365audit.TargetFilePath
+      ignore_empty_value: true
+      override: false
+
+  - set:
+      field: file.size
+      copy_from: o365audit.FileSizeBytes
+      ignore_empty_value: true
+  - set:
+      field: file.size
+      copy_from: o365audit.FileSize
+      ignore_empty_value: true
+      override: false
+  - script:
+      tag: convert_file_size_to_long
+      if: ctx.file?.size != null
+      source: |-
+        if (ctx.file.size instanceof long || ctx.file.size instanceof int) {
+          return;
+        }
+        if (ctx.file.size instanceof double) {
+          ctx.file.size = (long) ctx.file.size;
+          return;
+        }
+        try {
+          // Attempt to parse as long to prevent inexact integer conversion.
+          ctx.file.size = Long.parseLong(ctx.file.size);
+        }
+        catch (NumberFormatException e) {
+          // But fall back to float parsing for cases where we failed.
+          ctx.file.size = (long) Double.parseDouble(ctx.file.size);
+        }
+      on_failure:
+        - remove:
+            field: file.size
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - set:
+      field: process.name
+      copy_from: o365audit.Application
+      ignore_empty_value: true
+
+  - set:
+      field: url.domain
+      copy_from: o365audit.OriginatingDomain
+      ignore_empty_value: true
+
   # General Schema
   - date:
       field: o365audit.CreationTime
@@ -85,6 +168,11 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
+      tag: rename_organization_id
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - json:
       tag: json-extract-stringly-AdditionalInfo
@@ -262,6 +350,37 @@ processors:
         - '^-?Identity\s"?%{DATA:o365audit.NetworkMessageId}"?$'
       ignore_missing: true
       ignore_failure: true
+
+  - script:
+      lang: painless
+      tag: collect_email_to_addresses_from_parameters
+      source: >
+        void splitTrimAdd(Set acc, String str) {
+            if (str != null && str != '') {
+                String[] parts = str.splitOnToken(';');
+                for (int i = 0; i < parts.length; i++) {
+                    acc.add(parts[i].trim());
+                }
+            }
+        }
+
+        def addressSet = new HashSet(ctx.email?.to?.address ?: []);
+
+        splitTrimAdd(addressSet, ctx.o365audit?.Parameters?.ForwardAsAttachmentTo);
+        splitTrimAdd(addressSet, ctx.o365audit?.Parameters?.ForwardTo);
+        splitTrimAdd(addressSet, ctx.o365audit?.Parameters?.RedirectTo);
+
+        if (!addressSet.isEmpty()) {
+          ctx.email = ctx.email ?: [:];
+          ctx.email.to = ctx.email.to ?: [:];
+          ctx.email.to.address = addressSet.asList();
+        }
+
+  - set:
+      field: email.from.address
+      copy_from: o365audit.Parameters.From
+      ignore_empty_value: true
+
   - script:
       if: ctx.o365audit?.Platform != null
       lang: painless
@@ -362,6 +481,11 @@ processors:
       target_field: organization.name
       ignore_missing: true
       if: ctx.event?.code == "ExchangeAdmin"
+      tag: rename_organization_name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -389,6 +513,11 @@ processors:
       target_field: organization.name
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
+      tag: rename_organization_name_exchange_item
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -519,10 +648,9 @@ processors:
       value: creation
       if: 'ctx.event?.action != null && ["FileUploaded", "FolderCopied", "FolderCreated"].contains(ctx.event?.action)'
   # SecurityComplianceAlerts Schema
-  - rename:
-      field: o365audit.Comments
-      target_field: message
-      ignore_missing: true
+  - set:
+      field: message
+      copy_from: o365audit.Name
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
       field: o365audit.Name
@@ -810,6 +938,15 @@ processors:
       target_field: destination.user.email
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
+  - script:
+      description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.TargetYammerUserId != null
+      source: |-
+        if (ctx.o365audit.TargetYammerUserId instanceof double) {
+          ctx.o365audit.TargetYammerUserId = ((long)ctx.o365audit.TargetYammerUserId).toString();
+        } else {
+          ctx.o365audit.TargetYammerUserId = ctx.o365audit.TargetYammerUserId.toString();
+        }
   - rename:
       field: o365audit.TargetYammerUserId
       target_field: destination.user.id
@@ -1004,7 +1141,7 @@ processors:
       if: ctx.server?.ip != null
   - script:
       lang: painless
-      if: 'ctx.user?.id != null && ctx.user?.id.contains("@")'
+      if: 'ctx.user?.id instanceof String && ctx.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1015,7 +1152,7 @@ processors:
         ctx.user.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.user?.target?.id != null && ctx.user?.target?.id.contains("@")'
+      if: 'ctx.user?.target?.id instanceof String && ctx.user?.target?.id.contains("@")'
       source: >
         String[] splitmail = ctx.user.target.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1026,7 +1163,7 @@ processors:
         ctx.user.target.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.source?.user?.id != null && ctx.source?.user?.id.contains("@")'
+      if: 'ctx.source?.user?.id instanceof String && ctx.source?.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.source.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1037,7 +1174,7 @@ processors:
         ctx.source.user.name = splitmail[0];
   - script:
       lang: painless
-      if: 'ctx.destination?.user?.id != null && ctx.destination?.user?.id.contains("@")'
+      if: 'ctx.destination?.user?.id instanceof String && ctx.destination?.user?.id.contains("@")'
       source: >
         String[] splitmail = ctx.destination.user.id.splitOnToken("@");
         if (splitmail.length != 2) {
@@ -1049,7 +1186,7 @@ processors:
   - set:
       field: network.type
       value: ipv6
-      if: 'ctx.client?.ip != null && ctx.client?.ip.contains(":")'
+      if: 'ctx.client?.ip instanceof String && ctx.client?.ip.contains(":")'
   - set:
       field: network.type
       value: ipv4
@@ -1093,24 +1230,28 @@ processors:
   - lowercase:
       field: organization.id
       ignore_missing: true
+      ignore_failure: true
   - set:
       field: host.id
       copy_from: organization.id
-      if: ctx.organization?.id != null
+      if: ctx.organization instanceof Map && ctx.organization?.id != null
   - script:
       lang: painless
-      if: 'ctx.organization?.id != null && ctx._conf?.tenants != null'
+      if: ctx.organization instanceof Map && ctx.organization?.id != null && ctx._conf?.tenants != null
       source: >
         def conftenants = ctx._conf.tenants;
         def orgid = ctx.organization.id;
         if (conftenants instanceof Map && conftenants.containsKey(orgid)) {
           ctx.organization.name = conftenants[orgid];
-          ctx.host.name = conftenants[orgid];
         }
   - set:
       field: host.name
+      copy_from: o365audit.DeviceName
+      if: ctx.o365audit?.DeviceName != null && ctx.host?.name == null
+  - set:
+      field: host.name
       copy_from: organization.name
-      if: ctx.organization?.name != null && ctx.host?.name == null
+      if: ctx.organization instanceof Map && ctx.organization?.name != null && ctx.host?.name == null
   - set:
       field: host.name
       copy_from: user.domain
@@ -1153,26 +1294,51 @@ processors:
           tag: convert_target_type_to_string
           type: string
           ignore_missing: true
-  - convert:
-      field: o365audit.Version
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.InternalLogonType
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.LogonType
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.ActorYammerUserId
-      type: string
-      ignore_missing: true
-  - convert:
-      field: o365audit.YammerNetworkId
-      type: string
-      ignore_missing: true
+  - script:
+      description: Ensure that versions are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.Version != null
+      source: |-
+        if (ctx.o365audit.Version instanceof double) {
+          ctx.o365audit.Version = ((long)ctx.o365audit.Version).toString();
+        } else {
+          ctx.o365audit.Version = ctx.o365audit.Version.toString();
+        }
+  - script:
+      description: Ensure that internal logon types are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.InternalLogonType != null
+      source: |-
+        if (ctx.o365audit.InternalLogonType instanceof double) {
+          ctx.o365audit.InternalLogonType = ((long)ctx.o365audit.InternalLogonType).toString();
+        } else {
+          ctx.o365audit.InternalLogonType = ctx.o365audit.InternalLogonType.toString();
+        }
+  - script:
+      description: Ensure that logon types are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.LogonType != null
+      source: |-
+        if (ctx.o365audit.LogonType instanceof double) {
+          ctx.o365audit.LogonType = ((long)ctx.o365audit.LogonType).toString();
+        } else {
+          ctx.o365audit.LogonType = ctx.o365audit.LogonType.toString();
+        }
+  - script:
+      description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.ActorYammerUserId != null
+      source: |-
+        if (ctx.o365audit.ActorYammerUserId instanceof double) {
+          ctx.o365audit.ActorYammerUserId = ((long)ctx.o365audit.ActorYammerUserId).toString();
+        } else {
+          ctx.o365audit.ActorYammerUserId = ctx.o365audit.ActorYammerUserId.toString();
+        }
+  - script:
+      description: Ensure that network IDs are not rendered with e-notation, general fallback for all other cases.
+      if: ctx.o365audit?.YammerNetworkId != null
+      source: |-
+        if (ctx.o365audit.YammerNetworkId instanceof double) {
+          ctx.o365audit.YammerNetworkId = ((long)ctx.o365audit.YammerNetworkId).toString();
+        } else {
+          ctx.o365audit.YammerNetworkId = ctx.o365audit.YammerNetworkId.toString();
+        }
   - append:
       field: email.message_id
       value: "{{{o365audit.InternetMessageId}}}"
@@ -1191,12 +1357,16 @@ processors:
       if: ctx.o365audit?.P1Sender != null && ctx.o365audit.P1Sender != ''
       tag: append_email_sender_address_1
       allow_duplicates: false
-  - set:
-      field: email.to.address
-      copy_from: o365audit.Recipients
+  - foreach:
+      field: o365audit.Recipients
       if: ctx.o365audit?.Recipients instanceof List && ctx.o365audit.Recipients.length > 0
-      tag: set_email_to_address_1
-      ignore_empty_value: true
+      tag: foreach_recipient
+      processor:
+        append:
+          field: email.to.address
+          value: "{{{_ingest._value}}}"
+          tag: append_recipient_to_email_to_address
+          allow_duplicates: false
   - append:
       field: related.ip
       value: "{{{o365audit.SenderIp}}}"
@@ -1278,15 +1448,18 @@ processors:
       lang: painless
       tag: script_known_Data
       if: 'ctx.o365audit?.Data?.flattened instanceof Map'
-      source: >
-        def knownKeys = ['ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at',
+      params:
+        knownKeys: [
+          'ad', 'af', 'aii', 'ail', 'alk', 'als', 'an', 'at',
           'cid', 'cpid', 'dm', 'dpn', 'eid', 'etps', 'etype', 'f3u', 'fvs',
           'imsgid', 'lon', 'mat', 'md', 'ms', 'od', 'op', 'ot', 'plk', 'pud',
           'reid', 'rid', 'sev', 'sict', 'sid', 'sip', 'sitmi', 'srt', 'ssic',
           'suid', 'tdc', 'te', 'thn', 'tht', 'tid', 'tpid', 'tpt', 'trc', 'ts',
           'tsd', 'ttdt', 'ttr', 'upfc', 'upfv', 'ut', 'von', 'wl', 'zfh', 'zfn',
-          'zmfh', 'zmfn', 'zu'];
-        for (def key : knownKeys) {
+          'zmfh', 'zmfn', 'zu'
+        ]
+      source: >
+        for (def key : params.knownKeys) {
           if (ctx.o365audit.Data.flattened.containsKey(key)) {
             ctx.o365audit.Data[key] = ctx.o365audit.Data.flattened[key];
           }
@@ -1295,6 +1468,11 @@ processors:
       field: o365audit.Data.sip
       type: ip
       ignore_missing: true
+      if: ctx.o365audit?.Data?.sip != ''
+      on_failure:
+        - remove:
+            field: o365audit.Data.sip
+            ignore_missing: true
   - date:
       field: o365audit.Data.at
       target_field: o365audit.Data.at
@@ -1386,15 +1564,18 @@ processors:
       lang: painless
       tag: script_known_Data.Entities
       if: ctx.o365audit?.Data?.flattened?.Entities instanceof List
+      params:
+        knownEntityKeys: [
+          'InternetMessageId', 'NetworkMessageId', 'OriginalDeliveryLocation',
+          'P1Sender', 'P2Sender', 'PhishConfidenceLevel', 'Recipient', 'SenderIP', 'Subject',
+          'ThreatDetectionMethods', 'Upn'
+        ]
       source: >
         ctx._tmp = [:];
         ctx._tmp.entities = [:];
-        def knownEntityKeys = ['InternetMessageId', 'NetworkMessageId', 'OriginalDeliveryLocation', 
-          'P1Sender', 'P2Sender', 'PhishConfidenceLevel', 'Recipient', 'SenderIP', 'Subject',
-          'ThreatDetectionMethods', 'Upn'];
         for (def entity: ctx.o365audit.Data.flattened.Entities) {
           if (entity instanceof Map) {
-            for (def key : knownEntityKeys) {
+            for (def key : params.knownEntityKeys) {
               if (! ctx._tmp.entities.containsKey(key)) {
                 ctx._tmp.entities[key] = [];
               }
@@ -1492,6 +1673,26 @@ processors:
       target_field: o365audit.PhishConfidenceLevel
       tag: rename_entities.PhishConfidenceLevel
       ignore_missing: true
+  - set:
+      field: device.id
+      copy_from: o365audit.AppAccessContext.DeviceId
+      tag: set_device_id_from_AppAccessContext_DeviceID
+      ignore_empty_value: true
+  - set:
+      field: session.id
+      copy_from: o365audit.AppAccessContext.AADSessionId
+      tag: set_session_id_from_AppAccessContext_AADSessionId
+      ignore_empty_value: true
+  - set:
+      field: token.id
+      copy_from: o365audit.AppAccessContext.UniqueTokenId
+      tag: set_token_id_from_AppAccessContext_UniqueTokenId
+      ignore_empty_value: true
+  - set:
+      field: application.name
+      copy_from: o365audit.ApplicationDisplayName
+      tag: set_application_name
+      ignore_empty_value: true
   - script:
       description: Handle _tmp.entities.ThreatDetectionMethods containing list of lists.
       lang: painless

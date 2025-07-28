@@ -1,0 +1,1795 @@
+---
+description: Pipeline for processing Event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_to_palo_alto_networks
+      value: Palo Alto Networks
+  - set:
+      field: observer.product
+      tag: set_observer_name_to_cortex_xdr
+      value: Cortex XDR
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json._id
+      tag: rename_id_to_xdr_event_id
+      target_field: panw_cortex.xdr.event.id
+      ignore_missing: true
+  - rename:
+      field: json.uuid
+      tag: rename_uuid_to_xdr_event_uuid
+      target_field: panw_cortex.xdr.event.uuid
+      ignore_missing: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id_from_xdr_event_id
+      copy_from: panw_cortex.xdr.event.id
+      ignore_empty_value: true
+  - set:
+      field: process.entity_id
+      if: ctx.process?.entity_id == null
+      tag: set_process_entity_id_from_xdr_event_uuid
+      copy_from: panw_cortex.xdr.event.uuid
+      ignore_empty_value: true
+  - date:
+      field: json.action_boot_time
+      tag: date_action_boot_time
+      target_field: panw_cortex.xdr.event.action.boot_time
+      formats:
+        - ISO8601
+      if: ctx.json?.action_boot_time != null && ctx.json.action_boot_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.action_file_access_time
+      tag: date_action_file_access_time
+      target_field: panw_cortex.xdr.event.action.file.access_time
+      formats:
+        - ISO8601
+      if: ctx.json?.action_file_access_time != null && ctx.json.action_file_access_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.accessed
+      tag: set_file_accessed_from_xdr_event_action_file_access_time
+      copy_from: panw_cortex.xdr.event.action.file.access_time
+      ignore_empty_value: true
+  - rename:
+      field: json.action_file_attributes
+      tag: rename_action_file_attributes
+      target_field: panw_cortex.xdr.event.action.file.attributes
+      ignore_missing: true
+  - append:
+      field: file.attributes
+      tag: append_panw_cortex_xdr_event_action_file_attributes_into_file_attributes
+      value: '{{{panw_cortex.xdr.event.action.file.attributes}}}'
+      allow_duplicates: false
+      if: ctx.panw_cortex?.xdr?.event?.action?.file?.attributes != null
+  - date:
+      field: json.action_file_create_time
+      tag: date_action_file_create_time
+      target_field: panw_cortex.xdr.event.action.file.create_time
+      formats:
+        - ISO8601
+      if: ctx.json?.action_file_create_time != null && ctx.json.action_file_create_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.created
+      tag: set_file_created_from_xdr_event_action_file_create_time
+      copy_from: panw_cortex.xdr.event.action.file.create_time
+      ignore_empty_value: true
+  - rename:
+      field: json.action_file_device_type
+      tag: rename_action_file_device_type
+      target_field: panw_cortex.xdr.event.action.file.device_type
+      ignore_missing: true
+  - rename:
+      field: json.action_file_group
+      tag: rename_action_file_group
+      target_field: panw_cortex.xdr.event.action.file.group
+      ignore_missing: true
+  - set:
+      field: file.gid
+      tag: set_file_gid_from_xdr_event_action_file_group
+      copy_from: panw_cortex.xdr.event.action.file.group
+      ignore_empty_value: true
+  - rename:
+      field: json.action_file_group_name
+      tag: rename_action_file_group_name
+      target_field: panw_cortex.xdr.event.action.file.group_name
+      ignore_missing: true
+  - set:
+      field: file.group
+      tag: set_file_group_from_xdr_event_action_file_group_name
+      copy_from: panw_cortex.xdr.event.action.file.group_name
+      ignore_empty_value: true
+  - convert:
+      field: json.action_file_is_anonymous
+      tag: convert_action_file_is_anonymous_to_boolean
+      target_field: panw_cortex.xdr.event.action.file.is_anonymous
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_file_last_writer_actor
+      tag: rename_action_file_last_writer_actor
+      target_field: panw_cortex.xdr.event.action.file.last_writer_actor
+      ignore_missing: true
+  - rename:
+      field: json.action_file_md5
+      tag: rename_action_file_md5
+      target_field: panw_cortex.xdr.event.action.file.md5
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_xdr_event_action_file_md5
+      copy_from: panw_cortex.xdr.event.action.file.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_panw_cortex_xdr_event_action_file_md5_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.file.md5}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.file?.md5 != null
+      allow_duplicates: false
+  - date:
+      field: json.action_file_mod_time
+      tag: date_action_file_mod_time
+      target_field: panw_cortex.xdr.event.action.file.mod_time
+      formats:
+        - ISO8601
+      if: ctx.json?.action_file_mod_time != null && ctx.json.action_file_mod_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.mtime
+      tag: set_file_mtime_from_xdr_event_action_file_mod_time
+      copy_from: panw_cortex.xdr.event.action.file.mod_time
+      ignore_empty_value: true
+  - rename:
+      field: json.action_file_mode
+      tag: rename_action_file_mode
+      target_field: panw_cortex.xdr.event.action.file.mode
+      ignore_missing: true
+  - set:
+      field: file.mode
+      tag: set_file_mode_from_xdr_event_action_file_mode
+      copy_from: panw_cortex.xdr.event.action.file.mode
+      ignore_empty_value: true
+  - foreach:
+      field: json.action_file_name
+      if: ctx.json?.action_file_name instanceof List
+      tag: foreach_action_file_name_into_file_name
+      processor:
+        append:
+          field: file.name
+          tag: append_action_file_name_into_file_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.action_file_name
+      tag: rename_action_file_name
+      target_field: panw_cortex.xdr.event.action.file.name
+      ignore_missing: true
+  - rename:
+      field: json.action_file_operation_flags
+      tag: rename_action_file_operation_flags
+      target_field: panw_cortex.xdr.event.action.file.operation_flags
+      ignore_missing: true
+  - rename:
+      field: json.action_file_owner
+      tag: rename_action_file_owner
+      target_field: panw_cortex.xdr.event.action.file.owner
+      ignore_missing: true
+  - rename:
+      field: json.action_file_owner_name
+      tag: rename_action_file_owner_name
+      target_field: panw_cortex.xdr.event.action.file.owner_name
+      ignore_missing: true
+  - set:
+      field: file.owner
+      tag: set_file_owner_from_xdr_event_action_file_owner_name
+      copy_from: panw_cortex.xdr.event.action.file.owner_name
+      ignore_empty_value: true
+  - foreach:
+      field: json.action_file_path
+      if: ctx.json?.action_file_path instanceof List
+      tag: foreach_action_file_path_into_file_path
+      processor:
+        append:
+          field: file.path
+          tag: append_action_file_path_into_file_path
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.action_file_path
+      tag: rename_action_file_path
+      target_field: panw_cortex.xdr.event.action.file.path
+      ignore_missing: true
+  - rename:
+      field: json.action_file_pe_info
+      tag: rename_action_file_pe_info
+      target_field: panw_cortex.xdr.event.action.file.pe_info
+      ignore_missing: true
+  - set:
+      field: file.pe.description
+      tag: set_file_pe_description_from_xdr_event_action_file_pe_info
+      copy_from: panw_cortex.xdr.event.action.file.pe_info
+      ignore_empty_value: true
+  - rename:
+      field: json.action_file_prev_type
+      tag: rename_action_file_prev_type
+      target_field: panw_cortex.xdr.event.action.file.prev_type
+      ignore_missing: true
+  - rename:
+      field: json.action_file_previous_file_name
+      tag: rename_action_file_previous_file_name
+      target_field: panw_cortex.xdr.event.action.file.previous_file_name
+      ignore_missing: true
+  - rename:
+      field: json.action_file_previous_file_path
+      tag: rename_action_file_previous_file_path
+      target_field: panw_cortex.xdr.event.action.file.previous_file_path
+      ignore_missing: true
+  - rename:
+      field: json.action_file_sha256
+      tag: rename_action_file_sha256
+      target_field: panw_cortex.xdr.event.action.file.sha256
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_xdr_event_action_file_sha256
+      copy_from: panw_cortex.xdr.event.action.file.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_action_file_sha256_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.file.sha256}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.file?.sha256 != ''
+      allow_duplicates: false
+  - convert:
+      field: json.action_file_signature_is_embedded
+      tag: convert_action_file_signature_is_embedded_to_boolean
+      target_field: panw_cortex.xdr.event.action.file.signature_is_embedded
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.code_signature.exists
+      tag: set_file_code_signature_exists_from_xdr_event_action_file_signature_is_embedded
+      copy_from: panw_cortex.xdr.event.action.file.signature_is_embedded
+      ignore_empty_value: true
+  - rename:
+      field: json.action_file_signature_product
+      tag: rename_action_file_signature_product
+      target_field: panw_cortex.xdr.event.action.file.signature_product
+      ignore_missing: true
+  - rename:
+      field: json.action_file_signature_status
+      tag: rename_action_file_signature_status
+      target_field: panw_cortex.xdr.event.action.file.signature_status
+      ignore_missing: true
+  - rename:
+      field: json.action_file_signature_vendor
+      tag: rename_action_file_signature_vendor
+      target_field: panw_cortex.xdr.event.action.file.signature_vendor
+      ignore_missing: true
+  - convert:
+      field: json.action_file_size
+      tag: convert_action_file_size_to_long
+      target_field: panw_cortex.xdr.event.action.file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_xdr_event_action_file_size
+      copy_from: panw_cortex.xdr.event.action.file.size
+      ignore_empty_value: true
+  - rename:
+      field: json.action_file_type
+      tag: rename_action_file_type
+      target_field: panw_cortex.xdr.event.action.file.type
+      ignore_missing: true
+  - set:
+      field: file.type
+      tag: set_file_type_from_xdr_event_action_file_type
+      copy_from: panw_cortex.xdr.event.action.file.type
+      ignore_empty_value: true
+  - foreach:
+      field: json.action_local_ip
+      if: ctx.json?.action_local_ip instanceof List
+      tag: foreach_action_local_ip_convert_to_ip
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_action_local_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.action_local_ip
+      if: ctx.json?.action_local_ip instanceof List
+      tag: foreach_action_local_ip_append_into_source_ip
+      processor:
+        append:
+          field: source.ip
+          tag: append_action_local_ip_into_source_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.action_local_ip
+      if: ctx.json?.action_local_ip instanceof List
+      tag: foreach_action_local_ip_append_into_related_ip
+      processor:
+        append:
+          field: related.ip
+          tag: append_action_local_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.action_local_ip
+      tag: rename_action_local_ip
+      target_field: panw_cortex.xdr.event.action.local_ip
+      ignore_missing: true
+  - foreach:
+      field: json.action_local_port
+      if: ctx.json?.action_local_port instanceof List
+      tag: foreach_action_local_port_convert_to_long
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_action_local_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.action_local_port
+      if: ctx.json?.action_local_port instanceof List
+      tag: foreach_action_local_port_append_into_source_port
+      processor:
+        append:
+          field: source.port
+          tag: append_action_local_port_into_source_port
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.action_local_port
+      tag: rename_action_local_port
+      target_field: panw_cortex.xdr.event.action.local_port
+      ignore_missing: true
+  - rename:
+      field: json.action_module_base_address
+      tag: rename_action_module_base_address
+      target_field: panw_cortex.xdr.event.action.module.base_address
+      ignore_missing: true
+  - rename:
+      field: json.action_module_boot_code_integrity
+      tag: rename_action_module_boot_code_integrity
+      target_field: panw_cortex.xdr.event.action.module.boot_code_integrity
+      ignore_missing: true
+  - rename:
+      field: json.action_module_code_integrity
+      tag: rename_action_module_code_integrity
+      target_field: panw_cortex.xdr.event.action.module.code_integrity
+      ignore_missing: true
+  - rename:
+      field: json.action_module_file_info
+      tag: rename_action_module_file_info
+      target_field: panw_cortex.xdr.event.action.module.file_info
+      ignore_missing: true
+  - convert:
+      field: json.action_module_image_size
+      tag: convert_action_module_image_size_to_double
+      target_field: panw_cortex.xdr.event.action.module.image_size
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_module_last_writer_actor
+      tag: rename_action_module_last_writer_actor
+      target_field: panw_cortex.xdr.event.action.module.last_writer_actor
+      ignore_missing: true
+  - rename:
+      field: json.action_module_md5
+      tag: rename_action_module_md5
+      target_field: panw_cortex.xdr.event.action.module.md5
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_action_module_md5_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.module.md5}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.module?.md5 != ''
+      allow_duplicates: false
+  - rename:
+      field: json.action_module_other_load_location
+      tag: rename_action_module_other_load_location
+      target_field: panw_cortex.xdr.event.action.module.other_load_location
+      ignore_missing: true
+  - rename:
+      field: json.action_module_page_protection
+      tag: rename_action_module_page_protection
+      target_field: panw_cortex.xdr.event.action.module.page_protection
+      ignore_missing: true
+  - rename:
+      field: json.action_module_path
+      tag: rename_action_module_path
+      target_field: panw_cortex.xdr.event.action.module.path
+      ignore_missing: true
+  - set:
+      field: package.path
+      tag: set_package_path_from_xdr_event_action_module_path
+      copy_from: panw_cortex.xdr.event.action.module.path
+      ignore_empty_value: true
+  - rename:
+      field: json.action_module_sha256
+      tag: rename_action_module_sha256
+      target_field: panw_cortex.xdr.event.action.module.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_action_module_sha256_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.module.sha256}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.module?.sha256 != ''
+      allow_duplicates: false
+  - convert:
+      field: json.action_module_signature_is_embedded
+      tag: convert_action_module_signature_is_embedded_to_boolean
+      target_field: panw_cortex.xdr.event.action.module.signature_is_embedded
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_module_signature_product
+      tag: rename_action_module_signature_product
+      target_field: panw_cortex.xdr.event.action.module.signature_product
+      ignore_missing: true
+  - rename:
+      field: json.action_module_signature_status
+      tag: rename_action_module_signature_status
+      target_field: panw_cortex.xdr.event.action.module.signature_status
+      ignore_missing: true
+  - rename:
+      field: json.action_module_signature_vendor
+      tag: rename_action_module_signature_vendor
+      target_field: panw_cortex.xdr.event.action.module.signature_vendor
+      ignore_missing: true
+  - rename:
+      field: json.action_module_system_properties
+      tag: rename_action_module_system_properties
+      target_field: panw_cortex.xdr.event.action.module.system_properties
+      ignore_missing: true
+  - rename:
+      field: json.action_network_connection_id
+      tag: rename_action_network_connection_id
+      target_field: panw_cortex.xdr.event.action.network.connection_id
+      ignore_missing: true
+  - convert:
+      field: json.action_network_is_server
+      tag: convert_action_network_is_server_to_boolean
+      target_field: panw_cortex.xdr.event.action.network.is_server
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_network_protocol
+      tag: rename_action_network_protocol
+      target_field: panw_cortex.xdr.event.action.network.protocol
+      ignore_missing: true
+  - date:
+      field: json.action_network_creation_time
+      tag: date_action_network_creation_time
+      target_field: panw_cortex.xdr.event.action.network.creation_time
+      formats:
+        - ISO8601
+      if: ctx.json?.action_network_creation_time != null && ctx.json.action_network_creation_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_xdr_event_action_network_protocol
+      copy_from: panw_cortex.xdr.event.action.network.protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - convert:
+      field: json.action_network_stats_is_last
+      tag: convert_action_network_stats_is_last_to_boolean
+      target_field: panw_cortex.xdr.event.action.network.stats_is_last
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_powered_off
+      tag: rename_action_powered_off
+      target_field: panw_cortex.xdr.event.action.powered_off
+      ignore_missing: true
+  - rename:
+      field: json.action_process_fds
+      tag: rename_action_process_fds
+      target_field: panw_cortex.xdr.event.action.process.fds
+      ignore_missing: true
+  - rename:
+      field: json.action_process_image_command_line
+      tag: rename_action_process_image_command_line
+      target_field: panw_cortex.xdr.event.action.process.image_command_line
+      ignore_missing: true
+  - rename:
+      field: json.action_process_image_extension
+      tag: rename_action_process_image_extension
+      target_field: panw_cortex.xdr.event.action.process.image_extension
+      ignore_missing: true
+  - rename:
+      field: json.action_process_image_md5
+      tag: rename_action_process_image_md5
+      target_field: panw_cortex.xdr.event.action.process.image_md5
+      ignore_missing: true
+  - set:
+      field: process.hash.md5
+      tag: set_process_hash_md5_from_xdr_event_action_process_image_md5
+      copy_from: panw_cortex.xdr.event.action.process.image_md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_process_hash_md5_from_xdr_event_action_process_image_md5_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.process.image_md5}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.process?.image_md5 != ''
+      allow_duplicates: false
+  - rename:
+      field: json.action_process_image_name
+      tag: rename_action_process_image_name
+      target_field: panw_cortex.xdr.event.action.process.image_name
+      ignore_missing: true
+  - rename:
+      field: json.action_process_image_path
+      tag: rename_action_process_image_path
+      target_field: panw_cortex.xdr.event.action.process.image_path
+      ignore_missing: true
+  - rename:
+      field: json.action_process_image_sha256
+      tag: rename_action_process_image_sha256
+      target_field: panw_cortex.xdr.event.action.process.image_sha256
+      ignore_missing: true
+  - set:
+      field: process.hash.sha256
+      tag: set_process_hash_sha256_from_xdr_event_action_process_image_sha256
+      copy_from: panw_cortex.xdr.event.action.process.image_sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_process_hash_sha256_from_xdr_event_action_process_image_sha256_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.process.image_sha256}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.process?.image_sha256 != ''
+      allow_duplicates: false
+  - convert:
+      field: json.action_process_in_txn
+      tag: convert_action_process_in_txn_to_boolean
+      target_field: panw_cortex.xdr.event.action.process.in_txn
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.action_process_instance_execution_time
+      tag: date_action_process_instance_execution_time
+      target_field: panw_cortex.xdr.event.action.process.instance_execution_time
+      formats:
+        - ISO8601
+      if: ctx.json?.action_process_instance_execution_time != null && ctx.json.action_process_instance_execution_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_process_instance_id
+      tag: rename_action_process_instance_id
+      target_field: panw_cortex.xdr.event.action.process.instance_id
+      ignore_missing: true
+  - rename:
+      field: json.action_process_integrity_level
+      tag: rename_action_process_integrity_level
+      target_field: panw_cortex.xdr.event.action.process.integrity_level
+      ignore_missing: true
+  - rename:
+      field: json.action_process_last_writer_actor
+      tag: rename_action_process_last_writer_actor
+      target_field: panw_cortex.xdr.event.action.process.last_writer_actor
+      ignore_missing: true
+  - convert:
+      field: json.action_process_os_pid
+      tag: convert_action_process_os_pid_to_long
+      target_field: panw_cortex.xdr.event.action.process.os_pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.pid
+      tag: set_process_pid_from_xdr_event_action_process_os_pid
+      copy_from: panw_cortex.xdr.event.action.process.os_pid
+      ignore_empty_value: true
+  - rename:
+      field: json.action_process_pe_load_info
+      tag: rename_action_process_pe_load_info
+      target_field: panw_cortex.xdr.event.action.process.pe_load_info
+      ignore_missing: true
+  - set:
+      field: process.pe.description
+      tag: set_process_pe_description_from_xdr_event_action_process_pe_load_info
+      copy_from: panw_cortex.xdr.event.action.process.pe_load_info
+      ignore_empty_value: true
+  - rename:
+      field: json.action_process_peb
+      tag: rename_action_process_peb
+      target_field: panw_cortex.xdr.event.action.process.peb
+      ignore_missing: true
+  - rename:
+      field: json.action_process_peb32
+      tag: rename_action_process_peb32
+      target_field: panw_cortex.xdr.event.action.process.peb32
+      ignore_missing: true
+  - rename:
+      field: json.action_process_privileges
+      tag: rename_action_process_privileges
+      target_field: panw_cortex.xdr.event.action.process.privileges
+      ignore_missing: true
+  - rename:
+      field: json.action_process_scheduled_task_name
+      tag: rename_action_process_scheduled_task_name
+      target_field: panw_cortex.xdr.event.action.process.scheduled_task_name
+      ignore_missing: true
+  - convert:
+      field: json.action_process_signature_is_embedded
+      tag: convert_action_process_signature_is_embedded_to_boolean
+      target_field: panw_cortex.xdr.event.action.process.signature_is_embedded
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.code_signature.exists
+      tag: set_process_code_signature_exists_from_xdr_event_action_process_signature_is_embedded
+      copy_from: panw_cortex.xdr.event.action.process.signature_is_embedded
+      ignore_empty_value: true
+  - rename:
+      field: json.action_process_signature_product
+      tag: rename_action_process_signature_product
+      target_field: panw_cortex.xdr.event.action.process.signature_product
+      ignore_missing: true
+  - foreach:
+      field: json.action_process_signature_status
+      if: ctx.json?.action_process_signature_status instanceof List
+      tag: foreach_action_process_signature_status
+      processor:
+        append:
+          field: process.code_signature.status
+          tag: append_action_process_signature_status_into_process_code_signature_status
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.action_process_signature_status
+      tag: rename_action_process_signature_status
+      target_field: panw_cortex.xdr.event.action.process.signature_status
+      ignore_missing: true
+  - rename:
+      field: json.action_process_signature_vendor
+      tag: rename_action_process_signature_vendor
+      target_field: panw_cortex.xdr.event.action.process.signature_vendor
+      ignore_missing: true
+  - set:
+      field: process.code_signature.subject_name
+      tag: set_process_code_signature_subject_name_from_xdr_event_action_process_signature_vendor
+      copy_from: panw_cortex.xdr.event.action.process.signature_vendor
+      ignore_empty_value: true
+  - convert:
+      field: json.action_process_termination_code
+      tag: convert_action_process_termination_code_to_long
+      target_field: panw_cortex.xdr.event.action.process.termination_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.exit_code
+      tag: set_process_exit_code_from_xdr_event_action_process_termination_code
+      copy_from: panw_cortex.xdr.event.action.process.termination_code
+      ignore_empty_value: true
+  - date:
+      field: json.action_process_termination_date
+      tag: date_action_process_termination_date
+      target_field: panw_cortex.xdr.event.action.process.termination_date
+      formats:
+        - ISO8601
+      if: ctx.json?.action_process_termination_date != null && ctx.json.action_process_termination_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.end
+      tag: set_process_end_from_xdr_event_action_process_termination_date
+      copy_from: panw_cortex.xdr.event.action.process.termination_date
+      ignore_empty_value: true
+  - rename:
+      field: json.action_process_token
+      tag: rename_action_process_token
+      target_field: panw_cortex.xdr.event.action.process.token
+      ignore_missing: true
+  - rename:
+      field: json.action_process_user_sid
+      tag: rename_action_process_user_sid
+      target_field: panw_cortex.xdr.event.action.process.user_sid
+      ignore_missing: true
+  - set:
+      field: process.entry_leader.attested_user.id
+      tag: set_process_entry_leader_attested_user_id_from_xdr_event_action_process_user_sid
+      copy_from: panw_cortex.xdr.event.action.process.user_sid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_from_xdr_event_action_process_user_sid
+      value: '{{{panw_cortex.xdr.event.action.process.user_sid}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.process?.user_sid != null
+      allow_duplicates: false
+  - rename:
+      field: json.action_process_username
+      tag: rename_action_process_username
+      target_field: panw_cortex.xdr.event.action.process.username
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_related_user_from_xdr_event_action_process_username
+      value: '{{{panw_cortex.xdr.event.action.process.username}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.process?.username != null
+      allow_duplicates: false
+  - set:
+      field: process.entry_leader.attested_user.name
+      tag: set_process_entry_leader_attested_user_name_from_xdr_event_action_process_username
+      copy_from: panw_cortex.xdr.event.action.process.username
+      ignore_empty_value: true
+  - rename:
+      field: json.action_registry_data
+      tag: rename_action_registry_data
+      target_field: panw_cortex.xdr.event.action.registry.data
+      ignore_missing: true
+  - set:
+      field: registry.data.bytes
+      tag: set_registry_data_bytes_from_xdr_event_action_registry_data
+      copy_from: panw_cortex.xdr.event.action.registry.data
+      ignore_empty_value: true
+  - rename:
+      field: json.action_registry_file_path
+      tag: rename_action_registry_file_path
+      target_field: panw_cortex.xdr.event.action.registry.file_path
+      ignore_missing: true
+  - set:
+      field: registry.path
+      tag: set_registry_path_from_xdr_event_action_registry_file_path
+      copy_from: panw_cortex.xdr.event.action.registry.file_path
+      ignore_empty_value: true
+  - rename:
+      field: json.action_registry_key_name
+      tag: rename_action_registry_key_name
+      target_field: panw_cortex.xdr.event.action.registry.key_name
+      ignore_missing: true
+  - set:
+      field: registry.key
+      tag: set_registry_key_from_xdr_event_action_registry_key_name
+      copy_from: panw_cortex.xdr.event.action.registry.key_name
+      ignore_empty_value: true
+  - rename:
+      field: json.action_registry_old_key_name
+      tag: rename_action_registry_old_key_name
+      target_field: panw_cortex.xdr.event.action.registry.old_key_name
+      ignore_missing: true
+  - rename:
+      field: json.action_registry_return_val
+      tag: rename_action_registry_return_val
+      target_field: panw_cortex.xdr.event.action.registry.return_val
+      ignore_missing: true
+  - rename:
+      field: json.action_registry_value_name
+      tag: rename_action_registry_value_name
+      target_field: panw_cortex.xdr.event.action.registry.value_name
+      ignore_missing: true
+  - set:
+      field: registry.value
+      tag: set_registry_value_from_xdr_event_action_registry_value_name
+      copy_from: panw_cortex.xdr.event.action.registry.value_name
+      ignore_empty_value: true
+  - rename:
+      field: json.action_registry_value_type
+      tag: rename_action_registry_value_type
+      target_field: panw_cortex.xdr.event.action.registry.value_type
+      ignore_missing: true
+  - foreach:
+      field: json.action_remote_ip
+      if: ctx.json?.action_remote_ip instanceof List
+      tag: foreach_action_remote_ip_convert_to_ip
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_action_remote_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.action_remote_ip
+      if: ctx.json?.action_remote_ip instanceof List
+      tag: foreach_action_remote_ip_append_into_destination_ip
+      processor:
+        append:
+          field: destination.ip
+          tag: append_action_remote_ip_into_destination_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.action_remote_ip
+      if: ctx.json?.action_remote_ip instanceof List
+      tag: foreach_action_remote_ip_append_into_related_ip
+      processor:
+        append:
+          field: related.ip
+          tag: append_action_remote_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.action_remote_ip
+      tag: rename_action_remote_ip
+      target_field: panw_cortex.xdr.event.action.remote_ip
+      ignore_missing: true
+  - foreach:
+      field: json.action_remote_port
+      if: ctx.json?.action_remote_port instanceof List
+      tag: foreach_action_remote_port_convert_to_long
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_action_remote_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.action_remote_port
+      tag: foreach_append_json_action_remote_port_to_destination_port
+      if: ctx.json?.action_remote_port instanceof List
+      processor:
+        append:
+          field: destination.port
+          tag: append_json_action_remote_port_into_destination_port
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.action_remote_port
+      tag: rename_action_remote_port
+      target_field: panw_cortex.xdr.event.action.remote_port
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_image_command_line
+      tag: rename_action_remote_process_image_command_line
+      target_field: panw_cortex.xdr.event.action.remote_process.image_command_line
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_image_md5
+      tag: rename_action_remote_process_image_md5
+      target_field: panw_cortex.xdr.event.action.remote_process.image_md5
+      ignore_missing: true
+  - append:
+      field: process.hash.md5
+      tag: append_panw_cortex_xdr_event_action_remote_process_image_md5_into_process_hash_md5
+      value: '{{{panw_cortex.xdr.event.action.remote_process.image_md5}}}'
+      allow_duplicates: false
+      if: ctx.panw_cortex?.xdr?.event?.action?.remote_process?.image_md5 != null
+  - append:
+      field: related.hash
+      tag: append_panw_cortex_xdr_event_action_remote_process_image_md5_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.remote_process.image_md5}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.remote_process?.image_md5 != ''
+      allow_duplicates: false
+  - rename:
+      field: json.action_remote_process_image_name
+      tag: rename_action_remote_process_image_name
+      target_field: panw_cortex.xdr.event.action.remote_process.image_name
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_image_path
+      tag: rename_action_remote_process_image_path
+      target_field: panw_cortex.xdr.event.action.remote_process.image_path
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_image_sha256
+      tag: rename_action_remote_process_image_sha256
+      target_field: panw_cortex.xdr.event.action.remote_process.image_sha256
+      ignore_missing: true
+  - append:
+      field: process.hash.sha256
+      tag: append_panw_cortex_xdr_event_action_remote_process_image_sha256_into_process_hash_sha256
+      value: '{{{panw_cortex.xdr.event.action.remote_process.image_sha256}}}'
+      allow_duplicates: false
+      if: ctx.panw_cortex?.xdr?.event?.action?.remote_process?.image_sha256 != ''
+  - append:
+      field: related.hash
+      tag: append_panw_cortex_xdr_event_action_remote_process_image_sha256_into_related_hash
+      value: '{{{panw_cortex.xdr.event.action.remote_process.image_sha256}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.remote_process?.image_sha256 != ''
+      allow_duplicates: false
+  - rename:
+      field: json.action_remote_process_instance_id
+      tag: rename_action_remote_process_instance_id
+      target_field: panw_cortex.xdr.event.action.remote_process.instance_id
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_integrity_level
+      tag: rename_action_remote_process_integrity_level
+      target_field: panw_cortex.xdr.event.action.remote_process.integrity_level
+      ignore_missing: true
+  - convert:
+      field: json.action_remote_process_os_pid
+      tag: convert_action_remote_process_os_pid_to_long
+      target_field: panw_cortex.xdr.event.action.remote_process.os_pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.entry_leader.pid
+      tag: set_process_entry_leader_pid_from_xdr_event_action_remote_process_os_pid
+      copy_from: panw_cortex.xdr.event.action.remote_process.os_pid
+      ignore_empty_value: true
+  - convert:
+      field: json.action_remote_process_signature_is_embedded
+      tag: convert_action_remote_process_signature_is_embedded_to_boolean
+      target_field: panw_cortex.xdr.event.action.remote_process.signature_is_embedded
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_remote_process_signature_product
+      tag: rename_action_remote_process_signature_product
+      target_field: panw_cortex.xdr.event.action.remote_process.signature_product
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_signature_status
+      tag: rename_action_remote_process_signature_status
+      target_field: panw_cortex.xdr.event.action.remote_process.signature_status
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_signature_vendor
+      tag: rename_action_remote_process_signature_vendor
+      target_field: panw_cortex.xdr.event.action.remote_process.signature_vendor
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_thread_id
+      tag: rename_action_remote_process_thread_id
+      target_field: panw_cortex.xdr.event.action.remote_process.thread_id
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_thread_start_address
+      tag: rename_action_remote_process_thread_start_address
+      target_field: panw_cortex.xdr.event.action.remote_process.thread_start_address
+      ignore_missing: true
+  - rename:
+      field: json.action_remote_process_user_sid
+      tag: rename_action_remote_process_user_sid
+      target_field: panw_cortex.xdr.event.action.remote_process.user_sid
+      ignore_missing: true
+  - set:
+      field: process.entry_leader.user.id
+      tag: set_process_entry_leader_user_id_from_xdr_event_action_remote_process_user_sid
+      copy_from: panw_cortex.xdr.event.action.remote_process.user_sid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_from_xdr_event_action_remote_process_user_sid
+      value: '{{{panw_cortex.xdr.event.action.remote_process.user_sid}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.remote_process?.user_sid != ''
+      allow_duplicates: false
+  - rename:
+      field: json.action_remote_process_username
+      tag: rename_action_remote_process_username
+      target_field: panw_cortex.xdr.event.action.remote_process.username
+      ignore_missing: true
+  - set:
+      field: process.entry_leader.user.name
+      tag: set_process_entry_leader_user_name_from_xdr_event_action_remote_process_username
+      copy_from: panw_cortex.xdr.event.action.remote_process.username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_from_xdr_event_action_remote_process_username
+      value: '{{{panw_cortex.xdr.event.action.remote_process.username}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.remote_process?.username != ''
+      allow_duplicates: false
+  - rename:
+      field: json.action_socket_type
+      tag: rename_action_socket_type
+      target_field: panw_cortex.xdr.event.action.socket_type
+      ignore_missing: true
+  - convert:
+      field: json.action_total_download
+      tag: convert_action_total_download_to_long
+      target_field: panw_cortex.xdr.event.action.total_download
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.action_total_upload
+      tag: convert_action_total_upload_to_long
+      target_field: panw_cortex.xdr.event.action.total_upload
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.action_user_is_local_session
+      tag: convert_action_user_is_local_session_to_boolean
+      target_field: panw_cortex.xdr.event.action.user_is_local_session
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action_user_session_id
+      tag: rename_action_user_session_id
+      target_field: panw_cortex.xdr.event.action.user_session_id
+      ignore_missing: true
+  - rename:
+      field: json.action_user_status
+      tag: rename_action_user_status
+      target_field: panw_cortex.xdr.event.action.user_status
+      ignore_missing: true
+  - rename:
+      field: json.action_user_status_sid
+      tag: rename_action_user_status_sid
+      target_field: panw_cortex.xdr.event.action.user_status_sid
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_xdr_event_action_user_status_sid
+      copy_from: panw_cortex.xdr.event.action.user_status_sid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_from_xdr_event_action_user_status_sid
+      value: '{{{panw_cortex.xdr.event.action.user_status_sid}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.user_status_sid != ''
+      allow_duplicates: false
+  - rename:
+      field: json.action_username
+      tag: rename_action_username
+      target_field: panw_cortex.xdr.event.action.username
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_xdr_event_action_username
+      copy_from: panw_cortex.xdr.event.action.username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_from_xdr_event_action_username
+      value: '{{{panw_cortex.xdr.event.action.username}}}'
+      if: ctx.panw_cortex?.xdr?.event?.action?.username != ''
+      allow_duplicates: false
+  - rename:
+      field: json.address_mapping
+      tag: rename_address_mapping
+      target_field: panw_cortex.xdr.event.address_mapping
+      ignore_missing: true
+  - rename:
+      field: json.agent_content_version
+      tag: rename_agent_content_version
+      target_field: panw_cortex.xdr.event.agent.content_version
+      ignore_missing: true
+  - set:
+      field: agent.version
+      tag: set_agent_version_from_xdr_event_agent_content_version
+      copy_from: panw_cortex.xdr.event.agent.content_version
+      ignore_empty_value: true
+  - rename:
+      field: json.agent_hostname
+      tag: rename_agent_hostname
+      target_field: panw_cortex.xdr.event.agent.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_xdr_event_agent_hostname
+      value: '{{{panw_cortex.xdr.event.agent.hostname}}}'
+      if: ctx.panw_cortex?.xdr?.event?.agent?.hostname != ''
+      allow_duplicates: false
+  - rename:
+      field: json.agent_id
+      tag: rename_agent_id
+      target_field: panw_cortex.xdr.event.agent.id
+      ignore_missing: true
+  - set:
+      field: agent.id
+      tag: set_agent_id_from_xdr_event_agent_id
+      copy_from: panw_cortex.xdr.event.agent.id
+      ignore_empty_value: true
+  - rename:
+      field: json.agent_interface_map
+      tag: rename_agent_interface_map
+      target_field: panw_cortex.xdr.event.agent.interface_map
+      ignore_missing: true
+  - foreach:
+      field: json.agent_ip_addresses
+      if: ctx.json?.agent_ip_addresses instanceof List
+      tag: foreach_convert_agent_ip_addresses_to_ip
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_agent_ip_addresses_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.agent_ip_addresses
+      if: ctx.json?.agent_ip_addresses instanceof List
+      tag: foreach_agent_ip_addresses_append_into_related_ip
+      processor:
+        append:
+          field: related.ip
+          tag: append_agent_ip_addresses_v6_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.agent_ip_addresses
+      tag: rename_agent_ip_addresses_to panw_cortex_xdr_event_agent_ip_addresses
+      target_field: panw_cortex.xdr.event.agent.ip_addresses
+      ignore_missing: true
+  - foreach:
+      field: json.agent_ip_addresses_v6
+      if: ctx.json?.agent_ip_addresses_v6 instanceof List
+      tag: foreach_agent_ip_addresses_v6_convert_to_ip
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_agent_ip_addresses_v6_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.agent_ip_addresses_v6
+      if: ctx.json?.agent_ip_addresses_v6 instanceof List
+      tag: foreach_agent_ip_addresses_v6_append_into_related_ip
+      processor:
+        append:
+          field: related.ip
+          tag: append_agent_ip_addresses_v6_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.agent_ip_addresses_v6
+      tag: rename_agent_ip_addresses_v6
+      target_field: panw_cortex.xdr.event.agent.ip_addresses_v6
+      ignore_missing: true
+  - rename:
+      field: json.agent_os_sub_type
+      tag: rename_agent_os_sub_type
+      target_field: panw_cortex.xdr.event.agent.os_sub_type
+      ignore_missing: true
+  - rename:
+      field: json.agent_os_type
+      tag: rename_agent_os_type
+      target_field: panw_cortex.xdr.event.agent.os_type
+      ignore_missing: true
+  - rename:
+      field: json.agent_version
+      tag: rename_agent_version
+      target_field: panw_cortex.xdr.event.agent.version
+      ignore_missing: true
+  - append:
+      field: agent.version
+      tag: append_panw_cortex_xdr_event_agent_version_into_agent_version
+      value: '{{{panw_cortex.xdr.event.agent.version}}}'
+      allow_duplicates: false
+      if: ctx.panw_cortex?.xdr?.event?.agent?.version != ''
+  - rename:
+      field: json.event_id
+      tag: rename_event_id
+      target_field: panw_cortex.xdr.event.event_id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_xdr_event_event_id
+      copy_from: panw_cortex.xdr.event.event_id
+      ignore_empty_value: true
+  - rename:
+      field: json.event_rpc_func_opnum
+      tag: rename_event_rpc_func_opnum
+      target_field: panw_cortex.xdr.event.event_rpc_func_opnum
+      ignore_missing: true
+  - rename:
+      field: json.event_rpc_interface_uuid
+      tag: rename_event_rpc_interface_uuid
+      target_field: panw_cortex.xdr.event.event_rpc_interface_uuid
+      ignore_missing: true
+  - rename:
+      field: json.event_sub_type
+      tag: rename_event_sub_type
+      target_field: panw_cortex.xdr.event.event_sub_type
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_xdr_event_event_sub_type
+      copy_from: panw_cortex.xdr.event.event_sub_type
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.event_timestamp
+      if: ctx.json?.event_timestamp instanceof List
+      tag: foreach_event_timestamp_convert_into_date
+      processor:
+        date:
+          field: _ingest._value
+          tag: date_event_timestamp
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_xdr_event_event_timestamp
+      copy_from: json.event_timestamp.0 #To be changed
+      ignore_empty_value: true
+  - rename:
+      field: json.event_timestamp
+      tag: rename_event_timestamp
+      target_field: panw_cortex.xdr.event.event_timestamp
+      ignore_missing: true
+  - rename:
+      field: json.event_type
+      tag: rename_event_type
+      target_field: panw_cortex.xdr.event.event_type
+      ignore_missing: true
+  - rename:
+      field: json.event_version
+      tag: rename_event_version
+      target_field: panw_cortex.xdr.event.event_version
+      ignore_missing: true
+  - rename:
+      field: json.host_metadata_domain
+      tag: rename_host_metadata_domain
+      target_field: panw_cortex.xdr.event.host_metadata.domain
+      ignore_missing: true
+  - set:
+      field: host.domain
+      tag: set_host_domain_from_xdr_event_host_metadata_domain
+      copy_from: panw_cortex.xdr.event.host_metadata.domain
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_xdr_event_host_metadata_domain
+      value: '{{{panw_cortex.xdr.event.host_metadata.domain}}}'
+      if: ctx.panw_cortex?.xdr?.event?.host_metadata?.domain != ''
+      allow_duplicates: false
+  - rename:
+      field: json.host_metadata_hostname
+      tag: rename_host_metadata_hostname
+      target_field: panw_cortex.xdr.event.host_metadata.hostname
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_xdr_event_host_metadata_hostname
+      copy_from: panw_cortex.xdr.event.host_metadata.hostname
+      ignore_empty_value: true
+  - lowercase:
+      field: host.hostname
+      tag: lowercase_host_hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_xdr_event_host_metadata_hostname
+      value: '{{{panw_cortex.xdr.event.host_metadata.hostname}}}'
+      if: ctx.panw_cortex?.xdr?.event?.host_metadata?.hostname != ''
+      allow_duplicates: false
+  - script:
+      description: This Script processor creates a host.name field from host.hostname and host.domain.
+      tag: create_host_name_from_host_hostname_and_host_domain
+      if: ctx.host?.hostname != null && ctx.host?.domain != null
+      lang: painless
+      source: |
+        ctx.host = ctx.host ?: [:];
+        String hostname = ctx.host.hostname.toLowerCase() + '.' + ctx.host.domain.toLowerCase();
+        ctx.host.put("name", hostname);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_host_name
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != ''
+      allow_duplicates: false
+  - rename:
+      field: json.host_metadata_interface_map
+      tag: rename_host_metadata_interface_map
+      target_field: panw_cortex.xdr.event.host_metadata.interface_map
+      ignore_missing: true
+  - convert:
+      field: json.os_actor_local_ip
+      tag: convert_os_actor_local_ip_to_ip
+      target_field: panw_cortex.xdr.event.os_actor.local_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.os_actor_local_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.ip
+      tag: append_panw_cortex_xdr_event_os_actor_local_ip_into_source_ip
+      value: '{{{panw_cortex.xdr.event.os_actor.local_ip}}}'
+      allow_duplicates: false
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.local_ip != null
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{panw_cortex.xdr.event.os_actor.local_ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - convert:
+      field: json.os_actor_local_port
+      tag: convert_os_actor_local_port_to_long
+      target_field: panw_cortex.xdr.event.os_actor.local_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.port
+      tag: append_panw_cortex_xdr_event_os_actor_local_port_to_source_port
+      value: '{{{panw_cortex.xdr.event.os_actor.local_port}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.local_port != null
+      allow_duplicates: false
+  - rename:
+      field: json.os_actor_primary_user_sid
+      tag: rename_os_actor_primary_user_sid
+      target_field: panw_cortex.xdr.event.os_actor.primary_user_sid
+      ignore_missing: true
+  - append:
+      field: user.id
+      tag: append_panw_cortex_xdr_event_os_actor_primary_user_sid_into_user_id
+      value: '{{{panw_cortex.xdr.event.os_actor.primary_user_sid}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.primary_user_sid != ''
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_panw_cortex_xdr_event_os_actor_primary_user_sid_to_related_user
+      value: '{{{panw_cortex.xdr.event.os_actor.primary_user_sid}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.primary_user_sid != ''
+      allow_duplicates: false
+  - rename:
+      field: json.os_actor_primary_username
+      tag: rename_os_actor_primary_username
+      target_field: panw_cortex.xdr.event.os_actor.primary_username
+      ignore_missing: true
+  - append:
+      field: user.name
+      tag: append_panw_cortex_xdr_event_os_actor_primary_username_into_user_name
+      value: '{{{panw_cortex.xdr.event.os_actor.primary_username}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.primary_username != ''
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_panw_cortex_xdr_event_os_actor_primary_username_to_related_user
+      value: '{{{panw_cortex.xdr.event.os_actor.primary_username}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.primary_username != ''
+      allow_duplicates: false
+  - rename:
+      field: json.os_actor_process_command_line
+      tag: rename_os_actor_process_command_line
+      target_field: panw_cortex.xdr.event.os_actor.process_command_line
+      ignore_missing: true
+  - rename:
+      field: json.os_actor_process_image_md5
+      tag: rename_os_actor_process_image_md5
+      target_field: panw_cortex.xdr.event.os_actor.process_image_md5
+      ignore_missing: true
+  - append:
+      field: process.hash.md5
+      tag: append_panw_cortex_xdr_event_os_actor_process_image_md5_into_process_hash_md5
+      value: '{{{panw_cortex.xdr.event.os_actor.process_image_md5}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.process_image_md5 != ''
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_panw_cortex_xdr_event_os_actor_process_image_md5_to_related_hash
+      value: '{{{panw_cortex.xdr.event.os_actor.process_image_md5}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.process_image_md5 != ''
+      allow_duplicates: false
+  - rename:
+      field: json.os_actor_process_image_name
+      tag: rename_os_actor_process_image_name
+      target_field: panw_cortex.xdr.event.os_actor.process_image_name
+      ignore_missing: true
+  - rename:
+      field: json.os_actor_process_image_path
+      tag: rename_os_actor_process_image_path
+      target_field: panw_cortex.xdr.event.os_actor.process_image_path
+      ignore_missing: true
+  - rename:
+      field: json.os_actor_process_image_sha256
+      tag: rename_os_actor_process_image_sha256
+      target_field: panw_cortex.xdr.event.os_actor.process_image_sha256
+      ignore_missing: true
+  - append:
+      field: process.hash.sha256
+      tag: append_panw_cortex_xdr_event_os_actor_process_image_sha256_into_process_hash_sha256
+      value: '{{{panw_cortex.xdr.event.os_actor.process_image_sha256}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.process_image_sha256 != ''
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_panw_cortex_xdr_event_os_actor_process_image_sha256_to_related_hash
+      value: '{{{panw_cortex.xdr.event.os_actor.process_image_sha256}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.process_image_sha256 != ''
+      allow_duplicates: false
+  - rename:
+      field: json.os_actor_process_instance_id
+      tag: rename_os_actor_process_instance_id
+      target_field: panw_cortex.xdr.event.os_actor.process_instance_id
+      ignore_missing: true
+  - rename:
+      field: json.os_actor_process_logon_id
+      tag: rename_os_actor_process_logon_id
+      target_field: panw_cortex.xdr.event.os_actor.process_logon_id
+      ignore_missing: true
+  - rename:
+      field: json.os_actor_process_os_pid
+      tag: rename_os_actor_process_os_pid
+      target_field: panw_cortex.xdr.event.os_actor.process_os_pid
+      ignore_missing: true
+  - rename:
+      field: json.os_actor_process_signature_status
+      tag: rename_os_actor_process_signature_status
+      target_field: panw_cortex.xdr.event.os_actor.process_signature_status
+      ignore_missing: true
+  - convert:
+      field: json.os_actor_remote_ip
+      tag: convert_os_actor_remote_ip_to_ip
+      target_field: panw_cortex.xdr.event.os_actor.remote_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.os_actor_remote_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: destination.ip
+      tag: append_panw_cortex_xdr_event_os_actor_remote_ip_into_destination_ip
+      value: '{{{panw_cortex.xdr.event.os_actor.remote_ip}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.remote_ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      tag: append_panw_cortex_xdr_event_os_actor_remote_ip_into_related_ip
+      value: '{{{panw_cortex.xdr.event.os_actor.remote_ip}}}'
+      if: ctx.panw_cortex?.xdr?.event?.os_actor?.remote_ip != null
+      allow_duplicates: false
+  - rename:
+      field: json.os_actor_thread_thread_id
+      tag: rename_os_actor_thread_thread_id
+      target_field: panw_cortex.xdr.event.os_actor.thread_thread_id
+      ignore_missing: true
+  - foreach:
+      field: source.port
+      tag: foreach_convert_source_port_to_long
+      if: ctx.source?.port instanceof List
+      processor:
+        convert:
+            field: _ingest._value
+            tag: convert_source_port_to_long
+            type: long
+            ignore_missing: true
+            on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: destination.port
+      tag: foreach_convert_destination_port_to_long
+      if: ctx.destination?.port instanceof List
+      processor:
+        convert:
+            field: _ingest._value
+            tag: convert_destination_port_to_long
+            type: long
+            ignore_missing: true
+            on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - panw_cortex.xdr.event.action.file.access_time
+        - panw_cortex.xdr.event.action.file.attributes
+        - panw_cortex.xdr.event.action.file.create_time
+        - panw_cortex.xdr.event.action.file.group
+        - panw_cortex.xdr.event.action.file.group_name
+        - panw_cortex.xdr.event.action.file.md5
+        - panw_cortex.xdr.event.action.file.mod_time
+        - panw_cortex.xdr.event.action.file.mode
+        - panw_cortex.xdr.event.action.file.owner_name
+        - panw_cortex.xdr.event.action.file.pe_info
+        - panw_cortex.xdr.event.action.file.sha256
+        - panw_cortex.xdr.event.action.file.signature_is_embedded
+        - panw_cortex.xdr.event.action.file.size
+        - panw_cortex.xdr.event.action.file.type
+        - panw_cortex.xdr.event.action.module.path
+        - panw_cortex.xdr.event.action.network.protocol
+        - panw_cortex.xdr.event.action.process.image_md5
+        - panw_cortex.xdr.event.action.process.image_sha256
+        - panw_cortex.xdr.event.action.process.os_pid
+        - panw_cortex.xdr.event.action.process.pe_load_info
+        - panw_cortex.xdr.event.action.process.signature_is_embedded
+        - panw_cortex.xdr.event.action.process.signature_vendor
+        - panw_cortex.xdr.event.action.process.termination_code
+        - panw_cortex.xdr.event.action.process.termination_date
+        - panw_cortex.xdr.event.action.process.user_sid
+        - panw_cortex.xdr.event.action.process.username
+        - panw_cortex.xdr.event.action.registry.data
+        - panw_cortex.xdr.event.action.registry.file_path
+        - panw_cortex.xdr.event.action.registry.key_name
+        - panw_cortex.xdr.event.action.registry.value_name
+        - panw_cortex.xdr.event.action.remote_process.image_md5
+        - panw_cortex.xdr.event.action.remote_process.image_sha256
+        - panw_cortex.xdr.event.action.user_status_sid
+        - panw_cortex.xdr.event.action.username
+        - panw_cortex.xdr.event.agent.content_version
+        - panw_cortex.xdr.event.agent.id
+        - panw_cortex.xdr.event.agent.version
+        - panw_cortex.xdr.event.action.file.name
+        - panw_cortex.xdr.event.action.file.path
+        - panw_cortex.xdr.event.action.local_ip
+        - panw_cortex.xdr.event.action.local_port
+        - panw_cortex.xdr.event.action.process.signature_status
+        - panw_cortex.xdr.event.action.remote_ip
+        - panw_cortex.xdr.event.action.remote_port
+        - panw_cortex.xdr.event.event_id
+        - panw_cortex.xdr.event.event_sub_type
+        - panw_cortex.xdr.event.event_timestamp
+        - panw_cortex.xdr.event.host_metadata.domain
+        - panw_cortex.xdr.event.host_metadata.hostname
+        - panw_cortex.xdr.event.id
+        - panw_cortex.xdr.event.os_actor.local_ip
+        - panw_cortex.xdr.event.os_actor.local_port
+        - panw_cortex.xdr.event.os_actor.primary_user_sid
+        - panw_cortex.xdr.event.os_actor.primary_username
+        - panw_cortex.xdr.event.os_actor.process_image_md5
+        - panw_cortex.xdr.event.os_actor.process_image_sha256
+        - panw_cortex.xdr.event.os_actor.remote_ip
+        - panw_cortex.xdr.event.action.remote_process.user_sid
+        - panw_cortex.xdr.event.action.remote_process.username
+        - panw_cortex.xdr.event.action.remote_process.os_pid
+        - panw_cortex.xdr.event.uuid
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      if: ctx.error?.message != null
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}' {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}' {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

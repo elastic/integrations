@@ -13,6 +13,7 @@ For example, you could use this integration to view and track when firewall rule
 The AWS Network Firewall integration collects two types of data: logs and metrics.
 
 **Logs** help you keep a record of events happening in AWS Network Firewall.
+All three types of logs recorded by [AWS Network Firewall](https://docs.aws.amazon.com/network-firewall/latest/developerguide/firewall-logging.html) can be collected by the integration: `Flow`, `Alert` and `TLS` logs.
 Logs collected by the AWS Network Firewall integration include the observer name, source and destination IP, port, country, event type, and more. See more details in the [Logs reference](#logs-reference).
 
 **Metrics** give you insight into the state of Network Firewall.

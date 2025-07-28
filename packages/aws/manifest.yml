@@ -1,7 +1,7 @@
-format_version: 3.3.1
+format_version: 3.3.2
 name: aws
 title: AWS
-version: 3.1.0
+version: 3.13.2
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -63,6 +63,13 @@ vars:
     multi: false
     required: false
     show_user: false
+  - name: external_id
+    type: text
+    title: External ID
+    multi: false
+    required: false
+    show_user: false
+    description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
   - name: default_region
     type: text
     title: Default AWS Region
@@ -139,10 +146,6 @@ policy_templates:
         title: Collect CloudTrail logs from CloudWatch
         description: Collecting logs from CloudTrail using aws-cloudwatch input
         input_group: logs
-      - type: httpjson
-        title: Collect CloudTrail logs from third-party REST API (experimental)
-        description: Collect CloudTrail logs using third-party REST API (experimental)
-        input_group: logs
     icons:
       - src: /img/logo_cloudtrail.svg
         title: AWS Cloudtrail logo
@@ -176,6 +179,36 @@ policy_templates:
         title: AWS CloudWatch logo
         size: 32x32
         type: image/svg+xml
+  - name: config
+    title: AWS Config
+    description: Collect AWS Config Logs with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    data_streams:
+      - config
+    categories:
+      - security
+      - cloudsecurity_cdr
+    inputs:
+      - type: cel
+        title: Collect AWS Config logs via API
+        description: Collecting AWS Config logs via API.
+    icons:
+      - src: /img/logo-aws-config.svg
+        title: AWS Config logo
+        size: 33x39
+        type: image/svg+xml
+    screenshots:
+      - src: /img/config-findings-overview.png
+        title: Config Findings Overview Dashboard
+        size: 600x600
+        type: image/png
   - name: dynamodb
     title: Amazon DynamoDB
     description: Collect Amazon DynamoDB metrics with Elastic Agent
@@ -325,9 +358,10 @@ policy_templates:
         type: image/png
   - name: lambda
     title: AWS Lambda
-    description: Collect Lambda metrics with Elastic Agent
+    description: Collect Lambda metrics and logs with Elastic Agent
     data_streams:
       - lambda
+      - lambda_logs
     categories:
       - observability
     inputs:
@@ -335,6 +369,10 @@ policy_templates:
         title: Collect Lambda metrics
         description: Collect Lambda metrics using AWS CloudWatch
         input_group: metrics
+      - type: aws-cloudwatch
+        title: Collect lambda logs from CloudWatch
+        description: Collecting AWS lambda logs using aws-cloudwatch input
+        input_group: logs
     icons:
       - src: /img/logo_lambda.svg
         title: AWS Lambda logo
@@ -343,7 +381,11 @@ policy_templates:
     screenshots:
       - src: /img/metricbeat-aws-lambda-overview.png
         title: metricbeat aws lambda overview
-        size: 1990x3097
+        size: 3012x4867
+        type: image/png
+      - src: /img/filebeat-aws-lambda-overview.png
+        title: AWS lambda logs overview
+        size: 2632x2735
         type: image/png
   - name: natgateway
     title: Amazon NAT Gateway
@@ -716,6 +758,14 @@ policy_templates:
   - name: securityhub
     title: AWS Security Hub
     description: Collect AWS Security Hub Logs with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     data_streams:
       - securityhub_findings
       - securityhub_findings_full_posture
@@ -742,8 +792,16 @@ policy_templates:
         size: 33x39
         type: image/svg+xml
   - name: inspector
-    title: AWS Inspector
-    description: Collect AWS Inspector Logs with Elastic Agent.
+    title: Amazon Inspector
+    description: Collect Amazon Inspector Logs with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     data_streams:
       - inspector
     categories:
@@ -751,16 +809,28 @@ policy_templates:
       - cloudsecurity_cdr
     inputs:
       - type: httpjson
-        title: Collect AWS Inspector logs via API
-        description: Collecting AWS Inspector logs via API.
+        title: Collect Amazon Inspector logs via API
+        description: Collecting Amazon Inspector logs via API.
     screenshots:
-      - src: /img/inspector-screenshot.png
-        title: Inspector dashboard screenshot
+      - src: /img/inspector-findings-overview-dashboard.png
+        title: Inspector Findings Overview dashboard
+        size: 600x600
+        type: image/png
+      - src: /img/inspector-severity-dashboard.png
+        title: Inspector Severity dashboard
+        size: 600x600
+        type: image/png
+      - src: /img/inspector-vulnerabilities-dashboard.png
+        title: Inspector Vulnerabilities dashboard
+        size: 600x600
+        type: image/png
+      - src: /img/inspector-ec2-ecr-overview-dashboard.png
+        title: Inspector EC2 & ECR Overview dashboard
         size: 600x600
         type: image/png
     icons:
       - src: /img/logo_inspector.svg
-        title: AWS Inspector logo
+        title: Amazon Inspector logo
         size: 33x39
         type: image/svg+xml
   - name: guardduty

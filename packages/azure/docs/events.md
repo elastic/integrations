@@ -65,6 +65,29 @@ The Azure Logs integration (v2 preview) collects logs.
 **Logs** help you keep a record of events that happen on your Azure account.
 Log data streams collected by the Azure Logs integration include Activity, Platform, Microsoft Entra ID (Sign-in, Audit, Identity Protection, Provisioning), Microsoft Graph Activity, and Spring Apps logs.
 
+## Routing
+
+The integration routes the logs to the most appropriate data stream based on the log category. 
+
+Use the following table to identify the target data streams for each log category. For example, if the integration receives a log event with the `NonInteractiveUserSignInLogs` category, it will infer `azure.signinlogs` as dataset, indexing the log into `logs-azure.signinlogs-default` data stream. 
+
+| Data Stream                        | Log Categories                                                                                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `logs-azure.activitylogs-*`        | `Administrative`, `Security`, `ServiceHealth`, `Alert`, `Recommendation`, `Policy`, `Autoscale`, `ResourceHealth`                                            |
+| `logs-azure.application_gateway-*` | `ApplicationGatewayFirewallLog`, `ApplicationGatewayAccessLog`                                                                                               |
+| `logs-azure.auditlogs-*`           | `AuditLogs`                                                                                                                                                  |
+| `logs-azure.firewall_logs-*`       | `AzureFirewallApplicationRule`, `AzureFirewallNetworkRule`, `AzureFirewallDnsProxy`, `AZFWApplicationRule`, `AZFWNetworkRule`, `AZFWNatRule`, `AZFWDnsQuery` |
+| `logs-azure.graphactivitylog-*`    | `MicrosoftGraphActivityLogs`                                                                                                                                 |
+| `logs-azure.identity_protection-*` | `RiskyUsers`, `UserRiskEvents`                                                                                                                               |
+| `logs-azure.provisioning-*`        | `ProvisioningLogs`                                                                                                                                           |
+| `logs-azure.signinlogs-*`          | `SignInLogs`, `NonInteractiveUserSignInLogs`, `ServicePrincipalSignInLogs`, `ManagedIdentitySignInLogs`                                                      |
+| `logs-azure.springcloudlogs-*`     | `ApplicationConsole`, `SystemLogs`, `IngressLogs`, `BuildLogs`, `ContainerEventLogs`                                                                         |
+| `logs-azure.platformlogs-*`        | All other log categories                                                                                                                                     |
+
+### What about all other log categories?
+
+The integration indexes all other Azure logs categories using the `logs-azure.platformlogs-*` data stream.
+
 ## Requirements
 
 You need Elasticsearch to store and search for your data and Kibana to visualize and manage it.

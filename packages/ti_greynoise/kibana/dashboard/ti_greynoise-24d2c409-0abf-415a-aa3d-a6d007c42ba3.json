@@ -10,17 +10,14 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "9f8c02a3-21e6-4162-b6b7-512f4692fabb": {
+                "f56e2c6c-2a43-4c99-b665-52ea043adb55": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "exclude": false,
                         "existsSelected": false,
                         "fieldName": "greynoise.ip.internet_scanner_intelligence.classification",
                         "id": "9f8c02a3-21e6-4162-b6b7-512f4692fabb",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
                         "sort": {
-                            "by": "_count",
                             "direction": "desc"
                         },
                         "title": "Classification"
@@ -44,18 +41,40 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "_index",
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "_index",
+                            "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "logs-ti_greynoise_latest.ip*"
+                                "query": "ti_greynoise.ip"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "_index": "logs-ti_greynoise_latest.ip*"
+                                "data_stream.dataset": "ti_greynoise.ip"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "labels.is_transform_source",
+                            "negate": false,
+                            "params": {
+                                "query": "false"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_transform_source": "false"
                             }
                         }
                     }
@@ -96,7 +115,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "[Threat Intelligence](#/dashboard/ti_greynoise-90679482-db68-4980-b69c-5f562f964d55), **Threat Feed Overview**\n\nThis dashboard provides an overview of Threat Feed IOCs collected via GreyNoise, focusing on IOC distribution and threat analysis.\n\nThis dashboard provides a comprehensive view of IP indicators collected using GreyNoise data. It delivers insights into event distribution, threat analysis, and categorized breakdowns by classification.\n\nKey metrics include unique IP IOCs. IOCs are further analyzed by classification types, country, business service category, and actors to identify patterns.\n\n[**Integrations Page**](/app/integrations/detail/ti_greynoise/overview)",
+                            "markdown": "**Threat Feed Overview**\n\nThis dashboard provides an overview of Threat Feed IOCs collected via GreyNoise, focusing on IOC distribution and threat analysis.\n\nThis dashboard provides a comprehensive view of IP indicators collected using GreyNoise data. It delivers insights into event distribution, threat analysis, and categorized breakdowns by classification.\n\nKey metrics include unique IP IOCs. IOCs are further analyzed by classification types, country, business service category, and actors to identify patterns.\n\nSaved search to provide essential IP details.\n\n[**Integrations Page**](/app/integrations/detail/ti_greynoise/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1189,6 +1208,23 @@
                 "panelIndex": "bf3f8ece-abbb-46d1-82fa-2be24132f8fb",
                 "title": "Top 10 countries by IP IOCs [Logs GreyNoise]",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "6c98a31c-7b56-4a82-919e-fade4716786a",
+                    "w": 48,
+                    "x": 0,
+                    "y": 57
+                },
+                "panelIndex": "6c98a31c-7b56-4a82-919e-fade4716786a",
+                "panelRefName": "panel_6c98a31c-7b56-4a82-919e-fade4716786a",
+                "title": "GreyNoise essential IP Details [Logs GreyNoise]",
+                "type": "search"
             }
         ],
         "timeRestore": false,
@@ -1196,13 +1232,18 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-05-05T05:46:07.301Z",
+    "created_at": "2025-05-30T12:14:40.929Z",
     "id": "ti_greynoise-24d2c409-0abf-415a-aa3d-a6d007c42ba3",
     "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
@@ -1246,9 +1287,9 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "controlGroup_ae28e06b-239a-4979-8f45-0c715653b299:optionsListDataView",
-            "type": "index-pattern"
+            "id": "ti_greynoise-cbe163eb-0cbf-45b7-b449-ffc02ae3bcff",
+            "name": "6c98a31c-7b56-4a82-919e-fade4716786a:panel_6c98a31c-7b56-4a82-919e-fade4716786a",
+            "type": "search"
         },
         {
             "id": "ti_greynoise-security-solution-default",
@@ -1259,8 +1300,14 @@
             "id": "ti_greynoise-security-solution-default",
             "name": "tag-ref-security-solution-default",
             "type": "tag"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_9f8c02a3-21e6-4162-b6b7-512f4692fabb:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

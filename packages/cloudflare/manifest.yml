@@ -1,13 +1,13 @@
 name: cloudflare
 title: Cloudflare
-version: "2.30.0"
+version: "2.31.0"
 description: Collect logs from Cloudflare with Elastic Agent.
 type: integration
 format_version: "3.0.2"
 categories: [security, network, cdn_security]
 conditions:
   kibana:
-    version: "^8.13.0 || ^9.0.0"
+    version: "^8.16.0 || ^9.0.0"
 icons:
   - src: /img/cf-logo-v.svg
     title: Cloudflare
@@ -31,8 +31,8 @@ policy_templates:
     title: Cloudflare logs
     description: Collect logs from Cloudflare
     inputs:
-      - type: httpjson
-        title: "Collect Cloudflare logs via API"
+      - type: cel
+        title: "Collect Cloudflare logs via API (v2)"
         description: "Collecting logs from Cloudflare via API"
         vars:
           - name: api_url
@@ -49,7 +49,60 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+            default: false
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+              Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+              tracer will delete any stored traces.
+              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+              for details.
+          - name: ssl
+            type: yaml
+            title: SSL
+            multi: false
+            required: false
+            show_user: false
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: true
+            default: 60s
+      - type: httpjson
+        title: "Collect Cloudflare logs via API (Legacy Input)"
+        description: "Collecting logs from Cloudflare via API"
+        vars:
+          - name: api_url
+            type: text
+            title: API URL.
+            description: The API URL without the path.
+            multi: false
+            required: true
+            show_user: false
+            default: https://api.cloudflare.com
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            default: false
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+              Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+              tracer will delete any stored traces.
+              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)
+              for details.
           - name: ssl
             type: yaml
             title: SSL

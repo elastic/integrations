@@ -25,10 +25,13 @@ program: |
   state.with(
     request(
       "GET",
-      state.url.trim_right("/") + "/v3/gnql" + "?" + {
-      ?"scroll": has(state.scroll) && state.scroll != null ? optional.of([state.scroll]) : optional.none(),
-      "query": ["last_seen:1d" + (has(state.query) && state.query != null ? " " + state.query.trim_right(" ") : "")],
-      "size": [(has(state.page_size) && state.page_size != null && int(state.page_size) <= 5000 ? string(state.page_size) : "5000")],
+      state.url.trim_right("/") + "/v3/gnql?" + {
+        ?"scroll": has(state.?next.scroll) ?
+          optional.of([state.next.scroll])
+        :
+          optional.none(),
+        "query": ["last_seen:1d" + (has(state.query) && state.query != null ? " " + state.query.trim_right(" ") : "")],
+        "size": [int(state.page_size) <= 5000 ? string(state.page_size) : "5000"],
       }.format_query()
     ).with({
       "Header": {
@@ -40,14 +43,14 @@ program: |
           has(body.data) && size(body.data) > 0 ?
             body.data.map(e, {
               "message": e.with({
-                 "internet_scanner_intelligence": e.internet_scanner_intelligence.drop("raw_data")
-                }).encode_json(),
+                "internet_scanner_intelligence": e.internet_scanner_intelligence.drop("raw_data")
+              }).encode_json(),
             })
           :
             [{"message": "retry"}]
         ),
         "want_more": has(body.?request_metadata.complete) && body.request_metadata.complete == false,
-        "scroll": has(body.?request_metadata.scroll) ? body.request_metadata.scroll : null
+        "next": {?"scroll": body.?request_metadata.scroll},
       })
     :
       {
@@ -55,7 +58,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": ":" + (
+            "message": "GET " + state.url.trim_right("/") + "/v3/gnql: " + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
@@ -63,7 +66,7 @@ program: |
               ),
           },
         },
-        "scroll": null,
+        "next": {},
         "want_more": false,
       }
     )

@@ -10,7 +10,6 @@ platform_type_lowercase="${platform_type,,}"
 
 SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 
-GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
@@ -255,34 +254,6 @@ with_github_cli() {
     gh version
 }
 
-## Logging and logout from Google Cloud
-google_cloud_auth_safe_logs() {
-    local gsUtilLocation
-    gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
-    local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
-
-    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-
-    gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-    export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
-google_cloud_logout_active_account() {
-  local active_account
-  active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null || true)
-  if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
-    echo "Logging out from GCP for active account"
-    gcloud auth revoke "$active_account" > /dev/null 2>&1
-  else
-    echo "No active GCP accounts found."
-  fi
-
-  if [ -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]; then
-    rm -rf "${GOOGLE_APPLICATION_CREDENTIALS}"
-    unset GOOGLE_APPLICATION_CREDENTIALS
-  fi
-}
-
 ## Helpers for integrations pipelines
 check_git_diff() {
     cd "${WORKSPACE}"
@@ -298,10 +269,22 @@ use_elastic_package() {
     go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
+elastic_package_verbosity() {
+    local opts="-v"
+    if [[ "${GITHUB_PR_TRIGGER_COMMENT:-""}" =~ ^/test[[:space:]]+verbose ]]; then
+        opts="${opts}v"
+    fi
+    echo "${opts}"
+}
+
+ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
+
 is_already_published() {
     local packageZip=$1
 
-    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep -q "HTTP/2 200" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep "HTTP/2 200" > /dev/null; then
         echo "- Already published ${packageZip}"
         return 0
     fi
@@ -315,8 +298,20 @@ create_kind_cluster() {
 }
 
 delete_kind_cluster() {
+    if ! command -v kind > /dev/null 2>&1 ; then
+        return
+    fi
     echo "--- Delete kind cluster"
     kind delete cluster || true
+}
+
+is_stack_created() {
+    local files=0
+    files=$(find ~/.elastic-package -type f -name "docker-compose.yml" | wc -l)
+    if [ "${files}" -gt 0 ]; then
+        return 0
+    fi
+    return 1
 }
 
 kibana_version_manifest() {
@@ -407,7 +402,9 @@ is_package_excluded_in_config() {
     local package_name=""
     package_name=$(package_name_manifest)
 
-    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if echo "${excluded_packages}" | grep -E "\"${package_name}\"" > /dev/null; then
         return 0
     fi
     return 1
@@ -438,7 +435,9 @@ is_supported_capability() {
     fi
 
     for cap in ${capabilities}; do
-        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
+        # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+        # https://tldp.org/LDP/lpg/node20.html
+        if ! echo "${cap}" | grep -E "${capabilities_kibana_grep}" > /dev/null; then
             return 1
         fi
     done
@@ -562,9 +561,6 @@ prepare_serverless_stack() {
         profile_name="integrations-${BUILDKITE_PULL_REQUEST}-${BUILDKITE_BUILD_NUMBER}-${SERVERLESS_PROJECT}"
     fi
     create_elastic_package_profile "${profile_name}"
-
-    export EC_API_KEY=${EC_API_KEY_SECRET}
-    export EC_HOST=${EC_HOST_SECRET}
 
     echo "Boot up the Elastic stack"
     # grep command required to remove password from the output
@@ -768,12 +764,20 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
@@ -801,7 +805,7 @@ teardown_serverless_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
@@ -812,12 +816,17 @@ teardown_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    if ! is_stack_created; then
+        echo "No stack running. Skip dump logs and run stack down process."
+        return
+    fi
+
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
 
-    echo "Take down the Elastic stack"
+    echo "--- Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
 }
 
@@ -861,7 +870,7 @@ skip_installation_step() {
 install_package() {
     local package=$1
     echo "Install package: ${package}"
-    if ! ${ELASTIC_PACKAGE_BIN} install -v ; then
+    if ! ${ELASTIC_PACKAGE_BIN} install "${ELASTIC_PACKAGE_VERBOSITY}" ; then
         return 1
     fi
     echo ""
@@ -870,11 +879,11 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="--report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test "${ELASTIC_PACKAGE_VERBOSITY}" ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -885,7 +894,7 @@ test_package_in_local_stack() {
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="${ELASTIC_PACKAGE_VERBOSITY} --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
@@ -974,11 +983,9 @@ upload_safe_logs() {
         return
     fi
 
-    google_cloud_auth_safe_logs
+    gcloud storage cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
 
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
-
-    google_cloud_logout_active_account
+    echo "GCP logout is not required, the BK plugin will do it for us"
 }
 
 clean_safe_logs() {
@@ -999,6 +1006,8 @@ upload_safe_logs_from_package() {
     local build_directory=$2
 
     local parent_folder="insecure-logs"
+
+    echo "--- Uploading safe logs to GCP bucket ${JOB_GCS_BUCKET_INTERNAL}"
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
@@ -1044,6 +1053,8 @@ process_package() {
 
     if ! run_tests_package "${package}" ; then
         exit_code=1
+        # Ensure that the group where the failure happened is opened.
+        echo "^^^ +++"
         echo "[${package}] run_tests_package failed"
         if [[ "${failed_packages_file}" != "" ]]; then
             echo "- ${package}" >> "${failed_packages_file}"
@@ -1052,7 +1063,7 @@ process_package() {
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
-            ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+            ${ELASTIC_PACKAGE_BIN} benchmark pipeline "${ELASTIC_PACKAGE_VERBOSITY}" --report-format json --report-output file
         fi
     fi
 
@@ -1065,6 +1076,8 @@ process_package() {
     else
         if ! teardown_test_package "${package}" ; then
             exit_code=1
+            # Ensure that the group where the failure happened is opened.
+            echo "^^^ +++"
             echo "[${package}] teardown_test_package failed"
         fi
     fi
@@ -1126,4 +1139,20 @@ get_comment_with_pattern() {
     rm response_github.json
 
     echo "${comment_id}"
+}
+
+## Buildkite output
+# https://buildkite.com/docs/pipelines/configure/links-and-images-in-log-output#links
+inline_link() {
+    local url="$1"
+    local text="${2:-""}"
+    local link=""
+
+    link=$(printf "url='%s'" "$url")
+
+    if [[ "${text}" != "" ]]; then
+        link=$(printf "%s;content='%s'" "$link" "$text")
+    fi
+
+    printf '\033]1339;%s\a\n' "$link"
 }

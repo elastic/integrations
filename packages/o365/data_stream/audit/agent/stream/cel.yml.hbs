@@ -66,6 +66,7 @@ state:
     tenant_id: "{{azure_tenant_id}}"
     list_contents_start_time: "{{initial_interval}}"
     batch_interval: "{{batch_interval}}"
+    maximum_age: "{{maximum_age}}"
     content_types: "{{content_types}}"
 
 redact:
@@ -78,62 +79,78 @@ program: |-
   ).map(content_type,
   	request(
   		"POST",
-  		state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier=" + state.base.tenant_id
+  		state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/start?" +
+  		{
+  			"contentType": [content_type],
+  			"PublisherIdentifier": [state.base.tenant_id],
+  		}.format_query()
   	).do_request().as(start_subs_resp,
-  		bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body,
+  		start_subs_resp.Body.decode_json().as(start_subs_resp_body,
   			(
   				has(start_subs_resp_body.status) && start_subs_resp_body.status == "enabled" ||
-  has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) && start_subs_resp_body.error.code == "AF20024"
+  				has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) &&
+  				start_subs_resp_body.error.code == "AF20024"
   			) ?
   				// When start-subscription API returns success or if already started subscription,
   				duration(state.base.batch_interval).as(batch_interval,
-  					((batch_interval > duration("24h")) ? duration("24h") : batch_interval).as(batch_interval,
+  					min(duration("24h"), batch_interval).as(batch_interval,
   						request(
   							"GET",
   							(
-  								state.want_more && has(state.?cursor.content_types_state_as_list) && size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0 &&
-  state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page != ""
+  								state.want_more && has(state.?cursor.content_types_state_as_list) &&
+  								size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0 &&
+  								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page != ""
   							) ?
   								// if NextPageUri exists
   								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page
   							:
   							(
-  								has(state.?cursor.content_types_state_as_list) && size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0
+  								has(state.?cursor.content_types_state_as_list) &&
+  								size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0
   							) ?
   								// if NextPageUri does not exist, but content_type_state_created_at exists in state
   								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type).as(content_type_state,
   									content_type_state[0].content_created_at.as(content_type_state_created_at,
   										// if saved time inside state is more than 7 days old, then change it to 7 days.
-  										content_type_state_created_at.parse_time(time_layout.RFC3339).as(state_created_at,
-  											// The 168h API age limit is expressed as 167h55m to
-  											// prevent API call delay from causing a call to fail.
-  											(state_created_at < now - duration("167h55m")) ?
-  												(now - duration("167h55m"))
-  											:
-  												state_created_at
+  										max(
+                        // Enforce the maximum age limit.
+  											now() - duration(state.base.maximum_age),
+  											content_type_state_created_at.parse_time(time_layout.RFC3339)
   										).as(state_created_at_calc,
-  											state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?contentType=" + content_type + "&PublisherIdentifier=" + state.base.tenant_id + "&startTime=" + string(state_created_at_calc + duration("1s")) + "&endTime=" + string((state_created_at_calc + batch_interval).as(calc_end_time, (calc_end_time <= now) ? calc_end_time : now))
+  											state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?" +
+  											{
+  												"contentType": [content_type],
+  												"PublisherIdentifier": [state.base.tenant_id],
+  												"startTime": [string(min(now() - duration("1s"), state_created_at_calc + duration("1s")))],
+  												"endTime": [string(min(now(), state_created_at_calc + batch_interval))],
+  											}.format_query()
   										)
   									)
   								)
   							:
   								// initial run when no cursor state exists i.e., polling from initial_interval
-  								state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?contentType=" + content_type + "&PublisherIdentifier=" + state.base.tenant_id + "&startTime=" + string(now - duration(state.base.list_contents_start_time)) + "&endTime=" + string((now - duration(state.base.list_contents_start_time) + batch_interval).as(calc_end_time, (calc_end_time <= now) ? calc_end_time : now))
+  								state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?" +
+  								{
+  									"contentType": [content_type],
+  									"PublisherIdentifier": [state.base.tenant_id],
+  									"startTime": [string(min(now() - duration("1s"), now() - duration(state.base.list_contents_start_time)))],
+  									"endTime": [string(min(now(), now() - duration(state.base.list_contents_start_time) + batch_interval))],
+  								}.format_query()
   						)
   					)
   				).do_request().as(list_contents_resp,
-  					bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body,
+  					list_contents_resp.Body.decode_json().as(list_contents_resp_body,
   						(
   							type(list_contents_resp_body) != map && size(list_contents_resp_body) > 0 &&
-  has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" &&
-  has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != ""
+  							has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" &&
+  							has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != ""
   						) ?
   							// contents exist to consume
   							list_contents_resp_body.map(l1,
-  								(has(l1.contentExpiration) && l1.contentExpiration.parse_time(time_layout.RFC3339) >= now) ?
+  								(has(l1.contentExpiration) && l1.contentExpiration.parse_time(time_layout.RFC3339) >= now()) ?
   									request("GET", l1.contentUri).do_request().as(content_resp,
   										(has(content_resp.StatusCode) && content_resp.StatusCode == 200 && size(content_resp.Body) > 0) ?
-  											bytes(content_resp.Body).decode_json().map(content_resp_body,
+  											content_resp.Body.decode_json().map(content_resp_body,
   												content_resp_body.with({"copy": {"o365audit": content_resp_body}})
   											).map(content_resp_body_with_copy,
   												content_resp_body_with_copy.copy
@@ -141,28 +158,41 @@ program: |-
   												{
   													"events_per_content_type": contents,
   													"content_type": content_type,
-  													// if 'contentCreated' is older than 167h55m, change it to 167h55m.
-  													"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, (temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+  													// if 'contentCreated' is older than the maximum age, change it to the maximum age.
+  													"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
+  														(temp_max.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
+  															temp_max
+  														:
+  															(now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
+  													),
   													"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   														(list_contents_resp.Header.NextPageUri[0])
   													: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
   														(list_contents_resp.Header.Nextpageuri[0])
   													:
   														"",
-  													// keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
+  													// keep fetching more if (nextpageuri exists) or
+  													// (the end of the request range is one batch interval or longer before the current time)
   													"want_more_content": has(list_contents_resp.Header) &&
   													(
   														has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ||
-  has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0
-  													) || {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split("T").as(t, t.size() > 1 &&
-  t[0] != now.format("2006-01-02")),
+  														has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0 ||
+  														list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().?endTime[0].optMap(endTime,
+  														  (now() - endTime.parse_time(time_layout.RFC3339)) >= duration(state.base.batch_interval)
+  														).orValue(false)
+  													)
   												}
   											)
   										:
   											{
   												"events_per_content_type": [],
   												"content_type": content_type,
-  												"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, (temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+  												"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
+  													(temp_max.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
+  														temp_max
+  													:
+  														(now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
+  												),
   												"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   													(list_contents_resp.Header.NextPageUri[0])
   												: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
@@ -175,7 +205,12 @@ program: |-
   									{
   										"events_per_content_type": [],
   										"content_type": content_type,
-  										"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, (temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+  										"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
+  											(temp_max.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
+  												temp_max
+  											:
+  												(now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
+  										),
   										"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   											(list_contents_resp.Header.NextPageUri[0])
   										: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
@@ -191,8 +226,10 @@ program: |-
   									{
   										"events_per_content_type": (size(list_contents_resp_body) == 0) ? [] : [list_contents_resp_body],
   										"content_type": content_type,
-  										"content_created_at": (has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
-  list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0) ?
+  										"content_created_at": (
+  											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
+  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0
+  										) ?
   											(reqQuery.endTime[0])
   										: (has(reqQuery.startTime) && reqQuery.startTime.size() > 0) ?
   											(reqQuery.startTime[0])
@@ -205,11 +242,15 @@ program: |-
   												e.content_type == content_type
   											)[0].content_created_at
   										:
-  											string(now - duration(state.base.list_contents_start_time)),
+  											string(now() - duration(state.base.list_contents_start_time)),
   										"next_page": "",
-  										"want_more_content": has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
-  list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 && reqQuery.endTime[0].split("T").as(t, t.size() > 0 &&
-  t[0] != now.format("2006-01-02")),
+  										"want_more_content": (
+  											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
+  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 &&
+  											reqQuery.endTime[0].parse_time(time_layout.RFC3339).as(endTime,
+  											  (now() - endTime) >= duration(state.base.batch_interval)
+  											)
+  										),
   									},
   								]
   							)
@@ -224,7 +265,7 @@ program: |-
   						"content_created_at": (has(state.cursor) && has(state.cursor.content_types_state_as_list)) ?
   							state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
   						:
-  							string(now - duration(state.base.list_contents_start_time)),
+  							string(now() - duration(state.base.list_contents_start_time)),
   						"next_page": "",
   						"want_more_content": false,
   					},
