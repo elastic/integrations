@@ -85,7 +85,7 @@ A user document:
     },
     "_links": {
       "self": {
-        "href": "https://localhost/api/v1/users/userid"
+        "href": "<YOUR_LOCAL_HOST>/api/v1/users/userid"
       }
     }
   },
@@ -134,7 +134,7 @@ A device document:
                         "POST"
                     ]
                 },
-                "href": "https://localhost/api/v1/devices/deviceid/lifecycle/activate"
+                "href": "<YOUR_LOCAL_HOST>/api/v1/devices/deviceid/lifecycle/activate"
             },
             "self": {
                 "hints": {
@@ -144,7 +144,7 @@ A device document:
                         "PUT"
                     ]
                 },
-                "href": "https://localhost/api/v1/devices/deviceid"
+                "href": "<YOUR_LOCAL_HOST>/api/v1/devices/deviceid"
             },
             "users": {
                 "hints": {
@@ -152,7 +152,7 @@ A device document:
                         "GET"
                     ]
                 },
-                "href": "https://localhost/api/v1/devices/deviceid/users"
+                "href": "<YOUR_LOCAL_HOST>/api/v1/devices/deviceid/users"
             }
         },
         "users": [
@@ -183,7 +183,7 @@ A device document:
                 },
                 "_links": {
                     "self": {
-                        "href": "https://localhost/api/v1/users/userid"
+                        "href": "<YOUR_LOCAL_HOST>/api/v1/users/userid"
                     }
                 }
             }
