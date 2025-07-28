@@ -30,6 +30,13 @@ env:
   ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI: "${ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI:-false}"
   # Disable checking for newer versions
   ELASTIC_PACKAGE_CHECK_UPDATE_DISABLED: "true"
+  # Customize Service Test Run ID used by elastic-package
+  # It requires to be customized in .buildkite/hooks/pre-command
+  # Defining here in this file an environment variable like this:
+  # ELASTIC_PACKAGE_CUSTOMIZE_SERVICE_TEST_RUN_ID: "${BUILDKITE_STEP_ID: -4}"
+  # All steps will have the same value, since it always gets the value
+  # "BUILDKITE_STEP_ID" from the first "Upload pipeline" step.
+  ELASTIC_PACKAGE_CUSTOMIZE_SERVICE_TEST_RUN_ID: "true"
 
 steps:
   - label: "Get reference from target branch"
@@ -37,6 +44,11 @@ steps:
     command: "echo 'Get reference from main'"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false"
+
+  - wait: ~
+    continue_on_failure: false
 
   - label: ":white_check_mark: Check go sources"
     key: "check"
@@ -45,9 +57,6 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
-    depends_on:
-      - step: "reference-target-branch"
-        allow_failure: false
 
   - label: "Trigger integrations"
     key: "test-integrations"
