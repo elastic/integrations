@@ -27,4 +27,6 @@ if [[ "$run_links_command" == "true" ]] ; then
     # links command require at least v0.113.0
     use_elastic_package
     ${ELASTIC_PACKAGE_BIN} links check
+else
+    echo "Skip elastic-package links. Unsupported for this elastic-package version."
 fi
