@@ -1,0 +1,55 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $hostname := generate "host.name" }}
+{{- $agentId := generate "agent.id" }}
+{{- $id := generate "id" }}
+{{- $duration_start := generate "duration_start" }}
+{{- $duration_end := generate "duration_end" }}
+{{- $dateAdded := $timestamp | date_modify (print $duration_start) }}
+{{- $lastOnline := $timestamp | date_modify (print $duration_end) }}
+{{- $url := generate "url" }}
+{{- $urlStatus := generate "url_status" }}
+{
+  "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+  "_conf": {
+    "interval": "1h"
+  },
+  "agent": {
+    "id": "{{$agentId}}",
+    "name": "{{$hostname}}",
+    "type": "filebeat",
+    "version": "8.18.0",
+    "ephemeral_id": "{{$agentId}}"
+  },
+  "data_stream": {
+    "namespace": "ep",
+    "type": "logs",
+    "dataset": "ti_abusech.url"
+  },
+  "elastic_agent": {
+    "id": "60a22c30-4c80-4e95-b5b1-87ff540d8afd",
+    "snapshot": false,
+    "version": "8.18.0"
+  },
+  "message": "{
+  \"dateadded\":\"{{$dateAdded.Format "2006-01-02 15:04:05 MST"}}\",
+  \"id\":\"{{$id}}\",
+  \"last_online\":\"{{$lastOnline.Format "2006-01-02 15:04:05 MST"}}\",
+  \"reporter\":\"abuse_ch\",
+  \"tags\":[\"apk\",\"censys\",\"mips\",\"Mozi\"],
+  \"threat\":\"malware_download\",
+  \"url\":\"{{$url}}\",
+  \"url_status\":\"{{$urlStatus}}\",
+  \"urlhaus_link\":\"https://urlhaus.abuse.ch/url/3589950/\"
+  }",
+  "event": {
+    "dataset": "ti_abusech.url"
+  },
+  "input": {
+    "type": "cel"
+  },
+  "tags": [
+    "preserve_original_event",
+    "forwarded",
+    "abusech-url"
+  ]
+}
