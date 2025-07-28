@@ -149,7 +149,7 @@ setting accordingly, for instance:
 
 ```yml
 remote_write:
-  - url: "http://localhost:9201/write"
+  - url: "YOUR_LOCAL_HOST:9201/write"
 ```
 
 In Kubernetes, a Service resource should also be created:
