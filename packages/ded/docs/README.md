@@ -62,7 +62,7 @@ After the data view for the dashboard is configured, the **Data Exfiltration Det
 
 ### Anomaly Detection Jobs
 
-| Job                                                  | Description                                                                                                        | Supported Platform | event.category |
+| Job                                                  | Description                                                                                                        | Supported Platform | Event Category |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------ | ----- |
 | ded_high_sent_bytes_destination_geo_country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     | network |
 | ded_high_sent_bytes_destination_ip                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     | network |
