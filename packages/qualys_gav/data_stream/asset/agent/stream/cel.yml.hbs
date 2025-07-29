@@ -24,7 +24,9 @@ redact:
   fields:
     - password
 program: |
-  (
+  state.with({
+    "base_url": state.url.trim_right("/")
+  }).as(state, state.with(
     has(state.expiry) && timestamp(state.expiry) > now ?
       {
         "access_token": state.access_token,
@@ -32,7 +34,7 @@ program: |
       }
     :
       post_request(
-        state.url.trim_right("/") + "/auth",
+        state.base_url + "/auth",
         "application/x-www-form-urlencoded",
         {"username":[state.username],"password":[state.password]}.format_query()
       ).do_request().as(resp, resp.StatusCode == 201 ?
@@ -47,7 +49,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "POST: "+ state.url.trim_right("/") + "/auth" + (
+              "message": "POST: "+ state.base_url + "/auth" + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
@@ -63,7 +65,7 @@ program: |
       state.with(
         request(
           "POST",
-          state.url.trim_right("/") + "/rest/2.0/search/am/asset?" + {
+          state.base_url + "/rest/2.0/search/am/asset?" + {
             "pageSize": [string(state.batch_size)],
             "lastSeenAssetId": [string(int(state.asset_id))]
           }.format_query()
@@ -97,7 +99,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "POST: "+ state.url.trim_right("/") + "/rest/2.0/search/am/asset" + (
+                  "message": "POST: "+ state.base_url + "/rest/2.0/search/am/asset" + (
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -109,7 +111,7 @@ program: |
             }
         )
       )
-  )
+  ))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

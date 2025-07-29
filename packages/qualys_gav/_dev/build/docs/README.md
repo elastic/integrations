@@ -8,9 +8,9 @@ The Qualys GAV integration collect assets via REST API.
 
 ## Data streams
 
-The Qualys GAV integration collects logs for one type of event.
+The Qualys GAV integration collects logs of the following type:
 
-**Asset:** This data stream will collect details of all assets.
+1. **Asset:** This data stream will collect details of all assets.
 
 >**Note**: For the **Asset** Dashboard, ensure that the time range is aligned with the configured interval parameter to display accurate and consistent data.
 
