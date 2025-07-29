@@ -4,7 +4,7 @@ The NGINX metrics from NGINX OTEL integration allows you to monitor [Nginx](http
 
 Use the NGINX OTEL integration to analyze performance metrics from your NGINX instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting performance issues.
 
-For example, if you wanted to monitor the request rate or connection status of your NGINX server, you could use this integration to collect metrics such as `nginx.requests` or `nginx.connections_current`. Then you can visualize these metrics in Kibana dashboards, set up alerts for high error rates, or troubleshoot by analyzing metric trends.
+For example, if you wanted to monitor the request rate or connection status of your NGINX server, you could use [NGINX Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver) to collect metrics such as `nginx.requests` or `nginx.connections_current` and then the NGINX OTEL integrtaion to  you  visualize these metrics in Kibana dashboards, set up alerts for high error rates, or troubleshoot by analyzing metric trends.
 
 
 ## Requirements
