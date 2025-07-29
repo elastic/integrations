@@ -59,7 +59,7 @@ Please refer [Upgrade an integration](https://www.elastic.co/guide/en/fleet/curr
 
 This integration works by creating a subscription for each enabled content type, checking each subscription for available data, and downloading any data that is available.
 
-As disucssed in Microsoft's [Working with the Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#working-with-the-office-365-management-activity-api) documentation, when a subscription is first created it can take up to 12 hours for the first data to become available. Users of this integration should expect to see that initial delay.
+As discussed in Microsoft's [Working with the Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#working-with-the-office-365-management-activity-api) documentation, when a subscription is first created it can take up to 12 hours for the first data to become available. Users of this integration should expect to see that initial delay.
 
 Data may become available out of order, so earliest data will not necessarily be downloaded first. Data will be downloaded in the order in which it becomes available.
 
