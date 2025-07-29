@@ -128,104 +128,65 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-29T11:40:00.000Z",
+    "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "8d29c1cd-cb6c-4cb6-84fe-e9fe846678c6",
-        "id": "2d6e7a58-eccc-44b1-b49a-b0c9c1824cdd",
-        "name": "elastic-agent-43537",
+        "ephemeral_id": "dfb11704-8962-47d6-b6db-273d5f5ceebc",
+        "id": "0f34c9a0-5d22-445a-a67c-213c32486e64",
+        "name": "elastic-agent-94967",
         "type": "filebeat",
         "version": "8.18.0"
     },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-github-audit-bucket-43960",
-                "name": "elastic-package-github-audit-bucket-43960"
-            },
-            "object": {
-                "key": "test-audit.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
-    },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "38998",
+        "namespace": "33218",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2d6e7a58-eccc-44b1-b49a-b0c9c1824cdd",
+        "id": "0f34c9a0-5d22-445a-a67c-213c32486e64",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
-        "action": "user.login",
+        "action": "repo.destroy",
         "agent_id_status": "verified",
         "category": [
             "configuration",
             "web"
         ],
+        "created": "2025-07-29T06:21:44.111Z",
         "dataset": "github.audit",
-        "ingested": "2025-07-25T09:25:54Z",
+        "id": "LwW2vpJZCDS-WUmo9Z-ifw",
+        "ingested": "2025-07-29T06:21:45Z",
         "kind": "event",
-        "original": "{\"@timestamp\": 1698579600000, \"action\": \"user.login\", \"active\": true, \"actor\": \"john_doe\", \"actor_id\": 12345, \"actor_location\": {\"country_name\": \"USA\", \"ip\": \"192.168.1.1\"}, \"org_id\": 67890, \"org\": \"tech-corp\", \"user_id\": 12345, \"business_id\": 56789, \"business\": \"tech-enterprise\", \"message\": \"User logged in successfully.\", \"name\": \"John Doe\", \"device\": \"laptop\", \"login_method\": \"password\"}",
+        "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
             "change"
         ]
     },
     "github": {
-        "active": true,
-        "actor_id": "12345",
-        "actor_location": {
-            "country_name": "USA",
-            "ip": "192.168.1.1"
-        },
-        "business": "tech-enterprise",
-        "business_id": "56789",
-        "category": "user",
-        "device": "laptop",
-        "login_method": "password",
-        "message": "User logged in successfully.",
-        "name": "John Doe",
-        "org": "tech-corp",
-        "org_id": "67890",
-        "user_id": "12345"
+        "category": "repo",
+        "org": "mona-org",
+        "repo": "mona-org/mona-test-repo",
+        "visibility": "private"
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-github-audit-bucket-43960.s3.us-east-1.amazonaws.com/test-audit.log"
-        },
-        "offset": 0
+        "type": "httpjson"
     },
     "related": {
-        "ip": [
-            "192.168.1.1"
-        ],
         "user": [
-            "john_doe",
-            "12345"
+            "monalisa"
         ]
     },
     "tags": [
-        "collect_sqs_logs",
-        "preserve_original_event",
         "forwarded",
-        "github.audit"
+        "github-audit",
+        "preserve_original_event"
     ],
     "user": {
-        "id": "12345",
-        "name": "john_doe",
-        "target": {
-            "id": "12345"
-        }
+        "name": "monalisa"
     }
 }
 ```
