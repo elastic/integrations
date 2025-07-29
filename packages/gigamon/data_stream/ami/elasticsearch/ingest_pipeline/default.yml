@@ -465,7 +465,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'  
   - script:
       lang: painless
       description: Gigamon AMI lookup mappings
@@ -1203,11 +1203,6 @@ processors:
       copy_from: gigamon.ami.smb_version_value
       if: ctx.gigamon?.ami?.smb_version_value != null
   - set:
-      field: service.version
-      tag: set_snmp_version
-      copy_from: gigamon.ami.snmp_version
-      if: ctx.gigamon?.ami?.snmp_version != null
-  - set:
       field: event.id
       tag: set_event_id
       copy_from: gigamon.ami.id
@@ -1229,6 +1224,7 @@ processors:
      source: >-
        ctx.destination.mac = ctx.gigamon.ami.dst_mac.replace(":", "-").toUpperCase();
      if: ctx.gigamon?.ami?.dst_mac != null  
+     if: ctx.gigamon?.ami?.dst_mac != null
   - remove:
       field:
         - ts
