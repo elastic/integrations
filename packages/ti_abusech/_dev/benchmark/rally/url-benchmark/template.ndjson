@@ -4,14 +4,17 @@
 {{- $id := generate "id" }}
 {{- $duration_start := generate "duration_start" }}
 {{- $duration_end := generate "duration_end" }}
-{{- $dateAdded := $timestamp | date_modify (print $duration_start) }}
-{{- $lastOnline := $timestamp | date_modify (print $duration_end) }}
-{{- $url := generate "url" }}
+{{- $dateAdded := ($timestamp | date_modify (print $duration_start)).Format "2006-01-02 15:04:05 MST" }}
+{{- $lastOnline := ($timestamp | date_modify (print $duration_end)).Format "2006-01-02 15:04:05 MST" }}
+{{- $reporter := generate "reporter" }}
+{{- $threat := generate "threat" }}
+{{- $urlIp := generate "url_ip" }}
+{{- $urlPath := generate "url_path" }}
 {{- $urlStatus := generate "url_status" }}
 {
   "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
   "_conf": {
-    "interval": "1h"
+    "interval": "{{ $expireDur }}h"
   },
   "agent": {
     "id": "{{$agentId}}",
@@ -30,7 +33,7 @@
     "snapshot": false,
     "version": "8.18.0"
   },
-  "message": "{\"dateadded\":\"{{$dateAdded.Format "2006-01-02 15:04:05 MST"}}\",\"id\":\"{{$id}}\",\"last_online\":\"{{$lastOnline.Format "2006-01-02 15:04:05 MST"}}\",\"reporter\":\"abuse_ch\",\"tags\":[\"apk\",\"censys\",\"mips\",\"Mozi\"],\"threat\":\"malware_download\",\"url\":\"{{$url}}\",\"url_status\":\"{{$urlStatus}}\",\"urlhaus_link\":\"https://urlhaus.abuse.ch/url/3589950/\"}",
+  "message": "{\"dateadded\":\"{{ $dateAdded }}\",\"id\":\"{{ $id }}\",\"last_online\":\"{{ $lastOnline }}\",\"reporter\":\"{{ $reporter }}\",\"tags\":[\"{{ $reporter }}\",\"{{ $id }}\",\"{{ $urlStatus }}\"],\"threat\":\"{{ $threat }}\",\"url\":\"http://{{ $urlIp }}/articles/{{ $urlPath }}/text.php\",\"url_status\":\"{{ $urlStatus }}\",\"urlhaus_link\":\"https://urlhaus.abuse.ch/url/{{ $id }}/\"}",
   "event": {
     "dataset": "ti_abusech.url"
   },
