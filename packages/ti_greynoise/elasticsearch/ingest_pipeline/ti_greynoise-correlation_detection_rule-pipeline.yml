@@ -31,21 +31,18 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
+      tag: remove_unwanted_fields
       source: |-
         // Define the list of fields to retain
         def fieldsToKeep = ["@timestamp"];
-
-        // Define regex patterns
-        def greynoisePattern = /^temp_fields.*/;  // Matches keys starting with 'temp_fields'
-        def underscorePattern = /^_.*/;  // Matches keys starting with '_'
 
         // Get a copy of the current document keys
         def keys = new ArrayList(ctx.keySet());
 
         // Iterate over the keys
         for (def key : keys) {
-          // If the key is not in fieldsToKeep, does not match any Pattern, remove it
-          if (!fieldsToKeep.contains(key) && !(key =~ greynoisePattern) && !(key =~ underscorePattern)) {
+          // Keep if the key is in fieldsToKeep, starts with "temp_fields" or starts with "_"
+          if (!fieldsToKeep.contains(key) && !key.startsWith("temp_fields") && !key.startsWith("_")) {
             ctx.remove(key);
           }
         }
