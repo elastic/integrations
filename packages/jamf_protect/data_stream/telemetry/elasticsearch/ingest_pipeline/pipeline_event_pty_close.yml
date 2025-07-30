@@ -1,0 +1,23 @@
+---
+description: Pipeline for parsing specific fields related to pty close events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A pseudoterminal control device is closed
+    - append:
+        field: event.type
+        value: end
+    - rename:
+        field: jamf_protect.telemetry.event.pty_close.dev
+        target_field: jamf_protect.telemetry.dev
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'
+        

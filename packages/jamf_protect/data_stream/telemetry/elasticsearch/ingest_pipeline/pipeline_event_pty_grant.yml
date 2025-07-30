@@ -1,0 +1,23 @@
+---
+description: Pipeline for parsing specific fields related to pty grant events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A pseudoterminal control device is granted
+    - append:
+        field: event.type
+        value: start
+    - rename:
+        field: jamf_protect.telemetry.event.pty_grant.dev
+        target_field: jamf_protect.telemetry.dev
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'
+        
