@@ -89,6 +89,27 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
       - topic
       - subscription name 
 
+## Troubleshooting
+
+### Breaking Changes
+
+#### Support for Elastic Vulnerability & Misconfiguration Findings page.
+
+Version `2.0.0` of the Google Security Command Center integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of Google Security Command Center integration to ingest their vulnerabilities and misconfiguration findings from Google Security Command Center platform into Elastic and get insights directly from [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and [Misconfiguration Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page).
+This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest findings from source indices matching the pattern `logs-google_scc.finding-*` into new destination indices matching the pattern `security_solution-google_scc.vulnerability_latest-*` and `security_solution-google_scc.misconfiguration_latest-`. The Elastic Findings pages will display findings based on the destination indices.
+
+For existing users of Google Security Command Center integration, before upgrading to `2.0.0` please ensure following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of finsings is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
+
 ## Logs reference
 
 ### Asset
@@ -494,32 +515,37 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "a9a0a3db-ff56-40e1-b324-4ad9ff501509",
-        "id": "39c156c2-79a3-4f0b-8edc-df08caf36ce0",
-        "name": "elastic-agent-83941",
+        "ephemeral_id": "1dc978d7-ef40-4a3d-9786-3411e417898f",
+        "id": "06ad7c29-d71d-4938-81d0-37c2128940bb",
+        "name": "elastic-agent-57944",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "google_scc.finding",
-        "namespace": "71507",
+        "namespace": "37601",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "39c156c2-79a3-4f0b-8edc-df08caf36ce0",
-        "snapshot": false,
-        "version": "8.18.0"
+        "id": "06ad7c29-d71d-4938-81d0-37c2128940bb",
+        "snapshot": true,
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
-        "ingested": "2025-07-22T06:28:25Z",
+        "id": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
+        "ingested": "2025-07-30T05:33:00Z",
         "kind": "event",
-        "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}"
+        "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}",
+        "severity": 99,
+        "type": [
+            "info"
+        ]
     },
     "google_scc": {
         "finding": {
@@ -546,6 +572,9 @@ An example event for `finding` looks as following:
             },
             "name": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
             "parent": "organizations/515665165161/sources/98481484454154454545",
+            "resource": {
+                "name": "//cloudresourcemanager.googleapis.com/projects/45455445554"
+            },
             "resource_name": "//cloudresourcemanager.googleapis.com/projects/45455445554",
             "security_marks": {
                 "name": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks"
@@ -558,8 +587,14 @@ An example event for `finding` looks as following:
     "input": {
         "type": "httpjson"
     },
+    "observer": {
+        "vendor": "Google Security Command Center"
+    },
     "organization": {
         "id": "515665165161"
+    },
+    "resource": {
+        "id": "//cloudresourcemanager.googleapis.com/projects/45455445554"
     },
     "tags": [
         "preserve_original_event",
@@ -579,12 +614,12 @@ An example event for `finding` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | google_scc.finding.access.caller_ip | Caller's IP address, such as "1.1.1.1". | ip |
 | google_scc.finding.access.caller_ip_geo.region_code | A CLDR. | keyword |
 | google_scc.finding.access.method_name | The method that the service account called, e.g. "SetIamPolicy". | keyword |
@@ -594,6 +629,7 @@ An example event for `finding` looks as following:
 | google_scc.finding.access.service_account.delegation_info.principal.subject | A string representing the principalSubject associated with the identity. As compared to principalEmail, supports principals that aren't associated with email addresses, such as third party principals. For most identities, the format will be principal://iam.googleapis.com/\{identity pool name\}/subject/\{subject\} except for some GKE identities (GKE_WORKLOAD, FREEFORM, GKE_HUB_WORKLOAD) that are still in the legacy format serviceAccount:\{identity pool name\}[\{subject\}]. | keyword |
 | google_scc.finding.access.service_account.key_name | The name of the service account key that was used to create or exchange credentials for authenticating the service account that made the request. This is a scheme-less URI full resource name. For example:  "//iam.googleapis.com/projects/\{PROJECT_ID\}/serviceAccounts/\{ACCOUNT\}/keys/\{key\}". | keyword |
 | google_scc.finding.access.service_name | This is the API service that the service account made a call to, e.g. "iam.googleapis.com". | keyword |
+| google_scc.finding.access.user_agent | The caller's user agent string associated with the finding. | keyword |
 | google_scc.finding.access.user_agent_family | Type of user agent associated with the finding, for example, operating system shells and embedded or stand-alone applications. | keyword |
 | google_scc.finding.access.user_name | A string that represents a username. The username provided depends on the type of the finding and is likely not an IAM principal. For example, this can be a system username if the finding is related to a virtual machine, or it can be an application login username. | keyword |
 | google_scc.finding.canonical_name | The canonical name of the finding. It's either "organizations/\{organization_id\}/sources/\{source_id\}/findings/\{findingId\}", "folders/\{folder_id\}/sources/\{source_id\}/findings/\{findingId\}" or "projects/\{project_number\}/sources/\{source_id\}/findings/\{findingId\}", depending on the closest CRM ancestor of the resource associated with the finding. | keyword |
@@ -694,6 +730,10 @@ An example event for `finding` looks as following:
 | google_scc.finding.kubernetes.roles.kind | Role type. | keyword |
 | google_scc.finding.kubernetes.roles.name | Role name. | keyword |
 | google_scc.finding.kubernetes.roles.namespace | Role namespace. | keyword |
+| google_scc.finding.log_entries.cloud_logging_entry.insert_id | A unique identifier for the log entry. | keyword |
+| google_scc.finding.log_entries.cloud_logging_entry.log_id | The type of the log. | keyword |
+| google_scc.finding.log_entries.cloud_logging_entry.resource_container | The organization, folder, or project of the monitored resource that produced this log entry. | keyword |
+| google_scc.finding.log_entries.cloud_logging_entry.timestamp | The time the event described by the log entry occurred. | date |
 | google_scc.finding.mitre_attack.additional.tactics | Additional MITRE ATT&CK tactics related to this finding, if any. | keyword |
 | google_scc.finding.mitre_attack.additional.techniques | Additional MITRE ATT&CK techniques related to this finding, if any, along with any of their respective parent techniques. | keyword |
 | google_scc.finding.mitre_attack.primary.tactic | The MITRE ATT&CK tactic most closely represented by this finding, if any. | keyword |
@@ -703,6 +743,10 @@ An example event for `finding` looks as following:
 | google_scc.finding.mute.initiator | Records additional information about the mute operation, for example, the mute configuration that muted the finding and the user who muted the finding. | keyword |
 | google_scc.finding.mute.state | Indicates the mute state of a finding (either muted, unmuted or undefined). Unlike other attributes of a finding, a finding provider shouldn't set the value of mute. | keyword |
 | google_scc.finding.mute.update_time | Output only. The most recent time this finding was muted or unmuted. | date |
+| google_scc.finding.mute_info.dynamic_mute_records.match_time | When the dynamic mute rule first matched the finding. | date |
+| google_scc.finding.mute_info.dynamic_mute_records.mute_config | The relative resource name of the mute rule, represented by a mute config. | keyword |
+| google_scc.finding.mute_info.static_mute.apply_time | When the static mute was applied. | date |
+| google_scc.finding.mute_info.static_mute.state | The static mute state. If the value is MUTED or UNMUTED, then the finding's overall mute state will have the same value. | keyword |
 | google_scc.finding.name | The relative resource name of this finding. See: https://cloud.google.com/apis/design/resource_names#relative_resource_name Example: "organizations/\{organization_id\}/sources/\{source_id\}/findings/\{findingId\}". | keyword |
 | google_scc.finding.next_steps | Steps to address the finding. | keyword |
 | google_scc.finding.notification_config_name |  | keyword |
@@ -734,14 +778,22 @@ An example event for `finding` looks as following:
 | google_scc.finding.processes.script.path | Absolute path of the file as a JSON encoded string. | keyword |
 | google_scc.finding.processes.script.sha256 | SHA256 hash of the first hashedSize bytes of the file encoded as a hex string. If hashedSize == size, sha256 represents the SHA256 hash of the entire file. | keyword |
 | google_scc.finding.processes.script.size | Size of the file in bytes. | long |
+| google_scc.finding.resource.cloud_provider | Indicates which cloud provider the finding is from. | keyword |
 | google_scc.finding.resource.display_name | The human readable name of the resource. | keyword |
-| google_scc.finding.resource.folders.display_name | The user defined display name for this folder. | keyword |
-| google_scc.finding.resource.folders.name | Full resource name of this folder. See: https://cloud.google.com/apis/design/resource_names#full_resource_name | keyword |
-| google_scc.finding.resource.name | For findings on Google Cloud resources, the full resource name of the Google Cloud resource this finding is for. See: https://cloud.google.com/apis/design/resource_names#full_resource_name When the finding is for a non-Google Cloud resource, the resourceName can be a customer or partner defined string. This field is immutable after creation time. | keyword |
-| google_scc.finding.resource.parent.display_name | The human readable name of resource's parent. | keyword |
-| google_scc.finding.resource.parent.name | The full resource name of resource's parent. | keyword |
-| google_scc.finding.resource.project.display_name | The project ID that the resource belongs to. | keyword |
-| google_scc.finding.resource.project.name | The full resource name of project that the resource belongs to. | keyword |
+| google_scc.finding.resource.gcp_metadata.folders.resource_folder | Full resource name of this folder. | keyword |
+| google_scc.finding.resource.gcp_metadata.folders.resource_folder_display_name | The user defined display name for this folder. | keyword |
+| google_scc.finding.resource.gcp_metadata.organization | The name of the organization that the resource belongs to. | keyword |
+| google_scc.finding.resource.gcp_metadata.parent | The full resource name of resource's parent. | keyword |
+| google_scc.finding.resource.gcp_metadata.parent_display_name | The human readable name of resource's parent. | keyword |
+| google_scc.finding.resource.gcp_metadata.project | The full resource name of project that the resource belongs to. | keyword |
+| google_scc.finding.resource.gcp_metadata.project_display_name | The project ID that the resource belongs to. | keyword |
+| google_scc.finding.resource.location | The region or location of the service (if applicable). | keyword |
+| google_scc.finding.resource.name | The full resource name of the resource. | keyword |
+| google_scc.finding.resource.resource_path.nodes.display_name | The display name of the resource this node represents. | keyword |
+| google_scc.finding.resource.resource_path.nodes.id | The ID of the resource this node represents. | keyword |
+| google_scc.finding.resource.resource_path.nodes.node_type | The type of resource this node represents. | keyword |
+| google_scc.finding.resource.resource_path_string | A string representation of the resource path. | keyword |
+| google_scc.finding.resource.service | The service or resource provider associated with the resource. | keyword |
 | google_scc.finding.resource.type | The full resource type of the resource. | keyword |
 | google_scc.finding.resource_name | For findings on Google Cloud resources, the full resource name of the Google Cloud resource this finding is for. See: https://cloud.google.com/apis/design/resource_names#full_resource_name When the finding is for a non-Google Cloud resource, the resourceName can be a customer or partner defined string. This field is immutable after creation time. | keyword |
 | google_scc.finding.security_marks.canonical_name | The canonical name of the marks. Examples: "organizations/\{organization_id\}/assets/\{asset_id\}/securityMarks" "folders/\{folder_id\}/assets/\{asset_id\}/securityMarks" "projects/\{project_number\}/assets/\{asset_id\}/securityMarks" "organizations/\{organization_id\}/sources/\{source_id\}/findings/\{findingId\}/securityMarks" "folders/\{folder_id\}/sources/\{source_id\}/findings/\{findingId\}/securityMarks" "projects/\{project_number\}/sources/\{source_id\}/findings/\{findingId\}/securityMarks". | keyword |
@@ -788,7 +840,20 @@ An example event for `finding` looks as following:
 | google_scc.finding.vulnerability.security_bulletin.submission_time | Submission time of this Security Bulletin. | date |
 | google_scc.finding.vulnerability.security_bulletin.suggested_upgrade_version | This represents a version that the cluster receiving this notification should be upgraded to, based on its current version. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Log offset. | long |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
+| resource.id | The ID of the resource. | keyword |
+| resource.name | The name of the resource. | keyword |
+| resource.type | The type of the resource. | keyword |
+| result.evaluation | The result of the evaluation. | keyword |
+| rule.remediation | The remediation actions for the rule. | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
+| vulnerability.published_date | When the vulnerability was published. | date |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.title | The human readeable title of the vulnerability. | keyword |
 
 
 ### Source

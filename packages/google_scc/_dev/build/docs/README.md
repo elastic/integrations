@@ -89,6 +89,27 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
       - topic
       - subscription name 
 
+## Troubleshooting
+
+### Breaking Changes
+
+#### Support for Elastic Vulnerability & Misconfiguration Findings page.
+
+Version `2.0.0` of the Google Security Command Center integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of Google Security Command Center integration to ingest their vulnerabilities and misconfiguration findings from Google Security Command Center platform into Elastic and get insights directly from [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and [Misconfiguration Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page).
+This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest findings from source indices matching the pattern `logs-google_scc.finding-*` into new destination indices matching the pattern `security_solution-google_scc.vulnerability_latest-*` and `security_solution-google_scc.misconfiguration_latest-`. The Elastic Findings pages will display findings based on the destination indices.
+
+For existing users of Google Security Command Center integration, before upgrading to `2.0.0` please ensure following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of finsings is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
+
 ## Logs reference
 
 ### Asset

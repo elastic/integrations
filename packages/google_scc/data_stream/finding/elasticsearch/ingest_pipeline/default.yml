@@ -46,10 +46,23 @@ processors:
       fields:
         - json.finding.eventTime
         - json.finding.createTime
+        - json.finding.name
+        - json.finding.muteUpdateTime
+        - json.finding.resourceName
       tag: fingerprint_processor
       target_field: _id
       ignore_missing: true
 
+  - rename:
+      field: json.resource
+      target_field: json.finding.resource
+      tag: rename_resource
+      ignore_missing: true
+  - rename:
+      field: json.stateChange
+      target_field: json.finding.stateChange
+      tag: rename_stateChange
+      ignore_missing: true
   # rename to snake case
   - script:
       tag: script_convert_camelcase_to_snake_case
@@ -102,16 +115,10 @@ processors:
         // Apply the conversion
         ctx.google_scc = ctx.google_scc ?: [:];
         if (ctx.json != null) {
-          ctx.google_scc.finding = convertToSnakeCase(ctx.json);
+          ctx.google_scc.finding = convertToSnakeCase(ctx.json.finding);
         }
 
   # convert values
-  - rename:
-      field: google_scc.finding.finding
-      target_field: google_scc.finding
-      tag: rename_finding
-      ignore_missing: true
-      override: true
   - date:
       field: google_scc.finding.event_time
       target_field: google_scc.finding.event_time
@@ -234,6 +241,20 @@ processors:
       target_field: google_scc.finding.mitre_attack.primary.techniques
       tag: rename_finding_mitre_attack_primary_techniques
       ignore_missing: true
+  - foreach:
+      field: google_scc.finding.log_entries
+      if: ctx.google_scc?.finding?.log_entries instanceof List
+      processor:
+        date:
+          field: _ingest._value.cloud_logging_entry.timestamp
+          target_field: _ingest._value.cloud_logging_entry.timestamp
+          tag: date_finding_log_entries_cloud_logging_entry_timestamp
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.cloud_logging_entry.timestamp
+                ignore_missing: true
   - convert:
       field: google_scc.finding.access.caller_ip
       tag: convert_finding_access_caller_ip_to_ip
@@ -571,6 +592,33 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_scc.finding.mute_info.static_mute.apply_time
+      target_field: google_scc.finding.mute_info.static_mute.apply_time
+      tag: date_finding_mute_info_static_mute_apply_time
+      formats:
+        - ISO8601
+      if: ctx.google_scc?.finding?.mute_info?.static_mute?.apply_time != null && ctx.google_scc.finding.mute_info.static_mute.apply_time != ''
+      on_failure:
+        - remove:
+            field: google_scc.finding.mute_info.static_mute.apply_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_scc.finding.mute_info.dynamic_mute_records
+      if: ctx.google_scc?.finding?.mute_info?.dynamic_mute_records instanceof List
+      processor:
+        date:
+          field: _ingest._value.match_time
+          target_field: _ingest._value.match_time
+          tag: date_finding_mute_info_dynamic_mute_records_match_time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.match_time
+                ignore_missing: true
   - foreach:
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
@@ -727,8 +775,8 @@ processors:
           tag: rename_finding_processes_parent_pid
           target_field: _ingest._value.parent.pid
           ignore_missing: true
-  # GCP meta fields namely - projectName,projectDisplayName,parentName,parentDisplayName,folders,cloudProvider,organization 
-  # are inside "resource" field in v1 API. 
+  # GCP meta fields namely - projectName,projectDisplayName,parentName,parentDisplayName,folders,cloudProvider,organization
+  # are inside "resource" field in v1 API.
   # Copy them into "google_scc.finding.resource.gcp_metadata" to consistent with v2 API.
   - rename:
       field: google_scc.finding.resource.folders
@@ -742,7 +790,7 @@ processors:
       ignore_missing: true
   - rename:
       field: google_scc.finding.resource.parent_name
-      target_field: google_scc.finding.resource.gcp_metadata.parent_name
+      target_field: google_scc.finding.resource.gcp_metadata.parent
       tag: rename_resource_parent_name
       ignore_missing: true
   - rename:
@@ -752,7 +800,7 @@ processors:
       ignore_missing: true
   - rename:
       field: google_scc.finding.resource.project_name
-      target_field: google_scc.finding.resource.gcp_metadata.project_name
+      target_field: google_scc.finding.resource.gcp_metadata.project
       tag: rename_resource_project_name
       ignore_missing: true
   - rename:
@@ -908,38 +956,95 @@ processors:
   # event.*
   - set:
       field: event.kind
-      tag: set_event_kind
-      value: event
+      tag: set_event_kind_to_alert
+      value: alert
+      if: ctx.google_scc?.finding?.class == 'THREAT'
   - set:
       field: event.kind
-      tag: set_event_kind
-      value: alert
-      if: ctx.google_scc?.finding?.class != null && ['THREAT','VULNERABILITY','MISCONFIGURATION'].contains(ctx.google_scc.finding.class.toLowerCase())
+      tag: set_event_kind_to_state
+      value: state
+      if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+      if: ctx.event?.kind == null
+  - append:
       field: event.category
-      tag: set_event_category
-      value: [vulnerability]
+      tag: append_vulnerability_into_event_category
+      value: vulnerability
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
-  - set:
+  - append:
       field: event.category
-      tag: set_event_category
-      value: [threat]
+      tag: append_threat_into_event_category
+      value: threat
       if: ctx.google_scc?.finding?.class == 'THREAT'
-  - set:
+  - append:
+      field: event.category
+      tag: append_configuration_into_event_category
+      value: configuration
+      if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+  - append:
       field: event.type
-      tag: set_event_type
-      value: [info]
-      if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
-  - set:
-      field: event.type
-      tag: set_event_type
-      value: [indicator]
+      tag: append_indicator_into_event_type
+      value: indicator
       if: ctx.google_scc?.finding?.class == 'THREAT'
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      if: ctx.event?.type == null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success
+      value: success
+      if: ctx.google_scc?.finding?.state == 'INACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.google_scc?.finding?.state == 'ACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_unknown
+      value: unknown
+      if: ctx.google_scc?.finding?.state == 'STATE_UNSPECIFIED' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: event.created
       tag: set_event_created_from_create_time
       copy_from: google_scc.finding.create_time
       ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_name
+      copy_from: google_scc.finding.name
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: script_to_set_event_severity
+      if: ctx.google_scc?.finding?.severity != null
+      source: |-
+        def severity = ctx.google_scc.finding.severity;
+          if (severity == 'LOW' || severity == 'SEVERITY_UNSPECIFIED') {
+            ctx.event.severity = 21;
+          } else if (severity == 'MEDIUM') {
+            ctx.event.severity = 47;
+          } else if (severity == 'HIGH') {
+            ctx.event.severity = 73;
+          } else if (severity == 'CRITICAL') {
+            ctx.event.severity = 99;
+          }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # observer.*
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google Security Command Center
 
   # container.*
   - foreach:
@@ -951,6 +1056,86 @@ processors:
           tag: append_finding_containers_name_to_conatiner_name
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
+
+  # cloud.*
+  - dissect:
+      description: Extract Cloud Account ID.
+      field: google_scc.finding.resource.gcp_metadata.organization
+      pattern: 'organizations/%{cloud.account.id}'
+      if: ctx.google_scc?.finding?.resource?.gcp_metadata?.organization != ''
+      tag: dissect_to_extract_cloud_account_id
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_aws_metadata_account_id
+      copy_from: google_scc.finding.resource.aws_metadata.account.id
+      ignore_empty_value: true
+      if: ctx.cloud?.account?.id == null
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_resource_name
+      copy_from: google_scc.finding.resource.name
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.resource?.type == 'google.compute.Instance'
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_resource_display_name
+      copy_from: google_scc.finding.resource.display_name
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.resource?.type == 'google.compute.Instance'
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_to_gcp
+      value: gcp
+      if: ctx.google_scc?.finding?.resource?.cloud_provider == 'GOOGLE_CLOUD_PLATFORM'
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_to_aws
+      value: aws
+      if: ctx.google_scc?.finding?.resource?.cloud_provider == 'AMAZON_WEB_SERVICES'
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_to_azure
+      value: azure
+      if: ctx.google_scc?.finding?.resource?.cloud_provider == 'MICROSOFT_AZURE'
+  - grok:
+      field: google_scc.finding.resource.location
+      tag: grok_to_extract_cloud_region
+      patterns:
+        - '^%{DATA:cloud.region}-(?<_temp>.)$'
+        - '^%{DATA:cloud.region}$'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_resource_location
+      copy_from: google_scc.finding.resource.location
+      ignore_empty_value: true
+  - set:
+      field: cloud.project.id
+      tag: set_cloud_project_id_from_resource_gcp_metadata_project
+      copy_from: google_scc.finding.resource.gcp_metadata.project
+      ignore_empty_value: true
+  - set:
+      field: cloud.project.name
+      tag: set_cloud_project_name_from_resource_gcp_metadata_project_display_name
+      copy_from: google_scc.finding.resource.gcp_metadata.project_display_name
+      ignore_empty_value: true
+
+  # host.*
+  - set:
+      field: host.name
+      tag: set_host_name_from_resource_name
+      copy_from: google_scc.finding.resource.name
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.resource?.type == 'google.compute.Instance'
 
   # destination.*
   - foreach:
@@ -1036,17 +1221,60 @@ processors:
       ignore_missing: true
 
   # organization.*
-  - grok:
+  - dissect:
       description: Extract Organization ID.
       field: google_scc.finding.parent
-      tag: grok_to_extract_organization_id
-      if: ctx.google_scc?.finding?.parent != null
-      patterns:
-        - '^organizations/%{DATA:organization.id}/sources/%{DATA:google_scc.finding.source_id}$'
+      pattern: 'organizations/%{organization.id}/sources/%{google_scc.finding.source_id}'
+      if: ctx.google_scc?.finding?.parent != ''
+      tag: dissect_to_extract_organization_id
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # orchestrator.*
+  - foreach:
+      field: google_scc.finding.kubernetes.access_reviews
+      if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
+      processor:
+        append:
+          field: orchestrator.namespace
+          tag: append_kubernetes_access_reviews_ns_to_orchestrator_namespace
+          value: '{{{_ingest._value.ns}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.kubernetes.access_reviews
+      if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
+      processor:
+        append:
+          field: orchestrator.resource.name
+          tag: append_kubernetes_access_reviews_name_to_orchestrator_resource_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.kubernetes.access_reviews
+      if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
+      processor:
+        append:
+          field: orchestrator.api_version
+          tag: append_kubernetes_access_reviews_version_to_orchestrator_api_version
+          value: '{{{_ingest._value.version}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.kubernetes.access_reviews
+      if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
+      processor:
+        append:
+          field: orchestrator.resource.type
+          tag: append_kubernetes_access_reviews_resource_to_orchestrator_resource_type
+          value: '{{{_ingest._value.resource}}}'
+          allow_duplicates: false
+  - set:
+      field: orchestrator.type
+      tag: set_orchestrator_type_to_kubernetes
+      value: kubernetes
+      if: ctx.google_scc?.finding?.kubernetes != null
 
   # file.*
   - foreach:
@@ -1090,6 +1318,23 @@ processors:
           tag: append_files_sha256_to_file_hash_sha256
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
+
+  # package.*
+  - set:
+      field: package.name
+      tag: set_package_name_from_vulnerability_offending_package_package_name
+      copy_from: google_scc.finding.vulnerability.offending_package.package_name
+      ignore_empty_value: true
+  - set:
+      field: package.version
+      tag: set_package_version_from_vulnerability_offending_package_package_version
+      copy_from: google_scc.finding.vulnerability.offending_package.package_version
+      ignore_empty_value: true
+  - set:
+      field: package.fixed_version
+      tag: set_package_fixed_version_from_vulnerability_fixed_package_package_version
+      copy_from: google_scc.finding.vulnerability.fixed_package.package_version
+      ignore_empty_value: true
 
   # process.*
   - foreach:
@@ -1147,6 +1392,67 @@ processors:
           tag: append_finding_processes_name_to_process_name
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
+
+  # resource.*
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_resource_name
+      copy_from: google_scc.finding.resource.name
+      ignore_empty_value: true
+  - set:
+      field: resource.name
+      tag: set_resource_name_from_resource_display_name
+      copy_from: google_scc.finding.resource.display_name
+      ignore_empty_value: true
+  - set:
+      field: resource.type
+      tag: set_resource_type_from_resource_type
+      copy_from: google_scc.finding.resource.type
+      ignore_empty_value: true
+
+  # result.*
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_passed
+      value: passed
+      if: ctx.google_scc?.finding?.state == 'INACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_failed
+      value: failed
+      if: ctx.google_scc?.finding?.state == 'ACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_unknown
+      value: unknown
+      if: ctx.google_scc?.finding?.state == 'STATE_UNSPECIFIED' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+
+  # rule.*
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_category
+      copy_from: google_scc.finding.category
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+  - fingerprint:
+      fields:
+        - google_scc.finding.category
+      tag: fingerprint_rule_uuid
+      target_field: rule.uuid
+      if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+      ignore_missing: true
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_description
+      copy_from: google_scc.finding.description
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
+  - set:
+      field: rule.remediation
+      tag: set_rule_remediation_from_source_properties_recommendation
+      copy_from: google_scc.finding.source_properties.recommendation
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
 
   # threat.*
   - foreach:
@@ -1385,9 +1691,44 @@ processors:
   # user.*
   - set:
       field: user.name
-      tag: set_user_name
+      tag: set_user_name_from_access_user_name
+      copy_from: google_scc.finding.access.user_name
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_database_user_name
       copy_from: google_scc.finding.database.user_name
       ignore_empty_value: true
+      if: ctx.user?.name == null
+  - set:
+      field: user.id
+      tag: set_user_id_from_access_principal_email
+      copy_from: google_scc.finding.access.principal.email
+      ignore_empty_value: true
+  - foreach:
+      field: google_scc.finding.access.service_account_delegation_info
+      if: ctx.google_scc?.finding?.access?.service_account_delegation_info instanceof List && ctx.user?.id == null
+      processor:
+        append:
+          field: user.id
+          tag: append_access_service_account_delegation_info_principal_email_to_user_id
+          value: '{{{_ingest._value.principal.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.data_access_events
+      if: ctx.google_scc?.finding?.data_access_events instanceof List && ctx.user?.id == null
+      processor:
+        append:
+          field: user.id
+          tag: append_data_access_events_principal_email_to_user_id
+          value: '{{{_ingest._value.principal_email}}}'
+          allow_duplicates: false
+  - set:
+      field: user.email
+      tag: set_user_email_from_user_id
+      copy_from: user.id
+      ignore_empty_value: true
+      if: ctx.user?.name == null
   - foreach:
       field: google_scc.finding.iam_bindings
       if: ctx.google_scc?.finding?.iam_bindings instanceof List
@@ -1402,23 +1743,40 @@ processors:
   - set:
       field: vulnerability.classification
       value: CVSS
-      if: ctx.google_scc?.finding?.vulnerability != null
       tag: set_vulnerability_classification
+      if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - set:
       field: vulnerability.enumeration
       value: CVE
-      if: ctx.google_scc?.finding?.vulnerability != null
-      tag: set_vulnerability_enumeration
+      tag: set_vulnerability_enumeration_to_CVE
+      if: ctx.google_scc?.finding?.class == 'VULNERABILITY' && ctx.google_scc?.finding?.vulnerability?.cve?.id?.startsWith('CVE') == true
+  - set:
+      field: vulnerability.enumeration
+      value: GHSA
+      tag: set_vulnerability_enumeration_to_GHSA
+      if: ctx.google_scc?.finding?.class == 'VULNERABILITY' && ctx.google_scc?.finding?.vulnerability?.cve?.id?.startsWith('GHSA') == true
   - set:
       field: vulnerability.score.version
       value: '3.1'
-      if: ctx.google_scc?.finding?.vulnerability != null
       tag: set_vulnerability_score_version
+      if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - set:
       field: vulnerability.id
-      tag: set_vulnerability_id
+      tag: set_vulnerability_id_from_vulnerability_cve_id
       copy_from: google_scc.finding.vulnerability.cve.id
       ignore_empty_value: true
+  - append:
+      field: vulnerability.category
+      tag: append_category_to_vulnerability_category
+      value: '{{{google_scc.finding.category}}}'
+      allow_duplicates: false
+      if: ctx.google_scc?.finding?.category != null && ctx.google_scc?.finding?.class == 'VULNERABILITY'
+  - set:
+      field: vulnerability.description
+      tag: set_vulnerability_description_from_description
+      copy_from: google_scc.finding.description
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - foreach:
       field: google_scc.finding.vulnerability.cve.references
       if: ctx.google_scc?.finding?.vulnerability?.cve?.references instanceof List
@@ -1430,9 +1788,62 @@ processors:
           allow_duplicates: false
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base
+      tag: set_vulnerability_score_base_from_vulnerability_cve_cvssv3_base_score
       copy_from: google_scc.finding.vulnerability.cve.cvssv3.base_score
       ignore_empty_value: true
+  - set:
+      field: vulnerability.published_date
+      tag: set_vulnerability_published_date_from_vulnerability_cve_exploit_release_date
+      copy_from: google_scc.finding.vulnerability.cve.exploit_release_date
+      ignore_empty_value: true
+  - script:
+      description: Map vulnerability.severity to CVSS standard
+      tag: script_to_map_severity_to_CVSS
+      lang: painless
+      if: ctx.google_scc?.finding?.severity != null && ctx.google_scc.finding.class == 'VULNERABILITY'
+      source: >
+        String severity = ctx.google_scc.finding.severity;
+        if (severity == 'SEVERITY_UNSPECIFIED') {
+          ctx.vulnerability.put('severity', 'None');
+        } else if (severity == 'LOW') {
+          ctx.vulnerability.put('severity', 'Low');
+        } else if (severity == 'MEDIUM') {
+          ctx.vulnerability.put('severity', 'Medium');
+        } else if (severity == 'HIGH') {
+          ctx.vulnerability.put('severity', 'High');
+        } else if (severity == 'CRITICAL') {
+          ctx.vulnerability.put('severity', 'Critical');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.title
+      tag: set_vulnerability_title_from_package_name_package_version_vulnerability_id
+      value: 'Vulnerability found in {{{package.name}}} {{{package.version}}} - {{{vulnerability.id}}}'
+      if: ctx.package?.name != null && ctx.package?.version != null && ctx.vulnerability?.id != null
+  - set:
+      field: vulnerability.title
+      tag: set_vulnerability_title_from_package_name_package_version
+      value: 'Vulnerability found in {{{package.name}}} {{{package.version}}}'
+      if: ctx.package?.name != null && ctx.package?.version != null && ctx.vulnerability?.title == null
+  - set:
+      field: vulnerability.title
+      tag: set_vulnerability_title_from_vulnerability_id
+      value: 'Vulnerability found - {{{vulnerability.id}}}'
+      if: ctx.vulnerability?.id != null && ctx.vulnerability?.title == null
+  - set:
+      field: vulnerability.scanner.vendor
+      tag: set_vulnerability_scanner_vendor
+      value: Google Security Command Center
+      if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
+  - set:
+      field: vulnerability.cve
+      tag: set_vulnerability_cve_from_vulnerability_cve_id
+      copy_from: google_scc.finding.vulnerability.cve.id
+      ignore_empty_value: true
+      if: ctx.google_scc?.finding?.class == 'VULNERABILITY' && ctx.google_scc?.finding?.vulnerability?.cve?.id?.startsWith('CVE') == true
 
   # related.*
   - foreach:
@@ -1470,10 +1881,112 @@ processors:
       if: ctx.google_scc?.finding?.access?.caller_ip != null
   - append:
       field: related.user
-      tag: append_user_name_to_related_user
-      value: '{{{user.name}}}'
+      tag: append_access_user_name_to_related_user
+      value: '{{{google_scc.finding.access.user_name}}}'
       allow_duplicates: false
-      if: ctx.user?.name != null
+      if: ctx.google_scc?.finding?.access?.user_name != null
+  - append:
+      field: related.user
+      tag: append_database_user_name_to_related_user
+      value: '{{{google_scc.finding.database.user_name}}}'
+      allow_duplicates: false
+      if: ctx.google_scc?.finding?.database?.user_name != null
+  - append:
+      field: related.user
+      tag: append_access_principal_email_to_related_user
+      value: '{{{google_scc.finding.access.principal.email}}}'
+      allow_duplicates: false
+      if: ctx.google_scc?.finding?.access?.principal?.email != null
+  - foreach:
+      field: google_scc.finding.access.service_account_delegation_info
+      if: ctx.google_scc?.finding?.access?.service_account_delegation_info instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_access_service_account_delegation_info_principal_email_into_related_user
+          value: '{{{_ingest._value.principal.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.data_access_events
+      if: ctx.google_scc?.finding?.data_access_events instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_data_access_events_principal_email_into_related_user
+          value: '{{{_ingest._value.principal_email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.billing
+      if: ctx.google_scc?.finding?.contacts?.billing instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_billing_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.legal
+      if: ctx.google_scc?.finding?.contacts?.legal instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_legal_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.security
+      if: ctx.google_scc?.finding?.contacts?.security instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_security_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.all
+      if: ctx.google_scc?.finding?.contacts?.all instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_all_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.product_updates
+      if: ctx.google_scc?.finding?.contacts?.product_updates instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_product_updates_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.suspension
+      if: ctx.google_scc?.finding?.contacts?.suspension instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_suspension_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.technical
+      if: ctx.google_scc?.finding?.contacts?.technical instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_technical_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_scc.finding.contacts.technical_incidents
+      if: ctx.google_scc?.finding?.contacts?.technical_incidents instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_contacts_technical_incidents_email_into_related_user
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
   - foreach:
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
@@ -1518,6 +2031,7 @@ processors:
   - remove:
       field:
         - json
+        - _temp
         - google_scc.finding.cloud_dlp_inspection.full_scan
         - google_scc.finding.cloud_dlp_inspection.info_type_count
         - google_scc.finding.kernel_root_kit.unexpected_code_modification
@@ -1593,17 +2107,38 @@ processors:
             - _ingest._value.role
           tag: remove_remove_duplicate_custom_fields_from_iam_bindings_array
           ignore_missing: true
+  - foreach:
+      field: google_scc.finding.kubernetes.access_reviews
+      if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      processor:
+        remove:
+          field:
+            - _ingest._value.ns
+            - _ingest._value.name
+            - _ingest._value.version
+            - _ingest._value.resource
+          tag: remove_remove_duplicate_custom_fields_from_kubernetes_access_reviews_array
+          ignore_missing: true
   - remove:
       field:
         - google_scc.finding.event_time
         - google_scc.finding.create_time
+        - google_scc.finding.name
+        - google_scc.finding.resource.name
+        - google_scc.finding.resource.type
+        - google_scc.finding.resource.display_name
         - google_scc.finding.description
         - google_scc.finding.mitre_attack.additional.tactics
         - google_scc.finding.mitre_attack.primary.tactic
         - google_scc.finding.mitre_attack.additional.techniques
         - google_scc.finding.mitre_attack.primary.techniques
+        - google_scc.finding.resource.location
+        - google_scc.finding.resource.gcp_metadata.project
+        - google_scc.finding.resource.gcp_metadata.project_display_name
+        - google_scc.finding.vulnerability.offending_package.package_name
+        - google_scc.finding.vulnerability.offending_package.package_version
+        - google_scc.finding.vulnerability.fixed_package.package_version
         - google_scc.finding.external_uri
-        - google_scc.finding.database.user_name
         - google_scc.finding.vulnerability.cve.id
         - google_scc.finding.vulnerability.cve.cvssv3.base_score
       tag: remove_duplicate_custom_fields
