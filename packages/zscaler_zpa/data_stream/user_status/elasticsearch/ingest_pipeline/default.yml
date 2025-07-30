@@ -13,13 +13,31 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - script:
+      description: Drops null/empty values in json recursively.
+      tag: remove_empty_values_from_json
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
   - date:
       field: json.LogTimestamp
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-      if: ctx.json?.LogTimestamp != null && ctx.json.LogTimestamp != ''
+      if: ctx.json?.LogTimestamp != null 
       on_failure:
         - remove:
             field: json.LogTimestamp
@@ -154,7 +172,7 @@ processors:
       target_field: zscaler_zpa.user_status.timestamp.authentication
       formats:
         - ISO8601
-      if: ctx.json?.TimestampAuthentication != null && ctx.json.TimestampAuthentication != ''
+      if: ctx.json?.TimestampAuthentication != null 
       on_failure:
         - remove:
             field: json.TimestampAuthentication
@@ -234,6 +252,7 @@ processors:
       if: ctx.json?.PosturesMiss instanceof List
   - script:
       description: Drops null/empty values recursively.
+      tag: remove_empty_values_from_event
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
