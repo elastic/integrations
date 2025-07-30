@@ -55,6 +55,7 @@ processors:
       target_field: client.ip
       type: ip
       ignore_missing: true
+      if: ctx.json?.PublicIP != ''
       on_failure:
         - remove:
             field: json.PublicIP
@@ -135,6 +136,7 @@ processors:
       target_field: zscaler_zpa.user_status.private_ip
       type: ip
       ignore_missing: true
+      if: ctx.json?.PrivateIP != ''
       on_failure:
         - remove:
             field: json.PrivateIP
@@ -164,7 +166,7 @@ processors:
       target_field: zscaler_zpa.user_status.timestamp.unauthentication
       formats:
         - ISO8601
-      if: ctx.json?.TimestampAuthentication != null && ctx.json.TimestampUnAuthentication != ''
+      if: ctx.json?.TimestampUnAuthentication != null && ctx.json.TimestampUnAuthentication != ''
       on_failure:
         - remove:
             field: json.TimestampUnAuthentication
