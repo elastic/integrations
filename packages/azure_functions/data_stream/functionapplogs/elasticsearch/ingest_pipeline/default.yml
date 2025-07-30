@@ -21,9 +21,21 @@ processors:
       field: event.original
       target_field: json
       on_failure:
+        - grok:
+            field: event.original
+            patterns:
+                - "resourceId\": ?\"%{DATA:azure.category}\""
+                - "time\": ?\"%{DATA:azure.time}\""
+                - "category\": ?\"%{DATA:azure.category}\""
+            ignore_failure: true
+            ignore_missing: true
         - set:
             field: error.message
             value: 'Received invalid JSON from the Azure Function service. Unable to parse the source log message'
+            ignore_failure: true
+        - append:
+            field: tags
+            value: ["preserve_original_event"]
             ignore_failure: true
   - date:
       field: json.time
@@ -44,6 +56,11 @@ processors:
       field: json.operationName
       target_field: azure.operation_name
       ignore_missing: true
+  - rename:
+      field: json.properties
+      if: ctx.json?.properties instanceof String
+      target_field: azure.properties.raw
+      ignore_missing: true    
   - rename:
       field: json.properties.level
       target_field: azure.function.level
