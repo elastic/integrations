@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This detection identifies a Linux host that has potentially been infected with malware and is being used to conduct brute-force attacks against external systems over SSH (port 22 and common alternative SSH ports). The detection looks for a high volume of outbound connection attempts to non-private IP addresses from a single process. A compromised host may be part of a botnet or controlled by an attacker, attempting to gain unauthorized access to remote systems. This behavior is commonly observed in SSH brute-force campaigns where malware hijacks vulnerable machines to expand its attack surface. ESQL rules have limited fields available in its alert documents. Make sure to review the original documents to aid in the investigation of this alert.",
+        "from": "now-61m",
+        "interval": "1h",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Malware-Driven SSH Brute Force Attempt",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Malware-Driven SSH Brute Force Attempt\n\nSSH is a protocol used to securely access remote systems. Adversaries exploit it by deploying malware on compromised Linux hosts to perform brute-force attacks, attempting unauthorized access to other systems. The detection rule identifies such abuse by monitoring high volumes of outbound SSH connection attempts from a single process to external IPs, indicating potential malware activity.\n\n### Possible investigation steps\n\n- Review the process executable identified in the alert to determine if it is a legitimate application or potentially malicious. Check for known malware signatures or unusual file paths.\n- Analyze the destination IP addresses involved in the connection attempts to identify if they are known malicious hosts or part of a larger attack infrastructure. Use threat intelligence sources to gather more information.\n- Examine the host's recent activity logs to identify any unusual behavior or signs of compromise, such as unexpected process executions or changes in system configurations.\n- Investigate the specific agent.id associated with the alert to determine if other alerts or suspicious activities have been reported from the same host, indicating a broader compromise.\n- Check for any recent changes or updates to the host's software or configurations that could have introduced vulnerabilities exploited by the malware.\n- Assess the network traffic patterns from the host to identify any other unusual outbound connections that may indicate additional malicious activity or data exfiltration attempts.\n\n### False positive analysis\n\n- High-volume legitimate SSH operations from a single process can trigger alerts. Exclude known safe processes or scripts that perform frequent SSH operations by adding them to an exception list.\n- Automated backup or synchronization tools using SSH to connect to external servers may be misidentified. Identify these tools and exclude their process names or IP addresses from the detection rule.\n- Development or testing environments where SSH connections are frequently initiated to external systems for legitimate purposes can cause false positives. Document these environments and adjust the rule to exclude their specific IP ranges or process identifiers.\n- Security scanning tools that perform SSH checks on external systems might be flagged. Ensure these tools are recognized and their activities are excluded by specifying their process names or IP addresses in the rule exceptions.\n\n### Response and remediation\n\n- Isolate the affected Linux host from the network immediately to prevent further unauthorized access attempts and potential spread of malware to other systems.\n- Terminate the suspicious process identified by the detection rule to stop ongoing brute-force attempts and reduce the risk of further compromise.\n- Conduct a thorough malware scan on the isolated host using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious software.\n- Review and reset credentials for any accounts that may have been targeted or compromised during the brute-force attempts to ensure account security.\n- Apply security patches and updates to the affected host and any other vulnerable systems to mitigate known vulnerabilities that could be exploited by similar threats.\n- Monitor network traffic for any signs of continued or new suspicious activity, particularly focusing on outbound SSH connections, to detect and respond to any further attempts promptly.\n- Escalate the incident to the security operations center (SOC) or relevant security team for further investigation and to assess the potential impact on the broader network infrastructure.\n",
+        "query": "from logs-endpoint.events.network-*\n| keep @timestamp, host.os.type, event.type, event.action, destination.port, process.executable, destination.ip, agent.id, host.name\n| where @timestamp > now() - 1 hours\n| where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and\n  destination.port in (22, 222, 2222, 10022, 2022, 2200, 62612, 8022) and not\n     CIDR_MATCH(\n       destination.ip, \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\", \"192.0.0.0/29\", \"192.0.0.8/32\", \"192.0.0.9/32\",\n       \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\", \"192.0.2.0/24\", \"192.31.196.0/24\", \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\",\n       \"224.0.0.0/4\", \"100.64.0.0/10\", \"192.175.48.0/24\",\"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"224.0.0.0/4\", \"240.0.0.0/4\", \"::1\",\n       \"FE80::/10\", \"FF00::/8\"\n     )\n| stats cc = count(), agent_count = count_distinct(agent.id), host.name = VALUES(host.name), agent.id = VALUES(agent.id) by process.executable, destination.port\n| where agent_count == 1 and cc > 15\n| sort cc asc\n| limit 100\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "77122db4-5876-4127-b91b-6c179eb21f88",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 4
+    },
+    "id": "77122db4-5876-4127-b91b-6c179eb21f88_4",
+    "type": "security-rule"
+}
