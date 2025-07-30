@@ -24,17 +24,15 @@ redact:
   fields:
     - password
 program: |
-  state.with({
-    "base_url": state.url.trim_right("/")
-  }).as(state, state.with(
-    has(state.expiry) && timestamp(state.expiry) > now ?
+  state.url.trim_right("/").as(base_url, state.with(
+    (has(state.expiry) && timestamp(state.expiry) > now ?
       {
         "access_token": state.access_token,
         "expiry": state.expiry
       }
     :
       post_request(
-        state.base_url + "/auth",
+        base_url + "/auth",
         "application/x-www-form-urlencoded",
         {"username":[state.username],"password":[state.password]}.format_query()
       ).do_request().as(resp, resp.StatusCode == 201 ?
@@ -49,7 +47,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "POST: "+ state.base_url + "/auth" + (
+              "message": "POST: "+ base_url + "/auth" + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
@@ -60,12 +58,11 @@ program: |
           "want_more": false,
         }
       )
-  ).as(token,
-    has(token.events) ? token : // Exit early due to failure.
-      state.with(
+    ).as(token,
+      has(token.events) ? token : // Exit early due to failure.
         request(
           "POST",
-          state.base_url + "/rest/2.0/search/am/asset?" + {
+          base_url + "/rest/2.0/search/am/asset?" + {
             "pageSize": [string(state.batch_size)],
             "lastSeenAssetId": [string(int(state.asset_id))]
           }.format_query()
@@ -99,7 +96,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "POST: "+ state.base_url + "/rest/2.0/search/am/asset" + (
+                  "message": "POST: "+ base_url + "/rest/2.0/search/am/asset" + (
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -110,7 +107,7 @@ program: |
               "want_more": false,
             }
         )
-      )
+    )
   ))
 tags:
 {{#if preserve_original_event}}
