@@ -515,22 +515,22 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "1dc978d7-ef40-4a3d-9786-3411e417898f",
-        "id": "06ad7c29-d71d-4938-81d0-37c2128940bb",
-        "name": "elastic-agent-57944",
+        "ephemeral_id": "e22254f0-b9bd-4d63-8492-499067aaf3b2",
+        "id": "b04fd317-5d04-4e14-8590-e1dbecea05fc",
+        "name": "elastic-agent-90591",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "google_scc.finding",
-        "namespace": "37601",
+        "namespace": "87519",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "06ad7c29-d71d-4938-81d0-37c2128940bb",
+        "id": "b04fd317-5d04-4e14-8590-e1dbecea05fc",
         "snapshot": true,
         "version": "8.19.0"
     },
@@ -539,7 +539,7 @@ An example event for `finding` looks as following:
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
         "id": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
-        "ingested": "2025-07-30T05:33:00Z",
+        "ingested": "2025-07-30T09:09:05Z",
         "kind": "event",
         "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}",
         "severity": 99,
