@@ -4,6 +4,12 @@
     - name: gmail
       type: group
       fields:
+        - name: domain_name
+          type: keyword
+        - name: email
+          type: keyword
+        - name: event_id
+          type: keyword
         - name: event_info
           type: group
           fields:
@@ -34,6 +40,14 @@
             - name: timestamp_usec
               type: date
               description: Time when this event started, in the form of a UNIX timestamp, in microseconds.
+        - name: event_name
+          type: keyword
+        - name: event_type
+          type: keyword
+        - name: has_sensitive_content
+          type: boolean
+        - name: ip_address
+          type: ip
         - name: message_info
           type: group
           fields:
@@ -386,9 +400,13 @@
             - name: upload_error_category
               type: keyword
               description: Error encountered while uploading the message to the destination.
+        - name: record_type
+          type: keyword
         - name: resource_details
           type: group
           fields:
+            - name: application_id
+              type: keyword
             - name: applied_labels
               type: group
               fields:
@@ -425,9 +443,15 @@
             - name: id
               type: keyword
               description: RFC 2822 message ID of the message. Set only when the message has labels.
+            - name: relation
+              type: keyword
             - name: title
               type: keyword
               description: Message subject. Set only set when the message has labels.
             - name: type
               type: keyword
               description: Always EMAIL for Gmail events.
+        - name: time_usec
+          type: date
+        - name: unique_identifier
+          type: keyword

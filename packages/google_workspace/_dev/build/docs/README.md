@@ -55,11 +55,7 @@ Click the Advanced option of Google Workspace Audit Reports. The default value o
 
 # Google Workspace Gmail Logs
 
-The integration collects and parses Gmail log data received form the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) using CEL input.
-
-## Compatibility
-
-- Gmail Data Stream has been tested against `BigQuery API (v2)`.
+The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this features. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
 
 ## Requirements
 
@@ -67,7 +63,7 @@ In order to ingest data from the Google BigQuery API, you must:
 
 1. Enable BigQuery API if not already
 
-- In the [Google Cloud console](https://console.cloud.google.com), navigate to **APIs & Services** > **Library**.
+- In the [Google Cloud console](https://console.cloud.google.com), navigate to **APIs & Services > Library**.
 - Search for **BigQuery API** and select it.
 - Click **Enable**.
 
@@ -82,7 +78,6 @@ In order to ingest data from the Google BigQuery API, you must:
   - Click **Continue**.
   - (Optional) Grant user access.
   - Click **Done**.
-- Copy email address of the service account which will be required in upcoming steps.
 
 3. Generate a JSON Key:
 
@@ -92,7 +87,7 @@ In order to ingest data from the Google BigQuery API, you must:
 - Choose **JSON** format and click **Create**.
 - Save the downloaded JSON key securely.
 
-4. Grant IAM Role:
+4. Grant IAM Role to service account:
 
 - Go to **IAM & Admin > IAM** in the Cloud Console.
 - Click **Grant access**.
@@ -100,20 +95,38 @@ In order to ingest data from the Google BigQuery API, you must:
 - Click **Select a role**, search for and select **BigQuery Job User**.
 - Click **Save**.
 
-5. Enable Gmail Logs Export in Admin Console:
+5. Set up a BigQuery project for reporting logs
 
-- Sign in to your [Google Admin console](admin.google.com).
-- Navigate to **Apps > Google Workspace > Gmail > Setup**.
-- Click Email **Logs in BigQuery > Enable**.
-- Choose the same Google Cloud project used for the service account.
-- Optionally, specify a custom name for the dataset.
+- Go to **IAM & Admin page** for your project.
+- Add a project editor for your project.
+  - Click **Grant access**.
+  - Enter `gapps-reports@system.gserviceaccount.com` in the **New principals** field.
+  - In **Select a role**, select **Project**, then **Editor**.
+  - Click **Save**.
+- Add a Google Workspace administrator account as a project editor by following the same steps above.
+- For more details see [Set up a BigQuery project for reporting logs](https://support.google.com/a/answer/9082756?hl=en)
+
+5. Set up a BigQuery Export configuration:
+
+- Sign in to your [Google Admin console](https://admin.google.com) with a super administrator account.
+- Navigate to **Reporting > Data Integrations** (Requires having the **Reports** administrator privilege).  
+  Education administrators go to Menu **Reporting > BigQuery export**, which opens the **Data integrations** page.
+- Point to the **BigQuery Export** card and click Edit.
+- To activate BigQuery logs, check the **Enable Google Workspace data export to Google BigQuery** box.
+- (Optional) To export sensitive parameters of DLP rules, check the **Allow export of sensitive content from DLP rule logs** box.
+- Under **BigQuery project ID**, select the project where you want to store the logs.  
+  Choose a project for which `gapps-reports@system.gserviceaccount.com` has an editor role.
+- Under **New dataset within project**, enter the name of the dataset to use for storing the logs in the project.  
+  A new dataset will be created with this name in your BigQuery project.
+- (Optional) Check the **Restrict the dataset to a specific geographic location** box > select the location from the menu.
 - Click **Save**.
+- For more details see [Set up a BigQuery Export configuration](https://support.google.com/a/answer/9079365?hl=en).
 
 6. Grant Dataset Permissions:
 
 - Go to [Google Cloud console](https://console.cloud.google.com) and search for **BigQuery**.
 - Click your Google Cloud project on the left pane.
-- Locate the dataset (e.g., gmail_logs_dataset), click the **three-dot menu > Share > Manage Permissions**.
+- Locate the dataset, click the **three-dot menu > Share > Manage Permissions**.
 - Click **Add principal**.
 - Paste the service account email in **New principals**.
 - Select **BigQuery Data Viewer** as the role.
@@ -121,7 +134,7 @@ In order to ingest data from the Google BigQuery API, you must:
 
 This integration will make use of the following *oauth2 scope*:
 
-- `https://www.googleapis.com/auth/bigquery.readonly`
+- `https://www.googleapis.com/auth/bigquery`
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration for collecting Gmail logs.
 

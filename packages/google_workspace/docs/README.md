@@ -55,11 +55,7 @@ Click the Advanced option of Google Workspace Audit Reports. The default value o
 
 # Google Workspace Gmail Logs
 
-The integration collects and parses Gmail log data received form the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) using CEL input.
-
-## Compatibility
-
-- Gmail Data Stream has been tested against `BigQuery API (v2)`.
+The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this features. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
 
 ## Requirements
 
@@ -67,7 +63,7 @@ In order to ingest data from the Google BigQuery API, you must:
 
 1. Enable BigQuery API if not already
 
-- In the [Google Cloud console](https://console.cloud.google.com), navigate to **APIs & Services** > **Library**.
+- In the [Google Cloud console](https://console.cloud.google.com), navigate to **APIs & Services > Library**.
 - Search for **BigQuery API** and select it.
 - Click **Enable**.
 
@@ -82,7 +78,6 @@ In order to ingest data from the Google BigQuery API, you must:
   - Click **Continue**.
   - (Optional) Grant user access.
   - Click **Done**.
-- Copy email address of the service account which will be required in upcoming steps.
 
 3. Generate a JSON Key:
 
@@ -92,7 +87,7 @@ In order to ingest data from the Google BigQuery API, you must:
 - Choose **JSON** format and click **Create**.
 - Save the downloaded JSON key securely.
 
-4. Grant IAM Role:
+4. Grant IAM Role to service account:
 
 - Go to **IAM & Admin > IAM** in the Cloud Console.
 - Click **Grant access**.
@@ -100,20 +95,38 @@ In order to ingest data from the Google BigQuery API, you must:
 - Click **Select a role**, search for and select **BigQuery Job User**.
 - Click **Save**.
 
-5. Enable Gmail Logs Export in Admin Console:
+5. Set up a BigQuery project for reporting logs
 
-- Sign in to your [Google Admin console](admin.google.com).
-- Navigate to **Apps > Google Workspace > Gmail > Setup**.
-- Click Email **Logs in BigQuery > Enable**.
-- Choose the same Google Cloud project used for the service account.
-- Optionally, specify a custom name for the dataset.
+- Go to **IAM & Admin page** for your project.
+- Add a project editor for your project.
+  - Click **Grant access**.
+  - Enter `gapps-reports@system.gserviceaccount.com` in the **New principals** field.
+  - In **Select a role**, select **Project**, then **Editor**.
+  - Click **Save**.
+- Add a Google Workspace administrator account as a project editor by following the same steps above.
+- For more details see [Set up a BigQuery project for reporting logs](https://support.google.com/a/answer/9082756?hl=en)
+
+5. Set up a BigQuery Export configuration:
+
+- Sign in to your [Google Admin console](https://admin.google.com) with a super administrator account.
+- Navigate to **Reporting > Data Integrations** (Requires having the **Reports** administrator privilege).  
+  Education administrators go to Menu **Reporting > BigQuery export**, which opens the **Data integrations** page.
+- Point to the **BigQuery Export** card and click Edit.
+- To activate BigQuery logs, check the **Enable Google Workspace data export to Google BigQuery** box.
+- (Optional) To export sensitive parameters of DLP rules, check the **Allow export of sensitive content from DLP rule logs** box.
+- Under **BigQuery project ID**, select the project where you want to store the logs.  
+  Choose a project for which `gapps-reports@system.gserviceaccount.com` has an editor role.
+- Under **New dataset within project**, enter the name of the dataset to use for storing the logs in the project.  
+  A new dataset will be created with this name in your BigQuery project.
+- (Optional) Check the **Restrict the dataset to a specific geographic location** box > select the location from the menu.
 - Click **Save**.
+- For more details see [Set up a BigQuery Export configuration](https://support.google.com/a/answer/9079365?hl=en).
 
 6. Grant Dataset Permissions:
 
 - Go to [Google Cloud console](https://console.cloud.google.com) and search for **BigQuery**.
 - Click your Google Cloud project on the left pane.
-- Locate the dataset (e.g., gmail_logs_dataset), click the **three-dot menu > Share > Manage Permissions**.
+- Locate the dataset, click the **three-dot menu > Share > Manage Permissions**.
 - Click **Add principal**.
 - Paste the service account email in **New principals**.
 - Select **BigQuery Data Viewer** as the role.
@@ -121,7 +134,7 @@ In order to ingest data from the Google BigQuery API, you must:
 
 This integration will make use of the following *oauth2 scope*:
 
-- `https://www.googleapis.com/auth/bigquery.readonly`
+- `https://www.googleapis.com/auth/bigquery`
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration for collecting Gmail logs.
 
@@ -4067,22 +4080,22 @@ An example event for `gmail` looks as following:
 {
     "@timestamp": "2025-05-05T07:27:19.747Z",
     "agent": {
-        "ephemeral_id": "ba95e509-daf6-4668-a5be-77000e466025",
-        "id": "22bb78a0-9171-486f-a752-7cdecaff32b1",
-        "name": "elastic-agent-73276",
+        "ephemeral_id": "0423f4ba-e8b1-46ff-83ca-78f7fdf5e6bb",
+        "id": "13d359d8-1d2c-40e4-b48c-03e4d73897a7",
+        "name": "elastic-agent-66265",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_workspace.gmail",
-        "namespace": "42733",
+        "namespace": "82186",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "22bb78a0-9171-486f-a752-7cdecaff32b1",
+        "id": "13d359d8-1d2c-40e4-b48c-03e4d73897a7",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -4093,7 +4106,7 @@ An example event for `gmail` looks as following:
         ],
         "dataset": "google_workspace.gmail",
         "duration": 541484000,
-        "ingested": "2025-07-01T10:40:53Z",
+        "ingested": "2025-07-29T05:48:55Z",
         "kind": "event",
         "original": "{\"row\":{\"f\":[{\"v\":{\"f\":[{\"v\":null},{\"v\":\"541484\"},{\"v\":\"0\"},{\"v\":\"true\"},{\"v\":\"1746430039747736\"}]}}]},\"schema\":{\"fields\":[{\"fields\":[{\"fields\":[{\"mode\":\"NULLABLE\",\"name\":\"client_type\",\"type\":\"STRING\"},{\"fields\":[{\"mode\":\"NULLABLE\",\"name\":\"delegate_user_email\",\"type\":\"STRING\"},{\"mode\":\"NULLABLE\",\"name\":\"dusi\",\"type\":\"STRING\"}],\"mode\":\"NULLABLE\",\"name\":\"session_context\",\"type\":\"RECORD\"}],\"mode\":\"NULLABLE\",\"name\":\"client_context\",\"type\":\"RECORD\"},{\"mode\":\"NULLABLE\",\"name\":\"elapsed_time_usec\",\"type\":\"INTEGER\"},{\"mode\":\"NULLABLE\",\"name\":\"mail_event_type\",\"type\":\"INTEGER\"},{\"mode\":\"NULLABLE\",\"name\":\"success\",\"type\":\"BOOLEAN\"},{\"mode\":\"NULLABLE\",\"name\":\"timestamp_usec\",\"type\":\"INTEGER\"}],\"mode\":\"NULLABLE\",\"name\":\"event_info\",\"type\":\"RECORD\"}]}}",
         "outcome": "success",
@@ -4114,10 +4127,6 @@ An example event for `gmail` looks as following:
     "input": {
         "type": "cel"
     },
-    "observer": {
-        "product": "Gmail",
-        "vendor": "Google Workspace"
-    },
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
@@ -4131,12 +4140,15 @@ An example event for `gmail` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| google_workspace.gmail.domain_name |  | keyword |
+| google_workspace.gmail.email |  | keyword |
+| google_workspace.gmail.event_id |  | keyword |
 | google_workspace.gmail.event_info.client_context.client_type | The type of client or device where the action occurred, including WEB, IOS, ANDROID, IMAP, POP3, and API. | keyword |
 | google_workspace.gmail.event_info.client_context.session_context.delegate_user_email | Email address of the delegated user who performed the action on the account owner's behalf. | keyword |
 | google_workspace.gmail.event_info.client_context.session_context.dusi | Identifier for a user's session on a specific device. | keyword |
@@ -4144,6 +4156,10 @@ An example event for `gmail` looks as following:
 | google_workspace.gmail.event_info.mail_event_type | Logged event type. The event type corresponds to the Event attribute in Gmail log events in Security Investigation Tool. | keyword |
 | google_workspace.gmail.event_info.success | True if the event was successful, otherwise false. For example, the value is false if the message was rejected by a policy. | boolean |
 | google_workspace.gmail.event_info.timestamp_usec | Time when this event started, in the form of a UNIX timestamp, in microseconds. | date |
+| google_workspace.gmail.event_name |  | keyword |
+| google_workspace.gmail.event_type |  | keyword |
+| google_workspace.gmail.has_sensitive_content |  | boolean |
+| google_workspace.gmail.ip_address |  | ip |
 | google_workspace.gmail.message_info.action_type | The message delivery action that the event represents. | keyword |
 | google_workspace.gmail.message_info.attachment.file_extension_type | File extension (not mime part type), not including the period. | keyword |
 | google_workspace.gmail.message_info.attachment.file_name | File attachment name. | keyword |
@@ -4239,6 +4255,8 @@ An example event for `gmail` looks as following:
 | google_workspace.gmail.message_info.triggered_rule_info.string_match.source | Location of the string matched in the message. | keyword |
 | google_workspace.gmail.message_info.triggered_rule_info.string_match.type | Type of match. | keyword |
 | google_workspace.gmail.message_info.upload_error_category | Error encountered while uploading the message to the destination. | keyword |
+| google_workspace.gmail.record_type |  | keyword |
+| google_workspace.gmail.resource_details.application_id |  | keyword |
 | google_workspace.gmail.resource_details.applied_labels.field_values.display_name | Field display name. | keyword |
 | google_workspace.gmail.resource_details.applied_labels.field_values.id | Field ID. | keyword |
 | google_workspace.gmail.resource_details.applied_labels.field_values.selection_value.badged | Indicates whether the choice is badged. | boolean |
@@ -4248,8 +4266,11 @@ An example event for `gmail` looks as following:
 | google_workspace.gmail.resource_details.applied_labels.id | Label ID. | keyword |
 | google_workspace.gmail.resource_details.applied_labels.title | Label title. | keyword |
 | google_workspace.gmail.resource_details.id | RFC 2822 message ID of the message. Set only when the message has labels. | keyword |
+| google_workspace.gmail.resource_details.relation |  | keyword |
 | google_workspace.gmail.resource_details.title | Message subject. Set only set when the message has labels. | keyword |
 | google_workspace.gmail.resource_details.type | Always EMAIL for Gmail events. | keyword |
+| google_workspace.gmail.time_usec |  | date |
+| google_workspace.gmail.unique_identifier |  | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
