@@ -1,0 +1,2527 @@
+---
+description: Pipeline for processing ioc_stream logs.
+processors:
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_enrichment
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Threat Intelligence
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.id
+        - json.context_attributes.notification_date
+        - json.context_attributes.notification_id
+      tag: fingerprint_ioc_stream
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.attributes.as_owner
+      tag: rename_attributes_as_owner
+      target_field: gti.ioc_stream.attributes.as_owner
+      ignore_missing: true
+  - convert:
+      field: json.attributes.asn
+      tag: convert_attributes_asn_to_long
+      target_field: gti.ioc_stream.attributes.asn
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.gti_assessment.contributing_factors.gavs_detections
+      tag: convert_attributes_gti_assessment_contributing_factors_gavs_detections
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.gavs_detections
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.gti_assessment.contributing_factors.malicious_sandbox_verdict
+      tag: convert_attributes_gti_assessment_contributing_factors_malicious_sandbox_verdict_to_boolean
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.malicious_sandbox_verdict
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.gti_assessment.contributing_factors.mandiant_analyst_malicious
+      tag: convert_attributes_gti_assessment_contributing_factors_mandiant_analyst_malicious_to_boolean
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.mandiant_analyst_malicious
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.gti_assessment.contributing_factors.mandiant_analyst_observed_recent
+      tag: convert_attributes_gti_assessment_contributing_factors_mandiant_analyst_observed_recent_to_boolean
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.mandiant_analyst_observed_recent
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.gti_assessment.contributing_factors.mandiant_confidence_score
+      tag: convert_attributes_gti_assessment_contributing_factors_mandiant_confidence_score_to_long
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.mandiant_confidence_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.gti_assessment.contributing_factors.normalised_categories
+      tag: rename_attributes_gti_assessment_contributing_factors_normalised_categories
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.normalised_categories
+      ignore_missing: true
+  - convert:
+      field: json.attributes.gti_assessment.contributing_factors.pervasive_indicator
+      tag: convert_attributes_gti_assessment_contributing_factors_pervasive_indicator_to_boolean
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.pervasive_indicator
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.gti_assessment.contributing_factors.safebrowsing_verdict
+      tag: rename_attributes_gti_assessment_contributing_factors_safebrowsing_verdict
+      target_field: gti.ioc_stream.attributes.assessment.contributing_factors.safebrowsing_verdict
+      ignore_missing: true
+  - rename:
+      field: json.attributes.gti_assessment.description
+      tag: rename_attributes_gti_assessment_description
+      target_field: gti.ioc_stream.attributes.assessment.description
+      ignore_missing: true
+  - rename:
+      field: json.attributes.gti_assessment.severity.value
+      tag: rename_attributes_gti_assessment_severity_value
+      target_field: gti.ioc_stream.attributes.assessment.severity
+      ignore_missing: true
+  - convert:
+      field: json.attributes.gti_assessment.threat_score.value
+      tag: convert_attributes_gti_assessment_threat_score_value_to_long
+      target_field: gti.ioc_stream.attributes.assessment.threat_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.gti_assessment.verdict.value
+      tag: rename_attributes_gti_assessment_verdict_value
+      target_field: gti.ioc_stream.attributes.assessment.verdict
+      ignore_missing: true
+  - rename:
+      field: json.attributes.authentihash
+      tag: rename_attributes_authentihash
+      target_field: gti.ioc_stream.attributes.authentihash
+      ignore_missing: true
+  - rename:
+      field: json.attributes.autostart_locations
+      tag: rename_attributes_autostart_locations
+      target_field: gti.ioc_stream.attributes.autostart_locations
+      ignore_missing: true
+  - rename:
+      field: json.attributes.available_tools
+      tag: rename_attributes_available_tools
+      target_field: gti.ioc_stream.attributes.available_tools
+      ignore_missing: true
+  - rename:
+      field: json.attributes.categories.BitDefender
+      tag: rename_attributes_categories_BitDefender
+      target_field: gti.ioc_stream.attributes.vendor_categories.bitdefender
+      ignore_missing: true
+  - rename:
+      field: json.attributes.categories.Sophos
+      tag: rename_attributes_categories_Sophos
+      target_field: gti.ioc_stream.attributes.vendor_categories.sophos
+      ignore_missing: true
+  - rename:
+      field: json.attributes.categories.Webroot
+      tag: rename_attributes_categories_Webroot
+      target_field: gti.ioc_stream.attributes.vendor_categories.webroot
+      ignore_missing: true
+  - rename:
+      field: json.attributes.continent
+      tag: rename_attributes_continent
+      target_field: gti.ioc_stream.attributes.continent
+      ignore_missing: true
+  - rename:
+      field: json.attributes.country
+      tag: rename_attributes_country
+      target_field: gti.ioc_stream.attributes.country
+      ignore_missing: true
+  - date:
+      field: json.attributes.creation_date
+      tag: date_attributes_creation_date
+      target_field: gti.ioc_stream.attributes.creation_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.creation_date != null && ctx.json.attributes.creation_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.crowdsourced_ai_results
+      tag: rename_attributes_crowdsourced_ai_results
+      target_field: gti.ioc_stream.attributes.crowdsourced_ai_results
+      ignore_missing: true
+  - rename:
+      field: json.attributes.crowdsourced_ids_results
+      tag: rename_attributes_crowdsourced_ids_results
+      target_field: gti.ioc_stream.attributes.crowdsourced_ids_results
+      ignore_missing: true
+  - convert:
+      field: json.attributes.crowdsourced_ids_stats.high
+      tag: convert_attributes_crowdsourced_ids_stats_high_to_long
+      target_field: gti.ioc_stream.attributes.crowdsourced_ids_stats.high
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.crowdsourced_ids_stats.info
+      tag: convert_attributes_crowdsourced_ids_stats_info_to_long
+      target_field: gti.ioc_stream.attributes.crowdsourced_ids_stats.info
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.crowdsourced_ids_stats.low
+      tag: convert_attributes_crowdsourced_ids_stats_low_to_long
+      target_field: gti.ioc_stream.attributes.crowdsourced_ids_stats.low
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.crowdsourced_ids_stats.medium
+      tag: convert_attributes_crowdsourced_ids_stats_medium_to_long
+      target_field: gti.ioc_stream.attributes.crowdsourced_ids_stats.medium
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.crowdsourced_yara_results
+      if: ctx.json?.attributes?.crowdsourced_yara_results instanceof List
+      processor:
+        date:
+          field: _ingest._value.match_date
+          tag: date_attributes_crowdsourced_yara_results_match_date
+          target_field: _ingest._value.match_date
+          formats:
+            - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.match_date
+                ignore_missing: true
+  - rename:
+      field: json.attributes.crowdsourced_yara_results
+      tag: rename_attributes_crowdsourced_yara_results
+      target_field: gti.ioc_stream.attributes.crowdsourced_yara_results
+      ignore_missing: true
+  - rename:
+      field: json.attributes.detectiteasy.filetype
+      tag: rename_attributes_detectiteasy_filetype
+      target_field: gti.ioc_stream.attributes.detectiteasy.filetype
+      ignore_missing: true
+  - rename:
+      field: json.attributes.detectiteasy.values
+      tag: rename_attributes_detectiteasy_values
+      target_field: gti.ioc_stream.attributes.detectiteasy.values
+      ignore_missing: true
+  - convert:
+      field: json.attributes.downloadable
+      tag: convert_attributes_downloadable_to_boolean
+      target_field: gti.ioc_stream.attributes.downloadable
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.exiftool.CharacterSet
+      tag: rename_attributes_exiftool_CharacterSet
+      target_field: gti.ioc_stream.attributes.exiftool.character_set
+      ignore_missing: true
+  - convert:
+      field: json.attributes.exiftool.CodeSize
+      tag: convert_attributes_exiftool_CodeSize_to_long
+      target_field: gti.ioc_stream.attributes.exiftool.code_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.exiftool.CompanyName
+      tag: rename_attributes_exiftool_CompanyName
+      target_field: gti.ioc_stream.attributes.exiftool.company_name
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.EntryPoint
+      tag: rename_attributes_exiftool_EntryPoint
+      target_field: gti.ioc_stream.attributes.exiftool.entry_point
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileDescription
+      tag: rename_attributes_exiftool_FileDescription
+      target_field: gti.ioc_stream.attributes.exiftool.file.description
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileFlagsMask
+      tag: rename_attributes_exiftool_FileFlagsMask
+      target_field: gti.ioc_stream.attributes.exiftool.file.flags_mask
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileOS
+      tag: rename_attributes_exiftool_FileOS
+      target_field: gti.ioc_stream.attributes.exiftool.file.os
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileSubtype
+      tag: rename_attributes_exiftool_FileSubtype
+      target_field: gti.ioc_stream.attributes.exiftool.file.subtype
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileType
+      tag: rename_attributes_exiftool_FileType
+      target_field: gti.ioc_stream.attributes.exiftool.file.type
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileTypeExtension
+      tag: rename_attributes_exiftool_FileTypeExtension
+      target_field: gti.ioc_stream.attributes.exiftool.file.type_extension
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileVersion
+      tag: rename_attributes_exiftool_FileVersion
+      target_field: gti.ioc_stream.attributes.exiftool.file.version
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.FileVersionNumber
+      tag: rename_attributes_exiftool_FileVersionNumber
+      target_field: gti.ioc_stream.attributes.exiftool.file.version_number
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.ImageFileCharacteristics
+      tag: rename_attributes_exiftool_ImageFileCharacteristics
+      target_field: gti.ioc_stream.attributes.exiftool.image.file_characteristics
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.ImageVersion
+      tag: rename_attributes_exiftool_ImageVersion
+      target_field: gti.ioc_stream.attributes.exiftool.image.version
+      ignore_missing: true
+  - convert:
+      field: json.attributes.exiftool.InitializedDataSize
+      tag: convert_attributes_exiftool_InitializedDataSize_to_long
+      target_field: gti.ioc_stream.attributes.exiftool.initialized_data_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.exiftool.InternalName
+      tag: rename_attributes_exiftool_InternalName
+      target_field: gti.ioc_stream.attributes.exiftool.internal_name
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.LanguageCode
+      tag: rename_attributes_exiftool_LanguageCode
+      target_field: gti.ioc_stream.attributes.exiftool.language_code
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.LegalCopyright
+      tag: rename_attributes_exiftool_LegalCopyright
+      target_field: gti.ioc_stream.attributes.exiftool.legal_copyright
+      ignore_missing: true
+  - convert:
+      field: json.attributes.exiftool.LineCount
+      tag: convert_attributes_exiftool_LineCount_to_long
+      target_field: gti.ioc_stream.attributes.exiftool.line_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.exiftool.LinkerVersion
+      tag: rename_attributes_exiftool_LinkerVersion
+      target_field: gti.ioc_stream.attributes.exiftool.linker_version
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.MachineType
+      tag: rename_attributes_exiftool_MachineType
+      target_field: gti.ioc_stream.attributes.exiftool.machine_type
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.MIMEEncoding
+      tag: rename_attributes_exiftool_MIMEEncoding
+      target_field: gti.ioc_stream.attributes.exiftool.mime.encoding
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.MIMEType
+      tag: rename_attributes_exiftool_MIMEType
+      target_field: gti.ioc_stream.attributes.exiftool.mime.type
+      ignore_missing: true
+  - set:
+      field: file.mime_type
+      tag: set_file_mime_type_from_ioc_stream_attributes_exiftool_mime_type
+      copy_from: gti.ioc_stream.attributes.exiftool.mime.type
+      ignore_empty_value: true
+  - rename:
+      field: json.attributes.exiftool.Newlines
+      tag: rename_attributes_exiftool_Newlines
+      target_field: gti.ioc_stream.attributes.exiftool.newlines
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.ObjectFileType
+      tag: rename_attributes_exiftool_ObjectFileType
+      target_field: gti.ioc_stream.attributes.exiftool.object_file_type
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.OriginalFileName
+      tag: rename_attributes_exiftool_OriginalFileName
+      target_field: gti.ioc_stream.attributes.exiftool.original_file_name
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.OSVersion
+      tag: rename_attributes_exiftool_OSVersion
+      target_field: gti.ioc_stream.attributes.exiftool.os_version
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.PEType
+      tag: rename_attributes_exiftool_PEType
+      target_field: gti.ioc_stream.attributes.exiftool.pe_type
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.ProductName
+      tag: rename_attributes_exiftool_ProductName
+      target_field: gti.ioc_stream.attributes.exiftool.product.name
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.ProductVersion
+      tag: rename_attributes_exiftool_ProductVersion
+      target_field: gti.ioc_stream.attributes.exiftool.product.version
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.ProductVersionNumber
+      tag: rename_attributes_exiftool_ProductVersionNumber
+      target_field: gti.ioc_stream.attributes.exiftool.product.version_number
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.Subsystem
+      tag: rename_attributes_exiftool_Subsystem
+      target_field: gti.ioc_stream.attributes.exiftool.subsystem
+      ignore_missing: true
+  - rename:
+      field: json.attributes.exiftool.SubsystemVersion
+      tag: rename_attributes_exiftool_SubsystemVersion
+      target_field: gti.ioc_stream.attributes.exiftool.subsystem_version
+      ignore_missing: true
+  - remove:
+      field:
+        - json.attributes.exiftool.TimeStamp
+      tag: remove_attributes_exiftool_TimeStamp_field
+      ignore_missing: true
+      if: ctx.json?.attributes?.exiftool?.TimeStamp == '0000:00:00 00:00:00'
+  - date:
+      field: json.attributes.exiftool.TimeStamp
+      tag: date_attributes_exiftool_TimeStamp
+      target_field: gti.ioc_stream.attributes.exiftool.timestamp
+      formats:
+        - yyyy:MM:dd HH:mm:ssXXX
+      if: ctx.json?.attributes?.exiftool?.TimeStamp != null && ctx.json.attributes.exiftool.TimeStamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.mtime
+      tag: set_file_mtime_from_ioc_stream_attributes_exiftool_timestamp
+      copy_from: gti.ioc_stream.attributes.exiftool.timestamp
+      ignore_empty_value: true
+  - convert:
+      field: json.attributes.exiftool.UninitializedDataSize
+      tag: convert_attributes_exiftool_UninitializedDataSize_to_long
+      target_field: gti.ioc_stream.attributes.exiftool.uninitialized_data_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.exiftool.WordCount
+      tag: convert_attributes_exiftool_WordCount_to_long
+      target_field: gti.ioc_stream.attributes.exiftool.word_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.last_analysis_stats.failure
+      tag: convert_attributes_last_analysis_stats_failure_to_long
+      target_field: gti.ioc_stream.attributes.failure
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.favicon.dhash
+      tag: rename_attributes_favicon_dhash
+      target_field: gti.ioc_stream.attributes.favicon.dhash
+      ignore_missing: true
+  - rename:
+      field: json.attributes.favicon.raw_md5
+      tag: rename_attributes_favicon_raw_md5
+      target_field: gti.ioc_stream.attributes.favicon.raw_md5
+      ignore_missing: true
+  - rename:
+      field: json.attributes.filecondis.dhash
+      tag: rename_attributes_filecondis_dhash
+      target_field: gti.ioc_stream.attributes.filecondis.dhash
+      ignore_missing: true
+  - rename:
+      field: json.attributes.filecondis.raw_md5
+      tag: rename_attributes_filecondis_raw_md5
+      target_field: gti.ioc_stream.attributes.filecondis.raw_md5
+      ignore_missing: true
+  - date:
+      field: json.attributes.first_seen_itw_date
+      tag: date_attributes_first_seen_itw_date
+      target_field: gti.ioc_stream.attributes.first_seen_itw_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.first_seen_itw_date != null && ctx.json.attributes.first_seen_itw_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.first_seen
+      tag: set_threat_indicator_first_seen_from_first_seen_itw_date
+      copy_from: gti.ioc_stream.attributes.first_seen_itw_date
+      ignore_empty_value: true
+  - date:
+      field: json.attributes.first_submission_date
+      tag: date_attributes_first_submission_date
+      target_field: gti.ioc_stream.attributes.first_submission_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.first_submission_date != null && ctx.json.attributes.first_submission_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.has_content
+      tag: convert_attributes_has_content_to_boolean
+      target_field: gti.ioc_stream.attributes.has_content
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.jarm
+      tag: rename_attributes_jarm
+      target_field: gti.ioc_stream.attributes.jarm
+      ignore_missing: true
+  - date:
+      field: json.attributes.last_analysis_date
+      tag: date_attributes_last_analysis_date
+      target_field: gti.ioc_stream.attributes.last_analysis_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.last_analysis_date != null && ctx.json.attributes.last_analysis_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.last_analysis_stats.confirmed-timeout
+      tag: convert_attributes_last_analysis_stats_confirmed-timeout_to_long
+      target_field: gti.ioc_stream.attributes.last_analysis_stats.confirmed_timeout
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.last_analysis_stats.harmless
+      tag: convert_attributes_last_analysis_stats_harmless_to_long
+      target_field: gti.ioc_stream.attributes.last_analysis_stats.harmless
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.last_analysis_stats.malicious
+      tag: convert_attributes_last_analysis_stats_malicious_to_long
+      target_field: gti.ioc_stream.attributes.last_analysis_stats.malicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.last_analysis_stats.suspicious
+      tag: convert_attributes_last_analysis_stats_suspicious_to_long
+      target_field: gti.ioc_stream.attributes.last_analysis_stats.suspicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.last_analysis_stats.timeout
+      tag: convert_attributes_last_analysis_stats_timeout_to_long
+      target_field: gti.ioc_stream.attributes.last_analysis_stats.timeout
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.last_analysis_stats.undetected
+      tag: convert_attributes_last_analysis_stats_undetected_to_long
+      target_field: gti.ioc_stream.attributes.last_analysis_stats.undetected
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.last_dns_records
+      tag: rename_attributes_last_dns_records
+      target_field: gti.ioc_stream.attributes.last_dns_records
+      ignore_missing: true
+  - date:
+      field: json.attributes.last_dns_records_date
+      tag: date_attributes_last_dns_records_date
+      target_field: gti.ioc_stream.attributes.last_dns_records_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.last_dns_records_date != null && ctx.json.attributes.last_dns_records_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.last_final_url
+      tag: rename_attributes_last_final_url
+      target_field: gti.ioc_stream.attributes.last_final_url
+      ignore_missing: true
+  - convert:
+      field: json.attributes.last_http_response_code
+      tag: convert_attributes_last_http_response_code_to_long
+      target_field: gti.ioc_stream.attributes.last_http_response_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_ioc_stream_attributes_last_http_response_code
+      copy_from: gti.ioc_stream.attributes.last_http_response_code
+      ignore_empty_value: true
+  - convert:
+      field: json.attributes.last_http_response_content_length
+      tag: convert_attributes_last_http_response_content_length_to_long
+      target_field: gti.ioc_stream.attributes.last_http_response_content_length
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.last_http_response_content_sha256
+      tag: rename_attributes_last_http_response_content_sha256
+      target_field: gti.ioc_stream.attributes.last_http_response_content_sha256
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.cert_signature.signature
+      tag: rename_attributes_last_https_certificate_cert_signature_signature
+      target_field: gti.ioc_stream.attributes.last_https_certificate.cert_signature.signature
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.cert_signature.signature_algorithm
+      tag: rename_attributes_last_https_certificate_cert_signature_signature_algorithm
+      target_field: gti.ioc_stream.attributes.last_https_certificate.cert_signature.signature_algorithm
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.issuer.C
+      tag: rename_attributes_last_https_certificate_issuer_C
+      target_field: gti.ioc_stream.attributes.last_https_certificate.issuer.c
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.issuer.CN
+      tag: rename_attributes_last_https_certificate_issuer_CN
+      target_field: gti.ioc_stream.attributes.last_https_certificate.issuer.cn
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.issuer.L
+      tag: rename_attributes_last_https_certificate_issuer_L
+      target_field: gti.ioc_stream.attributes.last_https_certificate.issuer.l
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.issuer.O
+      tag: rename_attributes_last_https_certificate_issuer_O
+      target_field: gti.ioc_stream.attributes.last_https_certificate.issuer.o
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.issuer.OU
+      tag: rename_attributes_last_https_certificate_issuer_OU
+      target_field: gti.ioc_stream.attributes.last_https_certificate.issuer.ou
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.issuer.ST
+      tag: rename_attributes_last_https_certificate_issuer_ST
+      target_field: gti.ioc_stream.attributes.last_https_certificate.issuer.st
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.public_key.algorithm
+      tag: rename_attributes_last_https_certificate_public_key_algorithm
+      target_field: gti.ioc_stream.attributes.last_https_certificate.public_key.algorithm
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.public_key.ec.oid
+      tag: rename_attributes_last_https_certificate_public_key_ec_oid
+      target_field: gti.ioc_stream.attributes.last_https_certificate.public_key.ec.oid
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.public_key.ec.pub
+      tag: rename_attributes_last_https_certificate_public_key_ec_pub
+      target_field: gti.ioc_stream.attributes.last_https_certificate.public_key.ec.pub
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.public_key.rsa.exponent
+      tag: rename_attributes_last_https_certificate_public_key_rsa_exponent
+      target_field: gti.ioc_stream.attributes.last_https_certificate.public_key.rsa.exponent
+      ignore_missing: true
+  - convert:
+      field: json.attributes.last_https_certificate.public_key.rsa.key_size
+      tag: convert_attributes_last_https_certificate_public_key_rsa_key_size_to_long
+      target_field: gti.ioc_stream.attributes.last_https_certificate.public_key.rsa.key_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.last_https_certificate.public_key.rsa.modulus
+      tag: rename_attributes_last_https_certificate_public_key_rsa_modulus
+      target_field: gti.ioc_stream.attributes.last_https_certificate.public_key.rsa.modulus
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.serial_number
+      tag: rename_attributes_last_https_certificate_serial_number
+      target_field: gti.ioc_stream.attributes.last_https_certificate.serial_number
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.signature_algorithm
+      tag: rename_attributes_last_https_certificate_signature_algorithm
+      target_field: gti.ioc_stream.attributes.last_https_certificate.signature_algorithm
+      ignore_missing: true
+  - convert:
+      field: json.attributes.last_https_certificate.size
+      tag: convert_attributes_last_https_certificate_size_to_long
+      target_field: gti.ioc_stream.attributes.last_https_certificate.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.last_https_certificate.subject.CN
+      tag: rename_attributes_last_https_certificate_subject_CN
+      target_field: gti.ioc_stream.attributes.last_https_certificate.subject.cn
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.thumbprint
+      tag: rename_attributes_last_https_certificate_thumbprint
+      target_field: gti.ioc_stream.attributes.last_https_certificate.thumbprint
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.tags
+      tag: rename_attributes_last_https_certificate_tags
+      target_field: gti.ioc_stream.attributes.last_https_certificate.tags
+      ignore_missing: true
+  - rename:
+      field: json.attributes.last_https_certificate.thumbprint_sha256
+      tag: rename_attributes_last_https_certificate_thumbprint_sha256
+      target_field: gti.ioc_stream.attributes.last_https_certificate.thumbprint_sha256
+      ignore_missing: true
+  - date:
+      field: json.attributes.last_https_certificate.validity.not_after
+      tag: date_attributes_last_https_certificate_validity_not_after
+      target_field: gti.ioc_stream.attributes.last_https_certificate.validity.not_after
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.attributes?.last_https_certificate?.validity?.not_after != null && ctx.json.attributes.last_https_certificate.validity.not_after != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.attributes.last_https_certificate.validity.not_before
+      tag: date_attributes_last_https_certificate_validity_not_before
+      target_field: gti.ioc_stream.attributes.last_https_certificate.validity.not_before
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.attributes?.last_https_certificate?.validity?.not_before != null && ctx.json.attributes.last_https_certificate.validity.not_before != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.last_https_certificate.version
+      tag: rename_attributes_last_https_certificate_version
+      target_field: gti.ioc_stream.attributes.last_https_certificate.version
+      ignore_missing: true
+  - date:
+      field: json.attributes.last_https_certificate_date
+      tag: date_attributes_last_https_certificate_date
+      target_field: gti.ioc_stream.attributes.last_https_certificate_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.last_https_certificate_date != null && ctx.json.attributes.last_https_certificate_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.attributes.last_modification_date
+      tag: date_attributes_last_modification_date
+      target_field: gti.ioc_stream.attributes.last_modification_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.last_modification_date != null && ctx.json.attributes.last_modification_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_ioc_stream_attributes_last_modification_date
+      copy_from: gti.ioc_stream.attributes.last_modification_date
+      ignore_empty_value: true
+  - date:
+      field: json.attributes.last_seen_itw_date
+      tag: date_attributes_last_seen_itw_date
+      target_field: gti.ioc_stream.attributes.last_seen_itw_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.last_seen_itw_date != null && ctx.json.attributes.last_seen_itw_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.attributes.last_submission_date
+      tag: date_attributes_last_submission_date
+      target_field: gti.ioc_stream.attributes.last_submission_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.last_submission_date != null && ctx.json.attributes.last_submission_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.attributes.last_update_date
+      tag: date_attributes_last_update_date
+      target_field: gti.ioc_stream.attributes.last_update_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.last_update_date != null && ctx.json.attributes.last_update_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.magic
+      tag: rename_attributes_magic
+      target_field: gti.ioc_stream.attributes.magic
+      ignore_missing: true
+  - rename:
+      field: json.attributes.magika
+      tag: rename_attributes_magika
+      target_field: gti.ioc_stream.attributes.magika
+      ignore_missing: true
+  - rename:
+      field: json.attributes.main_icon.dhash
+      tag: rename_attributes_main_icon_dhash
+      target_field: gti.ioc_stream.attributes.main_icon.dhash
+      ignore_missing: true
+  - rename:
+      field: json.attributes.main_icon.raw_md5
+      tag: rename_attributes_main_icon_raw_md5
+      target_field: gti.ioc_stream.attributes.main_icon.raw_md5
+      ignore_missing: true
+  - convert:
+      field: json.attributes.mandiant_ic_score
+      tag: convert_attributes_mandiant_ic_score_to_long
+      target_field: gti.ioc_stream.attributes.mandiant_ic_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.md5
+      tag: rename_attributes_md5
+      target_field: gti.ioc_stream.attributes.md5
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_ioc_stream_attributes_md5
+      copy_from: gti.ioc_stream.attributes.md5
+      ignore_empty_value: true
+  - rename:
+      field: json.attributes.meaningful_name
+      tag: rename_attributes_meaningful_name
+      target_field: gti.ioc_stream.attributes.meaningful_name
+      ignore_missing: true
+  - set:
+      field: file.name
+      tag: set_file_name_from_ioc_stream_attributes_meaningful_name
+      copy_from: gti.ioc_stream.attributes.meaningful_name
+      ignore_empty_value: true
+  - foreach:
+      field: json.attributes.names
+      if: ctx.json?.attributes?.names instanceof List
+      processor:
+        append:
+          field: file.attributes
+          tag: append_attributes_names_into_file_attributes
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.attributes.names
+      tag: rename_attributes_names
+      target_field: gti.ioc_stream.attributes.names
+      ignore_missing: true
+  - rename:
+      field: json.attributes.network
+      tag: rename_attributes_network
+      target_field: gti.ioc_stream.attributes.network
+      ignore_missing: true
+  - rename:
+      field: json.attributes.outgoing_links
+      tag: rename_attributes_outgoing_links
+      target_field: gti.ioc_stream.attributes.outgoing_links
+      ignore_missing: true
+  - rename:
+      field: json.attributes.pe_info.compiler_product_versions
+      tag: rename_attributes_pe_info_compiler_product_versions
+      target_field: gti.ioc_stream.attributes.pe_info.compiler_product_versions
+      ignore_missing: true
+  - rename:
+      field: json.attributes.pe_info.debug
+      tag: rename_attributes_pe_info_debug
+      target_field: gti.ioc_stream.attributes.pe_info.debug
+      ignore_missing: true
+  - convert:
+      field: json.attributes.pe_info.entry_point
+      tag: convert_attributes_pe_info_entry_point_to_long
+      target_field: gti.ioc_stream.attributes.pe_info.entry_point
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.pe_info.exports
+      tag: rename_attributes_pe_info_exports
+      target_field: gti.ioc_stream.attributes.pe_info.exports
+      ignore_missing: true
+  - rename:
+      field: json.attributes.pe_info.imphash
+      tag: rename_attributes_pe_info_imphash
+      target_field: gti.ioc_stream.attributes.pe_info.imphash
+      ignore_missing: true
+  - rename:
+      field: json.attributes.pe_info.import_list
+      tag: rename_attributes_pe_info_import_list
+      target_field: gti.ioc_stream.attributes.pe_info.import_list
+      ignore_missing: true
+  - convert:
+      field: json.attributes.pe_info.machine_type
+      tag: convert_attributes_pe_info_machine_type_to_long
+      target_field: gti.ioc_stream.attributes.pe_info.machine_type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.pe_info.resource_details
+      tag: rename_attributes_pe_info_resource_details
+      target_field: gti.ioc_stream.attributes.pe_info.resource_details
+      ignore_missing: true
+  - convert:
+      field: json.attributes.pe_info.resource_types.RT_GROUP_ICON
+      tag: convert_attributes_pe_info_resource_types_RT_GROUP_ICON_to_long
+      target_field: gti.ioc_stream.attributes.pe_info.resource_types.rt_group_icon
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.pe_info.resource_types.RT_ICON
+      tag: convert_attributes_pe_info_resource_types_RT_ICON_to_long
+      target_field: gti.ioc_stream.attributes.pe_info.resource_types.rt_icon
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.pe_info.resource_types.RT_MANIFEST
+      tag: convert_attributes_pe_info_resource_types_RT_MANIFEST_to_long
+      target_field: gti.ioc_stream.attributes.pe_info.resource_types.rt_manifest
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.pe_info.resource_types.RT_VERSION
+      tag: convert_attributes_pe_info_resource_types_RT_VERSION_to_long
+      target_field: gti.ioc_stream.attributes.pe_info.resource_types.rt_version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.pe_info.rich_pe_header_hash
+      tag: rename_attributes_pe_info_rich_pe_header_hash
+      target_field: gti.ioc_stream.attributes.pe_info.rich_pe_header_hash
+      ignore_missing: true
+  - rename:
+      field: json.attributes.pe_info.sections
+      tag: rename_attributes_pe_info_sections
+      target_field: gti.ioc_stream.attributes.pe_info.sections
+      ignore_missing: true
+  - date:
+      field: json.attributes.pe_info.timestamp
+      tag: date_attributes_pe_info_timestamp
+      target_field: gti.ioc_stream.attributes.pe_info.timestamp
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.pe_info?.timestamp != null && ctx.json.attributes.pe_info.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.popular_threat_classification.popular_threat_category
+      tag: rename_attributes_popular_threat_classification_popular_threat_category
+      target_field: gti.ioc_stream.attributes.popular_threat_classification.popular_threat_category
+      ignore_missing: true
+  - rename:
+      field: json.attributes.popular_threat_classification.popular_threat_name
+      tag: rename_attributes_popular_threat_classification_popular_threat_name
+      target_field: gti.ioc_stream.attributes.popular_threat_classification.popular_threat_name
+      ignore_missing: true
+  - rename:
+      field: json.attributes.popular_threat_classification.suggested_threat_label
+      tag: rename_attributes_popular_threat_classification_suggested_threat_label
+      target_field: gti.ioc_stream.attributes.popular_threat_classification.suggested_threat_label
+      ignore_missing: true
+  - rename:
+      field: json.attributes.redirection_chain
+      tag: rename_attributes_redirection_chain
+      target_field: gti.ioc_stream.attributes.redirection_chain
+      ignore_missing: true
+  - rename:
+      field: json.attributes.regional_internet_registry
+      tag: rename_attributes_regional_internet_registry
+      target_field: gti.ioc_stream.attributes.regional_internet_registry
+      ignore_missing: true
+  - rename:
+      field: json.attributes.registrar
+      tag: rename_attributes_registrar
+      target_field: gti.ioc_stream.attributes.registrar
+      ignore_missing: true
+  - convert:
+      field: json.attributes.reputation
+      tag: convert_attributes_reputation_to_long
+      target_field: gti.ioc_stream.attributes.reputation
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.num_gav_detections
+      tag: convert_attributes_threat_severity_threat_severity_data_num_gav_detections_to_long
+      target_field: gti.ioc_stream.attributes.severity_data.num_gav_detections
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.sha1
+      tag: rename_attributes_sha1
+      target_field: gti.ioc_stream.attributes.sha1
+      ignore_missing: true
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_ioc_stream_attributes_sha1
+      copy_from: gti.ioc_stream.attributes.sha1
+      ignore_empty_value: true
+  - rename:
+      field: json.attributes.sha256
+      tag: rename_attributes_sha256
+      target_field: gti.ioc_stream.attributes.sha256
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_ioc_stream_attributes_sha256
+      copy_from: gti.ioc_stream.attributes.sha256
+      ignore_empty_value: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            date:
+              field: _ingest._value.values.CreationUtcTime
+              tag: date_attributes_sigma_analysis_results_match_context_values_CreationUtcTime
+              target_field: _ingest._value.creation_time
+              formats:
+                - UNIX
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.CreationUtcTime
+                    ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.DestinationHostname
+              tag: rename_attributes_sigma_analysis_results_match_context_values_DestinationHostname
+              target_field: _ingest._value.destination_hostname
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.DestinationIp
+              tag: convert_attributes_sigma_analysis_results_match_context_values_DestinationIp_to_ip
+              target_field: _ingest._value.destination_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.DestinationIp
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.DestinationIsIpv6
+              tag: convert_attributes_sigma_analysis_results_match_context_values_DestinationIsIpv6_to_boolean
+              target_field: _ingest._value.destination_is_ipv6
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.DestinationIsIpv6
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.DestinationPort
+              tag: convert_attributes_sigma_analysis_results_match_context_values_DestinationPort_to_long
+              target_field: _ingest._value.destination_port
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.DestinationPort
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.DestinationPortName
+              tag: rename_attributes_sigma_analysis_results_match_context_values_DestinationPortName
+              target_field: _ingest._value.destination_port_name
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Details
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Details
+              target_field: _ingest._value.details
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.EventID
+              tag: convert_attributes_sigma_analysis_results_match_context_values_EventID_to_long
+              target_field: _ingest._value.event_id
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.EventID
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.EventType
+              tag: rename_attributes_sigma_analysis_results_match_context_values_EventType
+              target_field: _ingest._value.event_type
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Image
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Image
+              target_field: _ingest._value.image
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.Initiated
+              tag: convert_attributes_sigma_analysis_results_match_context_values_Initiated_to_boolean
+              target_field: _ingest._value.initiated
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.Initiated
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.ProcessGuid
+              tag: rename_attributes_sigma_analysis_results_match_context_values_ProcessGuid
+              target_field: _ingest._value.process_guid
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.ProcessId
+              tag: convert_attributes_sigma_analysis_results_match_context_values_ProcessId_to_long
+              target_field: _ingest._value.process_id
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.ProcessId
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Protocol
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Protocol
+              target_field: _ingest._value.protocol
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.RuleName
+              tag: rename_attributes_sigma_analysis_results_match_context_values_RuleName
+              target_field: _ingest._value.rule_name
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.SourceHostname
+              tag: rename_attributes_sigma_analysis_results_match_context_values_SourceHostname
+              target_field: _ingest._value.source_hostname
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.SourceIp
+              tag: convert_attributes_sigma_analysis_results_match_context_values_SourceIp_to_ip
+              target_field: _ingest._value.source_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.SourceIp
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.SourceIsIpv6
+              tag: convert_attributes_sigma_analysis_results_match_context_values_SourceIsIpv6_to_boolean
+              target_field: _ingest._value.source_is_ipv6
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.SourceIsIpv6
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.SourcePort
+              tag: convert_attributes_sigma_analysis_results_match_context_values_SourcePort_to_long
+              target_field: _ingest._value.source_port
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.SourcePort
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.SourcePortName
+              tag: rename_attributes_sigma_analysis_results_match_context_values_SourcePortName
+              target_field: _ingest._value.source_port_name
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.TargetFilename
+              tag: rename_attributes_sigma_analysis_results_match_context_values_TargetFilename
+              target_field: _ingest._value.target_file_name
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.TargetObject
+              tag: rename_attributes_sigma_analysis_results_match_context_values_TargetObject
+              target_field: _ingest._value.target_object
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.User
+              tag: rename_attributes_sigma_analysis_results_match_context_values_User
+              target_field: _ingest._value.user
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            date:
+              field: _ingest._value.values.UtcTime
+              tag: date_attributes_sigma_analysis_results_match_context_values_UtcTime
+              target_field: _ingest._value.utc_time
+              formats:
+                - UNIX
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.UtcTime
+                    ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.CommandLine
+              tag: rename_attributes_sigma_analysis_results_match_context_values_CommandLine
+              target_field: _ingest._value.command_line
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Description
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Description
+              target_field: _ingest._value.description
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.OriginalFileName
+              tag: rename_attributes_sigma_analysis_results_match_context_values_OriginalFileName
+              target_field: _ingest._value.original_file_name
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.FileVersion
+              tag: rename_attributes_sigma_analysis_results_match_context_values_FileVersion
+              target_field: _ingest._value.file_version
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Product
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Product
+              target_field: _ingest._value.product
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.ParentCommandLine
+              tag: rename_attributes_sigma_analysis_results_match_context_values_ParentCommandLine
+              target_field: _ingest._value.parent_command_line
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.CurrentDirectory
+              tag: rename_attributes_sigma_analysis_results_match_context_values_CurrentDirectory
+              target_field: _ingest._value.current_directory
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Company
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Company
+              target_field: _ingest._value.company
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Hashes
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Hashes
+              target_field: _ingest._value.hashes
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.ParentImage
+              tag: rename_attributes_sigma_analysis_results_match_context_values_ParentImage
+              target_field: _ingest._value.parent_image
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.IntegrityLevel
+              tag: rename_attributes_sigma_analysis_results_match_context_values_IntegrityLevel
+              target_field: _ingest._value.integrity_level
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.LogonGuid
+              tag: rename_attributes_sigma_analysis_results_match_context_values_LogonGuid
+              target_field: _ingest._value.logon_guid
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.ParentProcessGuid
+              tag: rename_attributes_sigma_analysis_results_match_context_values_ParentProcessGuid
+              target_field: _ingest._value.parent_process_guid
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.TerminalSessionId
+              tag: convert_attributes_sigma_analysis_results_match_context_values_TerminalSessionId_to_long
+              target_field: _ingest._value.terminal_session_id
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.TerminalSessionId
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.QueryStatus
+              tag: rename_attributes_sigma_analysis_results_match_context_values_QueryStatus
+              target_field: _ingest._value.query_status
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.QueryResults
+              tag: rename_attributes_sigma_analysis_results_match_context_values_QueryResults
+              target_field: _ingest._value.query_results
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.QueryName
+              tag: rename_attributes_sigma_analysis_results_match_context_values_QueryName
+              target_field: _ingest._value.query_name
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.SignatureStatus
+              tag: rename_attributes_sigma_analysis_results_match_context_values_SignatureStatus
+              target_field: _ingest._value.signature_status
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.ImageLoaded
+              tag: rename_attributes_sigma_analysis_results_match_context_values_ImageLoaded
+              target_field: _ingest._value.image_loaded
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            convert:
+              field: _ingest._value.values.Signed
+              tag: convert_attributes_sigma_analysis_results_match_context_values_Signed_to_boolean
+              target_field: _ingest._value.signed
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.values.Signed
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.Signature
+              tag: rename_attributes_sigma_analysis_results_match_context_values_Signature
+              target_field: _ingest._value.signature
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            rename:
+              field: _ingest._value.values.param1
+              tag: rename_attributes_sigma_analysis_results_match_context_values_param1
+              target_field: _ingest._value.param1
+              ignore_missing: true
+  - foreach:
+      field: json.attributes.sigma_analysis_results
+      if: ctx.json?.attributes?.sigma_analysis_results instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.match_context
+          processor:
+            remove:
+              field:
+                - _ingest._value.values.DestinationIp
+                - _ingest._value.values.DestinationIsIpv6
+                - _ingest._value.values.DestinationPort
+                - _ingest._value.values.EventID
+                - _ingest._value.values.Initiated
+                - _ingest._value.values.ProcessId
+                - _ingest._value.values.Signed
+                - _ingest._value.values.SourceIp
+                - _ingest._value.values.SourceIsIpv6
+                - _ingest._value.values.SourcePort
+                - _ingest._value.values.UtcTime
+                - _ingest._value.values.TerminalSessionId
+                - _ingest._value.values.CreationUtcTime
+              tag: remove_attributes_sigma_analysis_results_match_context
+              ignore_missing: true
+  - rename:
+      field: json.attributes.sigma_analysis_results
+      tag: rename_attributes_sigma_analysis_results
+      target_field: gti.ioc_stream.attributes.sigma_analysis_results
+      ignore_missing: true
+  - convert:
+      field: json.attributes.sigma_analysis_stats.critical
+      tag: convert_attributes_sigma_analysis_stats_critical_to_long
+      target_field: gti.ioc_stream.attributes.sigma_analysis_stats.critical
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.sigma_analysis_stats.high
+      tag: convert_attributes_sigma_analysis_stats_high_to_long
+      target_field: gti.ioc_stream.attributes.sigma_analysis_stats.high
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.sigma_analysis_stats.low
+      tag: convert_attributes_sigma_analysis_stats_low_to_long
+      target_field: gti.ioc_stream.attributes.sigma_analysis_stats.low
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.sigma_analysis_stats.medium
+      tag: convert_attributes_sigma_analysis_stats_medium_to_long
+      target_field: gti.ioc_stream.attributes.sigma_analysis_stats.medium
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.signature_info.copyright
+      tag: rename_attributes_signature_info_copyright
+      target_field: gti.ioc_stream.attributes.signature_info.copyright
+      ignore_missing: true
+  - rename:
+      field: json.attributes.signature_info.description
+      tag: rename_attributes_signature_info_description
+      target_field: gti.ioc_stream.attributes.signature_info.description
+      ignore_missing: true
+  - rename:
+      field: json.attributes.signature_info.product
+      tag: rename_attributes_signature_info_product
+      target_field: gti.ioc_stream.attributes.signature_info.product
+      ignore_missing: true
+  - convert:
+      field: json.attributes.size
+      tag: convert_attributes_size_to_long
+      target_field: gti.ioc_stream.attributes.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.ssdeep
+      tag: rename_attributes_ssdeep
+      target_field: gti.ioc_stream.attributes.ssdeep
+      ignore_missing: true
+  - rename:
+      field: json.attributes.tags
+      tag: rename_attributes_tags
+      target_field: gti.ioc_stream.attributes.tags
+      ignore_missing: true
+  - date:
+      field: json.attributes.threat_severity.last_analysis_date
+      tag: date_attributes_threat_severity_last_analysis_date
+      target_field: gti.ioc_stream.attributes.threat_severity.last_analysis_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.threat_severity?.last_analysis_date != null && ctx.json.attributes.threat_severity.last_analysis_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.threat_severity.level_description
+      tag: rename_attributes_threat_severity_level_description
+      target_field: gti.ioc_stream.attributes.threat_severity.level_description
+      ignore_missing: true
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.belongs_to_bad_collection
+      tag: convert_attributes_threat_severity_threat_severity_data_belongs_to_bad_collection_to_boolean
+      target_field: gti.ioc_stream.attributes.threat_severity.threat_severity_data.belongs_to_bad_collection
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.belongs_to_threat_actor
+      tag: convert_attributes_threat_severity_threat_severity_data_belongs_to_threat_actor_to_boolean
+      target_field: gti.ioc_stream.attributes.threat_severity.threat_severity_data.belongs_to_threat_actor
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.domain_rank
+      tag: convert_attributes_threat_severity_threat_severity_data_domain_rank_to_long
+      target_field: gti.ioc_stream.attributes.threat_severity.threat_severity_data.domain_rank
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.has_bad_communicating_files_high
+      tag: convert_attributes_threat_severity_threat_severity_data_has_bad_communicating_files_high_to_boolean
+      target_field: gti.ioc_stream.attributes.threat_severity.threat_severity_data.has_bad_communicating_files_high
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.has_bad_communicating_files_medium
+      tag: convert_attributes_threat_severity_threat_severity_data_has_bad_communicating_files_medium_to_boolean
+      target_field: gti.ioc_stream.attributes.threat_severity.threat_severity_data.has_bad_communicating_files_medium
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.threat_severity.threat_severity_level
+      tag: rename_attributes_threat_severity_threat_severity_level
+      target_field: gti.ioc_stream.attributes.threat_severity.threat_severity_level
+      ignore_missing: true
+  - rename:
+      field: json.attributes.threat_severity.version
+      tag: rename_attributes_threat_severity_version
+      target_field: gti.ioc_stream.attributes.threat_severity.version
+      ignore_missing: true
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.has_references
+      tag: convert_attributes_threat_severity_threat_severity_data_has_references_to_boolean
+      target_field: gti.ioc_stream.attributes.threat_severity_data.has_references
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.has_vulnerabilities
+      tag: convert_attributes_threat_severity_threat_severity_data_has_vulnerabilities_to_boolean
+      target_field: gti.ioc_stream.attributes.threat_severity_data.has_vulnerabilities
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.num_av_detections
+      tag: convert_attributes_threat_severity_threat_severity_data_num_av_detections_to_long
+      target_field: gti.ioc_stream.attributes.threat_severity_data.num_av_detections
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.threat_severity.threat_severity_data.num_detections
+      tag: convert_attributes_threat_severity_threat_severity_data_num_detections_to_long
+      target_field: gti.ioc_stream.attributes.threat_severity_data.num_detections
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.times_submitted
+      tag: convert_attributes_times_submitted_to_long
+      target_field: gti.ioc_stream.attributes.times_submitted
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.title
+      tag: rename_attributes_title
+      target_field: gti.ioc_stream.attributes.title
+      ignore_missing: true
+  - rename:
+      field: json.attributes.tld
+      tag: rename_attributes_tld
+      target_field: gti.ioc_stream.attributes.tld
+      ignore_missing: true
+  - rename:
+      field: json.attributes.tlsh
+      tag: rename_attributes_tlsh
+      target_field: gti.ioc_stream.attributes.tlsh
+      ignore_missing: true
+  - convert:
+      field: json.attributes.total_votes.harmless
+      tag: convert_attributes_total_votes_harmless_to_long
+      target_field: gti.ioc_stream.attributes.total_votes.harmless
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.total_votes.malicious
+      tag: convert_attributes_total_votes_malicious_to_long
+      target_field: gti.ioc_stream.attributes.total_votes.malicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.trid
+      if: ctx.json?.attributes?.trid instanceof List
+      processor:
+        convert:
+          field: _ingest._value.probability
+          tag: convert_attributes_trid_probability_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.probability
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.trid
+      tag: rename_attributes_trid
+      target_field: gti.ioc_stream.attributes.trid
+      ignore_missing: true
+  - rename:
+      field: json.attributes.type_description
+      tag: rename_attributes_type_description
+      target_field: gti.ioc_stream.attributes.type_description
+      ignore_missing: true
+  - set:
+      field: file.type
+      tag: set_file_type_from_ioc_stream_attributes_type_description
+      copy_from: gti.ioc_stream.attributes.type_description
+      ignore_empty_value: true
+  - rename:
+      field: json.attributes.type_extension
+      tag: rename_attributes_type_extension
+      target_field: gti.ioc_stream.attributes.type_extension
+      ignore_missing: true
+  - set:
+      field: file.extension
+      tag: set_file_extension_from_ioc_stream_attributes_type_extension
+      copy_from: gti.ioc_stream.attributes.type_extension
+      ignore_empty_value: true
+  - rename:
+      field: json.attributes.type_tags
+      tag: rename_attributes_type_tags
+      target_field: gti.ioc_stream.attributes.type_tags
+      ignore_missing: true
+  - convert:
+      field: json.attributes.last_analysis_stats.type-unsupported
+      tag: convert_attributes_last_analysis_stats_type-unsupported_to_long
+      target_field: gti.ioc_stream.attributes.type_unsupported
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.unique_sources
+      tag: convert_attributes_unique_sources_to_long
+      target_field: gti.ioc_stream.attributes.unique_sources
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.url
+      tag: rename_attributes_url
+      target_field: gti.ioc_stream.attributes.url
+      ignore_missing: true
+  - set:
+      field: url.full
+      tag: set_url_full_from_ioc_stream_attributes_url
+      copy_from: gti.ioc_stream.attributes.url
+      ignore_empty_value: true
+  - date:
+      field: json.attributes.whois_date
+      tag: date_attributes_whois_date
+      target_field: gti.ioc_stream.attributes.whois_date
+      formats:
+        - UNIX
+      if: ctx.json?.attributes?.whois_date != null && ctx.json.attributes.whois_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.context_attributes.hunting_info.rule_name
+      tag: rename_context_attributes_hunting_info_rule_name
+      target_field: gti.ioc_stream.context_attributes.hunting_info.rule_name
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.rule_tags
+      tag: rename_context_attributes_hunting_info_rule_tags
+      target_field: gti.ioc_stream.context_attributes.hunting_info.rule_tags
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.snippet
+      tag: rename_context_attributes_hunting_info_snippet
+      target_field: gti.ioc_stream.context_attributes.hunting_info.snippet
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.source_country
+      tag: rename_context_attributes_hunting_info_source_country
+      target_field: gti.ioc_stream.context_attributes.hunting_info.source_country
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.source_key
+      tag: rename_context_attributes_hunting_info_source_key
+      target_field: gti.ioc_stream.context_attributes.hunting_info.source_key
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.tags
+      tag: rename_context_attributes_tags
+      target_field: gti.ioc_stream.context_attributes.tags
+      ignore_missing: true
+  - date:
+      field: json.context_attributes.notification_date
+      tag: date_context_attributes_notification_date
+      target_field: gti.ioc_stream.context_attributes.notification_date
+      formats:
+        - UNIX
+      if: ctx.json?.context_attributes?.notification_date != null && ctx.json.context_attributes.notification_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.context_attributes.notification_id
+      tag: convert_context_attributes_notification_id_to_long
+      target_field: gti.ioc_stream.context_attributes.notification_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.context_attributes.origin
+      tag: rename_context_attributes_origin
+      target_field: gti.ioc_stream.context_attributes.origin
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.sources
+      tag: rename_context_attributes_sources
+      target_field: gti.ioc_stream.context_attributes.sources
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: gti.ioc_stream.id
+      ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: gti.ioc_stream.type
+      ignore_missing: true
+  - rename:
+      field: json.attributes.vhash
+      tag: rename_attributes_vhash
+      target_field: gti.ioc_stream.vhash
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_data_attributes_authentihash
+      value: '{{{gti.ioc_stream.attributes.authentihash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_favicon_dhash
+      value: '{{{gti.ioc_stream.attributes.favicon.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_favicon_raw_md5
+      value: '{{{gti.ioc_stream.attributes.favicon.raw_md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_filecondis_dhash
+      value: '{{{gti.ioc_stream.attributes.filecondis.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_filecondis_raw_md5
+      value: '{{{gti.ioc_stream.attributes.filecondis.raw_md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_last_http_response_content_sha256
+      value: '{{{gti.ioc_stream.attributes.last_http_response_content_sha256}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_last_https_certificate_thumbprint
+      value: '{{{gti.ioc_stream.attributes.last_https_certificate.thumbprint}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_last_https_certificate_thumbprint_sha256
+      value: '{{{gti.ioc_stream.attributes.last_https_certificate.thumbprint_sha256}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_main_icon_dhash
+      value: '{{{gti.ioc_stream.attributes.main_icon.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_main_icon_raw_md5
+      value: '{{{gti.ioc_stream.attributes.main_icon.raw_md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_md5
+      value: '{{{gti.ioc_stream.attributes.md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_pe_info_imphash
+      value: '{{{gti.ioc_stream.attributes.pe_info.imphash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_pe_info_rich_pe_header_hash
+      value: '{{{gti.ioc_stream.attributes.pe_info.rich_pe_header_hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_sha1
+      value: '{{{gti.ioc_stream.attributes.sha1}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_sha256
+      value: '{{{gti.ioc_stream.attributes.sha256}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_ssdeep
+      value: '{{{gti.ioc_stream.attributes.ssdeep}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_tlsh
+      value: '{{{gti.ioc_stream.attributes.tlsh}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_vhash
+      value: '{{{gti.ioc_stream.vhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_attributes_jarm
+      value: '{{{gti.ioc_stream.attributes.jarm}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_id
+      value: '{{{gti.ioc_stream.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.ioc_stream?.type == 'url'
+  - set:
+      field: threat.feed.dashboard_id
+      tag: set_threat_feed_dashboard_id
+      value:
+        - ti_google_threat_intelligence-55f5f53b-343e-4095-b61f-1089a5273d84
+        - ti_google_threat_intelligence-fb3daf8e-b45b-4fd9-bf94-dbaf96fcfb67
+  - set:
+      field: threat.feed.name
+      tag: set_threat_feed_name
+      value: GTI IOC Stream
+  - set:
+      field: threat.indicator.url.original
+      tag: set_threat_indicator_url_original_from_ransomware_attributes_url
+      copy_from: gti.ioc_stream.attributes.url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full_from_url_original
+      copy_from: threat.indicator.url.original
+      ignore_empty_value: true
+  - uri_parts:
+      field: threat.indicator.url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: append_data_url_domain_into_related_host
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.geo.country_iso_code
+      tag: set_threat_indicator_geo_country_iso_code_from_ioc_stream_attributes_country
+      copy_from: gti.ioc_stream.attributes.country
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.continent_code
+      tag: set_threat_indicator_geo_continent_code_from_ioc_stream_attributes_continent
+      copy_from: gti.ioc_stream.attributes.continent
+      ignore_empty_value: true
+  - append:
+      field: threat.indicator.id
+      tag: append_data_id
+      value: '{{{gti.ioc_stream.id}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_id
+      copy_from: gti.ioc_stream.id
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_data_id_domain
+      value: '{{{gti.ioc_stream.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.ioc_stream?.type == 'domain'
+  - set:
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256_from_ioc_stream_id
+      copy_from: gti.ioc_stream.id
+      if: ctx.gti?.ioc_stream?.type == 'file'
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256
+      value: '{{{threat.indicator.file.hash.sha256}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.ip
+      tag: set_threat_indicator_ip_from_ioc_stream_id
+      copy_from: gti.ioc_stream.id
+      if: ctx.gti?.ioc_stream?.type == 'ip_address'
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_data_threat.indicator.ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+  - script:
+      description: Set threat indicator type from gti ioc stream type.
+      if: ctx.gti?.ioc_stream?.type != null
+      tag: set_threat_indicator_type_from_gti_ioc_stream_type
+      lang: painless
+      params:
+        domain: domain-name
+        file: file
+        ip_address: ipv4-addr
+        url: url
+      source: |-
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.type = params[ctx.gti.ioc_stream.type];
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
