@@ -129,7 +129,7 @@ You need the following information from your `Apache Tomcat instance` to configu
 
 Host Configuration Format: `http[s]://<hostname>:<port>/<metrics_path>`
 
-Example Host Configuration: `<YOUR_LOCAL_HOST>:9090/metrics`
+Example Host Configuration: `http://example.com:9090/metrics`
 
 ## Validation
 

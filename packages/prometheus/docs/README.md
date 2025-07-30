@@ -264,7 +264,7 @@ setting accordingly, for instance:
 
 ```yml
 remote_write:
-  - url: "<YOUR_LOCAL_HOST>:9201/write"
+  - url: "http://example.com:9201/write"
 ```
 
 In Kubernetes, a Service resource should also be created:
@@ -312,7 +312,7 @@ be able to cover `max_samples_per_send`.
 configuration. It is a relabeling, that applies to samples before sending them to the remote endpoint. Example:
 ```
 remote_write:
-  - url: "<YOUR_LOCAL_HOST>:9201/write"
+  - url: "http://example.com:9201/write"
     write_relabel_configs:
       - source_labels: [job]
         regex: 'prometheus'
@@ -338,7 +338,7 @@ and on Prometheus side:
 
 ```yml
 remote_write:
-  - url: "<YOUR_LOCAL_HOST>:9201/write"
+  - url: "http://example.com:9201/write"
     tls_config:
         cert_file: "/etc/prometheus/my_key.pem"
         key_file: "/etc/prometheus/my_key.key"

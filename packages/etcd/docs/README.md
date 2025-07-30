@@ -30,7 +30,7 @@ In order to ingest data from etcd, you must know the instance host.
 
 Host Configuration Format: `http[s]://host:port`
 
-Example Host Configuration: `<YOUR_LOCAL_HOST>:2379`
+Example Host Configuration: `http://example.com:2379`
 
 ## Metrics reference
 

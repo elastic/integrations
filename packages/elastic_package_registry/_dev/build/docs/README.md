@@ -43,7 +43,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 Elastic Package Registry can provide Prometheus metrics in the `/metrics` endpoint.
 You can verify that metrics endpoint is enabled by making an HTTP request to
-`<YOUR_LOCAL_HOST>:9000/metrics` on your package registry instance.
+`http://example.com:9000/metrics` on your package registry instance.
 
 {{ fields "metrics" }}
 

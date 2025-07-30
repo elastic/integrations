@@ -22,7 +22,7 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs. To 
 In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication via your service app.
 - ### Service App Configuration  
     1) In the [Azure portal](https://portal.azure.com/), create a Microsoft Entra App (service app) Registration. For details please refer to the official [Microsoft Documentation](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal).
-    2) In most cases under the `Redirect URI` section, you would want to configure the value `Web` for the `app type` and `<YOUR_LOCAL_HOST>` for the `Redirect URI`, unless there are some specific requirements on your end.
+    2) In most cases under the `Redirect URI` section, you would want to configure the value `Web` for the `app type` and `http://example.com` for the `Redirect URI`, unless there are some specific requirements on your end.
     3) Assign the application at least one Microsoft Entra (Azure AD) role that will enable it to access the Reporting Web Service:
         - Security Reader
         - Global Reader
