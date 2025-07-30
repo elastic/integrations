@@ -255,12 +255,12 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 
 The values used in `event.severity` are consistent with Elastic Detection Rules.
 
-| Severity Name | `event.severity` |
-|---------------|:----------------:|
-| Low (or Info) | 21               |
-| Medium        | 47               |
-| High          | 73               |
-| Critical      | 99               |
+| Severity Name              | `event.severity` |
+|----------------------------|:----------------:|
+| Low, Info or Informational | 21               |
+| Medium                     | 47               |
+| High                       | 73               |
+| Critical                   | 99               |
 
 If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
 

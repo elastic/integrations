@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -14,6 +13,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -23,23 +24,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-e8716a81-f0e9-4669-8a77-33673cf3ae32",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "filter-index-pattern-0",
+                                "name": "9f3eecd2-96d7-43f5-8115-8e04aea68e26",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "e8716a81-f0e9-4669-8a77-33673cf3ae32": {
                                             "columnOrder": [
@@ -55,7 +52,7 @@
                                                     "label": " ",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "7eee8328-0704-41e0-881b-3341dab40c21": {
                                                     "dataType": "string",
@@ -82,6 +79,7 @@
                                                     "label": " ",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -101,14 +99,19 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "tags",
+                                        "field": "data_stream.dataset",
+                                        "index": "9f3eecd2-96d7-43f5-8115-8e04aea68e26",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
-                                            "forgerock-am-access",
-                                            "forgerock-idm-access"
+                                            "forgerock.am_access",
+                                            "forgerock.idm_access"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "forgerock.am_access",
+                                            "forgerock.idm_access"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -116,12 +119,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-am-access"
+                                                        "data_stream.dataset": "forgerock.am_access"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-idm-access"
+                                                        "data_stream.dataset": "forgerock.idm_access"
                                                     }
                                                 }
                                             ]
@@ -129,6 +132,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -166,6 +170,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "line",
@@ -199,8 +204,7 @@
                 },
                 "panelIndex": "3305cd7f-df9a-46c5-9002-02005e8351fc",
                 "title": "Access logs over time [ForgeRock]",
-                "type": "lens",
-                "version": "7.17.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -208,18 +212,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
+                                "name": "indexpattern-datasource-layer-9ccd1839-a8ec-4c6f-a488-8aa716701f53",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-9ccd1839-a8ec-4c6f-a488-8aa716701f53",
+                                "name": "cd02266e-d69c-44f9-9447-594e99cf9f82",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "9ccd1839-a8ec-4c6f-a488-8aa716701f53": {
                                             "columnOrder": [
@@ -254,7 +259,7 @@
                                                     "label": "Count of records by type",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "fa19e632-9914-4dd0-9e97-47a8ab63fac7": {
                                                     "dataType": "string",
@@ -280,7 +285,31 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "cd02266e-d69c-44f9-9447-594e99cf9f82",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "forgerock.*"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "forgerock.*"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -318,6 +347,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "bar_stacked",
@@ -351,8 +381,7 @@
                 },
                 "panelIndex": "88825b63-8601-4931-a219-c806ab580080",
                 "title": "Outcome by topic [ForgeRock]",
-                "type": "lens",
-                "version": "7.17.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -360,23 +389,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-14949b82-0f18-48d8-9619-786e98a5548c",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "filter-index-pattern-0",
+                                "name": "aa78d7a4-3aed-4583-9d31-95591da1df13",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "14949b82-0f18-48d8-9619-786e98a5548c": {
                                             "columnOrder": [
@@ -394,7 +419,7 @@
                                                     "label": " ",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -410,14 +435,19 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "tags",
+                                        "field": "data_stream.dataset",
+                                        "index": "aa78d7a4-3aed-4583-9d31-95591da1df13",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
-                                            "forgerock-am-authentication",
-                                            "forgerock-idm-authentication"
+                                            "forgerock.am_authentication",
+                                            "forgerock.idm_authentication"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "forgerock.am_authentication",
+                                            "forgerock.idm_authentication"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -425,12 +455,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-am-authentication"
+                                                        "data_stream.dataset": "forgerock.am_authentication"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-idm-authentication"
+                                                        "data_stream.dataset": "forgerock.idm_authentication"
                                                     }
                                                 }
                                             ]
@@ -438,6 +468,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -445,12 +476,15 @@
                             "visualization": {
                                 "accessor": "a450a9a3-0e7e-464d-b5f5-89e160241ce1",
                                 "layerId": "14949b82-0f18-48d8-9619-786e98a5548c",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -464,8 +498,7 @@
                 },
                 "panelIndex": "0f42b5db-15b2-4025-a3a6-4db5af6cf4bb",
                 "title": "Successful authentication count [ForgeRock]",
-                "type": "lens",
-                "version": "7.17.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -473,23 +506,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-14949b82-0f18-48d8-9619-786e98a5548c",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "filter-index-pattern-0",
+                                "name": "562ca2a6-c866-48c1-bc7d-abe9784e00f9",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "14949b82-0f18-48d8-9619-786e98a5548c": {
                                             "columnOrder": [
@@ -507,7 +536,7 @@
                                                     "label": " ",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -523,14 +552,19 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "tags",
+                                        "field": "data_stream.dataset",
+                                        "index": "562ca2a6-c866-48c1-bc7d-abe9784e00f9",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
-                                            "forgerock-am-access",
-                                            "forgerock-idm-access"
+                                            "forgerock.am_access",
+                                            "forgerock.idm_access"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "forgerock.am_access",
+                                            "forgerock.idm_access"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -538,12 +572,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-am-access"
+                                                        "data_stream.dataset": "forgerock.am_access"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-idm-access"
+                                                        "data_stream.dataset": "forgerock.idm_access"
                                                     }
                                                 }
                                             ]
@@ -551,6 +585,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -558,12 +593,15 @@
                             "visualization": {
                                 "accessor": "a450a9a3-0e7e-464d-b5f5-89e160241ce1",
                                 "layerId": "14949b82-0f18-48d8-9619-786e98a5548c",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -577,8 +615,7 @@
                 },
                 "panelIndex": "1bceec0e-85ea-415c-b6bc-e7d352a9d900",
                 "title": "Successful access count [ForgeRock]",
-                "type": "lens",
-                "version": "7.17.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -586,23 +623,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-14949b82-0f18-48d8-9619-786e98a5548c",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "filter-index-pattern-0",
+                                "name": "1b3e5dc8-1b66-43da-8ba0-e339d9e8dae5",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "14949b82-0f18-48d8-9619-786e98a5548c": {
                                             "columnOrder": [
@@ -620,7 +653,7 @@
                                                     "label": " ",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -636,14 +669,19 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "tags",
+                                        "field": "data_stream.dataset",
+                                        "index": "1b3e5dc8-1b66-43da-8ba0-e339d9e8dae5",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
-                                            "forgerock-am-authentication",
-                                            "forgerock-idm-authentication"
+                                            "forgerock.am_authentication",
+                                            "forgerock.idm_authentication"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "forgerock.am_authentication",
+                                            "forgerock.idm_authentication"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -651,12 +689,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-am-authentication"
+                                                        "data_stream.dataset": "forgerock.am_authentication"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-idm-authentication"
+                                                        "data_stream.dataset": "forgerock.idm_authentication"
                                                     }
                                                 }
                                             ]
@@ -664,6 +702,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -671,12 +710,15 @@
                             "visualization": {
                                 "accessor": "a450a9a3-0e7e-464d-b5f5-89e160241ce1",
                                 "layerId": "14949b82-0f18-48d8-9619-786e98a5548c",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -690,8 +732,7 @@
                 },
                 "panelIndex": "20b5a42c-83d8-4027-a7fe-054e8ce69422",
                 "title": "Failed authentication count [ForgeRock]",
-                "type": "lens",
-                "version": "7.17.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -699,23 +740,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-14949b82-0f18-48d8-9619-786e98a5548c",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "filter-index-pattern-0",
+                                "name": "f89d932f-6833-4e67-8e85-d4aff825dba3",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "14949b82-0f18-48d8-9619-786e98a5548c": {
                                             "columnOrder": [
@@ -733,7 +770,7 @@
                                                     "label": " ",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -749,14 +786,19 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "tags",
+                                        "field": "data_stream.dataset",
+                                        "index": "f89d932f-6833-4e67-8e85-d4aff825dba3",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
-                                            "forgerock-am-access",
-                                            "forgerock-idm-access"
+                                            "forgerock.am_access",
+                                            "forgerock.idm_access"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "forgerock.am_access",
+                                            "forgerock.idm_access"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -764,12 +806,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-am-access"
+                                                        "data_stream.dataset": "forgerock.am_access"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "tags": "forgerock-idm-access"
+                                                        "data_stream.dataset": "forgerock.idm_access"
                                                     }
                                                 }
                                             ]
@@ -777,6 +819,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -784,12 +827,15 @@
                             "visualization": {
                                 "accessor": "a450a9a3-0e7e-464d-b5f5-89e160241ce1",
                                 "layerId": "14949b82-0f18-48d8-9619-786e98a5548c",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -803,8 +849,7 @@
                 },
                 "panelIndex": "8bf6ae67-35a2-47da-9470-44ea1e677f58",
                 "title": "Failed access count [ForgeRock]",
-                "type": "lens",
-                "version": "7.17.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -812,18 +857,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
+                                "name": "indexpattern-datasource-layer-135224db-44c2-4067-b818-2cb0d0e952c9",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-135224db-44c2-4067-b818-2cb0d0e952c9",
+                                "name": "c2821abb-c908-4778-a423-8f636d72d7d4",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "135224db-44c2-4067-b818-2cb0d0e952c9": {
                                             "columnOrder": [
@@ -855,7 +901,7 @@
                                                     "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -863,7 +909,31 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "c2821abb-c908-4778-a423-8f636d72d7d4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "forgerock.*"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "forgerock.*"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -878,7 +948,9 @@
                                     }
                                 ],
                                 "layerId": "135224db-44c2-4067-b818-2cb0d0e952c9",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
                             }
                         },
                         "title": "",
@@ -897,25 +969,17 @@
                 },
                 "panelIndex": "ee41e068-b768-4dd8-ac4d-80b1f8daa500",
                 "title": "Top users [ForgeRock]",
-                "type": "lens",
-                "version": "7.17.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[ForgeRock] Audit Event Overview",
         "version": 1
     },
-    "coreMigrationVersion": "7.17.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-07-04T13:08:05.398Z",
     "id": "forgerock-263aed30-7fa9-11ed-b53a-1b59fe8c1601",
-    "migrationVersion": {
-        "dashboard": "7.17.0"
-    },
     "references": [
-        {
-            "id": "logs-*",
-            "name": "3305cd7f-df9a-46c5-9002-02005e8351fc:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
         {
             "id": "logs-*",
             "name": "3305cd7f-df9a-46c5-9002-02005e8351fc:indexpattern-datasource-layer-e8716a81-f0e9-4669-8a77-33673cf3ae32",
@@ -923,12 +987,7 @@
         },
         {
             "id": "logs-*",
-            "name": "3305cd7f-df9a-46c5-9002-02005e8351fc:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "88825b63-8601-4931-a219-c806ab580080:indexpattern-datasource-current-indexpattern",
+            "name": "3305cd7f-df9a-46c5-9002-02005e8351fc:9f3eecd2-96d7-43f5-8115-8e04aea68e26",
             "type": "index-pattern"
         },
         {
@@ -938,7 +997,7 @@
         },
         {
             "id": "logs-*",
-            "name": "0f42b5db-15b2-4025-a3a6-4db5af6cf4bb:indexpattern-datasource-current-indexpattern",
+            "name": "88825b63-8601-4931-a219-c806ab580080:cd02266e-d69c-44f9-9447-594e99cf9f82",
             "type": "index-pattern"
         },
         {
@@ -948,12 +1007,7 @@
         },
         {
             "id": "logs-*",
-            "name": "0f42b5db-15b2-4025-a3a6-4db5af6cf4bb:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "1bceec0e-85ea-415c-b6bc-e7d352a9d900:indexpattern-datasource-current-indexpattern",
+            "name": "0f42b5db-15b2-4025-a3a6-4db5af6cf4bb:aa78d7a4-3aed-4583-9d31-95591da1df13",
             "type": "index-pattern"
         },
         {
@@ -963,12 +1017,7 @@
         },
         {
             "id": "logs-*",
-            "name": "1bceec0e-85ea-415c-b6bc-e7d352a9d900:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "20b5a42c-83d8-4027-a7fe-054e8ce69422:indexpattern-datasource-current-indexpattern",
+            "name": "1bceec0e-85ea-415c-b6bc-e7d352a9d900:562ca2a6-c866-48c1-bc7d-abe9784e00f9",
             "type": "index-pattern"
         },
         {
@@ -978,12 +1027,7 @@
         },
         {
             "id": "logs-*",
-            "name": "20b5a42c-83d8-4027-a7fe-054e8ce69422:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "8bf6ae67-35a2-47da-9470-44ea1e677f58:indexpattern-datasource-current-indexpattern",
+            "name": "20b5a42c-83d8-4027-a7fe-054e8ce69422:1b3e5dc8-1b66-43da-8ba0-e339d9e8dae5",
             "type": "index-pattern"
         },
         {
@@ -993,19 +1037,20 @@
         },
         {
             "id": "logs-*",
-            "name": "8bf6ae67-35a2-47da-9470-44ea1e677f58:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "ee41e068-b768-4dd8-ac4d-80b1f8daa500:indexpattern-datasource-current-indexpattern",
+            "name": "8bf6ae67-35a2-47da-9470-44ea1e677f58:f89d932f-6833-4e67-8e85-d4aff825dba3",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "ee41e068-b768-4dd8-ac4d-80b1f8daa500:indexpattern-datasource-layer-135224db-44c2-4067-b818-2cb0d0e952c9",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ee41e068-b768-4dd8-ac4d-80b1f8daa500:c2821abb-c908-4778-a423-8f636d72d7d4",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -1,6 +1,6 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) and [Microsoft Management API](https://learn.microsoft.com/en-us/office/office-365-management-api/) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) and [Microsoft Management API](https://learn.microsoft.com/en-us/office/office-365-management-api/) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and service health.
 
 ## Data streams
 
@@ -27,7 +27,7 @@ Following Microsoft 365 data can be collected by Microsoft Office 365 Metrics in
 | [Viva Engage Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-device-usage-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Device Usage User Counts metrics   |   `Period`-based   |      Reports.Read.All    |
 | [Service Health](https://learn.microsoft.com/en-us/graph/service-communications-concept-overview?view=o365-worldwide)                                                 |    [reportRoot: getServiceHealth](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Service Health metrics   |   No aggregation  |    ServiceHealth.Read.All  |
 | [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [subscribedSkus](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0), [subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/companysubscription?view=graph-rest-1.0)   |   Microsoft 365 Subscriptions metrics   |   No aggregation  | LicenseAssignment.Read.All  |
-| [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
+| [Teams Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
 | Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All, Directory.Read.All  |
 | [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
 | [Entra Features](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
@@ -388,85 +388,89 @@ An example event for `mailbox_usage_quota_status` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-06-16",
+    "agent": {
+        "ephemeral_id": "5ba0488b-5972-422e-9dcf-acffc252d4ad",
+        "id": "9832a43d-9b1e-4d80-8a4c-78c07b204c27",
+        "name": "elastic-agent-96043",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.mailbox_usage_quota_status",
+        "namespace": "63785",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "9832a43d-9b1e-4d80-8a4c-78c07b204c27",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.mailbox_usage_quota_status",
+        "ingested": "2025-06-26T10:26:19Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-96043",
+        "ip": [
+            "192.168.32.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "56-38-50-9D-7B-4E",
+            "F2-ED-DF-6A-08-7F"
+        ],
+        "name": "elastic-agent-96043",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "mailbox": {
                 "usage": {
                     "quota": {
                         "status": {
-                            "send_receive_prohibited": {
-                                "count": 9
-                            },
                             "indeterminate": {
-                                "count": 3
-                            },
-                            "under_limit": {
-                                "count": 20
-                            },
-                            "warning_issued": {
-                                "count": 1
+                                "count": 0
                             },
                             "report": {
-                                "date": "2025-01-26",
+                                "date": "2025-06-16",
                                 "period": {
                                     "day": "7"
                                 },
-                                "refresh_date": "2025-01-26"
+                                "refresh_date": "2025-06-17"
                             },
                             "send_prohibited": {
-                                "count": 6
+                                "count": 0
+                            },
+                            "send_receive_prohibited": {
+                                "count": 0
+                            },
+                            "under_limit": {
+                                "count": 19
+                            },
+                            "warning_issued": {
+                                "count": 0
                             }
                         }
                     }
                 }
             }
         }
-    },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "0af64850-a098-46f3-a3c6-98b706017b44",
-        "type": "filebeat",
-        "ephemeral_id": "3c0f3a0f-f3dd-4793-affb-f9441816b674",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-26",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.mailbox_usage_quota_status"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "family": "",
-            "type": "linux",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "containerized": false,
-        "ip": [
-            "192.168.32.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-20-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "0af64850-a098-46f3-a3c6-98b706017b44",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-28T12:46:50Z",
-        "dataset": "o365_metrics.mailbox_usage_quota_status"
     },
     "tags": [
         "o365.metrics.mailbox.usage"
@@ -490,6 +494,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.mailbox.usage.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  | gauge |
 | o365.metrics.mailbox.usage.quota.status.report.date | The specific date for which the report data applies. | date |  |  |
 | o365.metrics.mailbox.usage.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |  |
@@ -508,98 +513,105 @@ An example event for `mailbox_usage_detail` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-01-22",
+    "agent": {
+        "ephemeral_id": "e0c9daaf-ed19-40a7-8eb5-a11d7e85054d",
+        "id": "7643ee80-69c2-4ae1-b978-0e0c567cb471",
+        "name": "elastic-agent-53630",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.mailbox_usage_detail",
+        "namespace": "63780",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "7643ee80-69c2-4ae1-b978-0e0c567cb471",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.mailbox_usage_detail",
+        "ingested": "2025-06-26T10:23:57Z",
+        "original": "{\"Created Date\":\"2024-10-11\",\"Deleted Date\":\"\",\"Deleted Item Count\":\"286\",\"Deleted Item Quota (Byte)\":\"32212254720\",\"Deleted Item Size (Byte)\":\"2053156\",\"Display Name\":\"MOD Administrator\",\"Has Archive\":\"False\",\"Is Deleted\":\"False\",\"Issue Warning Quota (Byte)\":\"105226698752\",\"Item Count\":\"385\",\"Last Activity Date\":\"2024-12-10\",\"Prohibit Send Quota (Byte)\":\"106300440576\",\"Prohibit Send/Receive Quota (Byte)\":\"107374182400\",\"Report Period\":\"7\",\"Storage Used (Byte)\":\"22991073\",\"User Principal Name\":\"admin@xyz.com\",\"﻿Report Refresh Date\":\"2025-01-22\"}"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-53630",
+        "ip": [
+            "192.168.32.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "52-54-64-52-35-BF",
+            "9A-53-D1-74-09-9E"
+        ],
+        "name": "elastic-agent-53630",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "mailbox": {
                 "usage": {
                     "detail": {
-                        "item": {
-                            "count": 181
-                        },
-                        "deleted_item_size": {
-                            "byte": 440815
-                        },
-                        "prohibit_send_quota": {
-                            "byte": 106300440576
+                        "created_date": "2024-10-11",
+                        "deleted_item": {
+                            "count": 286
                         },
                         "deleted_item_quota": {
                             "byte": 32212254720
                         },
-                        "last_activity_date": "2024-10-11",
-                        "display_name": "Dgo Sky",
-                        "has_archive": true,
+                        "deleted_item_size": {
+                            "byte": 2053156
+                        },
+                        "display_name": "MOD Administrator",
+                        "has_archive": false,
+                        "is_deleted": false,
                         "issue_warning_quota": {
                             "byte": 105226698752
                         },
-                        "deleted_item": {
-                            "count": 66
+                        "item": {
+                            "count": 385
                         },
-                        "user_principal_name": "DgoS@OnMicrosoft.com",
-                        "is_deleted": false,
+                        "last_activity_date": "2024-12-10",
+                        "prohibit_send_quota": {
+                            "byte": 106300440576
+                        },
+                        "prohibit_send_receive_quota": {
+                            "byte": 107374182400
+                        },
                         "report": {
                             "period": {
                                 "day": "7"
                             },
                             "refresh_date": "2025-01-22"
                         },
-                        "prohibit_send_receive_quota": {
-                            "byte": 107374182400
-                        },
-                        "created_date": "2024-10-11",
                         "storage_used": {
-                            "byte": 6399001
-                        }
+                            "byte": 22991073
+                        },
+                        "user_principal_name": "admin@xyz.com"
                     }
                 }
             }
         }
     },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "e6f906c1-7164-4902-843f-78493e2b68a4",
-        "ephemeral_id": "d04fab8b-d48e-4df3-83f1-aa2022d19736",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-22",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.mailbox_usage_detail"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "type": "linux",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "ip": [
-            "172.24.0.7"
-        ],
-        "containerized": false,
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-AC-18-00-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "e6f906c1-7164-4902-843f-78493e2b68a4",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-24T09:32:25Z",
-        "dataset": "o365_metrics.mailbox_usage_detail"
-    },
     "tags": [
+        "preserve_original_event",
         "o365.metrics.mailbox.usage"
     ]
 }
@@ -621,6 +633,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |  |
 | o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |  |
 | o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  | gauge |
@@ -1208,81 +1221,76 @@ An example event for `outlook_activity` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-06-17",
+    "agent": {
+        "ephemeral_id": "d8ece44b-4857-4d7f-9f60-4f5a9f24ee8f",
+        "id": "fdfa13bf-f290-441b-a202-e042f963d8cd",
+        "name": "elastic-agent-25720",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.outlook_activity",
+        "namespace": "32108",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "fdfa13bf-f290-441b-a202-e042f963d8cd",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.outlook_activity",
+        "ingested": "2025-06-26T10:27:53Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-25720",
+        "ip": [
+            "192.168.32.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "0E-B1-2D-F6-A9-30",
+            "2E-B1-57-84-1C-E9"
+        ],
+        "name": "elastic-agent-25720",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "outlook": {
                 "activity": {
-                    "meeting_interacted": {
-                        "count": 6
+                    "emails_received": {
+                        "count": 22
                     },
                     "meeting_created": {
                         "count": 0
                     },
-                    "emails_received": {
-                        "count": 11
-                    },
-                    "emails_sent": {
-                        "count": 1
-                    },
                     "report": {
-                        "date": "2025-01-21",
+                        "date": "2025-06-17",
                         "period": {
                             "day": "7"
                         },
-                        "refresh_date": "2025-01-26"
-                    },
-                    "emails_read": {
-                        "count": 6
+                        "refresh_date": "2025-06-18"
                     }
                 }
             }
         }
-    },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "e416de39-a342-4f53-86e7-e36d8846b4b7",
-        "ephemeral_id": "d9e690ae-7a58-4c59-b143-1408bbb93a4f",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-21",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.outlook_activity"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "type": "linux",
-            "family": "",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "containerized": false,
-        "ip": [
-            "192.168.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-00-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "e416de39-a342-4f53-86e7-e36d8846b4b7",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-28T08:13:54Z",
-        "dataset": "o365_metrics.outlook_activity"
     },
     "tags": [
         "o365.metrics.outlook.activity"
@@ -1306,6 +1314,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | long |  | gauge |
@@ -1324,6 +1333,56 @@ An example event for `outlook_app_usage_version_counts` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-06-22",
+    "agent": {
+        "ephemeral_id": "7b30c678-22ff-4994-805a-c342a2b5e137",
+        "id": "d4492aa6-fa0d-479a-a0b9-6fc7405cd885",
+        "name": "elastic-agent-77159",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.outlook_app_usage_version_counts",
+        "namespace": "91015",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "d4492aa6-fa0d-479a-a0b9-6fc7405cd885",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.outlook_app_usage_version_counts",
+        "ingested": "2025-06-26T10:38:31Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-77159",
+        "ip": [
+            "192.168.32.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "46-9A-66-10-61-82",
+            "E2-09-C0-CE-33-E0"
+        ],
+        "name": "elastic-agent-77159",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "outlook": {
@@ -1331,32 +1390,11 @@ An example event for `outlook_app_usage_version_counts` looks as following:
                     "usage": {
                         "version": {
                             "counts": {
-                                "outlook_2013": {
-                                    "count": 1
-                                },
-                                "outlook_2016": {
-                                    "count": 7
-                                },
-                                "outlook_2007": {
-                                    "count": 6
-                                },
-                                "undetermined": {
-                                    "count": 3
-                                },
                                 "report": {
                                     "period": {
                                         "day": "7"
                                     },
-                                    "refresh_date": "2025-01-26"
-                                },
-                                "outlook_2019": {
-                                    "count": 2
-                                },
-                                "outlook_m365": {
-                                    "count": 10
-                                },
-                                "outlook_2010": {
-                                    "count": 1
+                                    "refresh_date": "2025-06-22"
                                 }
                             }
                         }
@@ -1364,52 +1402,6 @@ An example event for `outlook_app_usage_version_counts` looks as following:
                 }
             }
         }
-    },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "e6840d3f-0681-4dde-b0e6-f0e767ba296c",
-        "ephemeral_id": "5180e26c-bab3-433c-9dce-fd0be1cabfd0",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-26",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.outlook_app_usage_version_counts"
-    },
-    "elastic_agent": {
-        "id": "e6840d3f-0681-4dde-b0e6-f0e767ba296c",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "type": "linux",
-            "family": "",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "ip": [
-            "172.31.0.7"
-        ],
-        "containerized": false,
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-AC-1F-00-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-28T07:05:32Z",
-        "dataset": "o365_metrics.outlook_app_usage_version_counts"
     },
     "tags": [
         "o365metrics-outlook_app_usage_version_counts"
@@ -1433,6 +1425,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.outlook.app.usage.version.counts.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.app.usage.version.counts.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.app.usage.version.counts.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | long |  | gauge |
@@ -1704,6 +1697,56 @@ An example event for `teams_user_activity_user_counts` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-06-13",
+    "agent": {
+        "ephemeral_id": "3e7fb723-b40d-4f9f-9db8-4db6254f94da",
+        "id": "ad84daf9-7d96-4495-8894-c5c5570022ab",
+        "name": "elastic-agent-68004",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.teams_user_activity_user_counts",
+        "namespace": "88429",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "ad84daf9-7d96-4495-8894-c5c5570022ab",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.teams_user_activity_user_counts",
+        "ingested": "2025-06-26T10:45:59Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-68004",
+        "ip": [
+            "192.168.32.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "16-EC-53-D0-85-C9",
+            "8A-63-50-08-82-B5"
+        ],
+        "name": "elastic-agent-68004",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "teams": {
@@ -1711,24 +1754,24 @@ An example event for `teams_user_activity_user_counts` looks as following:
                     "activity": {
                         "user": {
                             "counts": {
-                                "other_actions": {
+                                "calls": {
                                     "count": 0
                                 },
-                                "calls": {
+                                "meetings": {
+                                    "count": 0
+                                },
+                                "other_actions": {
                                     "count": 0
                                 },
                                 "private_chat_messages": {
                                     "count": 0
                                 },
                                 "report": {
-                                    "date": "2025-01-13",
+                                    "date": "2025-06-13",
                                     "period": {
                                         "day": "7"
                                     },
-                                    "refresh_date": "2025-01-19"
-                                },
-                                "meetings": {
-                                    "count": 0
+                                    "refresh_date": "2025-06-19"
                                 },
                                 "team_chat_messages": {
                                     "count": 0
@@ -1739,52 +1782,6 @@ An example event for `teams_user_activity_user_counts` looks as following:
                 }
             }
         }
-    },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "584e4497-cd3a-4e6f-b4b7-91889923e4e2",
-        "type": "filebeat",
-        "ephemeral_id": "9beddad6-b97a-43a4-8bd0-ac371e54deb9",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-13",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.teams_user_activity_user_counts"
-    },
-    "elastic_agent": {
-        "id": "584e4497-cd3a-4e6f-b4b7-91889923e4e2",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "family": "",
-            "type": "linux",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "containerized": false,
-        "ip": [
-            "172.27.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-AC-1B-00-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-21T12:25:43Z",
-        "dataset": "o365_metrics.teams_user_activity_user_counts"
     },
     "tags": [
         "o365.metrics.teams.user.activity.user.counts"
@@ -1808,6 +1805,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.teams.user.activity.user.counts.calls.count | The number of calls made by Teams users. | long |  | gauge |
 | o365.metrics.teams.user.activity.user.counts.meetings.count | The number of meetings attended or organized by Teams users. | long |  | gauge |
 | o365.metrics.teams.user.activity.user.counts.other_actions.count | The count of other user actions within Teams. | long |  | gauge |
@@ -2098,6 +2096,56 @@ An example event for `viva_engage_device_usage_user_counts` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-06-19",
+    "agent": {
+        "ephemeral_id": "0b866f69-1dec-43fb-a266-ad349a410384",
+        "id": "fd269b47-b5fb-46a8-9590-0ac5630a6e88",
+        "name": "elastic-agent-28582",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.viva_engage_device_usage_user_counts",
+        "namespace": "89389",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "fd269b47-b5fb-46a8-9590-0ac5630a6e88",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.viva_engage_device_usage_user_counts",
+        "ingested": "2025-06-26T10:19:59Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-28582",
+        "ip": [
+            "192.168.32.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "46-F1-AF-8D-C8-9D",
+            "EE-81-8A-1B-9C-92"
+        ],
+        "name": "elastic-agent-28582",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "viva": {
@@ -2106,30 +2154,30 @@ An example event for `viva_engage_device_usage_user_counts` looks as following:
                         "usage": {
                             "user": {
                                 "counts": {
-                                    "other": {
+                                    "android_phone": {
+                                        "count": 6
+                                    },
+                                    "ipad": {
                                         "count": 2
                                     },
-                                    "windows_phone": {
-                                        "count": 12
+                                    "iphone": {
+                                        "count": 4
+                                    },
+                                    "other": {
+                                        "count": 3
+                                    },
+                                    "report": {
+                                        "date": "2025-06-19",
+                                        "period": {
+                                            "day": "7"
+                                        },
+                                        "refresh_date": "2025-06-19"
                                     },
                                     "web": {
                                         "count": 3
                                     },
-                                    "report": {
-                                        "date": "2025-01-25",
-                                        "period": {
-                                            "day": "7"
-                                        },
-                                        "refresh_date": "2025-01-26"
-                                    },
-                                    "ipad": {
-                                        "count": 1
-                                    },
-                                    "android_phone": {
-                                        "count": 6
-                                    },
-                                    "iphone": {
-                                        "count": 4
+                                    "windows_phone": {
+                                        "count": 12
                                     }
                                 }
                             }
@@ -2138,52 +2186,6 @@ An example event for `viva_engage_device_usage_user_counts` looks as following:
                 }
             }
         }
-    },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "1017792f-50f9-430c-8888-042d046c690b",
-        "ephemeral_id": "9d29bf05-61fe-429a-9179-aa2eaf0a42bc",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-25",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.viva_engage_device_usage_user_counts"
-    },
-    "elastic_agent": {
-        "id": "1017792f-50f9-430c-8888-042d046c690b",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "type": "linux",
-            "family": "",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "containerized": false,
-        "ip": [
-            "192.168.16.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-10-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-28T12:11:16Z",
-        "dataset": "o365_metrics.viva_engage_device_usage_user_counts"
     },
     "tags": [
         "o365metrics-viva_engage_device_usage_user_counts"
@@ -2207,6 +2209,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.viva.engage.device.usage.user.counts.android_phone.count | The count of users accessing Yammer on Android phones. | long |  | gauge |
 | o365.metrics.viva.engage.device.usage.user.counts.ipad.count | The count of users accessing Yammer on iPads. | long |  | gauge |
 | o365.metrics.viva.engage.device.usage.user.counts.iphone.count | The count of users accessing Yammer on iPhones. | long |  | gauge |
@@ -2227,6 +2230,56 @@ An example event for `teams_device_usage_user_counts` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-06-13",
+    "agent": {
+        "ephemeral_id": "eae1737f-def4-4fc4-9ce8-486949e9a4b4",
+        "id": "c82618c0-f5db-49a7-a066-fcafaa3788b8",
+        "name": "elastic-agent-33477",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.teams_device_usage_user_counts",
+        "namespace": "74296",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "c82618c0-f5db-49a7-a066-fcafaa3788b8",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.teams_device_usage_user_counts",
+        "ingested": "2025-06-26T10:43:00Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-33477",
+        "ip": [
+            "192.168.32.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "56-3C-AB-3D-E2-D8",
+            "5A-51-EE-80-60-4B"
+        ],
+        "name": "elastic-agent-33477",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "teams": {
@@ -2234,36 +2287,36 @@ An example event for `teams_device_usage_user_counts` looks as following:
                     "usage": {
                         "user": {
                             "counts": {
-                                "windows_phone": {
-                                    "count": 2
+                                "android_phone": {
+                                    "count": 0
                                 },
-                                "web": {
-                                    "count": 1
+                                "chrome_os": {
+                                    "count": 0
+                                },
+                                "ios": {
+                                    "count": 0
                                 },
                                 "linux": {
-                                    "count": 10
+                                    "count": 0
+                                },
+                                "mac": {
+                                    "count": 0
                                 },
                                 "report": {
-                                    "date": "2025-01-21",
+                                    "date": "2025-06-13",
                                     "period": {
                                         "day": "7"
                                     },
-                                    "refresh_date": "2025-01-21"
+                                    "refresh_date": "2025-06-19"
                                 },
-                                "chrome_os": {
-                                    "count": 20
-                                },
-                                "ios": {
-                                    "count": 7
+                                "web": {
+                                    "count": 0
                                 },
                                 "windows": {
-                                    "count": 9
+                                    "count": 0
                                 },
-                                "android_phone": {
-                                    "count": 5
-                                },
-                                "mac": {
-                                    "count": 2
+                                "windows_phone": {
+                                    "count": 0
                                 }
                             }
                         }
@@ -2271,52 +2324,6 @@ An example event for `teams_device_usage_user_counts` looks as following:
                 }
             }
         }
-    },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "dd15c14a-87a8-447a-9664-47ede1fae11a",
-        "ephemeral_id": "cee4f8bf-01b4-425c-8ecb-a2fa49a97348",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-21",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.teams_device_usage_user_counts"
-    },
-    "elastic_agent": {
-        "id": "dd15c14a-87a8-447a-9664-47ede1fae11a",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "type": "linux",
-            "family": "",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "ip": [
-            "172.19.0.7"
-        ],
-        "containerized": false,
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-AC-13-00-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-23T07:00:30Z",
-        "dataset": "o365_metrics.teams_device_usage_user_counts"
     },
     "tags": [
         "o365.metrics.teams.device.usage.user.counts"
@@ -2340,6 +2347,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.teams.device.usage.user.counts.android_phone.count | The number of active Teams users on Android devices. | long |  | gauge |
 | o365.metrics.teams.device.usage.user.counts.chrome_os.count | The number of active Teams users on Chrome OS devices. | long |  | gauge |
 | o365.metrics.teams.device.usage.user.counts.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | long |  | gauge |
@@ -2445,7 +2453,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | input.type | Input type. | keyword |
 | o365.metrics.service.health.id | The service id. | keyword |
 | o365.metrics.service.health.service | The service name. | keyword |
-| o365.metrics.service.health.status | Show the overall service health status (Eg. serviceOperational, serviceOperational etc.). | keyword |
+| o365.metrics.service.health.status | The overall service health status (Eg. serviceOperational, serviceDegraded etc.). | keyword |
 
 
 
