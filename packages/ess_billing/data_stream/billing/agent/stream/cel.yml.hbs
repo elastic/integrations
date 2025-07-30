@@ -91,7 +91,7 @@ program: |-
           {
             "events": [
               {
-                "fake": true, // This will either way be dropped by the ingest pipeline
+                "fake": true, // This will be discarded by the drop_event processor.
               },
             ],
             "cursor": {
@@ -139,7 +139,8 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 
-{{#if processors}}
 processors:
+- drop_event.when.equals.fake: true
+{{#if processors}}
 {{processors}}
 {{/if}}
