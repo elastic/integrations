@@ -95,8 +95,8 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
 
 #### Support for Elastic Vulnerability & Misconfiguration Findings page.
 
-Version `2.0.0` of the Google Security Command Center integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of Google Security Command Center integration to ingest their vulnerabilities and misconfiguration findings from Google Security Command Center platform into Elastic and get insights directly from [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and [Misconfiguration Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page).
-This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest findings from source indices matching the pattern `logs-google_scc.finding-*` into new destination indices matching the pattern `security_solution-google_scc.vulnerability_latest-*` and `security_solution-google_scc.misconfiguration_latest-`. The Elastic Findings pages will display findings based on the destination indices.
+Version `2.0.0` of the Google Security Command Center integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of Google Security Command Center integration to ingest vulnerabilities and misconfiguration findings from Google Security Command Center platform into Elastic and get insights directly from [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) and [Misconfiguration Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page).
+Version `2.0.0` update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest findings from source indices matching the pattern `logs-google_scc.finding-*` into new destination indices matching the pattern `security_solution-google_scc.vulnerability_latest-*` and `security_solution-google_scc.misconfiguration_latest-`. The Elastic Findings pages will display findings based on the destination indices.
 
 For existing users of Google Security Command Center integration, before upgrading to `2.0.0` please ensure following requirements are met:
 
@@ -484,23 +484,23 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "e22254f0-b9bd-4d63-8492-499067aaf3b2",
-        "id": "b04fd317-5d04-4e14-8590-e1dbecea05fc",
-        "name": "elastic-agent-90591",
+        "ephemeral_id": "37fbc612-cf62-42d7-b806-3a0752057c4c",
+        "id": "c80e7e48-a164-47b9-90e8-a021a5d6efea",
+        "name": "elastic-agent-98423",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "google_scc.finding",
-        "namespace": "87519",
+        "namespace": "95684",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b04fd317-5d04-4e14-8590-e1dbecea05fc",
-        "snapshot": true,
+        "id": "c80e7e48-a164-47b9-90e8-a021a5d6efea",
+        "snapshot": false,
         "version": "8.19.0"
     },
     "event": {
@@ -508,7 +508,7 @@ An example event for `finding` looks as following:
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
         "id": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
-        "ingested": "2025-07-30T09:09:05Z",
+        "ingested": "2025-07-31T10:24:36Z",
         "kind": "event",
         "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}",
         "severity": 99,
@@ -776,7 +776,7 @@ An example event for `finding` looks as following:
 | google_scc.finding.vulnerability.cve.cvssv3.attack.complexity | This metric describes the conditions beyond the attacker's control that must exist in order to exploit the vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.attack.vector | Base Metrics Represents the intrinsic characteristics of a vulnerability that are constant over time and across user environments. This metric reflects the context by which vulnerability exploitation is possible. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.availability_impact | This metric measures the impact to the availability of the impacted component resulting from a successfully exploited vulnerability. | keyword |
-| google_scc.finding.vulnerability.cve.cvssv3.base_score | The base score is a function of the base metric scores. | double |
+| google_scc.finding.vulnerability.cve.cvssv3.base_score | The base score is a function of the base metric scores. | float |
 | google_scc.finding.vulnerability.cve.cvssv3.confidentiality_impact | This metric measures the impact to the confidentiality of the information resources managed by a software component due to a successfully exploited vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.integrity_impact | This metric measures the impact to integrity of a successfully exploited vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.privileges_required | This metric describes the level of privileges an attacker must possess before successfully exploiting the vulnerability. | keyword |

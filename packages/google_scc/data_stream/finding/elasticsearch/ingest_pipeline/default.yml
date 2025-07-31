@@ -820,8 +820,8 @@ processors:
       ignore_missing: true
   - convert:
       field: google_scc.finding.vulnerability.cve.cvssv3.base_score
-      tag: convert_finding_vulnerability_cve_cvssv3_base_score_to_double
-      type: double
+      tag: convert_finding_vulnerability_cve_cvssv3_base_score_to_float
+      type: float
       ignore_missing: true
       if: ctx.google_scc?.finding?.vulnerability?.cve?.cvssv3?.base_score != ''
       on_failure:
@@ -1127,6 +1127,11 @@ processors:
       field: cloud.project.name
       tag: set_cloud_project_name_from_resource_gcp_metadata_project_display_name
       copy_from: google_scc.finding.resource.gcp_metadata.project_display_name
+      ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name_from_resource_service
+      copy_from: google_scc.finding.resource.service
       ignore_empty_value: true
 
   # host.*
@@ -1846,6 +1851,12 @@ processors:
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY' && ctx.google_scc?.finding?.vulnerability?.cve?.id?.startsWith('CVE') == true
 
   # related.*
+  - append:
+      field: related.hosts
+      tag: append_finding_resource_name_to_related_hosts
+      value: '{{{google_scc.finding.resource.name}}}'
+      allow_duplicates: false
+      if: ctx.google_scc?.finding?.resource?.name != null && ctx.google_scc.finding.resource.type == 'google.compute.Instance'
   - foreach:
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
@@ -2127,6 +2138,7 @@ processors:
         - google_scc.finding.resource.name
         - google_scc.finding.resource.type
         - google_scc.finding.resource.display_name
+        - google_scc.finding.resource.service
         - google_scc.finding.description
         - google_scc.finding.mitre_attack.additional.tactics
         - google_scc.finding.mitre_attack.primary.tactic
