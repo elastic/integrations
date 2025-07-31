@@ -69,35 +69,35 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-30T11:10:37.869Z",
+    "@timestamp": "2025-07-30T12:27:26.931Z",
     "agent": {
-        "ephemeral_id": "6545769f-e426-4e1c-9549-44bd7f788ee4",
-        "id": "afb159d9-5bc3-429a-b8a7-3cda969112a5",
-        "name": "elastic-agent-88629",
+        "ephemeral_id": "08d06867-8f75-4d09-a992-ee92a24ee1a3",
+        "id": "0f0ccca8-57b9-43f3-9186-3c016c331f87",
+        "name": "elastic-agent-58717",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset",
-        "namespace": "81787",
+        "namespace": "17989",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "afb159d9-5bc3-429a-b8a7-3cda969112a5",
-        "snapshot": false,
-        "version": "8.18.0"
+        "id": "0f0ccca8-57b9-43f3-9186-3c016c331f87",
+        "snapshot": true,
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2025-05-30T11:10:37.869Z",
+        "created": "2025-07-30T12:27:26.931Z",
         "dataset": "rapid7_insightvm.asset",
-        "ingested": "2025-05-30T11:10:40Z",
+        "ingested": "2025-07-30T12:27:29Z",
         "kind": "state",
         "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
         "type": [
@@ -611,34 +611,34 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2018-06-08T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "dbee2821-362a-4d7a-9e8e-0fcd816d4696",
-        "id": "6a264171-bdc2-47a0-a131-9a515aa1c01f",
-        "name": "elastic-agent-42291",
+        "ephemeral_id": "488e5224-2624-4d2d-8117-39d02f6fe12d",
+        "id": "d5820362-a217-44f6-aab2-d444704e9be3",
+        "name": "elastic-agent-58088",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.vulnerability",
-        "namespace": "75615",
+        "namespace": "55539",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6a264171-bdc2-47a0-a131-9a515aa1c01f",
-        "snapshot": false,
-        "version": "8.18.0"
+        "id": "d5820362-a217-44f6-aab2-d444704e9be3",
+        "snapshot": true,
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2025-05-30T11:12:58.134Z",
+        "created": "2025-07-30T12:28:12.994Z",
         "dataset": "rapid7_insightvm.vulnerability",
         "id": "7-zip-cve-2008-6536",
-        "ingested": "2025-05-30T11:13:00Z",
+        "ingested": "2025-07-30T12:28:15Z",
         "kind": "event",
         "original": "{\"added\":\"2018-05-16T00:00:00Z\",\"categories\":\"7-Zip\",\"cves\":\"CVE-2008-6536\",\"cvss_v2_access_complexity\":\"low\",\"cvss_v2_access_vector\":\"network\",\"cvss_v2_authentication\":\"none\",\"cvss_v2_availability_impact\":\"complete\",\"cvss_v2_confidentiality_impact\":\"complete\",\"cvss_v2_exploit_score\":9.996799,\"cvss_v2_impact_score\":10.000845,\"cvss_v2_integrity_impact\":\"complete\",\"cvss_v2_score\":10,\"cvss_v2_vector\":\"AV:N/AC:L/Au:N/C:C/I:C/A:C\",\"cvss_v3_attack_complexity\":null,\"cvss_v3_attack_vector\":null,\"cvss_v3_availability_impact\":null,\"cvss_v3_confidentiality_impact\":null,\"cvss_v3_exploit_score\":0,\"cvss_v3_impact_score\":0,\"cvss_v3_integrity_impact\":null,\"cvss_v3_privileges_required\":null,\"cvss_v3_scope\":null,\"cvss_v3_score\":0,\"cvss_v3_user_interaction\":null,\"cvss_v3_vector\":null,\"denial_of_service\":false,\"description\":\"Unspecified vulnerability in 7-zip before 4.5.7 has unknown impact and remote attack vectors, as demonstrated by the PROTOS GENOME test suite for Archive Formats (c10).\",\"exploits\":[],\"id\":\"7-zip-cve-2008-6536\",\"links\":[{\"href\":\"http://www.securityfocus.com/bid/28285\",\"id\":\"28285\",\"rel\":\"advisory\",\"source\":\"bid\"},{\"href\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"id\":\"41247\",\"rel\":\"advisory\",\"source\":\"xf\"},{\"href\":\"http://nvd.nist.gov/vuln/detail/CVE-2008-6536\",\"id\":\"CVE-2008-6536\",\"rel\":\"advisory\",\"source\":\"cve\"},{\"href\":\"http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html\",\"id\":\"http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/\",\"id\":\"http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.securityfocus.com/bid/28285\",\"id\":\"http://www.securityfocus.com/bid/28285\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.vupen.com/english/advisories/2008/0914/references\",\"id\":\"http://www.vupen.com/english/advisories/2008/0914/references\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf\",\"id\":\"http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"id\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"rel\":\"advisory\",\"source\":\"url\"}],\"malware_kits\":[],\"modified\":\"2018-06-08T00:00:00Z\",\"pci_cvss_score\":10,\"pci_fail\":true,\"pci_severity_score\":5,\"pci_special_notes\":\"\",\"pci_status\":\"fail\",\"published\":\"2009-03-29T00:00:00Z\",\"references\":\"bid:28285,xf:41247,cve:CVE-2008-6536,url:http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html,url:http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/,url:http://www.securityfocus.com/bid/28285,url:http://www.vupen.com/english/advisories/2008/0914/references,url:http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf,url:https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"risk_score\":885.16,\"severity\":\"critical\",\"severity_score\":10,\"title\":\"7-Zip: CVE-2008-6536: Unspecified vulnerability in 7-zip before 4.5.7\"}",
         "risk_score": 885.16,
