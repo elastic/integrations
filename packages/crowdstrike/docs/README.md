@@ -831,6 +831,9 @@ Current supported event types are:
 | crowdstrike.event.FalconHostLink |  | keyword |
 | crowdstrike.event.FileName |  | keyword |
 | crowdstrike.event.FilePath |  | keyword |
+| crowdstrike.event.FilesAccessed.FileName |  | keyword |
+| crowdstrike.event.FilesAccessed.FilePath |  | keyword |
+| crowdstrike.event.FilesAccessed.Timestamp |  | date |
 | crowdstrike.event.FilesWritten.FileName |  | keyword |
 | crowdstrike.event.FilesWritten.FilePath |  | keyword |
 | crowdstrike.event.FilesWritten.Timestamp |  | date |
@@ -937,6 +940,8 @@ Current supported event types are:
 | crowdstrike.event.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PatternId | The numerical ID of the pattern associated with the action taken on the detection. | keyword |
+| crowdstrike.event.PlatformId |  | keyword |
+| crowdstrike.event.PlatformName |  | keyword |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
 | crowdstrike.event.PolicyId | The ID of the associated Policy. | long |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
@@ -945,6 +950,7 @@ Current supported event types are:
 | crowdstrike.event.ProcessId |  | long |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
+| crowdstrike.event.ReferrerUrl |  | keyword |
 | crowdstrike.event.Region |  | keyword |
 | crowdstrike.event.ReportFileReference |  | keyword |
 | crowdstrike.event.ReportID |  | keyword |
@@ -1584,6 +1590,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.FileVaultIsEnabled |  | match_only_text |
 | crowdstrike.FileVersion |  | keyword |
 | crowdstrike.FileWrittenFlags |  | keyword |
+| crowdstrike.FilesAccessed.FileName |  | keyword |
+| crowdstrike.FilesAccessed.FilePath |  | keyword |
+| crowdstrike.FilesAccessed.Timestamp |  | date |
 | crowdstrike.FilesWritten.FileName |  | keyword |
 | crowdstrike.FilesWritten.FilePath |  | keyword |
 | crowdstrike.FilesWritten.Timestamp |  | date |
@@ -1751,6 +1760,15 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.NeighborList |  | keyword |
 | crowdstrike.NeighborName |  | keyword |
 | crowdstrike.NetLuidIndex |  | long |
+| crowdstrike.NetworkAccesses.AccessTimestamp |  | keyword |
+| crowdstrike.NetworkAccesses.AccessType |  | keyword |
+| crowdstrike.NetworkAccesses.ConnectionDirection |  | keyword |
+| crowdstrike.NetworkAccesses.IsIPV6 |  | keyword |
+| crowdstrike.NetworkAccesses.LocalAddress |  | keyword |
+| crowdstrike.NetworkAccesses.LocalPort |  | keyword |
+| crowdstrike.NetworkAccesses.Protocol |  | keyword |
+| crowdstrike.NetworkAccesses.RemoteAddress |  | keyword |
+| crowdstrike.NetworkAccesses.RemotePort |  | keyword |
 | crowdstrike.NetworkBindCount |  | long |
 | crowdstrike.NetworkCapableAsepWriteCount |  | long |
 | crowdstrike.NetworkCloseCount |  | long |
@@ -1831,6 +1849,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.PatternDispositionDescription |  | keyword |
 | crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.ContainmentFileSystem |  | boolean |
 | crowdstrike.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
 | crowdstrike.PatternDispositionFlags.Detect |  | boolean |
 | crowdstrike.PatternDispositionFlags.FsOperationBlocked |  | boolean |
@@ -1882,6 +1901,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
 | crowdstrike.PhysicalMediumType |  | keyword |
+| crowdstrike.PlatformId |  | keyword |
+| crowdstrike.PlatformName |  | keyword |
 | crowdstrike.PointerSize |  | keyword |
 | crowdstrike.PreferredLifetime |  | keyword |
 | crowdstrike.PrefixLength |  | keyword |
@@ -1917,6 +1938,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ReachableTime |  | keyword |
 | crowdstrike.ReasonOfFunctionalityLevel |  | keyword |
 | crowdstrike.ReceiveLinkSpeed |  | keyword |
+| crowdstrike.ReferrerUrl |  | keyword |
 | crowdstrike.RegBinaryValue |  | match_only_text |
 | crowdstrike.RegClassification |  | keyword |
 | crowdstrike.RegClassificationFlags |  | keyword |

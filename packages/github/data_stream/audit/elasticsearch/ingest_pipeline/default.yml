@@ -414,6 +414,13 @@ processors:
         - github.created_at
         - github.@timestamp
       ignore_missing: true
+  - remove:
+      field:
+        - log.file.path
+        - log.offset
+      tag: remove_log_fields
+      if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null
+      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
