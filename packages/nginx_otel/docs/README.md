@@ -11,7 +11,7 @@ For example, if you wanted to monitor the request rate or connection status of y
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-1. Compatibility and Supported Versions: The integration is compatible with systems running either [EDOT Collector](https://www.elastic.co/docs/reference/opentelemetry/quickstart/) or vanilla upstream Collector and NGINX with the stub_status module enabled. This Integration has been tested with OTEL collector version v0.130.0 , EDOT collector version 9.x and NGINX version 1.27.5. 
+1. Compatibility and Supported Versions: The integration is compatible with systems running either [EDOT Collector](https://www.elastic.co/docs/reference/opentelemetry/quickstart/) or vanilla upstream Collector and NGINX with the stub_status module enabled. This Integration has been tested with OTEL collector version v0.129.0 , EDOT collector version 9.x and NGINX version 1.27.5. 
 
 2. Permissions needed: The Collector requires access to the NGINX stub_status endpoint (e.g., http://localhost:80/nginx_status). Ensure the user running the collector has appropriate permissions to access this endpoint.
 
