@@ -39,7 +39,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 To ingest data from Citrix ADC, you must know the host(s) and the administrator credentials for the Citrix ADC instance.
 
 Host Configuration Format: `http[s]://<hostname>:<port>`
-Example Host Configuration: `http://example.com:9090``
+Example Host Configuration: `http://example.com:9090`
 
 ## Setup
   
