@@ -1,0 +1,73 @@
+description: Aggregates daily total ECU usage per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+source:
+  index:
+    - chargeback-monitoring-read # Set this before running the transform. Either to `monitoring-indices` or `metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*`
+  query:
+    bool:
+      filter:
+        - bool:
+            filter:
+              # This filters only the documents that have the required fields (ie post 1.16 for the integration)
+              - exists:
+                  field: "elasticsearch.index.creation_date"
+            should:
+              - term:
+                  event.dataset: "elasticsearch.index"
+              - term:
+                  event.dataset: "elasticsearch.stack_monitoring.index"
+        # Exclude system indices
+        - bool:
+            should:
+              - bool:
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: "."
+              - bool:
+                  filter:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-"
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-."
+                    - prefix:
+                        elasticsearch.index.name: ".ds-ilm-history"
+dest:
+  index: cluster_deployment_contribution_lookup
+  pipeline: metrics-chargeback.usage-0.1.4
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_name:
+      terms:
+        field: elasticsearch.cluster.name
+  aggregations:
+    deployment_sum_indexing_time:
+      sum:
+        field: elasticsearch.index.total.indexing.index_time_in_millis
+    deployment_sum_query_time:
+      sum:
+        field: elasticsearch.index.total.search.query_time_in_millis
+    deployment_sum_store_size:
+      sum:
+        field: elasticsearch.index.total.store.size_in_bytes
+    deployment_sum_data_set_store_size:
+      sum:
+        field: elasticsearch.index.primaries.store.total_data_set_size_in_bytes
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.1.4

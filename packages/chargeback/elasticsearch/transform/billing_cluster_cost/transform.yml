@@ -1,0 +1,42 @@
+description: Aggregates daily total ECU usage per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+source:
+  index:
+    - metrics-ess_billing.billing-default
+  query:
+    range:
+      ess.billing.total_ecu:
+        gt: 0
+dest:
+  index: billing_cluster_cost_lookup
+  pipeline: metrics-chargeback.billing-0.1.4
+frequency: 60m
+sync:
+  time:
+    field: event.ingested
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    deployment_id:
+      terms:
+        field: ess.billing.deployment_id
+    deployment_name:
+      terms:
+        field: ess.billing.deployment_name
+  aggregations:
+    total_ecu:
+      sum:
+        field: ess.billing.total_ecu
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.1.4
