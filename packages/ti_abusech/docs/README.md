@@ -21,7 +21,7 @@ This integration collects threat intelligence indicators into the following data
 - `url`: Collects malware URL-based indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
 
 ### Supported use cases
-<!-- Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. -->
+
 Integrating abuse.ch with Elastic enables following use cases.
 
 - [Prebuilt threat intel detection rules](https://www.elastic.co/docs/reference/security/prebuilt-rules)
