@@ -74,7 +74,7 @@ For more details, check the abuse.ch [Community First - New Authentication](http
     * To **Collect AbuseCH logs via API**, you'll need to:
         - Configure **Auth Key**.
         - Enable/Disable the required datasets.
-        - For each dataset, adjust the integration configuration parameters if required, including the Interval, API endpoint, etc. to enable data collection.
+        - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
 6. Select **Save and continue** to save the integration.
 
