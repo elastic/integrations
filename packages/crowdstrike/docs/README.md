@@ -2887,6 +2887,7 @@ An example event for `host` looks as following:
 | crowdstrike.host.modified_timestamp | Timestamp indicating when the incident was created. | date |
 | crowdstrike.host.os.build |  | keyword |
 | crowdstrike.host.os.version | The version of the operating system on the host. | keyword |
+| crowdstrike.host.ou | The organizational unit of the host as seen by the sensor. | keyword |
 | crowdstrike.host.platform.id |  | keyword |
 | crowdstrike.host.platform.name | The identifier associated with the customer. | keyword |
 | crowdstrike.host.policies.applied |  | boolean |
