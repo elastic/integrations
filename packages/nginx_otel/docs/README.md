@@ -65,7 +65,7 @@ Use this configuration to run the collector.
 
 The `resourcedetection` processor is required to get the host information for the dashboard.
 
-## Metrics Reference
+## Metrics reference
 
 ### NGINX metrics
 The [NGINX receiver]((https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/nginxreceiver/documentation.md)) collects performance metrics from the NGINX `stub_status` module. Key metrics include:
