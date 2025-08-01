@@ -1,5 +1,5 @@
 type: logs
-title: AbuseCH URL logs
+title: Malware URLs
 ilm_policy: logs-ti_abusech.url-default_policy
 streams:
   - input: cel
@@ -7,8 +7,8 @@ streams:
     vars:
       - name: url
         type: text
-        title: AbuseCH Active URL API
-        description: Active URL API fetches URLs that are either actively distributing malware or that have been added to URLhaus within the past 90 days.
+        title: URL
+        description: Base URL of the abuse.ch URLhaus API to collect actively distributing malware URLs.
         multi: false
         required: true
         show_user: false
@@ -35,7 +35,7 @@ streams:
         required: true
         show_user: true
         default: 1h
-        description: Interval for polling indicators from AbuseCH data dump. As data dump is generated every 5 minutes, it should be greater than 5 minutes. Default `1h`.
+        description: Duration between requests to the URLhaus API. Supported units for this parameter are h/m/s. Example `24h`. As data dump is generated every 5 minutes, it should be greater than 5 minutes.
       - name: ssl
         type: yaml
         title: SSL Configuration
@@ -70,5 +70,5 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: cel.yml.hbs
-    title: AbuseCH URL logs using Elastic Agent
-    description: Collect AbuseCH URL logs using Elastic Agent
+    title: Malware URLs
+    description: Collect Malware URLs from abuse.ch URLhaus.
