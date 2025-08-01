@@ -71,7 +71,7 @@ func TestErrorsFromTest(t *testing.T) {
 					},
 					packageName: "fortinet_fortigate",
 					dataStream:  "log",
-					teams:       []string{"@elastic/sec-deployment-and-devices"},
+					teams:       []string{"@elastic/integration-experience"},
 				},
 				{
 					dataError: dataError{
