@@ -422,6 +422,18 @@ processors:
       type: integer
       if: (ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != "")
 
+  ## AWS S3 input does _id-Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, even the _id-Based Deduplication
+        needs to be removed.
+      if: ctx._conf?.enable_deduplication == false
+      ignore_missing: true
+      
   - fingerprint:
       fields:
         - '@timestamp'
