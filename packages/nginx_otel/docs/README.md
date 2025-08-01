@@ -61,7 +61,7 @@ service:
       processors: [resourcedetection]
       exporters: [debug, elasticsearch/otel]
 ```
-Use this config to run the Collector.
+Use this configuration to run the collector.
 
 The `resourcedetection` processor is required to get the host information for the dashboard.
 
