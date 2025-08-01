@@ -730,6 +730,21 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset == "MalwareFamily"'
   # DLP Schema
+  - script:
+      lang: painless
+      description: Construct a message from operation, user and subject fields for 'ComplianceDLPExchange' events
+      tag: construct_message_for_compliance_dlp_exchange_events
+      if: ctx.event?.code == "ComplianceDLPExchange"
+      source: >
+        def operation = ctx.event?.action ?: '';
+        def user = ctx.user?.id ?: '';
+        def subject = ctx.o365audit?.ExchangeMetaData?.Subject ?: ctx.email?.subject ?: '';
+
+        if (operation.isEmpty() && user.isEmpty() && subject.isEmpty()) {
+          ctx.message = "Office365 Alert";
+        } else {
+          ctx.message = "Office365 Alert: " + operation + " detected in email sent by " + user + " with subject '" + subject + "'";
+        }
   - set: 
       field: event.kind
       value: alert
@@ -775,11 +790,6 @@ processors:
   - rename:
       field: o365audit.ExchangeMetaData.From
       target_field: source.user.email
-      ignore_missing: true
-      if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
-  - rename:
-      field: o365audit.ExchangeMetaData.Subject
-      target_field: message
       ignore_missing: true
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
   - rename:
