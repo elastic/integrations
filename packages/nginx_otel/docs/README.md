@@ -63,7 +63,7 @@ service:
 ```
 Use this config to run the Collector.
 
-The resourcedetection processor is required to get the host information for the dashboard.
+The `resourcedetection` processor is required to get the host information for the dashboard.
 
 ## Metrics Reference
 
