@@ -155,6 +155,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.function.process_id | The process ID. | long |
 | azure.function.role_instance | The role instance ID. | keyword |
 | azure.operation_name | The operation name. | keyword |
+| azure.properties | Event properties | flattened |
 | azure.resource.group | Azure Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
