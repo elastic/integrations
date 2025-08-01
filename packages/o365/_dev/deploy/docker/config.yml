@@ -66,6 +66,21 @@ rules:
             - "application/json"
         body: |-
           {"contentType": "Audit.General","status": "enabled","webhook": null}
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.TypeRequiringAdditionalPermissions"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":{"code":"AF10001","message":"The permission set (...) sent in the request does not include the expected permission."}}
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
