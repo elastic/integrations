@@ -193,3 +193,9 @@ Default port: _9021_
 {{fields "events_v2"}}
 
 {{event "events_v2"}}
+
+### Transaction
+
+{{fields "transaction"}}
+
+{{event "transaction"}}
