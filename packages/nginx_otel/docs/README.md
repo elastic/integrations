@@ -33,7 +33,7 @@ server {
 
 1. Make sure the NGINX `stub_status` module is enabled and the status endpoint is accessible.
 
-2. Install and configure the EDOT Collector or upstream Collector to export metrics to Elasticsearch. Example Config:
+2. Install and configure the EDOT Collector or upstream Collector to export metrics to Elasticsearch, as shown in the following example:
 
 ```
 receivers:
