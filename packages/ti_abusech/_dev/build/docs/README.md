@@ -101,7 +101,6 @@ For more details, check the abuse.ch [Community First - New Authentication](http
     2. In **Search field names**, search and add fields `error.message` and `data_stream.dataset` into the **Discover** view. For more details on adding fields inside **Discover**, check [Discover getting started](https://www.elastic.co/docs/explore-analyze/discover/discover-get-started).
     3. Search for the dataset(s) that are enabled by this integration. For example, in the KQL query bar, use the KQL query `data_stream.dataset: ti_abusech.url` to search on specific dataset or KQL query `data_stream.dataset: ti_abusech.*` to search on all datasets.
     4. Search for presence of any errors that are captured into `error.message` field using KQL query `error.message: *`. You can combine queries using [KQL boolean expressions](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql#_combining_multiple_queries), such as `AND`. For example, to search for any errors inside `url` dataset, you can use KQL query: `data_stream.dataset: ti_abusech.url AND error.message: *`.
-
 - Since this integration supports Expiration of Indicators of Compromise (IOCs) using Elastic latest transform, the indicators are present in both source and destination indices. While this seem like duplicate ingestion, it is an implmentation detail which is required to properly expire indicators.
 - Because the latest copy of indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period. For more details, check the [Reference](#ilm-policy).
 - For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -114,23 +113,23 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
-{{fields "url"}}
-
 {{fields "malware"}}
 
 {{fields "malwarebazaar"}}
 
 {{fields "threatfox"}}
 
-### Example event
+{{fields "url"}}
 
-{{event "url"}}
+### Example event
 
 {{event "malware"}}
 
 {{event "malwarebazaar"}}
 
 {{event "threatfox"}}
+
+{{event "url"}}
 
 ### Inputs used
 

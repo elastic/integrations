@@ -101,7 +101,6 @@ For more details, check the abuse.ch [Community First - New Authentication](http
     2. In **Search field names**, search and add fields `error.message` and `data_stream.dataset` into the **Discover** view. For more details on adding fields inside **Discover**, check [Discover getting started](https://www.elastic.co/docs/explore-analyze/discover/discover-get-started).
     3. Search for the dataset(s) that are enabled by this integration. For example, in the KQL query bar, use the KQL query `data_stream.dataset: ti_abusech.url` to search on specific dataset or KQL query `data_stream.dataset: ti_abusech.*` to search on all datasets.
     4. Search for presence of any errors that are captured into `error.message` field using KQL query `error.message: *`. You can combine queries using [KQL boolean expressions](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql#_combining_multiple_queries), such as `AND`. For example, to search for any errors inside `url` dataset, you can use KQL query: `data_stream.dataset: ti_abusech.url AND error.message: *`.
-
 - Since this integration supports Expiration of Indicators of Compromise (IOCs) using Elastic latest transform, the indicators are present in both source and destination indices. While this seem like duplicate ingestion, it is an implmentation detail which is required to properly expire indicators.
 - Because the latest copy of indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period. For more details, check the [Reference](#ilm-policy).
 - For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -113,43 +112,6 @@ For more information on architectures that can be used for scaling this integrat
 ## Reference
 
 ### ECS field reference
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| abusech.url.blacklists.spamhaus_dbl | If the indicator is listed on the spamhaus blacklist. | keyword |
-| abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
-| abusech.url.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
-| abusech.url.id | The ID of the indicator. | keyword |
-| abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false). | boolean |
-| abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
-| abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
-| abusech.url.tags | A list of tags associated with the queried malware URL. | keyword |
-| abusech.url.threat | The threat corresponding to this malware URL. | keyword |
-| abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
-| abusech.url.urlhaus_reference | Link to URLhaus entry. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
-| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
-| log.flags | Flags for the log file. | keyword |
-| log.offset | Offset of the entry in the log file. | long |
-| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
-| threat.feed.name | Display friendly feed name | constant_keyword |
-| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-
 
 **Exported fields**
 
@@ -257,88 +219,44 @@ For more information on architectures that can be used for scaling this integrat
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abusech.url.blacklists.spamhaus_dbl | If the indicator is listed on the spamhaus blacklist. | keyword |
+| abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
+| abusech.url.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
+| abusech.url.id | The ID of the indicator. | keyword |
+| abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false). | boolean |
+| abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
+| abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
+| abusech.url.tags | A list of tags associated with the queried malware URL. | keyword |
+| abusech.url.threat | The threat corresponding to this malware URL. | keyword |
+| abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
+| abusech.url.urlhaus_reference | Link to URLhaus entry. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
 ### Example event
-
-An example event for `url` looks as following:
-
-```json
-{
-    "@timestamp": "2025-07-16T06:32:41.644Z",
-    "abusech": {
-        "url": {
-            "deleted_at": "2025-07-16T07:31:14.625Z",
-            "id": "2786904",
-            "threat": "malware_download",
-            "url_status": "online"
-        }
-    },
-    "agent": {
-        "ephemeral_id": "8039c627-ea96-4027-8751-2ff7db77251b",
-        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
-        "name": "elastic-agent-41888",
-        "type": "filebeat",
-        "version": "8.18.0"
-    },
-    "data_stream": {
-        "dataset": "ti_abusech.url",
-        "namespace": "49664",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
-        "snapshot": true,
-        "version": "8.18.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "threat"
-        ],
-        "dataset": "ti_abusech.url",
-        "ingested": "2025-07-16T06:32:44Z",
-        "kind": "enrichment",
-        "original": "{\"dateadded\":\"2024-03-19 11:34:09 UTC\",\"id\":\"2786904\",\"last_online\":\"2024-03-19 11:34:09 UTC\",\"reporter\":\"lrz_urlhaus\",\"tags\":[\"elf\",\"Mozi\"],\"threat\":\"malware_download\",\"url\":\"http://115.55.244.160:41619/Mozi.m\",\"url_status\":\"online\",\"urlhaus_link\":\"https://urlhaus.abuse.ch/url/2786904/\"}",
-        "type": [
-            "indicator"
-        ]
-    },
-    "input": {
-        "type": "cel"
-    },
-    "labels": {
-        "interval": "1h"
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "abusech-url",
-        "elf",
-        "Mozi"
-    ],
-    "threat": {
-        "indicator": {
-            "first_seen": "2024-03-19T11:34:09.000Z",
-            "last_seen": "2024-03-19T11:34:09.000Z",
-            "name": "http://115.55.244.160:41619/Mozi.m",
-            "provider": "lrz_urlhaus",
-            "reference": "https://urlhaus.abuse.ch/url/2786904/",
-            "type": "url",
-            "url": {
-                "domain": "115.55.244.160",
-                "extension": "m",
-                "full": "http://115.55.244.160:41619/Mozi.m",
-                "original": "http://115.55.244.160:41619/Mozi.m",
-                "path": "/Mozi.m",
-                "port": 41619,
-                "scheme": "http"
-            }
-        }
-    }
-}
-```
 
 An example event for `malware` looks as following:
 
@@ -607,6 +525,87 @@ An example event for `threatfox` looks as following:
         "software": {
             "name": "AsyncRAT",
             "reference": "https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat"
+        }
+    }
+}
+```
+
+An example event for `url` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-16T06:32:41.644Z",
+    "abusech": {
+        "url": {
+            "deleted_at": "2025-07-16T07:31:14.625Z",
+            "id": "2786904",
+            "threat": "malware_download",
+            "url_status": "online"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "8039c627-ea96-4027-8751-2ff7db77251b",
+        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
+        "name": "elastic-agent-41888",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.url",
+        "namespace": "49664",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.url",
+        "ingested": "2025-07-16T06:32:44Z",
+        "kind": "enrichment",
+        "original": "{\"dateadded\":\"2024-03-19 11:34:09 UTC\",\"id\":\"2786904\",\"last_online\":\"2024-03-19 11:34:09 UTC\",\"reporter\":\"lrz_urlhaus\",\"tags\":[\"elf\",\"Mozi\"],\"threat\":\"malware_download\",\"url\":\"http://115.55.244.160:41619/Mozi.m\",\"url_status\":\"online\",\"urlhaus_link\":\"https://urlhaus.abuse.ch/url/2786904/\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "interval": "1h"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-url",
+        "elf",
+        "Mozi"
+    ],
+    "threat": {
+        "indicator": {
+            "first_seen": "2024-03-19T11:34:09.000Z",
+            "last_seen": "2024-03-19T11:34:09.000Z",
+            "name": "http://115.55.244.160:41619/Mozi.m",
+            "provider": "lrz_urlhaus",
+            "reference": "https://urlhaus.abuse.ch/url/2786904/",
+            "type": "url",
+            "url": {
+                "domain": "115.55.244.160",
+                "extension": "m",
+                "full": "http://115.55.244.160:41619/Mozi.m",
+                "original": "http://115.55.244.160:41619/Mozi.m",
+                "path": "/Mozi.m",
+                "port": 41619,
+                "scheme": "http"
+            }
         }
     }
 }
