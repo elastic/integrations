@@ -1,44 +1,118 @@
-# AbuseCH integration
+# AbuseCH Integration for Elastic
 
-This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes the following datasets for retrieving indicators from the AbuseCH API:
+## Overview
 
-- `url` dataset: Supports URL based indicators from AbuseCH API.
-- `malware` dataset: Supports Malware based indicators from AbuseCH API.
-- `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
-- `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
+The AbuseCH integration for Elastic enables collection of logs from [abuse.ch](https://abuse.ch/). This integration facilitates the ingestion of threat intelligence indicators to be used for threat detection and event enrichment.
 
-## Note:
+### Compatibility
+This integration is compatible with `v1` version of URLhaus, MalwareBazaar, and ThreatFox APIs.
 
-AbuseCH requires using an `Auth Key` (API Key) in the requests for authentication.
-Requests without authentication will be denied by the API.
+### How it works
 
-More details on this topic can be found [here](https://abuse.ch/blog/community-first/).
+This integration periodically queries the abuse.ch APIs to retrieve threat intelligence indicators.
 
-## Agentless Enabled Integration
+## What data does this integration collect?
+
+This integration collects threat intelligence indicators into the following datasets:
+
+- `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
+- `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `threatfox`: Collects indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
+- `url`: Collects malware URL-based indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+
+### Supported use cases
+<!-- Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. -->
+Integrating abuse.ch with Elastic enables following use cases.
+
+- [Prebuilt threat intel detection rules](https://www.elastic.co/docs/reference/security/prebuilt-rules)
+- Real-time threat detection and hunting through [Elastic Security for Threat Intelligence](https://www.elastic.co/security/tip)
+- Real-time dashboards
+
+## What do I need to use this integration?
+
+### From Elastic
+
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+#### Agentless-based installation
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-## Expiration of Indicators of Compromise (IOCs)
-All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
-Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
+#### Agent-based installation
 
-| Source Datastream                  | Destination Index Pattern                        | Destination Alias                       |
-|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
-| `logs-ti_abusech.url-*`            | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`            |
-| `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
-| `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
-| `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### ILM Policy
-To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abusech.<datastream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<datastream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+#### Transform
 
-## Logs
+As this integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview), the requirements of transform must be met. For more details, check the [Transform Setup](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
 
-### URL
+### From abuse.ch
 
-The AbuseCH URL data_stream retrieves full list of active threat intelligence indicators every interval from the Active Indicators URL database dump `https://urlhaus.abuse.ch/downloads/json/`.
+abuse.ch requires using an `Auth-Key` (API Key) in the requests for authentication. Requests without authentication will be denied by the abuse.ch APIs.
+
+#### Obtain `Auth-Key`:
+1. Sign up for new account or login into [abuse.ch authentication portal](https://auth.abuse.ch).
+2. Connect with atleast one authentication provider, namely Google, Github, X, or LinkedIn.
+3. Select **Save profile**.
+4. In the **Optional** section, click on **Generate Key** button to generate **Auth Key**.
+5. Copy the generated **Auth Key**.
+
+For more details, check the abuse.ch [Community First - New Authentication](https://abuse.ch/blog/community-first/) blog.
+
+## How do I deploy this integration?
+
+### Onboard / configure
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **AbuseCH**.
+3. Select the **AbuseCH** integration from the search results.
+4. Select **Add AbuseCH** to add the integration.
+5. Enable and configure only the collection methods which you will use.
+
+    * To **Collect AbuseCH logs via API**, you'll need to:
+        - Configure **Auth Key**.
+        - Enable/Disable the required datasets.
+        - For each dataset, adjust the integration configuration parameters if required, including the Interval, API endpoint, etc. to enable data collection.
+
+6. Select **Save and continue** to save the integration.
+
+### Validation
+
+#### Dashboards populated
+
+1. In Kibana, navigate to **Dashboards**.
+2. In the search bar, type **AbuseCH**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In Kibana, navigate to **Management** > **Stack Management**.
+2. Under **Data**, select **Transforms**.
+3. In the search bar, type **AbuseCH**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
+## Troubleshooting
+
+- When creating **Auth Key** inside [abuse.ch authentication portal](https://auth.abuse.ch/), ensure that you connect at least one additional authentication provider to ensure seemless access to abuse.ch platform.
+- Check for captured ingestion errors inside Kibana. Any ingestion errors, including API errors, are captured into `error.message` field.
+    1. Navigate to **Analytics** > **Discover**.
+    2. In **Search field names**, search and add fields `error.message` and `data_stream.dataset` into the **Discover** view. For more details on adding fields inside **Discover**, check [Discover getting started](https://www.elastic.co/docs/explore-analyze/discover/discover-get-started).
+    3. Search for the dataset(s) that are enabled by this integration. For example, in the KQL query bar, use the KQL query `data_stream.dataset: ti_abusech.url` to search on specific dataset or KQL query `data_stream.dataset: ti_abusech.*` to search on all datasets.
+    4. Search for presence of any errors that are captured into `error.message` field using KQL query `error.message: *`. You can combine queries using [KQL boolean expressions](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql#_combining_multiple_queries), such as `AND`. For example, to search for any errors inside `url` dataset, you can use KQL query: `data_stream.dataset: ti_abusech.url AND error.message: *`.
+
+- Since this integration supports Expiration of Indicators of Compromise (IOCs) using Elastic latest transform, the indicators are present in both source and destination indices. While this seem like duplicate ingestion, it is an implmentation detail which is required to properly expire indicators.
+- Because the latest copy of indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period. For more details, check the [Reference](#ilm-policy).
+- For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+## Scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### ECS field reference
 
 **Exported fields**
 
@@ -77,10 +151,6 @@ The AbuseCH URL data_stream retrieves full list of active threat intelligence in
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
-### Malware
-
-The AbuseCH malware data_stream retrieves threat intelligence indicators from the payload API endpoint `https://urlhaus-api.abuse.ch/v1/payloads/recent/`.
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -111,10 +181,6 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
-
-### MalwareBazaar
-
-The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators from the MalwareBazaar API endpoint `https://mb-api.abuse.ch/api/v1/`.
 
 **Exported fields**
 
@@ -159,10 +225,6 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
-### Threat Fox
-
-The AbuseCH threatfox data_stream retrieves threat intelligence indicators from the Threat Fox API endpoint `https://threatfox-api.abuse.ch/api/v1/`.
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -193,3 +255,390 @@ The AbuseCH threatfox data_stream retrieves threat intelligence indicators from 
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+### Example event
+
+An example event for `url` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-16T06:32:41.644Z",
+    "abusech": {
+        "url": {
+            "deleted_at": "2025-07-16T07:31:14.625Z",
+            "id": "2786904",
+            "threat": "malware_download",
+            "url_status": "online"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "8039c627-ea96-4027-8751-2ff7db77251b",
+        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
+        "name": "elastic-agent-41888",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.url",
+        "namespace": "49664",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.url",
+        "ingested": "2025-07-16T06:32:44Z",
+        "kind": "enrichment",
+        "original": "{\"dateadded\":\"2024-03-19 11:34:09 UTC\",\"id\":\"2786904\",\"last_online\":\"2024-03-19 11:34:09 UTC\",\"reporter\":\"lrz_urlhaus\",\"tags\":[\"elf\",\"Mozi\"],\"threat\":\"malware_download\",\"url\":\"http://115.55.244.160:41619/Mozi.m\",\"url_status\":\"online\",\"urlhaus_link\":\"https://urlhaus.abuse.ch/url/2786904/\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "interval": "1h"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-url",
+        "elf",
+        "Mozi"
+    ],
+    "threat": {
+        "indicator": {
+            "first_seen": "2024-03-19T11:34:09.000Z",
+            "last_seen": "2024-03-19T11:34:09.000Z",
+            "name": "http://115.55.244.160:41619/Mozi.m",
+            "provider": "lrz_urlhaus",
+            "reference": "https://urlhaus.abuse.ch/url/2786904/",
+            "type": "url",
+            "url": {
+                "domain": "115.55.244.160",
+                "extension": "m",
+                "full": "http://115.55.244.160:41619/Mozi.m",
+                "original": "http://115.55.244.160:41619/Mozi.m",
+                "path": "/Mozi.m",
+                "port": 41619,
+                "scheme": "http"
+            }
+        }
+    }
+}
+```
+
+An example event for `malware` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-16T06:30:10.517Z",
+    "abusech": {
+        "malware": {
+            "deleted_at": "2021-10-10T04:17:02.000Z",
+            "ioc_expiration_duration": "5d"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "c478eac0-6769-456a-8a26-d5d6cc86318d",
+        "id": "5d0ab6a2-0351-4c94-8bfb-e268dee367e4",
+        "name": "elastic-agent-40763",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.malware",
+        "namespace": "70630",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "5d0ab6a2-0351-4c94-8bfb-e268dee367e4",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.malware",
+        "ingested": "2025-07-16T06:30:13Z",
+        "kind": "enrichment",
+        "original": "{\"file_size\":\"1563\",\"file_type\":\"unknown\",\"firstseen\":\"2021-10-05 04:17:02\",\"imphash\":null,\"md5_hash\":\"9cd5a4f0231a47823c4adba7c8ef370f\",\"sha256_hash\":\"7c0852d514df7faf8fdbfa4f358cc235dd1b1a2d843cc65495d03b502e4099f2\",\"signature\":null,\"ssdeep\":\"48:yazkS7neW+mfe4CJjNXcq5Co4Fr1PpsHn:yrmGNt5mbP2n\",\"tlsh\":\"T109314C5E7822CA70B91AD69300C22D8C2F53EAF229E6686C3BDD4C86FA1344208CF1\",\"urlhaus_download\":\"https://urlhaus-api.abuse.ch/v1/download/7c0852d514df7faf8fdbfa4f358cc235dd1b1a2d843cc65495d03b502e4099f2/\",\"virustotal\":null}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hash": [
+            "9cd5a4f0231a47823c4adba7c8ef370f",
+            "7c0852d514df7faf8fdbfa4f358cc235dd1b1a2d843cc65495d03b502e4099f2",
+            "48:yazkS7neW+mfe4CJjNXcq5Co4Fr1PpsHn:yrmGNt5mbP2n",
+            "T109314C5E7822CA70B91AD69300C22D8C2F53EAF229E6686C3BDD4C86FA1344208CF1"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-malware"
+    ],
+    "threat": {
+        "indicator": {
+            "confidence": "Not Specified",
+            "file": {
+                "hash": {
+                    "md5": "9cd5a4f0231a47823c4adba7c8ef370f",
+                    "sha256": "7c0852d514df7faf8fdbfa4f358cc235dd1b1a2d843cc65495d03b502e4099f2",
+                    "ssdeep": "48:yazkS7neW+mfe4CJjNXcq5Co4Fr1PpsHn:yrmGNt5mbP2n",
+                    "tlsh": "T109314C5E7822CA70B91AD69300C22D8C2F53EAF229E6686C3BDD4C86FA1344208CF1"
+                },
+                "size": 1563,
+                "type": "unknown"
+            },
+            "first_seen": "2021-10-05T04:17:02.000Z",
+            "name": "7c0852d514df7faf8fdbfa4f358cc235dd1b1a2d843cc65495d03b502e4099f2",
+            "type": "file"
+        }
+    }
+}
+```
+
+An example event for `malwarebazaar` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-16T06:30:59.281Z",
+    "abusech": {
+        "malwarebazaar": {
+            "anonymous": 0,
+            "deleted_at": "2021-10-10T14:02:45.000Z",
+            "intelligence": {
+                "downloads": 11,
+                "uploads": 1
+            },
+            "ioc_expiration_duration": "5d"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "f5b70b3f-5d2b-4d55-96b0-dc8e46e10b9a",
+        "id": "372b884d-d232-4e1e-806c-d08ae525f868",
+        "name": "elastic-agent-37187",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.malwarebazaar",
+        "namespace": "64456",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "372b884d-d232-4e1e-806c-d08ae525f868",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.malwarebazaar",
+        "ingested": "2025-07-16T06:31:02Z",
+        "kind": "enrichment",
+        "original": "{\"anonymous\":0,\"code_sign\":[],\"dhash_icon\":null,\"file_name\":\"7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e.exe\",\"file_size\":432640,\"file_type\":\"exe\",\"file_type_mime\":\"application/x-dosexec\",\"first_seen\":\"2021-10-05 14:02:45\",\"imphash\":\"f34d5f2d4577ed6d9ceec516c1f5a744\",\"intelligence\":{\"clamav\":null,\"downloads\":\"11\",\"mail\":null,\"uploads\":\"1\"},\"last_seen\":null,\"md5_hash\":\"1fc1c2997c8f55ac10496b88e23f5320\",\"origin_country\":\"FR\",\"reporter\":\"abuse_ch\",\"sha1_hash\":\"42c7153680d7402e56fe022d1024aab49a9901a0\",\"sha256_hash\":\"7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28\",\"sha3_384_hash\":\"d63e73b68973bc73ab559549aeee2141a48b8a3724aabc0d81fb14603c163a098a5a10be9f6d33b888602906c0d89955\",\"signature\":\"RedLineStealer\",\"ssdeep\":\"12288:jhhl1Eo+iEXvpb1C7drqAd1uUaJvzXGyO2F5V3bS1jsTacr:7lL\",\"tags\":[\"exe\",\"RedLineStealer\"],\"telfhash\":null,\"tlsh\":\"T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hash": [
+            "42c7153680d7402e56fe022d1024aab49a9901a0",
+            "d63e73b68973bc73ab559549aeee2141a48b8a3724aabc0d81fb14603c163a098a5a10be9f6d33b888602906c0d89955",
+            "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28",
+            "T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479",
+            "12288:jhhl1Eo+iEXvpb1C7drqAd1uUaJvzXGyO2F5V3bS1jsTacr:7lL",
+            "1fc1c2997c8f55ac10496b88e23f5320",
+            "f34d5f2d4577ed6d9ceec516c1f5a744"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-malwarebazaar",
+        "exe",
+        "RedLineStealer"
+    ],
+    "threat": {
+        "indicator": {
+            "file": {
+                "extension": "exe",
+                "hash": {
+                    "md5": "1fc1c2997c8f55ac10496b88e23f5320",
+                    "sha1": "42c7153680d7402e56fe022d1024aab49a9901a0",
+                    "sha256": "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28",
+                    "sha384": "d63e73b68973bc73ab559549aeee2141a48b8a3724aabc0d81fb14603c163a098a5a10be9f6d33b888602906c0d89955",
+                    "ssdeep": "12288:jhhl1Eo+iEXvpb1C7drqAd1uUaJvzXGyO2F5V3bS1jsTacr:7lL",
+                    "tlsh": "T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479"
+                },
+                "mime_type": "application/x-dosexec",
+                "name": "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e.exe",
+                "pe": {
+                    "imphash": "f34d5f2d4577ed6d9ceec516c1f5a744"
+                },
+                "size": 432640
+            },
+            "first_seen": "2021-10-05T14:02:45.000Z",
+            "geo": {
+                "country_iso_code": "FR"
+            },
+            "marking": {
+                "tlp": "CLEAR"
+            },
+            "name": "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28",
+            "provider": "abuse_ch",
+            "type": "file"
+        },
+        "software": {
+            "alias": [
+                "RedLineStealer"
+            ]
+        }
+    }
+}
+```
+
+An example event for `threatfox` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-16T06:31:50.732Z",
+    "abusech": {
+        "threatfox": {
+            "confidence_level": 100,
+            "deleted_at": "2022-08-10T19:43:08.000Z",
+            "ioc_expiration_duration": "5d",
+            "malware": "win.asyncrat",
+            "threat_type": "botnet_cc",
+            "threat_type_desc": "Indicator that identifies a botnet command&control server (C&C)"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "49a54718-d50a-45cf-8da6-597e14572d1b",
+        "id": "07477042-3fd0-44e5-83e1-d33c53a1b34d",
+        "name": "elastic-agent-57963",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.threatfox",
+        "namespace": "90202",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "07477042-3fd0-44e5-83e1-d33c53a1b34d",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.threatfox",
+        "id": "841537",
+        "ingested": "2025-07-16T06:31:53Z",
+        "kind": "enrichment",
+        "original": "{\"confidence_level\":100,\"first_seen\":\"2022-08-05 19:43:08 UTC\",\"id\":\"841537\",\"ioc\":\"wizzy.hopto.org\",\"ioc_type\":\"domain\",\"ioc_type_desc\":\"Domain that is used for botnet Command\\u0026control (C\\u0026C)\",\"last_seen\":null,\"malware\":\"win.asyncrat\",\"malware_alias\":null,\"malware_malpedia\":\"https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat\",\"malware_printable\":\"AsyncRAT\",\"reference\":\"https://tria.ge/220805-w57pxsgae2\",\"reporter\":\"AndreGironda\",\"tags\":[\"asyncrat\"],\"threat_type\":\"botnet_cc\",\"threat_type_desc\":\"Indicator that identifies a botnet command\\u0026control server (C\\u0026C)\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-threatfox",
+        "asyncrat"
+    ],
+    "threat": {
+        "indicator": {
+            "confidence": "High",
+            "description": "Domain that is used for botnet Command&control (C&C)",
+            "first_seen": "2022-08-05T19:43:08.000Z",
+            "marking": {
+                "tlp": "WHITE"
+            },
+            "name": "wizzy.hopto.org",
+            "provider": "AndreGironda",
+            "reference": "https://tria.ge/220805-w57pxsgae2",
+            "type": "domain-name",
+            "url": {
+                "domain": "wizzy.hopto.org"
+            }
+        },
+        "software": {
+            "name": "AsyncRAT",
+            "reference": "https://malpedia.caad.fkie.fraunhofer.de/details/win.asyncrat"
+        }
+    }
+}
+```
+
+### Inputs used
+
+These inputs can be used in this integration:
+
+- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+### API usage
+
+This integration datasets uses the following APIs:
+
+- `malware`: [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
+- `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
+- `url`: [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+
+### Expiration of Indicators of Compromise (IOCs)
+
+All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
+Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
+
+| Source Datastream                  | Destination Index Pattern                        | Destination Alias                       |
+|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
+| `logs-ti_abusech.url-*`            | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`            |
+| `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
+| `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
+| `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+
+#### ILM Policy
+
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abusech.<datastream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<datastream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date.
