@@ -105,11 +105,31 @@ processors:
           list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx);
+  - script:
+      lang: painless
+      description: Restructure scan item tags
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.attributes?.tags instanceof List
+      source: |
+        def result = [];
+        for (def tag : ctx.snyk.issues.relationships.scan_item.data.attributes.tags) {
+          if (tag instanceof Map) {
+            result.add([tag.key, tag.value].join(":"))
+          } else if (tag instanceof String) {
+            result.add(tag);
+          }
+        }
+        ctx.snyk.issues.relationships.scan_item.data.attributes.tags = result;
+  - append:
+      field: error.message
+      value: '{{{ snyk.issues.relationships.scan_item.data._enrich_error_message }}}'
+      if: ctx.snyk.issues.relationships.scan_item.data._enrich_error_message instanceof String
+      allow_duplicates: false
   - remove:
       field:
         - message
         - snyk.issues.cvssScore
         - snyk.issues.type
+        - snyk.issues.relationships.scan_item.data._enrich_error_message
       ignore_missing: true
 on_failure:
   - set:
