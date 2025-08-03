@@ -10,7 +10,10 @@ For example, you could use this integration to track throttled lambda functions,
 
 ## Data streams
 
-The AWS Lambda integration collects one type of data: metrics.
+The AWS Lambda integration collects metrics and logs.
+
+**Logs** provide detailed information about the execution of AWS Lambda functions.
+They include invocation events, function output, error messages, stack traces, initialization logs, and AWS-generated reports. These logs help you troubleshoot issues, analyze performance, and monitor the behavior of your Lambda functions during runtime.
 
 **Metrics** give you insight into the state of AWS Lambda.
 Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more.
@@ -53,6 +56,85 @@ When you configure the AWS integration, you can collect data from as many AWS se
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+
+To enable AWS Lambda logs, ensure that your function's execution role includes the necessary permissions to write to Amazon CloudWatch Logs. Specifically, the role should have the following permissions: 
+- `logs:CreateLogGroup`
+- `logs:CreateLogStream`
+- `logs:PutLogEvents` 
+
+You can grant these permissions by attaching the AWS managed policy `AWSLambdaBasicExecutionRole` to your function's execution role.
+
+By default, AWS Lambda automatically streams logs to CloudWatch Logs. You can view these logs by navigating to the AWS Lambda console, selecting your function, and choosing the "Monitor" tab. From there, click on "View CloudWatch logs" to access the logs in the CloudWatch console.
+
+For more detailed information, refer to the AWS documentation on [Sending Lambda function logs to CloudWatch Logs](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html).
+
+## Logs reference
+
+An example event for `lambda` looks as following:
+
+```json
+{
+    "@timestamp": "2025-05-05T03:31:17.000Z",
+    "agent": {
+        "ephemeral_id": "b08489ab-f2a0-4ae5-8428-eac8cdf637b8",
+        "id": "fe56d5ab-2d79-40bf-95d9-2972541e73b2",
+        "name": "elastic-agent-58953",
+        "type": "filebeat",
+        "version": "8.16.6"
+    },
+    "aws": {
+        "lambda": {
+            "error": {
+                "message": "Unable to import module 'app': No module named 'aws_lambda_powertools'",
+                "type": "Runtime.ImportModuleError"
+            }
+        }
+    },
+    "aws.cloudwatch": {
+        "ingestion_time": "2025-05-05T03:31:18.000Z",
+        "log_group": "arn:aws:logs:ap-south-1:XXXXXXXXXXXX:log-group:/aws/lambda/sam-app-powertools-python-HelloWorldFunction-snAkfaCNYJjx",
+        "log_stream": "2025/05/05/[$LATEST]3486c2ec71334eedba860f992d13b330"
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "ap-south-1",
+        "service": {
+            "name": "aws_lambda"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws.lambda_logs",
+        "namespace": "13365",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "fe56d5ab-2d79-40bf-95d9-2972541e73b2",
+        "snapshot": false,
+        "version": "8.16.6"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws.lambda_logs",
+        "id": "38946375503894473967458689613264054098903355794226544641",
+        "ingested": "2025-05-28T15:40:08Z"
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:ap-south-1:XXXXXXXX:log-group:/aws/lambda/sam-app-powertools-python-HelloWorldFunction-snAkfaCNYJjx/2025/05/05/[$LATEST]3486c2ec71334eedba860f992d13b330"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "aws-lambda-logs"
+    ]
+}
+```
 
 ## Metrics reference
 
@@ -187,3 +269,68 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| aws.cloudwatch.ingestion_time | AWS CloudWatch ingest time | date |
+| aws.cloudwatch.log_group | AWS CloudWatch Log Group name | keyword |
+| aws.cloudwatch.log_stream | AWS CloudWatch Log Stream name | keyword |
+| aws.lambda.arn | The Amazon Resource Name (ARN) of the Lambda function. | keyword |
+| aws.lambda.aws_request_id | The AWS request ID for the Lambda function invocation. | keyword |
+| aws.lambda.cold_start | Indicates whether the Lambda function was invoked for the first time (cold start) or if it was a subsequent invocation (warm start). | boolean |
+| aws.lambda.cold_start_int | The cold start indicator for the Lambda function invocation. | float |
+| aws.lambda.correlation_id | The correlation ID for the Lambda function invocation. | keyword |
+| aws.lambda.error.location | The location of the error. | keyword |
+| aws.lambda.error.message | The error message. | keyword |
+| aws.lambda.error.stack_trace | The stack trace of the error. | text |
+| aws.lambda.error.type | The type of error. | keyword |
+| aws.lambda.event_type | The type of event that triggered the Lambda function. | keyword |
+| aws.lambda.execution_environment | The execution environment for the Lambda function. | keyword |
+| aws.lambda.extension.events | The events associated with the Lambda extension. | keyword |
+| aws.lambda.extension.name | The name of the Lambda extension. | keyword |
+| aws.lambda.extension.state | The state of the Lambda extension. | keyword |
+| aws.lambda.initialization_type | The type of initialization for the Lambda function. | keyword |
+| aws.lambda.instance_id | The unique identifier for the Lambda function instance. | keyword |
+| aws.lambda.log_extension.name | The name of the Lambda log extension. | keyword |
+| aws.lambda.log_extension.state | The state of the Lambda log extension. | keyword |
+| aws.lambda.log_extension.types | The types of logs associated with the Lambda log extension. | keyword |
+| aws.lambda.log_stream_id | The unique identifier for the log stream. | keyword |
+| aws.lambda.message |  | flattened |
+| aws.lambda.metrics.billed_duration_ms | The billed duration of the Lambda function in milliseconds. | long |
+| aws.lambda.metrics.dropped_bytes | The number of bytes dropped by the Lambda function. | long |
+| aws.lambda.metrics.dropped_records | The number of records dropped by the Lambda function. | long |
+| aws.lambda.metrics.duration_ms | The duration of the Lambda function in milliseconds. | long |
+| aws.lambda.metrics.init_duration_ms | The initialization duration of the Lambda function in milliseconds. | long |
+| aws.lambda.metrics.instance_max_memory | The maximum memory of the Lambda function instance. | long |
+| aws.lambda.metrics.max_memory_used_mb | The maximum memory used by the Lambda function in megabytes. | long |
+| aws.lambda.metrics.memory_size_mb | The memory size of the Lambda function in megabytes. | long |
+| aws.lambda.metrics.produced_bytes | The number of bytes produced by the Lambda function. | long |
+| aws.lambda.name | The name of the Lambda function. | keyword |
+| aws.lambda.phase | The phase of the Lambda function invocation. | keyword |
+| aws.lambda.request_id | The unique identifier for the Lambda function invocation. | keyword |
+| aws.lambda.runtime_version | The runtime version of the Lambda function. | keyword |
+| aws.lambda.runtime_version_arn | The ARN of the runtime version for the Lambda function. | keyword |
+| aws.lambda.service.name | The name of the service. | keyword |
+| aws.lambda.spans.durationMs | The duration of the span in milliseconds. | long |
+| aws.lambda.spans.name | The name of the span. | keyword |
+| aws.lambda.spans.start | The start time of the span. | date |
+| aws.lambda.status |  | keyword |
+| aws.lambda.trace_id | The trace ID for the Lambda function invocation. | keyword |
+| aws.lambda.tracing.sampled | The sampling result for the traced requests. | keyword |
+| aws.lambda.tracing.segment_id | XRAY segment ID for the traced requests. | keyword |
+| aws.lambda.tracing.span_id | The trace ID for the Lambda function invocation. | keyword |
+| aws.lambda.tracing.type | The type of tracing for the Lambda function invocation. | keyword |
+| aws.lambda.tracing.value | The value of the tracing for the Lambda function invocation. | keyword |
+| aws.lambda.tracing.xray_trace_id | The X-Ray trace ID for the Lambda function invocation. | keyword |
+| aws.lambda.users |  | flattened |
+| aws.lambda.version | The version of the Lambda function. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |

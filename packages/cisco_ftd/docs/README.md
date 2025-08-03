@@ -39,11 +39,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:02.000Z",
     "agent": {
-        "ephemeral_id": "1ab84bcb-b57f-4f6a-bb15-6534c4ceba57",
-        "id": "003c2ae5-ffc1-4a61-a309-b9d59a743dda",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "477973c4-b380-4791-ad68-919bc71782eb",
+        "id": "dc57df32-adfa-4d1e-9386-d4519fc2d1e9",
+        "name": "elastic-agent-79310",
         "type": "filebeat",
-        "version": "8.10.3"
+        "version": "8.18.0"
     },
     "cisco": {
         "ftd": {
@@ -79,7 +79,7 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_ftd.log",
-        "namespace": "ep",
+        "namespace": "84072",
         "type": "logs"
     },
     "destination": {
@@ -103,9 +103,9 @@ An example event for `log` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "003c2ae5-ffc1-4a61-a309-b9d59a743dda",
+        "id": "dc57df32-adfa-4d1e-9386-d4519fc2d1e9",
         "snapshot": false,
-        "version": "8.10.3"
+        "version": "8.18.0"
     },
     "event": {
         "action": "malware-detected",
@@ -116,7 +116,7 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2023-11-14T06:10:15Z",
+        "ingested": "2025-05-20T10:32:02Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
@@ -137,12 +137,12 @@ An example event for `log` looks as following:
         "hostname": "firepower"
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.160.4:39732"
+            "address": "192.168.249.3:51934"
         }
     },
     "network": {
@@ -248,6 +248,7 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.dst_port |  | integer |
 | cisco.ftd.security_event.egress_interface |  | keyword |
 | cisco.ftd.security_event.egress_zone |  | keyword |
+| cisco.ftd.security_event.encrypt_peer_ip |  | ip |
 | cisco.ftd.security_event.file_action |  | keyword |
 | cisco.ftd.security_event.file_count |  | integer |
 | cisco.ftd.security_event.file_direction |  | keyword |
@@ -295,6 +296,7 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.url_reputation |  | keyword |
 | cisco.ftd.security_event.user |  | keyword |
 | cisco.ftd.security_event.user_agent |  | keyword |
+| cisco.ftd.security_event.vpn_action |  | keyword |
 | cisco.ftd.security_event.web_application |  | keyword |
 | cisco.ftd.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |

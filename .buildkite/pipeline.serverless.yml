@@ -73,11 +73,16 @@ steps:
       - elastic/oblt-aws-auth#v0.1.0:
           duration: 10800 # seconds
       # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
-      # This plugin authenticates to Google Cloud using the OIDC token.
+      # This plugin authenticates to CI Google Cloud using the OIDC token.
       - elastic/oblt-google-auth#v1.3.0:
           lifetime: 10800 # seconds
           project-id: "elastic-observability-ci"
           project-number: "911195782929"
+          lifetime: 10800 # seconds
+      - avaly/gcp-secret-manager#v1.2.0:
+          env:
+            EC_API_KEY: elastic-cloud-observability-team-qa-api-key
+            EC_HOST: elastic-cloud-observability-team-qa-endpoint
     artifact_paths:
       - "build/test-results/*.xml"
       - "build/elastic-stack-dump/*/logs/*.log"
@@ -90,13 +95,16 @@ steps:
     continue_on_failure: true
 
   - label: ":junit: Junit annotate"
+    agents:
+      # requires at least "bash", "curl" and "git"
+      image: "docker.elastic.co/ci-agent-images/buildkite-junit-annotate:1.0"
     plugins:
-      - junit-annotate#v2.5.0:
+      - junit-annotate#v2.7.0:
           artifacts: "build/test-results/*.xml"
           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
           report-skipped: true
-    agents:
-      provider: "gcp"  # junit plugin requires docker
+          always-annotate: true
+          run-in-docker: false
 
   - label: ":github: Report failed tests"
     key: report-failed-tests
@@ -105,6 +113,8 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
     # not fail build if this step fails
     soft_fail: true
     # run this step when if it is triggered by the daily job

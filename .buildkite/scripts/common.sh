@@ -269,6 +269,16 @@ use_elastic_package() {
     go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
+elastic_package_verbosity() {
+    local opts="-v"
+    if [[ "${GITHUB_PR_TRIGGER_COMMENT:-""}" =~ ^/test[[:space:]]+verbose ]]; then
+        opts="${opts}v"
+    fi
+    echo "${opts}"
+}
+
+ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
+
 is_already_published() {
     local packageZip=$1
 
@@ -288,8 +298,20 @@ create_kind_cluster() {
 }
 
 delete_kind_cluster() {
+    if ! command -v kind > /dev/null 2>&1 ; then
+        return
+    fi
     echo "--- Delete kind cluster"
     kind delete cluster || true
+}
+
+is_stack_created() {
+    local files=0
+    files=$(find ~/.elastic-package -type f -name "docker-compose.yml" | wc -l)
+    if [ "${files}" -gt 0 ]; then
+        return 0
+    fi
+    return 1
 }
 
 kibana_version_manifest() {
@@ -540,9 +562,6 @@ prepare_serverless_stack() {
     fi
     create_elastic_package_profile "${profile_name}"
 
-    export EC_API_KEY=${EC_API_KEY_SECRET}
-    export EC_HOST=${EC_HOST_SECRET}
-
     echo "Boot up the Elastic stack"
     # grep command required to remove password from the output
     if ! ${ELASTIC_PACKAGE_BIN} stack up \
@@ -749,7 +768,7 @@ is_pr_affected() {
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' > /dev/null; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
@@ -786,7 +805,7 @@ teardown_serverless_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
@@ -797,12 +816,17 @@ teardown_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    if ! is_stack_created; then
+        echo "No stack running. Skip dump logs and run stack down process."
+        return
+    fi
+
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
 
-    echo "Take down the Elastic stack"
+    echo "--- Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
 }
 
@@ -846,7 +870,7 @@ skip_installation_step() {
 install_package() {
     local package=$1
     echo "Install package: ${package}"
-    if ! ${ELASTIC_PACKAGE_BIN} install -v ; then
+    if ! ${ELASTIC_PACKAGE_BIN} install "${ELASTIC_PACKAGE_VERBOSITY}" ; then
         return 1
     fi
     echo ""
@@ -855,11 +879,11 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="--report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test "${ELASTIC_PACKAGE_VERBOSITY}" ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -870,7 +894,7 @@ test_package_in_local_stack() {
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="${ELASTIC_PACKAGE_VERBOSITY} --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
@@ -954,8 +978,6 @@ upload_safe_logs() {
     local source="$2"
     local target="$3"
 
-    echo "--- Uploading safe logs to GCP bucket ${bucket}"
-
     if ! ls ${source} 2>&1 > /dev/null ; then
         echo "upload_safe_logs: artifacts files not found, nothing will be archived"
         return
@@ -984,6 +1006,8 @@ upload_safe_logs_from_package() {
     local build_directory=$2
 
     local parent_folder="insecure-logs"
+
+    echo "--- Uploading safe logs to GCP bucket ${JOB_GCS_BUCKET_INTERNAL}"
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
@@ -1029,6 +1053,8 @@ process_package() {
 
     if ! run_tests_package "${package}" ; then
         exit_code=1
+        # Ensure that the group where the failure happened is opened.
+        echo "^^^ +++"
         echo "[${package}] run_tests_package failed"
         if [[ "${failed_packages_file}" != "" ]]; then
             echo "- ${package}" >> "${failed_packages_file}"
@@ -1037,7 +1063,7 @@ process_package() {
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
-            ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+            ${ELASTIC_PACKAGE_BIN} benchmark pipeline "${ELASTIC_PACKAGE_VERBOSITY}" --report-format json --report-output file
         fi
     fi
 
@@ -1050,6 +1076,8 @@ process_package() {
     else
         if ! teardown_test_package "${package}" ; then
             exit_code=1
+            # Ensure that the group where the failure happened is opened.
+            echo "^^^ +++"
             echo "[${package}] teardown_test_package failed"
         fi
     fi
@@ -1111,4 +1139,20 @@ get_comment_with_pattern() {
     rm response_github.json
 
     echo "${comment_id}"
+}
+
+## Buildkite output
+# https://buildkite.com/docs/pipelines/configure/links-and-images-in-log-output#links
+inline_link() {
+    local url="$1"
+    local text="${2:-""}"
+    local link=""
+
+    link=$(printf "url='%s'" "$url")
+
+    if [[ "${text}" != "" ]]; then
+        link=$(printf "%s;content='%s'" "$link" "$text")
+    fi
+
+    printf '\033]1339;%s\a\n' "$link"
 }

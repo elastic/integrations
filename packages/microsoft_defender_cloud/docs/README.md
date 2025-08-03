@@ -38,6 +38,17 @@ The minimum **kibana.version** required is **8.3.0**.
    - storage_account_container (optional)
    - resource_manager_endpoint (optional)
 
+## Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name          | `event.severity` |
+|------------------------|:----------------:|
+| Low (or Informational) | 21               |
+| Medium                 | 47               |
+| High                   | 73               |
+| Critical               | 99               |
+
 ## Logs reference
 
 ### Event

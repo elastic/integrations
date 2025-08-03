@@ -1,6 +1,8 @@
 # Netskope
 
-This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785) on respective TCP ports.
+This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785) and [Netskope Log Streaming](https://docs.netskope.com/en/log-streaming/). To receive log from Netskope Cloud Log Shipper use the TCP input, and for Netskope Log Streaming use any of the Cloud based inputs (AWS, GCS, or Azure Blob Storage).
+
+
 
 The log message is expected to be in JSON format. The data is mapped to
 ECS fields where applicable and the remaining fields are written under
@@ -8,6 +10,7 @@ ECS fields where applicable and the remaining fields are written under
 
 ## Setup steps
 
+### For receiving log from Netskope Cloud Shipper
 1. Configure this integration with the TCP input in Kibana.
 2. For all Netskope Cloud Exchange configurations refer to the [Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785).
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
@@ -32,6 +35,124 @@ ECS fields where applicable and the remaining fields are written under
 
 > Note: For detailed steps refer to [Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
 Please make sure to use the given response formats.
+
+### For receiving log from Netskope Log Streaming
+1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). Ensure that compression is set to GZIP when configuring the stream as other compression types are not supported.
+
+
+#### Collect data from an AWS S3 bucket
+
+Considering you already have an AWS S3 bucket setup, to configure it with Netskope, follow [these steps](https://docs.netskope.com/en/stream-logs-to-amazon-s3) to enable the log streaming.
+
+#### Collect data from Azure Blob Storage
+
+1. If you already have an Azure storage container setup, configure it with Netskope via log streaming.
+2. Enable the Netskope log streaming by following [these instructions](https://docs.netskope.com/en/stream-logs-to-azure-blob).
+3. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options. For OAuth2 (Entra ID RBAC), you will need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you will need either the Service Account Key or the URI to access the data.
+
+
+- How to setup the `auth.oauth2` credentials can be found in the Azure documentation [here]( https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- For more details about the Azure Blob Storage input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
+
+Note:
+- The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
+- We recommend assigning either the **Storage Blob Data Reader** or **Storage Blob Data Owner** role. The **Storage Blob Data Reader** role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The **Storage Blob Data Owner** role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
+
+#### Collect data from a GCS bucket
+
+1. If you already have a GCS bucket setup, configure it with Netskope via log streaming.
+2. Enable the Netskope log streaming by following [these instructions](https://docs.netskope.com/en/stream-logs-to-gcp-cloud-storage).
+3. Configure the integration with your GCS project ID, Bucket name and Service Account Key/Service Account Credentials File.
+
+For more details about the GCS input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).
+
+#### The GCS credentials key file:
+
+Once you have added a key to GCP service account, you will get a JSON key file that can only be downloaded once.
+If you're new to GCS bucket creation, follow these steps:
+
+1. Make sure you have a service account available, if not follow the steps below:
+   - Navigate to 'APIs & Services' > 'Credentials'
+   - Click on 'Create credentials' > 'Service account'
+2. Once the service account is created, you can navigate to the 'Keys' section and attach/generate your service account key.
+3. Make sure to download the JSON key file once prompted.
+4. Use this JSON key file either inline (JSON string object), or by specifying the path to the file on the host machine, where the agent is running.
+
+A sample JSON Credentials file looks as follows:
+```json
+{
+  "type": "dummy_service_account",
+  "project_id": "dummy-project",
+  "private_key_id": "dummy-private-key-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nDummyPrivateKey\n-----END PRIVATE KEY-----\n",
+  "client_email": "dummy-service-account@example.com",
+  "client_id": "12345678901234567890",
+  "auth_uri": "https://dummy-auth-uri.com",
+  "token_uri": "https://dummy-token-uri.com",
+  "auth_provider_x509_cert_url": "https://dummy-auth-provider-cert-url.com",
+  "client_x509_cert_url": "https://dummy-client-cert-url.com",
+  "universe_domain": "dummy-universe-domain.com"
+}
+```
+
+
+#### Collect data from AWS SQS
+
+1. If you have already set up a connection to push data into the AWS bucket; if not, refer to the section above.
+
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+   - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in Netskope.
+3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+   - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
+
+For more details about the AWS-S3 input settings, check this [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
+
+### Enable the integration in Elastic
+
+1. In Kibana go to **Management** > **Integrations**.
+2. In "Search for integrations" top bar, search for `Netskope`.
+3. Select the **Netskope** integration from the search results.
+4. Select "Add Netskope" to add the integration.
+5. While adding the integration, there are different options to collect logs; 
+    
+    To collect logs via AWS S3 when adding the integration, you must provide the following details::
+    - Collect logs via S3 Bucket toggled on
+    - Access Key ID
+    - Secret Access Key
+    - Bucket ARN
+    - Session Token
+
+    To collect logs via AWS SQS when adding the integration, you must provide the following details:
+    - Collect logs via S3 Bucket toggled off
+    - Queue URL
+    - Secret Access Key
+    - Access Key ID
+
+    To collect logs via GCS when adding the integration, you must provide the following details:
+    - Project ID
+    - Buckets
+    - Service Account Key/Service Account Credentials File
+
+    To collect logs via Azure Blob Storage when adding the integration, you must provide the following details:
+
+    - For OAuth2 (Microsoft Entra ID RBAC):
+        - Toggle on **Collect logs using OAuth2 authentication**
+        - Account Name
+        - Client ID
+        - Client Secret
+        - Tenant ID
+        - Container Details.
+
+    - For Service Account Credentials:
+        - Service Account Key or the URI
+        - Account Name
+        - Container Details
+        
+
+    To collect logs via TCP when adding the integration, you must provide the following details:
+    - Listen Address
+    - Listen Port
+6. Save the integration.
 
 ## Compatibility
 
@@ -114,8 +235,9 @@ Default port: _9021_
 | netskope.alerts.audit.category | The subcategories in an application such as IAM, EC in AWS, login, token, file, etc., in case of Google. | keyword |
 | netskope.alerts.audit.type | The sub category in audit according to SaaS / IaaS apps. | keyword |
 | netskope.alerts.bin.timestamp | Applicable to only: Shared Credentials, Data Exfiltration, Bulk Anomaly types( Bulk Upload/Download/Delete) and Failed Login Anomaly type. Bin TimeStamp (is a window used that is used for certain types of anomalies - for breaking into several windows per day/hour). | long |
-| netskope.alerts.breach.date | Breach date for compromised credentials. | double |
-| netskope.alerts.breach.description | N/A | keyword |
+| netskope.alerts.breach.date | Breach date for compromised credentials. | date |
+| netskope.alerts.breach.description | Breach description for compromised credentials. | keyword |
+| netskope.alerts.breach.description.text | Multi-field of `netskope.alerts.breach.description`. | match_only_text |
 | netskope.alerts.breach.id | Breach ID for compromised credentials. | keyword |
 | netskope.alerts.breach.media_references | Media references of breach. | keyword |
 | netskope.alerts.breach.score | Breach score for compromised credentials. | long |
@@ -679,6 +801,420 @@ An example event for `alerts` looks as following:
 }
 ```
 
+### Alerts V2
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| netskope.alert_v2._id | Unique id - hexadecimal string. | keyword |
+| netskope.alert_v2.access_method | Cloud app traffic can be steered to the Netskope cloud using different deployment methods such as Client (Netskope Client), Secure Forwarder etc. Administrators can also upload firewall and/or proxy logs for log analytics. This field shows the actual access method that triggered the event.For log uploads this shows the actual log type such as PAN, Websense, etc. | keyword |
+| netskope.alert_v2.account_id | Account ID is an account number as provided by the cloud provider AWS, GCP and AZURE etc. | keyword |
+| netskope.alert_v2.account_name | Account name - in case of AWS this is the instance name set by user. For others, account name is provided by the cloud provider. | keyword |
+| netskope.alert_v2.acked | Whether user has acknowledged the alert or not. | boolean |
+| netskope.alert_v2.act_user | Acting User is the user responsible for the configured policy violation. | keyword |
+| netskope.alert_v2.action | Action taken on the event for the policy. | keyword |
+| netskope.alert_v2.activity | Description of the user performed activity. | keyword |
+| netskope.alert_v2.alert | Indicates whether alert is generated or not and its populated as yes for all alerts. | keyword |
+| netskope.alert_v2.alert_id | Indicates the alert is raised and the carries the id of the alert raised. | keyword |
+| netskope.alert_v2.alert_name | Indicates the alert is raised and the carries the name of the alert raised. | keyword |
+| netskope.alert_v2.alert_source | Indicates the alert is raised and the carries the Netskope solution name as source of the alert raised. | keyword |
+| netskope.alert_v2.alert_type | Indicates the alert is raised and the carries the type of the alert raised. | keyword |
+| netskope.alert_v2.app | Specific cloud application used by the user. | keyword |
+| netskope.alert_v2.app_session_id | Unique App/Site Session ID for traffic_type = CloudApp and Web. An app session starts when a user starts using a cloud app/site on and ends once they have been inactive for a certain period of time(15 minutes). Use app_session_id to check all the user activities in a single app session. app_session_id is unique for a user, device, browser and domain. | keyword |
+| netskope.alert_v2.appcategory | The application category. | keyword |
+| netskope.alert_v2.appsuite | The SAAS application suite ( Ex : Microsoft Office / Google Docs  etc ). | keyword |
+| netskope.alert_v2.audit_type | The sub category in audit according to SaaS / IaaS apps. | keyword |
+| netskope.alert_v2.bcc | Breach target references for compromised credentials or BCC users information in the case of SMTP DLP incident. | keyword |
+| netskope.alert_v2.breach_date | Breach Metric date for compromised credentials. | date |
+| netskope.alert_v2.breach_id | Breach description for compromised credentials. | keyword |
+| netskope.alert_v2.breach_score | Breach score for compromised credentials. | long |
+| netskope.alert_v2.browser | Shows the actual browser from where the cloud app was accessed.A native browser refers to Safari (iOS), Chrome (Android), or the default browser on the user's laptop. | keyword |
+| netskope.alert_v2.browser_session_id | Browser Session Id. | keyword |
+| netskope.alert_v2.cc | SMTP Proxy will parse the cc field in the email and send them to DLP in the event object. The cc recipients from the e-mail header, up to 1KB. | keyword |
+| netskope.alert_v2.cci | Cloud confidence Index value as Integer. | long |
+| netskope.alert_v2.ccl | Cloud Confidence Level. CCL measures the enterprise readiness of the cloud apps taking into consideration those apps security, auditability and business continuity.Each app is assigned one of five cloud confidence levels: excellent, high, medium, low, or poor. Useful for querying if users are accessing a cloud app with a lower CCL. | keyword |
+| netskope.alert_v2.client_bytes | Total number of bytes uploaded from client to server. | long |
+| netskope.alert_v2.client_packets | Total number of packets uploaded from client to server. | long |
+| netskope.alert_v2.computer_name | Computer name of the end point. | keyword |
+| netskope.alert_v2.conn_duration | Duration of the connection in milliseconds. Useful for querying long-lived sessions. | long |
+| netskope.alert_v2.conn_endtime | Connection end time. | date |
+| netskope.alert_v2.conn_starttime | Connection start time. | date |
+| netskope.alert_v2.connection_id | Each connection has a unique ID. Shows the ID for the connection event. | keyword |
+| netskope.alert_v2.connection_type | EndPoint DLP connection mode. | keyword |
+| netskope.alert_v2.custom_attr.usr_display_name | User display name from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_status | User status from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_title | User title from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel2 | Business segment level 2 from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel3 | Business segment level 3 from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_companyname | Company name from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_employeeid | Employee ID from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_primarydomain | Primary domain from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_supervisorname | Supervisor name from custom attributes. | keyword |
+| netskope.alert_v2.destination_file_directory | The directory and filename of the destination file on the endpoint. | keyword |
+| netskope.alert_v2.destination_file_name | Endpoint DLP destination file name. | keyword |
+| netskope.alert_v2.destination_file_path | Endpoint DLP destination file path. | keyword |
+| netskope.alert_v2.detection_engine | Threat Detection engine name. | keyword |
+| netskope.alert_v2.device | Device type from where the user accessed the cloud app. It could be Macintosh Windows device, iPad etc. | keyword |
+| netskope.alert_v2.device_classification | Designation of device as determined by the Netskope Client as to whether the device is managed or not. | keyword |
+| netskope.alert_v2.device_sn | Device serial number. | keyword |
+| netskope.alert_v2.device_type | Device type. | keyword |
+| netskope.alert_v2.dlp_file | File/Object name extracted from the file/object. | keyword |
+| netskope.alert_v2.dlp_fingerprint_classification | Fingerprint classification. | keyword |
+| netskope.alert_v2.dlp_fingerprint_match | Fingerprint classification match file name. | keyword |
+| netskope.alert_v2.dlp_fingerprint_score | Fingerprint classification score | long |
+| netskope.alert_v2.dlp_incident_id | Incident ID associated with sub-file in DLP scans. In the case of main file, this is same as the parent incident ID. | keyword |
+| netskope.alert_v2.dlp_is_unique_count | True or false depending upon if rule is unique counted per rule data. | boolean |
+| netskope.alert_v2.dlp_parent_id | Incident ID associated with main container (or non-container) file that was scanned. | keyword |
+| netskope.alert_v2.dlp_profile | DLP profile name. | keyword |
+| netskope.alert_v2.dlp_profile_name | DLP profile name. | keyword |
+| netskope.alert_v2.dlp_rule | DLP rule that triggered the scans. | keyword |
+| netskope.alert_v2.dlp_rule_count | Count of dlp rule hits. | long |
+| netskope.alert_v2.dlp_rule_score | DLP rule score for weighted dictionaries. | long |
+| netskope.alert_v2.dlp_rule_severity | Severity of DLP rule. | keyword |
+| netskope.alert_v2.dlp_unique_count | Integer value of number of unique matches seen per rule data. Only present if rule is uniquely counted. | long |
+| netskope.alert_v2.dns_profile | DNS profiles allow you to control, inspect, and log all or blocked DNS traffic. When configuring a DNS profile, you can configure the actions taken for specific domain categories and choose to allow or block specific domains. This field contains the configuration file name. | keyword |
+| netskope.alert_v2.domain | Domain value. This will hold the host header value or SNI or extracted from absolute URI. | keyword |
+| netskope.alert_v2.domain_ip | Domain IP address. | ip |
+| netskope.alert_v2.driver | Driver name used by endpoint device. | keyword |
+| netskope.alert_v2.dst_country | Application's two-letter country code as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.alert_v2.dst_geoip_src | Source from where the location of Destination IP was derived. | long |
+| netskope.alert_v2.dst_latitude | Latitude of the Application as determined by the Maxmind or IP2Location Geo Database. | double |
+| netskope.alert_v2.dst_latitude_keyword |  | keyword |
+| netskope.alert_v2.dst_location | Application's city as determined by the Maxmind or IP2Location Geo database. | keyword |
+| netskope.alert_v2.dst_longitude | Longitude of the Application as determined by the Maxmind or IP2Location Geo Database. | double |
+| netskope.alert_v2.dst_longitude_keyword |  | keyword |
+| netskope.alert_v2.dst_region | Application's state or region as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.alert_v2.dst_timezone | Destination timezone. | keyword |
+| netskope.alert_v2.dst_zipcode | Application's zip code as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.alert_v2.dsthost | Destination host. | keyword |
+| netskope.alert_v2.dstip | IP address where the destination app is hosted. | ip |
+| netskope.alert_v2.dstport | Destination port. | long |
+| netskope.alert_v2.email_title | Email subject. | keyword |
+| netskope.alert_v2.end_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |
+| netskope.alert_v2.event_uuid | Unique ID to recognize applation event activities. | keyword |
+| netskope.alert_v2.executable_hash | Flag to indicate if executable_hash is signed or not. | keyword |
+| netskope.alert_v2.executable_signed | Flag to indicate if executable_hash is signed or not. | boolean |
+| netskope.alert_v2.file_category | Type of file category. | keyword |
+| netskope.alert_v2.file_cls_encrypted | Its a boolean value representing  whether its CLS encrypted or not. | boolean |
+| netskope.alert_v2.file_exposure | File sharing exposure value for SaaS apps. | keyword |
+| netskope.alert_v2.file_id | Unique file id to recognize the file. | keyword |
+| netskope.alert_v2.file_origin | File origin source location. | keyword |
+| netskope.alert_v2.file_path | Path of the file in the application. | keyword |
+| netskope.alert_v2.file_size | Size of the file in bytes. | long |
+| netskope.alert_v2.file_type | File type as detected by Netskope Solutions. | keyword |
+| netskope.alert_v2.filename | Filename found during Malware threat detection. | keyword |
+| netskope.alert_v2.from_user | Email address used to login to the SAAS app. | keyword |
+| netskope.alert_v2.hostname | User's Host name. | keyword |
+| netskope.alert_v2.iaas_remediated | value representing whether IAAS alerts remediated or not. | boolean |
+| netskope.alert_v2.iaas_remediated_by | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the admin's email address who applied the remediation steps. | keyword |
+| netskope.alert_v2.iaas_remediated_on | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the time in epoch format when remediation steps were taken. | long |
+| netskope.alert_v2.iaas_remediation_action | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the action taken. | keyword |
+| netskope.alert_v2.incident_id | Unique Incident ID associated with main container (or non-container) file that was scanned. | keyword |
+| netskope.alert_v2.instance | Instance associated with an organization application instance. | keyword |
+| netskope.alert_v2.instance_id | Unique ID associated with an organization application instance. | keyword |
+| netskope.alert_v2.instance_name | App instances are configured while configuring policies. instance_name is the custom name chose by admin. | keyword |
+| netskope.alert_v2.ip_protocol | Assigned Internet Protocol Number. | keyword |
+| netskope.alert_v2.loc | Short name for location. | keyword |
+| netskope.alert_v2.local_md5 | MD5 of the sample which was calculated by Netskope's FastScan (TSS) service. | keyword |
+| netskope.alert_v2.local_sha1 | SHA1 of the sample which was calculated by Netskope's fastscan (TSS) service. | keyword |
+| netskope.alert_v2.local_sha256 | SHA256 of the sample which was calculated by Netskope's fastscan (TSS) service. | keyword |
+| netskope.alert_v2.location | A string that specifies the physical location of the printer (for example, Bldg. 38, Room 1164). | keyword |
+| netskope.alert_v2.mal_id | Unique id assigned to recognize the malware. | keyword |
+| netskope.alert_v2.mal_type | Type of malware detected. | keyword |
+| netskope.alert_v2.malware_id | Unique id assigned to recognize the malware. | keyword |
+| netskope.alert_v2.malware_severity | Malware Severity category. | keyword |
+| netskope.alert_v2.malware_type | Type of malware detected. | keyword |
+| netskope.alert_v2.managed_app | Whether or not the app in question is managed. | keyword |
+| netskope.alert_v2.managementID | Field value is attached to Devices Host Info Object. | keyword |
+| netskope.alert_v2.md5 | MD5 value of the file content. | keyword |
+| netskope.alert_v2.message_id | Unique message id used internally by NSProxy. | keyword |
+| netskope.alert_v2.mime_type | A media type (also known as a Multipurpose Internet Mail Extensions or MIME type) indicates the nature and format of a document, file, or assortment of bytes. | keyword |
+| netskope.alert_v2.modified_date | File modification date found during malware detection. Timestamp in epoch format. | date |
+| netskope.alert_v2.netskope_pop | Netskope Data Plane name. | keyword |
+| netskope.alert_v2.network_session_id | Network session ID used by NPA services. | keyword |
+| netskope.alert_v2.nsdeviceuid | Device ID attached to Devices Host Info Object. | keyword |
+| netskope.alert_v2.numbytes | Total number of bytes that were transmitted for the connection - numbytes = client_bytes + server_bytes. | long |
+| netskope.alert_v2.oauth | Oauth is a standard that allows applications to access a user's data without the user needing to share their password. This field holds value if it was used or not. | keyword |
+| netskope.alert_v2.object | Name of the object which is being acted on. It could be a filename, folder name, report name, document name, etc.Incident object name and the value of the field represents the object details of the incident triggered. | keyword |
+| netskope.alert_v2.object_id | Unique ID associated with an object. | keyword |
+| netskope.alert_v2.object_type | Type of the object which is being acted on. Object type could be a file, folder, report, document, message, etc. | keyword |
+| netskope.alert_v2.org | Search for events from a specific organization. Organization name is derived from the user ID. | keyword |
+| netskope.alert_v2.organization_unit | Org Units for which the event correlates to. This ties to user information extracted from Active Directory using the Directory Importer/AD Connector application. | keyword |
+| netskope.alert_v2.os | Operating system of the host who generated the event. | keyword |
+| netskope.alert_v2.os_details | Detailed OS version string. | keyword |
+| netskope.alert_v2.os_family | Operating system type of the end user's device. | keyword |
+| netskope.alert_v2.os_user_name | Username on the local machine that performs action. | keyword |
+| netskope.alert_v2.os_version | OS version of the host. | keyword |
+| netskope.alert_v2.owner | Owner or the user information of the file object in DLP. | keyword |
+| netskope.alert_v2.owner_pdl | File's owner Preferred Data Location derived from owner uid(OneDrive) and site URL(SharePoint). | keyword |
+| netskope.alert_v2.page | The URL of the originating page. | keyword |
+| netskope.alert_v2.parent_id | Parent ID ( event_id ) of an alert. | keyword |
+| netskope.alert_v2.pid | Process ID that is doing file processing ex:- A process that trigger the evaluation. | keyword |
+| netskope.alert_v2.policy | Name of the policy configured by an admin. | keyword |
+| netskope.alert_v2.policy_action | Endpoint DLP Policy action planned according to the policy. User can override the planned action or actual enforcement action might not be implemented. | keyword |
+| netskope.alert_v2.policy_name | Endpoint DLP Name of matching policy. | keyword |
+| netskope.alert_v2.policy_name_enforced | Actual action taken by Endpoint DLP Policy. | keyword |
+| netskope.alert_v2.policy_version | Endpoint DLP Policy name configured version number. | keyword |
+| netskope.alert_v2.pop_id | Netskope MPs/DPs unique id. | keyword |
+| netskope.alert_v2.port | A string that identifies the port(s) used to transmit data to the printer. If a printer is connected to more than one port, the names of each port must be separated by commas (for example, LPT1:,LPT2:,LPT3:). | keyword |
+| netskope.alert_v2.process_cert_subject | the subject of the certificate that signed the process. | keyword |
+| netskope.alert_v2.process_name | Endpoint process Name For example:- native application for Printer on User's Laptop. | keyword |
+| netskope.alert_v2.process_path | The path to the process that performed the action on the endpoint. | keyword |
+| netskope.alert_v2.product_id | It's Part of USB specification. Used to identify a USB device. | keyword |
+| netskope.alert_v2.publisher_cn | The publisher CName. | keyword |
+| netskope.alert_v2.quarantine_action_reason | Reason for the action taken for quarantine. | keyword |
+| netskope.alert_v2.record_type | Indicate the event type of the record. | keyword |
+| netskope.alert_v2.redirect_url | URL name where traffic is redirected based on the applied Policy. | keyword |
+| netskope.alert_v2.referer | Referer URL associated with an activity in a cloud app.Referer URL of the application(with http) that the user visited as provided by the log or data plane traffic. | keyword |
+| netskope.alert_v2.region_id | Region ID as provided by the cloud provider AWS, GCP and Azure etc. | keyword |
+| netskope.alert_v2.region_name | Region Name as provided by the cloud provider AWS, GCP and Azure etc. | keyword |
+| netskope.alert_v2.related_malware | This field contains the malware information attached to UEBA anomaly detection. | keyword |
+| netskope.alert_v2.req_cnt | Total number of HTTP requests (equal to number of transaction events for this page event) sent from client to server over one underlying TCP connection. | long |
+| netskope.alert_v2.request_id | Unique id attached to proxy activity events and dlp activity events. | keyword |
+| netskope.alert_v2.resource_category | IAAS assets resource category of the Cloud providers AWS, GCP and Azure etc. For Example Amazon EC2, Amazon ECS are categorized as Compute whereas Amazon RDS and DynamoDB are categorized as database. | keyword |
+| netskope.alert_v2.resource_group | Cloud providers AWS, GCP and Azure have entities called resource groups that organize resources such as VMs, storage, and virtual networking devices etc. | keyword |
+| netskope.alert_v2.resp_cnt | Total number of HTTP responses (equal to number of transaction events for this page event) from server to client. | long |
+| netskope.alert_v2.risk_level_id | This field is set by both RBA and MLAD anomaly engines for every anomaly that's detected. MLAD always sets individual anomalies risk-level to 0 (low). RBA has different rules. | keyword |
+| netskope.alert_v2.sa_profile_name | IAAS/CSA profile Name as provided by cloud providers AWS, GCP and Azure etc. | keyword |
+| netskope.alert_v2.sa_rule_name | IAAS/CSA rule name configured for scans to run on data stored in cloud providers AWS, GCP and Azure data. | keyword |
+| netskope.alert_v2.sa_rule_severity | IAAS/CSA rule severity as captured by backend policy engines. | keyword |
+| netskope.alert_v2.sanctioned_instance | A sanctioned instance is a company owned account in an external application. A value of yes indicates that the company has granted    access for the specific SaaS / IaaS account to Netskope. A value of no    represents a personal user account or an enterprise account not    authorized by the enterprise Administrator. | keyword |
+| netskope.alert_v2.sender | Sender email information related to introspection's support for MS Teams app. | keyword |
+| netskope.alert_v2.server_bytes | Total number of downloaded bytes from server to client. | long |
+| netskope.alert_v2.server_packets | Total number of server packet from server to client. | long |
+| netskope.alert_v2.session_duration | Session duration of a session. | long |
+| netskope.alert_v2.severity | Severity used by watchlist and malware alerts. Severity of the incident. | keyword |
+| netskope.alert_v2.severity_id | Malware severity category ids. These ids are mapped with severity category values like high, low, medium etc. | keyword |
+| netskope.alert_v2.severity_level | Severity level of the Malsite ( High / Med / Low). | keyword |
+| netskope.alert_v2.sha256 | Sha256 value of a file. | keyword |
+| netskope.alert_v2.sharedType | Object shared type detected for the DLP incidents. | keyword |
+| netskope.alert_v2.shared_credential_user | Denotes the value of the credential being shared by multiple users. | keyword |
+| netskope.alert_v2.shared_domains | List of domains of users the document is shared with. | keyword |
+| netskope.alert_v2.shared_with | Email ids with whom a document is shared with. | keyword |
+| netskope.alert_v2.site | For traffic_type = CloudApp, site = app and for traffic_type = Web, it will be the second level domain name + top-level domain name. For example, in www.cnn.com, it is cnn.com. | keyword |
+| netskope.alert_v2.smtp_status | Customers can configure Netskope SMTP Proxy with Microsoft O365 Exchange, all outgoing emails from Microsoft O365 Exchange are sent to Netskope SMTP Proxy for policy evaluation and will send Back to Exchange  for mail delivery. This field denotes the status code for ex:- SMTP status 250 shows successful delivery of mail. | keyword |
+| netskope.alert_v2.src_country | User's country's two-letter Country Code as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.alert_v2.src_geoip_src | Source from where the location of Source IP was derived. | long |
+| netskope.alert_v2.src_latitude | Latitude of the user as determined by the Maxmind or IP2Location Geo database. | double |
+| netskope.alert_v2.src_latitude_keyword |  | keyword |
+| netskope.alert_v2.src_location | User's city as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.alert_v2.src_longitude | Longitude of the user as determined by the Maxmind or IP2Location Geo database. | double |
+| netskope.alert_v2.src_longitude_keyword |  | keyword |
+| netskope.alert_v2.src_region | Source state or region as determined by the Maxmind or IP2Location Geo database. | keyword |
+| netskope.alert_v2.src_timezone | Source timezone for the location at which the event is created. Shows the long format timezone designation. | keyword |
+| netskope.alert_v2.src_zipcode | Source zip code for the location at which the event is created as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.alert_v2.srcip | IP address of source/user where event is created. | ip |
+| netskope.alert_v2.srcport | Port used by the source/user where event is created. It is used by NPA applications. | long |
+| netskope.alert_v2.start_time | Capture NPA user's session start time. | date |
+| netskope.alert_v2.subject | value present in the email subject captured during DLP email scans. | keyword |
+| netskope.alert_v2.suppression_count | Number of events suppressed. | keyword |
+| netskope.alert_v2.telemetry_app | Typically SaaS app web sites use web analytics code within the pages to gather analytic data.When a SaaS app action or page is shown, there is subsequent traffic generated to tracking apps such as doubleclick.net, Optimizely, etc. These tracking apps are listed if applicable in theTelemetry App field. | keyword |
+| netskope.alert_v2.threat_type | Type of threat detected. | keyword |
+| netskope.alert_v2.timestamp | Timestamp when the event/alert happened. Event timestamp in Unix epoch format. | date |
+| netskope.alert_v2.to_user | Used when a file is moved from user A to user B. Shows the email address of user B. | keyword |
+| netskope.alert_v2.total_packets | Total value of Server Packets + Client Packets. | long |
+| netskope.alert_v2.traffic_type | Type of the traffic: CloudApp or Web. CloudApp indicates CASB and web indicates HTTP traffic. Web traffic is only captured for inline access method. It is currently not captured for Risk Insights. | keyword |
+| netskope.alert_v2.transaction_id | Unique ID for a given request/response. | keyword |
+| netskope.alert_v2.tss_license | Indicates if malware license is enabled for the tenant or not. | keyword |
+| netskope.alert_v2.tss_mode | Malware scanning mode, specifies whether it's Real-time Protection or API Data Protection. | keyword |
+| netskope.alert_v2.tunnel_id | Shows the Client installation ID. Only available for the Client steering configuration. | keyword |
+| netskope.alert_v2.two_factor_auth | Two factor authentication is enabled or not. | keyword |
+| netskope.alert_v2.type | Shows if it is an application event or a connection event. Application events are recorded to track user events inside a cloud app. Connection events shows the actual HTTP connection. | keyword |
+| netskope.alert_v2.unc_path | The Universal Naming Convention path of the network file share, or printer. | keyword |
+| netskope.alert_v2.ur_normalized | All lower case user email. | keyword |
+| netskope.alert_v2.url | URL of the application that the user visited as provided by the log or data plane traffic. | wildcard |
+| netskope.alert_v2.user | User email. | keyword |
+| netskope.alert_v2.user_confidence_index | UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user’s behavior is. The lower UCI is, the more risky the user behavior is. The UCI starts from an initial value and is deducted an amount when the user’s behavior is detected to be anomaly by UEBA engine. The user’s UCI is daily-based, i.e. UEBA engine will create the new UCI with an initial score for users when an UTC day starts. Each user is supposed to start from 1000, but his/her previous day performance will rollover to current day and therefore impact the initial UCI. | long |
+| netskope.alert_v2.user_confidence_level | UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user’s behavior is. User confidence level field holds risk level values. | keyword |
+| netskope.alert_v2.user_id | User email. | keyword |
+| netskope.alert_v2.useragent | The User-Agent request header value. | keyword |
+| netskope.alert_v2.usergroup | Custom attributes added by customer using ADImporter. | keyword |
+| netskope.alert_v2.userip | IP address of User. | ip |
+| netskope.alert_v2.userkey | User ID or email. | keyword |
+| netskope.alert_v2.vendor_id | Netskope's Vendor id. | keyword |
+| netskope.alert_v2.watchlist_name | Name given by admins while creating watchlist by selecting different filters on webUI. | keyword |
+| netskope.alert_v2.web_url | Endpoint configured by customer to fetch Filemeta scan etc. | keyword |
+
+
+An example event for `alerts_v2` looks as following:
+
+```json
+{
+    "@timestamp": "2025-05-13T11:02:02.000Z",
+    "agent": {
+        "ephemeral_id": "1caa7082-bf2e-4fc9-bdac-3673d20f986f",
+        "id": "d5fe41dd-4f7d-4b58-b383-eb8ba0a48f0c",
+        "name": "elastic-agent-55769",
+        "type": "filebeat",
+        "version": "8.17.8"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-netskope-alert-v2-bucket-59128",
+                "name": "elastic-package-netskope-alert-v2-bucket-59128"
+            },
+            "object": {
+                "key": "test-alerts-v2.csv.gz"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "netskope.alerts_v2",
+        "namespace": "89449",
+        "type": "logs"
+    },
+    "destination": {
+        "geo": {
+            "city_name": "Stockholm",
+            "country_iso_code": "SE",
+            "postal_code": "100 04",
+            "region_name": "Stockholm County",
+            "timezone": "Europe/Stockholm"
+        },
+        "ip": "81.2.69.142",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "d5fe41dd-4f7d-4b58-b383-eb8ba0a48f0c",
+        "snapshot": false,
+        "version": "8.17.8"
+    },
+    "event": {
+        "action": "alert",
+        "agent_id_status": "verified",
+        "dataset": "netskope.alerts_v2",
+        "id": "eb8fc9903c2fbb6aa05537ff",
+        "ingested": "2025-07-17T11:04:37Z",
+        "kind": "alert",
+        "original": "{\"_id\":\"eb8fc9903c2fbb6aa05537ff\",\"access_method\":\"Client\",\"account_id\":\"-\",\"account_name\":\"-\",\"acked\":\"false\",\"act_user\":\"-\",\"acting_user\":\"-\",\"action\":\"alert\",\"activity\":\"Edit\",\"alert\":\"yes\",\"alert_id\":\"-\",\"alert_name\":\"Web Access Allow\",\"alert_source\":\"-\",\"alert_type\":\"policy\",\"app\":\"Amazon Systems Manager\",\"app-gdpr-level\":\"-\",\"app_session_id\":\"2241753685910532990\",\"appact\":\"-\",\"appcategory\":\"IT Service/Application Management\",\"appsuite\":\"Amazon\",\"assignee\":\"-\",\"audit_type\":\"-\",\"bcc\":\"-\",\"breach_date\":\"-\",\"breach_id\":\"-\",\"breach_score\":\"-\",\"browser\":\"Native\",\"browser_session_id\":\"4940241048203471891\",\"cc\":\"-\",\"cci\":\"92\",\"ccl\":\"excellent\",\"client_bytes\":\"-\",\"client_packets\":\"-\",\"cloud_provider\":\"-\",\"computer_name\":\"-\",\"conn_duration\":\"-\",\"conn_endtime\":\"-\",\"conn_starttime\":\"-\",\"connection_id\":\"2631086121425559188\",\"connection_type\":\"-\",\"custom_attr\":\"-\",\"destination_file_directory\":\"-\",\"destination_file_name\":\"-\",\"destination_file_path\":\"-\",\"detection_engine\":\"-\",\"device\":\"Windows Device\",\"device_classification\":\"unmanaged\",\"device_sn\":\"-\",\"device_type\":\"-\",\"dinsid\":\"-\",\"dlp_file\":\"-\",\"dlp_fingerprint_classification\":\"-\",\"dlp_fingerprint_match\":\"-\",\"dlp_fingerprint_score\":\"-\",\"dlp_incident_id\":\"-\",\"dlp_is_unique_count\":\"-\",\"dlp_match_info\":\"-\",\"dlp_parent_id\":\"-\",\"dlp_profile\":\"-\",\"dlp_profile_name\":\"-\",\"dlp_rule\":\"-\",\"dlp_rule_count\":\"-\",\"dlp_rule_score\":\"-\",\"dlp_rule_severity\":\"-\",\"dlp_unique_count\":\"-\",\"dns_profile\":\"-\",\"domain\":\"ssm.eu-north-1.amazonaws.com\",\"domain_ip\":\"-\",\"driver\":\"-\",\"dst_country\":\"SE\",\"dst_geoip_src\":\"-\",\"dst_latitude\":\"18.0717|59.328699999999998\",\"dst_location\":\"Stockholm\",\"dst_longitude\":\"18.0717|59.328699999999998\",\"dst_region\":\"Stockholm County\",\"dst_timezone\":\"Europe/Stockholm\",\"dst_zipcode\":\"100 04\",\"dsthost\":\"-\",\"dstip\":\"81.2.69.142\",\"dstport\":\"443\",\"eeml\":\"-\",\"email_from_user\":\"-\",\"email_modified\":\"-\",\"email_title\":\"-\",\"email_user\":\"-\",\"encryption_status\":\"-\",\"end_time\":\"-\",\"event_uuid\":\"-\",\"executable_hash\":\"-\",\"executable_signed\":\"-\",\"file_category\":\"-\",\"file_cls_encrypted\":\"-\",\"file_exposure\":\"-\",\"file_id\":\"-\",\"file_md5\":\"-\",\"file_origin\":\"-\",\"file_owner\":\"-\",\"file_path\":\"-\",\"file_pdl\":\"-\",\"file_size\":\"-\",\"file_type\":\"-\",\"filename\":\"-\",\"filepath\":\"-\",\"fllg\":\"-\",\"flpp\":\"-\",\"from_user\":\"-\",\"hostname\":\"Test-IDMHT6TII\",\"iaas_remediated\":\"-\",\"iaas_remediated_by\":\"-\",\"iaas_remediated_on\":\"-\",\"iaas_remediation_action\":\"-\",\"incident_id\":\"5254981775376249392\",\"inline_dlp_match_info\":\"-\",\"instance\":\"-\",\"instance_id\":\"202533540828\",\"instance_name\":\"-\",\"ip_protocol\":\"-\",\"latest_incident_id\":\"-\",\"loc\":\"-\",\"local_md5\":\"-\",\"local_sha1\":\"-\",\"local_sha256\":\"-\",\"local_source_time\":\"-\",\"location\":\"-\",\"mal_id\":\"-\",\"mal_sev\":\"-\",\"mal_type\":\"-\",\"malware_id\":\"-\",\"malware_severity\":\"-\",\"malware_type\":\"-\",\"managed_app\":\"no\",\"managementID\":\"-\",\"md5\":\"-\",\"message_id\":\"-\",\"mime_type\":\"-\",\"modified_date\":\"-\",\"netskope_pop\":\"SE-STO1\",\"network_session_id\":\"-\",\"nsdeviceuid\":\"-\",\"num_users\":\"-\",\"numbytes\":\"-\",\"oauth\":\"-\",\"object\":\"-\",\"object_id\":\"-\",\"object_type\":\"-\",\"org\":\"-\",\"organization_unit\":\"-\",\"os\":\"Windows 11\",\"os_details\":\"-\",\"os_family\":\"Windows\",\"os_user_name\":\"-\",\"os_version\":\"Windows NT 11.0\",\"owner\":\"-\",\"owner_pdl\":\"-\",\"page\":\"ssm.eu-north-1.amazonaws.com\",\"parent_id\":\"-\",\"pid\":\"-\",\"policy\":\"Web Access Allow\",\"policy_action\":\"-\",\"policy_name\":\"-\",\"policy_name_enforced\":\"-\",\"policy_version\":\"-\",\"pop_id\":\"-\",\"port\":\"443\",\"process_cert_subject\":\"-\",\"process_name\":\"-\",\"process_path\":\"-\",\"product_id\":\"-\",\"publisher_cn\":\"-\",\"record_type\":\"alert\",\"redirect_url\":\"-\",\"referer\":\"-\",\"region_id\":\"-\",\"region_name\":\"-\",\"req\":\"-\",\"req_cnt\":\"-\",\"request_id\":\"5254981775376249392\",\"resource_category\":\"-\",\"resource_group\":\"-\",\"resp\":\"-\",\"resp_cnt\":\"-\",\"response_time\":\"-\",\"risk_level_id\":\"-\",\"risk_score\":\"-\",\"sa_profile_name\":\"-\",\"sa_rule_compliance\":\"-\",\"sa_rule_name\":\"-\",\"sa_rule_severity\":\"-\",\"sanctioned_instance\":\"-\",\"sender\":\"-\",\"server_bytes\":\"-\",\"server_packets\":\"-\",\"serverity\":\"-\",\"session_duration\":\"-\",\"session_number_unique\":\"-\",\"severity\":\"-\",\"severity_id\":\"-\",\"severity_level\":\"-\",\"sha256\":\"-\",\"sharedType\":\"-\",\"shared_credential_user\":\"-\",\"shared_domains\":\"-\",\"shared_with\":\"-\",\"site\":\"Amazon Systems Manager\",\"smtp_status\":\"-\",\"smtp_to\":\"-\",\"spet\":\"-\",\"spst\":\"-\",\"src_country\":\"SE\",\"src_geoip_src\":\"-\",\"src_latitude\":\"18.0717|59.328699999999998\",\"src_location\":\"Stockholm\",\"src_longitude\":\"18.0717|59.328699999999998\",\"src_network\":\"-\",\"src_region\":\"Stockholm County\",\"src_timezone\":\"Europe/Stockholm\",\"src_zipcode\":\"100 04\",\"srcip\":\"81.2.69.142\",\"srcport\":\"-\",\"start_time\":\"-\",\"status\":\"-\",\"subject\":\"-\",\"subtype\":\"-\",\"suppression_count\":\"-\",\"tags\":\"-\",\"telemetry_app\":\"-\",\"thr\":\"-\",\"threat_type\":\"-\",\"timestamp\":\"1747134122\",\"to_user\":\"-\",\"total_packets\":\"-\",\"traffic_type\":\"CloudApp\",\"transaction_id\":\"5254981775376249392\",\"tss_license\":\"-\",\"tss_mode\":\"-\",\"tunnel_id\":\"-\",\"tur\":\"-\",\"two_factor_auth\":\"-\",\"type\":\"nspolicy\",\"unc_path\":\"-\",\"ur_normalized\":\"test@gmail.com\",\"url\":\"ssm.eu-north-1.amazonaws.com/\",\"user\":\"test@gmail.com\",\"user_confidence_index\":\"-\",\"user_confidence_level\":\"-\",\"user_id\":\"-\",\"useragent\":\"aws-sdk-go/1.55.5 (go1.23.7; windows; amd64) amazon-ssm-agent/3.3.2299.0\",\"usergroup\":\"-\",\"userip\":\"81.2.69.142\",\"userkey\":\"test@gmail.com\",\"vendor_id\":\"-\",\"violation\":\"-\",\"watchlist_name\":\"-\",\"web_url\":\"-\"}"
+    },
+    "host": {
+        "domain": "ssm.eu-north-1.amazonaws.com",
+        "name": "Test-IDMHT6TII",
+        "os": {
+            "family": "Windows",
+            "full": "Windows 11",
+            "version": "Windows NT 11.0"
+        }
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-netskope-alert-v2-bucket-59128.s3.us-east-1.amazonaws.com/test-alerts-v2.csv.gz"
+        },
+        "offset": 4504
+    },
+    "netskope": {
+        "alert_v2": {
+            "access_method": "Client",
+            "acked": false,
+            "activity": "Edit",
+            "alert": "yes",
+            "alert_type": "policy",
+            "app_session_id": "2241753685910532990",
+            "appcategory": "IT Service/Application Management",
+            "appsuite": "Amazon",
+            "browser": "Native",
+            "browser_session_id": "4940241048203471891",
+            "cci": 92,
+            "ccl": "excellent",
+            "connection_id": "2631086121425559188",
+            "device": "Windows Device",
+            "device_classification": "unmanaged",
+            "dst_latitude_keyword": "18.0717|59.328699999999998",
+            "dst_longitude_keyword": "18.0717|59.328699999999998",
+            "incident_id": "5254981775376249392",
+            "instance_id": "202533540828",
+            "managed_app": "no",
+            "netskope_pop": "SE-STO1",
+            "page": "ssm.eu-north-1.amazonaws.com",
+            "policy": "Web Access Allow",
+            "port": "443",
+            "record_type": "alert",
+            "request_id": "5254981775376249392",
+            "site": "Amazon Systems Manager",
+            "src_latitude_keyword": "18.0717|59.328699999999998",
+            "src_longitude_keyword": "18.0717|59.328699999999998",
+            "traffic_type": "CloudApp",
+            "transaction_id": "5254981775376249392",
+            "type": "nspolicy",
+            "ur_normalized": "test@gmail.com",
+            "userip": "81.2.69.142",
+            "userkey": "test@gmail.com"
+        }
+    },
+    "network": {
+        "application": "amazon systems manager"
+    },
+    "related": {
+        "hosts": [
+            "ssm.eu-north-1.amazonaws.com",
+            "Test-IDMHT6TII"
+        ],
+        "ip": [
+            "81.2.69.142"
+        ],
+        "user": [
+            "test@gmail.com"
+        ]
+    },
+    "rule": {
+        "name": "Web Access Allow"
+    },
+    "source": {
+        "geo": {
+            "city_name": "Stockholm",
+            "country_iso_code": "SE",
+            "postal_code": "100 04",
+            "region_name": "Stockholm County",
+            "timezone": "Europe/Stockholm"
+        },
+        "ip": "81.2.69.142"
+    },
+    "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
+        "forwarded",
+        "netskope-alerts"
+    ],
+    "url": {
+        "original": "ssm.eu-north-1.amazonaws.com/"
+    },
+    "user": {
+        "email": "test@gmail.com"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "aws-sdk-go",
+        "original": "aws-sdk-go/1.55.5 (go1.23.7; windows; amd64) amazon-ssm-agent/3.3.2299.0",
+        "version": "1.55.5"
+    }
+}
+```
+
 ### Events
 
 **Exported fields**
@@ -1057,5 +1593,371 @@ An example event for `events` looks as following:
         "forwarded",
         "netskope-events"
     ]
+}
+```
+
+### Events V2
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| netskope.events_v2._id | Unique id - hexadecimal string. | keyword |
+| netskope.events_v2.access_method | Cloud app traffic can be steered to the Netskope cloud using different deployment methods such as Client (Netskope Client), Secure Forwarder etc. Administrators can also upload firewall and/or proxy logs for log analytics. This field shows the actual access method that triggered the event.For log uploads this shows the actual log type such as PAN, Websense, etc. | keyword |
+| netskope.events_v2.acting_user | Acting User is the user responsible for the violation. | keyword |
+| netskope.events_v2.action | Action taken on the event for the policy. | keyword |
+| netskope.events_v2.activity | Description of the user performed activity. | keyword |
+| netskope.events_v2.alert | Indicates whether alert is generated or not and its populated as yes for all alerts. | keyword |
+| netskope.events_v2.alert_name | Indicates the alert is raised and the carries the name of the alert raised. | keyword |
+| netskope.events_v2.alert_type | Indicates the alert is raised and the carries the type of the alert raised. | keyword |
+| netskope.events_v2.app | Specific cloud application used by the user. | keyword |
+| netskope.events_v2.app_session_id | Unique App/Site Session ID for traffic_type = CloudApp and Web. An app session starts when a user starts using a cloud app/site on and ends once they have been inactive for a certain period of time(15 minutes). Use app_session_id to check all the user activities in a single app session. app_session_id is unique for a user, device, browser and domain. | keyword |
+| netskope.events_v2.appact | UBA service detect app activities performed by the end user like Download, Upload etc. | keyword |
+| netskope.events_v2.appcategory | The application category. | keyword |
+| netskope.events_v2.appsuite | The SAAS application suite ( Ex : Microsoft Office / Google Docs  etc ). | keyword |
+| netskope.events_v2.assignee | Represents the username to whom the incident is assigned to. | keyword |
+| netskope.events_v2.audit_type | The sub category in audit according to SaaS / IaaS apps. | keyword |
+| netskope.events_v2.bcc | Breach target references for compromised credentials or BCC users information in the case of SMTP DLP incident. | keyword |
+| netskope.events_v2.browser | Shows the actual browser from where the cloud app was accessed.A native browser refers to Safari (iOS), Chrome (Android), or the default browser on the user's laptop. | keyword |
+| netskope.events_v2.browser_session_id | Browser Session Id. | keyword |
+| netskope.events_v2.cc | SMTP Proxy will parse the cc field in the email and send them to DLP in the event object. The cc recipients from the e-mail header, up to 1KB. | keyword |
+| netskope.events_v2.cci | Cloud confidence Index value as Integer. | long |
+| netskope.events_v2.ccl | Cloud Confidence Level. CCL measures the enterprise readiness of the cloud apps taking into consideration those apps security, auditability and business continuity.Each app is assigned one of five cloud confidence levels: excellent, high, medium, low, or poor. Useful for querying if users are accessing a cloud app with a lower CCL. | keyword |
+| netskope.events_v2.client_bytes | Total number of bytes uploaded from client to server. | long |
+| netskope.events_v2.client_packets | Total number of packets uploaded from client to server. | long |
+| netskope.events_v2.computer_name | Computer name of the end point. | keyword |
+| netskope.events_v2.conn_duration | Duration of the connection in milliseconds. Useful for querying long-lived sessions. | long |
+| netskope.events_v2.conn_endtime | Connection end time. | date |
+| netskope.events_v2.conn_starttime | Connection start time. | date |
+| netskope.events_v2.connection_id | Each connection has a unique ID. Shows the ID for the connection event. | keyword |
+| netskope.events_v2.connection_type | EndPoint DLP connection mode. | keyword |
+| netskope.events_v2.destination_file_directory | The directory and filename of the destination file on the endpoint. | keyword |
+| netskope.events_v2.destination_file_name | Endpoint DLP destination file name. | keyword |
+| netskope.events_v2.destination_file_path | Endpoint DLP destination file path. | keyword |
+| netskope.events_v2.device | Device type from where the user accessed the cloud app. It could be Macintosh Windows device, iPad etc. | keyword |
+| netskope.events_v2.device_classification | Designation of device as determined by the Netskope Client as to whether the device is managed or not. | keyword |
+| netskope.events_v2.device_sn | Device serial number. | keyword |
+| netskope.events_v2.device_type | Device type. | keyword |
+| netskope.events_v2.dlp_file | File/Object name extracted from the file/object. | keyword |
+| netskope.events_v2.dlp_incident_id | Incident ID associated with sub-file in DLP scans. In the case of main file, this is same as the parent incident ID. | keyword |
+| netskope.events_v2.dlp_is_unique_count | True or false depending upon if rule is unique counted per rule data. | boolean |
+| netskope.events_v2.dlp_match_info | DLP match info carries the details about DLP profile and rule info along with the violation count information. | keyword |
+| netskope.events_v2.dlp_parent_id | Incident ID associated with main container (or non-container) file that was scanned. | keyword |
+| netskope.events_v2.dlp_profile | DLP profile name. | keyword |
+| netskope.events_v2.dlp_profile_name | DLP profile name. | keyword |
+| netskope.events_v2.dlp_rule | DLP rule that triggered the scans. | keyword |
+| netskope.events_v2.dlp_rule_count | Count of dlp rule hits. | long |
+| netskope.events_v2.dlp_rule_severity | Severity of DLP rule. | keyword |
+| netskope.events_v2.dlp_unique_count | Integer value of number of unique matches seen per rule data. Only present if rule is uniquely counted. | long |
+| netskope.events_v2.dns_profile | DNS profiles allow you to control, inspect, and log all or blocked DNS traffic. When configuring a DNS profile, you can configure the actions taken for specific domain categories and choose to allow or block specific domains. This field contains the configuration file name. | keyword |
+| netskope.events_v2.domain | Domain value. This will hold the host header value or SNI or extracted from absolute URI. | keyword |
+| netskope.events_v2.domain_ip | Domain IP address. | ip |
+| netskope.events_v2.driver | Driver name used by endpoint device. | keyword |
+| netskope.events_v2.dst_country | Application's two-letter country code as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.events_v2.dst_geoip_src | Source from where the location of Destination IP was derived. | long |
+| netskope.events_v2.dst_latitude | Latitude of the Application as determined by the Maxmind or IP2Location Geo Database. | double |
+| netskope.events_v2.dst_latitude_keyword |  | keyword |
+| netskope.events_v2.dst_location | Application's city as determined by the Maxmind or IP2Location Geo database. | keyword |
+| netskope.events_v2.dst_longitude | Longitude of the Application as determined by the Maxmind or IP2Location Geo Database. | double |
+| netskope.events_v2.dst_longitude_keyword |  | keyword |
+| netskope.events_v2.dst_region | Application's state or region as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.events_v2.dst_timezone | Destination timezone. | keyword |
+| netskope.events_v2.dst_zipcode | Application's zip code as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.events_v2.dsthost | Destination host. | keyword |
+| netskope.events_v2.dstip | IP address where the destination app is hosted. | ip |
+| netskope.events_v2.dstport | Destination port. | long |
+| netskope.events_v2.end_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |
+| netskope.events_v2.executable_hash | Flag to indicate if executable_hash is signed or not. | keyword |
+| netskope.events_v2.executable_signed | Flag to indicate if executable_hash is signed or not. | boolean |
+| netskope.events_v2.file_origin | File origin source location. | keyword |
+| netskope.events_v2.file_path | Path of the file in the application. | keyword |
+| netskope.events_v2.file_size | Size of the file in bytes. | long |
+| netskope.events_v2.file_type | File type as detected by Netskope Solutions. | keyword |
+| netskope.events_v2.from_user | Email address used to login to the SAAS app. | keyword |
+| netskope.events_v2.hostname | User's Host name. | keyword |
+| netskope.events_v2.incident_id | Unique Incident ID associated with main container (or non-container) file that was scanned. | keyword |
+| netskope.events_v2.inline_dlp_match_info | Inline DLP match info carries the details about DLP profile and rule info along with the violation count information. | keyword |
+| netskope.events_v2.instance | Instance associated with an organization application instance. | keyword |
+| netskope.events_v2.instance_id | Unique ID associated with an organization application instance. | keyword |
+| netskope.events_v2.ip_protocol | Assigned Internet Protocol Number. | keyword |
+| netskope.events_v2.latest_incident_id | Latest incident ID captured by DLP backend services. | keyword |
+| netskope.events_v2.location | A string that specifies the physical location of the printer (for example, Bldg. 38, Room 1164). | keyword |
+| netskope.events_v2.managed_app | Whether or not the app in question is managed. | keyword |
+| netskope.events_v2.managementID | Field value is attached to Devices Host Info Object. | keyword |
+| netskope.events_v2.md5 | MD5 value of the file content. | keyword |
+| netskope.events_v2.mime_type | A media type (also known as a Multipurpose Internet Mail Extensions or MIME type) indicates the nature and format of a document, file, or assortment of bytes. | keyword |
+| netskope.events_v2.netskope_pop | Netskope Data Plane name. | keyword |
+| netskope.events_v2.network_session_id | Network session ID used by NPA services. | keyword |
+| netskope.events_v2.nsdeviceuid | Device ID attached to Devices Host Info Object. | keyword |
+| netskope.events_v2.numbytes | Total number of bytes that were transmitted for the connection - numbytes = client_bytes + server_bytes. | long |
+| netskope.events_v2.oauth | Oauth is a standard that allows applications to access a user's data without the user needing to share their password. This field holds value if it was used or not. | keyword |
+| netskope.events_v2.object | Name of the object which is being acted on. It could be a filename, folder name, report name, document name, etc.Incident object name and the value of the field represents the object details of the incident triggered. | keyword |
+| netskope.events_v2.object_id | Unique ID associated with an object. | keyword |
+| netskope.events_v2.object_type | Type of the object which is being acted on. Object type could be a file, folder, report, document, message, etc. | keyword |
+| netskope.events_v2.org | Search for events from a specific organization. Organization name is derived from the user ID. | keyword |
+| netskope.events_v2.organization_unit | Org Units for which the event correlates to. This ties to user information extracted from Active Directory using the Directory Importer/AD Connector application. | keyword |
+| netskope.events_v2.os | Operating system of the host who generated the event. | keyword |
+| netskope.events_v2.os_details | Detailed OS version string. | keyword |
+| netskope.events_v2.os_family | Operating system type of the end user's device. | keyword |
+| netskope.events_v2.os_user_name | Username on the local machine that performs action. | keyword |
+| netskope.events_v2.os_version | OS version of the host. | keyword |
+| netskope.events_v2.owner | Owner or the user information of the file object in DLP. | keyword |
+| netskope.events_v2.owner_pdl | File's owner Preferred Data Location derived from owner uid(OneDrive) and site URL(SharePoint). | keyword |
+| netskope.events_v2.page | The URL of the originating page. | keyword |
+| netskope.events_v2.parent_id | Parent ID ( event_id ) of an alert. | keyword |
+| netskope.events_v2.pid | Process ID that is doing file processing ex: A process that trigger the evaluation. | long |
+| netskope.events_v2.policy | Name of the policy configured by an admin. | keyword |
+| netskope.events_v2.policy_action | Endpoint DLP Policy action planned according to the policy. User can override the planned action or actual enforcement action might not be implemented. | keyword |
+| netskope.events_v2.policy_name | Endpoint DLP Name of matching policy. | keyword |
+| netskope.events_v2.policy_name_enforced | Actual policy name used by Endpoint DLP Policy. | keyword |
+| netskope.events_v2.policy_version | Endpoint DLP Policy name configured version number. | keyword |
+| netskope.events_v2.pop_id | Netskope MPs/DPs unique id. | keyword |
+| netskope.events_v2.port | A string that identifies the port(s) used to transmit data to the printer. If a printer is connected to more than one port, the names of each port must be separated by commas (for example, LPT1:,LPT2:,LPT3:). | keyword |
+| netskope.events_v2.process_cert_subject | the subject of the certificate that signed the process. | keyword |
+| netskope.events_v2.process_name | Endpoint process Name For example: native application for Printer on User's Laptop. | keyword |
+| netskope.events_v2.process_path | The path to the process that performed the action on the endpoint. | keyword |
+| netskope.events_v2.product_id | It's Part of USB specification. Used to identify a USB device. | keyword |
+| netskope.events_v2.publisher_cn | The publisher CName. | keyword |
+| netskope.events_v2.record_type | Indicate the event type of the record. | keyword |
+| netskope.events_v2.referer | Referer URL associated with an activity in a cloud app.Referer URL of the application(with http) that the user visited as provided by the log or data plane traffic. | keyword |
+| netskope.events_v2.req_cnt | Total number of HTTP requests (equal to number of transaction events for this page event) sent from client to server over one underlying TCP connection. | long |
+| netskope.events_v2.request_id | Unique id attached to proxy activity events and dlp activity events. | keyword |
+| netskope.events_v2.resp_cnt | Total number of HTTP responses (equal to number of transaction events for this page event) from server to client. | long |
+| netskope.events_v2.response_time | Response time in milliseconds from the server/app as captured by NPA solution. | long |
+| netskope.events_v2.sanctioned_instance | A sanctioned instance is a company owned account in an external application. A value of yes indicates that the company has granted    access for the specific SaaS / IaaS account to Netskope. A value of no    represents a personal user account or an enterprise account not    authorized by the enterprise Administrator. | keyword |
+| netskope.events_v2.server_bytes | Total number of downloaded bytes from server to client. | long |
+| netskope.events_v2.server_packets | Total number of server packet from server to client. | long |
+| netskope.events_v2.session_duration | Session duration of a session. | long |
+| netskope.events_v2.severity | Severity used by watchlist and malware alerts. Severity of the incident. | keyword |
+| netskope.events_v2.sha256 | Sha256 value of a file. | keyword |
+| netskope.events_v2.shared_with | Email ids with whom a document is shared with. | keyword |
+| netskope.events_v2.site | For traffic_type = CloudApp, site = app and for traffic_type = Web, it will be the second level domain name + top-level domain name. For example, in www.cnn.com, it is cnn.com. | keyword |
+| netskope.events_v2.smtp_to | SMTP Proxy will parse the smtp_to field in the email and send them to DLP in the event object. List contains the The recipients from the SMTP envelope. | keyword |
+| netskope.events_v2.src_country | User's country's two-letter Country Code as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.events_v2.src_geoip_src | Source from where the location of Source IP was derived. | long |
+| netskope.events_v2.src_latitude | Latitude of the user as determined by the Maxmind or IP2Location Geo database. | double |
+| netskope.events_v2.src_latitude_keyword |  | keyword |
+| netskope.events_v2.src_location | User's city as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.events_v2.src_longitude | Longitude of the user as determined by the Maxmind or IP2Location Geo database. | double |
+| netskope.events_v2.src_longitude_keyword |  | keyword |
+| netskope.events_v2.src_region | Source state or region as determined by the Maxmind or IP2Location Geo database. | keyword |
+| netskope.events_v2.src_timezone | Source timezone for the location at which the event is created. Shows the long format timezone designation. | keyword |
+| netskope.events_v2.src_zipcode | Source zip code for the location at which the event is created as determined by the Maxmind or IP2Location Geo Database. | keyword |
+| netskope.events_v2.srcip | IP address of source/user where event is created. | ip |
+| netskope.events_v2.srcport | Port used by the source/user where event is created. It is used by NPA applications. | long |
+| netskope.events_v2.start_time | Capture NPA user's session start time. | date |
+| netskope.events_v2.status | Specific status name used by the enduser for DLP incidents. | keyword |
+| netskope.events_v2.telemetry_app | Typically SaaS app web sites use web analytics code within the pages to gather analytic data.When a SaaS app action or page is shown, there is subsequent traffic generated to tracking apps such as doubleclick.net, Optimizely, etc. These tracking apps are listed if applicable in theTelemetry App field. | keyword |
+| netskope.events_v2.threat_type | Type of threat detected. | keyword |
+| netskope.events_v2.timestamp | Timestamp when the event/alert happened. Event timestamp in Unix epoch format. | date |
+| netskope.events_v2.to_user | Used when a file is moved from user A to user B. Shows the email address of user B. | keyword |
+| netskope.events_v2.total_packets | Total value of Server Packets + Client Packets. | long |
+| netskope.events_v2.traffic_type | Type of the traffic: CloudApp or Web. CloudApp indicates CASB and web indicates HTTP traffic. Web traffic is only captured for inline access method. It is currently not captured for Risk Insights. | keyword |
+| netskope.events_v2.transaction_id | Unique ID for a given request/response. | keyword |
+| netskope.events_v2.tss_mode | Malware scanning mode, specifies whether it's Real-time Protection or API Data Protection. | keyword |
+| netskope.events_v2.tunnel_id | Shows the Client installation ID. Only available for the Client steering configuration. | keyword |
+| netskope.events_v2.type | Shows if it is an application event or a connection event. Application events are recorded to track user events inside a cloud app. Connection events shows the actual HTTP connection. | keyword |
+| netskope.events_v2.unc_path | The Universal Naming Convention path of the network file share, or printer. | keyword |
+| netskope.events_v2.ur_normalized | All lower case user email. | keyword |
+| netskope.events_v2.url | URL of the application that the user visited as provided by the log or data plane traffic. | wildcard |
+| netskope.events_v2.user | User email. | keyword |
+| netskope.events_v2.user_confidence_index | UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user\u2019s behavior is. The lower UCI is, the more risky the user behavior is. The UCI starts from an initial value and is deducted an amount when the user\u2019s behavior is detected to be anomaly by UEBA engine. The user\u2019s UCI is daily-based, i.e. UEBA engine will create the new UCI with an initial score for users when an UTC day starts. Each user is supposed to start from 1000, but his/her previous day performance will rollover to current day and therefore impact the initial UCI. | long |
+| netskope.events_v2.user_confidence_level | UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user\u2019s behavior is. User confidence level field holds risk level values. | keyword |
+| netskope.events_v2.user_id | User email. | keyword |
+| netskope.events_v2.useragent | The User-Agent request header value. | keyword |
+| netskope.events_v2.userip | IP address of User. | ip |
+| netskope.events_v2.userkey | User ID or email. | keyword |
+| netskope.events_v2.vendor_id | Netskope's Vendor id. | keyword |
+
+
+An example event for `events_v2` looks as following:
+
+```json
+{
+    "@timestamp": "2025-05-13T10:43:50.000Z",
+    "agent": {
+        "ephemeral_id": "04b261d7-d51e-485c-aed5-039119a22e80",
+        "id": "e8f06fce-767e-4024-bea3-813ec054f48d",
+        "name": "elastic-agent-69616",
+        "type": "filebeat",
+        "version": "8.17.8"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-netskope-bucket-91880",
+                "name": "elastic-package-netskope-bucket-91880"
+            },
+            "object": {
+                "key": "events.csv.gz"
+            }
+        }
+    },
+    "client": {
+        "bytes": 961033
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
+    "data_stream": {
+        "dataset": "netskope.events_v2",
+        "namespace": "42670",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 387197,
+        "geo": {
+            "city_name": "Chennai",
+            "country_iso_code": "IN",
+            "region_name": "Tamil Nadu",
+            "timezone": "Asia/Kolkata"
+        },
+        "ip": "142.250.77.133",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "e8f06fce-767e-4024-bea3-813ec054f48d",
+        "snapshot": false,
+        "version": "8.17.8"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "netskope.events_v2",
+        "id": "c96659f7292a31d76576becd",
+        "ingested": "2025-07-18T10:39:59Z",
+        "kind": "event",
+        "original": "{\"_id\":\"c96659f7292a31d76576becd\",\"access_method\":\"Client\",\"account_id\":\"-\",\"account_name\":\"-\",\"acked\":\"-\",\"act_user\":\"-\",\"acting_user\":\"-\",\"action\":\"-\",\"activity\":\"-\",\"alert\":\"-\",\"alert_id\":\"-\",\"alert_name\":\"-\",\"alert_source\":\"-\",\"alert_type\":\"-\",\"app\":\"Google Gmail\",\"app-gdpr-level\":\"-\",\"app_session_id\":\"438388819325815355\",\"appact\":\"-\",\"appcategory\":\"Webmail\",\"appsuite\":\"-\",\"assignee\":\"-\",\"audit_type\":\"-\",\"bcc\":\"-\",\"breach_date\":\"-\",\"breach_id\":\"-\",\"breach_score\":\"-\",\"browser\":\"Chrome\",\"browser_session_id\":\"5006467906912901882\",\"cc\":\"-\",\"cci\":\"86\",\"ccl\":\"high\",\"client_bytes\":\"961033\",\"client_packets\":\"-\",\"cloud_provider\":\"-\",\"computer_name\":\"-\",\"conn_duration\":\"986\",\"conn_endtime\":\"1747134016\",\"conn_starttime\":\"1747133030\",\"connection_id\":\"8335488044687090606\",\"connection_type\":\"-\",\"custom_attr\":\"-\",\"destination_file_directory\":\"-\",\"destination_file_name\":\"-\",\"destination_file_path\":\"-\",\"detection_engine\":\"-\",\"device\":\"Windows Device\",\"device_classification\":\"-\",\"device_sn\":\"-\",\"device_type\":\"-\",\"dinsid\":\"-\",\"dlp_file\":\"-\",\"dlp_fingerprint_classification\":\"-\",\"dlp_fingerprint_match\":\"-\",\"dlp_fingerprint_score\":\"-\",\"dlp_incident_id\":\"-\",\"dlp_is_unique_count\":\"-\",\"dlp_match_info\":\"-\",\"dlp_parent_id\":\"-\",\"dlp_profile\":\"-\",\"dlp_profile_name\":\"-\",\"dlp_rule\":\"-\",\"dlp_rule_count\":\"-\",\"dlp_rule_score\":\"-\",\"dlp_rule_severity\":\"-\",\"dlp_unique_count\":\"-\",\"dns_profile\":\"-\",\"domain\":\"mail.google.com\",\"domain_ip\":\"-\",\"driver\":\"-\",\"dst_country\":\"IN\",\"dst_geoip_src\":\"-\",\"dst_latitude\":\"80.278480529785156|13.087898254394531\",\"dst_location\":\"Chennai\",\"dst_longitude\":\"80.278480529785156|13.087898254394531\",\"dst_region\":\"Tamil Nadu\",\"dst_timezone\":\"Asia/Kolkata\",\"dst_zipcode\":\"N/A\",\"dsthost\":\"-\",\"dstip\":\"142.250.77.133\",\"dstport\":\"443\",\"eeml\":\"-\",\"email_from_user\":\"-\",\"email_modified\":\"-\",\"email_title\":\"-\",\"email_user\":\"-\",\"encryption_status\":\"-\",\"end_time\":\"-\",\"event_uuid\":\"-\",\"executable_hash\":\"-\",\"executable_signed\":\"-\",\"file_category\":\"-\",\"file_cls_encrypted\":\"-\",\"file_exposure\":\"-\",\"file_id\":\"-\",\"file_md5\":\"-\",\"file_origin\":\"-\",\"file_owner\":\"-\",\"file_path\":\"-\",\"file_pdl\":\"-\",\"file_size\":\"-\",\"file_type\":\"-\",\"filename\":\"-\",\"filepath\":\"-\",\"fllg\":\"-\",\"flpp\":\"-\",\"from_user\":\"-\",\"hostname\":\"Test\",\"iaas_remediated\":\"-\",\"iaas_remediated_by\":\"-\",\"iaas_remediated_on\":\"-\",\"iaas_remediation_action\":\"-\",\"incident_id\":\"-\",\"inline_dlp_match_info\":\"-\",\"instance\":\"-\",\"instance_id\":\"-\",\"instance_name\":\"-\",\"ip_protocol\":\"-\",\"latest_incident_id\":\"-\",\"loc\":\"-\",\"local_md5\":\"-\",\"local_sha1\":\"-\",\"local_sha256\":\"-\",\"local_source_time\":\"-\",\"location\":\"-\",\"mal_id\":\"-\",\"mal_sev\":\"-\",\"mal_type\":\"-\",\"malware_id\":\"-\",\"malware_severity\":\"-\",\"malware_type\":\"-\",\"managed_app\":\"-\",\"managementID\":\"-\",\"md5\":\"-\",\"message_id\":\"-\",\"mime_type\":\"-\",\"modified_date\":\"-\",\"netskope_pop\":\"IN-MAA2\",\"network_session_id\":\"-\",\"nsdeviceuid\":\"-\",\"num_users\":\"-\",\"numbytes\":\"1348230\",\"oauth\":\"-\",\"object\":\"-\",\"object_id\":\"-\",\"object_type\":\"-\",\"org\":\"-\",\"organization_unit\":\"-\",\"os\":\"Windows 11\",\"os_details\":\"-\",\"os_family\":\"Windows\",\"os_user_name\":\"-\",\"os_version\":\"Windows NT 11.0\",\"owner\":\"-\",\"owner_pdl\":\"-\",\"page\":\"mail.google.com\",\"parent_id\":\"-\",\"pid\":\"-\",\"policy\":\"-\",\"policy_action\":\"-\",\"policy_name\":\"-\",\"policy_name_enforced\":\"-\",\"policy_version\":\"-\",\"pop_id\":\"-\",\"port\":\"-\",\"process_cert_subject\":\"-\",\"process_name\":\"-\",\"process_path\":\"-\",\"product_id\":\"-\",\"publisher_cn\":\"-\",\"record_type\":\"page\",\"redirect_url\":\"-\",\"referer\":\"-\",\"region_id\":\"-\",\"region_name\":\"-\",\"req\":\"-\",\"req_cnt\":\"173\",\"request_id\":\"-\",\"resource_category\":\"-\",\"resource_group\":\"-\",\"resp\":\"-\",\"resp_cnt\":\"173\",\"response_time\":\"-\",\"risk_level_id\":\"-\",\"risk_score\":\"-\",\"sa_profile_name\":\"-\",\"sa_rule_compliance\":\"-\",\"sa_rule_name\":\"-\",\"sa_rule_severity\":\"-\",\"sanctioned_instance\":\"-\",\"sender\":\"-\",\"server_bytes\":\"387197\",\"server_packets\":\"-\",\"serverity\":\"-\",\"session_duration\":\"-\",\"session_number_unique\":\"-\",\"severity\":\"-\",\"severity_id\":\"-\",\"severity_level\":\"-\",\"sha256\":\"-\",\"sharedType\":\"-\",\"shared_credential_user\":\"-\",\"shared_domains\":\"-\",\"shared_with\":\"-\",\"site\":\"Google Gmail\",\"smtp_status\":\"-\",\"smtp_to\":\"-\",\"spet\":\"-\",\"spst\":\"-\",\"src_country\":\"IN\",\"src_geoip_src\":\"-\",\"src_latitude\":\"77.590999999999994|12.975300000000001\",\"src_location\":\"Bengaluru\",\"src_longitude\":\"77.590999999999994|12.975300000000001\",\"src_network\":\"-\",\"src_region\":\"Karnataka\",\"src_timezone\":\"Asia/Kolkata\",\"src_zipcode\":\"562130\",\"srcip\":\"175.16.199.0\",\"srcport\":\"-\",\"start_time\":\"-\",\"status\":\"-\",\"subject\":\"-\",\"subtype\":\"-\",\"suppression_count\":\"-\",\"tags\":\"-\",\"telemetry_app\":\"-\",\"thr\":\"-\",\"threat_type\":\"-\",\"timestamp\":\"1747133030\",\"to_user\":\"-\",\"total_packets\":\"-\",\"traffic_type\":\"CloudApp\",\"transaction_id\":\"-\",\"tss_license\":\"-\",\"tss_mode\":\"-\",\"tunnel_id\":\"-\",\"tur\":\"-\",\"two_factor_auth\":\"-\",\"type\":\"connection\",\"unc_path\":\"-\",\"ur_normalized\":\"test@gmail.com\",\"url\":\"mail.google.com\",\"user\":\"test@gmail.com\",\"user_confidence_index\":\"-\",\"user_confidence_level\":\"-\",\"user_id\":\"-\",\"useragent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\",\"usergroup\":\"-\",\"userip\":\"192.168.1.11\",\"userkey\":\"test@gmail.com\",\"vendor_id\":\"-\",\"violation\":\"-\",\"watchlist_name\":\"-\",\"web_url\":\"-\"}",
+        "outcome": "unknown",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "name": "Test",
+        "os": {
+            "family": "Windows",
+            "full": "Windows 11",
+            "version": "NT 11.0"
+        }
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-netskope-bucket-91880.s3.us-east-1.amazonaws.com/events.csv.gz"
+        },
+        "offset": 3962
+    },
+    "netskope": {
+        "events_v2": {
+            "access_method": "Client",
+            "app_session_id": "438388819325815355",
+            "appcategory": "Webmail",
+            "browser": "Chrome",
+            "browser_session_id": "5006467906912901882",
+            "cci": 86,
+            "ccl": "high",
+            "conn_duration": 986,
+            "conn_endtime": "2025-05-13T11:00:16.000Z",
+            "conn_starttime": "2025-05-13T10:43:50.000Z",
+            "connection_id": "8335488044687090606",
+            "device": "Windows Device",
+            "domain": "mail.google.com",
+            "dst_latitude_keyword": "80.278480529785156|13.087898254394531",
+            "dst_longitude_keyword": "80.278480529785156|13.087898254394531",
+            "netskope_pop": "IN-MAA2",
+            "page": "mail.google.com",
+            "record_type": "page",
+            "req_cnt": 173,
+            "resp_cnt": 173,
+            "site": "Google Gmail",
+            "src_country": "IN",
+            "src_latitude_keyword": "77.590999999999994|12.975300000000001",
+            "src_location": "Bengaluru",
+            "src_longitude_keyword": "77.590999999999994|12.975300000000001",
+            "src_region": "Karnataka",
+            "src_timezone": "Asia/Kolkata",
+            "src_zipcode": "562130",
+            "srcip": "175.16.199.0",
+            "traffic_type": "CloudApp",
+            "type": "connection",
+            "ur_normalized": "test@gmail.com",
+            "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+            "userip": "192.168.1.11",
+            "userkey": "test@gmail.com"
+        }
+    },
+    "network": {
+        "application": "google gmail",
+        "bytes": 1348230
+    },
+    "related": {
+        "hosts": [
+            "Test",
+            "mail.google.com"
+        ],
+        "ip": [
+            "142.250.77.133",
+            "192.168.1.11"
+        ],
+        "user": [
+            "test",
+            "test@gmail.com"
+        ]
+    },
+    "server": {
+        "bytes": 387197
+    },
+    "source": {
+        "bytes": 961033,
+        "geo": {
+            "country_iso_code": "IN",
+            "postal_code": "562130",
+            "region_name": "Karnataka"
+        },
+        "ip": "175.16.199.0"
+    },
+    "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
+        "forwarded",
+        "netskope-event"
+    ],
+    "url": {
+        "original": "mail.google.com"
+    },
+    "user": {
+        "domain": "gmail.com",
+        "email": "test@gmail.com",
+        "name": "test"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        },
+        "version": "136.0.0.0"
+    }
 }
 ```

@@ -409,7 +409,7 @@ processors:
       description: "113014"
       field: "message"
       patterns:
-          - "AAA authentication server not accessible(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
+          - "AAA authentication server not accessible(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
@@ -1262,6 +1262,10 @@ processors:
         EgressZone:
           target: egress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.egress.zone]
+        EncryptPeerIP:
+          target: encrypt_peer_ip
+          id: ["430001", "430002", "430003"]
         Endpoint Profile:
           target: endpoint_profile
           id: ["430002", "430003"]
@@ -1335,6 +1339,7 @@ processors:
         IngressZone:
           target: ingress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.ingress.zone]
         InitiatorBytes:
           target: initiator_bytes
           id: ["430003"]
@@ -1496,6 +1501,9 @@ processors:
         VLAN_ID:
           target: vlan_id
           id: ["430001", "430002", "430003"]
+        VPN_Action:
+          target: vpn_action
+          id: ["430001", "430002", "430003"]
         WebApplication:
           target: web_application
           ecs: [network.application]
@@ -1540,6 +1548,7 @@ processors:
                                     'dst_port',
                                     'egress_interface',
                                     'egress_zone',
+                                    'encrypt_peer_ip',
                                     'file_action',
                                     'file_count',
                                     'file_direction',
@@ -1587,6 +1596,7 @@ processors:
                                     'url_reputation',
                                     'user',
                                     'user_agent',
+                                    'vpn_action',
                                     'web_application']);
         ctx._temp_.cisco['security'] = dest;
         ctx._temp_.cisco['security_event'] = dest_event;
@@ -1634,6 +1644,11 @@ processors:
       tag: convert-security_event_dst_ip
       field: _temp_.cisco.security_event.dst_ip
       target_field: _temp_.cisco.security_event.dst_ip
+      type: ip
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.encrypt_peer_ip != null
+      tag: convert-security_event_encrypt_peer_ip
+      field: _temp_.cisco.security_event.encrypt_peer_ip
       type: ip
   - convert:
       if: ctx._temp_?.cisco?.security_event?.dst_port != null
@@ -2713,6 +2728,11 @@ processors:
       field: related.ip
       value: "{{{destination.nat.ip}}}"
       if: "ctx.destination?.nat?.ip != null"
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{cisco.ftd.security_event.encrypt_peer_ip}}}'
+      if: ctx.cisco?.ftd?.security_event?.encrypt_peer_ip != null
       allow_duplicates: false
   - append:
       field: related.user
