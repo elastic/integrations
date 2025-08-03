@@ -1,4 +1,4 @@
-# NGINX metrics from Opentelemtry Collector 
+# NGINX metrics from OpenTelemetry Collector 
 
 The NGINX metrics from NGINX OTEL integration allows you to monitor [Nginx](https://nginx.org/), a high-performance web server, reverse proxy, and load balancer. NGINX is widely used for serving web content, proxying traffic, and load balancing across multiple servers.
 
