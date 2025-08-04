@@ -29,7 +29,9 @@ state:
   initial_interval: {{initial_interval}}
   want_more: false
   preserve_original_event: {{preserve_original_event}}
-  query: {{query}}
+{{#if query}}
+  query: {{escape_string query}}
+{{/if}}
 redact:
   fields:
     - api_key
@@ -44,7 +46,7 @@ program: |-
   			"limit": [string(state.page_size)],
   			?"update_id__gt": state.?cursor.last_update_id.optMap(id, [string(int(id))]),
   			?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
-  			?"q": state.query != null && state.query != "" ? optional.of([state.query]) : optional.none(),
+  			?"q": state.?query.orValue("") != "" ? optional.of([state.query]) : optional.none(),
   		}.format_query()
   	).with(
   		{
