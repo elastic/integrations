@@ -262,6 +262,8 @@ program: |-
   					{
   						"events_per_content_type": [{
   						  "error": {
+  						    "code": string(start_subs_resp.StatusCode),
+  						    "id": string(start_subs_resp.Status),
   						    "message": content_type + ": " + start_subs_resp_body.?error.code.optFlatMap(code,
   						      start_subs_resp_body.?error.message.optMap(message,
   						        code + " " + message
@@ -288,7 +290,13 @@ program: |-
   	      {
   	        "url": state.url,
   	        "base": state.base,
-  	        "events": { "error": { "message": error_events.collate("error.message").join("; ") }},
+  	        "events": {
+  	          "error": {
+  	            "code": error_events.collate("error.code").as(codes, codes.zip(codes)).keys().as(codes, codes.size() == 1 ? codes[0] : dyn(codes)),
+  	            "id": error_events.collate("error.id").as(ids, ids.zip(ids)).keys().as(ids, ids.size() == 1 ? ids[0] : dyn(ids)),
+  	            "message": error_events.collate("error.message").join("; "),
+  	          },
+  	        },
   	        "want_more": false,
   	        ?"cursor": state.?cursor,
   	      }
