@@ -17,12 +17,12 @@ This integration collects threat intelligence indicators into the following data
 
 - `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
 - `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
-- `threatfox`: Collects indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: Collects malware URL-based indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+- `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
+- `url`: Collects malware URL-based threat indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
 
 ### Supported use cases
 
-Integrating abuse.ch with Elastic enables following use cases.
+Integrating abuse.ch with Elastic enables the following use cases.
 
 - [Prebuilt threat intel detection rules](https://www.elastic.co/docs/reference/security/prebuilt-rules)
 - Real-time threat detection and hunting through [Elastic Security for Threat Intelligence](https://www.elastic.co/security/tip)
@@ -95,14 +95,14 @@ For more details, check the abuse.ch [Community First - New Authentication](http
 
 ## Troubleshooting
 
-- When creating **Auth Key** inside [abuse.ch authentication portal](https://auth.abuse.ch/), ensure that you connect at least one additional authentication provider to ensure seemless access to abuse.ch platform.
+- When creating the **Auth Key** inside [abuse.ch authentication portal](https://auth.abuse.ch/), ensure that you connect at least one additional authentication provider to ensure seemless access to abuse.ch platform.
 - Check for captured ingestion errors inside Kibana. Any ingestion errors, including API errors, are captured into `error.message` field.
     1. Navigate to **Analytics** > **Discover**.
     2. In **Search field names**, search and add fields `error.message` and `data_stream.dataset` into the **Discover** view. For more details on adding fields inside **Discover**, check [Discover getting started](https://www.elastic.co/docs/explore-analyze/discover/discover-get-started).
     3. Search for the dataset(s) that are enabled by this integration. For example, in the KQL query bar, use the KQL query `data_stream.dataset: ti_abusech.url` to search on specific dataset or KQL query `data_stream.dataset: ti_abusech.*` to search on all datasets.
     4. Search for presence of any errors that are captured into `error.message` field using KQL query `error.message: *`. You can combine queries using [KQL boolean expressions](https://www.elastic.co/docs/explore-analyze/query-filter/languages/kql#_combining_multiple_queries), such as `AND`. For example, to search for any errors inside `url` dataset, you can use KQL query: `data_stream.dataset: ti_abusech.url AND error.message: *`.
-- Since this integration supports Expiration of Indicators of Compromise (IOCs) using Elastic latest transform, the indicators are present in both source and destination indices. While this seem like duplicate ingestion, it is an implmentation detail which is required to properly expire indicators.
-- Because the latest copy of indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period. For more details, check the [Reference](#ilm-policy).
+- Since this integration supports Expiration of Indicators of Compromise (IOCs) using Elastic latest transform, the threat indicators are present in both source and destination indices. While this seem like duplicate ingestion, it is an implmentation detail which is required to properly expire threat indicators.
+- Because the latest copy of threat indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period. For more details, check the [Reference](#ilm-policy).
 - For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
 ## Scaling
@@ -628,10 +628,10 @@ This integration datasets uses the following APIs:
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
-Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
+All AbuseCH datasets now support indicator expiration. For the `URL` dataset, a full list of active threat indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the threat indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active threat indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
+Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 
-| Source Datastream                  | Destination Index Pattern                        | Destination Alias                       |
+| Source Data stream                  | Destination Index Pattern                        | Destination Alias                       |
 |:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
 | `logs-ti_abusech.url-*`            | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`            |
 | `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
@@ -640,4 +640,4 @@ Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
 
 #### ILM Policy
 
-To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abusech.<datastream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<datastream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date.
+To facilitate IOC expiration, source data stream-backed indices `.ds-logs-ti_abusech.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<data_stream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date.
