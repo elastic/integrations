@@ -1,36 +1,38 @@
 # Jolokia input
 
-This input package collects metrics from  [Jolokia agents](https://jolokia.org/agent.html) running on a target JMX server or dedicated proxy server.
+The Jolokia input package collects metrics from [Jolokia agents](https://jolokia.org/agent.html) running on a target JMX server or dedicated proxy server.
 
 The metrics are collected by communicating with a Jolokia HTTP/REST endpoint that exposes the JMX metrics over HTTP/REST/JSON.
 
-The user can use this input for any service that collects metrics through Jolokia endpoint. User has the flexibility to provide custom mappings and custom ingets pipelines through the Kibana UI to get the tailored data. 
+You can use this input for any service that collects metrics through Jolokia endpoint. You can provide custom mappings and custom ingets pipelines through the Kibana UI to get the tailored data.
 
-## Collect metrics from a Jolokia endpoint
+## Compatibility
 
-## Configuration options
+The Jolokia module is tested with Jolokia 2.2.9.
+
+## Configuration
 
 ### Hosts
-- To collect metrics from a Jolokia endpoint, configure the hosts setting to point to your Jolokia agent.
-example:
-- `http://host_address:jolokia_port`
+To collect metrics from a Jolokia endpoint, configure the hosts setting to point to your Jolokia agent.
+For example:
+`http://host_address:jolokia_port`
 
 ### Period
-- Defines the interval at which metrics are fetched.
-- e.g. every `1s`, `1m`, `1h`.
+Defines the interval at which metrics are fetched.
+For example, every `1s`, `1m`, `1h`.
 
 ### Path
-- Specifies the endpoint path of the Jolokia service, including any optional query parameters.
+Specifies the endpoint path of the Jolokia service, including any optional query parameters.
 - Default: `/jolokia`
 - Example with query parameters:: `/jolokia/?ignoreErrors=true&canonicalNaming=false`
 
 ### HTTP Method
-- Specifies the HTTP method used to communicate with the Jolokia endpoint.
+Specifies the HTTP method used to communicate with the Jolokia endpoint.
 - Supported values: `GET`, `POST`
 
 ### Authentication and SSL Configuration
-- To securely communicate with HTTPS-enabled Jolokia endpoints, we can configure `SSL settings` to match requirements.
-Example:
+To securely communicate with HTTPS-enabled Jolokia endpoints, you can configure `SSL settings` to meet the necessary requirements. For example:
+
 ```yaml
 ssl.verification_mode: full               # Options: none, certificate, full
 ssl.certificate_authorities:
@@ -48,7 +50,7 @@ password: your_password                     # Optional: for basic auth
 
 
 ### JMX Mappings and attributes
-- The Jolokia Input package can collect metrics from various JMX MBeans by configuring the mbean parameter. You can specify which MBeans and attributes to collect using the following format:
+The Jolokia input package can collect metrics from various JMX MBeans by configuring the `mbean` parameter. You can specify which MBeans and attributes to collect using the following format:
 
 ```
 - mbean: 'java.lang:type=Runtime'
@@ -62,7 +64,3 @@ password: your_password                     # Optional: for basic auth
     - attr: NonHeapMemoryUsage
       field: memory.non_heap_usage
 ```
-
-## Compatibility
-
-The Jolokia module is tested with Jolokia 2.2.9.
