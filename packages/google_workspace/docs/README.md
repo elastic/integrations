@@ -540,6 +540,7 @@ An example event for `login` looks as following:
 | google_workspace.login.failure_type | Login failure type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.login.is_second_factor |  | boolean |
 | google_workspace.login.is_suspicious |  | boolean |
+| google_workspace.login.sensitive_action_name |  | keyword |
 | google_workspace.login.timestamp | UNIX timestmap of login in microseconds. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | long |
 | google_workspace.login.type | Login credentials type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
@@ -893,6 +894,7 @@ An example event for `admin` looks as following:
 | event.module | Event module | constant_keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.admin.alert.id |  | keyword |
 | google_workspace.admin.alert.name | The alert name. | keyword |
 | google_workspace.admin.api.client.name | The API client name. | keyword |
 | google_workspace.admin.api.scopes | The API scopes. | keyword |
@@ -906,6 +908,8 @@ An example event for `admin` looks as following:
 | google_workspace.admin.application.package_id | The mobile application package ID. | keyword |
 | google_workspace.admin.bulk_upload.failed | Number of failed records in bulk upload operation. | long |
 | google_workspace.admin.bulk_upload.total | Number of total records in bulk upload operation. | long |
+| google_workspace.admin.chart.filters |  | keyword |
+| google_workspace.admin.chart.name |  | keyword |
 | google_workspace.admin.chrome_licenses.allowed | Licences enabled. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-org-settings | keyword |
 | google_workspace.admin.chrome_licenses.enabled | Licences enabled. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-org-settings | keyword |
 | google_workspace.admin.chrome_os.session_type | Chrome OS session type. | keyword |
@@ -940,6 +944,12 @@ An example event for `admin` looks as following:
 | google_workspace.admin.group.email | The group's primary email address. | keyword |
 | google_workspace.admin.group.priorities | Group priorities. | keyword |
 | google_workspace.admin.info_type | This will be used to state what kind of information was changed. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-domain-settings | keyword |
+| google_workspace.admin.investigation.action |  | keyword |
+| google_workspace.admin.investigation.data_source |  | keyword |
+| google_workspace.admin.investigation.entity_ids |  | keyword |
+| google_workspace.admin.investigation.object_identifier |  | keyword |
+| google_workspace.admin.investigation.query |  | keyword |
+| google_workspace.admin.investigation.url_display_text |  | keyword |
 | google_workspace.admin.managed_configuration | The name of the managed configuration. | keyword |
 | google_workspace.admin.mdm.token | The MDM vendor enrollment token. | keyword |
 | google_workspace.admin.mdm.vendor | The MDM vendor's name. | keyword |
@@ -1115,33 +1125,42 @@ An example event for `drive` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| google_workspace.actor.application_name | Name of the application used to perform the action. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.drive.accessed_url | The URLs that were accessed. | keyword |
 | google_workspace.drive.actor_is_collaborator_account | Whether the actor is a collaborator account. | boolean |
 | google_workspace.drive.added_role | Added membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.api_method | The API method used to generate the event. | keyword |
 | google_workspace.drive.billable | Whether this activity is billable. | boolean |
+| google_workspace.drive.copy_type | Indicates whether the original item and new item are owned by the same organization. | keyword |
+| google_workspace.drive.deletion_reason | The reason an item was deleted. | keyword |
 | google_workspace.drive.destination_folder_id |  | keyword |
 | google_workspace.drive.destination_folder_title |  | keyword |
+| google_workspace.drive.encryption_enforcement_option | The client-side encryption policy being applied to the user at time of the item's creation. | keyword |
 | google_workspace.drive.file.id |  | keyword |
 | google_workspace.drive.file.owner.email |  | keyword |
 | google_workspace.drive.file.owner.is_shared_drive | Boolean flag denoting whether owner is a shared drive. | boolean |
 | google_workspace.drive.file.type | Document Drive type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.is_encrypted | Whether the file is client-side encrypted. | boolean |
 | google_workspace.drive.membership_change_type | Type of change in Team Drive membership of a user/group. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.new_publish_visibility | New Publish Visibility Value. | keyword |
 | google_workspace.drive.new_value | When a setting or property of the file changes, the new value for it will appear here. | keyword |
+| google_workspace.drive.old_publish_visibility | Old Publish Visibility Value. | keyword |
 | google_workspace.drive.old_value | When a setting or property of the file changes, the old value for it will appear here. | keyword |
 | google_workspace.drive.old_visibility | When visibility changes, this holds the old value. | keyword |
 | google_workspace.drive.originating_app_id | The Google Cloud Project ID of the application that performed the action. | keyword |
 | google_workspace.drive.owner_is_team_drive | Whether the owner is a Team Drive. | boolean |
 | google_workspace.drive.primary_event | Whether this is a primary event. A single user action in Drive may generate several events. | boolean |
 | google_workspace.drive.removed_role | Removed membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.script_id | The document ID of the executing script. | keyword |
 | google_workspace.drive.shared_drive_id | The unique identifier of the Team Drive. Only populated for for events relating to a Team Drive or item contained inside a Team Drive. | keyword |
 | google_workspace.drive.shared_drive_settings_change_type | Type of change in Team Drive settings. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.sheets_import_range_recipient_doc | Doc ID of the recipient of a sheets import range. | keyword |
 | google_workspace.drive.source_folder_id |  | keyword |
 | google_workspace.drive.source_folder_title |  | keyword |
 | google_workspace.drive.target | Target user or group. | keyword |
-| google_workspace.drive.target_domain | The domain for which the acccess scope was changed. This can also be the alias all to indicate the access scope was changed for all domains that have visibility for this document. | keyword |
+| google_workspace.drive.target_domain | The domain for which the access scope was changed. This can also be the alias all to indicate the access scope was changed for all domains that have visibility for this document. | keyword |
 | google_workspace.drive.target_user | The email address of the user or group whose access permissions were changed, or the name of the domain for which access permissions were changed. | keyword |
 | google_workspace.drive.visibility | Visibility of target file. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.visibility_change | When visibility changes, this holds the new overall visibility of the file. | keyword |
@@ -1852,6 +1871,7 @@ An example event for `device` looks as following:
 | google_workspace.device.failed_passwd_attempts | Parameter to indicate the number of failed screen unlock attempts. | long |
 | google_workspace.device.id | Parameter to indicate the Device Id. | keyword |
 | google_workspace.device.ios_vendor_id | Parameter to indicate the iOS Vendor Id. | keyword |
+| google_workspace.device.last_sync_audit_date |  | date |
 | google_workspace.device.model | Parameter to indicate the device model. | keyword |
 | google_workspace.device.new_device_id | Parameter to indicate the new Device Id. | keyword |
 | google_workspace.device.new_value | Parameter to indicate the new value. | keyword |
@@ -2292,6 +2312,7 @@ An example event for `token` looks as following:
 | google_workspace.token.client.type | The client type. | keyword |
 | google_workspace.token.method_name | The method name which was used in the OAuth Activity. | keyword |
 | google_workspace.token.num_response_bytes | The number of response bytes in the OAuth Activity. | long |
+| google_workspace.token.product_bucket |  | keyword |
 | google_workspace.token.scope.data | Scope Data. | flattened |
 | google_workspace.token.scope.value | Scopes under which access was granted / revoked. | keyword |
 | input.type | Type of Filebeat input. | keyword |

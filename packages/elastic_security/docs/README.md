@@ -153,7 +153,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "elastic_security.alert",
-        "namespace": "49122",
+        "namespace": "62014",
         "type": "logs"
     },
     "ecs": {
@@ -165,7 +165,7 @@ An example event for `alert` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "2863eb76-9d3a-4478-b149-3e3efbafdfd9",
+        "id": "46c02687-27f9-4870-a876-39fc2e3b9cb5",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -180,7 +180,7 @@ An example event for `alert` looks as following:
         "created": "2024-06-09T13:52:07.402627721Z",
         "dataset": "elastic_security.alert",
         "id": "Na7UF0/g6Q++++3Y96",
-        "ingested": "2025-07-07T10:07:53Z",
+        "ingested": "2025-07-22T11:05:12Z",
         "kind": "alert",
         "original": "{\"@timestamp\":\"2022-06-09T13:56:03.205Z\",\"Endpoint\":{\"policy\":{\"applied\":{\"artifacts\":{\"global\":{\"identifiers\":[{\"name\":\"diagnostic-configuration-v1\",\"sha256\":\"BBBBB40ca79cf0e165053daac3e4df8b428dea81c8d20edefca330d77bc0958c1\"}],\"snapshot\":\"latest\",\"update_age\":0,\"version\":\"1.0.1049\"},\"user\":{\"identifiers\":[{\"name\":\"endpoint-blocklist-linux-v1\",\"sha256\":\"d801aacc330a5e3173372ea6af4a3d08ec58074478e85aa5603e926658\"}],\"version\":\"1.0.0\"}}}}},\"Events\":[{\"@timestamp\":\"2022-06-09T13:52:06.9710234Z\",\"_label\":\"script_executed\",\"_state\":0,\"event\":{\"action\":\"exec\",\"category\":[\"process\"],\"created\":\"2024-06-09T13:52:06.9710234Z\",\"id\":\"Na7UF0/g6QHP1vOo++++3Y8t\",\"kind\":\"event\",\"outcome\":\"unknown\",\"type\":[\"start\"]},\"group\":{\"Ext\":{\"real\":{\"id\":1006,\"name\":\"admin\"}},\"id\":1006,\"name\":\"admin\"},\"message\":\"Endpoint process event\",\"user\":{\"Ext\":{\"real\":{\"id\":1005,\"name\":\"admin\"}},\"id\":1005,\"name\":\"admin\"}}],\"Responses\":[{\"@timestamp\":\"2022-06-09T13:52:07.403464561Z\",\"action\":{\"action\":\"kill_process\",\"field\":\"process.entity_id\",\"state\":0},\"message\":\"Success\",\"process\":{\"entity_id\":\"YyyyyyyYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2\",\"name\":\"bash\",\"pid\":141206},\"result\":0}],\"agent\":{\"build\":{\"original\":\"version: 8.13.0, compiled: Wed Mar 20 20:00:00 2022, branch: HEAD, commit: f90579240155fc17f659ed37f7864ab1194ed2ea\"},\"id\":\"abcd-513b-4526-a34a-e229a6f15dff\",\"type\":\"endpoint\",\"version\":\"8.13.0\"},\"ecs\":{\"version\":\"8.10.0\"},\"elastic\":{\"agent\":{\"id\":\"abcd-513b-4526-a34a-e229a6f15dff\"}},\"event.action\":\"rule_detection\",\"event.agent_id_status\":\"verified\",\"event.category\":[\"malware\",\"intrusion_detection\"],\"event.code\":\"behavior\",\"event.created\":\"2024-06-09T13:52:07.402627721Z\",\"event.id\":\"Na7UF0/g6Q++++3Y96\",\"event.ingested\":\"2024-06-09T13:52:08Z\",\"event.kind\":\"signal\",\"event.outcome\":\"success\",\"event.risk_score\":73,\"event.sequence\":600720,\"event.severity\":73,\"event.type\":[\"info\",\"allowed\"],\"group\":{\"Ext\":{\"real\":{\"id\":1006,\"name\":\"admin\"}},\"id\":1006,\"name\":\"admin\"},\"host\":{\"architecture\":\"x86_64\",\"hostname\":\"siem-linux-release-sec-bis\",\"id\":\"aaaad59dd2c858c4f9b5d50c4a0e7d7\",\"ip\":[\"127.0.0.1\",\"::1\",\"89.160.20.156\"],\"mac\":[\"AA-FF-AA-FF-00-02\"],\"name\":\"siem-linux-release-sec-bis\",\"os\":{\"Ext\":{\"variant\":\"Debian\"},\"family\":\"debian\",\"full\":\"Debian 11.9\",\"kernel\":\"5.10.0-29-cloud-amd64 #1 SMP Debian 5.10.216-1 (2024-05-03)\",\"name\":\"Linux\",\"platform\":\"debian\",\"type\":\"linux\",\"version\":\"11.9\"},\"risk\":{\"calculated_level\":\"Critical\",\"calculated_score_norm\":98.00494}},\"kibana.alert.ancestors\":[{\"depth\":0,\"id\":\"f3PTBcu\",\"index\":\".ds-logs-endpoint.alerts-default-2024.05.18-002\",\"type\":\"event\"}],\"kibana.alert.depth\":1,\"kibana.alert.last_detected\":\"2022-06-09T13:56:03.235Z\",\"kibana.alert.original_event.action\":\"rule_detection\",\"kibana.alert.original_event.agent_id_status\":\"verified\",\"kibana.alert.original_event.category\":[\"malware\",\"intrusion_detection\"],\"kibana.alert.original_event.code\":\"behavior\",\"kibana.alert.original_event.created\":\"2024-06-09T13:52:07.402627721Z\",\"kibana.alert.original_event.dataset\":\"endpoint.alerts\",\"kibana.alert.original_event.id\":\"Na7UF0/abcddd++++3Y96\",\"kibana.alert.original_event.ingested\":\"2024-06-09T13:52:08Z\",\"kibana.alert.original_event.kind\":\"alert\",\"kibana.alert.original_event.module\":\"endpoint\",\"kibana.alert.original_event.outcome\":\"success\",\"kibana.alert.original_event.risk_score\":73,\"kibana.alert.original_event.sequence\":600720,\"kibana.alert.original_event.severity\":73,\"kibana.alert.original_event.type\":[\"info\",\"allowed\"],\"kibana.alert.original_time\":\"2024-06-09T13:52:07.402Z\",\"kibana.alert.reason\":\"malware, intrusion_detection event with process bash, parent process python3, by admin on siem-linux-release-sec-bis created high alert Malicious Behavior Prevention Alert: Empire Stager Execution.\",\"kibana.alert.risk_score\":73,\"kibana.alert.rule.actions\":[],\"kibana.alert.rule.author\":[\"Elastic\"],\"kibana.alert.rule.category\":\"Custom Query Rule\",\"kibana.alert.rule.consumer\":\"siem\",\"kibana.alert.rule.created_at\":\"2024-04-18T11:06:23.900Z\",\"kibana.alert.rule.created_by\":\"elastic\",\"kibana.alert.rule.description\":\"Generates a detection alert each time an Elastic Endpoint Security alert is received. Enabling this rule allows you to immediately begin investigating your Endpoint alerts.\",\"kibana.alert.rule.enabled\":true,\"kibana.alert.rule.exceptions_list\":[{\"id\":\"endpoint_list\",\"list_id\":\"endpoint_list\",\"namespace_type\":\"agnostic\",\"type\":\"endpoint\"}],\"kibana.alert.rule.execution.uuid\":\"abcd-fda4-40dc-8586-f3d0fa908bc4\",\"kibana.alert.rule.false_positives\":[],\"kibana.alert.rule.from\":\"now-10m\",\"kibana.alert.rule.immutable\":true,\"kibana.alert.rule.indices\":[\"logs-endpoint.alerts-*\"],\"kibana.alert.rule.interval\":\"5m\",\"kibana.alert.rule.license\":\"Elastic License v2\",\"kibana.alert.rule.max_signals\":10000,\"kibana.alert.rule.name\":\"Malicious Behavior Prevention Alert: Empire Stager Execution\",\"kibana.alert.rule.parameters\":{\"author\":[\"Elastic\"],\"description\":\"Generates a detection alert each time an Elastic Endpoint Security alert is received. Enabling this rule allows you to immediately begin investigating your Endpoint alerts.\",\"false_positives\":[],\"from\":\"now-10m\",\"immutable\":true,\"index\":[\"logs-endpoint.alerts-*\"],\"language\":\"kuery\",\"license\":\"Elastic License v2\",\"max_signals\":10000,\"query\":\"event.kind:alert and event.module:(endpoint and not endgame)\\n\",\"references\":[],\"risk_score\":47,\"risk_score_mapping\":[{\"field\":\"event.risk_score\",\"operator\":\"equals\",\"value\":\"\"}],\"rule_id\":\"abcdef-0b5f-4c3d-8305-a268d404c306\",\"rule_name_override\":\"message\",\"setup\":\"## Setup\\n\\nThis rule is configured to generate more **Max alerts per run** than the default 1000 alerts per run set for all rules. This is to ensure that it captures as many alerts as possible.\\n\\n**IMPORTANT:** The rule's **Max alerts per run** setting can be superseded by the xpack.alerting.rules.run.alerts.max Kibana config setting, which determines the maximum alerts generated by _any_ rule in the Kibana alerting framework. For example, if xpack.alerting.rules.run.alerts.max is set to 1000, this rule will still generate no more than 1000 alerts even if its own **Max alerts per run** is set higher.\\n\\nTo make sure this rule can generate as many alerts as it's configured in its own **Max alerts per run** setting, increase the xpack.alerting.rules.run.alerts.max system setting accordingly.\\n\\n**NOTE:** Changing xpack.alerting.rules.run.alerts.max is not possible in Serverless projects.\",\"severity\":\"medium\",\"severity_mapping\":[{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"low\",\"value\":\"21\"}],\"threat\":[],\"timestamp_override\":\"event.ingested\",\"to\":\"now\",\"type\":\"query\",\"version\":103},\"kibana.alert.rule.producer\":\"siem\",\"kibana.alert.rule.references\":[],\"kibana.alert.rule.revision\":1,\"kibana.alert.rule.risk_score\":47,\"kibana.alert.rule.risk_score_mapping\":[{\"field\":\"event.risk_score\",\"operator\":\"equals\",\"value\":\"\"}],\"kibana.alert.rule.rule_id\":\"9a1a2dae-0b5f-4c3d-8305-a268d404c306\",\"kibana.alert.rule.rule_name_override\":\"message\",\"kibana.alert.rule.rule_type_id\":\"siem.queryRule\",\"kibana.alert.rule.severity\":\"medium\",\"kibana.alert.rule.severity_mapping\":[{\"field\":\"event.severity\",\"operator\":\"equals\",\"severity\":\"low\",\"value\":\"21\"}],\"kibana.alert.rule.tags\":[\"Data Source: Elastic Defend\"],\"kibana.alert.rule.threat\":[],\"kibana.alert.rule.timestamp_override\":\"event.ingested\",\"kibana.alert.rule.to\":\"now\",\"kibana.alert.rule.type\":\"query\",\"kibana.alert.rule.updated_at\":\"2024-05-20T01:03:43.962Z\",\"kibana.alert.rule.updated_by\":\"elastic\",\"kibana.alert.rule.uuid\":\"abcd-3ea9-4695-9a1b-4af87bead73e\",\"kibana.alert.rule.version\":103,\"kibana.alert.severity\":\"high\",\"kibana.alert.start\":\"2022-06-09T13:56:03.235Z\",\"kibana.alert.status\":\"active\",\"kibana.alert.url\":\"https://release-app/app/security/alerts/redirect/abcd?index=.alerts-security.alerts-default×tamp=2024-06-09T13:56:03.205Z\",\"kibana.alert.uuid\":\"abcdef123\",\"kibana.alert.workflow_assignee_ids\":[],\"kibana.alert.workflow_status\":\"open\",\"kibana.alert.workflow_tags\":[],\"kibana.space_ids\":[\"default\"],\"kibana.version\":\"8.14.0\",\"message\":\"Malicious Behavior Prevention Alert: Empire Stager Execution\",\"process\":{\"args\":[\"/tmp/bash\",\"exec(base64.b64decode*abcdef)\"],\"args_count\":2,\"command_line\":\"/tmp/bash exec(base64.b64decode*abcdef)\",\"entity_id\":\"YYYYYYYYYtNTEzYi00NTI2LWEzNGEtZTIyOWE2ZjE1ZGZmLTE0MTIwNi0xNzE3OTQxMTI2\",\"env_vars\":[],\"executable\":\"/tmp/bash\",\"group\":{\"id\":1006,\"name\":\"admin\"},\"hash\":{\"md5\":\"ABCDf2d21a340f2b3ee534fba5b29e417\",\"sha1\":\"ABCDc728d069ba6239c1da751a2f31fba9b1aa\",\"sha256\":\"ABCD3091f6093bd9a7b308e536fbc285aeef2c5139577cc96bc594a4845f0e13\"},\"name\":\"bash\",\"real_group\":{\"id\":1006,\"name\":\"admin\"},\"supplemental_groups\":[{\"id\":4,\"name\":\"adm\"}],\"user\":{\"id\":1005,\"name\":\"admin\"}},\"rule\":{\"description\":\"Identifies when a script interpreter executes a base64-encoded Empire stager. Empire is penetration testing software that is often utilized by attackers.\",\"id\":\"ABCD-82ff-4743-9e07-1c6901b1f0ea\",\"name\":\"Empire Stager Execution\",\"reference\":[\"https://github.com/abc/emp\",\"https://github.com/BC-abcd/emp\"],\"ruleset\":\"production\",\"version\":\"1.0.29\"},\"threat\":[{\"framework\":\"MITRE ATT\\u0026CK\",\"tactic\":{\"id\":\"TA0011\",\"name\":\"Command and Control\",\"reference\":\"https://attack.mitre.org/tactics/TA0011/\"},\"technique\":[{\"id\":\"T1132\",\"name\":\"Data Encoding\",\"reference\":\"https://attack.mitre.org/techniques/T1132/\",\"subtechnique\":[{\"id\":\"T1132.001\",\"name\":\"Standard Encoding\",\"reference\":\"https://attack.mitre.org/techniques/T1132/001/\"}]}]}],\"user\":{\"Ext\":{\"real\":{\"id\":1005,\"name\":\"admin\"}},\"id\":1005,\"name\":\"admin\",\"risk\":{\"calculated_level\":\"Critical\",\"calculated_score_norm\":98.13564}}}",
         "outcome": "success",
@@ -411,7 +411,7 @@ An example event for `alert` looks as following:
         },
         "supplemental_groups": [
             {
-                "id": 4,
+                "id": "4",
                 "name": "adm"
             }
         ],
@@ -747,124 +747,48 @@ An example event for `alert` looks as following:
 | kibana.version |  | keyword |
 | log.offset | Log offset. | long |
 | process.Ext.ancestry |  | keyword |
-| process.args_count |  | long |
-| process.command_line |  | keyword |
-| process.entity_id |  | keyword |
-| process.entry_leader.args |  | keyword |
-| process.entry_leader.args_count |  | long |
-| process.entry_leader.entity_id |  | keyword |
-| process.entry_leader.entry_meta.type |  | keyword |
-| process.entry_leader.executable |  | keyword |
-| process.entry_leader.group.id |  | long |
-| process.entry_leader.group.name |  | keyword |
-| process.entry_leader.interactive |  | boolean |
-| process.entry_leader.name |  | keyword |
-| process.entry_leader.parent.entity_id |  | keyword |
-| process.entry_leader.parent.pid |  | long |
-| process.entry_leader.parent.start |  | keyword |
-| process.entry_leader.pid |  | long |
-| process.entry_leader.real_group.id |  | long |
-| process.entry_leader.real_group.name |  | keyword |
-| process.entry_leader.real_user.id |  | long |
-| process.entry_leader.real_user.name |  | keyword |
-| process.entry_leader.same_as_process |  | boolean |
-| process.entry_leader.start |  | keyword |
-| process.entry_leader.user.id |  | long |
-| process.entry_leader.user.name |  | keyword |
-| process.entry_leader.working_directory |  | keyword |
-| process.executable |  | keyword |
-| process.group.id |  | long |
-| process.group.name |  | keyword |
-| process.group_leader.args |  | keyword |
-| process.group_leader.args_count |  | long |
-| process.group_leader.entity_id |  | keyword |
-| process.group_leader.executable |  | keyword |
-| process.group_leader.group.id |  | long |
-| process.group_leader.group.name |  | keyword |
-| process.group_leader.interactive |  | boolean |
-| process.group_leader.name |  | keyword |
-| process.group_leader.pid |  | long |
-| process.group_leader.real_group.id |  | long |
-| process.group_leader.real_group.name |  | keyword |
-| process.group_leader.real_user.id |  | long |
-| process.group_leader.real_user.name |  | keyword |
-| process.group_leader.same_as_process |  | boolean |
-| process.group_leader.start |  | keyword |
-| process.group_leader.supplemental_groups.id |  | long |
-| process.group_leader.supplemental_groups.name |  | keyword |
-| process.group_leader.user.id |  | long |
-| process.group_leader.user.name |  | keyword |
-| process.group_leader.working_directory |  | keyword |
-| process.hash.md5 |  | keyword |
-| process.hash.sha1 |  | keyword |
-| process.hash.sha256 |  | keyword |
-| process.interactive |  | boolean |
-| process.name |  | keyword |
-| process.parent.args |  | keyword |
-| process.parent.args_count |  | long |
-| process.parent.command_line |  | keyword |
-| process.parent.entity_id |  | keyword |
-| process.parent.executable |  | keyword |
-| process.parent.group.id |  | long |
-| process.parent.group.name |  | keyword |
-| process.parent.interactive |  | boolean |
-| process.parent.name |  | keyword |
-| process.parent.pid |  | long |
-| process.parent.real_group.id |  | long |
-| process.parent.real_group.name |  | keyword |
-| process.parent.real_user.id |  | long |
-| process.parent.real_user.name |  | keyword |
-| process.parent.start |  | keyword |
-| process.parent.supplemental_groups.id |  | long |
-| process.parent.supplemental_groups.name |  | keyword |
-| process.parent.user.id |  | long |
-| process.parent.user.name |  | keyword |
-| process.parent.working_directory |  | keyword |
-| process.pid |  | long |
-| process.previous.args |  | keyword |
-| process.previous.args_count |  | long |
-| process.previous.executable |  | keyword |
-| process.real_group.id |  | long |
-| process.real_group.name |  | keyword |
-| process.real_user.id |  | long |
-| process.real_user.name |  | keyword |
-| process.session_leader.args |  | keyword |
-| process.session_leader.args_count |  | long |
-| process.session_leader.entity_id |  | keyword |
-| process.session_leader.executable |  | keyword |
-| process.session_leader.group.id |  | long |
-| process.session_leader.group.name |  | keyword |
-| process.session_leader.interactive |  | boolean |
-| process.session_leader.name |  | keyword |
-| process.session_leader.pid |  | long |
-| process.session_leader.real_group.id |  | long |
-| process.session_leader.real_group.name |  | keyword |
-| process.session_leader.real_user.id |  | long |
-| process.session_leader.real_user.name |  | keyword |
-| process.session_leader.same_as_process |  | boolean |
-| process.session_leader.start |  | keyword |
-| process.session_leader.supplemental_groups.id |  | long |
-| process.session_leader.supplemental_groups.name |  | keyword |
-| process.session_leader.user.id |  | long |
-| process.session_leader.user.name |  | keyword |
-| process.session_leader.working_directory |  | keyword |
-| process.start |  | keyword |
-| process.supplemental_groups.id |  | long |
-| process.supplemental_groups.name |  | keyword |
-| process.user.id |  | long |
-| process.user.name |  | keyword |
-| process.working_directory |  | keyword |
+| process.entry_leader.group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.entry_leader.real_group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.entry_leader.real_user.id | Unique identifier of the user. | keyword |
+| process.entry_leader.user.id | Unique identifier of the user. | keyword |
+| process.group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.group_leader.group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.group_leader.real_group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.group_leader.real_user.id | Unique identifier of the user. | keyword |
+| process.group_leader.supplemental_groups.id | Unique identifier for the group on the system/platform. | keyword |
+| process.group_leader.supplemental_groups.name | Name of the group. | keyword |
+| process.group_leader.user.id | Unique identifier of the user. | keyword |
+| process.parent.group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.parent.real_group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.parent.real_user.id | Unique identifier of the user. | keyword |
+| process.parent.supplemental_groups.id | Unique identifier for the group on the system/platform. | keyword |
+| process.parent.supplemental_groups.name | Name of the group. | keyword |
+| process.parent.user.id | Unique identifier of the user. | keyword |
+| process.previous.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
+| process.previous.args_count | Length of the process.args array. | long |
+| process.previous.executable | Absolute path to the process executable. | keyword |
+| process.real_group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.real_user.id | Unique identifier of the user. | keyword |
+| process.session_leader.group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.session_leader.real_group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.session_leader.real_user.id | Unique identifier of the user. | keyword |
+| process.session_leader.supplemental_groups.id | Unique identifier for the group on the system/platform. | keyword |
+| process.session_leader.supplemental_groups.name | Name of the group. | keyword |
+| process.session_leader.user.id | Unique identifier of the user. | keyword |
+| process.supplemental_groups.id | Unique identifier for the group on the system/platform. | keyword |
+| process.supplemental_groups.name | Name of the group. | keyword |
+| process.user.id | Unique identifier of the user. | keyword |
 | sort |  | long |
 | source_metadata._id |  | keyword |
 | source_metadata._index |  | keyword |
-| threat.tactic.id |  | keyword |
-| threat.tactic.name |  | keyword |
-| threat.tactic.reference |  | keyword |
-| threat.technique.id |  | keyword |
-| threat.technique.name |  | keyword |
-| threat.technique.reference |  | keyword |
-| threat.technique.subtechnique.id |  | keyword |
-| threat.technique.subtechnique.name |  | keyword |
-| threat.technique.subtechnique.reference |  | keyword |
+| threat.tactic.id | The id of tactic used by this threat. | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. | keyword |
+| threat.tactic.reference | The reference url of tactic used by this threat. | keyword |
+| threat.technique.id | The id of technique used by this threat. | keyword |
+| threat.technique.name | The name of technique used by this threat. | keyword |
+| threat.technique.reference | The reference url of technique used by this threat. | keyword |
+| threat.technique.subtechnique.id | The full id of subtechnique used by this threat. | keyword |
+| threat.technique.subtechnique.name | The name of subtechnique used by this threat. | keyword |
+| threat.technique.subtechnique.reference | The reference url of subtechnique used by this threat. | keyword |
 | user.Ext.real.id |  | long |
 | user.Ext.real.name |  | keyword |
