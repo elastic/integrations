@@ -34,7 +34,7 @@ PUT chargeback_conf_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.4" }
+      "package": { "name": "chargeback", "version": "0.1.5" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
@@ -68,7 +68,7 @@ PUT billing_cluster_cost_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.4" }
+      "package": { "name": "chargeback", "version": "0.1.5" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -101,7 +101,7 @@ PUT cluster_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.4" }
+      "package": { "name": "chargeback", "version": "0.1.5" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -128,7 +128,7 @@ PUT cluster_deployment_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.4" }
+      "package": { "name": "chargeback", "version": "0.1.5" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -153,7 +153,7 @@ PUT cluster_tier_and_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.4" }
+      "package": { "name": "chargeback", "version": "0.1.5" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -181,7 +181,7 @@ PUT cluster_tier_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.4" }
+      "package": { "name": "chargeback", "version": "0.1.5" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -196,5 +196,15 @@ PUT cluster_tier_contribution_lookup
       "tier_sum_store_size": { "type": "double" },
       "tier_sum_data_set_store_size": { "type": "double" }
     }
+  }
+}
+
+# Create data view used for control.
+POST kbn:/api/data_views/data_view
+{
+  "data_view": {
+    "name": "[Chargeback] Billing Cluster Cost",
+    "title": "billing_cluster_cost_lookup",
+    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f"
   }
 }
