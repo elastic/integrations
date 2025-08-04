@@ -1485,103 +1485,6 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_qds_factors_#text_2
       target_field: qualys_vmdr.asset_host_detection.vulnerability.qds_factors.text
       ignore_missing: true
-  - script:
-      lang: painless
-      tag: script_to_assign_vulnerability_score_base
-      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.qds_factors instanceof List
-      description: Assign vulnerbaility.score.base from array field qualys_vmdr.asset_host_detection.vulnerability.qds_factors
-      source: |-
-        def cvss_score;
-        if (ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors instanceof List) {
-          for (def attr: ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors) {
-            if (attr.text == null && attr.text == "") {
-              continue;
-            }
-            if (attr.name == "CVSS") {
-              cvss_score = attr.text;
-            }
-          }
-          if (cvss_score != null) {
-            if (ctx.vulnerability == null) {
-              ctx.vulnerability = new HashMap();
-            }
-            if (ctx.vulnerability.score == null) {
-              ctx.vulnerability.score = new HashMap();
-            }
-            ctx.vulnerability.score.base = Float.parseFloat(cvss_score);
-            ctx.vulnerability.classification = "CVSS";
-          }
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      lang: painless
-      tag: script_to_assign_vulnerability_score_version
-      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.qds_factors instanceof List
-      description: Assign vulnerbaility.score.version from array field qualys_vmdr.asset_host_detection.vulnerability.qds_factors
-      source: |-
-        def cvss_version;
-        def pattern = /CVSS:([234]\.\d)/;
-        
-        if (ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors instanceof List) {
-          for (def attr: ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors) {
-            if (attr.text == null && attr.value == "") {
-              continue;
-            }
-            if (attr.name == "CVSS_vector") {
-              def matcher = pattern.matcher(attr.text);
-              if (matcher.find()) {
-                  cvss_version = matcher.group(1);
-              } 
-            }
-          }
-          
-          if (cvss_version != null) {
-            if (ctx.vulnerability == null) {
-              ctx.vulnerability = new HashMap();
-            }
-            if (ctx.vulnerability.score == null) {
-              ctx.vulnerability.score = new HashMap();
-              
-            }
-            ctx.vulnerability.score.version = cvss_version;
-          }
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      lang: painless
-      tag: script_to_assign_vulnerability_severity
-      if: ctx.vulnerability?.score?.base != null
-      description: Assign vulnerbaility.severity from field vulnerability.score.base
-      source: |-
-        // CVSS score between 9.0 and 10.0)
-        if (9.0 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "critical";
-        }
-        // CVSS score between 7.0 and 8.9
-        else if (7.0 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "high";
-        }
-        // CVSS score between 4.0 and 6.9
-        else if (4.0 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "medium";
-        }
-        // CVSS score between 0.1 and 3.9
-        else if (0.1 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "low";
-        }
-        else if (ctx.vulnerability.score.base == 0) {
-          ctx.vulnerability.severity = "none";
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle KNOWLEDGE_BASE
   - append:
       field: error.message
@@ -1592,6 +1495,81 @@ processors:
       if: ctx.json?.KNOWLEDGE_BASE != null && ctx.json.KNOWLEDGE_BASE.size() > 0
       tag: pipeline_knowledge_base
       ignore_missing_pipeline: true
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_knowledge_base_cvss_v3_base
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.base
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.score.version
+      tag: set_vulnerability_score_version_from_knowledge_base_cvss_v3_version
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.version
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base != null
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_knowledge_base_cvss_base
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base == null
+  - grok:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.vector_string
+      tag: grok_to_extract_vulnerability_score_version
+      patterns:
+        - '^CVSS:%{DATA:vulnerability.score.version}/%{GREEDYDATA}$'
+        - '^%{GREEDYDATA}$'
+      ignore_missing: true
+      if: ctx.vulnerability?.score?.version == null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: vulnerability.score.base
+      tag: convert_vulnerability_score_base_to_float
+      type: float
+      ignore_missing: true
+      if: ctx.vulnerability?.score?.base != ''
+      on_failure:
+        - remove:
+            field: vulnerability.score.base
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.classification
+      tag: set_vulnerability_classification
+      value: CVSS
+      if: ctx.vulnerability?.score?.base != null
+  - script:
+      lang: painless
+      tag: script_to_assign_vulnerability_severity
+      if: ctx.vulnerability?.score?.base != null
+      description: Assign vulnerability.severity from field vulnerability.score.base
+      source: |-
+        // CVSS score between 9.0 and 10.0)
+        if (9.0 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "Critical";
+        }
+        // CVSS score between 7.0 and 8.9
+        else if (7.0 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "High";
+        }
+        // CVSS score between 4.0 and 6.9
+        else if (4.0 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "Medium";
+        }
+        // CVSS score between 0.1 and 3.9
+        else if (0.1 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "Low";
+        }
+        else if (ctx.vulnerability.score.base == 0) {
+          ctx.vulnerability.severity = "None";
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: message
       target_field: event.original
