@@ -78,24 +78,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-02-01T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "2e9ea01e-3359-4e87-8d5f-4e83ced8614e",
-        "id": "54091d68-30e6-490c-b7a1-4f9572a26629",
-        "name": "elastic-agent-38182",
+        "ephemeral_id": "2ad22f71-fc0e-431f-ac9b-5cce9186e1ef",
+        "id": "22610512-ee45-4ec8-8a19-124542ad0a82",
+        "name": "elastic-agent-97577",
         "type": "filebeat",
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "vectra_rux.audit",
-        "namespace": "73346",
+        "namespace": "34718",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "54091d68-30e6-490c-b7a1-4f9572a26629",
+        "id": "22610512-ee45-4ec8-8a19-124542ad0a82",
         "snapshot": false,
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "event": {
         "action": "updated",
@@ -104,7 +104,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "vectra_rux.audit",
-        "ingested": "2025-08-01T14:27:07Z",
+        "ingested": "2025-05-08T05:10:37Z",
         "kind": "event",
         "original": "{\"api_client_id\":\"0cc5c3a9-4b1d-4b3a-9c5c-3a9b1d4b3a9b\",\"event_action\":\"updated\",\"event_data\":{},\"event_object\":\"account_tags\",\"event_timestamp\":\"2025-02-01T00:00:00.000Z\",\"id\":3,\"message\":\"[table:linked_account][id:1] with tags [] was changed to ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6']\",\"result_status\":\"success\",\"source_ip\":\"89.160.20.156\",\"user_id\":3,\"user_role\":\"Security Analyst\",\"user_type\":\"API_CLIENT\",\"username\":\"admin\",\"version\":\"2022.0.0\"}",
         "outcome": "success",
@@ -228,24 +228,24 @@ An example event for `detection_event` looks as following:
 {
     "@timestamp": "2022-09-13T16:31:35.000Z",
     "agent": {
-        "ephemeral_id": "aab1f383-e8c3-4892-b2ac-29358f90b975",
-        "id": "8b453df9-23ba-4688-8ef1-67e1bb31ea0d",
-        "name": "elastic-agent-16228",
+        "ephemeral_id": "f902a8e6-4c67-4620-9db4-c0a260f8c994",
+        "id": "e1f117dc-bfd4-4ff6-9b98-2e4040a1b329",
+        "name": "elastic-agent-18657",
         "type": "filebeat",
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "vectra_rux.detection_event",
-        "namespace": "35404",
+        "namespace": "24621",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8b453df9-23ba-4688-8ef1-67e1bb31ea0d",
+        "id": "e1f117dc-bfd4-4ff6-9b98-2e4040a1b329",
         "snapshot": false,
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -254,7 +254,7 @@ An example event for `detection_event` looks as following:
         ],
         "dataset": "vectra_rux.detection_event",
         "id": "959",
-        "ingested": "2025-08-01T14:29:26Z",
+        "ingested": "2025-05-08T05:11:36Z",
         "kind": "alert",
         "original": "{\"category\":\"command_and_control\",\"certainty\":50,\"d_type_vname\":\"Azure AD Redundant Access Creation\",\"detail\":{},\"detection_href\":\"https://207031206993.uw2.devportal.vectra.ai/detections/959?detail_id=94341\",\"detection_id\":959,\"detection_type\":\"Azure AD Redundant Access Creation\",\"entity_href\":\"https://207031206993.uw2.devportal.vectra.ai/accounts/1\",\"entity_id\":1,\"entity_uid\":\"O365:ServicePrincipal_3fb87dda-882a-49e1-88b9-67d2499b2fd4\",\"event_timestamp\":\"2022-09-13T16:31:35Z\",\"id\":5,\"mitre\":[\"T1526\"],\"severity\":5,\"src_entity\":\"O365:ServicePrincipal_3fb87dda-882a-49e1-88b9-67d2499b2fd4\",\"threat\":50,\"triaged\":false,\"type\":\"account\",\"url\":\"https://207031206993.uw2.devportal.vectra.ai/detections/959\"}",
         "reference": "https://207031206993.uw2.devportal.vectra.ai/detections/959?detail_id=94341",
@@ -387,24 +387,24 @@ An example event for `entity_event` looks as following:
 {
     "@timestamp": "2022-07-07T00:14:31.000Z",
     "agent": {
-        "ephemeral_id": "da509ed2-0ed0-41e0-a8bb-056d4d9940d0",
-        "id": "646e932a-7d61-498b-95a3-520e7776edcb",
-        "name": "elastic-agent-90686",
+        "ephemeral_id": "8e279852-4243-469f-91ad-8d0997ef64f6",
+        "id": "e80a9f22-25ca-45f5-9e14-925407b71763",
+        "name": "elastic-agent-21664",
         "type": "filebeat",
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "vectra_rux.entity_event",
-        "namespace": "51425",
+        "namespace": "67167",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "646e932a-7d61-498b-95a3-520e7776edcb",
+        "id": "e80a9f22-25ca-45f5-9e14-925407b71763",
         "snapshot": false,
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -413,7 +413,7 @@ An example event for `entity_event` looks as following:
         ],
         "dataset": "vectra_rux.entity_event",
         "id": "100",
-        "ingested": "2025-08-01T14:31:46Z",
+        "ingested": "2025-05-08T05:12:29Z",
         "kind": "event",
         "original": "{\"active_detection_types\":[\"hidden_https_tunnel_cnc\"],\"attack_rating\":0,\"breadth_contrib\":0,\"category\":\"HOST_SCORING\",\"entity_id\":100,\"event_timestamp\":\"2022-07-07T00:14:31Z\",\"id\":1,\"importance\":0,\"is_prioritized\":false,\"last_detection\":{\"id\":103,\"type\":\"hidden_https_tunnel_cnc\",\"url\":\"https://200888808432.uw2.devportal.vectra.ai/detections/103\"},\"name\":\"piper-desktop\",\"severity\":\"Low\",\"type\":\"host\",\"urgency_reason\":\"Ransomware: This entity was prioritized because it was implicated in an active ransomware detection\",\"urgency_score\":0,\"url\":\"https://200888808432.uw2.devportal.vectra.ai/accounts/8\",\"velocity_contrib\":0}",
         "reference": "https://200888808432.uw2.devportal.vectra.ai/detections/103",
@@ -536,29 +536,29 @@ An example event for `health` looks as following:
 {
     "@timestamp": "2025-04-15T09:39:45.146Z",
     "agent": {
-        "ephemeral_id": "b3802f35-2e45-444f-92aa-bc238d35e4a6",
-        "id": "ab3ca3e2-cb83-4ced-8464-f74cb9fd038c",
-        "name": "elastic-agent-69347",
+        "ephemeral_id": "179cd6a3-65f7-4a00-adde-438057bab374",
+        "id": "25cd8358-4959-42d7-b298-4f4de6a30faf",
+        "name": "elastic-agent-32052",
         "type": "filebeat",
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "vectra_rux.health",
-        "namespace": "72709",
+        "namespace": "68011",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "ab3ca3e2-cb83-4ced-8464-f74cb9fd038c",
+        "id": "25cd8358-4959-42d7-b298-4f4de6a30faf",
         "snapshot": false,
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vectra_rux.health",
-        "ingested": "2025-08-01T14:34:06Z",
+        "ingested": "2025-05-08T05:13:27Z",
         "kind": "event",
         "original": "{\"connectivity\":{\"sensors\":[{\"affected_metadata_hours\":[\"2025-04-18T00:00:00Z\",\"2025-04-18T01:00:00Z\"],\"error\":\"metadata replication seems fine\",\"ip_address\":\"216.160.83.56\",\"luid\":\"w4ftj0a8\",\"name\":\"EDR Sensor\",\"serial_number\":\"V421353ef386550fb2f9a959fa3f52aee\",\"status\":\"OK\"},{\"affected_metadata_hours\":[\"2025-04-18T00:00:00Z\",\"2025-04-18T01:00:00Z\"],\"error\":\"metadata replication seems fine\",\"ip_address\":\"81.2.69.142\",\"luid\":\"w4ftj0a8\",\"name\":\"XDR Sensor\",\"serial_number\":\"V423ef386550fb2f9a959fa3f52aee\",\"status\":\"OK\"}],\"updated_at\":\"2025-04-18 07:17:35+00:00\"},\"cpu\":{\"idle_percent\":43.9,\"nice_percent\":0,\"system_percent\":24.9,\"updated_at\":\"2025-04-18 07:17:35+00:00\",\"user_percent\":30},\"detection\":{\"detection_type\":\"AWS\",\"message\":\"This is detection message\",\"name\":\"Detection 1\",\"status\":\"OK\",\"updated_at\":\"2025-04-18 07:17:33+00:00\"},\"disk\":{\"degraded_raid_volume\":{\"error\":\"error\",\"output\":\"output\",\"status\":\"OK\"},\"disk_raid\":{\"error\":\"error\",\"output\":\"output\",\"status\":\"OK\"},\"disk_utilization\":{\"free_bytes\":10000109,\"total_bytes\":67444477952,\"usage_percent\":47,\"used_bytes\":33078743040},\"raid_disks_missing\":{\"error\":\"error\",\"output\":\"output\",\"status\":\"OK\"},\"updated_at\":\"2025-04-18 07:17:34+00:00\"},\"event_timestamp\":\"2025-04-15T09:39:45.146Z\",\"hostid\":{\"artifact_counts\":{\"TestEDR\":0,\"arsenic\":0,\"carbon_black\":0,\"cb_cloud\":0,\"clear_state\":0,\"cookie\":0,\"crowdstrike\":0,\"cybereason\":0,\"dhcp\":6606,\"dns\":27818,\"end_time\":0,\"fireeye\":0,\"generic_edr\":0,\"idle_end\":27818,\"idle_start\":27936,\"invalid\":0,\"kerberos\":209,\"kerberos_user\":0,\"mdns\":18575,\"netbios\":15596,\"proxy_ip\":0,\"rdns\":0,\"sentinelone\":0,\"split\":0,\"src_port\":0,\"static_ip\":0,\"total\":134681,\"uagent\":10122,\"vmachine_info\":0,\"windows_defender\":1,\"zpa_user\":0},\"ip_always_percent\":18.52,\"ip_never_percent\":79.01,\"ip_sometimes_percent\":2.47,\"updated_at\":\"2025-04-18 07:17:35+00:00\"},\"memory\":{\"free_bytes\":5597118464,\"total_bytes\":67444477952,\"updated_at\":\"2025-04-18 07:17:35+00:00\",\"usage_percent\":47,\"used_bytes\":33078743040},\"network\":{\"updated_at\":\"2025-04-18 07:17:34+00:00\",\"vlans\":{\"count\":1,\"vlan_ids\":[\"7\",\"8\"]}},\"power\":{\"error\":\"Power check for this device is not supported\",\"status\":\"SKIP\",\"updated_at\":\"2025-04-18 07:17:35+00:00\"},\"sensors\":[{\"headend_uri\":\"175.16.199.24\",\"id\":3,\"ip_address\":\"175.16.199.0\",\"last_seen\":\"2025-04-18T07:15:37.685Z\",\"location\":\"hyp-2-37\",\"luid\":\"w4ftj0a8\",\"mode\":\"sensor\",\"name\":\"EDR Sensor\",\"original_version\":\"7.9.0-17-38\",\"product_name\":\"DCS\",\"public_key\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1y0zv2goBjkol/8TggJJ\\nMgP03tIZ6B6w9PVpF/bK8KTT0/hinX8PHP/MdDS58sVE6DuAqAkkELqN55f35AhB\\nOqztY9xWDH8bO7Y0P0kbBIQ9+/abyfNpaxbiQe5Yk8oClyEgtXH4GKJCNxkGgbIb\\n-----END PUBLIC KEY-----\\n\",\"serial_number\":\"V421353ef386550fb2f9a959fa3f52aee\",\"ssh_tunnel_port\":\"38113\",\"status\":\"paired\",\"update_count\":0,\"version\":\"9.0.3-1-62\"},{\"headend_uri\":\"175.16.199.24\",\"id\":2,\"ip_address\":\"175.16.199.0\",\"last_seen\":\"2025-04-18T07:15:37.685Z\",\"location\":\"hyp-2-35\",\"luid\":\"w4ftj0a8\",\"mode\":\"sensor\",\"name\":\"XDR Sensor\",\"original_version\":\"7.9.0-17-38\",\"product_name\":\"DCS\",\"public_key\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1y0zv2goBjkol/8TggJJ\\nMgP03tIZ6B6w9PVpF/bK8KTT0/hinX8PHP/MdDS58sVE6DuAqAkkELqN55f35AhB\\nOqztY9xWDH8bO7Y0P0kbBIQ9+/abyfNpaxbiQe5Yk8oClyEgtXH4GKJCNxkGgbIb\\n-----END PUBLIC KEY-----\\n\",\"serial_number\":\"12421353ef386550fb2f9a959fa3f52aee\",\"ssh_tunnel_port\":\"38113\",\"status\":\"paired\",\"update_count\":0,\"version\":\"9.0.3-1-62\"},{\"headend_uri\":\"http://headend_uri/\",\"id\":1,\"ip_address\":\"175.16.199.0\",\"last_seen\":\"2025-04-18T07:15:37.685Z\",\"location\":\"hyp-2-30\",\"luid\":\"w4ftj0a8\",\"mode\":\"sensor\",\"name\":\"DR Sensor\",\"original_version\":\"7.9.0-17-38\",\"product_name\":\"DCS\",\"public_key\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1y0zv2goBjkol/8TggJJ\\nMgP03tIZ6B6w9PVpF/bK8KTT0/hinX8PHP/MdDS58sVE6DuAqAkkELqN55f35AhB\\nOqztY9xWDH8bO7Y0P0kbBIQ9+/abyfNpaxbiQe5Yk8oClyEgtXH4GKJCNxkGgbIb\\n-----END PUBLIC KEY-----\\n\",\"serial_number\":\"V4121353ef386550fb2f9a959fa3f52aee\",\"ssh_tunnel_port\":\"38113\",\"status\":\"paired\",\"update_count\":0,\"version\":\"9.0.3-1-62\"}],\"system\":{\"serial_number\":\"VHE66258a5e8dafe76d9a5dd741abd94ee8\",\"updated_at\":\"2025-04-18 07:17:33+00:00\",\"uptime\":\"261 days, 13 hours, 33 minutes\",\"version\":{\"cloud_bridge\":true,\"gmt\":\"2025-04-18T07:14:09.593927Z\",\"last_update\":\"Wed Apr  9 02:03:16 2025\",\"last_update_utc\":\"2025-04-09T02:03:16+00:00\",\"mode\":\"brain\",\"model\":\"VHE\",\"vectra_instance_type\":\"medium\",\"vectra_version\":\"9.0.3-2-62\",\"vm_type\":\"vmware\"}},\"trafficdrop\":{\"sensors\":[{\"error\":\"All interfaces have traffic volume within range\",\"ip_address\":\"1.128.0.0\",\"luid\":\"w4ftj0a8\",\"name\":\"EDR Sensor\",\"serial_number\":\"V421353ef386550fb2f9a959fa3f52aee\",\"status\":\"OK\"},{\"error\":\"Interface have traffic volume within range\",\"ip_address\":\"1.128.0.11\",\"luid\":\"w4ftj0a8\",\"name\":\"XDR Sensor\",\"serial_number\":\"1421353ef386550fb2f9a959fa3f52aee\",\"status\":\"OK\"}],\"updated_at\":\"2025-04-18 07:17:35+00:00\"}}"
     },
@@ -963,24 +963,24 @@ An example event for `lockdown` looks as following:
 {
     "@timestamp": "2023-03-06T22:30:06.000Z",
     "agent": {
-        "ephemeral_id": "bf888aea-5cff-4398-bc0f-4b1281e013a9",
-        "id": "cddd6c68-3aa1-4857-967e-6ff889925853",
-        "name": "elastic-agent-76068",
+        "ephemeral_id": "37d3c565-b736-4b82-a0ad-be1e92db36ed",
+        "id": "03e0c104-ccc5-42d7-ac56-8d19b25af6ac",
+        "name": "elastic-agent-31520",
         "type": "filebeat",
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "vectra_rux.lockdown",
-        "namespace": "15621",
+        "namespace": "46084",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "cddd6c68-3aa1-4857-967e-6ff889925853",
+        "id": "03e0c104-ccc5-42d7-ac56-8d19b25af6ac",
         "snapshot": false,
-        "version": "8.18.2"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -989,7 +989,7 @@ An example event for `lockdown` looks as following:
         ],
         "dataset": "vectra_rux.lockdown",
         "end": "2023-04-07T23:50:00.000Z",
-        "ingested": "2025-08-01T14:36:25Z",
+        "ingested": "2025-05-08T05:14:19Z",
         "kind": "event",
         "original": "{\"certainty\":0,\"entity_id\":1184,\"entity_name\":\"Windows10_Jump\",\"id\":1,\"lock_event_timestamp\":\"2023-03-06T22:30:06Z\",\"locked_by\":\"vadmin\",\"type\":\"host\",\"unlock_event_timestamp\":\"2023-04-07T23:50:00Z\"}",
         "start": "2023-03-06T22:30:06.000Z",
