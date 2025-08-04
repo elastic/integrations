@@ -40,8 +40,8 @@ program: |
           "events": body.events.map(e, {
             "message": e.encode_json(),
           }),
-          "want_more": int(body.remaining_count) > 0,
-          "from": int(body.next_checkpoint),
+          "want_more": has(body.remaining_count) && int(body.remaining_count) > 0,
+          "from": body.?next_checkpoint.orValue(null),
           "start_time": start_time,
           "cursor": {
             ?"last_timestamp": (has(body.events) && size(body.events) > 0) ?
