@@ -50,7 +50,7 @@ password: your_password                     # Optional: for basic auth
 
 
 ### JMX Mappings and attributes
-The Jolokia input package can collect metrics from various JMX MBeans by configuring the `mbean` parameter. You can specify which MBeans and attributes to collect using the following format:
+The Jolokia input package can collect metrics from various JMX MBeans by configuring the `mbean` parameter. You can specify which MBeans and attributes to collect as show in below example:
 
 ```
 - mbean: 'java.lang:type=Runtime'
