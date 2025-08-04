@@ -284,7 +284,7 @@ program: |-
   	)
   ).flatten().drop_empty().as(events_list,
   	events_list.collate("events_per_content_type").as(events,
-  	  events.filter(e, e.?error.message.hasValue()).as(error_events,
+  	  events.filter(e, has(e.error) && has(e.error.message)).as(error_events,
   	    error_events.size() > 0 ?
   	      // If there are errors, return a single merged error event and discard any other results
   	      {
