@@ -26,13 +26,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.authentication_info.service_account_delegation_info | Identity delegation history of an authenticated service account that makes the request. It contains information on the real authorities that try to access GCP resources by delegating on a service account. When multiple authorities present, they are guaranteed to be sorted based on the original ordering of the identity delegation events. | flattened |
 | gcp.audit.authentication_info.service_account_key_name | The service account key that was used to request the OAuth 2.0 access token. This field identifies the service account key by its full resource name. | keyword |
 | gcp.audit.authentication_info.third_party_principal | The third party identification (if any) of the authenticated user making the request. When the JSON object represented here has a proto equivalent, the proto name will be indicated in the @type property. | flattened |
-| gcp.audit.authorization_info | Authorization information for the operation. | nested |
-| gcp.audit.authorization_info.granted | Whether or not authorization for resource and permission was granted. | boolean |
-| gcp.audit.authorization_info.permission | The required IAM permission. | keyword |
-| gcp.audit.authorization_info.resource | The resource being accessed, as a REST-style string. | keyword |
-| gcp.audit.authorization_info.resource_attributes.name | The name of the resource. | keyword |
-| gcp.audit.authorization_info.resource_attributes.service | The name of the service. | keyword |
-| gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
+| gcp.audit.authorization_info | Authorization information for the operation. | flattened |
 | gcp.audit.flattened | Contains the full audit document as sent by GCP. | flattened |
 | gcp.audit.labels | A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined. | flattened |
 | gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
