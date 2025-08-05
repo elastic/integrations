@@ -409,7 +409,7 @@ processors:
       description: "113014"
       field: "message"
       patterns:
-          - "AAA authentication server not accessible(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
+          - "AAA authentication server not accessible(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
@@ -1262,6 +1262,7 @@ processors:
         EgressZone:
           target: egress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.egress.zone]
         EncryptPeerIP:
           target: encrypt_peer_ip
           id: ["430001", "430002", "430003"]
@@ -1338,6 +1339,7 @@ processors:
         IngressZone:
           target: ingress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.ingress.zone]
         InitiatorBytes:
           target: initiator_bytes
           id: ["430003"]
