@@ -1,0 +1,71 @@
+---
+description: Pipeline for processing Ubiquiti UniFi Alarm Manager webhook events
+processors:
+- set:
+    field: ecs.version
+    value: '8.17.0'
+
+- set:
+    field: event.type
+    value: [info]
+
+- set:
+    field: event.kind
+    value: event
+
+### Add some basic observer fields so we can co-exist with ubnt_unifi.logs at a basic level ###
+
+- set:
+    if: ctx.observer?.vendor == null
+    field: observer.vendor
+    value: Ubiquiti
+
+- set:
+    if: ctx.observer?.product == null
+    field: observer.product
+    value: UniFi Alarm Manager
+
+- rename:
+    description: The entire webhook payload should have been parsed into a JSON object, we do nothing more than rename this at this point.
+    field: json
+    target_field: ubnt.unifi.webhook
+    ignore_missing: true
+
+##############
+## Clean Up ##
+##############
+
+- script:
+    description: Drops null/empty values recursively to minimise event size
+    lang: painless
+    source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+######################
+## Failure Handling ##
+######################
+
+on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
