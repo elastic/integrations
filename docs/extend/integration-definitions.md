@@ -53,7 +53,7 @@ The data stream consists of:
 
 The package manifest (`manifest.yml`) is the main configuration file that defines a package's metadata and structure. Located at the root of every package, it contains:
 
-* Package name, version, and description
+* Package name, version, type, and description
 * Format version (package-spec compatibility)
 * License information
 * Categories and tags for classification
