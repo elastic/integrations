@@ -25,6 +25,7 @@ func TestNewPackageError(t *testing.T) {
 				ServerlessProject: "observability",
 				LogsDB:            false,
 				StackVersion:      "8.16.0-SNAPSHOT",
+				Subscription:      "basic",
 				BuildURL:          "https://buildkite.com/elastic/integrations/build/1",
 				TestCase: testCase{
 					Name:      "failing test",
@@ -40,6 +41,7 @@ func TestNewPackageError(t *testing.T) {
 					serverlessProject: "observability",
 					logsDB:            false,
 					stackVersion:      "8.16.0-SNAPSHOT",
+					subscription:      "basic",
 					errorLinks: errorLinks{
 						firstBuild: "https://buildkite.com/elastic/integrations/build/1",
 					},

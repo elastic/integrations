@@ -10,13 +10,14 @@ platform_type_lowercase="${platform_type,,}"
 
 SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 
-GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
 
 COVERAGE_FORMAT="generic"
 COVERAGE_OPTIONS="--test-coverage --coverage-format=${COVERAGE_FORMAT}"
+
+FATAL_ERROR="Fatal Error"
 
 running_on_buildkite() {
     if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
@@ -198,7 +199,7 @@ with_kubernetes() {
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
+    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
     chmod +x "${BIN_FOLDER}/kubectl"
     kubectl version --client
     which kubectl
@@ -253,34 +254,6 @@ with_github_cli() {
     gh version
 }
 
-## Logging and logout from Google Cloud
-google_cloud_auth_safe_logs() {
-    local gsUtilLocation
-    gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
-    local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
-
-    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-
-    gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-    export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
-google_cloud_logout_active_account() {
-  local active_account
-  active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null || true)
-  if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
-    echo "Logging out from GCP for active account"
-    gcloud auth revoke "$active_account" > /dev/null 2>&1
-  else
-    echo "No active GCP accounts found."
-  fi
-
-  if [ -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]; then
-    rm -rf "${GOOGLE_APPLICATION_CREDENTIALS}"
-    unset GOOGLE_APPLICATION_CREDENTIALS
-  fi
-}
-
 ## Helpers for integrations pipelines
 check_git_diff() {
     cd "${WORKSPACE}"
@@ -296,10 +269,22 @@ use_elastic_package() {
     go build -o "${ELASTIC_PACKAGE_BIN}" github.com/elastic/elastic-package
 }
 
+elastic_package_verbosity() {
+    local opts="-v"
+    if [[ "${GITHUB_PR_TRIGGER_COMMENT:-""}" =~ ^/test[[:space:]]+verbose ]]; then
+        opts="${opts}v"
+    fi
+    echo "${opts}"
+}
+
+ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
+
 is_already_published() {
     local packageZip=$1
 
-    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep -q "HTTP/2 200" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep "HTTP/2 200" > /dev/null; then
         echo "- Already published ${packageZip}"
         return 0
     fi
@@ -313,25 +298,29 @@ create_kind_cluster() {
 }
 
 delete_kind_cluster() {
+    if ! command -v kind > /dev/null 2>&1 ; then
+        return
+    fi
     echo "--- Delete kind cluster"
     kind delete cluster || true
 }
 
+is_stack_created() {
+    local files=0
+    files=$(find ~/.elastic-package -type f -name "docker-compose.yml" | wc -l)
+    if [ "${files}" -gt 0 ]; then
+        return 0
+    fi
+    return 1
+}
+
 kibana_version_manifest() {
-    local kibana_version
-    kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
-    if [ "${kibana_version}" != "null" ]; then
-        echo "${kibana_version}"
-        return
+    local kibana_version=""
+    if ! kibana_version=$(mage -d "${WORKSPACE}" -w . kibanaConstraintPackage) ; then
+        return 1
     fi
-
-    kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
-    if [ "${kibana_version}" != "null" ]; then
-        echo "${kibana_version}"
-        return
-    fi
-
-    echo "null"
+    echo "${kibana_version}"
+    return 0
 }
 
 capabilities_manifest() {
@@ -413,7 +402,9 @@ is_package_excluded_in_config() {
     local package_name=""
     package_name=$(package_name_manifest)
 
-    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if echo "${excluded_packages}" | grep -E "\"${package_name}\"" > /dev/null; then
         return 0
     fi
     return 1
@@ -444,7 +435,9 @@ is_supported_capability() {
     fi
 
     for cap in ${capabilities}; do
-        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
+        # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+        # https://tldp.org/LDP/lpg/node20.html
+        if ! echo "${cap}" | grep -E "${capabilities_kibana_grep}" > /dev/null; then
             return 1
         fi
     done
@@ -457,35 +450,25 @@ is_supported_stack() {
         return 0
     fi
 
-    local kibana_version
-    kibana_version=$(kibana_version_manifest)
-    if [ "${kibana_version}" == "null" ]; then
-        return 0
-    fi
-    if [[ ( ! "${kibana_version}" =~ \^7\. ) && "${STACK_VERSION}" =~ ^7\. ]]; then
+    local supported
+    if ! supported=$(mage -d "${WORKSPACE}" -w . isSupportedStack "${STACK_VERSION}"); then
         return 1
     fi
-    if [[ ( ! "${kibana_version}" =~ \^8\. ) && "${STACK_VERSION}" =~ ^8\. ]]; then
-        return 1
-    fi
-
-    # TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
-    # This workaround should be removed once packages have been updated their constraints for 9.0 stack.
-    if [[ ( ! ( "${kibana_version}" =~ \^9\. || "${kibana_version}" =~ \^8\. ) ) && "${STACK_VERSION}" =~ ^9\. ]]; then
-        return 1
-    fi
-
+    echo "${supported}"
     return 0
 }
 
 oldest_supported_version() {
     local kibana_version
-    kibana_version=$(kibana_version_manifest)
+    if ! kibana_version=$(kibana_version_manifest); then
+        return 1
+    fi
     if [ "$kibana_version" != "null" ]; then
         python3 "${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py" --manifest-path manifest.yml
-        return
+        return 0
     fi
     echo "null"
+    return 0
 }
 
 create_elastic_package_profile() {
@@ -497,19 +480,46 @@ create_elastic_package_profile() {
 prepare_stack() {
     echo "--- Prepare stack"
 
+    local requiredSubscription="${ELASTIC_SUBSCRIPTION:-""}"
+    local requiredLogsDB="${STACK_LOGSDB_ENABLED:-"false"}"
+
     local args="-v"
+    local version_set=""
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
+        version_set="${STACK_VERSION}"
     else
         local version
-        version=$(oldest_supported_version)
+        if ! version=$(oldest_supported_version); then
+            return 1
+        fi
+        if [[ "${requiredLogsDB}" == "true" ]]; then
+            # If LogsDB index mode is enabled, the required Elastic stack should be at least 8.17.0
+            # In 8.17.0 LogsDB index mode was made GA.
+            local less_than=""
+            if ! less_than=$(mage -d "${WORKSPACE}" -w . isVersionLessThanLogsDBGA "${version}") ; then
+                echo "${FATAL_ERROR}"
+                return 1
+            fi
+            if [[ "${less_than}" == "true" ]]; then
+                version="8.17.0"
+            fi
+        fi
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
+            version_set="${version}"
         fi
     fi
+    echoerr "- Stack Version: \"${version_set}\""
 
-    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+    if [ "${requiredLogsDB:-false}" == "true" ]; then
+        echoerr "- Enable LogsDB"
         args="${args} -U stack.logsdb_enabled=true"
+    fi
+
+    if [ "${requiredSubscription}" != "" ]; then
+        echoerr "- Set Subscription ${ELASTIC_SUBSCRIPTION}"
+        args="${args} -U stack.elastic_subscription=${requiredSubscription}"
     fi
 
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
@@ -552,9 +562,6 @@ prepare_serverless_stack() {
     fi
     create_elastic_package_profile "${profile_name}"
 
-    export EC_API_KEY=${EC_API_KEY_SECRET}
-    export EC_HOST=${EC_HOST_SECRET}
-
     echo "Boot up the Elastic stack"
     # grep command required to remove password from the output
     if ! ${ELASTIC_PACKAGE_BIN} stack up \
@@ -570,9 +577,9 @@ prepare_serverless_stack() {
 }
 
 is_spec_3_0_0() {
-    local pkg_spec
+    local pkg_spec=""
     pkg_spec=$(cat manifest.yml | yq '.format_version')
-    local major_version
+    local major_version=""
     major_version=$(echo "$pkg_spec" | cut -d '.' -f 1)
 
     if [ "${major_version}" -ge 3 ]; then
@@ -668,16 +675,56 @@ get_to_changeset() {
     echo "${to}"
 }
 
+is_subscription_compatible() {
+    local reason=""
+
+    if ! reason=$(mage -d "${WORKSPACE}" -w . isSubscriptionCompatible) ; then
+        return 1
+    fi
+    echo "${reason}"
+    return 0
+}
+
+is_logsdb_compatible() {
+    if [[ "${STACK_VERSION:-""}" != "" ]]; then
+        # Assumption that if this variable is set, it is supported
+        echo "true"
+        return 0
+    fi
+
+    if ! reason=$(mage -d "${WORKSPACE}" -w . isLogsDBSupportedInPackage); then
+        return 1
+    fi
+    echo "${reason}"
+    return 0
+}
+
 is_pr_affected() {
     local package="${1}"
-    local from=${2:-""}
-    local to=${3:-""}
+    local from="${2}"
+    local to="${3}"
 
-    echoerr "[${package}] Original commits: from '${from}' - to: '${to}'"
-
-    if ! is_supported_stack ; then
+    local stack_supported=""
+    if ! stack_supported=$(is_supported_stack) ; then
+        echo "${FATAL_ERROR}"
+        return 1
+    fi
+    if [[ "${stack_supported}" == "false" ]]; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
+    fi
+
+    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" ]]; then
+        # Packages require to support 8.17.0 or higher as part of their Kibana constraints (manifest)
+        local logsdb_compatible=""
+        if ! logsdb_compatible=$(is_logsdb_compatible); then
+            echo "${FATAL_ERROR}"
+            return 1
+        fi
+        if [[ "${logsdb_compatible}" == "false" ]]; then
+            echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
+            return 1
+        fi
     fi
 
     if is_serverless; then
@@ -689,6 +736,25 @@ is_pr_affected() {
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
         fi
+        if [[ "${package}" == "fleet_server" ]]; then
+            echoerr "fleet_server not supported. Skipped"
+            echo "[${package}] not supported"
+            return 1
+        fi
+        if ! is_spec_3_0_0 ; then
+            echoerr "Not v3 spec version. Skipped"
+            echo "[${package}] spec <3.0.0"
+            return 1
+        fi
+    fi
+    local compatible=""
+    if ! compatible=$(is_subscription_compatible); then
+        echo "${FATAL_ERROR}"
+        return 1
+    fi
+    if [[ "${compatible}" == "false" ]]; then
+        echo "[${package}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
+        return 1
     fi
 
     if [[ "${FORCE_CHECK_ALL}" == "true" ]];then
@@ -696,23 +762,22 @@ is_pr_affected() {
         return 0
     fi
 
-    if [[ "${from}" == ""  || "${to}" == "" ]]; then
-        echo "[${package}] Calculating commits: from '${from}' - to: '${to}'"
-        # setting range of changesets to check differences
-        from="$(get_from_changeset)"
-        to="$(get_to_changeset)"
-    fi
-
-    echo "[${package}]: commits: from: '${from}' - to: '${to}'"
-
-    echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
+    echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
-    echo "[${package}] git-diff: check package files"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" ; then
+    echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
@@ -728,7 +793,11 @@ is_pr() {
 }
 
 kubernetes_service_deployer_used() {
-    find . -type d | grep -E '_dev/deploy/k8s$'
+    # Not able to use -q in parameter
+    # as set -o pipefail is defined, when adding "-q" parameter, grep finishes with its first match
+    # but find still is writing to the pipe causing the SIGPIPE
+    # https://tldp.org/LDP/lpg/node20.html
+    find . -type d | grep -E "_dev/deploy/k8s$" > /dev/null
 }
 
 teardown_serverless_test_package() {
@@ -736,7 +805,7 @@ teardown_serverless_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
@@ -747,12 +816,17 @@ teardown_test_package() {
     local build_directory="${WORKSPACE}/build"
     local dump_directory="${build_directory}/elastic-stack-dump/${package}"
 
-    echo "Collect Elastic stack logs"
+    if ! is_stack_created; then
+        echo "No stack running. Skip dump logs and run stack down process."
+        return
+    fi
+
+    echo "--- Collect Elastic stack logs"
     ${ELASTIC_PACKAGE_BIN} stack dump -v --output "${dump_directory}"
 
     upload_safe_logs_from_package "${package}" "${build_directory}"
 
-    echo "Take down the Elastic stack"
+    echo "--- Take down the Elastic stack"
     ${ELASTIC_PACKAGE_BIN} stack down -v
 }
 
@@ -796,7 +870,7 @@ skip_installation_step() {
 install_package() {
     local package=$1
     echo "Install package: ${package}"
-    if ! ${ELASTIC_PACKAGE_BIN} install -v ; then
+    if ! ${ELASTIC_PACKAGE_BIN} install "${ELASTIC_PACKAGE_VERBOSITY}" ; then
         return 1
     fi
     echo ""
@@ -805,11 +879,11 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="--report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test "${ELASTIC_PACKAGE_VERBOSITY}" ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -820,7 +894,7 @@ test_package_in_local_stack() {
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    TEST_OPTIONS="${ELASTIC_PACKAGE_VERBOSITY} --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
@@ -858,6 +932,12 @@ run_tests_package() {
     if ! skip_installation_step "${package}" ; then
         echo "--- [${package}] test installation"
         if ! install_package "${package}" ; then
+            if [[ "${package}" == "elastic_connectors" ]]; then
+                # TODO: Remove this skip once elastic_connectors can be installed again
+                # For reference: https://github.com/elastic/kibana/pull/211419
+                echo "[${package}]: Known issue when package is installed - skipped all tests"
+                return 0
+            fi
             return 1
         fi
     fi
@@ -903,11 +983,9 @@ upload_safe_logs() {
         return
     fi
 
-    google_cloud_auth_safe_logs
+    gcloud storage cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
 
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
-
-    google_cloud_logout_active_account
+    echo "GCP logout is not required, the BK plugin will do it for us"
 }
 
 clean_safe_logs() {
@@ -929,6 +1007,8 @@ upload_safe_logs_from_package() {
 
     local parent_folder="insecure-logs"
 
+    echo "--- Uploading safe logs to GCP bucket ${JOB_GCS_BUCKET_INTERNAL}"
+
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
         "${build_directory}/elastic-stack-dump/${package}/logs/elastic-agent-internal/*.*" \
@@ -948,9 +1028,8 @@ upload_safe_logs_from_package() {
 
 # Helper to run all tests and checks for a package
 process_package() {
-    local package="$1"
-    local from=${2:-""}
-    local to=${3:-""}
+    local package="${1}"
+    local failed_packages_file="${2:-""}"
     local exit_code=0
 
     echo "--- Package ${package}: check"
@@ -958,49 +1037,33 @@ process_package() {
 
     clean_safe_logs
 
-    if is_serverless ; then
-        if [[ "${package}" == "fleet_server" ]]; then
-            echo "fleet_server not supported. Skipped"
-            echo "- [${package}] not supported" >> "${SKIPPED_PACKAGES_FILE_PATH}"
-            popd > /dev/null
-            return
-        fi
-        if ! is_spec_3_0_0 ; then
-            echo "Not v3 spec version. Skipped"
-            echo "- [${package}] spec <3.0.0" >> "${SKIPPED_PACKAGES_FILE_PATH}"
-            popd > /dev/null
-            return
-        fi
-    fi
-
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        echo "${reason}"
-        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
-        popd > /dev/null
-        return
-    fi
-
-    echo "${reason}"
-
     use_kind=0
-    if kubernetes_service_deployer_used ; then
-        echo "Kubernetes service deployer is used. Creating Kind cluster"
-        use_kind=1
-        if ! create_kind_cluster ; then
-            popd > /dev/null
-            return 1
+    if ! is_serverless ; then
+        # TODO: in serverless system tests are not triggered,
+        # there is no need to create the kind cluster in these CI builds.
+        if kubernetes_service_deployer_used ; then
+            echo "Kubernetes service deployer is used. Creating Kind cluster"
+            use_kind=1
+            if ! create_kind_cluster ; then
+                popd > /dev/null
+                return 1
+            fi
         fi
     fi
 
     if ! run_tests_package "${package}" ; then
         exit_code=1
+        # Ensure that the group where the failure happened is opened.
+        echo "^^^ +++"
         echo "[${package}] run_tests_package failed"
-        echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
+        if [[ "${failed_packages_file}" != "" ]]; then
+            echo "- ${package}" >> "${failed_packages_file}"
+        fi
     fi
 
     if ! is_serverless ; then
         if [[ $exit_code -eq 0 ]]; then
-            ${ELASTIC_PACKAGE_BIN} benchmark pipeline -v --report-format json --report-output file
+            ${ELASTIC_PACKAGE_BIN} benchmark pipeline "${ELASTIC_PACKAGE_VERBOSITY}" --report-format json --report-output file
         fi
     fi
 
@@ -1013,6 +1076,8 @@ process_package() {
     else
         if ! teardown_test_package "${package}" ; then
             exit_code=1
+            # Ensure that the group where the failure happened is opened.
+            echo "^^^ +++"
             echo "[${package}] teardown_test_package failed"
         fi
     fi
@@ -1074,4 +1139,20 @@ get_comment_with_pattern() {
     rm response_github.json
 
     echo "${comment_id}"
+}
+
+## Buildkite output
+# https://buildkite.com/docs/pipelines/configure/links-and-images-in-log-output#links
+inline_link() {
+    local url="$1"
+    local text="${2:-""}"
+    local link=""
+
+    link=$(printf "url='%s'" "$url")
+
+    if [[ "${text}" != "" ]]; then
+        link=$(printf "%s;content='%s'" "$link" "$text")
+    fi
+
+    printf '\033]1339;%s\a\n' "$link"
 }
