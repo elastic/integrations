@@ -56,10 +56,11 @@ These values are:
 4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
 5. Select "Save and continue" to save the integration.
 
-### Data Retention and ILM Configuration (For Vulnerability Data Stream)
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+### Data Retention and ILM Configuration
 
-> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
+For `vulnerability` data stream, a full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we've set up an Index Lifecycle Management (ILM) policy that automatically deletes `vulnerability` data older than 7 days. This helps keep storage usage under control.
+
+> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index: `delete`, `delete_index`
 
 ## ECS mappings
 
@@ -761,6 +762,7 @@ An example event for `vulnerability` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.resource_id | Cloud provider-specific native identifier of the monitored cloud resource. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

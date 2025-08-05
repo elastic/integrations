@@ -1,0 +1,40 @@
+source:
+  index:
+    - "logs-microsoft_defender_endpoint.vulnerability-*"
+  # Below query ensures findings are not populated when users disable 
+  # "Collect vulnerabilities from affected machines only" integration setting.
+  # It avoids populating findings from unaffected machines.
+  query:
+    bool:
+      filter:
+        - exists:
+            field: resource.id
+dest:
+  index: "security_solution-microsoft_defender_endpoint.vulnerability_latest-v1"
+  aliases:
+    - alias: "security_solution-microsoft_defender_endpoint.vulnerability_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - vulnerability.id
+    - resource.id
+    - package.name
+    - package.version
+    - data_stream.namespace
+  sort: "@timestamp"
+description: Latest Vulnerabilities Findings from Microsoft Defender for Endpoint.
+settings:
+  unattended: true
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 24h # Since source does a full sync every interval: 24h (default)
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.1.0
