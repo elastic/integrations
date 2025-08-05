@@ -38,7 +38,7 @@ Note:
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
+1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search top bar, type **Elastic Security**.
 3. Select the **Elastic Security** integration and add it.
 4. Add all the required integration configuration parameters such as username, password, API key, or bearer token depending on the selected authentication type to enable data collection.

@@ -59,7 +59,7 @@ If installing in GCP-Cloud environment, credentials are not necessary but make s
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana navigate to Management > Integrations.
+1. In the top search bar in Kibana, search for **Integrations**.
 2. In "Search for integrations" top bar, search for `Google SecOps`.
 3. Select the "Google SecOps" integration from the search results.
 4. Select "Add Google SecOps" to add the integration.
