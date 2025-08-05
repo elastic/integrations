@@ -823,13 +823,14 @@ An example event for `vulnerability` looks as following:
 | microsoft_defender_endpoint.vulnerability.exposed_machines | Number of exposed devices. | long |
 | microsoft_defender_endpoint.vulnerability.first_detected |  | date |
 | microsoft_defender_endpoint.vulnerability.id | Vulnerability ID. | keyword |
-| microsoft_defender_endpoint.vulnerability.impact |  | keyword |
+| microsoft_defender_endpoint.vulnerability.impact | Impact of vulnerability. | keyword |
 | microsoft_defender_endpoint.vulnerability.name | Vulnerability title. | keyword |
 | microsoft_defender_endpoint.vulnerability.patch_first_available |  | date |
 | microsoft_defender_endpoint.vulnerability.public_exploit | Public exploit exists. | boolean |
 | microsoft_defender_endpoint.vulnerability.published_on | Date when vulnerability was published. | date |
-| microsoft_defender_endpoint.vulnerability.remediation |  | keyword |
+| microsoft_defender_endpoint.vulnerability.remediation | Remediation fix for vulnerability to mitigate the problem. | keyword |
 | microsoft_defender_endpoint.vulnerability.severity | Vulnerability Severity. Possible values are: Low, Medium, High, or Critical. | keyword |
+| microsoft_defender_endpoint.vulnerability.summary | Summary of vulnerability. | keyword |
 | microsoft_defender_endpoint.vulnerability.tags |  | keyword |
 | microsoft_defender_endpoint.vulnerability.updated_on | Date when vulnerability was updated. | date |
 | package.fixed_version |  | keyword |
@@ -837,5 +838,6 @@ An example event for `vulnerability` looks as following:
 | package.version | Package version | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date |  | date |
 | vulnerability.title |  | keyword |
