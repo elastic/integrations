@@ -33,7 +33,7 @@ You will need the following information:
 2. Authentication credentials such as username, password, API key, or bearer token depending on the selected authentication type.
 
 Note:
-1. Users must have `read` index privileges on the `..alerts-security.alerts-<space_id>` indices to access and query security alerts.
+1. Users must have `read` index privileges on the `.alerts-security.alerts-<space_id>` indices to access and query security alerts.
 2. To learn how to create authentication credentials and use the appropriate authentication type, refer to the Elasticsearch Authentication [Documentation](https://www.elastic.co/docs/deploy-manage/users-roles/cluster-or-deployment-auth/user-authentication).
 
 ### Enable the integration in Elastic
