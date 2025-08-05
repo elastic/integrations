@@ -1,7 +1,7 @@
 <!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
 <!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
 
-# MYSQL OTEL
+# MYSQL metrics for OpenTelemetry Collector
 
 <!-- The MYSQL OTEL integration allows you to monitor {name of service}. {name of service} is {describe service}.
 
@@ -44,6 +44,23 @@ For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 <!-- Additional set up instructions -->
+
+The following metrics should be enabled in the `mysqlreceiver` configuration:
+
+```yaml
+mysql.query.client.count:
+  enabled: true
+mysql.client.network.io:
+  enabled: true
+mysql.commands:
+  enabled: true
+mysql.max_used_connections:
+  enabled: true
+mysql.connection.errors:
+  enabled: true
+mysql.table_open_cache:
+  enabled: true
+```
 
 <!-- If applicable -->
 <!-- ## Logs reference -->
