@@ -38,7 +38,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 1. Log in to the  "https://console.cloud.google.com/"  using valid credentials.
 2. Navigate to the **Chronicle API**.
-3. Click **Enabale**.
+3. Click **Enable**.
 
 ### Update the Permission of Service Account
 
