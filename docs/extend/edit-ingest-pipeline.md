@@ -68,7 +68,7 @@ Pipelines can call other pipelines using the `pipeline` processor:
 ```yaml
 processors:
 - pipeline:
-    name: logs-apache.access-1.0.0-parser
+    name: '{{ IngestPipeline "parser" }}'
     if: ctx.event?.original != null
 ```
 
