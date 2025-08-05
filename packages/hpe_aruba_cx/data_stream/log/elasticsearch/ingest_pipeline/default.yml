@@ -8,14 +8,13 @@ processors:
   - remove:
       field: message
       ignore_missing: true
-  - redact:
+  - gsub:
       field: "event.original"
       tag: redact_passkey
       description: "Redacting passkey updates"
-      prefix: "tacacs_passkey update:   -> "
-      skip_if_unlicensed: true
-      patterns:
-        - "tacacs_passkey %{GREEDYDATA:redact}"
+      replacement: "$1****"
+      pattern: "(tacacs_passkey update :   -> )([^\\s]+)$"
+      ignore_missing: true
   - set:
       field: ecs.version
       value: "8.11.0"
@@ -1210,7 +1209,7 @@ processors:
       field: "message"
       description: "Logs TACACS+ server update, server group update and global default update"
       patterns:
-        - "^TACACS %{GREEDYDATA:aruba.aaa.tacacs_type} %{DATA:aruba.aaa.tacacs_action}:\\s?%{GREEDYDATA:aruba.aaa.tacacs_event}"
+        - "^TACACS %{GREEDYDATA:aruba.aaa.tacacs_type} %{DATA:aruba.aaa.tacacs_action} :\\s?%{GREEDYDATA:aruba.aaa.tacacs_event}"
   - grok:
       if: "ctx.event.code == '2303'"
       tag: aaa_event_2303
