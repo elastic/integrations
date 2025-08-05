@@ -16,12 +16,12 @@ trap cleanup_gh EXIT
 DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default ${DRY_RUN:-"true"})"
 BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default ${BASE_COMMIT:-""})"
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default ${PACKAGE_NAME:-""})"
-PACKAGE_FOLDER_NAME="$(buildkite-agent meta-data get PACKAGE_FOLDER_NAME --default ${PACKAGE_FOLDER_NAME:-$PACKAGE_NAME})"
+PACKAGE_FOLDER_NAME="$(buildkite-agent meta-data get PACKAGE_FOLDER_NAME --default ${PACKAGE_FOLDER_NAME:-""})"
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default ${PACKAGE_VERSION:-""})"
 REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default ${REMOVE_OTHER_PACKAGES:-"false"})"
 
-if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
-  buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
+if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_FOLDER_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
+  buildkite-agent annotate "The variables **PACKAGE_NAME**, **PACKAGE_FOLDER_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
   exit 1
 fi
 
@@ -257,12 +257,12 @@ fi
 version="$(git show "${BASE_COMMIT}":"packages/${PACKAGE_FOLDER_NAME}/manifest.yml" | yq -r .version)"
 echo "Check if version from ${BASE_COMMIT} (${version}) matches with version from input step ${PACKAGE_VERSION}"
 if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
-  buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "error"
+  buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_FOLDER_NAME}/manifest.yml" --style "error"
   exit 1
 fi
 
 echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
-if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
+if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_FOLDER_NAME}/manifest.yml | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
   buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
   exit 1
 fi
