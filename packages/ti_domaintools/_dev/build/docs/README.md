@@ -65,7 +65,7 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 
 ### Domain Discovery Feed
 
-The `domaindiscovery feed` data stream provides events from [DomainTools Domain Discovery Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
+The `domaindiscovery_feed` data stream provides events from [DomainTools Domain Discovery Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
@@ -76,7 +76,7 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 
 ### Domain RDAP Feed
 
-The `domainrdap feed` data stream provides events from [DomainTools Domain RDAP](https://www.domaintools.com/products/threat-intelligence-feeds/).
+The `domainrdap_feed` data stream provides events from [DomainTools Domain RDAP](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example

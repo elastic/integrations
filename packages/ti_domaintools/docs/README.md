@@ -295,7 +295,7 @@ An example event for `nad_feed` looks as following:
 
 ### Domain Discovery Feed
 
-The `domaindiscovery feed` data stream provides events from [DomainTools Domain Discovery Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
+The `domaindiscovery_feed` data stream provides events from [DomainTools Domain Discovery Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
@@ -412,7 +412,7 @@ An example event for `domaindiscovery_feed` looks as following:
 
 ### Domain RDAP Feed
 
-The `domainrdap feed` data stream provides events from [DomainTools Domain RDAP](https://www.domaintools.com/products/threat-intelligence-feeds/).
+The `domainrdap_feed` data stream provides events from [DomainTools Domain RDAP](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
