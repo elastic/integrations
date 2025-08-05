@@ -174,6 +174,13 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- ".go-version"
     git add .go-version
 
+    # Restore workflows from the main branch since modifying them requires extra permissions.
+    # > error: GH013: Repository rule violations found for ...
+    # > refusing to allow a GitHub App to create or update workflow `.github/workflows/bump-elastic-stack-version.yml` without `workflows` permission
+    echo "Copying .github/workflows from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- ".github/workflows"
+    git add .github/workflows
+
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     go mod tidy
 
