@@ -57,7 +57,7 @@ The package manifest (`manifest.yml`) is the main configuration file that define
 * Format version (package-spec compatibility)
 * License information
 * Categories and tags for classification
-* Minimum Kibana versions required
+* Package constraints, such as the Kibana versions required.
 * Policy templates that define configurable inputs
 * Owner information for maintenance
 
