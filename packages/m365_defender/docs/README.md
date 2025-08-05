@@ -1754,13 +1754,14 @@ An example event for `vulnerability` looks as following:
 | m365_defender.vulnerability.exposed_machines | Number of exposed devices. | long |
 | m365_defender.vulnerability.first_detected |  | date |
 | m365_defender.vulnerability.id | Vulnerability ID. | keyword |
-| m365_defender.vulnerability.impact |  | keyword |
+| m365_defender.vulnerability.impact | Impact of vulnerability. | keyword |
 | m365_defender.vulnerability.name | Vulnerability title. | keyword |
 | m365_defender.vulnerability.patch_first_available |  | date |
 | m365_defender.vulnerability.public_exploit | Public exploit exists. | boolean |
 | m365_defender.vulnerability.published_on | Date when vulnerability was published. | date |
-| m365_defender.vulnerability.remediation |  | keyword |
+| m365_defender.vulnerability.remediation | Remediation fix for vulnerability to mitigate the problem. | keyword |
 | m365_defender.vulnerability.severity | Vulnerability Severity. Possible values are: Low, Medium, High, or Critical. | keyword |
+| m365_defender.vulnerability.summary | Summary of vulnerability. | keyword |
 | m365_defender.vulnerability.tags |  | keyword |
 | m365_defender.vulnerability.updated_on | Date when vulnerability was updated. | date |
 | package.fixed_version |  | keyword |
@@ -1768,6 +1769,7 @@ An example event for `vulnerability` looks as following:
 | package.version | Package version | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date |  | date |
 | vulnerability.title |  | keyword |
 
