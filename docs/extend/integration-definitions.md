@@ -32,6 +32,11 @@ A content package is a type of package that contains only Kibana assets without 
 Unlike integrations, content packages do not include data streams or Agent policy templates, as they don't collect data themselves.
 
 
+## Input Package [_input_package]
+
+An input package is a type of package that exposes the raw configuration of an Elastic Agent input for custom use cases. Unlike integrations that provide pre-configured data collection for specific technologies, input packages allow users to configure inputs directly for their unique requirements.
+
+
 ## Data stream [_data_stream]
 
 A data stream is logical sub-division of an Integration package, dealing with a specific type of observable aspect of the service or product being observed. For example, the `mysql` package defines a data stream for collecting metrics and another data stream for collecting server logs.
