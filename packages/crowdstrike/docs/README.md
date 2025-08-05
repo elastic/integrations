@@ -4,7 +4,17 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily
 
 1. **Falcon SIEM Connector**: This is a pre-built integration designed to connect CrowdStrike Falcon with Security Information and Event Management (SIEM) systems. It streamlines the flow of security data from CrowdStrike Falcon to the SIEM, providing a standardized and structured way of feeding information into the SIEM platform. It includes the following datasets for receiving logs:
 
-- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
+- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from Falcon SIEM Connector.
+
+    **Log File Format and Location**
+
+    The CrowdStrike integration only supports JSON output format from the SIEM Connector.
+
+    - Log files are written to multiple rotated output files based on the `output_path` setting in the `cs.falconhoseclient.cfg` file.
+    - The default output location for the Falcon SIEM Connector is `/var/log/crowdstrike/falconhoseclient/output`.
+    - By default, files named `output*` in `/var/log/crowdstrike/falconhoseclient` directory contain valid JSON event data and should be used as the source for ingestion.
+
+    >Note: Files with names like `cs.falconhoseclient-*.log` in the same directory are primarily used for logging internal operations of the Falcon SIEM Connector and are not intended to be consumed by this integration.
 
 2. **CrowdStrike REST API**: This provides a programmatic interface to interact with the CrowdStrike Falcon platform. It allows users to perform various operations such as querying information about unified alerts and hosts/devices. It includes the following datasets for receiving logs:
 
@@ -831,6 +841,9 @@ Current supported event types are:
 | crowdstrike.event.FalconHostLink |  | keyword |
 | crowdstrike.event.FileName |  | keyword |
 | crowdstrike.event.FilePath |  | keyword |
+| crowdstrike.event.FilesAccessed.FileName |  | keyword |
+| crowdstrike.event.FilesAccessed.FilePath |  | keyword |
+| crowdstrike.event.FilesAccessed.Timestamp |  | date |
 | crowdstrike.event.FilesWritten.FileName |  | keyword |
 | crowdstrike.event.FilesWritten.FilePath |  | keyword |
 | crowdstrike.event.FilesWritten.Timestamp |  | date |
@@ -937,6 +950,8 @@ Current supported event types are:
 | crowdstrike.event.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PatternId | The numerical ID of the pattern associated with the action taken on the detection. | keyword |
+| crowdstrike.event.PlatformId |  | keyword |
+| crowdstrike.event.PlatformName |  | keyword |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
 | crowdstrike.event.PolicyId | The ID of the associated Policy. | long |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
@@ -945,6 +960,7 @@ Current supported event types are:
 | crowdstrike.event.ProcessId |  | long |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
+| crowdstrike.event.ReferrerUrl |  | keyword |
 | crowdstrike.event.Region |  | keyword |
 | crowdstrike.event.ReportFileReference |  | keyword |
 | crowdstrike.event.ReportID |  | keyword |
@@ -1584,6 +1600,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.FileVaultIsEnabled |  | match_only_text |
 | crowdstrike.FileVersion |  | keyword |
 | crowdstrike.FileWrittenFlags |  | keyword |
+| crowdstrike.FilesAccessed.FileName |  | keyword |
+| crowdstrike.FilesAccessed.FilePath |  | keyword |
+| crowdstrike.FilesAccessed.Timestamp |  | date |
 | crowdstrike.FilesWritten.FileName |  | keyword |
 | crowdstrike.FilesWritten.FilePath |  | keyword |
 | crowdstrike.FilesWritten.Timestamp |  | date |
@@ -1751,6 +1770,15 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.NeighborList |  | keyword |
 | crowdstrike.NeighborName |  | keyword |
 | crowdstrike.NetLuidIndex |  | long |
+| crowdstrike.NetworkAccesses.AccessTimestamp |  | keyword |
+| crowdstrike.NetworkAccesses.AccessType |  | keyword |
+| crowdstrike.NetworkAccesses.ConnectionDirection |  | keyword |
+| crowdstrike.NetworkAccesses.IsIPV6 |  | keyword |
+| crowdstrike.NetworkAccesses.LocalAddress |  | keyword |
+| crowdstrike.NetworkAccesses.LocalPort |  | keyword |
+| crowdstrike.NetworkAccesses.Protocol |  | keyword |
+| crowdstrike.NetworkAccesses.RemoteAddress |  | keyword |
+| crowdstrike.NetworkAccesses.RemotePort |  | keyword |
 | crowdstrike.NetworkBindCount |  | long |
 | crowdstrike.NetworkCapableAsepWriteCount |  | long |
 | crowdstrike.NetworkCloseCount |  | long |
@@ -1831,6 +1859,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.PatternDispositionDescription |  | keyword |
 | crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.ContainmentFileSystem |  | boolean |
 | crowdstrike.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
 | crowdstrike.PatternDispositionFlags.Detect |  | boolean |
 | crowdstrike.PatternDispositionFlags.FsOperationBlocked |  | boolean |
@@ -1882,6 +1911,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
 | crowdstrike.PhysicalMediumType |  | keyword |
+| crowdstrike.PlatformId |  | keyword |
+| crowdstrike.PlatformName |  | keyword |
 | crowdstrike.PointerSize |  | keyword |
 | crowdstrike.PreferredLifetime |  | keyword |
 | crowdstrike.PrefixLength |  | keyword |
@@ -1917,6 +1948,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ReachableTime |  | keyword |
 | crowdstrike.ReasonOfFunctionalityLevel |  | keyword |
 | crowdstrike.ReceiveLinkSpeed |  | keyword |
+| crowdstrike.ReferrerUrl |  | keyword |
 | crowdstrike.RegBinaryValue |  | match_only_text |
 | crowdstrike.RegClassification |  | keyword |
 | crowdstrike.RegClassificationFlags |  | keyword |
@@ -2865,6 +2897,7 @@ An example event for `host` looks as following:
 | crowdstrike.host.modified_timestamp | Timestamp indicating when the incident was created. | date |
 | crowdstrike.host.os.build |  | keyword |
 | crowdstrike.host.os.version | The version of the operating system on the host. | keyword |
+| crowdstrike.host.ou | The organizational unit of the host as seen by the sensor. | keyword |
 | crowdstrike.host.platform.id |  | keyword |
 | crowdstrike.host.platform.name | The identifier associated with the customer. | keyword |
 | crowdstrike.host.policies.applied |  | boolean |
