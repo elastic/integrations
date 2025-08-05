@@ -112,7 +112,7 @@ Parse JSON strings into structured fields:
 ```
 
 ### Parsing structured logs
-Use [`grok`](elasticsearch://reference/ingest/processors/grok.md) for complex patterns or [`dissect`](elasticsearch://reference/ingest/processors/dissect.md) for fixed delimiters:
+Use [`grok`](elasticsearch://reference/enrich-processor/grok-processor.md) for complex patterns or [`dissect`](elasticsearch://reference/enrich-processor/dissect-processor.md) for fixed delimiters:
 
 ```yaml
 # Grok for flexible patterns
