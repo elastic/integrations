@@ -4,17 +4,8 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-
-# used in common.sh
-SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
-FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
-
 # package name
 package="$1"
-# changesets
-from=${2:-""}
-to=${3:-""}
-
 
 if [ ! -d packages ]; then
     echo "Missing packages folder"
@@ -35,8 +26,13 @@ with_kubernetes
 use_elastic_package
 
 pushd packages > /dev/null
-if ! process_package "${package}" "${from}" "${to}"; then
-    echo "[${package}] failed"
-    exit 1
+exit_code=0
+if ! process_package "${package}" ; then
+    # keep this message as a collapsed group in Buildkite, so it
+    # is not hidden by the previous collapsed group.
+    echo "--- [${package}] failed"
+    exit_code=1
 fi
 popd > /dev/null
+
+exit "${exit_code}"

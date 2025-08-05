@@ -5,14 +5,17 @@ go 1.23.0
 toolchain go1.23.4
 
 require (
+	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.11.2
 	github.com/elastic/elastic-package v0.109.1
 	github.com/elastic/go-licenser v0.4.2
+	github.com/elastic/go-ucfg v0.8.8
 	github.com/elastic/package-registry v1.27.0
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/mod v0.23.0
 	golang.org/x/tools v0.30.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -35,7 +38,6 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.49.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.3.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/PaesslerAG/gval v1.2.2 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
@@ -65,7 +67,6 @@ require (
 	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
 	github.com/elastic/go-resource v0.2.0 // indirect
 	github.com/elastic/go-sysinfo v1.9.0 // indirect
-	github.com/elastic/go-ucfg v0.8.8 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
 	github.com/elastic/kbncontent v0.1.4 // indirect
@@ -195,7 +196,6 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
