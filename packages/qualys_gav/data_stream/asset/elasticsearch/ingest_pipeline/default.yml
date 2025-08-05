@@ -224,6 +224,26 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Remove fields having 0 value
+  - script:
+      tag: script_to_drop_zero_values
+      lang: painless
+      description: This script processor iterates over the sensor object to remove fields with zero values.
+      source: |
+        if (ctx?.qualys_gav?.asset?.sensor != null) {
+          def sensor = ctx.qualys_gav.asset.sensor;
+          List keysToRemove = new ArrayList();
+    
+          for (entry in sensor.entrySet()) {
+            if (entry.getValue() == 0) {
+              keysToRemove.add(entry.getKey());
+            }
+          }
+    
+          for (k in keysToRemove) {
+            sensor.remove(k);
+          }
+        }
   - date:
       field: qualys_gav.asset.sensor.last_vmscan
       target_field: qualys_gav.asset.sensor.last_vmscan
@@ -681,40 +701,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      description: Calculate host uptime in seconds.
-      tag: calculate_host_uptime
-      lang: painless
-      if: ctx.qualys_gav?.asset?.last_boot != null && ctx.qualys_gav?.asset?.created_date != null
-      source: |-
-
-        // Convert time from string to long in milliseconds
-        long parseTime(String timeString) {
-            DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("Z"));
-            ZonedDateTime dateTime = ZonedDateTime.parse(timeString, formatter);
-            return dateTime.toInstant().toEpochMilli();
-        }
-
-        // Get variables
-        def lastBootStr = ctx.qualys_gav.asset.last_boot;
-        def createdDateStr = ctx.qualys_gav.asset.created_date;
-
-        // Parse times into long
-        long lastBootMillis = parseTime(lastBootStr);
-        long createdDateMillis = parseTime(createdDateStr);
-
-        // Early exit
-        if(lastBootMillis < createdDateMillis) {
-          return;
-        }
-
-        // Calculate uptime
-        long uptimeMillis = lastBootMillis - createdDateMillis;
-        long uptimeSeconds =  uptimeMillis / 1000;
-
-        // Set uptime
-        ctx.host = ctx.host ?: [:];
-        ctx.host.uptime = uptimeSeconds;
   - set:
       field: host.geo.city_name
       tag: set_host_geo_city_name_from_asset_last_location_city
@@ -969,11 +955,11 @@ processors:
         ctx.host = ctx.host ?: [:];
         ctx.host.os = ctx.host.os ?: [:];
 
-        ctx.host.os.put('type', params.get(os_type));
-
         if (os_type.contains('centos') || os_type.contains('ubuntu')) {
           ctx.host.os.put('type', 'linux');
-        }
+        } else {
+            ctx.host.os.put('type', params.get(os_type));
+         }
   - convert:
       field: qualys_gav.asset.operating_system.cpe_id
       tag: convert_qualys_gav_asset_operating_system_cpe_id_to_string
