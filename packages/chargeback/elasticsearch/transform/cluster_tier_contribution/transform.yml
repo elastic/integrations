@@ -1,36 +1,7 @@
 description: Aggregates daily total ECU usage per tier from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
 source:
   index:
-    - chargeback-monitoring-read # Set this before running the transform. Either to `monitoring-indices` or `metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*`
-  query:
-    bool:
-      filter:
-        - bool:
-            filter:
-              # This filters only the documents that have the required fields (ie post 1.16 for the integration)
-              - exists:
-                  field: "elasticsearch.index.creation_date"
-            should:
-              - term:
-                  event.dataset: "elasticsearch.index"
-              - term:
-                  event.dataset: "elasticsearch.stack_monitoring.index"
-        # Exclude system indices
-        - bool:
-            should:
-              - bool:
-                  must_not:
-                    - prefix:
-                        elasticsearch.index.name: "."
-              - bool:
-                  filter:
-                    - prefix:
-                        elasticsearch.index.name: ".ds-"
-                  must_not:
-                    - prefix:
-                        elasticsearch.index.name: ".ds-."
-                    - prefix:
-                        elasticsearch.index.name: ".ds-ilm-history"
+    - monitoring-indices # Dependency: ES Integration added, but not neceserily installed. Need the output of the transform only.
 dest:
   index: cluster_tier_contribution_lookup
   pipeline: metrics-chargeback.usage-0.1.5

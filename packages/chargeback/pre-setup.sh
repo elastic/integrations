@@ -1,27 +1,3 @@
-# The usage transforms can work on both Cloud Stack monitoring data, or Elasticsearch Integration data
-
-# Check to see which of the sources you have available.
-# ES Integration
-GET monitoring-indices/_count
-# Stack Monitoring
-GET .monitoring-es-8-mb/_count 
-
-# If you do have the Elasticsearch Integration running, create this alias. It is preferable to use the Elasticsearch Integration as it is more performant.
-POST _aliases
-{
-  "actions": [
-    { "add": { "index": "monitoring-indices", "alias": "chargeback-monitoring-read", "is_write_index": false }}
-  ]
-}
-
-# If you cannot use the Elasticsearch Integration, but have Stack monitoring in place, create this alias.
-POST _aliases
-{
-  "actions": [
-    { "add": { "index": ".monitoring-es-8-mb", "alias": "chargeback-monitoring-read", "is_write_index": false }}
-  ]
-}
-
 # Create the lookup indices for chargeback configuration and billing metrics
 # These indices are used to store configuration and billing data for chargeback calculations.
 
@@ -34,7 +10,7 @@ PUT chargeback_conf_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.5" }
+      "package": { "name": "chargeback", "version": "0.1.6" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
@@ -68,7 +44,7 @@ PUT billing_cluster_cost_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.5" }
+      "package": { "name": "chargeback", "version": "0.1.6" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -101,7 +77,7 @@ PUT cluster_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.5" }
+      "package": { "name": "chargeback", "version": "0.1.6" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -128,7 +104,7 @@ PUT cluster_deployment_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.5" }
+      "package": { "name": "chargeback", "version": "0.1.6" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -153,7 +129,7 @@ PUT cluster_tier_and_datastream_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.5" }
+      "package": { "name": "chargeback", "version": "0.1.6" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -181,7 +157,7 @@ PUT cluster_tier_contribution_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.5" }
+      "package": { "name": "chargeback", "version": "0.1.6" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
