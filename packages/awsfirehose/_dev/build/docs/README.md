@@ -63,6 +63,8 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     
     Navigate to the **Settings** tab and click **Install AWS assets**. Confirm by clicking **Install AWS** in the popup.
 
+    ![Install AWS assets](../img/install-assets.png)
+
 2. Create a delivery stream in Amazon Data Firehose
 
     Sign into the AWS console and navigate to Amazon Data Firehose. Click **Create Firehose stream**.
