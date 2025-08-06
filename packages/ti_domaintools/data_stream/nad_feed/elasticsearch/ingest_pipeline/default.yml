@@ -1,39 +1,44 @@
 ---
 description: Pipeline for processing nad feed
 processors:
-- json:
-    if: ctx.message != null
-    field: message
-    target_field: domaintools
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null
+      description: error message set and no data to process.
 
-  ############################
-  # Generic indicator fields #
-  ############################
+  - json:
+      if: ctx.message != null
+      field: message
+      target_field: domaintools
 
-- set:
-    field: threat.indicator.type
-    value: domain-name
-- set:
-    if: ctx.domaintools?.domain != null
-    field: threat.indicator.name
-    copy_from: domaintools.domain
+    ############################
+    # Generic indicator fields #
+    ############################
 
-  ####################
-  # Event ECS fields #
-  ####################
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+  - set:
+      if: ctx.domaintools?.domain != null
+      field: threat.indicator.name
+      copy_from: domaintools.domain
 
-- set:
-    field: ecs.version
-    value: '8.11.0'
-- set:
-    field: event.kind
-    value: enrichment
-- set:
-    field: event.category
-    value: ['threat']
-- set:
-    field: event.type
-    value: ['indicator']
+    ####################
+    # Event ECS fields #
+    ####################
+
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: ['threat']
+  - set:
+      field: event.type
+      value: ['indicator']
 
 on_failure:
 - set:
