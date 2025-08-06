@@ -1,8 +1,8 @@
-# AbuseCH Integration for Elastic
+# abuse.ch Integration for Elastic
 
 ## Overview
 
-The AbuseCH integration for Elastic enables collection of logs from [abuse.ch](https://abuse.ch/). This integration facilitates the ingestion of threat intelligence indicators to be used for threat detection and event enrichment.
+The abuse.ch integration for Elastic enables collection of logs from [abuse.ch](https://abuse.ch/). This integration facilitates the ingestion of threat intelligence indicators to be used for threat detection and event enrichment.
 
 ### Compatibility
 This integration is compatible with `v1` version of URLhaus, MalwareBazaar, and ThreatFox APIs.
@@ -15,22 +15,40 @@ This integration periodically queries the abuse.ch APIs to retrieve threat intel
 
 This integration collects threat intelligence indicators into the following datasets:
 
+- `ja3_fingerprints`: Collects JA3 fingerprint based threat indicators identified by SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
 - `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: Collects malware URL-based threat indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+- `url`: Collects malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
 
 ### Supported use cases
 
-Integrating abuse.ch with Elastic enables the following use cases.
-
-- [Prebuilt threat intel detection rules](https://www.elastic.co/docs/reference/security/prebuilt-rules)
-- Real-time threat detection and hunting through [Elastic Security for Threat Intelligence](https://www.elastic.co/security/tip)
-- Real-time dashboards
+The abuse.ch integration brings threat intel into Elastic Security, enabling detection alerts when indicators of compromise (IoCs) like malicious [IPs](https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/threat_intel/threat_intel_indicator_match_address), [domains](https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/threat_intel/threat_intel_indicator_match_url), or [hashes](https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/threat_intel/threat_intel_indicator_match_hash) match your event or alert data. This data can also support threat hunting, enrich alerts with threat context, and power dashboards to track known threats in your environment.
 
 ## What do I need to use this integration?
 
 ### From Elastic
+
+#### Transform
+
+As this integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview), the requirements of transform must be met. For more details, check the [Transform Setup](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+
+### From abuse.ch
+
+abuse.ch requires using an `Auth Key` (API Key) in the requests for authentication. Requests without authentication will be denied by the abuse.ch APIs.
+
+#### Obtain `Auth Key`
+
+1. Sign up for new account or login into [abuse.ch authentication portal](https://auth.abuse.ch).
+2. Connect with atleast one authentication provider, namely Google, Github, X, or LinkedIn.
+3. Select **Save profile**.
+4. In the **Optional** section, click on **Generate Key** button to generate **Auth Key**.
+5. Copy the generated **Auth Key**.
+
+For more details, check the abuse.ch [Community First - New Authentication](https://abuse.ch/blog/community-first/) blog.
+
+## How do I deploy this integration?
 
 This integration supports both Elastic Agentless-based and Agent-based installations.
 
@@ -44,34 +62,16 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-#### Transform
-
-As this integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview), the requirements of transform must be met. For more details, check the [Transform Setup](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
-
-### From abuse.ch
-
-abuse.ch requires using an `Auth-Key` (API Key) in the requests for authentication. Requests without authentication will be denied by the abuse.ch APIs.
-
-#### Obtain `Auth-Key`:
-1. Sign up for new account or login into [abuse.ch authentication portal](https://auth.abuse.ch).
-2. Connect with atleast one authentication provider, namely Google, Github, X, or LinkedIn.
-3. Select **Save profile**.
-4. In the **Optional** section, click on **Generate Key** button to generate **Auth Key**.
-5. Copy the generated **Auth Key**.
-
-For more details, check the abuse.ch [Community First - New Authentication](https://abuse.ch/blog/community-first/) blog.
-
-## How do I deploy this integration?
-
 ### Onboard / configure
 
-1. In Kibana navigate to **Management** > **Integrations**.
-2. In the search bar, type **AbuseCH**.
-3. Select the **AbuseCH** integration from the search results.
-4. Select **Add AbuseCH** to add the integration.
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **abuse.ch**.
+3. Select the **abuse.ch** integration from the search results.
+4. Select **Add abuse.ch** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To **Collect AbuseCH logs via API**, you'll need to:
+    * To **Collect abuse.ch logs via API**, you'll need to:
+
         - Configure **Auth Key**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
@@ -83,14 +83,14 @@ For more details, check the abuse.ch [Community First - New Authentication](http
 #### Dashboards populated
 
 1. In Kibana, navigate to **Dashboards**.
-2. In the search bar, type **AbuseCH**.
+2. In the search bar, type **abuse.ch**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 #### Transforms healthy
 
 1. In Kibana, navigate to **Management** > **Stack Management**.
 2. Under **Data**, select **Transforms**.
-3. In the search bar, type **AbuseCH**.
+3. In the search bar, type **abuse.ch**.
 4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
 ## Troubleshooting
@@ -112,6 +112,38 @@ For more information on architectures that can be used for scaling this integrat
 ## Reference
 
 ### ECS field reference
+
+#### JA3 Fingerprint Blacklist
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abusech.ja3_fingerprints.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
+| abusech.ja3_fingerprints.urlhaus_reference | Link to URLhaus entry. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+#### Malware
 
 **Exported fields**
 
@@ -143,6 +175,8 @@ For more information on architectures that can be used for scaling this integrat
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
+
+#### MalwareBazaar
 
 **Exported fields**
 
@@ -187,6 +221,37 @@ For more information on architectures that can be used for scaling this integrat
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
+#### SSL Certificate Blacklist
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abusech.sslblacklist.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+#### ThreatFox
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -218,6 +283,8 @@ For more information on architectures that can be used for scaling this integrat
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
+
+#### URL
 
 **Exported fields**
 
@@ -257,6 +324,81 @@ For more information on architectures that can be used for scaling this integrat
 
 
 ### Example event
+
+#### JA3 Fingerprint Blacklist
+
+An example event for `ja3_fingerprints` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-31T05:12:01.523Z",
+    "abusech": {
+        "ja3_fingerprints": {
+            "deleted_at": "2025-07-31T06:10:34.470Z"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "9a4132fc-38d5-43ec-a459-0ef108d28187",
+        "id": "28fe4213-ba33-434e-8815-6bbc80c646d0",
+        "name": "elastic-agent-82406",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.ja3_fingerprints",
+        "namespace": "86925",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "28fe4213-ba33-434e-8815-6bbc80c646d0",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.ja3_fingerprints",
+        "ingested": "2025-07-31T05:12:04Z",
+        "kind": "enrichment",
+        "original": "{\"first_ts\":\"2017-07-14T18:08:15Z\",\"ja3\":\"b386946a5a44d1ddcc843bc75336dfce\",\"last_ts\":\"2019-07-27T20:42:54Z\",\"reason\":\"Dridex\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "interval": "1h"
+    },
+    "related": {
+        "hash": [
+            "b386946a5a44d1ddcc843bc75336dfce"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-ja3_fingerprints"
+    ],
+    "threat": {
+        "indicator": {
+            "description": "Dridex",
+            "first_seen": "2017-07-14T18:08:15.000Z",
+            "last_seen": "2019-07-27T20:42:54.000Z",
+            "name": "b386946a5a44d1ddcc843bc75336dfce",
+            "type": "software"
+        }
+    }
+}
+```
+
+#### Malware
 
 An example event for `malware` looks as following:
 
@@ -338,6 +480,8 @@ An example event for `malware` looks as following:
     }
 }
 ```
+
+#### MalwareBazaar
 
 An example event for `malwarebazaar` looks as following:
 
@@ -448,6 +592,80 @@ An example event for `malwarebazaar` looks as following:
 }
 ```
 
+#### SSL Certificate Blacklist
+
+An example event for `sslblacklist` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-31T05:15:00.672Z",
+    "abusech": {
+        "sslblacklist": {
+            "deleted_at": "2025-07-31T06:13:33.669Z"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "80e31fdd-70e8-4156-9a0d-ad6d0d853888",
+        "id": "01f51d20-e150-4b4e-a036-1746eb0c7285",
+        "name": "elastic-agent-47845",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.sslblacklist",
+        "namespace": "19255",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "01f51d20-e150-4b4e-a036-1746eb0c7285",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.sslblacklist",
+        "ingested": "2025-07-31T05:15:03Z",
+        "kind": "enrichment",
+        "original": "{\"reason\":\"HijackLoader C\\u0026C\",\"sha1\":\"029c128ec7f6c5a62ea19f5ad525cd1487971ce4\",\"ts\":\"2025-06-25T06:50:28Z\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "interval": "1h"
+    },
+    "related": {
+        "hash": [
+            "029c128ec7f6c5a62ea19f5ad525cd1487971ce4"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-sslblacklist"
+    ],
+    "threat": {
+        "indicator": {
+            "description": "HijackLoader C&C",
+            "first_seen": "2025-06-25T06:50:28.000Z",
+            "name": "029c128ec7f6c5a62ea19f5ad525cd1487971ce4",
+            "type": "x509-certificate"
+        }
+    }
+}
+```
+
+#### ThreatFox
+
 An example event for `threatfox` looks as following:
 
 ```json
@@ -529,6 +747,8 @@ An example event for `threatfox` looks as following:
     }
 }
 ```
+
+#### URL
 
 An example event for `url` looks as following:
 
@@ -621,14 +841,16 @@ These inputs can be used in this integration:
 
 This integration datasets uses the following APIs:
 
+- `ja3_fingerprints`: [SSLBL API](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
 - `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `sslblacklist`: [SSLBL API](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
 - `url`: [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-All AbuseCH datasets now support indicator expiration. For the `URL` dataset, a full list of active threat indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the threat indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active threat indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
+All abuse.ch datasets now support indicator expiration. For the `URL` dataset, a full list of active threat indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the threat indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active threat indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 
 | Source Data stream                  | Destination Index Pattern                        | Destination Alias                       |
