@@ -4,6 +4,9 @@ processors:
 - drop:
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
+    field: ecs.version
+    value: '8.17.0'
+- set:
     field: event.original
     copy_from: message
 - csv:
@@ -51,6 +54,7 @@ processors:
 - set:
     field: email.local_id
     copy_from: microsoft.exchange.networkmessageid
+    ignore_empty_value: true
 - append:
     field: email.sender.address
     value: "{{{microsoft.exchange.senderaddress}}}"
@@ -62,15 +66,15 @@ processors:
 - append:
     field: email.from.address
     value: "{{{_tmp.email.from.address}}}"
-    if: ctx._tmp?.email?.from?.address != null && ctx?._tmp?.email?.from?.address != "<>"
-    ignore_failure: true
+    if: ctx._tmp?.email?.from?.address != null && ctx._tmp.email.from.address != "<>"
 - append:
     field: email.from.address
     value: "{{{microsoft.exchange.senderaddress}}}"
-    if: ctx.email?.from?.address == null
+    if: ctx.microsoft?.exchange?.senderaddress != null && ctx.microsoft.exchange.senderaddress != ""
     ignore_failure: true
 - remove:
     field: microsoft.exchange.senderaddress
+    ignore_missing: true
 - convert:
     field: "microsoft.exchange.recipientcount"
     type: long
@@ -85,11 +89,6 @@ processors:
     field: event.ingested 
     copy_from: _ingest.timestamp
     ignore_failure: true
-- remove:
-    field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
-    ignore_missing: true
 - remove:
     field: _tmp
     ignore_missing: true

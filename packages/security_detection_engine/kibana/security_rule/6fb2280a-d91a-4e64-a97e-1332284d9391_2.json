@@ -1,0 +1,70 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected an unusual increase in special privilege usage events, such as privileged operations and service calls, for a user, suggesting potential unauthorized privileged access. A sudden spike in these events may indicate an attempt to escalate privileges, execute unauthorized tasks, or maintain persistence within a system.",
+        "from": "now-3h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "pad_windows_high_count_special_privilege_use_events",
+        "name": "Spike in Special Privilege Use Events",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Spike in Special Privilege Use Events\n\nMachine learning models monitor special privilege use, identifying anomalies that suggest unauthorized access. Adversaries exploit these privileges to escalate access, execute unauthorized actions, or maintain system persistence. The detection rule leverages ML to spot unusual spikes in privileged operations, flagging potential misuse for further investigation.\n\n### Possible investigation steps\n\n- Review the user account associated with the spike in special privilege use events to determine if the activity aligns with their normal behavior or job role.\n- Examine the specific privileged operations and service calls that were flagged to identify any unusual or unauthorized actions.\n- Check for any recent changes in user permissions or group memberships that could explain the increase in privilege use.\n- Investigate any corresponding logs or alerts around the same timeframe to identify potential indicators of compromise or related suspicious activities.\n- Assess the system or application where the privilege escalation occurred for any signs of exploitation or unauthorized access attempts.\n- Correlate the detected spike with known threat intelligence or recent security advisories to determine if it matches any known attack patterns or vulnerabilities.\n\n### False positive analysis\n\n- Routine administrative tasks by IT personnel can trigger false positives. Regularly review and whitelist known administrative accounts to prevent unnecessary alerts.\n- Scheduled maintenance activities often involve elevated privileges. Document and exclude these activities from monitoring during known maintenance windows.\n- Automated scripts or services that require elevated privileges may cause spikes. Identify and exclude these scripts or services from the rule to reduce false positives.\n- Software updates or installations can lead to temporary spikes in privilege use. Coordinate with IT to recognize these events and adjust monitoring rules accordingly.\n- Frequent legitimate use of privileged operations by certain users or roles should be analyzed. Establish a baseline for these users and adjust the detection threshold to accommodate their normal activity levels.\n\n### Response and remediation\n\n- Immediately isolate the affected user account to prevent further unauthorized privileged operations. Disable the account or change its credentials to stop potential misuse.\n- Conduct a thorough review of recent privileged operations and service calls associated with the user account to identify any unauthorized actions or changes made during the spike.\n- Revoke any unnecessary privileges or access rights from the affected user account to minimize the risk of future exploitation.\n- Implement additional monitoring on the affected system and user account to detect any further suspicious activities or attempts to regain unauthorized access.\n- Escalate the incident to the security operations team for a deeper investigation into potential privilege escalation techniques used, referencing MITRE ATT&CK technique T1068.\n- Review and update access control policies and privilege management practices to ensure they align with the principle of least privilege, reducing the risk of similar incidents.\n- Conduct a post-incident analysis to identify any gaps in detection or response and enhance the machine learning model's ability to detect similar threats in the future.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/pad"
+        ],
+        "related_integrations": [
+            {
+                "package": "pad",
+                "version": "^0.0.1"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "6fb2280a-d91a-4e64-a97e-1332284d9391",
+        "setup": "## Setup\n\nThe rule requires the Privileged Access Detection integration assets to be installed, as well as Windows logs collected by integrations such as Elastic Defend and Windows.\n\n### Privileged Access Detection Setup\nThe Privileged Access Detection integration detects privileged access activity by identifying abnormalities in Windows, Linux and Okta events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Privileged Access Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Windows events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) and [Windows](https://docs.elastic.co/en/integrations/windows) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Windows integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n\n#### The following steps should be executed to install assets associated with the Privileged Access Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Privileged Access Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Privileged Access Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    },
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 2
+    },
+    "id": "6fb2280a-d91a-4e64-a97e-1332284d9391_2",
+    "type": "security-rule"
+}

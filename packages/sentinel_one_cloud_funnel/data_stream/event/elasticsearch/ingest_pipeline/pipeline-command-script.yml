@@ -69,7 +69,7 @@ processors:
       target_field: sentinel_one_cloud_funnel.event.src.process.cross_process.out_of_storyline_count
       type: long
       ignore_missing: true
-      if: ctx.json?.src?.process['crossProcessOutOfStoryline™Count'] != ''
+      if: ctx.json?.src?.process != null && ctx.json.src.process['crossProcessOutOfStoryline™Count'] != ''
       on_failure:
         - append:
             field: error.message
@@ -84,7 +84,7 @@ processors:
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.is_storyline_tm_root
       type: boolean
       ignore_missing: true
-      if: ctx.json?.src?.process?.parent['isStoryline™Root'] != ''
+      if: ctx.json?.src?.process?.parent != null && ctx.json.src.process.parent['isStoryline™Root'] != ''
       on_failure:
         - append:
             field: error.message
@@ -100,7 +100,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.kind
-      value: pipeline_error
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

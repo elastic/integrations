@@ -55,7 +55,15 @@ streams:
         show_user: false
         secret: true
         description: >
-          API key that the API server may require for Bearer authorization.
+          API key that the API server may require for token authorization.
+      - name: key_type
+        type: text
+        title: API Key Type
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The authentication key type for token authorization. If it is not provided, Bearer authorization is used. An example alternative would be "Token".
 
       - name: username
         type: text
@@ -93,7 +101,7 @@ streams:
       - name: ssl
         type: yaml
         title: SSL Configuration
-        description: i.e. certificate, key, certificate_authorities, and [other SSL options](https://www.elastic.co/guide/en/beats/filebeacurrent/configuration-ssl.html).
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
         multi: false
         required: false
         show_user: false
@@ -119,6 +127,24 @@ streams:
           #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
           #    sxSmbIUfc2SGJGCJD4I=
           #    -----END CERTIFICATE-----
+      - name: accept_header
+        type: text
+        title: Accept header value
+        description: >
+          The Accept header is used by HTTP Requests to specify which Content-Types are acceptable in response. All TAXII requests must include a media range in the Accept header. More information can be found in the [TAXII specification](https://docs.oasis-open.org/cti/taxii/v2.1/csprd02/taxii-v2.1-csprd02.html#_Toc16526016). This option only applies when `Enable TAXII 2.1` is enabled.
+        multi: false
+        required: true
+        show_user: false
+        default: application/taxii+json;version=2.1
+      - name: content_header
+        type: text
+        title: Content-Type header value
+        description: >
+          The Content-Type header is used by HTTP to identify the format of HTTP Requests and HTTP Responses. More information can be found in the [TAXII specification](https://docs.oasis-open.org/cti/taxii/v2.1/csprd02/taxii-v2.1-csprd02.html#_Toc16526016). This option only applies when `Enable TAXII 2.1` is enabled.
+        multi: false
+        required: false
+        show_user: false
+        default: application/taxii+json;version=2.1
       - name: proxy_url
         type: text
         title: Proxy URL
@@ -194,6 +220,14 @@ streams:
         required: false
         show_user: false
         description: Link reference to the source of the data. Used as metadata to enrich events.
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: false
+        default: 60s
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing

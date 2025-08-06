@@ -10,9 +10,17 @@ processors:
       value: '8.11.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
@@ -34,6 +42,10 @@ processors:
       field: event.created
       copy_from: '@timestamp'
       if: ctx['@timestamp'] != null
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.tags instanceof List && ctx.mimecast.tags.length != 0
 
   ### NOTE LOG TYPE
   - rename:
@@ -238,27 +250,28 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
+      tag: script_to_drop_null_values
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
         void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
             }
-          }
-          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         handleMap(ctx);
 

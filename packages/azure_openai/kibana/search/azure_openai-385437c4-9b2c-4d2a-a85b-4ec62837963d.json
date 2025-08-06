@@ -1,0 +1,217 @@
+{
+    "attributes": {
+        "columns": [
+            "azure.open_ai.properties.backend_request_body.model",
+            "azure.open_ai.properties.backend_request_body.messages.content",
+            "azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.custom_blocklists.id",
+            "azure.open_ai.properties.backend_request_body.stream",
+            "azure.open_ai.properties.backend_response_body.error.message",
+            "azure.open_ai.properties.backend_response_body.error.innererror.code",
+            "azure.open_ai.properties.backend_response_body.error.code",
+            "azure.open_ai.properties.backend_response_body.error.param",
+            "azure.open_ai.properties.backend_response_body.error.status"
+        ],
+        "density": "compact",
+        "description": "Content filtered result logs",
+        "grid": {
+            "columns": {
+                "azure.open_ai.properties.backend_request_body.messages.content": {
+                    "width": 211
+                },
+                "azure.open_ai.properties.backend_request_body.model": {
+                    "width": 193
+                },
+                "azure.open_ai.properties.backend_request_body.stream": {
+                    "width": 153
+                },
+                "azure.open_ai.properties.backend_response_body.error.code": {
+                    "width": 144
+                },
+                "azure.open_ai.properties.backend_response_body.error.innererror.code": {
+                    "width": 230
+                },
+                "azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.custom_blocklists.id": {
+                    "width": 257
+                },
+                "azure.open_ai.properties.backend_response_body.error.message": {
+                    "width": 391
+                },
+                "azure.open_ai.properties.backend_response_body.error.param": {
+                    "width": 174
+                },
+                "azure.open_ai.properties.backend_response_body.error.status": {
+                    "width": 185
+                }
+            }
+        },
+        "headerRowHeight": -1,
+        "hideChart": true,
+        "isTextBasedQuery": true,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "index": {
+                    "allowHidden": false,
+                    "allowNoIndex": false,
+                    "fieldFormats": {},
+                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                    "name": "logs-*",
+                    "runtimeFieldMap": {},
+                    "sourceFilters": [],
+                    "timeFieldName": "@timestamp",
+                    "title": "logs-*",
+                    "type": "esql"
+                },
+                "query": {
+                    "esql": "FROM logs-*\n| where azure.open_ai.is_request_success == false and azure.open_ai.properties.backend_response_body.error.code == \"content_filter\""
+                }
+            }
+        },
+        "rowHeight": 3,
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "timeRestore": false,
+        "title": "Azure OpenAI Content Filter",
+        "visContext": {
+            "attributes": {
+                "references": [],
+                "state": {
+                    "adHocDataViews": {
+                        "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                            "allowHidden": false,
+                            "allowNoIndex": false,
+                            "fieldFormats": {},
+                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                            "name": "logs-*",
+                            "runtimeFieldMap": {},
+                            "sourceFilters": [],
+                            "timeFieldName": "@timestamp",
+                            "title": "logs-*",
+                            "type": "esql"
+                        }
+                    },
+                    "datasourceStates": {
+                        "textBased": {
+                            "indexPatternRefs": [
+                                {
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "timeField": "@timestamp",
+                                    "title": "logs-*"
+                                }
+                            ],
+                            "layers": {
+                                "2bf88e08-e729-4fc1-ac6b-0bb5ad777e4e": {
+                                    "columns": [
+                                        {
+                                            "columnId": "@timestamp every 3 hour",
+                                            "fieldName": "@timestamp every 3 hour",
+                                            "meta": {
+                                                "esType": "date",
+                                                "type": "date"
+                                            }
+                                        },
+                                        {
+                                            "columnId": "results",
+                                            "fieldName": "results",
+                                            "inMetricDimension": true,
+                                            "meta": {
+                                                "type": "number"
+                                            }
+                                        }
+                                    ],
+                                    "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "query": {
+                                        "esql": "FROM logs-*\n| where azure.open_ai.is_request_success == false and azure.open_ai.properties.backend_response_body.error.code == \"content_filter\"\n| EVAL timestamp=DATE_TRUNC(3 hour, @timestamp) | stats results = count(*) by timestamp | rename timestamp as `@timestamp every 3 hour`"
+                                    },
+                                    "timeField": "@timestamp"
+                                }
+                            }
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| where azure.open_ai.is_request_success == false and azure.open_ai.properties.backend_response_body.error.code == \"content_filter\"\n| EVAL timestamp=DATE_TRUNC(3 hour, @timestamp) | stats results = count(*) by timestamp | rename timestamp as `@timestamp every 3 hour`"
+                    },
+                    "visualization": {
+                        "axisTitlesVisibilitySettings": {
+                            "x": true,
+                            "yLeft": true,
+                            "yRight": true
+                        },
+                        "fittingFunction": "Linear",
+                        "gridlinesVisibilitySettings": {
+                            "x": true,
+                            "yLeft": true,
+                            "yRight": true
+                        },
+                        "labelsOrientation": {
+                            "x": 0,
+                            "yLeft": 0,
+                            "yRight": 0
+                        },
+                        "layers": [
+                            {
+                                "accessors": [
+                                    "results"
+                                ],
+                                "colorMapping": {
+                                    "assignments": [],
+                                    "colorMode": {
+                                        "type": "categorical"
+                                    },
+                                    "paletteId": "eui_amsterdam_color_blind",
+                                    "specialAssignments": [
+                                        {
+                                            "color": {
+                                                "type": "loop"
+                                            },
+                                            "rule": {
+                                                "type": "other"
+                                            },
+                                            "touched": false
+                                        }
+                                    ]
+                                },
+                                "layerId": "2bf88e08-e729-4fc1-ac6b-0bb5ad777e4e",
+                                "layerType": "data",
+                                "seriesType": "bar_stacked",
+                                "xAccessor": "@timestamp every 3 hour"
+                            }
+                        ],
+                        "legend": {
+                            "isVisible": true,
+                            "position": "right"
+                        },
+                        "preferredSeriesType": "bar_stacked",
+                        "tickLabelsVisibilitySettings": {
+                            "x": true,
+                            "yLeft": true,
+                            "yRight": true
+                        },
+                        "valueLabels": "hide"
+                    }
+                },
+                "title": "Bar vertical stacked",
+                "visualizationType": "lnsXY"
+            },
+            "requestData": {
+                "dataViewId": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                "timeField": "@timestamp"
+            },
+            "suggestionType": "histogramForESQL"
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-03-04T09:45:07.531Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "azure_openai-385437c4-9b2c-4d2a-a85b-4ec62837963d",
+    "managed": false,
+    "references": [],
+    "type": "search",
+    "typeMigrationVersion": "10.5.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}

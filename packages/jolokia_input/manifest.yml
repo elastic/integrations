@@ -1,7 +1,7 @@
 format_version: "3.0.0"
 name: jolokia
 title: "Jolokia Input"
-version: "0.6.1"
+version: "0.8.0"
 description: "Collects Metrics from Jolokia Agents"
 type: input
 categories:
@@ -9,7 +9,7 @@ categories:
   - custom
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.13.0 || ^9.0.0"
   elastic:
     subscription: "basic"
 icons:
@@ -31,6 +31,8 @@ policy_templates:
         multi: true
         required: true
         show_user: true
+        description: |
+          Full hosts for Jolokia Input (http://host_address:jolokia_port).
         default:
           - http://127.0.0.1:8778
       - name: period
@@ -39,13 +41,15 @@ policy_templates:
         multi: false
         required: true
         show_user: true
+        description: The period for fetching metrics, e.g. every 1s, 1m, 1h.
         default: 10s
-      - name: metrics_path
+      - name: path
         type: text
-        title: Metrics Path
+        title: Path
         multi: false
         required: true
         show_user: true
+        description: Path of the Jolokia endpoint, including any query parameters if applicable.
         default: /jolokia
       - name: http_method
         type: text
@@ -53,6 +57,7 @@ policy_templates:
         multi: false
         required: true
         show_user: true
+        description: Specifies the HTTP method used for the request. Valid values are `GET` and `POST`.
         default: GET
       - name: bearer_token_file
         type: text
@@ -65,6 +70,7 @@ policy_templates:
       - name: ssl.verification_mode
         type: text
         title: SSL Verification Mode
+        description: SSL verification mode. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
         multi: false
         required: false
         show_user: false
@@ -72,25 +78,30 @@ policy_templates:
       - name: ssl.certificate_authorities
         type: text
         title: SSL Certificate Authorities
+        description: SSL certificate authorities.  See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
         multi: true
         required: false
         show_user: true
       - name: ssl.certificate
         type: text
         title: SSL Certificate
+        description: SSL certificate. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
         show_user: true
       - name: ssl.key
         type: text
         title: SSL Private Key
+        description: SSL private key. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
         show_user: true
       - name: ssl.key_passphrase
         type: password
         title: SSL Key Passphrase
+        description: SSL key passphrase. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
         secret: true
         show_user: true
       - name: ssl.ca_trusted_fingerprint
         type: text
         title: SSL CA Trusted Fingerprint
+        description: SSL CA trusted fingerprint. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
         show_user: true
       - name: username
         type: text

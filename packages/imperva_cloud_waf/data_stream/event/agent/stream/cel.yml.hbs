@@ -1,8 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -17,55 +18,121 @@ state:
   want_more: false
   user: "{{api_id}}"
   password: "{{api_key}}"
+redact:
+  fields:
+    - password
 program: |
   (
     has(state.worklist) && size(state.worklist) > 0 ?
       state
     :
-      request("GET", ( state.url + "logs.index")).with({
+      request("GET", state.url.trim_right("/") + "/logs.index").with({
         "Header":{
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
         }
-      }).do_request().as(resp, bytes(resp.Body).as(body, {
-        "worklist": (
-          has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
-          ?
-            string(body).split(state.cursor.log_file)[1].split("\n").filter(x,x!="").map(x,{"filename":x})
-          :
-            string(body).split("\n").map(x,{"filename":x})
-        ),
-        "next": 0,
-      }))
-  ).as(v, v.next < size(v.worklist) ?
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.as(body, {
+          "worklist": (
+            has(state.?cursor.log_file) && state.cursor.log_file != null ?
+              string(body).split(state.cursor.log_file)[?1].optMap(f,
+                f.split("\n").map(x, x != "",
+                  {"filename":x}
+                )
+              ).orValue(string(body).split("\n").map(x,
+                {"filename":x}
+              ))
+            :
+              string(body).split("\n").map(x,
+                {"filename":x}
+              )
+          ),
+          "next": 0,
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/logs.index: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+          "user": state.user,
+          "password": state.password,
+         }
+      )
+  ).as(v, has(v.?events.error) ?
+    v
+  : v.next < size(v.worklist) ?
     (
       request("GET",
-        state.url+v.worklist[v.next].filename
+        state.url.trim_right("/") + "/" + v.worklist[v.next].filename
       ).with({
         "Header":{
           "Authorization": ["Basic "+string(base64(state.user + ":" + state.password))],
         }
-      }).do_request().as(resp, bytes(resp.Body).as(body, {
-        "events": (string(body)+"|==|").split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}),
-        "cursor": {
-          "log_file": (
-            has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
-            ?
-              (
-                (v.worklist[v.next].filename).split(".")[0] != (state.cursor.log_file).split(".")[0] ?
-                  v.worklist[v.next].filename
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.as(body, {
+          "events": try(string(body), "error").as(body, type(body) == type("") ?
+            dyn((body+"|==|").split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}))
+          :
+            // This is an unrecoverable error for the worklist element; it indicates
+            // most likely that the data was compressed, or was encrypted. We cannot
+            // handle this, so we step past it and log the failure. We are in an
+            // unfortunate position where ideally we would like this to cause a health
+            // status note in fleet to result, but we cannot do this since this would
+            // delete the cursor update and we would still be stuck here, so we just
+            // log into the index in the hope that someone will see it.
+            dyn([{"error":
+              {
+                "message": v.worklist[v.next].filename + ": " + body.error + ": check imperva waf logging is configured correctly",
+              },
+            }])
+          ),
+          "cursor": {
+            "log_file": (
+              has(state.?cursor.log_file) && state.cursor.log_file != null ?
+                (
+                  (v.worklist[v.next].filename).split(".")[0] != (state.cursor.log_file).split(".")[0] ?
+                    v.worklist[v.next].filename
+                  :
+                    state.cursor.log_file
+                )
+              :
+                v.worklist[v.next].filename
+            )
+          },
+          "worklist": (int(v.next)+1) < size(v.worklist) ? v.worklist : [],
+          "next": (int(v.next)+1) < size(v.worklist) ? (int(v.next)+1) : 0,
+          "want_more": (int(v.next)+1) < size(v.worklist),
+          "user": state.user,
+          "password": state.password,
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/" + v.worklist[v.next].filename + ": " +(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
                 :
-                  state.cursor.log_file
-              )
-            :
-              v.worklist[v.next].filename
-          )
-        },
-        "worklist": (int(v.next)+1) < size(v.worklist) ? v.worklist : [],
-        "next": (int(v.next)+1) < size(v.worklist) ? (int(v.next)+1) : 0,
-        "want_more": (int(v.next)+1) < size(v.worklist),
-        "user": state.user,
-        "password": state.password
-      }))
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+          "user": state.user,
+          "password": state.password,
+        }
+      )
     )
   :
     {

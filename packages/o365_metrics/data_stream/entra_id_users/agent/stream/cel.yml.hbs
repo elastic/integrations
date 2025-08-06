@@ -1,0 +1,166 @@
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  provider: azure
+  scopes:
+{{#each token_scopes as |token_scope|}}
+    - {{token_scope}}
+{{/each}}
+  endpoint_params: 
+    grant_type: client_credentials
+{{#if token_url}}
+  token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+  azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+redact:
+  fields: null
+state: 
+  users_path: '/users?$select=id,userPrincipalName,userType,onPremisesProvisioningErrors,onPremisesSyncEnabled'
+  risk_detections_path: '/identityProtection/riskDetections?$select=riskEventType,riskState,riskLevel,riskDetail&$filter=userId%20eq%20'
+  next_link: null
+program: |
+    state.with(
+      request(
+        "GET", 
+        has(state.next_link) && state.next_link != null ? state.next_link : state.url.trim_right("/") + state.users_path
+      ).do_request().as(users_resp,
+        users_resp.StatusCode == 200
+        ?
+          bytes(users_resp.Body).decode_json().as(users_json,
+            {
+              "events": users_json.value.map(user,
+                request(
+                  "GET", 
+                  state.url.trim_right("/") + state.risk_detections_path + "'" + user.id + "'"
+                ).do_request().as(risk_detections_resp,
+                  risk_detections_resp.StatusCode == 200
+                  ?
+                    bytes(risk_detections_resp.Body).decode_json().value.as(risk_detections,
+                      size(risk_detections) == 0 ? {} : risk_detections[0]
+                    )
+                  :
+                    {
+                      "risk_detections_error": [string(risk_detections_resp.StatusCode), string(risk_detections_resp.Body)].join(" ")
+                    }
+                ).as(risk, 
+                  {
+                    "o365": {
+                      "metrics": {
+                        "entra_id_users": {
+                          "user": {
+                            "id": user.id,
+                            "upn": user.userPrincipalName,
+                            "type": user.userType,
+                          },
+                          "on_premises_provisioning_errors": user.onPremisesProvisioningErrors.map(err,
+                            {
+                              "category": err.category,
+                              "occurred_date_time": err.occurredDateTime,
+                              "property_causing_error": err.propertyCausingError,
+                              "value": err.value
+                            }
+                          ),
+                          "on_premises_sync_enabled": user.onPremisesSyncEnabled,
+                          "risk": has(risk.risk_detections_error) 
+                          ?
+                            {
+                              "error": risk.risk_detections_error
+                            }
+                          : has(risk.riskLevel)
+                            ?
+                              {
+                                "event_type": risk.riskEventType,
+                                "level": risk.riskLevel,
+                                "state": risk.riskState,
+                                "detail": risk.riskDetail
+                              }
+                            :
+                              {}
+                        }
+                      }
+                    }
+                  }
+                )
+              ),
+              "want_more": "@odata.nextLink" in users_json,
+              "next_link": "@odata.nextLink" in users_json ? users_json["@odata.nextLink"] : null
+            }
+          )
+        :
+          {
+              "events": {
+                "error": {
+                  "code": string(users_resp.StatusCode),
+                  "id": string(users_resp.Status),
+                  "message": "GET " + state.users_path + ": " + (
+                    size(users_resp.Body) != 0 ?
+                      string(users_resp.Body)
+                    :
+                      string(users_resp.Status) + ' (' + string(users_resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+              "next_link": null
+            }
+      )
+    )
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

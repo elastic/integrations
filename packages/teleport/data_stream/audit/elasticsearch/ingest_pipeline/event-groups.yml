@@ -867,18 +867,30 @@ processors:
   - set:
       field: cloud.provider
       value: aws
-      if: ctx.teleport?.audit?.aws_region != null
+      if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.aws_region != null
   - rename:
       field: teleport.audit.aws_region
       target_field: cloud.region
+      ignore_missing: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.region == null
+  - remove:
+      field: teleport.audit.aws_region
       ignore_missing: true
   - rename:
       field: teleport.audit.aws_service
       target_field: cloud.service.name
       ignore_missing: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.service?.name == null
+  - remove:
+      field: teleport.audit.aws_service
+      ignore_missing: true
   - rename:
       field: teleport.audit.aws_host
       target_field: cloud.instance.id
+      ignore_missing: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.instance?.id == null
+  - remove:
+      field: teleport.audit.aws_host
       ignore_missing: true
   - rename:
       field: teleport.audit.aws_assumed_role
@@ -948,10 +960,14 @@ processors:
       field: teleport.audit.db_aws_region
       target_field: cloud.region
       ignore_missing: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.region == null
+  - remove:
+      field: teleport.audit.db_aws_region
+      ignore_missing: true
   - set:
       field: cloud.provider
       value: aws
-      if: ctx.teleport?.audit?.redshift_cluster_id != null
+      if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.redshift_cluster_id != null
   - rename:
       field: teleport.audit.db_aws_redshift_cluster_id
       target_field: teleport.audit.database.aws.redshift_cluster_id
@@ -959,7 +975,7 @@ processors:
   - set:
       field: cloud.provider
       value: gcp
-      if: ctx.teleport?.audit?.db_gcp_project_id != null
+      if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.db_gcp_project_id != null
   - rename:
       field: teleport.audit.db_gcp_project_id
       target_field: cloud.project.id
@@ -967,6 +983,10 @@ processors:
   - rename:
       field: teleport.audit.db_gcp_instance_id
       target_field: cloud.instance.id
+      ignore_missing: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.instance?.id == null
+  - remove:
+      field: teleport.audit.db_gcp_instance_id
       ignore_missing: true
   - rename:
       field: teleport.audit.db_roles
@@ -1398,7 +1418,7 @@ processors:
   - set:
       field: cloud.provider
       value: aws
-      if: ctx.teleport?.audit?.command_id != null
+      if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.command_id != null
   - rename:
       field: teleport.audit.command_id
       target_field: teleport.audit.database.aws.ssm_run.command_id
@@ -1406,6 +1426,10 @@ processors:
   - rename:
       field: teleport.audit.instance_id
       target_field: cloud.instance.id
+      ignore_missing: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.instance?.id == null
+  - remove:
+      field: teleport.audit.instance_id
       ignore_missing: true
   - rename:
       field: teleport.audit.exit_code
@@ -1426,11 +1450,22 @@ processors:
       field: teleport.audit.account_id
       target_field: cloud.account.id
       ignore_missing: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.account?.id == null
+  - remove:
+      field: teleport.audit.account_id
+      ignore_missing: true
   - rename:
       field: teleport.audit.region
       target_field: cloud.region
       ignore_missing: true
       ignore_failure: true
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.region == null
+  - remove:
+      field: teleport.audit.region
+      ignore_missing: true
+  - remove:
+      field: _conf
+      ignore_missing: true
   - rename:
       field: teleport.audit.stdout
       target_field: teleport.audit.database.aws.ssm_run.stdout

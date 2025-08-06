@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the creation of a systemd generator file. Generators are small executables executed by systemd at bootup and during configuration reloads. Their main role is to convert non-native configuration and execution parameters into dynamically generated unit files, symlinks, or drop-ins, extending the unit file hierarchy for the service manager. Systemd generators can be used to execute arbitrary code at boot time, which can be leveraged by attackers to maintain persistence on a Linux system.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Systemd Generator Created",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Systemd Generator Created\n\nSystemd generators are scripts that systemd runs at boot or during configuration reloads to convert non-native configurations into unit files. Adversaries can exploit this by creating malicious generators to execute arbitrary code, ensuring persistence or escalating privileges. The detection rule identifies suspicious generator file creations or renames, excluding benign processes and file types, to flag potential abuse.\n\n### Possible investigation steps\n\n- Review the file path where the generator was created or renamed to determine if it is located in a standard systemd generator directory, such as /run/systemd/system-generators/ or /etc/systemd/user-generators/.\n- Identify the process that created or renamed the generator file by examining the process.executable field, and determine if it is a known benign process or potentially malicious.\n- Check the file extension and original extension fields to ensure the file is not a temporary or expected system file, such as those with extensions like \"swp\" or \"dpkg-new\".\n- Investigate the history and behavior of the process that created the generator file, including any associated network connections or file modifications, to assess if it exhibits signs of malicious activity.\n- Correlate the event with other security alerts or logs from the same host to identify any patterns or additional indicators of compromise that might suggest persistence or privilege escalation attempts.\n\n### False positive analysis\n\n- Package managers like dpkg, rpm, and yum can trigger false positives when they create or rename files in systemd generator directories during software installations or updates. To handle these, exclude processes associated with these package managers as specified in the rule.\n- Automated system management tools such as Puppet and Chef may also create or modify generator files as part of their configuration management tasks. Exclude these processes by adding them to the exception list if they are part of your environment.\n- Temporary files with extensions like swp, swpx, and swx, often created by text editors, can be mistakenly flagged. Ensure these extensions are included in the exclusion list to prevent unnecessary alerts.\n- System updates or maintenance scripts that run as part of regular operations might create or modify generator files. Identify these scripts and add their executables to the exclusion list to reduce false positives.\n- Custom scripts or tools that are part of legitimate administrative tasks may also trigger alerts. Review these scripts and consider excluding their executables if they are verified as non-malicious.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further execution of potentially malicious code and lateral movement.\n- Terminate any suspicious processes associated with the creation or modification of systemd generator files to halt any ongoing malicious activity.\n- Conduct a thorough review of the systemd generator directories to identify and remove any unauthorized or suspicious generator files.\n- Restore any modified or deleted legitimate systemd generator files from a known good backup to ensure system integrity.\n- Implement file integrity monitoring on systemd generator directories to detect unauthorized changes in the future.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems are affected.\n- Review and update access controls and permissions for systemd generator directories to limit the ability to create or modify files to authorized users only.",
+        "query": "file where host.os.type == \"linux\" and event.action in (\"rename\", \"creation\") and file.path : (\n\"/run/systemd/system-generators/*\", \"/etc/systemd/system-generators/*\",\n\"/usr/local/lib/systemd/system-generators/*\", \"/lib/systemd/system-generators/*\",\n\"/usr/lib/systemd/system-generators/*\", \"/etc/systemd/user-generators/*\",\n\"/usr/local/lib/systemd/user-generators/*\", \"/usr/lib/systemd/user-generators/*\",\n\"/lib/systemd/user-generators/*\"\n) and not (\n  process.executable in (\n    \"/bin/dpkg\", \"/usr/bin/dpkg\", \"/bin/dockerd\", \"/usr/bin/dockerd\", \"/usr/sbin/dockerd\", \"/bin/microdnf\",\n    \"/usr/bin/microdnf\", \"/bin/rpm\", \"/usr/bin/rpm\", \"/bin/snapd\", \"/usr/bin/snapd\", \"/bin/yum\", \"/usr/bin/yum\",\n    \"/bin/dnf\", \"/usr/bin/dnf\", \"/bin/podman\", \"/usr/bin/podman\", \"/bin/dnf-automatic\", \"/usr/bin/dnf-automatic\",\n    \"/bin/pacman\", \"/usr/bin/pacman\", \"/usr/bin/dpkg-divert\", \"/bin/dpkg-divert\", \"/sbin/apk\", \"/usr/sbin/apk\",\n    \"/usr/local/sbin/apk\", \"/usr/bin/apt\", \"/usr/sbin/pacman\", \"/bin/podman\", \"/usr/bin/podman\", \"/usr/bin/puppet\",\n    \"/bin/puppet\", \"/opt/puppetlabs/puppet/bin/puppet\", \"/usr/bin/chef-client\", \"/bin/chef-client\", \"/usr/sbin/sshd\",\n    \"/bin/autossl_check\", \"/usr/bin/autossl_check\", \"/proc/self/exe\", \"/dev/fd/*\",  \"/usr/bin/pamac-daemon\",\n    \"/bin/pamac-daemon\", \"/usr/lib/snapd/snapd\", \"/usr/local/bin/dockerd\", \"/usr/libexec/platform-python\"\n  ) or\n  process.name like~ (\"ssm-agent-worker\", \"crio\", \"docker-init\", \"systemd\", \"pacman\", \"python*\", \"platform-python*\") or\n  file.extension in (\"swp\", \"swpx\", \"swx\", \"dpkg-remove\") or\n  file.Ext.original.extension == \"dpkg-new\" or\n  process.executable == null\n)\n",
+        "references": [
+            "https://pberba.github.io/security/2022/02/07/linux-threat-hunting-for-persistence-systemd-generators/",
+            "https://www.elastic.co/security-labs/primer-on-persistence-mechanisms"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "file.Ext.original.extension",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "39c06367-b700-4380-848a-cab06e7afede",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.002",
+                                "name": "Systemd Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.002",
+                                "name": "Systemd Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "39c06367-b700-4380-848a-cab06e7afede_5",
+    "type": "security-rule"
+}

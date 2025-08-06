@@ -1,0 +1,106 @@
+rules:
+  - path: /oauth2/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":1799,"token_type":"bearer"}
+  - path: /api/reporting
+    methods: ['GET']
+    query_params:
+      generate_report: "AccessSession"
+      start_time: "{start_time:.*}"
+      duration: "0"
+    responses:
+      - status_code: 200
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <session_list>
+                <session>
+                    <session_type>support2</session_type>
+                    <lseq>12345</lseq>
+                    <start_time timestamp="1712235600">2024-04-04T13:00:00Z</start_time>
+                    <end_time timestamp="1712239200">2024-04-04T14:00:00Z</end_time>
+                    <duration>01:00:00</duration>
+                    <jump_group type="shared" id="56789">Support Team</jump_group>
+                    <jumpoint id="98765">Main Jumpoint</jumpoint>
+                    <custom_attributes>
+                        <custom_attribute display_name="priority" code_name="priority">High</custom_attribute>
+                        <custom_attribute display_name="priority" code_name="priority">High</custom_attribute>
+                    </custom_attributes>
+                    <session_chat_view_url>https://example.com/chat_view/12345</session_chat_view_url>
+                    <session_chat_download_url>https://example.com/chat_download/12345</session_chat_download_url>
+                    <session_recording_view_url>https://example.com/recording_view/12345</session_recording_view_url>
+                    <session_recording_download_url>https://example.com/recording_download/12345</session_recording_download_url>
+                    <command_shell_recordings>
+                        <command_shell_recording instance="0">
+                            <download_url>https://example.com/shell_download/12345</download_url>
+                            <view_url>https://example.com/shell_view/12345</view_url>
+                        </command_shell_recording>
+                    </command_shell_recordings>
+                    <file_transfer_count>3</file_transfer_count>
+                    <file_move_count>1</file_move_count>
+                    <file_delete_count>0</file_delete_count>
+                    <primary_customer gsnumber="C12345">Remote PC</primary_customer>
+                    <primary_rep gsnumber="R56789" id="112233">John Doe</primary_rep>
+                    <customer_list>
+                        <customer gsnumber="C12345">
+                            <username>remote_user</username>
+                            <public_ip>81.2.69.192</public_ip>
+                            <private_ip>1.128.0.1</private_ip>
+                            <hostname>remote-host</hostname>
+                            <os>Windows 10</os>
+                        </customer>
+                    </customer_list>
+                    <rep_list>
+                        <representative gsnumber="R56789" id="112233">
+                            <username>admin_user</username>
+                            <display_name>Admin</display_name>
+                            <public_ip>175.16.199.0</public_ip>
+                            <private_ip>1.128.0.2</private_ip>
+                            <hostname>admin-host</hostname>
+                            <os>Windows 11</os>
+                            <session_owner>1</session_owner>
+                            <seconds_involved>3600</seconds_involved>
+                            <invited>1</invited>
+                        </representative>
+                    </rep_list>
+                    <session_details>
+                        <event timestamp="2024-04-04T13:30:00Z" event_type="Session Start">
+                            <performed_by gsnumber="R56789" type="representative" />
+                            <destination gsnumber="C12345" type="customer" />
+                            <body>Session started by Admin</body>
+                            <encoded_body>U2Vzc2lvbiBzdGFydGVkIGJ5IEFkbWlu</encoded_body>
+                            <filename>logfile.txt</filename>
+                            <filesize>1024</filesize>
+                            <files>
+                                <file>
+                                    <filename>logfile.txt</filename>
+                                    <filesize>1024</filesize>
+                                </file>
+                            </files>
+                            <system_information>
+                                <category name="OS Information">
+                                    <description>
+                                        <field name="hostname">Hostname</field>
+                                        <field name="hostid">Hostid</field>
+                                    </description>
+                                    <data>
+                                        <row>
+                                            <field name="hostname">remote-host1</field>
+                                            <field name="hostname">h1234</field>
+                                        </row>
+                                        <row>
+                                            <field name="hostname">remote-host2</field>
+                                            <field name="hostname">h5647</field>
+                                        </row>
+                                    </data>
+                                </category>
+                            </system_information>
+                        </event>
+                    </session_details>
+                </session>
+            </session_list>

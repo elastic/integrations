@@ -1,0 +1,205 @@
+- name: admin_by_request_epm
+  title: Admin By Request EPM Audit Log Fields
+  type: group
+  fields:
+    - name: auditlog
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The unique ID of this entry. This ID can be used to query updated information on this entry by appending it to the url to request this resource only
+        - name: trace_no
+          type: keyword
+          description: The trace number to find this entry in the portal auditlog
+        - name: settings_name
+          type: keyword
+          description: The name of the matching subsettings or "Global" if no subsetting was matched
+        - name: type
+          type: keyword
+          description: Type of request (possible values - Run As Admin, Admin Session, Server Session)
+        - name: type_code
+          type: keyword
+          description: 0 = Run As Admin, 1 = Admin Session, 2 = Server Session
+        - name: status
+          type: keyword
+          description: Status of the request (possible values - Open, Running, Finished, Denied, Pending approval, Quarantined)
+        - name: status_code
+          type: keyword
+          description: 0 = Open, 1 = Running, 2 = Finished, 3 = Denied, 4 = Pending Approval, 5 = Quarantined, 6 = Expired
+        - name: reason
+          type: text
+          description: Reason supplied by end user
+        - name: approved_by
+          type: keyword
+          description: Name of person that approved the request
+        - name: denied_reason
+          type: text
+          description: Reason for denying the request supplied by an administrator
+        - name: denied_by
+          type: keyword
+          description: Name of person denying the request
+        - name: sso_validated
+          type: boolean
+          description: If the request was validated by Single Sign-On (SSO) on the endpoint
+        - name: request_time_utc
+          type: date
+          description: Request time in Coordinated Universal Time (UTC)
+        - name: response_time
+          type: keyword
+          description: Time between a request and approval by an administrator
+        - name: response_time_in_seconds
+          type: long
+          description: Response time in seconds
+        - name: start_time_utc
+          type: date
+          description: Start time in Coordinated Universal Time (UTC)
+        - name: end_time_utc
+          type: date
+          description: End time in Coordinated Universal Time (UTC)
+        - name: auditlog_link
+          type: keyword
+          description: Link to this request in the auditlog on www.adminbyrequest.com
+        - name: user
+          type: group
+          fields:
+            - name: account
+              type: keyword
+              description: The user account the end user used to log on to the computer
+            - name: full_name
+              type: keyword
+              description: The full name of the user
+            - name: email
+              type: keyword
+              description: The user's email address supplied on the request form
+            - name: phone
+              type: keyword
+              description: The user's phone number supplied on the request form
+            - name: is_admin
+              type: boolean
+              description: Determines if the user is an administrator
+        - name: computer
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the computer executing the request
+            - name: platform
+              type: keyword
+              description: Operating system platform (possible values Windows, Mac, Server)
+            - name: platform_code
+              type: keyword
+              description: 0 = Windows, 1 = Mac, 2 = Server
+            - name: make
+              type: keyword
+              description: The vendor of the machine, as it appears in the inventory
+            - name: model
+              type: keyword
+              description: The model of the machine, as it appears in the inventory
+        - name: application
+          type: group
+          fields:
+            - name: file
+              type: keyword
+              description: The file name of the file executed using Run As Admin
+            - name: path
+              type: keyword
+              description: The file path of the executed application
+            - name: name
+              type: keyword
+              description: The name of the application (description property of file)
+            - name: vendor
+              type: keyword
+              description: The vendor of the application
+            - name: version
+              type: keyword
+              description: The version of the file
+            - name: sha256
+              type: keyword
+              description: The checksum of the file
+            - name: scan_result
+              type: keyword
+              description: Malware scan result (possible values - Clean, Malicious, Suspicious)
+            - name: scan_result_code
+              type: keyword
+              description: 0 = Clean, 1 = Malicious, 2 = Suspicious
+            - name: threat
+              type: keyword
+              description: Name of malware, if file is malicious or suspicious
+            - name: virustotal_link
+              type: keyword
+              description: Link to the file (checksum) on virustotal.com
+            - name: preapproved
+              type: boolean
+              description: If the file was pre-approved to run
+        - name: installs
+          type: group
+          fields:
+            - name: application
+              type: keyword
+              description: The name of the application (description property of file)
+            - name: version
+              type: keyword
+              description: The version of the application
+            - name: vendor
+              type: keyword
+              description: The vendor of the application
+        - name: uninstalls
+          type: group
+          fields:
+            - name: application
+              type: keyword
+              description: The name of the application (description property of file)
+            - name: version
+              type: keyword
+              description: The version of the application
+            - name: vendor
+              type: keyword
+              description: The vendor of the application
+        - name: elevated_applications
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the application (description property of file)
+            - name: path
+              type: keyword
+              description: The file path of the executed application
+            - name: file
+              type: keyword
+              description: The file name of the file executed
+            - name: version
+              type: keyword
+              description: The version of the file
+            - name: vendor
+              type: keyword
+              description: The vendor of the application
+            - name: sha256
+              type: keyword
+              description: The checksum of the file
+            - name: scan_result
+              type: keyword
+              description: Malware scan result (possible values - Clean, Malicious, Suspicious)
+            - name: scan_result_code
+              type: keyword
+              description: 0 = Clean, 1 = Malicious, 2 = Suspicious
+            - name: threat
+              type: keyword
+              description: Name of malware, if file is malicious or suspicious
+            - name: virustotal_link
+              type: keyword
+              description: Link to the file (checksum) on virustotal.com
+        - name: scan_results
+          type: group
+          fields:
+            - name: scan_result
+              type: keyword
+              description: Malware scan result (possible values - Clean, Malicious, Suspicious)
+            - name: scan_result_code
+              type: keyword
+              description: 0 = Clean, 1 = Malicious, 2 = Suspicious
+            - name: engine
+              type: keyword
+              description: Name of the antivirus engine with this result
+            - name: threat
+              type: keyword
+              description: Name of malware, if file is malicious or suspicious

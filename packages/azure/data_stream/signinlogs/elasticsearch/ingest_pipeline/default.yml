@@ -176,7 +176,7 @@ processors:
       ignore_missing: true
   - rename:
       field: azure.signinlogs.properties.location.state
-      target_field: geo.country_name
+      target_field: geo.region_name
       ignore_missing: true
   - rename:
       field: azure.signinlogs.properties.location.geo_coordinates.latitude
@@ -223,13 +223,18 @@ processors:
       field: event.id
       value: '{{{azure.signinlogs.properties.id}}}'
       ignore_empty_value: true
-  - grok:
-      field: azure.signinlogs.properties.user_principal_name
-      patterns:
-        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
-        - '%{GREEDYDATA:user.name}'
-      ignore_missing: true
-      ignore_failure: true
+  - set:
+     field: user.name
+     copy_from: azure.signinlogs.properties.user_principal_name
+     ignore_empty_value: true
+     tag: set_user_name
+  - set:
+      field: user.email
+      copy_from: user.name
+      tag: set_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  # Don't dissect the user email into <user.name>@<user.domain>
+  # as the parts are meaningless on their own
   - convert:
       field: azure.signinlogs.properties.user_display_name
       target_field: user.full_name
@@ -245,6 +250,24 @@ processors:
       target_field: user.id
       ignore_missing: true
       type: string
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.full_name}}}'
+      if: ctx.user?.full_name != null
+      allow_duplicates: false
+      ignore_failure: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -283,7 +306,6 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
-      
   - append:
       field: related.entity
       value: '{{{ azure.signinlogs.properties.app_id }}}'
@@ -294,6 +316,10 @@ processors:
       value: '{{{ azure.signinlogs.properties.resource_id }}}'
       allow_duplicates: false
       if: ctx.azure?.signinlogs?.properties?.resource_id != null && ctx.azure.signinlogs.properties.resource_id != ''
+  - set:
+      field: service.name
+      copy_from: azure.signinlogs.properties.service_principal_name
+      ignore_empty_value: true
   - append:
       field: related.entity
       value: '{{{ azure.signinlogs.properties.service_principal_id }}}'
@@ -316,7 +342,27 @@ processors:
       if: ctx.azure?.signinlogs?.properties?.device_detail?.device_id != null && ctx.azure.signinlogs.properties.device_detail.device_id != ''
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

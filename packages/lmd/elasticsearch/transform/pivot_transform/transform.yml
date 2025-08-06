@@ -3,9 +3,11 @@ source:
   query:
     bool:
       must_not:
-        term:
-          'user.name':
-            value: system
+        - term:
+            'user.name':
+              value: system
+        - terms:
+              'process.name': [ "elastic-agent.exe","elastic-agent","metricbeat.exe","metricbeat","filebeat.exe","filebeat","packetbeat.exe","packetbeat","winlogbeat.exe","winlogbeat" ]
       filter:
         - exists:
             field: process.Ext.session_info.client_address
@@ -73,5 +75,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 2.2.0
+  fleet_transform_version: 2.4.1
   run_as_kibana_system: false

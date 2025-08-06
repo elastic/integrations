@@ -4,8 +4,42 @@ processors:
   - script:
       lang: painless
       source: >
-        if (ctx.meraki != null && ctx.meraki.uplink != null && ctx.meraki.uplink.loss != null && ctx.meraki.uplink.loss.pct != null) {
-            ctx.meraki.uplink.loss.pct = ctx.meraki.uplink.loss.pct / 100;
+        // some values have unit 'percent' in the mappings; we need to scale them down from 0->100 to 0->1.
+        // we round to 4 decimal places to avoid floating point errors.
+
+        if (ctx.meraki != null) {
+            if (ctx.meraki.uplink != null && ctx.meraki.uplink.loss != null && ctx.meraki.uplink.loss.pct != null) {
+                ctx.meraki.uplink.loss.pct = Math.round((ctx.meraki.uplink.loss.pct / 100) * 10000) / 10000.0;
+            }
+
+            if (ctx.meraki.device != null && ctx.meraki.device.channel_utilization != null) {
+                def wifi0 = ctx.meraki.device.channel_utilization["2_4"];
+                def wifi1 = ctx.meraki.device.channel_utilization["5"];
+
+                if (wifi0 != null) {
+                    if (wifi0.utilization_80211 != null) {
+                        wifi0.utilization_80211 = Math.round((wifi0.utilization_80211 / 100) * 10000) / 10000.0;
+                    }
+                    if (wifi0.utilization_non_80211 != null) {
+                        wifi0.utilization_non_80211 = Math.round((wifi0.utilization_non_80211 / 100) * 10000) / 10000.0;
+                    }
+                    if (wifi0.utilization_total != null) {
+                        wifi0.utilization_total = Math.round((wifi0.utilization_total / 100) * 10000) / 10000.0;
+                    }
+                }
+
+                if (wifi1 != null) {
+                    if (wifi1.utilization_80211 != null) {
+                        wifi1.utilization_80211 = Math.round((wifi1.utilization_80211 / 100) * 10000) / 10000.0;
+                    }
+                    if (wifi1.utilization_non_80211 != null) {
+                        wifi1.utilization_non_80211 = Math.round((wifi1.utilization_non_80211 / 100) * 10000) / 10000.0;
+                    }
+                    if (wifi1.utilization_total != null) {
+                        wifi1.utilization_total = Math.round((wifi1.utilization_total / 100) * 10000) / 10000.0;
+                    }
+                }
+            }
         }
   - convert:
       field: meraki.uplink.rsrp
@@ -14,6 +48,14 @@ processors:
   - convert:
       field: meraki.uplink.rsrq
       type: float
+      ignore_missing: true
+  - rename:
+      field: meraki.device.channel_utilization.2_4
+      target_field: meraki.device.channel_utilization.wifi0
+      ignore_missing: true
+  - rename:
+      field: meraki.device.channel_utilization.5
+      target_field: meraki.device.channel_utilization.wifi1
       ignore_missing: true
 on_failure:
   - set:

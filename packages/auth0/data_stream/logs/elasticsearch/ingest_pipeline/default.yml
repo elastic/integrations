@@ -59,14 +59,40 @@ processors:
     field: network.type
     value: ipv4
     if: 'ctx.network?.type == null && ctx.source?.ip != null'
+- grok:
+    field: auth0.logs.data.user_name
+    patterns:
+      - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+      - '%{GREEDYDATA:user.name}'
+    ignore_missing: true
+    ignore_failure: true
 - set:
-    field: user.name
+    field: user.email
     copy_from: auth0.logs.data.user_name
-    if: 'ctx?.auth0?.logs?.data?.user_name != null'
+    tag: copy_user_email
+    if: ctx.auth0?.logs?.data?.user_name != null && ctx.auth0.logs.data.user_name.indexOf("@") > 0
 - set:
     field: user.id
     copy_from: auth0.logs.data.user_id
     if: 'ctx?.auth0?.logs?.data?.user_id != null'
+- append:
+    field: related.user
+    value: '{{{user.id}}}'
+    allow_duplicates: false
+    tag: append_related_user_id
+    if: ctx.user?.id != null
+- append:
+    field: related.user
+    value: '{{{user.name}}}'
+    allow_duplicates: false
+    tag: append_related_user_name
+    if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{{user.email}}}'
+    allow_duplicates: false
+    tag: append_related_user_email
+    if: ctx.user?.email != null
 - user_agent:
     field: auth0.logs.data.user_agent
     ignore_missing: true
@@ -83,10 +109,14 @@ processors:
 - append:
     field: event.category
     value: authentication
+- set:
+    field: auth0.logs.data.type_id
+    copy_from: auth0.logs.data.type
+    ignore_empty_value: true
 - script:
     lang: painless
     description: Sets event type, category and action based on type
-    if: ctx?.auth0?.logs?.data?.type != null
+    if: ctx.auth0?.logs?.data?.type != null
     params:
       actions:
         f:
@@ -130,18 +160,15 @@ processors:
           value: "Invalid email or username"
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: invalid-username-or-email
         w:
           classification: "Login - Notification"
           value: "Warnings during login"
           type:
             - info
-            - indicator
-          category:
-            - threat
           action: warnings-during-login
         s:
           classification: "Login - Success"
@@ -202,9 +229,9 @@ processors:
           value: "Failed silent authentication"
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: failed-silent-authentication
         ssa:
           classification: "Silent Authentication - Success"
@@ -516,20 +543,18 @@ processors:
           classification: "System - Notification"
           value: "An IP address is blocked with 100 failed login attempts using different usernames"
           type:
-            - indicator
             - info
+            - denied
           category:
-            - threat
             - intrusion_detection
           action: hundred-failed-logins-ip-address-blocked
         limit_wc:
           classification: "System - Notification"
           value: "An IP address is blocked with 10 failed login attempts into a single account from the same IP address"
           type:
-            - indicator
             - info
+            - denied
           category:
-            - threat
             - intrusion_detection
           action: ten-failed-logins-ip-address-blocked
         sys_os_update_start:
@@ -873,9 +898,9 @@ processors:
           value: "A user, during enrollment or authentication, enters an incorrect code more than the maximum allowed number of times. Ex: A user enrolling in SMS enters the 6-digit code wrong more than 10 times in a row."
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: user-entered-too-many-incorrect-codes
         gd_recovery_failed:
           classification: "Other"
@@ -888,9 +913,9 @@ processors:
           value: "A user enters a wrong recovery code too many times."
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: user-entered-too-many-wrong-codes
         gd_recovery_succeed:
           classification: "Other"
@@ -945,9 +970,9 @@ processors:
           value: "A user is temporarily prevented from logging in because more than 20 logins per minute occurred from the same IP address"
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: user-blocked-too-many-failed-logins-from-same-ip
         mfar:
           classification: "Other"
@@ -1037,6 +1062,26 @@ processors:
          } else {
            ctx.event.outcome = "unknown";
          }
+- script:
+    if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
+    tag: convert_timestamp_initiated_at to string removing any scientific notation if present
+    lang: painless
+    source: >
+      ctx.auth0.logs.data.details.initiatedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.initiatedAt.toString()));
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- script:
+    if: ctx?.auth0?.logs?.data?.details?.completedAt != null
+    tag: convert_timestamp_completed_at to string removing any scientific notation if present
+    lang: painless
+    source: >
+      ctx.auth0.logs.data.details.completedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.completedAt.toString()));
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - date:
     if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
     field: auth0.logs.data.details.initiatedAt
@@ -1065,7 +1110,7 @@ processors:
 # Clean up
 ##
 - remove:
-    field: 
+    field:
       - json
       - auth0.logs.data.$event_schema.version
       - auth0.logs.data._id

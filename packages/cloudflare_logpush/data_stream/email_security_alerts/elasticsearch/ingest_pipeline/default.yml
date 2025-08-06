@@ -1,0 +1,431 @@
+---
+description: Pipeline for parsing Email Security Alerts logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [email,network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - script:
+      lang: painless
+      tag: painless_Timestamp_to_milli
+      if: ctx.json?.Timestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.timestamp instanceof String) {
+            t = Long.parseLong(ctx.json.timestamp);
+          } else if (ctx.json.timestamp instanceof Number) {
+            t = (long)(ctx.json.timestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.timestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.timestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: >-
+            Processor '{{{ _ingest.on_failure_processor_type }}}'
+            {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+            {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: cloudflare_logpush.email_security_alerts.timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - rename:
+      field: json.AlertID
+      target_field: cloudflare_logpush.email_security_alerts.alert_id
+      ignore_missing: true
+  - rename:
+      field: json.AlertReasons
+      target_field: cloudflare_logpush.email_security_alerts.alert_reasons
+      ignore_missing: true
+  - rename:
+      field: json.Attachments
+      target_field: cloudflare_logpush.email_security_alerts.attachments
+      ignore_missing: true
+  - rename:
+      field: json.CC
+      target_field: cloudflare_logpush.email_security_alerts.cc
+      ignore_missing: true
+  - rename:
+      field: json.CCName
+      target_field: cloudflare_logpush.email_security_alerts.cc_name
+      ignore_missing: true
+  - rename:
+      field: json.FinalDisposition
+      target_field: cloudflare_logpush.email_security_alerts.final_disposition
+      ignore_missing: true
+  - rename:
+      field: json.From
+      target_field: cloudflare_logpush.email_security_alerts.from
+      ignore_missing: true
+  - rename:
+      field: json.FromName
+      target_field: cloudflare_logpush.email_security_alerts.from_name
+      ignore_missing: true
+  - rename:
+      field: json.Links
+      target_field: cloudflare_logpush.email_security_alerts.links
+      ignore_missing: true
+  - rename:
+      field: json.MessageDeliveryMode
+      target_field: cloudflare_logpush.email_security_alerts.message_delivery_mode
+      ignore_missing: true
+  - rename:
+      field: json.MessageID
+      target_field: cloudflare_logpush.email_security_alerts.message_id
+      ignore_missing: true
+  - rename:
+      field: json.Origin
+      target_field: cloudflare_logpush.email_security_alerts.origin
+      ignore_missing: true
+  - rename:
+      field: json.OriginalSender
+      target_field: cloudflare_logpush.email_security_alerts.original_sender
+      ignore_missing: true
+  - rename:
+      field: json.ReplyTo
+      target_field: cloudflare_logpush.email_security_alerts.reply_to
+      ignore_missing: true
+  - rename:
+      field: json.ReplyToName
+      target_field: cloudflare_logpush.email_security_alerts.reply_to_name
+      ignore_missing: true
+  - rename:
+      field: json.SMTPEnvelopeFrom
+      target_field: cloudflare_logpush.email_security_alerts.smtp_envelope_from
+      ignore_missing: true
+  - rename:
+      field: json.SMTPEnvelopeTo
+      target_field: cloudflare_logpush.email_security_alerts.smtp_envelope_to
+      ignore_missing: true
+  - convert:
+      field: json.SMTPHeloServerIP
+      target_field: cloudflare_logpush.email_security_alerts.smtp_helo_server_ip
+      tag: convert_smtp_helo_server_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.SMTPHeloServerIPAsName
+      target_field: cloudflare_logpush.email_security_alerts.smtp_helo_server_ip_as_name
+      ignore_missing: true
+  - rename:
+      field: json.SMTPHeloServerIPAsNumber
+      target_field: cloudflare_logpush.email_security_alerts.smtp_helo_server_ip_as_number
+      ignore_missing: true
+  - rename:
+      field: json.SMTPHeloServerIPGeo
+      target_field: cloudflare_logpush.email_security_alerts.smtp_helo_server_ip_geo
+      ignore_missing: true
+  - rename:
+      field: json.SMTPHeloServerName
+      target_field: cloudflare_logpush.email_security_alerts.smtp_helo_server_name
+      ignore_missing: true
+  - rename:
+      field: json.Subject
+      target_field: cloudflare_logpush.email_security_alerts.subject
+      ignore_missing: true
+  - rename:
+      field: json.ThreatCategories
+      target_field: cloudflare_logpush.email_security_alerts.threat_categories
+      ignore_missing: true
+  - rename:
+      field: json.To
+      target_field: cloudflare_logpush.email_security_alerts.to
+      ignore_missing: true
+  - rename:
+      field: json.ToName
+      target_field: cloudflare_logpush.email_security_alerts.to_name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.cloudflare_logpush?.email_security_alerts?.final_disposition != null && ctx.cloudflare_logpush.email_security_alerts.final_disposition != 'unset'
+  - append:
+      field: related.user
+      value: '{{{cloudflare_logpush.email_security_alerts.from}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.from != null && ctx.cloudflare_logpush.email_security_alerts.from != ''
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{cloudflare_logpush.email_security_alerts.from_name}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.from_name != null && ctx.cloudflare_logpush.email_security_alerts.from_name != ''
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{cloudflare_logpush.email_security_alerts.smtp_envelope_from}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.smtp_envelope_from != null && ctx.cloudflare_logpush.email_security_alerts.smtp_envelope_from != ''
+      allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.email_security_alerts.to
+      if: ctx.cloudflare_logpush?.email_security_alerts?.to instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.email_security_alerts.smtp_envelope_to
+      if: ctx.cloudflare_logpush?.email_security_alerts?.smtp_envelope_to instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.email_security_alerts.to_name
+      if: ctx.cloudflare_logpush?.email_security_alerts?.to_name instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.email_security_alerts.cc
+      if: ctx.cloudflare_logpush?.email_security_alerts?.cc instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.email_security_alerts.cc_name
+      if: ctx.cloudflare_logpush?.email_security_alerts?.cc_name instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: server.address
+      copy_from: cloudflare_logpush.email_security_alerts.smtp_helo_server_name
+      ignore_empty_value: true
+  - convert:
+      field: server.address
+      target_field: _tmp.server_ip
+      tag: convert_smtp_helo_server_name_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: server.domain
+            copy_from: server.address
+            ignore_empty_value: true
+  - set:
+      field: _tmp.links
+      copy_from: cloudflare_logpush.email_security_alerts.links
+      ignore_empty_value: true
+  - foreach:
+      field: _tmp.links
+      if: ctx._tmp?.links instanceof List
+      processor:
+        uri_parts:
+          tag: uri_parts_links
+          field: _ingest._value
+          target_field: _ingest._value
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: >-
+                  Processor '{{{ _ingest.on_failure_processor_type }}}'
+                  {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+                  {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - foreach:
+      field: _tmp.links
+      if: ctx._tmp?.links instanceof List
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value.domain}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      if: ctx.related?.user instanceof List || (ctx.server?.domain != null)
+      source: |-
+        def domains = new HashSet();
+        if (ctx.related?.hosts instanceof List) {
+          for (def h: ctx.related.hosts) {
+            domains.add(h);
+          }
+        }
+        if (ctx.server?.domain != null) {
+          domains.add(ctx.server.domain)
+        }
+        if (ctx.related?.user instanceof List) {
+          for (def u: ctx.related.user) {
+            if (u.length() < 3) {
+              continue;
+            }
+            def parts = u.splitOnToken('@');
+            if (parts.length != 2) {
+              continue;
+            }
+            domains.add(parts[1]);
+          }
+        }
+        ctx.related.hosts = domains;
+  - set:
+      field: server.ip
+      copy_from: cloudflare_logpush.email_security_alerts.smtp_helo_server_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{server.ip}}}'
+      if: ctx.server?.ip != null
+      allow_duplicates: false
+  - geoip:
+      field: server.ip
+      target_field: server.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      target_field: server.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: server.as.asn
+      target_field: server.as.number
+      ignore_missing: true
+  - rename:
+      field: server.as.organization_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.cloudflare_logpush?.email_security_alerts?.attachments instanceof List
+      source: |-
+        def files = [];
+        def hashes = new HashSet();
+        for (def a: ctx.cloudflare_logpush.email_security_alerts.attachments) {
+          def f = [:];
+          if (a.Name != null) {
+            f.name = a.Name;
+          }
+          if (a.ContentTypeComputed != null) {
+            f.mime_type = a.ContentTypeComputed;
+          }
+          def fh = [:];
+          if (a.Md5 != null) {
+            fh.md5 = a.Md5;
+          }
+          if (a.Sha1 != null) {
+            fh.sha1 = a.Sha1;
+          }
+          if (a.Sha256 != null) {
+            fh.sha256 = a.Sha256;
+          }
+          if (a.Sha384 != null) {
+            fh.sha384 = a.Sha384;
+          }
+          if (a.Sha512 != null) {
+            fh.sha512 = a.Sha512;
+          }
+          if (a.Ssdeep != null) {
+            fh.ssdeep = a.Ssdeep;
+          }
+          if (fh.size() != 0) {
+            f.hash = fh;
+          }
+          files.add(f);
+          for (def h: fh.entrySet()) {
+            hashes.add(h.getValue());
+          }
+        }
+        ctx.file = files;
+        ctx.related = ctx.related ?: [:];
+        ctx.related.hash = hashes;
+
+  - remove:
+      field:
+        - json
+        - _tmp
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.email_security_alerts.timestamp
+        - cloudflare_logpush.email_security_alerts.smtp_helo_server_ip
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source: |
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

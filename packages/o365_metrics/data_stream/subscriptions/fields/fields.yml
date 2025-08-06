@@ -7,48 +7,53 @@
       description: Number of unused units which indicates if you oversubscribed to any SKUs.
     - name: account_id
       type: keyword
-      description: Unique identifier for the account.
+      description: The unique ID of the account this SKU belongs to.
     - name: account_name
       type: text
-      description: Name of the account.
+      description: The name of the account this SKU belongs to.
     - name: applies_to
       type: keyword
-      description: Type of entity the subscription applies to (e.g. User or Company).
+      description: The target class for this SKU. Only SKUs with target class User are assignable. Possible values are (User, Company).
     - name: capability_status
       type: keyword
       description: Status of the capability (e.g. Enabled, Suspended).
     - name: consumed_units.count
       type: long
-      description: Number of consumed units.
+      metric_type: gauge
+      description: The number of licenses that have been assigned.
     - name: id
       type: keyword
-      description: Unique identifier for the subscription entry.
+      description: The unique identifier for the subscribed sku object.
     - name: prepaid_units
       type: group
-      description: Prepaid unit details
+      description: Information about the number and status of prepaid licenses.
       fields:
         - name: enabled.count
           type: long
-          description: Number of enabled prepaid units.
+          metric_type: gauge
+          description: The number of units that are enabled for the active subscription of the service SKU.
         - name: locked_out.count
           type: long
-          description: Number of locked-out prepaid units.
+          metric_type: gauge
+          description: The number of units that are locked out because the customer canceled their subscription of the service SKU.
         - name: suspended.count
           type: long
-          description: Number of suspended prepaid units.
+          metric_type: gauge
+          description: The number of units that are suspended because the subscription of the service SKU has been canceled. The units can't be assigned but can still be reactivated before they're deleted.
         - name: warning.count
           type: long
-          description: Number of prepaid units in warning state.
+          metric_type: gauge
+          description: The number of units that are in warning status. When the subscription of the service SKU has expired, the customer has a grace period to renew their subscription before it's canceled (moved to a suspended state).
     - name: service_plans
-      type: nested
-      description: Array of service plan details.
+      type: group
+      description: Information about the service plans that are available with the SKU.
       fields:
         - name: applies_to
           type: keyword
-          description: Type of entity the service plan applies to.
+          description: The object the service plan can be assigned to.
         - name: provisioning_status
           type: keyword
-          description: Status of the service plan provisioning.
+          description: The provisioning status of the service plan.
         - name: service_plan_id
           type: keyword
           description: Unique identifier for the service plan.
@@ -60,7 +65,35 @@
       description: Unique identifier for the SKU.
     - name: sku_part_number
       type: keyword
-      description: SKU part number.
+      description: The SKU part number; for example, AAD_PREMIUM or RMSBASIC.
     - name: subscription_ids
       type: keyword
-      description: Array of subscription IDs.
+      description: A list of all subscription IDs associated with the SKU.
+    - name: subscription_details
+      type: group
+      description: Details of all subscription IDs associated with the SKU.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique ID for the subscription.
+        - name: created_date_time
+          type: date
+          description: The date and time when this subscription was created.
+        - name: is_trial
+          type: boolean
+          description: Whether the subscription is a free trial or purchased.
+        - name: next_lifecycle_date_time
+          type: date
+          description: The date and time when the subscription will move to the next state (as defined by the status property) if not renewed by the tenant.
+        - name: status
+          type: keyword
+          description: The status of this subscription. Possible values are, Enabled, Deleted, Suspended, Warning, LockedOut.
+        - name: total_licenses
+          type: long
+          description: The number of licenses included in this subscription.
+        - name: owner_tenant_id
+          type: keyword
+          description: The unique identifier for the Microsoft partner tenant that created the subscription on a customer tenant.
+        - name: subscription_error
+          type: text
+          description:  An error if the subscription data is not available.

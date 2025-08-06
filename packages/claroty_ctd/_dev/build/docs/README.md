@@ -36,51 +36,33 @@ The Claroty CTD integration collects 7 types of message:
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the Syslog server and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+You can install only one Elastic Agent per host.
+Elastic Agent is required to stream data through the Syslog server and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Setup
 
-### To collect data via TCP/UDP, follow the below steps:
+### Collect data via TCP/UDP
 
 1. To set up Claroty CTD, refer to the [Installation Guide](https://portal.claroty.com/prm/English/s/assets?id=696859).
 2. To configure the syslog message types in Claroty CTD, refer to the [Administration Guide](https://portal.claroty.com/prm/English/s/assets?id=696857).
 3. Claroty CTD supports multiple message formats, including RFC5424, CEF, and CEF(Latest). Currently, we recommend using the CEF(Latest) message format for optimal integration with Elastic.
 
-### To collect data via REST API, follow the below steps:
+### Collect data via REST API
 
 1. To set up Claroty CTD, refer to the [Installation Guide](https://portal.claroty.com/prm/English/s/assets?id=696859).
 2. Obtain the credentials (username, password, and URL) that are generated during the setup process.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Claroty CTD.
-3. Select "Claroty CTD" integration from the search results.
-4. To collect logs via TCP or UDP, please enter the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Claroty CTD**.
+3. Select the **Claroty CTD** integration and add it.
+4. To collect logs via TCP or UDP, enter the following details:
    - Listen Address
    - Listen Port
 
-   To collect logs via REST API, please enter the following details:
+   To collect logs via REST API, enter the following details:
    - Username
    - Password
    - URL

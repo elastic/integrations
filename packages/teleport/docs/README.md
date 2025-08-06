@@ -22,26 +22,7 @@ The `teleport` integration collects the following logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -50,15 +31,13 @@ to make it send audit logs to the Elasticsearch instance.
 
 See the [Getting started guide](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) for instructions on setting up the Elastic Stack.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Teleport`.
-3. Select the "Teleport" integration from the search results.
-4. Select "Add Teleport" to add the integration.
-5. Add all the required integration configuration parameters, including Paths.
-6. Select "Save and continue" to save the integration.
-
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Symantec Endpoint Security**.
+3. Select the **Symantec Endpoint Security** integration and add it.
+4. Add all the required integration configuration parameters, including Paths.
+5. Save the integration.
 
 ## Reference
 
@@ -78,84 +57,80 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-04-22T19:39:26.676Z",
-    "client": {
-        "address": "67.43.156.11",
-        "as": {
-            "number": 35908
-        },
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.11",
-        "port": 51454
+    "@timestamp": "2019-04-22T00:49:03.000Z",
+    "agent": {
+        "ephemeral_id": "c29e01c1-a81a-4435-8264-1b93a60fb5a9",
+        "id": "da8bdad7-eb36-4672-a8fb-2c8f4acdd435",
+        "name": "elastic-agent-96476",
+        "type": "filebeat",
+        "version": "8.18.1"
+    },
+    "data_stream": {
+        "dataset": "teleport.audit",
+        "namespace": "75574",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "da8bdad7-eb36-4672-a8fb-2c8f4acdd435",
+        "snapshot": false,
+        "version": "8.18.1"
+    },
     "event": {
-        "action": "session.start",
+        "action": "user.login",
+        "agent_id_status": "verified",
         "category": [
-            "session"
+            "authentication"
         ],
-        "code": "T2000I",
-        "id": "84c07a99-856c-419f-9de5-15560451a116",
+        "code": "T1000I",
+        "dataset": "teleport.audit",
+        "id": "173d6b6e-d613-44be-8ff6-f9f893791ef2",
+        "ingested": "2025-06-03T16:26:53Z",
         "kind": "event",
-        "original": "{\"addr.local\":\"172.31.28.130:3022\",\"addr.remote\":\"67.43.156.11:51454\",\"code\":\"T2000I\",\"ei\":0,\"event\":\"session.start\",\"login\":\"root\",\"namespace\":\"default\",\"server_id\":\"de3800ea-69d9-4d72-a108-97e57f8eb393\",\"sid\":\"56408539-6536-11e9-80a1-427cfde50f5a\",\"size\":\"80:25\",\"time\":\"2019-04-22T19:39:26.676Z\",\"uid\":\"84c07a99-856c-419f-9de5-15560451a116\",\"user\":\"admin@example.com\"}",
-        "sequence": 0,
+        "original": "{\"code\":\"T1000I\",\"event\":\"user.login\",\"method\":\"local\",\"success\":true,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef2\",\"user\":\"admin@example.com\"}",
+        "outcome": [
+            "success"
+        ],
         "type": [
             "start"
         ]
     },
-    "group": {
-        "name": "default"
+    "input": {
+        "type": "filestream"
     },
-    "host": {
-        "id": "de3800ea-69d9-4d72-a108-97e57f8eb393"
-    },
-    "process": {
-        "tty": {
-            "columns": 80,
-            "rows": 25
+    "log": {
+        "file": {
+            "device_id": "38",
+            "inode": "171",
+            "path": "/tmp/service_logs/test-teleport-all-events.log"
         },
-        "user": {
-            "name": "root"
-        }
+        "offset": 9009
     },
     "related": {
-        "ip": [
-            "67.43.156.11",
-            "172.31.28.130"
-        ],
         "user": [
-            "admin@example.com",
-            "root"
+            "admin",
+            "admin@example.com"
         ]
     },
-    "server": {
-        "address": "172.31.28.130",
-        "ip": "172.31.28.130",
-        "port": 3022
-    },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "teleport-audit",
+        "provider_cloud_data"
     ],
     "teleport": {
         "audit": {
-            "session": {
-                "id": "56408539-6536-11e9-80a1-427cfde50f5a",
-                "terminal_size": "80:25"
+            "login": {
+                "method": "local"
             }
         }
     },
     "user": {
-        "name": "admin@example.com"
+        "domain": "example.com",
+        "email": "admin@example.com",
+        "name": "admin"
     }
 }
 ```

@@ -1,9 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
-{{/if}}
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+  maxbackups: 5
 auth.oauth2.client.id: {{client_id}}
 auth.oauth2.client.secret: {{client_secret}}
 auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/{{token_endpoint}}
@@ -32,6 +32,11 @@ request.transforms:
   - set:
       target: url.params.$orderby
       value: 'lastUpdateDateTime asc'
+{{#if include_unknown_enum_members}}
+  - set:
+      target: "header.Prefer"
+      value: 'include-unknown-enum-members'
+{{/if}}
 response.pagination:
   - set:
       target: url.params.$filter

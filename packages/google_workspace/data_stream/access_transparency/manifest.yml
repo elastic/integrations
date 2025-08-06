@@ -10,11 +10,20 @@ streams:
         type: text
         title: Interval
         description: >-
-          Duration between requests to the API. Google Workspace defaults to a 2 hour polling interval because Google reports can go from some minutes up to 3 days of delay. For more details on this, you can read more at https://support.google.com/a/answer/7061566. NOTE: Supported units for this parameter are h/m/s.
+          Duration between requests to the API. NOTE: Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
-        default: 2h
+        default: 15m
+      - name: lag_time
+        type: text
+        title: Lag Time
+        description: >-
+          The lag time allowed for when fetching this report. Lag times vary by report, and go up to a few hours. There are more details in the [Google Workspace Admin documentation](https://support.google.com/a/answer/7061566). NOTE: Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 3m
       - name: tags
         type: text
         title: Tags
@@ -58,7 +67,7 @@ streams:
       - name: ssl
         type: yaml
         title: SSL Configuration
-        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
         multi: false
         required: false
         show_user: false
@@ -84,3 +93,10 @@ streams:
           #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
           #    sxSmbIUfc2SGJGCJD4I=
           #    -----END CERTIFICATE-----
+      - name: application_name_for_url
+        type: text
+        title: Application Name for the URL
+        default: access_transparency
+        required: true
+        description: Do not modify. The application name used to build the endpoint URL.
+        show_user: false

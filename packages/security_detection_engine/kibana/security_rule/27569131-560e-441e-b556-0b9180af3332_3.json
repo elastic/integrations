@@ -1,0 +1,70 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has identified a user leveraging an uncommon privilege type for privileged operations, indicating potential privileged access activity. This indicates that a user is performing operations requiring elevated privileges but is using a privilege type that is not typically seen in their baseline logs.",
+        "from": "now-1h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "pad_windows_rare_privilege_assigned_to_user",
+        "name": "Unusual Privilege Type assigned to a User",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Privilege Type assigned to a User\n\nIn modern IT environments, privilege management is crucial for maintaining security. Adversaries may exploit uncommon privilege types to perform unauthorized actions, bypassing standard detection. The detection rule leverages machine learning to identify deviations from normal privilege usage patterns, flagging potential privilege escalation attempts. By analyzing user behavior against established baselines, it helps detect and mitigate unauthorized access risks.\n\n### Possible investigation steps\n\n- Review the user's recent activity logs to identify any unusual or unauthorized actions associated with the uncommon privilege type.\n- Cross-reference the identified privilege type with the user's role and responsibilities to determine if the usage is justified or anomalous.\n- Check for any recent changes in the user's account settings or privilege assignments that could explain the deviation from the baseline.\n- Investigate any recent system or application changes that might have introduced new privilege types or altered existing ones.\n- Consult with the user's manager or relevant department to verify if there was a legitimate need for the unusual privilege type usage.\n- Analyze the timeline of events leading up to the alert to identify any potential indicators of compromise or privilege escalation attempts.\n\n### False positive analysis\n\n- Users with multiple roles may trigger false positives if they occasionally use privileges associated with less common roles. Regularly review and update role-based access controls to ensure they reflect current responsibilities.\n- Temporary project assignments can lead to unusual privilege usage. Implement a process to document and approve temporary privilege changes, and exclude these documented cases from triggering alerts.\n- System administrators or IT staff might use uncommon privileges during maintenance or troubleshooting. Establish a whitelist for known maintenance activities and exclude these from the detection rule.\n- Automated scripts or applications that require elevated privileges might be flagged. Ensure these scripts are registered and their privilege usage is documented, then exclude them from the rule.\n- New employees or contractors may initially use privileges that seem unusual. Monitor their activity closely during the onboarding period and adjust baselines as their normal usage patterns become clear.\n\n### Response and remediation\n\n- Immediately isolate the affected user account to prevent further unauthorized access or privilege escalation. This can be done by disabling the account or changing its credentials.\n- Review and revoke any unusual or unnecessary privileges assigned to the user account to ensure it aligns with their normal operational requirements.\n- Conduct a thorough audit of recent activities performed by the user account to identify any unauthorized actions or data access that may have occurred.\n- Notify the security operations team and relevant stakeholders about the incident for further investigation and to ensure coordinated response efforts.\n- Implement additional monitoring on the affected user account and similar accounts to detect any further suspicious activities or privilege misuse.\n- Update and reinforce access control policies to prevent similar privilege escalation attempts, ensuring that privilege assignments are regularly reviewed and validated.\n- Document the incident details, response actions taken, and lessons learned to improve future incident response and privilege management processes.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/pad"
+        ],
+        "related_integrations": [
+            {
+                "package": "pad",
+                "version": "^0.0.1"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "27569131-560e-441e-b556-0b9180af3332",
+        "setup": "## Setup\n\nThe rule requires the Privileged Access Detection integration assets to be installed, as well as Windows logs collected by integrations such as Elastic Defend and Windows.\n\n### Privileged Access Detection Setup\nThe Privileged Access Detection integration detects privileged access activity by identifying abnormalities in Windows, Linux and Okta events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Privileged Access Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Windows events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) and [Windows](https://docs.elastic.co/en/integrations/windows) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Windows integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n\n#### The following steps should be executed to install assets associated with the Privileged Access Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Privileged Access Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Privileged Access Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    },
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 3
+    },
+    "id": "27569131-560e-441e-b556-0b9180af3332_3",
+    "type": "security-rule"
+}

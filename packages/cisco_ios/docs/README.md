@@ -218,6 +218,7 @@ An example event for `log` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | source.user.name | Short name or login of the user. | keyword |

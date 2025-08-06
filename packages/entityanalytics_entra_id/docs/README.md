@@ -8,41 +8,17 @@ This module has been tested against the **Microsoft Graph REST API v1.0**.
 
 ## Data streams
 
-The Microsoft Entra ID Entity Analytics integration collects two types of data: User and Device.
-
-While configuring the integration, the user can use the **Dataset** dropdown option to select which type of data they want to collect from Microsoft Entra ID.
+The Microsoft Entra ID Entity Analytics integration collects two types of data: user and device. While configuring the integration, you can use the **Dataset** dropdown option to select which type of data you want to collect from Microsoft Entra ID.
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data using Entity Analytics Input and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.11.0**.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect data from Microsoft Graph REST API:
+### Collect data from Microsoft Graph REST API
 
-For the integration to work effectively, the required Azure API permissions must be given:
+The following Azure API permissions are required:
 
 | Permission           | Type        |
 |----------------------|-------------|
@@ -50,16 +26,15 @@ For the integration to work effectively, the required Azure API permissions must
 | User.Read.All        | Application |
 | Device.Read.All      | Application |
 
-For a full guide on how to set up the necessary App Registration, permission granting, and secret configuration, follow this [guide](https://learn.microsoft.com/en-us/graph/auth-v2-service).
+For more details on how to set up the necessary App Registration, permission granting, and secret configuration, refer to this [guide](https://learn.microsoft.com/en-us/graph/auth-v2-service).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana, go to Management > Integrations.
-2. In the "Search for integrations" search bar, type Microsoft Entra ID Entity Analytics.
-3. Click on the "Microsoft Entra ID Entity Analytics" integration from the search results.
-4. Click on the Add Microsoft Entra ID Entity Analytics Integration button to add the integration.
-5. While adding the integration, add the Tenant ID, Client (Application) ID and Secret (API Key) that we got earlier.
-6. Save the integration by adding other necessary parameters.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Microsoft Entra ID Entity Analytics**.
+3. Select the **Microsoft Entra ID Entity Analytics** integration and add it.
+4. While adding the integration, add the Tenant ID, Client (Application) ID and Secret (API Key) that you obtained earlier.
+5. Save the integration.
 
 ## Usage
 
@@ -176,43 +151,45 @@ An example event for `entity` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-10T18:07:24.682Z",
+    "@timestamp": "2025-04-01T18:07:36.482Z",
     "agent": {
-        "ephemeral_id": "f3f1bfb7-14d6-4f81-abf2-96c6d4a03158",
-        "id": "15e5a007-7f90-47f5-be2c-f8f167a4d8ba",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "91db5bd7-4c69-428c-83d2-01c1bf05ba7c",
+        "id": "c8d80307-c3e5-45ae-bb30-a0025259b7ae",
+        "name": "elastic-agent-65963",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.15.1"
     },
     "data_stream": {
         "dataset": "entityanalytics_entra_id.entity",
-        "namespace": "ep",
+        "namespace": "55663",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "15e5a007-7f90-47f5-be2c-f8f167a4d8ba",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "c8d80307-c3e5-45ae-bb30-a0025259b7ae",
+        "snapshot": false,
+        "version": "8.15.1"
     },
     "event": {
         "action": "started",
         "agent_id_status": "verified",
         "dataset": "entityanalytics_entra_id.entity",
-        "ingested": "2023-10-10T18:07:27Z",
+        "ingested": "2025-04-01T18:07:39Z",
         "kind": "asset",
-        "start": "2023-10-10T18:07:24.682Z"
+        "original": "{\"input\":{\"type\":\"entity-analytics\"},\"agent\":{\"name\":\"elastic-agent-65963\",\"id\":\"c8d80307-c3e5-45ae-bb30-a0025259b7ae\",\"type\":\"filebeat\",\"ephemeral_id\":\"91db5bd7-4c69-428c-83d2-01c1bf05ba7c\",\"version\":\"8.15.1\"},\"@timestamp\":\"2025-04-01T18:07:36.482Z\",\"ecs\":{\"version\":\"8.11.0\"},\"data_stream\":{\"namespace\":\"55663\",\"type\":\"logs\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"elastic_agent\":{\"id\":\"c8d80307-c3e5-45ae-bb30-a0025259b7ae\",\"version\":\"8.15.1\",\"snapshot\":false},\"event\":{\"start\":\"2025-04-01T18:07:36.482Z\",\"action\":\"started\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"labels\":{\"identity_source\":\"entity-analytics-entityanalytics_entra_id.entity-b4dd8d01-dde7-48c9-8b0f-9c1f991c2117\"},\"tags\":[\"all-entities\",\"preserve_original_event\",\"forwarded\",\"entityanalytics_entra_id-entity\"],\"_version_type\":\"internal\",\"_index\":\"logs-entityanalytics_entra_id.entity-55663\",\"_id\":null,\"_version\":-4}",
+        "start": "2025-04-01T18:07:36.482Z"
     },
     "input": {
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-790e3b22-3c7a-48ed-a5e8-9188d8ef1e1f"
+        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-b4dd8d01-dde7-48c9-8b0f-9c1f991c2117"
     },
     "tags": [
         "all-entities",
+        "preserve_original_event",
         "forwarded",
         "entityanalytics_entra_id-entity"
     ]
@@ -313,6 +290,7 @@ An example event for `entity` looks as following:
 | entityanalytics_entra_id.device.version | For internal use only. | keyword |
 | entityanalytics_entra_id.user.account_enabled | true if the account is enabled; otherwise, false. | boolean |
 | entityanalytics_entra_id.user.business_phones | The telephone numbers for the user. | keyword |
+| entityanalytics_entra_id.user.department | The name of the department in which the user works. | keyword |
 | entityanalytics_entra_id.user.display_name | The name displayed in the address book for the user. This is usually the combination of the user's first name, middle initial and last name. | keyword |
 | entityanalytics_entra_id.user.given_name | The given name (first name) of the user. Maximum length is 64 characters. | keyword |
 | entityanalytics_entra_id.user.group.id | The unique identifier for the group. | keyword |

@@ -1,0 +1,90 @@
+{
+    "attributes": {
+        "author": [
+            "Austin Songer"
+        ],
+        "description": "Detects when Okta FastPass prevents a user from authenticating to a phishing website.",
+        "index": [
+            "filebeat-*",
+            "logs-okta*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Okta FastPass Phishing Detection",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Okta FastPass Phishing Detection\n\nOkta FastPass is a passwordless authentication solution that enhances security by verifying user identity without traditional credentials. Adversaries may attempt to exploit this by directing users to phishing sites mimicking legitimate services. The detection rule identifies failed authentication attempts where FastPass blocks access, indicating a phishing attempt, by analyzing specific event patterns and outcomes.\n\n### Possible investigation steps\n\n- Review the event details to confirm the presence of the specific outcome reason \"FastPass declined phishing attempt\" to ensure the alert is related to a phishing attempt.\n- Identify the user associated with the failed authentication attempt and gather additional context about their recent activities and access patterns.\n- Investigate the source IP address and geolocation of the failed authentication attempt to determine if it aligns with the user's typical access locations or if it appears suspicious.\n- Check for any other recent authentication attempts from the same user or IP address to identify potential patterns or repeated phishing attempts.\n- Communicate with the affected user to verify if they received any suspicious communications or if they attempted to access any unfamiliar websites around the time of the alert.\n- Review any additional logs or alerts from other security systems that might provide further context or corroborate the phishing attempt.\n\n### False positive analysis\n\n- Legitimate third-party applications that mimic the behavior of phishing sites may trigger false positives. Users can create exceptions for these applications by whitelisting their domains in the Okta FastPass settings.\n- Internal testing environments that simulate phishing scenarios for training purposes might be flagged. To prevent this, ensure that these environments are registered and recognized within the Okta system to avoid unnecessary alerts.\n- Users accessing legitimate services through unusual network paths or VPNs may be mistakenly identified as phishing attempts. Regularly review and update network configurations and trusted IP addresses to minimize these occurrences.\n- Frequent failed authentication attempts due to user error, such as incorrect device settings or outdated software, can be mistaken for phishing. Educate users on maintaining their devices and software to align with Okta FastPass requirements to reduce these false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected user accounts to prevent further unauthorized access attempts. This can be done by temporarily disabling the accounts or enforcing additional authentication measures.\n- Notify the affected users about the phishing attempt and instruct them to avoid interacting with suspicious emails or websites. Provide guidance on recognizing phishing attempts.\n- Conduct a thorough review of the affected users' recent activities to identify any potential data exposure or unauthorized access to sensitive information.\n- Escalate the incident to the security operations team for further investigation and to determine if there are any broader implications or related incidents.\n- Implement additional monitoring on the affected accounts and related systems to detect any further suspicious activities or attempts to bypass security controls.\n- Review and update security policies and configurations related to Okta FastPass to ensure they are optimized for detecting and preventing similar phishing attempts in the future.\n- Coordinate with the IT team to ensure that all systems and applications are patched and up-to-date to mitigate any vulnerabilities that could be exploited in conjunction with phishing attacks.",
+        "query": "event.dataset:okta.system and event.category:authentication and\n  okta.event_type:user.authentication.auth_via_mfa and event.outcome:failure and okta.outcome.reason:\"FastPass declined phishing attempt\"\n",
+        "references": [
+            "https://developer.okta.com/docs/reference/api/system-log/",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://sec.okta.com/fastpassphishingdetection",
+            "https://sec.okta.com/articles/2023/08/cross-tenant-impersonation-prevention-and-detection",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "okta.event_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "okta.outcome.reason",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ee39a9f7-5a79-4b0a-9815-d36b3cf28d3e",
+        "setup": "The Okta Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.\n\nThis rule requires Okta to have the following turned on:\n\nOkta Identity Engine - select 'Phishing Resistance for FastPass' under Settings > Features in the Admin Console.",
+        "severity": "medium",
+        "tags": [
+            "Tactic: Initial Access",
+            "Use Case: Identity and Access Audit",
+            "Data Source: Okta",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 310
+    },
+    "id": "ee39a9f7-5a79-4b0a-9815-d36b3cf28d3e_310",
+    "type": "security-rule"
+}

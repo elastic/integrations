@@ -3,7 +3,7 @@ description: Pipeline for processing DNS Server Analytical logs
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: 8.17.0
       tag: set_ecs_version
   - set:
       field: event.category
@@ -312,11 +312,27 @@ processors:
       copy_from: microsoft_dnsserver.analytical.xid
       ignore_empty_value: true
       tag: set_dns_id
-  - set:
-      field: dns.question.name
-      copy_from: microsoft_dnsserver.analytical.question_name
-      ignore_empty_value: true
-      tag: set_dns_question_name
+  - gsub:
+      field: microsoft_dnsserver.analytical.question_name
+      target_field: _temp.question_name
+      tag: gsub_trim_trailing_dot
+      pattern: \.$
+      replacement: ""
+      ignore_missing: true
+  - registered_domain:
+      field: _temp.question_name
+      tag: registered_domain_question_name
+      target_field: dns.question
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: dns.question.domain
+      tag: rename_dns_question_domain
+      target_field: dns.question.name
+      ignore_missing: true
   - set:
       field: dns.question.type
       copy_from: microsoft_dnsserver.analytical.question_type
@@ -364,6 +380,7 @@ processors:
       tag: append_dns_header_flag_TC
   - remove:
       field:
+        - _temp
         - microsoft_dnsserver.analytical.AA
         - microsoft_dnsserver.analytical.AD
         - microsoft_dnsserver.analytical.RD

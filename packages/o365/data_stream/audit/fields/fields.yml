@@ -1,6 +1,10 @@
 - name: o365.audit
   type: group
   fields:
+    - name: AadAppId
+      type: keyword
+    - name: Actions
+      type: flattened
     - name: Activity
       type: keyword
     - name: Actor
@@ -18,10 +22,21 @@
       type: keyword
     - name: ActorYammerUserId
       type: keyword
+    - name: AdditionalData
+      type: nested
+      fields:
+        - name: Name
+          type: keyword
+        - name: Value
+          type: keyword
     - name: AdditionalInfo.*
       type: object
       object_type: keyword
       object_type_mapping_type: '*'
+    - name: AirAdminActionSource
+      type: keyword
+    - name: AirAdminActionType
+      type: keyword
     - name: AlertEntityId
       type: keyword
     - name: AlertId
@@ -36,41 +51,60 @@
       object_type_mapping_type: '*'
     - name: AppId
       type: keyword
+    - name: Application
+      type: keyword
     - name: ApplicationDisplayName
       type: keyword
     - name: ApplicationId
       type: keyword
+    - name: Approver
+      type: keyword
+    - name: AttachmentData
+      type: nested
+      fields:
+        - name: FileName
+          type: keyword
+        - name: FileType
+          type: keyword
+        - name: FileVerdict
+          type: keyword
+        - name: MalwareFamily
+          type: keyword
+        - name: SHA256
+          type: keyword
+    - name: AuthDetails
+      type: nested
+      fields:
+        - name: Name
+          type: keyword
+        - name: Value
+          type: keyword
     - name: AzureActiveDirectoryEventType
       type: keyword
-    - name: ExchangeMetaData
-      type: group
-      fields:
-        - name: CC
-          type: keyword
-        - name: MessageID
-          type: keyword
-        - name: Sent
-          type: date
-        - name: To
-          type: keyword
-        - name: UniqueID
-          type: keyword
-        - name: "*"
-          type: long
+    - name: BCLValue
+      type: keyword
+    - name: BulkApprovalId
+      type: keyword
     - name: Category
       type: keyword
     - name: ClientAppId
       type: keyword
-    - name: ClientInfoString
+    - name: ClientApplication
       type: keyword
     - name: ClientIP
       type: keyword
     - name: ClientIPAddress
       type: keyword
+    - name: ClientInfoString
+      type: keyword
     - name: ClientRequestId
+      type: keyword
+    - name: CmdletVersion
       type: keyword
     - name: Comments
       type: text
+    - name: Connector
+      type: keyword
     - name: CorrelationId
       type: keyword
     - name: CreationTime
@@ -203,11 +237,33 @@
           type: keyword
     - name: DataType
       type: keyword
+    - name: DatabaseType
+      type: keyword
+    - name: DeepLinkUrl
+      type: keyword
+    - name: DeliveryAction
+      type: keyword
+    - name: Description
+      type: match_only_text
+    - name: DetectionMethod
+      type: keyword
+    - name: DetectionType
+      type: keyword
+    - name: DeviceName
+      type: keyword
+    - name: Directionality
+      type: keyword
+    - name: EffectiveOrganization
+      type: keyword
+    - name: EndTimeUtc
+      type: date
     - name: EntityType
       type: keyword
     - name: ErrorNumber
       type: keyword
     - name: EventData
+      type: keyword
+    - name: EventDeepLink
       type: keyword
     - name: EventSource
       type: keyword
@@ -217,6 +273,23 @@
       # not expressible here; object_type_mapping_type cannot be 'boolean'.
       object_type: keyword
       object_type_mapping_type: '*'
+    - name: ExchangeMetaData
+      type: group
+      fields:
+        - name: CC
+          type: keyword
+        - name: MessageID
+          type: keyword
+        - name: Sent
+          type: date
+        - name: To
+          type: keyword
+        - name: UniqueID
+          type: keyword
+        - name: Subject
+          type: keyword
+        - name: "*"
+          type: long
     - name: Experience
       type: keyword
     - name: ExtendedProperties.RequestType
@@ -227,8 +300,14 @@
       object_type_mapping_type: '*'
     - name: ExternalAccess
       type: boolean
+    - name: FileExtension
+      type: keyword
+    - name: FileSize
+      type: keyword
     - name: FileSizeBytes
       type: long
+    - name: FilteringDate
+      type: date
     - name: GroupName
       type: keyword
     - name: Id
@@ -237,11 +316,28 @@
       type: keyword
     - name: IncidentId
       type: keyword
-    - name: InternalLogonType
+    - name: InsightData
+      type: group
+      fields:
+        - name: Type
+          type: keyword
+    - name: InsightId
       type: keyword
     - name: InterSystemsId
       type: keyword
+    - name: InternalLogonType
+      type: keyword
+    - name: InternetMessageId
+      type: keyword
     - name: IntraSystemId
+      type: keyword
+    - name: InvestigationId
+      type: keyword
+    - name: InvestigationName
+      type: keyword
+    - name: InvestigationType
+      type: keyword
+    - name: InvestigationUrn
       type: keyword
     - name: Item.*
       type: object
@@ -254,6 +350,14 @@
     - name: ItemName
       type: keyword
     - name: ItemType
+      type: keyword
+    - name: KesMailId
+      type: keyword
+    - name: Language
+      type: keyword
+    - name: LastUpdateTimeUtc
+      type: date
+    - name: LatestDeliveryLocation
       type: keyword
     - name: ListBaseType
       type: keyword
@@ -277,15 +381,29 @@
       type: keyword
     - name: Members
       type: flattened
+    - name: MessageDate
+      type: keyword
+    - name: MessageTime
+      type: keyword
     - name: ModifiedProperties.Role_DisplayName.NewValue
       type: keyword
     - name: ModifiedProperties.*.*
       type: object
       object_type: keyword
       object_type_mapping_type: '*'
+      subobjects: false
+    - name: ModifiedProperties
+      type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
+      subobjects: false
     - name: Name
       type: keyword
+    - name: NetworkMessageId
+      type: keyword
     - name: NewValue
+      type: keyword
+    - name: NonPIIParameters
       type: keyword
     - name: ObjectDisplayName
       type: keyword
@@ -305,7 +423,19 @@
       type: keyword
     - name: OrganizationName
       type: keyword
+    - name: OriginalDeliveryLocation
+      type: keyword
+    - name: OriginatingDomain
+      type: keyword
     - name: OriginatingServer
+      type: keyword
+    - name: P1Sender
+      type: keyword
+    - name: P1SenderDomain
+      type: keyword
+    - name: P2Sender
+      type: keyword
+    - name: P2SenderDomain
       type: keyword
     - name: Parameters.AccessRights
       type: keyword
@@ -314,6 +444,8 @@
     - name: Parameters.AllowGuestUser
       type: keyword
     - name: Parameters.Enabled
+      type: keyword
+    - name: Parameters.From
       type: keyword
     - name: Parameters.ForwardAsAttachmentTo
       type: keyword
@@ -325,29 +457,68 @@
       type: object
       object_type: keyword
       object_type_mapping_type: '*'
+      subobjects: false
+    - name: Parameters
+      type: object
+      object_type: keyword
+      object_type_mapping_type: '*'
+      subobjects: false
+    - name: PhishConfidenceLevel
+      type: keyword
     - name: Platform
+      type: keyword
+    - name: Policy
+      type: keyword
+    - name: PolicyAction
       type: keyword
     - name: PolicyDetails
       type: flattened
     - name: PolicyId
       type: keyword
+    - name: Recipients
+      type: keyword
     - name: RecordType
       type: keyword
-    - name: ResultStatus
+    - name: RelativeUrl
       type: keyword
     - name: RequestId
       type: keyword
+    - name: RescanResult
+      type: group
+      fields:
+        - name: Id
+          type: keyword
+        - name: RescanVerdict
+          type: keyword
+        - name: Timestamp
+          type: keyword
+    - name: ResultCount
+      type: keyword
+    - name: ResultStatus
+      type: keyword
+    - name: RunningTime
+      type: keyword
+    - name: SecurityComplianceCenterEventType
+      type: keyword
+    - name: SenderIP
+      type: keyword
+    - name: SenderIp
+      type: keyword
     - name: SensitiveInfoDetectionIsIncluded
       type: boolean
+    - name: SessionId
+      type: keyword
+    - name: Severity
+      type: keyword
+    - name: Sha1
+      type: keyword
+    - name: Sha256
+      type: keyword
     - name: SharePointMetaData.*
       type: object
       # This object may contain date formatted fields, but we do not ensure validity, so leave as keyword.
       object_type: keyword
       object_type_mapping_type: '*'
-    - name: SessionId
-      type: keyword
-    - name: Severity
-      type: keyword
     - name: Site
       type: keyword
     - name: SiteUrl
@@ -360,10 +531,45 @@
       type: keyword
     - name: SourceRelativeUrl
       type: keyword
+    - name: StartTime
+      type: keyword
+    - name: StartTimeUtc
+      type: keyword
     - name: Status
+      type: keyword
+    - name: SubAirAdminActionTypeMail
+      type: keyword
+    - name: Subject
+      type: keyword
+    - name: SubmissionConfidenceLevel
+      type: keyword
+    - name: SubmissionContentSubType
+      type: keyword
+    - name: SubmissionContentType
+      type: keyword
+    - name: SubmissionId
+      type: keyword
+    - name: SubmissionState
+      type: keyword
+    - name: SubmissionType
+      type: keyword
+    - name: Submitter
+      type: keyword
+    - name: SubmitterId
       type: keyword
     - name: SupportTicketId
       type: keyword
+    - name: SystemOverrides
+      type: group
+      fields:
+        - name: Details
+          type: keyword
+        - name: FinalOverride
+          type: keyword
+        - name: Result
+          type: keyword
+        - name: Source
+          type: keyword
     - name: Target
       type: group
       fields:
@@ -373,13 +579,17 @@
           type: keyword
     - name: TargetContextId
       type: keyword
+    - name: TargetFilePath
+      type: keyword
     - name: TargetUserOrGroupName
       type: keyword
     - name: TargetUserOrGroupType
       type: keyword
+    - name: TeamGuid
+      type: keyword
     - name: TeamName
       type: keyword
-    - name: TeamGuid
+    - name: ThreatDetectionMethods
       type: keyword
     - name: Timestamp
       type: keyword
@@ -392,6 +602,8 @@
     - name: UserKey
       type: keyword
     - name: UserType
+      type: keyword
+    - name: Verdict
       type: keyword
     - name: Version
       type: keyword

@@ -6,6 +6,19 @@ processors:
       tag: set_ecs_version
       value: 8.11.0
 
+  - script:
+      tag: script_add_event_original
+      lang: painless
+      description: Add "event.original"
+      if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
+      source: |
+        def stringified_orig = Json.dump(ctx);
+        if (stringified_orig != null) {
+          if (ctx.event == null) {
+            ctx.event = new HashMap();
+          }
+          ctx.event.original = stringified_orig;
+        }
   - remove:
       field: event.action
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
@@ -33,11 +46,6 @@ processors:
       tag: pipeline_to_user
       if: ctx.user?.id != null
 
-  - remove:
-      field:
-        - azure_ad
-      tag: remove_azure_ad
-      ignore_missing: true
   - remove:
       field:
         - entityanalytics_entra_id.user.account_enabled

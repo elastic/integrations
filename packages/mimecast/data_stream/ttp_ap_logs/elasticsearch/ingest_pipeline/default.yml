@@ -7,9 +7,17 @@ processors:
       value: '8.11.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
@@ -25,6 +33,10 @@ processors:
   - set:
       field: event.category
       value: [email]
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.result == 'malicious'
 
   - date:
       description: Use 'mimecast.date' as the '@timestamp'
@@ -47,11 +59,23 @@ processors:
       pattern: "<%{email.from.address}>"
       ignore_missing: true
       ignore_failure: true
+  - gsub:
+       field: email.from.address
+       pattern: '<>'
+       replacement: ''
+       ignore_missing: true
+       ignore_failure: true
   - dissect:
       field: email.to.address
       pattern: "<%{email.to.address}>"
       ignore_missing: true
       ignore_failure: true
+  - gsub:
+       field: email.to.address
+       pattern: '<>'
+       replacement: ''
+       ignore_missing: true
+       ignore_failure: true
   - gsub:
       field: mimecast.actionTriggered
       pattern: ","
@@ -134,6 +158,33 @@ processors:
         - mimecast.senderAddress
         - mimecast.recipientAddress
       ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively
+      tag: script_to_drop_null_values
+      lang: painless
+      ignore_failure: true
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
 # Error handling
 on_failure:
   - set:
@@ -145,4 +196,7 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

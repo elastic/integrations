@@ -1,5 +1,8 @@
 config_version: 2
 interval: {{interval}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
 resource.url: {{hostname}}
 resource.rate_limit.burst: 1
 resource.rate_limit.limit: {{rate_limit}}
@@ -26,6 +29,7 @@ state:
   limit: {{limit}}
   initial_interval: {{initial_interval}}
   want_more: false
+  ignore_api_errors: {{ignore_api_errors}}
 redact:
   fields:
     - integration_key
@@ -107,23 +111,36 @@ program: |
 
                 )
             :
-                bytes(resp.Body).decode_json().as(body,
+                resp.StatusCode == 429 && bool(state.ignore_api_errors) ?
+                    // Cisco Duo auth API rate limit is very low i.e., once per minute. 
+                    // Sometimes 429s are received even when requests are made 
+                    // less than once per minute. This leads to users ingesting 429 
+                    // API errors very often. 
+                    // If users choose not to ingest these errors, ignore them.
                     {
-                        "events": {
-                            "error": {
-                                "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
-                                "id": string(resp.Status),
-                                "message": "GET:"+(
-                                    size(resp.Body) != 0 ?
-                                        string(resp.Body)
-                                    :
-                                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                                ),
-                            },
-                        },
+                        "events": [],
+                        // Log the rate limit excession at DEBUG level.
+                        "rate_limited": debug("rate_limit_exceeded", bytes(resp.Body).decode_json().?message.orValue("missing message")),
                         "want_more": false,
                     }
-                )
+                : 
+                    bytes(resp.Body).decode_json().as(body,
+                        {
+                            "events": {
+                                "error": {
+                                    "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
+                                    "id": string(resp.Status),
+                                    "message": "GET:"+(
+                                        size(resp.Body) != 0 ?
+                                            string(resp.Body)
+                                        :
+                                            string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                                    ),
+                                },
+                            },
+                            "want_more": false,
+                        }
+                    )
             )
         )
     ))

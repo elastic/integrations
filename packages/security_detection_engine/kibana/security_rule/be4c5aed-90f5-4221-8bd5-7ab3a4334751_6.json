@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "anomaly_threshold": 70,
+        "author": [
+            "Elastic"
+        ],
+        "description": "An anomaly detection job has detected a remote file transfer on an unusual directory indicating a potential lateral movement activity on the host. Many Security solutions monitor well-known directories for suspicious activities, so attackers might use less common directories to bypass monitoring.",
+        "from": "now-90m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "lmd_rare_file_path_remote_transfer",
+        "name": "Unusual Remote File Directory",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Remote File Directory\n\nThe 'Unusual Remote File Directory' detection leverages machine learning to identify atypical file transfers in directories not commonly monitored, which may indicate lateral movement by adversaries. Attackers exploit these less scrutinized paths to evade detection, often using remote services to transfer malicious payloads. This rule flags such anomalies, aiding in early detection of potential breaches.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific unusual directory involved in the file transfer and note any associated file names or types.\n- Check the source and destination IP addresses involved in the transfer to determine if they are known or trusted entities within the network.\n- Investigate the user account associated with the file transfer to verify if the activity aligns with their typical behavior or role within the organization.\n- Examine recent logs or events from the host to identify any other suspicious activities or anomalies that may correlate with the file transfer.\n- Cross-reference the detected activity with known threat intelligence sources to determine if the file transfer or directory is associated with any known malicious campaigns or tactics.\n- Assess the potential impact of the file transfer by evaluating the sensitivity of the data involved and the criticality of the systems affected.\n\n### False positive analysis\n\n- Routine administrative tasks may trigger alerts if they involve file transfers to directories not typically monitored. Users can create exceptions for known administrative activities to prevent unnecessary alerts.\n- Automated backup processes might be flagged if they store files in uncommon directories. Identifying and excluding these backup operations can reduce false positives.\n- Software updates or patches that deploy files to less common directories could be mistaken for suspicious activity. Users should whitelist these update processes to avoid false alerts.\n- Development or testing environments often involve file transfers to non-standard directories. Users can configure exceptions for these environments to minimize false positives.\n- Legitimate remote services used for file transfers, such as cloud storage synchronization, may be flagged. Users should identify and exclude these trusted services from monitoring.\n\n### Response and remediation\n\n- Isolate the affected host immediately to prevent further lateral movement and contain the potential threat. Disconnect it from the network to stop any ongoing malicious activity.\n- Conduct a thorough analysis of the unusual directory and any files transferred to identify malicious payloads. Use endpoint detection and response (EDR) tools to scan for known malware signatures and behaviors.\n- Remove any identified malicious files and artifacts from the affected directory and host. Ensure that all traces of the threat are eradicated to prevent re-infection.\n- Reset credentials and review access permissions for the affected host and any associated accounts to mitigate the risk of unauthorized access. Ensure that least privilege principles are enforced.\n- Monitor network traffic and logs for any signs of further lateral movement or exploitation attempts. Pay special attention to remote service connections and unusual directory access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional hosts or systems are compromised.\n- Update detection mechanisms and rules to enhance monitoring of less common directories and improve the detection of similar threats in the future.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/lmd",
+            "https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration",
+            "https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "lmd",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "be4c5aed-90f5-4221-8bd5-7ab3a4334751",
+        "setup": "## Setup\n\nThe rule requires the Lateral Movement Detection integration assets to be installed, as well as file and Windows RDP process events collected by the Elastic Defend integration.\n\n### Lateral Movement Detection Setup\nThe Lateral Movement Detection integration detects lateral movement activity by identifying abnormalities in file and Windows RDP events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Lateral Movement Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- File events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n#### The following steps should be executed to install assets associated with the Lateral Movement Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Lateral Movement Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Lateral Movement Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1210",
+                        "name": "Exploitation of Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1210/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 6
+    },
+    "id": "be4c5aed-90f5-4221-8bd5-7ab3a4334751_6",
+    "type": "security-rule"
+}

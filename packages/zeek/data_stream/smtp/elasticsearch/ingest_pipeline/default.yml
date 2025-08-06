@@ -120,6 +120,7 @@ processors:
       target_field: zeek.smtp.date
       formats:
         - EEE, d MMM yyyy HH:mm:ss Z
+        - d MMM yyyy HH:mm:ss Z
       if: ctx.zeek.smtp.date != null
   - geoip:
       field: destination.ip
@@ -181,11 +182,6 @@ processors:
   - remove:
       field:
         - zeek.smtp.id
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:

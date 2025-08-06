@@ -15,21 +15,51 @@ auth.oauth2:
 {{else if azure_tenant_id}}
     azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
-
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{url}}
 {{#if resource_ssl}}
 resource.ssl: 
   {{resource_ssl}}
 {{/if}}
-
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 {{/if}}
-
 tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
@@ -43,27 +73,44 @@ processors:
 
 state:
   want_more: false
+  next_page_sessions: ""
+  next: 0
+  worklist: []
+  prev_sess: []
+  sync_delay: "5s"
   base:
     tenant_id: "{{azure_tenant_id}}"
-    period: "{{period}}"
+    initial_interval: "{{initial_interval}}"
 
 redact:
   fields:
     - base.tenant_id
 
 program: |
-  (
-    has(state.worklist) && size(state.worklist) > 0 ?
+   (
+    // Check if pagination is complete for call records or needs to continue
+    has(state.next_page) && state.next_page == "" ?
       state
     :
+      // If there is a next page or it's the initial request, proceed with data fetching
       state.with(
           request(
             "GET",
-            state.url.trim_right("/") + "/communications/callRecords"
+            // use next_page link if available, otherwise construct the initial query
+            has(state.next_page) && state.next_page != "" ?
+            state.next_page
+            :
+            state.url.trim_right("/") + "/communications/callRecords?" + "$filter=startDateTime%20ge%20"+ string(now - duration(state.base.initial_interval) - duration(state.sync_delay))
           ).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
-              "worklist": body.value.collate("id"),
-              "next": 0,
+              //Collect call record IDs into the worklist
+              "worklist" : state.worklist + body.value.map(mp, {
+                "id": mp.id,
+                "start_date_time": mp.startDateTime,
+                "end_date_time": mp.endDateTime,
+              }),
+              "want_more": "@odata.nextLink" in body,
+              "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
             })
           :
             {
@@ -79,55 +126,193 @@ program: |
                   ),
                 },
               },
-              "want_more": false,
+            "want_more": false
             }
         ))
-  ).as(state, state.with(
-    !has(state.worklist) ? state : // Exit early due to GET failure.
-      state.worklist[?state.?next.orValue(-1)].hasValue() ?
-        request(
-          "GET",
-          has(state.next_page) && state.next_page != "" ?
-          state.next_page
-          :
-          state.url + "/communications/callRecords/" + state.worklist[state.next] + "/sessions?$expand=segments"
-        ).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
-            "events": (
-              has(body.value) && size(body.value) > 0 ?
-                body.value.map(e, {
-                  "message": e.encode_json()
-                })
-              :
-                [{"message":"retry"}]
-            ),
-            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page) && state.next_page != "" ?  int(state.next) : int(state.next) + 1) : 0,
-            "want_more": int(state.next) + 1 < size(state.worklist) || "@odata.nextLink" in body,
-            "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",     
-          })
+   ).as(state,
+    // If worklist has items to process, proceed to session-level data fetching using call_record_id(id)
+    has(state.worklist) && size(state.worklist) > int(state.next) ?
+    state.with(
+      request(
+        "GET",
+        has(state.next_page_sessions) && state.next_page_sessions != "" ?
+        state.next_page_sessions
         :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET /communications/callRecords/"+state.worklist[state.next].name+"/alerts:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
+        state.url + "/communications/callRecords/" + state.worklist[state.next].id + "/sessions?$expand=segments"
+      ).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(sess, sess.value.map(session, 
+        {
+          // Map each session and its segments
+          "session_id": session.id,
+          "modalities" : session.modalities,
+          "segments": session.segments.map(seg,{
+            "segment_id": seg.id,
+            "start_date_time": seg.startDateTime,
+            "end_date_time": seg.endDateTime,
+            "failure_info": seg.failureInfo,
+            "caller": has(seg.caller) && has(seg.caller.associatedIdentity) ? {
+                                  "associated_identity": {
+                                    "id": has(seg.caller.associatedIdentity.id) ? seg.caller.associatedIdentity.id : null,
+                                    "display_name": has(seg.caller.associatedIdentity.displayName) ? seg.caller.associatedIdentity.displayName : null,
+                                    "tenant_id": has(seg.caller.associatedIdentity.tenantId) ? seg.caller.associatedIdentity.tenantId : null,
+                                    "user_principal_name": has(seg.caller.associatedIdentity.userPrincipalName) ? seg.caller.associatedIdentity.userPrincipalName : null
+                                  }
+                                } : {},
+            "callee": has(seg.callee) && has(seg.callee.associatedIdentity) ? {
+                                  "associated_identity": {
+                                    "id": has(seg.callee.associatedIdentity.id) ? seg.callee.associatedIdentity.id : null,
+                                    "display_name": has(seg.callee.associatedIdentity.displayName) ? seg.callee.associatedIdentity.displayName : null,
+                                    "tenant_id": has(seg.callee.associatedIdentity.tenantId) ? seg.callee.associatedIdentity.tenantId : null,
+                                    "user_principal_name": has(seg.callee.associatedIdentity.userPrincipalName) ? seg.callee.associatedIdentity.userPrincipalName : null
+                                  }
+                                } : {},
+            "media" : seg.media.map(med,
+            !(med.label in ["data", "unknown"]) ?
+            {
+              "label": med.label,
+              "caller_network": {
+                "bandwidth_low_event_ratio": med.callerNetwork.bandwidthLowEventRatio,
+                "basic_service_set_identifier": med.callerNetwork.basicServiceSetIdentifier,
+                "connection_type": med.callerNetwork.connectionType,
+                "delay_event_ratio": med.callerNetwork.delayEventRatio,
+                "dns_suffix": med.callerNetwork.dnsSuffix,
+                "ip_address": med.callerNetwork.ipAddress,
+                "link_speed": med.callerNetwork.linkSpeed,
+                "mac_address": med.callerNetwork.macAddress,
+                "network_transport_protocol": med.callerNetwork.networkTransportProtocol,
+                "port": med.callerNetwork.port,
+                "received_quality_event_ratio": med.callerNetwork.receivedQualityEventRatio,
+                "reflexive_ip_address": med.callerNetwork.reflexiveIPAddress,
+                "relay_ip_address": med.callerNetwork.relayIPAddress,
+                "relay_port": med.callerNetwork.relayPort,
+                "sent_quality_event_ratio": med.callerNetwork.sentQualityEventRatio,
+                "subnet": med.callerNetwork.subnet
               },
-            },
-            "want_more": false,
+              "callee_network": {
+                "bandwidth_low_event_ratio": med.calleeNetwork.bandwidthLowEventRatio,
+                "basic_service_set_identifier": med.calleeNetwork.basicServiceSetIdentifier,
+                "connection_type": med.calleeNetwork.connectionType,
+                "delay_event_ratio": med.calleeNetwork.delayEventRatio,
+                "dns_suffix": med.calleeNetwork.dnsSuffix,
+                "ip_address": med.calleeNetwork.ipAddress,
+                "link_speed": med.calleeNetwork.linkSpeed,
+                "mac_address": med.calleeNetwork.macAddress,
+                "network_transport_protocol": med.calleeNetwork.networkTransportProtocol,
+                "port": med.calleeNetwork.port,
+                "received_quality_event_ratio": med.calleeNetwork.receivedQualityEventRatio,
+                "reflexive_ip_address": med.calleeNetwork.reflexiveIPAddress,
+                "relay_ip_address": med.calleeNetwork.relayIPAddress,
+                "relay_port": med.calleeNetwork.relayPort,
+                "sent_quality_event_ratio": med.calleeNetwork.sentQualityEventRatio,
+                "subnet": med.calleeNetwork.subnet
+              },
+              "streams": med.streams.map(stream,{
+                "audio_codec" : stream.audioCodec,
+                "average_audio_degradation" : stream.averageAudioDegradation,
+                "average_audio_network_jitter" : stream.averageAudioNetworkJitter,
+                "average_bandwidth_estimate" : stream.averageBandwidthEstimate,
+                "average_freeze_duration" : stream.averageFreezeDuration,
+                "average_jitter" : stream.averageJitter,
+                "average_packet_loss_rate" : stream.averagePacketLossRate,
+                "average_ratio_of_concealed_samples" : stream.averageRatioOfConcealedSamples,
+                "average_received_frame_rate" : stream.averageReceivedFrameRate,
+                "average_round_trip_time" : stream.averageRoundTripTime,
+                "average_video_frame_loss_percentage" : stream.averageVideoFrameLossPercentage,
+                "average_video_frame_rate" : stream.averageVideoFrameRate,
+                "average_video_packet_loss_rate" : stream.averageVideoPacketLossRate,
+                "end_date_time" : stream.endDateTime,
+                "is_audio_forward_error_correction_used" : stream.isAudioForwardErrorCorrectionUsed,
+                "low_frame_rate_ratio" : stream.lowFrameRateRatio,
+                "low_video_processing_capability_ratio" : stream.lowVideoProcessingCapabilityRatio,
+                "max_audio_network_jitter" : stream.maxAudioNetworkJitter,
+                "max_jitter" : stream.maxJitter,
+                "max_packet_loss_rate" : stream.maxPacketLossRate,
+                "max_ratio_of_concealed_samples" : stream.maxRatioOfConcealedSamples,
+                "max_round_trip_time" : stream.maxRoundTripTime,
+                "packet_utilization" : stream.packetUtilization,
+                "post_forward_error_correction_packet_loss_rate" : stream.postForwardErrorCorrectionPacketLossRate,
+                "rms_freeze_duration" : stream.rmsFreezeDuration,
+                "start_date_time" : stream.startDateTime,
+                "stream_direction" : stream.streamDirection,
+                "stream_id" : stream.streamId,
+                "video_codec" : stream.videoCodec,
+                "was_media_bypassed" : stream.wasMediaBypassed
+              })
+            }
+            : {}
+            ).filter(m, size(m) > 0)                    
           }
-        )
+          )
+        })
+        .as(mapped_sessions,
+
+        // If there's a next link for session pagination, continue fetching
+        // but do not emit for this case. Populate events
+        // with a place-holder to be discarded by the ingest
+        // pipeline. Keep storing sessions in prev_sess for same call_record
+
+        ("@odata.nextLink" in sess) ? 
+         {
+           "events": [{"message": "want_more"}],
+           "want_more": "@odata.nextLink" in sess || size(state.worklist) > 0,
+           "next_page_sessions": "@odata.nextLink" in sess ? sess["@odata.nextLink"] : "",
+           "worklist": state.worklist,
+           "prev_sess": mapped_sessions + state.prev_sess,
+         }
+         :
+         // If no more session pages, emit final event
+         {
+             "events": [
+              {
+                "o365":{
+                  "metrics": {
+                    "teams": {
+                      "call":{
+                        "quality": {
+                          "call_record_id" : string(state.worklist[state.next].id),
+                          "start_date_time" : state.worklist[state.next].start_date_time,
+                          "end_date_time" : state.worklist[state.next].end_date_time,
+                          "sessions": mapped_sessions + state.prev_sess
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+           ],
+           "want_more": "@odata.nextLink" in sess || size(state.worklist) > 0,
+           "next_page_sessions": "@odata.nextLink" in sess ? sess["@odata.nextLink"] : "",
+           // Remove the processed call_record_id from the worklist after publishing its event.
+           "worklist":  tail(state.worklist),
+           "prev_sess": [],
+         }))
       :
         {
-          "events": [],
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET  /sessions?$expand=segments" + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
           "want_more": false,
-          "next_page": {},
         }
+      )
     )
-  )
+    :
+    {
+      "events": [],
+      "want_more": false,
+      "base": state.base,
+      "sync_delay": state.sync_delay,
+      "worklist": [],
+      "prev_sess": [],
+      "next_page_sessions": "",
+      "next": 0
+    }
+   )

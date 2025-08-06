@@ -53,26 +53,26 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-02T05:53:33.529Z",
+    "@timestamp": "2025-07-09T06:45:28.103Z",
     "agent": {
-        "ephemeral_id": "a21855cb-722e-430f-8d9a-e6dfedf565b1",
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b92c2d23-6342-4374-bae3-0cdc41d039bb",
+        "id": "9c3b87c5-01a7-4d47-9aca-c646d7adace8",
+        "name": "elastic-agent-26267",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
-        "namespace": "82985",
+        "namespace": "87636",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
+        "id": "9c3b87c5-01a7-4d47-9aca-c646d7adace8",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -82,7 +82,7 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2024-08-02T05:53:45Z",
+        "ingested": "2025-07-09T06:45:31Z",
         "kind": "enrichment",
         "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":[],\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":[{\"value\":\"information-credibility-6\"},{\"value\":\"osint\"}],\"objectMarking\":[{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}],\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
         "type": [

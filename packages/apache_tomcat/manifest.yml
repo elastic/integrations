@@ -1,13 +1,13 @@
 format_version: "3.0.2"
 name: apache_tomcat
 title: Apache Tomcat
-version: "1.8.3"
+version: "1.11.0"
 description: Collect and parse logs and metrics from Apache Tomcat servers with Elastic Agent.
 categories: ["web", "observability"]
 type: integration
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.13.0 || ^9.0.0"
 policy_templates:
   - name: Apache Tomcat
     title: Apache Tomcat
@@ -66,15 +66,30 @@ policy_templates:
               #   xw23l/k8RoD1wRWaDVbgpjwSzt+kl+vJE/ip2w3h69eEZ9wbo6scRO5lCO2JM4Pr
               #   7RhLQyWn2u00L7/9Omw=
               #   -----END CERTIFICATE-----
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
             multi: false
             required: false
             show_user: false
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+            type: text
+            multi: false
+            required: false
+            show_user: true
         title: Collect Apache Tomcat metrics
         description: Collect metrics from Apache Tomcat instances using prometheus endpoint.
       - type: filestream
         title: Collect logs from Apache Tomcat via file
         description: Collect logs from Apache Tomcat instances using filestream input.
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+            type: text
+            multi: false
+            required: false
+            show_user: true
 icons:
   - src: /img/logo.svg
     title: Apache Tomcat logo

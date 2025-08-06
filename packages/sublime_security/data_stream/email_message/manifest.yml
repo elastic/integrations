@@ -44,6 +44,20 @@ streams:
         show_user: true
         default: 5
         description: Number of workers that will process the S3 objects listed.
+      - name: start_timestamp
+        type: text
+        title: "[S3] Start Timestamp"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, only read S3 objects with last modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format. For example, "2020-10-10T10:30:00Z" (UTC) or "2020-10-10T10:30:00Z+02:30" (with zone offset).
+      - name: ignore_older
+        type: text
+        title: "[S3] Ignore Older Timespan"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
       - name: queue_url
         type: text
         title: '[SQS] Queue URL'
@@ -73,7 +87,7 @@ streams:
         required: false
         show_user: true
         default: 5
-        description: The maximum number of SQS messages that can be inflight at any time.
+        description: Deprecated in agent version 8.16.0, this parameter is ignored if present, use number_of_workers instead. The maximum number of SQS messages that can be inflight at any time.
       - name: file_selectors
         type: yaml
         title: '[SQS] File Selectors'
@@ -81,7 +95,7 @@ streams:
         required: false
         show_user: false
         description: >-
-          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
+          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global content_type and expand_event_list_from_field values are ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
       - name: external_id
         type: text
         title: External ID

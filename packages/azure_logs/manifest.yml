@@ -1,7 +1,7 @@
 format_version: 3.3.0
 name: azure_logs
 title: "Custom Azure Logs"
-version: 0.1.0
+version: 0.3.1
 source:
   license: Elastic-2.0
 description: "Collect log events from Azure Event Hubs with Elastic Agent"
@@ -12,7 +12,7 @@ categories:
   - observability
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.15.1 || ^9.0.0"
   elastic:
     subscription: "basic"
 icons:
@@ -93,7 +93,22 @@ policy_templates:
           The ingest pipeline ID to use for processing the data. If provided,
           replaces the default pipeline for this integration.
         required: false
-        show_user: true        
+        show_user: true
+      - name: storage_account_container
+        type: text
+        title: Storage Account Container
+        multi: false
+        required: false
+        show_user: false
+        description:  >-
+          The storage account container where the integration stores the checkpoint
+          data for the event hub / consumer group. It is an advanced option to use with extreme care.
+          If you are using the [processor_version](https://www.elastic.co/guide/en/integrations/current/azure_logs.html#azure_logs-event-hub-processor-options) v1
+          (default option), you MUST use a dedicated storage account container for each event hub / consumer group pair.
+          For information about container name restrictions, please refer to the
+          [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names)
+          section in Microsoft's documentation.
+          If you don't specify a container name, the integration will automatically generate a default one for you.
       - name: resource_manager_endpoint
         type: text
         title: Resource Manager Endpoint
@@ -143,7 +158,106 @@ policy_templates:
           and avoid parsing issues during processing.
         type: bool
         multi: false
-        default: false        
+        default: false
+      - name: processor_version
+        type: text
+        title: Processor version
+        multi: false
+        required: false
+        show_user: false
+        default: v1
+        description: >-
+          The processor version that the integration should use.
+          Possible values are `v1` and `v2` (preview). 
+          
+          The v2 event hub processor is in preview, so using the v1 processor
+          is recommended for typical use cases.
+          
+          Default is `v1`.
+       
+      - name: processor_update_interval
+        type: text
+        title: Processor update interval
+        multi: false
+        required: false
+        show_user: false
+        default: 10s
+        description: >-
+          (Processor v2 only) How often the processor should attempt to claim
+          partitions.
+          
+          Default is `10` seconds.
+      - name: processor_start_position
+        type: text
+        title: Processor start position
+        multi: false
+        required: false
+        show_user: false
+        default: earliest
+        description: >-
+          (Processor v2 only) Controls from what position in the event hub
+          the processor should start processing messages for all partitions.
+          
+          Possible values are `earliest` and `latest`.
+          
+          `earliest` starts processing messages from the last checkpoint, or the
+          beginning of the event hub if no checkpoint is available.
+
+          `latest` starts processing messages from the the latest event in the
+          event hub and continues to process new events as they arrive.
+          
+          Default is `earliest`.
+
+      - name: migrate_checkpoint
+        type: bool
+        title: Migrate checkpoint information
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: >-
+          (Processor v2 only) Flag to control if the processor should perform 
+          the checkpoint information migration from processor v1 to v2
+          at startup.
+          
+          The checkpoint migration converts the checkpoint information
+          from the v1 format to the v2 format.
+
+          Default is `false`, which means the processor will not perform the
+          checkpoint migration.
+
+      - name: partition_receive_timeout
+        type: text
+        title: Partition receive timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 5s
+        description: >-
+          (Processor v2 only) Maximum time to wait before processing the
+          messages received from the event hub.
+          
+          The partition consumer waits up to a "receive count" or a
+          "receive timeout", whichever comes first.
+
+          Default is `5` seconds.
+
+      - name: partition_receive_count
+        type: text
+        title: Partition receive count
+        multi: false
+        required: false
+        show_user: false
+        default: 100
+        description: >-
+          (Processor v2 only) Maximum number of messages from the event hub
+          to wait for before processing them.
+          
+          The partition consumer waits up to a "receive count" or a
+          "receive timeout", whichever comes first.
+
+          Default is `100` messages.
+
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

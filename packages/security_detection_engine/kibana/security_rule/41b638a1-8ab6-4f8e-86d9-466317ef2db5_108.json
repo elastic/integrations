@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to create a local account that will be hidden from the macOS logon window. This may indicate an attempt to evade user attention while maintaining persistence using a separate local account.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential Hidden Local User Account Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Hidden Local User Account Creation\n\nIn macOS environments, the `dscl` command-line utility manages directory services, including user accounts. Adversaries may exploit this to create hidden local accounts, evading detection while maintaining persistence. The detection rule monitors for `dscl` processes attempting to set accounts as hidden, flagging suspicious activity indicative of potential misuse.\n\n### Possible investigation steps\n\n- Review the process details to confirm the presence of the `dscl` command with arguments related to account creation and hiding, specifically checking for `IsHidden`, `create`, and values like `true`, `1`, or `yes`.\n- Identify the user account under which the `dscl` command was executed to determine if it was initiated by an authorized user or a potential adversary.\n- Check the system logs for any additional suspicious activity around the time the `dscl` command was executed, such as other unauthorized account modifications or unusual login attempts.\n- Investigate the newly created account details, if available, to assess its purpose and legitimacy, including checking for any associated files or processes that might indicate malicious intent.\n- Correlate the event with other security alerts or anomalies on the host to determine if this activity is part of a broader attack pattern or isolated incident.\n\n### False positive analysis\n\n- System administrators may use the dscl command to create hidden accounts for legitimate purposes such as maintenance or automated tasks. To manage this, create exceptions for known administrator accounts or scripts that regularly perform these actions.\n- Some third-party applications or management tools might use hidden accounts for functionality or security purposes. Identify these applications and whitelist their processes to prevent unnecessary alerts.\n- During system setup or configuration, hidden accounts might be created as part of the initial setup process. Exclude these initial setup activities by correlating them with known installation or configuration events.\n- Regular audits of user accounts and their creation processes can help distinguish between legitimate and suspicious account creation activities, allowing for more informed exception handling.\n- If a specific user or group frequently triggers this rule due to their role, consider creating a role-based exception to reduce noise while maintaining security oversight.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent potential lateral movement or data exfiltration by the adversary.\n- Use administrative privileges to review and remove any unauthorized hidden user accounts created using the `dscl` command. Ensure that legitimate accounts are not affected.\n- Change passwords for all local accounts on the affected system to prevent unauthorized access using potentially compromised credentials.\n- Conduct a thorough review of system logs and security alerts to identify any additional suspicious activities or indicators of compromise related to the hidden account creation.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if the threat is part of a larger attack campaign.\n- Implement enhanced monitoring for `dscl` command usage across all macOS systems in the environment to detect and respond to similar threats promptly.\n- Update and reinforce endpoint security measures, such as ensuring all systems have the latest security patches and antivirus definitions, to prevent exploitation of known vulnerabilities.",
+        "query": "event.category:process and host.os.type:macos and event.type:(start or process_started) and\n process.name:dscl and process.args:(IsHidden and create and (true or 1 or yes))\n",
+        "references": [
+            "https://support.apple.com/en-us/HT203998"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "41b638a1-8ab6-4f8e-86d9-466317ef2db5",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.003",
+                                "name": "Local Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 108
+    },
+    "id": "41b638a1-8ab6-4f8e-86d9-466317ef2db5_108",
+    "type": "security-rule"
+}

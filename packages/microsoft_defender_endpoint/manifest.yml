@@ -1,7 +1,7 @@
-format_version: "3.0.2"
+format_version: "3.4.0"
 name: microsoft_defender_endpoint
 title: Microsoft Defender for Endpoint
-version: "2.27.1"
+version: "2.42.1"
 description: Collect logs from Microsoft Defender for Endpoint with Elastic Agent.
 categories:
   - "security"
@@ -9,11 +9,22 @@ categories:
 type: integration
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.18.0 || ^9.0.0"
 policy_templates:
   - name: microsoft_defender_endpoint
     title: Microsoft Defender for Endpoint
     description: Collect logs from Microsoft Defender for Endpoint
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+        resources:
+          requests:
+            memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
     inputs:
       - type: httpjson
         title: "Collect Microsoft Defender for Endpoint logs via API"
@@ -21,6 +32,93 @@ policy_templates:
       - type: logfile
         title: "Collect Microsoft Defender for Endpoint logs via file"
         description: "Collecting Defender for Endpoint logs via file"
+      - type: cel
+        title: Collect Microsoft Defender for Endpoint logs via API
+        description: Collecting Defender for Endpoint logs via API.
+        vars:
+          - name: client_id
+            type: text
+            title: Client ID
+            description: The client ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            description: The secret related to the client ID.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: login_url
+            type: text
+            title: OAuth Server URL
+            required: true
+            show_user: false
+            default: https://login.microsoftonline.com
+            description: "URL of Login Server 'tenant-id and token endpoint added automatically'."
+          - name: url
+            type: text
+            title: URL
+            required: true
+            show_user: false
+            default: https://api.security.microsoft.com
+            description: URL of azure portal.
+          - name: tenant_id
+            type: text
+            title: Tenant ID
+            description: The tenant ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: token_scopes
+            type: text
+            title: Token Scopes
+            multi: true
+            default:
+              - "https://securitycenter.onmicrosoft.com/windowsatpservice/.default"
+            description: Scopes for OAuth2 token.
+            required: true
+            show_user: false
+            secret: false
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
 icons:
   - src: /img/logo.svg
     title: Microsoft Defender for Endpoint logo
@@ -39,6 +137,18 @@ screenshots:
     title: SIEM events CS
     size: 3360x1776
     type: image/jpg
+  - src: /img/microsoft_defender_endpoint-machine_overview.png
+    title: Machine Overview Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/microsoft_defender_endpoint-machine_action_overview.png
+    title: Machine Action Overview Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/microsoft_defender_endpoint-vulnerability_overview.png
+    title: Vulnerability Overview Dashboard
+    size: 600x600
+    type: image/png
 owner:
   github: elastic/security-service-integrations
   type: elastic

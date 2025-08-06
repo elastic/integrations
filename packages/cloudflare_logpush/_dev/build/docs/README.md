@@ -13,7 +13,7 @@ For example, you could use the data from this integration to know which websites
 
 ## Data streams
 
-The Cloudflare Logpush integration collects logs for the following types of events.
+The Cloudflare Logpush integration collects logs for the following types of events. For more information on each dataset, refer to the Logs reference section at the end of this page.
 
 ### Zero Trust events
 
@@ -24,6 +24,10 @@ The Cloudflare Logpush integration collects logs for the following types of even
 **CASB findings**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 
 **Device Posture Results**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
+
+**DLP Forensic Copies**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
+
+**Email Security Alerts**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
 
 **Gateway DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
 
@@ -49,6 +53,8 @@ The Cloudflare Logpush integration collects logs for the following types of even
 
 **Network Analytics**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
 
+**Page Shield events**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
+
 **Sinkhole HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 
 **Spectrum Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
@@ -65,7 +71,8 @@ This module has been tested against **Cloudflare version v4**.
 
 ## Setup
 
-### To collect data from AWS S3 Bucket, follow the below steps:
+### Collect data from AWS S3 Bucket
+
 - Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
 - The default values of the "Bucket List Prefix" are listed below. However, users can set the parameter "Bucket List Prefix" according to their requirements.
 
@@ -90,7 +97,8 @@ This module has been tested against **Cloudflare version v4**.
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
 
-### To collect data from AWS SQS, follow the below steps:
+### Collect data from AWS SQS
+
 1. If Logpush forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
 2. Follow the steps below for each Logpush data stream that has been enabled:
      1. Create an SQS queue
@@ -108,7 +116,8 @@ This module has been tested against **Cloudflare version v4**.
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
-### To collect data from S3-Compatible Cloudflare R2 Buckets, follow the below steps:
+### Collect data from S3-Compatible Cloudflare R2 Buckets
+
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/r2/) to push logs to Cloudflare R2.
 
 **Note**:
@@ -124,7 +133,8 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 **Note**:
 - The AWS region is not a requirement when configuring the R2 Bucket, as the region for any R2 Bucket is `auto` from the [API perspective](https://developers.cloudflare.com/r2/api/s3/api/#bucket-region). However, the error `failed to get AWS region for bucket: operation error S3: GetBucketLocation` may appear when starting the integration. The reason is that `GetBucketLocation` is the first request made to the API when starting the integration, so any configuration, credentials or permissions errors would cause this. Focus on the API response error to identify the original issue.
 
-### To collect data from GCS Buckets, follow the below steps:
+### Collect data from GCS Buckets
+
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
 - Configure the GCS bucket names and credentials along with the required configs under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
 - Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
@@ -134,8 +144,9 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 - The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input currently only supports json data.
 
-### To collect data from the Cloudflare HTTP Endpoint, follow the below steps:
-- Reference link to [Enable HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/) for Cloudflare Logpush.
+### Collect data from the Cloudflare HTTP Endpoint
+
+- Refer to [Enable HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/) for Cloudflare Logpush.
 - Add same custom header along with its value on both the side for additional security.
 - For example, while creating a job along with a header and value for a particular dataset:
 ```
@@ -158,8 +169,9 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
 - To enable request ACKing, add a `wait_for_completion_timeout` request query with the timeout for an ACK. See the [HTTP Endpoint documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) for details.
 
-### Enabling the integration in Elastic
-1. In Kibana, go to Management > Integrations
+### Enable the integration in Elastic
+
+1. In Kibana, go to **Management** > **Integrations**.
 2. In the integrations search bar type **Cloudflare Logpush**.
 3. Click the **Cloudflare Logpush** integration from the search results.
 4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
@@ -210,6 +222,16 @@ This is the `device_posture` dataset.
 
 {{fields "device_posture"}}
 
+### dlp_forensic_copies
+
+This is the `dlp_forensic_copies` dataset.
+
+#### Example
+
+{{event "dlp_forensic_copies"}}
+
+{{fields "dlp_forensic_copies"}}
+
 ### dns
 
 This is the `dns` dataset.
@@ -229,6 +251,16 @@ This is the `dns_firewall` dataset.
 {{event "dns_firewall"}}
 
 {{fields "dns_firewall"}}
+
+### email_security_alerts
+
+This is the `email_security_alerts` dataset.
+
+#### Example
+
+{{event "email_security_alerts"}}
+
+{{fields "email_security_alerts"}}
 
 ### firewall_event
 
@@ -319,6 +351,16 @@ This is the `network_session` dataset.
 {{event "network_session"}}
 
 {{fields "network_session"}}
+
+### page_shield_events
+
+This is the `page_shield_events` dataset.
+
+#### Example
+
+{{event "page_shield_events"}}
+
+{{fields "page_shield_events"}}
 
 ### sinkhole_http
 

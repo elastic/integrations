@@ -1,0 +1,89 @@
+{
+    "attributes": {
+        "author": [
+            "Austin Songer"
+        ],
+        "description": "Identifies when a Route53 private hosted zone has been associated with VPC.",
+        "false_positives": [
+            "A private hosted zone may be asssociated with a VPC by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-60m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "interval": "10m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Route53 private hosted zone associated with a VPC",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS Route53 private hosted zone associated with a VPC\n\nAWS Route53 private hosted zones allow for DNS management within a Virtual Private Cloud (VPC), ensuring internal resources are accessible only within the VPC. Adversaries might exploit this by associating unauthorized VPCs to intercept or reroute traffic. The detection rule identifies successful associations of VPCs with hosted zones, signaling potential misuse or unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the CloudTrail logs for the event.dataset:aws.cloudtrail and event.provider:route53.amazonaws.com to gather details about the AssociateVPCWithHostedZone action, including the time of the event and the identity of the user or role that performed the action.\n- Verify the event.outcome:success to confirm that the association was successful and identify the specific VPC and hosted zone involved in the association.\n- Check the AWS IAM policies and permissions of the user or role that initiated the association to ensure they have the appropriate level of access and determine if the action aligns with their expected responsibilities.\n- Investigate the associated VPC to determine if it is authorized and expected to be linked with the private hosted zone. Look for any unusual or unauthorized VPCs that may indicate potential misuse.\n- Review recent changes or activities in the AWS account to identify any other suspicious actions or patterns that could suggest a broader security incident or compromise.\n\n### False positive analysis\n\n- Routine infrastructure changes may trigger this rule when legitimate VPCs are associated with private hosted zones during regular operations. To manage this, maintain an updated list of authorized VPCs and compare them against the detected associations.\n- Automated deployment tools or scripts that frequently associate VPCs with hosted zones can cause false positives. Identify these tools and create exceptions for their known activities to reduce noise.\n- Development and testing environments often involve frequent changes and associations of VPCs with hosted zones. Consider excluding these environments from the rule or setting up a separate monitoring policy with adjusted thresholds.\n- Scheduled maintenance or updates might involve temporary associations of VPCs with hosted zones. Document these schedules and incorporate them into the monitoring system to prevent false alerts during these periods.\n\n### Response and remediation\n\n- Immediately isolate the VPC associated with the unauthorized Route53 private hosted zone to prevent further unauthorized access or data exfiltration.\n- Review CloudTrail logs to identify the source and method of the unauthorized VPC association, focusing on the user or role that performed the action.\n- Revoke any unauthorized access or permissions identified during the log review, particularly those related to the IAM roles or users involved in the incident.\n- Conduct a security review of the affected VPC and associated resources to ensure no other configurations have been tampered with or compromised.\n- Notify the security operations team and relevant stakeholders about the incident for further investigation and potential escalation.\n- Implement additional monitoring and alerting for similar events in the future, ensuring that any unauthorized associations are detected promptly.\n- Review and update IAM policies and security group rules to enforce the principle of least privilege, reducing the risk of similar incidents occurring.",
+        "query": "event.dataset:aws.cloudtrail and event.provider:route53.amazonaws.com and event.action:AssociateVPCWithHostedZone and\nevent.outcome:success\n",
+        "references": [
+            "https://docs.aws.amazon.com/Route53/latest/APIReference/API_AssociateVPCWithHostedZone.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^2.40.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e3c27562-709a-42bd-82f2-3ed926cced19",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Route53",
+            "Use Case: Asset Visibility",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 208
+    },
+    "id": "e3c27562-709a-42bd-82f2-3ed926cced19_208",
+    "type": "security-rule"
+}

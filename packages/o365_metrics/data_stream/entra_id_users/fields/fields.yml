@@ -1,0 +1,66 @@
+- name: o365.metrics.entra_id_users
+  type: group
+  fields:
+    - name: user
+      type: group
+      fields:
+      - name: id
+        type: keyword
+        description: |
+          The unique identifier for the user. Should be treated as an opaque identifier.
+      - name: upn
+        type: keyword
+        description: |
+          The user principal name (UPN) of the user. The UPN is an Internet-style sign-in name for the user based on the Internet standard RFC 822. By convention, this value should map to the user's email name. The general format is alias@domain, where the domain must be present in the tenant's collection of verified domains.
+      - name: type
+        type: keyword
+        description: |
+          A string value that can be used to classify user types in your directory. The possible values are Member and Guest. 
+    - name: risk
+      type: group
+      fields:
+      - name: error
+        type: text
+        description: |
+          An error if the risk data is unavailable for this user.
+      - name: event_type
+        type: keyword
+        description: |
+          The type of risk event detected. The possible values are adminConfirmedUserCompromised, anomalousToken, anomalousUserActivity, anonymizedIPAddress, generic, impossibleTravel, investigationsThreatIntelligence, suspiciousSendingPatterns, leakedCredentials, maliciousIPAddress,malwareInfectedIPAddress, mcasSuspiciousInboxManipulationRules, newCountry, passwordSpray,riskyIPAddress, suspiciousAPITraffic, suspiciousBrowser,suspiciousInboxForwarding, suspiciousIPAddress, tokenIssuerAnomaly, unfamiliarFeatures, unlikelyTravel. If the risk detection is a premium detection, will show generic. 
+      - name: level
+        type: keyword
+        description: |
+          Level of the detected risky user. Possible values are: low, medium, high, hidden, none, unknownFutureValue.
+      - name: state
+        type: keyword
+        description: |
+          State of the user's risk. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue.
+      - name: detail
+        type: keyword
+        description: |
+          The possible values are none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue, adminConfirmedServicePrincipalCompromised, adminDismissedAllRiskForServicePrincipal, m365DAdminDismissedDetection, userChangedPasswordOnPremises, adminDismissedRiskForSignIn, adminConfirmedAccountSafe.
+    - name: on_premises_provisioning_errors
+      type: group
+      description: |
+        Errors when using Microsoft synchronization product during provisioning. 
+      fields:
+        - name: category
+          type: keyword
+          description: |
+            Category of the provisioning error.
+        - name: occurred_date_time
+          type: date
+          description: |
+            The date and time at which the error occurred.
+        - name: property_causing_error
+          type: keyword
+          description: |
+            Name of the directory property causing the error.
+        - name: value
+          type: keyword
+          description: |
+            Value of the property causing the error.
+    - name: on_premises_sync_enabled
+      type: boolean
+      description: |
+        true if this user object is currently being synced from an on-premises Active Directory (AD); otherwise the user isn't being synced and can be managed in Microsoft Entra ID.

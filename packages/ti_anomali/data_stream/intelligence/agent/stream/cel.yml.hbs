@@ -26,8 +26,12 @@ state:
   page_size: {{page_size}}
   remote_api_true: {{remote_api_true}}
   delay: 1m
+  initial_interval: {{initial_interval}}
   want_more: false
   preserve_original_event: {{preserve_original_event}}
+{{#if query}}
+  query: {{escape_string query}}
+{{/if}}
 redact:
   fields:
     - api_key
@@ -38,9 +42,11 @@ program: |-
   		state.url.trim_right("/") + "/api/v2/intelligence/?" + {
   			"order_by": ["update_id"],
   			"modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
+  			?"modified_ts__gt": state.?cursor.last_update_id.orValue(null) == null ? optional.of([(now - duration(state.initial_interval)).format(time_layout.RFC3339)]) : optional.none(),
   			"limit": [string(state.page_size)],
-  			?"search_after": state.?cursor.last_update_id.optMap(id, [string(int(id))]),
+  			?"update_id__gt": state.?cursor.last_update_id.optMap(id, [string(int(id))]),
   			?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
+  			?"q": state.?query.orValue("") != "" ? optional.of([state.query]) : optional.none(),
   		}.format_query()
   	).with(
   		{

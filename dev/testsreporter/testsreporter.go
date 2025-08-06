@@ -20,13 +20,15 @@ type CheckOptions struct {
 	ServerlessProject string
 	LogsDB            bool
 	StackVersion      string
+	Subscription      string
 	BuildURL          string
 	CodeownersPath    string
 
 	MaxPreviousLinks int
 	MaxTestsReported int
 
-	DryRun bool
+	DryRun  bool
+	Verbose bool
 }
 
 func Check(ctx context.Context, resultsPath string, options CheckOptions) error {
@@ -49,11 +51,15 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 		DryRun: options.DryRun,
 	})
 
-	aReporter := newReporter(ghCli, options.MaxPreviousLinks)
+	aReporter := newReporter(reporterOptions{
+		GhCli:            ghCli,
+		MaxPreviousLinks: options.MaxPreviousLinks,
+		Verbose:          options.Verbose,
+	})
 
 	if len(packageErrors) > options.MaxTestsReported {
 		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
-		packages, err := packagesFromTests(resultsPath, options)
+		packages, err := packagesFromTests(resultsPath)
 		if err != nil {
 			return fmt.Errorf("failed to get packages from results files: %w", err)
 		}
@@ -62,6 +68,7 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 			ServerlessProject: options.ServerlessProject,
 			LogsDB:            options.LogsDB,
 			StackVersion:      options.StackVersion,
+			Subscription:      options.Subscription,
 			BuildURL:          options.BuildURL,
 			Packages:          packages,
 		})
@@ -117,6 +124,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 				ServerlessProject: options.ServerlessProject,
 				LogsDB:            options.LogsDB,
 				StackVersion:      options.StackVersion,
+				Subscription:      options.Subscription,
 				BuildURL:          options.BuildURL,
 				TestCase:          c,
 				CodeownersPath:    options.CodeownersPath,
@@ -137,7 +145,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 }
 
 // packagesFromTests returns the sorted packages failing given the results file
-func packagesFromTests(resultsPath string, options CheckOptions) ([]string, error) {
+func packagesFromTests(resultsPath string) ([]string, error) {
 	packages := []string{}
 	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

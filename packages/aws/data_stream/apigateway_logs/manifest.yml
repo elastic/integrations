@@ -69,12 +69,26 @@ streams:
         description: "Time interval for polling listing of the S3 bucket. NOTE: Supported units for this parameter are h/m/s."
       - name: number_of_workers
         type: integer
-        title: "[S3] Number of Workers"
+        title: "[S3/SQS] Number of Workers"
         multi: false
         required: false
         show_user: false
         default: 5
         description: Number of workers that will process the S3 objects listed.
+      - name: start_timestamp
+        type: text
+        title: "[S3] Start Timestamp"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, only read S3 objects with last modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format. For example, "2020-10-10T10:30:00Z" (UTC) or "2020-10-10T10:30:00Z+02:30" (with zone offset).
+      - name: ignore_older
+        type: text
+        title: "[S3] Ignore Older Timespan"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
       - name: visibility_timeout
         type: text
         title: "[SQS] Visibility Timeout"
@@ -202,7 +216,7 @@ streams:
         required: false
         default: beginning
         show_user: true
-        description: Allows user to specify if this input should read log files from the beginning or from the end.
+        description: Specify whether the input should start reading logs from the `beginning` (oldest log entry), `end` (newest log entry), or `lastSync` (last successful read timestamp if input ran before).
       - name: scan_frequency
         type: text
         title: Scan Frequency

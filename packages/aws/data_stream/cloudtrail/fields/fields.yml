@@ -81,6 +81,7 @@
     - name: request_parameters
       type: keyword
       description: The parameters, if any, that were sent with the request.
+      ignore_above: 8191
       multi_fields:
         - name: text
           type: text
@@ -88,6 +89,7 @@
     - name: response_elements
       type: keyword
       description: The response element for actions that make changes (create, update, or delete actions).
+      ignore_above: 8191
       multi_fields:
         - name: text
           type: text
@@ -190,3 +192,20 @@
 - name: related.entity
   description: "A collection of all entity identifiers associated with the document. \nIf the document  contains multiple entities, identifiers for each will be included.\nExample identifiers include(but not limited to) cloud resource IDs, ARNs,  email addresses,\nand hostnames. \n"
   type: keyword
+- name: target
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+
+- name: actor
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword

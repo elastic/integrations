@@ -13,18 +13,72 @@
       type: nested
       description: |
         The list of non-terminating rules in the rule group that match the request. These are always COUNT rules (non-terminating rules that match)
+      fields:
+        - name: action
+          type: keyword
+        - name: ruleId
+          type: keyword
+        - name: ruleMatchDetails
+          type: nested
+          fields:
+            - name: conditionType
+              type: keyword
+            - name: location
+              type: keyword
+            - name: matchedData
+              type: keyword
+    - name: rule_group_list
+      type: nested
+      fields:
+        - name: nonTerminatingMatchingRules
+          type: nested
+          fields:
+            - name: action
+              type: keyword
+            - name: ruleId
+              type: keyword
+            - name: ruleMatchDetails
+              type: nested
+              fields:
+                - name: conditionType
+                  type: keyword
+                - name: location
+                  type: keyword
+                - name: matchedData
+                  type: keyword
+        - name: ruleGroupId
+          type: keyword
+        - name: terminatingRule
+          type: group
+          fields:
+            - name: action
+              type: keyword
+            - name: ruleId
+              type: keyword
+            - name: ruleMatchDetails
+              type: nested
+              fields:
+                - name: conditionType
+                  type: keyword
+                - name: location
+                  type: keyword
+                - name: matchedData
+                  type: keyword
     - name: rate_based_rule_list
       type: nested
       description: |
         The list of rate-based rules that acted on the request.
+      fields:
+        - name: conditionType
+          type: keyword
+        - name: location
+          type: keyword
+        - name: matchedData
+          type: keyword
     - name: request.headers
       type: flattened
       description: |
         List of request headers
-    - name: rule_group_list
-      type: nested
-      description: |
-        The list of rule groups that acted on this request.
     - name: source.id
       type: keyword
       description: |
@@ -37,3 +91,10 @@
       type: nested
       description: |
         Detailed information about the terminating rule that matched the request. A terminating rule has an action that ends the inspection process against a web request. Possible actions for a terminating rule are ALLOW and BLOCK. This is only populated for SQL injection and cross-site scripting (XSS) match rule statements. As with all rule statements that inspect for more than one thing, AWS WAF applies the action on the first match and stops inspecting the web request. A web request with a terminating action could contain other threats, in addition to the one reported in the log.
+      fields:
+        - name: conditionType
+          type: keyword
+        - name: location
+          type: keyword
+        - name: matchedData
+          type: keyword

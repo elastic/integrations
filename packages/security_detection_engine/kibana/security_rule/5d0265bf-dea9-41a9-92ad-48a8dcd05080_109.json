@@ -1,0 +1,83 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of the Defaults command to install a login or logoff hook in MacOS. An adversary may abuse this capability to establish persistence in an environment by inserting code to be executed at login or logout.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Persistence via Login or Logout Hook",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Persistence via Login or Logout Hook\n\nIn macOS environments, login and logout hooks are scripts executed automatically during user login or logout, often used for system management tasks. Adversaries exploit this by inserting malicious scripts to maintain persistence. The detection rule identifies suspicious use of the `defaults` command to set these hooks, excluding known legitimate scripts, thus highlighting potential unauthorized persistence attempts.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the use of the \"defaults\" command with \"write\" arguments targeting \"LoginHook\" or \"LogoutHook\".\n- Check the process execution history for the user account associated with the alert to identify any unusual or unauthorized activity.\n- Investigate the source and content of the script specified in the \"defaults\" command to determine if it contains malicious or unauthorized code.\n- Cross-reference the script path against known legitimate scripts to ensure it is not mistakenly flagged.\n- Analyze recent system changes or installations that might have introduced the suspicious script or process.\n- Review system logs around the time of the alert for any additional indicators of compromise or related suspicious activity.\n\n### False positive analysis\n\n- Known false positives include legitimate scripts used by system management tools like JAMF, which are often set as login or logout hooks.\n- To handle these, users can create exceptions for known legitimate scripts by adding their paths to the exclusion list in the detection rule.\n- Regularly review and update the exclusion list to ensure it includes all authorized scripts used in your environment.\n- Monitor for any changes in the behavior of these scripts to ensure they remain non-threatening and authorized.\n- Collaborate with IT and security teams to identify any new legitimate scripts that should be excluded from detection.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent potential lateral movement or data exfiltration by the adversary.\n- Terminate any suspicious processes associated with the unauthorized login or logout hooks to halt any ongoing malicious activity.\n- Remove the unauthorized login or logout hooks by using the `defaults delete` command to ensure the persistence mechanism is dismantled.\n- Conduct a thorough review of system logs and recent changes to identify any additional unauthorized modifications or indicators of compromise.\n- Restore any affected system files or configurations from a known good backup to ensure system integrity and functionality.\n- Escalate the incident to the security operations team for further analysis and to determine if additional systems are affected.\n- Implement enhanced monitoring and alerting for similar unauthorized use of the `defaults` command to improve detection and response capabilities.",
+        "query": "process where host.os.type == \"macos\" and event.type == \"start\" and\n process.name == \"defaults\" and process.args == \"write\" and process.args : (\"LoginHook\", \"LogoutHook\") and\n not process.args :\n       (\n         \"Support/JAMF/ManagementFrameworkScripts/logouthook.sh\",\n         \"Support/JAMF/ManagementFrameworkScripts/loginhook.sh\",\n         \"/Library/Application Support/JAMF/ManagementFrameworkScripts/logouthook.sh\",\n         \"/Library/Application Support/JAMF/ManagementFrameworkScripts/loginhook.sh\"\n       )\n",
+        "references": [
+            "https://www.virusbulletin.com/uploads/pdf/conference_slides/2014/Wardle-VB2014.pdf",
+            "https://www.manpagez.com/man/1/defaults/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5d0265bf-dea9-41a9-92ad-48a8dcd05080",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1037",
+                        "name": "Boot or Logon Initialization Scripts",
+                        "reference": "https://attack.mitre.org/techniques/T1037/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "5d0265bf-dea9-41a9-92ad-48a8dcd05080_109",
+    "type": "security-rule"
+}

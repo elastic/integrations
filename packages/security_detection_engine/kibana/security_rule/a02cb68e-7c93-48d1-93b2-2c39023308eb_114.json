@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies first-time modifications to scheduled tasks by user accounts, excluding system activity and machine accounts.",
+        "false_positives": [
+            "Legitimate scheduled tasks may be created during installation of new software."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Unusual Scheduled Task Update",
+        "new_terms_fields": [
+            "host.id",
+            "winlog.event_data.TaskName"
+        ],
+        "query": "event.category: \"iam\" and event.code: \"4702\" and\n  not winlog.event_data.SubjectUserSid: (\"S-1-5-18\" or \"S-1-5-19\" or \"S-1-5-20\") and\n  not user.name : *$\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4698"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SubjectUserSid",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "a02cb68e-7c93-48d1-93b2-2c39023308eb",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Windows Security Event Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 114
+    },
+    "id": "a02cb68e-7c93-48d1-93b2-2c39023308eb_114",
+    "type": "security-rule"
+}

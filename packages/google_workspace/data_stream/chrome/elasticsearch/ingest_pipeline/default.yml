@@ -13,10 +13,21 @@ processors:
       field: observer.product
       tag: set_observer_product
       value: Chrome
-  - fail:
+  - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process.
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -45,30 +56,25 @@ processors:
       if: ctx.json?.events?.parameters instanceof List
       description: Script to flatten the event parameters.
       source: >
-        if (ctx.google_workspace == null) {
-          ctx.google_workspace = new HashMap();
-        }
-        if (ctx.google_workspace.chrome == null) {
-          ctx.google_workspace.chrome = new HashMap();
-        }
-        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
-            ctx.google_workspace.chrome[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["value"];
+        ctx.google_workspace = ctx.google_workspace ?: [:];
+        ctx.google_workspace.chrome = ctx.google_workspace.chrome ?: [:];
+        for (def param : ctx.json.events.parameters) {
+          if (param.name == null) {
+            continue;
           }
-          if (ctx["json"]["events"]["parameters"][i]["boolValue"] != null) {
-            ctx.google_workspace.chrome[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["boolValue"];
-          }
-          if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
-            ctx.google_workspace.chrome[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["intValue"];
-          }
-          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
-            ctx.google_workspace.chrome[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["multiValue"];
-          }
-          if (ctx["json"]["events"]["parameters"][i]["multiIntValue"] != null) {
-            ctx.google_workspace.chrome[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["multiIntValue"];
-          }
-          if (ctx["json"]["events"]["parameters"][i]["multiBoolValue"] != null) {
-            ctx.google_workspace.chrome[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["multiBoolValue"];
+          def lw_case_name = param.name.toLowerCase();
+          if (param.value != null) {
+            ctx.google_workspace.chrome[lw_case_name] = param.value;
+          } else if (param.boolValue != null) {
+            ctx.google_workspace.chrome[lw_case_name] = param.boolValue;
+          } else if (param.intValue != null) {
+            ctx.google_workspace.chrome[lw_case_name] = param.intValue;
+          } else if (param.multiValue != null) {
+            ctx.google_workspace.chrome[lw_case_name] = param.multiValue;
+          } else if (param.multiIntValue != null) {
+            ctx.google_workspace.chrome[lw_case_name] = param.multiIntValue;
+          } else if (param.multiBoolValue != null) {
+            ctx.google_workspace.chrome[lw_case_name] = param.multiBoolValue;
           }
         }
       on_failure:

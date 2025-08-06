@@ -1,20 +1,20 @@
 name: okta
 title: Okta
-version: "3.4.1"
+version: "3.10.1"
 description: Collect and parse event logs from Okta API with Elastic Agent.
 type: integration
-format_version: "3.1.0"
+format_version: "3.2.3"
 categories: [security, iam]
 conditions:
   kibana:
-    version: ^8.15.0
+    version: "^8.18.0 || ^9.0.0"
 icons:
   - src: /img/okta-logo.svg
     title: Okta
     size: 216x216
     type: image/svg+xml
 screenshots:
-  - src: /img/filebeat-okta-dashboard.png
+  - src: /img/okta-system-screenshot.png
     title: Okta Dashboard
     size: 1024x662
     type: image/png
@@ -22,6 +22,14 @@ policy_templates:
   - name: okta
     title: Okta logs
     description: Collect logs from Okta
+    deployment_modes: 
+      default:
+        enabled: true 
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: httpjson
         vars:
@@ -136,17 +144,23 @@ policy_templates:
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing
+            default: false
             multi: false
             required: false
             show_user: false
             description: >-
-              The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_enable) for details.
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+              Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+              tracer will delete any stored traces.
+              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)
+              for details.
           - name: ssl
             type: yaml
             title: SSL
             multi: false
             required: false
             show_user: true
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
           - name: proxy_url
             type: text
             title: Proxy URL

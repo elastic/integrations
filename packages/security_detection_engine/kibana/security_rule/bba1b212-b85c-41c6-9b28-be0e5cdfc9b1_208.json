@@ -1,0 +1,84 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the occurence of files uploaded to OneDrive being detected as Malware by the file scanning engine. Attackers can use File Sharing and Organization Repositories to spread laterally within the company and amplify their access. Users can inadvertently share these files without knowing their maliciousness, giving adversaries opportunity to gain initial access to other endpoints in the environment.",
+        "false_positives": [
+            "Benign files can trigger signatures in the built-in virus protection"
+        ],
+        "from": "now-30m",
+        "index": [
+            "filebeat-*",
+            "logs-o365*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "OneDrive Malware File Upload",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating OneDrive Malware File Upload\n\nOneDrive, a cloud storage service, facilitates file sharing and collaboration within organizations. However, adversaries can exploit this by uploading malware, which can spread across shared environments, leading to lateral movement within a network. The detection rule identifies such threats by monitoring OneDrive activities for malware detection events, focusing on file operations flagged by Microsoft's security engine. This proactive approach helps in identifying and mitigating potential breaches.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the event dataset is 'o365.audit' and the event provider is 'OneDrive' to ensure the alert is relevant to OneDrive activities.\n- Examine the specific file operation flagged by the event code 'SharePointFileOperation' and action 'FileMalwareDetected' to identify the file in question and understand the nature of the detected malware.\n- Identify the user account associated with the file upload to determine if the account has been compromised or if the user inadvertently uploaded the malicious file.\n- Check the sharing settings of the affected file to assess the extent of exposure and identify any other users or systems that may have accessed the file.\n- Investigate the file's origin and history within the organization to trace how it was introduced into the environment and whether it has been shared or accessed by other users.\n- Review any additional security alerts or logs related to the user account or file to identify potential patterns of malicious activity or further compromise.\n- Coordinate with IT and security teams to isolate the affected file and user account, and initiate remediation steps to prevent further spread of the malware.\n\n### False positive analysis\n\n- Legitimate software updates or patches may be flagged as malware if they are not yet recognized by the security engine. Users should verify the source and integrity of the file and consider adding it to an exception list if confirmed safe.\n- Files containing scripts or macros used for automation within the organization might trigger false positives. Review the file's purpose and origin, and whitelist it if it is a known and trusted internal tool.\n- Shared files from trusted partners or vendors could be mistakenly identified as threats. Establish a process to verify these files with the sender and use exceptions for recurring, verified files.\n- Archived or compressed files that contain known safe content might be flagged due to their format. Decompress and scan the contents separately to confirm their safety before adding exceptions.\n- Files with unusual or encrypted content used for legitimate business purposes may be misclassified. Ensure these files are documented and approved by IT security before excluding them from alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected OneDrive account to prevent further file sharing and potential spread of malware within the organization.\n- Notify the user associated with the account about the detected malware and instruct them to cease any file sharing activities until further notice.\n- Conduct a thorough scan of the affected files using an updated antivirus or endpoint detection and response (EDR) solution to confirm the presence of malware and identify any additional infected files.\n- Remove or quarantine the identified malicious files from OneDrive and any other locations they may have been shared to prevent further access or execution.\n- Review and revoke any shared links or permissions associated with the infected files to ensure no unauthorized access is possible.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if any lateral movement or additional compromise has occurred.\n- Implement enhanced monitoring and alerting for similar OneDrive activities to quickly detect and respond to any future malware uploads or related threats.",
+        "query": "event.dataset:o365.audit and event.provider:OneDrive and event.code:SharePointFileOperation and event.action:FileMalwareDetected\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/virus-detection-in-spo?view=o365-worldwide"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^2.11.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "bba1b212-b85c-41c6-9b28-be0e5cdfc9b1",
+        "setup": "The Office 365 Logs Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Microsoft 365",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1080",
+                        "name": "Taint Shared Content",
+                        "reference": "https://attack.mitre.org/techniques/T1080/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 208
+    },
+    "id": "bba1b212-b85c-41c6-9b28-be0e5cdfc9b1_208",
+    "type": "security-rule"
+}

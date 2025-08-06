@@ -14,10 +14,16 @@ streams:
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
+        default: false
         multi: false
         required: false
         show_user: false
-        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)
+          for details.
       - name: client_id
         type: text
         title: ThreatQ Oauth2 Client ID
@@ -85,18 +91,19 @@ streams:
         type: integer
         multi: false
         required: false
-        default: 100
+        default: 1000
         show_user: false
         title: Page size
-        description: Maximum number of records to pull in one request.
+        description: Maximum number of records to pull in one request. The maximum supported page size value is 1000.
       - name: ssl
         type: yaml
-        title: SSL
+        title: SSL Configuration
         multi: false
         required: false
         show_user: false
         default: |
           #verification_mode: none
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
       - name: tags
         type: text
         title: Tags
@@ -114,6 +121,13 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve Custom fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
       - name: processors
         type: yaml
         title: Processors

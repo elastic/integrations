@@ -1,0 +1,71 @@
+---
+description: Pipeline for parsing specific fields related to GateKeeper events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: Gatekeeper controls were overridden
+    - append:
+        field: event.category
+        value: malware
+        allow_duplicates: false
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.file.path
+        target_field: file.path
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_size
+        target_field: file.size
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_birthtimespec
+        target_field: file.created
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_atimespec
+        target_field: file.accessed
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_uid
+        target_field: file.uid
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.file.stat.st_gid
+        target_field: file.gid
+        type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.sha256
+        target_field: file.hash.sha256
+        if: ctx.jamf_protect?.telemetry?.event?.gatekeeper_user_override?.sha256 != "NULL"
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.signing_info.cdhash
+        target_field: file.hash.cdhash
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.signing_info.team_id
+        target_field: file.code_signature.team_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.gatekeeper_user_override.signing_info.signing_id
+        target_field: file.code_signature.signing_id
+        ignore_missing: true
+    - append:
+        field: threat.indicator.file.path
+        value: '{{{file.path}}}'
+        if: ctx.file?.path != null && ctx.file.path != ''
+        allow_duplicates: false
+    - set:
+        field: threat.indicator.type
+        value: file
+        
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule leverages the new_terms rule type to detect successful SSH authentications by a user who has not been authenticated in the last 10 days. This behavior may indicate an attacker attempting to gain access to the system using a valid account.",
+        "false_positives": [
+            "This rule may trigger in cases where a user has routine work patterns that result in infrequent authentications."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-10d",
+        "index": [
+            "logs-system.auth-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Successful SSH Authentication from Unusual User",
+        "new_terms_fields": [
+            "related.user"
+        ],
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Successful SSH Authentication from Unusual User\n\nSSH (Secure Shell) is a protocol used to securely access and manage Linux systems. Adversaries may exploit valid user accounts to gain unauthorized access, bypassing traditional security measures. The detection rule identifies unusual SSH logins by flagging users who haven't logged in for over 10 days, indicating potential misuse of credentials. This proactive approach helps in early detection of unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the specific user account involved in the alert to determine if the login is expected or authorized, considering the user's typical login patterns and responsibilities.\n- Check the source IP address of the SSH login to see if it is recognized or associated with previous legitimate access, or if it appears unusual or suspicious.\n- Analyze the timing of the login event to see if it coincides with any known maintenance windows or scheduled activities that could explain the access.\n- Investigate any recent changes to the user's account, such as password resets or modifications to permissions, that could indicate potential compromise.\n- Correlate the SSH login event with other logs or alerts from the same timeframe to identify any additional suspicious activities or patterns that could suggest a broader security incident.\n\n### False positive analysis\n\n- Users returning from extended leave or vacation may trigger the rule. To manage this, create exceptions for users with known absence periods.\n- System administrators or service accounts that log in infrequently for maintenance tasks can be excluded by identifying and documenting these accounts.\n- Automated scripts or processes that authenticate sporadically might be flagged. Review and whitelist these processes if they are legitimate and necessary for operations.\n- Temporary contractors or consultants with limited access periods may cause alerts. Ensure their access is documented and create exceptions for their accounts during their engagement period.\n- Accounts used for testing or development purposes that are not regularly active can be excluded by maintaining a list of such accounts and updating it as needed.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the attacker.\n- Terminate the active SSH session associated with the unusual login to cut off the attacker's access.\n- Reset the password for the compromised user account and any other accounts that may have been accessed using the same credentials.\n- Conduct a thorough review of the affected system's logs and configurations to identify any unauthorized changes or additional compromised accounts.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems or accounts have been affected.\n- Implement multi-factor authentication (MFA) for SSH access to enhance security and prevent similar unauthorized access attempts in the future.\n- Update and enhance monitoring rules to detect similar unusual login patterns, ensuring early detection of potential threats.\n",
+        "query": "event.category:authentication and host.os.type:linux and event.action:ssh_login and event.outcome:success\n",
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.64.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "5b8d7b94-23c6-4e3f-baed-3a4d0da4f19d",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 2
+    },
+    "id": "5b8d7b94-23c6-4e3f-baed-3a4d0da4f19d_2",
+    "type": "security-rule"
+}

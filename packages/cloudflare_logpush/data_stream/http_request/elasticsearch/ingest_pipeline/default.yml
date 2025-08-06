@@ -56,10 +56,27 @@ processors:
       - append:
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
+  - date:
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      target_field: cloudflare_logpush.http_request.datetime
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
   - set:
-      if: ctx.cloudflare_logpush?.http_request?.edge?.start_time != null
+      field: '@timestamp'
+      copy_from: cloudflare_logpush.http_request.datetime
+      ignore_empty_value: true
+  - set:
       field: '@timestamp'
       copy_from: cloudflare_logpush.http_request.edge.start_time
+      ignore_empty_value: true
   - script:
       lang: painless
       tag: painless_edge_end_timestamp_to_milli
@@ -141,7 +158,7 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.http_request.origin.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientRequestMethod
       target_field: cloudflare_logpush.http_request.client.request.method
@@ -149,7 +166,7 @@ processors:
   - set:
       field: http.request.method
       copy_from: cloudflare_logpush.http_request.client.request.method
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.EdgeResponseContentType
       target_field: cloudflare_logpush.http_request.edge.response.content_type
@@ -157,7 +174,7 @@ processors:
   - set:
       field: http.response.mime_type
       copy_from: cloudflare_logpush.http_request.edge.response.content_type
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.EdgeResponseStatus
       target_field: cloudflare_logpush.http_request.edge.response.status
@@ -171,7 +188,7 @@ processors:
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.http_request.edge.response.status
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientASN
       target_field: cloudflare_logpush.http_request.client.asn
@@ -185,7 +202,7 @@ processors:
   - set:
       field: source.as.number
       copy_from: cloudflare_logpush.http_request.client.asn
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientCountry
       target_field: cloudflare_logpush.http_request.client.country
@@ -193,7 +210,7 @@ processors:
   - set:
       field: source.geo.country_iso_code
       copy_from: cloudflare_logpush.http_request.client.country
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientIP
       target_field: cloudflare_logpush.http_request.client.ip
@@ -207,11 +224,16 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.http_request.client.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.BotDetectionIDs
       target_field: cloudflare_logpush.http_request.bot.detection_ids
       tag: rename_bot_detections_ids
+      ignore_missing: true
+  - rename:
+      field: json.BotDetectionTags
+      target_field: cloudflare_logpush.http_request.bot.detection_tags
+      tag: rename_bot_detections_tags
       ignore_missing: true
   - convert:
       field: json.BotScore
@@ -239,9 +261,19 @@ processors:
       target_field: cloudflare_logpush.http_request.cache.status
       ignore_missing: true
   - convert:
+      field: json.CacheReserveUsed
+      target_field: cloudflare_logpush.http_request.cache.reserve_used
+      if: ctx.json?.CacheReserveUsed != null && ctx.json.CacheReserveUsed != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.CacheResponseBytes
       target_field: cloudflare_logpush.http_request.cache.response.bytes
-      if: ctx.json?.CacheResponseBytes != ''
+      if: ctx.json?.CacheResponseBytes != null && ctx.json.CacheResponseBytes != ''
       type: long
       ignore_missing: true
       on_failure:
@@ -263,6 +295,10 @@ processors:
       target_field: cloudflare_logpush.http_request.cache.tiered_fill
       ignore_missing: true
   - rename:
+      field: json.ClientCity
+      target_field: cloudflare_logpush.http_request.client.city
+      ignore_missing: true
+  - rename:
       field: json.ClientDeviceType
       target_field: cloudflare_logpush.http_request.client.device.type
       ignore_missing: true
@@ -271,12 +307,24 @@ processors:
       target_field: cloudflare_logpush.http_request.client.ip_class
       ignore_missing: true
   - rename:
+      field: json.ClientLatitude
+      target_field: cloudflare_logpush.http_request.client.latitude
+      ignore_missing: true
+  - rename:
+      field: json.ClientLongitude
+      target_field: cloudflare_logpush.http_request.client.longitude
+      ignore_missing: true
+  - rename:
       field: json.ClientMTLSAuthCertFingerprint
       target_field: cloudflare_logpush.http_request.client.mtls.auth.fingerprint
       ignore_missing: true
   - rename:
       field: json.ClientMTLSAuthStatus
       target_field: cloudflare_logpush.http_request.client.mtls.auth.status
+      ignore_missing: true
+  - rename:
+      field: json.ClientRegionCode
+      target_field: cloudflare_logpush.http_request.client.region_code
       ignore_missing: true
   - convert:
       field: json.ClientRequestBytes
@@ -292,6 +340,27 @@ processors:
       field: json.ClientRequestURI
       ignore_failure: true
       if: ctx.json?.ClientRequestURI != null
+  - rename:
+      field: json.ContentScanObjResults
+      target_field: cloudflare_logpush.http_request.content_scan.results
+      ignore_missing: true
+  - convert:
+      field: json.ContentScanObjSizes
+      target_field: cloudflare_logpush.http_request.content_scan.sizes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ContentScanObjTypes
+      target_field: cloudflare_logpush.http_request.content_scan.types
+      ignore_missing: true
+  - rename:
+      field: json.LeakedCredentialCheckResult
+      target_field: cloudflare_logpush.http_request.leaked_credential_check
+      ignore_missing: true
   - set:
       field: url.scheme
       copy_from: json.ClientRequestScheme
@@ -338,6 +407,8 @@ processors:
       field: cloudflare_logpush.http_request.client.request.protocol
       patterns:
         - "^%{DATA:network.protocol}/%{DATA:http.version}$"
+      ignore_missing: true
+      ignore_failure: true
   - lowercase:
       field: network.protocol
       ignore_missing: true
@@ -369,15 +440,19 @@ processors:
       field: json.ClientSSLCipher
       target_field: cloudflare_logpush.http_request.client.ssl.cipher
       ignore_missing: true
+  - set:
+      field: tls.cipher
+      copy_from: cloudflare_logpush.http_request.client.ssl.cipher
+      ignore_empty_value: true
   - rename:
       field: json.ClientSSLProtocol
       target_field: cloudflare_logpush.http_request.client.ssl.protocol
       ignore_missing: true
   - grok:
-      if: ctx.json?.cloudflare_logpush?.http_request?.client?.ssl?.protocol != 'none'
       field: cloudflare_logpush.http_request.client.ssl.protocol
       patterns:
         - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
+      ignore_missing: true
       ignore_failure: true
   - lowercase:
       field: tls.version_protocol
@@ -652,6 +727,7 @@ processors:
   - set:
       field: event.id
       copy_from: cloudflare_logpush.http_request.ray.id
+      ignore_empty_value: true
   - rename:
       field: json.RequestHeaders
       target_field: cloudflare_logpush.http_request.request.header
@@ -850,6 +926,7 @@ processors:
         - cloudflare_logpush.http_request.client.country
         - cloudflare_logpush.http_request.client.ip
         - cloudflare_logpush.http_request.client.request.user.agent
+        - cloudflare_logpush.http_request.client.ssl.cipher
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true

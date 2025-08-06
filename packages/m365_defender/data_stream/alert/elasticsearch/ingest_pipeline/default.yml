@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Alert logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -15,6 +26,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       tag: json_event_original
@@ -220,26 +236,27 @@ processors:
       tag: rename_severity
       target_field: m365_defender.alert.severity
       ignore_missing: true
-  - set:
-      field: event.severity
-      tag: set_event_severity_1
-      value: 1
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'informational'
-  - set:
-      field: event.severity
-      tag: set_event_severity_2
-      value: 2
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'low'
-  - set:
-      field: event.severity
-      tag: set_event_severity_3
-      value: 3
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'medium'
-  - set:
-      field: event.severity
-      tag: set_event_severity_4
-      value: 4
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'high'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.m365_defender?.alert?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.m365_defender.alert.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.firstActivityDateTime
       tag: date_firstActivityDateTime
@@ -643,24 +660,24 @@ processors:
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_internetMessageId
+      tag: foreach_append_evidence_internetMessageId
       if: ctx.json?.evidence instanceof List
       processor:
-        rename:
-          field: _ingest._value.internetMessageId
-          tag: rename_foreach_evidence_internetMessageId
-          target_field: _ingest._value.internet_message_id
-          ignore_missing: true
+        append:
+          field: email.message_id
+          tag: append_foreach_evidence_email_message_id
+          value: '{{{_ingest._value.internetMessageId}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_networkMessageId
+      tag: foreach_append_evidence_networkMessageId
       if: ctx.json?.evidence instanceof List
       processor:
-        rename:
-          field: _ingest._value.networkMessageId
-          tag: rename_foreach_evidence_networkMessageId
-          target_field: _ingest._value.network_message_id
-          ignore_missing: true
+        append:
+          field: email.local_id
+          tag: append_foreach_evidence_email_local_id
+          value: '{{{_ingest._value.networkMessageId}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_dot_expander_evidence_p1Sender
@@ -763,6 +780,16 @@ processors:
           allow_duplicates: false
   - foreach:
       field: json.evidence
+      tag: foreach_evidence_append_email_sender_address
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: email.sender.address
+          tag: append_foreach_evidence_email_sender_address
+          value: '{{{_ingest._value.p1_sender.email_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
       tag: foreach_append_evidence_related_user_p1sender_emailaddress
       if: ctx.json?.evidence instanceof List
       processor:
@@ -858,6 +885,16 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_append_source_ip_sender_ip
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_foreach_evidence_source_ip_sender_ip
+          value: '{{{_ingest._value.sender_ip}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_evidence_append_related_ip_sender_ip
@@ -1065,6 +1102,16 @@ processors:
           field: related.hosts
           tag: append_foreach_version_into_related_hosts
           value: '{{{_ingest._value.version}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_rename_evidence_azureAdDeviceId
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: device.id
+          tag: append_azureAdDeviceId_into_device_id
+          value: '{{{_ingest._value.azureAdDeviceId}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
@@ -1462,6 +1509,16 @@ processors:
           field: file.name
           tag: append_foreach_evidence_fileDetails_name
           value: '{{{_ingest._value.file_details.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: file.name
+      tag: foreach_file_name
+      if: ctx.file?.name instanceof List
+      processor:
+        append:
+          field: process.name
+          tag: append_file_name_to_process_name
+          value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
@@ -2020,6 +2077,16 @@ processors:
           allow_duplicates: false
   - foreach:
       field: json.evidence
+      tag: foreach_evidence_process_name
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: process.name
+          tag: append_evidence_imageFile_to_process_name
+          value: '{{{_ingest._value.imageFile.fileName}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
       tag: foreach_evidence_rename_imageFile_filename
       if: ctx.json?.evidence instanceof List
       processor:
@@ -2421,6 +2488,26 @@ processors:
           ctx.process.parent.pid = convertToOrderedArray(processParentPid);
         }
   - foreach:
+      field: process.pid
+      tag: foreach_process_pid
+      if: ctx.process?.pid instanceof List
+      processor:
+        append:
+          field: process.entity_id
+          tag: append_process_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: process.parent.pid
+      tag: foreach_process_parent_pid
+      if: ctx.process?.parent?.pid instanceof List
+      processor:
+        append:
+          field: process.parent.entity_id
+          tag: append_process_parent_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
       field: json.evidence
       tag: foreach_evidence_remove_fields
       if: ctx.json?.evidence instanceof List
@@ -2447,6 +2534,8 @@ processors:
             - _ingest._value.processId
             - _ingest._value.imageFile.fileSize
             - _ingest._value.parentProcessImageFile.fileSize
+            - _ingest._value.internetMessageId
+            - _ingest._value.networkMessageId
           ignore_missing: true
   - rename:
       field: json.evidence

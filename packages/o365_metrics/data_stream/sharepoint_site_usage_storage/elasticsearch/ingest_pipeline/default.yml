@@ -4,16 +4,16 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.sharepoint_site_usage_storage != null && ctx.sharepoint_site_usage_storage == null && ctx.event?.original == null
+      message: error message set and no data to process  
   - set:
       copy_from: sharepoint_site_usage_storage
       field: event.original
       ignore_empty_value: true
       ignore_failure: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
-  # - fail:
-  #     tag: cel_failure
-  #     if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-  #     message: error message set and no data to process       
   - json:
       field: sharepoint_site_usage_storage
       target_field: o365.metrics.sharepoint.site.usage.storage
@@ -79,11 +79,7 @@ processors:
   - fingerprint:
       fields:
         - o365.metrics.sharepoint.site.usage.storage.report.date
-      target_field: _id     
-  - remove:
-      field:
-        - o365.metrics.sharepoint.site.usage.storage.site_type
-      ignore_missing: true
+      target_field: _id
 
   - script:
       lang: painless

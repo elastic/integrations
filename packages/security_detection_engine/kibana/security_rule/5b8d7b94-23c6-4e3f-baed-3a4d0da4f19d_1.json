@@ -1,0 +1,84 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule leverages the new_terms rule type to detect successful SSH authentications by a user who has not been authenticated in the last 10 days. This behavior may indicate an attacker attempting to gain access to the system using a valid account.",
+        "false_positives": [
+            "This rule may trigger in cases where a user has routine work patterns that result in infrequent authentications."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-10d",
+        "index": [
+            "logs-system.auth-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Successful SSH Authentication from Unusual User",
+        "new_terms_fields": [
+            "related.user"
+        ],
+        "query": "event.category:authentication and host.os.type:linux and event.action:ssh_login and event.outcome:success\n",
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.6.4"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "5b8d7b94-23c6-4e3f-baed-3a4d0da4f19d",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "5b8d7b94-23c6-4e3f-baed-3a4d0da4f19d_1",
+    "type": "security-rule"
+}

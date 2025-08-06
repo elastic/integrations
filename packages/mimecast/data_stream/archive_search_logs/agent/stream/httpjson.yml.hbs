@@ -2,11 +2,18 @@ config_version: "2"
 interval: {{interval}}
 request.url: {{api_url}}/api/archive/get-archive-search-logs
 request.method: "POST"
-{{#if enable_request_tracer}}
-request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
-{{/if}}
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+  maxbackups: 5
 request.transforms:
+- set:
+    target: body.data
+    value: >-
+        [{"end": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "start":"[[.cursor.next_date]]"}]
+    default: >-
+        [{"end": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "start":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]"}]
+    value_type: json
 - set:
     target: body.meta.pagination.pageSize
     value: 100
@@ -38,10 +45,11 @@ response.pagination:
 - set:
     target: body.meta.pagination.pageToken
     value: >-
-         [[- if index .last_response.body.meta.pagination "next" -]]
-           [[- .last_response.body.meta.pagination.next -]]
-         [[- end -]]
+        [[- if (eq (len .last_response.body.fail) 0) -]]
+          [[- .last_response.body.meta.pagination.next -]]
+        [[- end -]]
     fail_on_template_error: true
+    do_not_log_failure: true
 cursor:
   next_date:
     value: '[[.first_event.createTime]]'

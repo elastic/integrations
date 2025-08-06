@@ -20,6 +20,7 @@ state:
   version: "2024-04-29"
   issues_id: {{issues_id}}
   api_token: {{api_token}}
+  fetch_related_projects: {{fetch_related_projects}}
 {{#if effective_severity_level}}
   effective_severity_level:
 {{#each effective_severity_level as |l|}}
@@ -61,6 +62,9 @@ redact:
   fields:
     - issues_id
     - api_token
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 program: |
   state.with(get_request(
     state.url.trim_right("/") + state.?cursor.next.orValue(
@@ -118,7 +122,43 @@ program: |
       }
     :
       {
-        "events": body.data.map(issue, {
+        "events": body.data.map(issue,
+          (
+            state.fetch_related_projects == false ||
+            issue.?relationships.scan_item.links.related.orValue("") == "" ||
+            issue.?relationships.scan_item.data.type.orValue("") != "project"
+          ) ?
+            // not activated or no link or not a project, don't enrich
+            issue
+          :
+            // use the link to enrich
+            issue.with({
+              "relationships": issue.relationships.with({
+                "scan_item": issue.relationships.scan_item.with({
+                  "data": issue.relationships.scan_item.data.with(
+                    get_request(
+                      state.url.trim_right("/") + "/rest" +
+                        issue.relationships.scan_item.links.related +
+                        "?" + { "version": [state.version] }.format_query()
+                    ).with({
+                      "Header":{
+                        "Accept":        ["application/vnd.api+json"],
+                        "Authorization": ["Token " + state.api_token],
+                      }
+                    }).do_request().as(resp, resp.StatusCode != 200 ?
+                      { "_enrich_error_message": "Status code "+string(resp.StatusCode)+" received while fetching "+issue.relationships.scan_item.links.related }
+                    :
+                      bytes(resp.Body).decode_json().as(body,
+                        body.?data.orValue({
+                          "_enrich_error_message": "No data received for "+issue.relationships.scan_item.links.related,
+                        })
+                      )
+                    )
+                  )
+                })
+              })
+            })
+        ).map(issue, {
           "message": issue.encode_json(),
         }),
         "cursor": {

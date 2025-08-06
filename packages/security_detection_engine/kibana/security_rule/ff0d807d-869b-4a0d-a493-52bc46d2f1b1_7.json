@@ -1,0 +1,66 @@
+{
+    "attributes": {
+        "anomaly_threshold": 70,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A population analysis machine learning job detected potential DGA (domain generation algorithm) activity. Such activity is often used by malware command and control (C2) channels. This machine learning job looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.",
+        "from": "now-45m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "dga_high_sum_probability",
+        "name": "Potential DGA Activity",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential DGA Activity\nDomain Generation Algorithms (DGAs) are used by malware to dynamically generate domain names for command and control (C2) communication, making it difficult to block malicious domains. Adversaries exploit this by frequently changing domains to evade detection. The 'Potential DGA Activity' detection rule leverages machine learning to analyze DNS requests from source IPs, identifying patterns indicative of DGA usage, thus flagging potential threats for further investigation.\n\n### Possible investigation steps\n\n- Review the source IP address identified in the alert to determine if it belongs to a known or trusted entity within the organization.\n- Analyze the DNS request patterns from the source IP to identify any unusual or suspicious domain names that may indicate DGA activity.\n- Cross-reference the flagged domains with threat intelligence feeds to check for known malicious domains or patterns associated with DGAs.\n- Investigate the network traffic associated with the source IP to identify any additional indicators of compromise or communication with known malicious IPs.\n- Check for any recent changes or anomalies in the system or network configurations that could explain the detected activity.\n- Assess the risk score and severity in the context of the organization's environment to prioritize the investigation and response efforts.\n\n### False positive analysis\n\n- Legitimate software updates or cloud services may generate high volumes of DNS requests that resemble DGA patterns. Users can create exceptions for known update servers or cloud service domains to reduce false positives.\n- Content delivery networks (CDNs) often use dynamically generated subdomains for load balancing and distribution, which can trigger DGA alerts. Identifying and excluding these CDN domains from analysis can help mitigate false positives.\n- Large organizations with complex internal networks might have internal applications that generate DNS requests similar to DGA activity. Conducting a thorough review of internal DNS traffic and whitelisting known internal domains can prevent these false positives.\n- Some security tools or network appliances may perform DNS lookups as part of their normal operation, which could be misclassified as DGA activity. Identifying these tools and excluding their IP addresses from the analysis can help manage false positives.\n\n### Response and remediation\n\n- Isolate the affected systems: Immediately disconnect any systems identified as making suspicious DNS requests from the network to prevent further communication with potential C2 servers.\n- Block identified domains: Use firewall and DNS filtering solutions to block the domains flagged by the detection rule, preventing any further communication attempts.\n- Conduct a thorough system scan: Use updated antivirus and anti-malware tools to scan the isolated systems for any signs of infection or malicious software.\n- Analyze network traffic: Review network logs to identify any additional suspicious activity or other systems that may be affected, focusing on unusual DNS requests and connections.\n- Patch and update systems: Ensure all systems, especially those identified in the alert, are fully patched and updated to mitigate vulnerabilities that could be exploited by malware.\n- Restore from backups: If malware is confirmed, restore affected systems from clean backups to ensure no remnants of the infection remain.\n- Escalate to incident response team: If the threat is confirmed and widespread, escalate the incident to the organization's incident response team for further investigation and coordinated response efforts.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/dga",
+            "https://www.elastic.co/security-labs/detect-domain-generation-algorithm-activity-with-new-kibana-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "dga",
+                "version": "^2.2.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "ff0d807d-869b-4a0d-a493-52bc46d2f1b1",
+        "setup": "## Setup\n\nThe rule requires the Domain Generation Algorithm (DGA) Detection integration assets to be installed, as well as DNS events collected by integrations such as Elastic Defend, Network Packet Capture, or Packetbeat.\n\n### DGA Detection Setup\nThe DGA Detection integration consists of an ML-based framework to detect DGA activity in DNS events.\n\n#### Prerequisite Requirements:\n- Fleet is required for DGA Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- DNS events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint), [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration, or [Packetbeat](https://www.elastic.co/guide/en/beats/packetbeat/current/packetbeat-overview.html).\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n- To set up and run Packetbeat, follow [this](https://www.elastic.co/guide/en/beats/packetbeat/current/setting-up-and-running.html) guide.\n\n#### The following steps should be executed to install assets associated with the DGA Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Domain Generation Algorithm Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n\n### Anomaly Detection Setup\nBefore you can enable this rule, you'll need to enable the corresponding Anomaly Detection job.\n- Go to the Kibana homepage. Under Analytics, click Machine Learning.\n- Under Anomaly Detection, click Jobs, and then click \"Create job\". Select the Data View containing your enriched DNS events. For example, this would be `logs-endpoint.events.*` if you used Elastic Defend to collect events, or `logs-network_traffic.*` if you used Network Packet Capture.\n- If the selected Data View contains events that match the query in [this](https://github.com/elastic/integrations/blob/main/packages/dga/kibana/ml_module/dga-ml.json) configuration file, you will see a card for DGA under \"Use preconfigured jobs\".\n- Keep the default settings and click \"Create jobs\" to start the anomaly detection job and datafeed.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Domain Generation Algorithm Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1568",
+                        "name": "Dynamic Resolution",
+                        "reference": "https://attack.mitre.org/techniques/T1568/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 7
+    },
+    "id": "ff0d807d-869b-4a0d-a493-52bc46d2f1b1_7",
+    "type": "security-rule"
+}

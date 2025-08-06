@@ -817,7 +817,7 @@
                 "id": "1",
                 "kind": "event",
                 "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"login\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"67.43.156.13\",\"events\":{\"type\":\"login\",\"name\":\"login_challenge\",\"parameters\":[{\"name\":\"login_challenge_method\",\"value\":\"backup_code\"},{\"name\":\"login_challenge_status\",\"value\":\"Challenge Passed.\"},{\"name\":\"login_type\",\"value\":\"exchange\"}]}}",
-                "outcome": "failure",
+                "outcome": "success",
                 "provider": "login",
                 "type": [
                     "info"
@@ -895,7 +895,7 @@
                 "id": "1",
                 "kind": "event",
                 "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"login\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"67.43.156.13\",\"events\":{\"type\":\"login\",\"name\":\"login_verification\",\"parameters\":[{\"name\":\"is_second_factor\",\"boolValue\":false},{\"name\":\"login_challenge_method\",\"value\":\"backup_code\"},{\"name\":\"login_challenge_status\",\"value\":\"Challenge Passed.\"},{\"name\":\"login_type\",\"value\":\"exchange\"}]}}",
-                "outcome": "failure",
+                "outcome": "success",
                 "provider": "login",
                 "type": [
                     "info"
@@ -912,6 +912,7 @@
                 "login": {
                     "challenge_method": "backup_code",
                     "challenge_status": "Challenge Passed.",
+                    "is_second_factor": false,
                     "type": "exchange"
                 },
                 "organization": {
@@ -1066,6 +1067,7 @@
                 "kind": "admin#reports#activity",
                 "login": {
                     "challenge_method": "backup_code",
+                    "is_suspicious": false,
                     "type": "exchange"
                 },
                 "organization": {
@@ -1112,6 +1114,240 @@
                 "email": "foo@bar.com",
                 "id": "1",
                 "name": "foo"
+            }
+        },
+        {
+            "@timestamp": "2020-10-02T15:00:00.000Z",
+            "ecs": {
+                "version": "8.16.0"
+            },
+            "event": {
+                "action": "login_success",
+                "category": [
+                    "authentication",
+                    "session"
+                ],
+                "id": "1",
+                "kind": "event",
+                "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"login\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"67.43.156.13\",\"events\":{\"type\":\"login\",\"name\":\"login_success\",\"parameters\":[{\"name\":\"login_challenge_method\",\"value\":\"password\"},{\"name\":\"is_suspicious\",\"boolValue\":true},{\"name\":\"login_type\",\"value\":\"google_password\"}]}}",
+                "outcome": "success",
+                "provider": "login",
+                "type": [
+                    "start"
+                ]
+            },
+            "google_workspace": {
+                "actor": {
+                    "type": "USER"
+                },
+                "event": {
+                    "type": "login"
+                },
+                "kind": "admin#reports#activity",
+                "login": {
+                    "challenge_method": "password",
+                    "is_suspicious": true,
+                    "type": "google_password"
+                },
+                "organization": {
+                    "domain": "elastic.com"
+                }
+            },
+            "organization": {
+                "id": "1"
+            },
+            "related": {
+                "ip": [
+                    "67.43.156.13"
+                ],
+                "user": [
+                    "foo"
+                ]
+            },
+            "source": {
+                "as": {
+                    "number": 35908
+                },
+                "geo": {
+                    "continent_name": "Asia",
+                    "country_iso_code": "BT",
+                    "country_name": "Bhutan",
+                    "location": {
+                        "lat": 27.5,
+                        "lon": 90.5
+                    }
+                },
+                "ip": "67.43.156.13",
+                "user": {
+                    "domain": "bar.com",
+                    "email": "foo@bar.com",
+                    "id": "1",
+                    "name": "foo"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "domain": "bar.com",
+                "email": "foo@bar.com",
+                "id": "1",
+                "name": "foo"
+            }
+        },
+        {
+            "@timestamp": "2020-10-02T15:00:00.000Z",
+            "ecs": {
+                "version": "8.16.0"
+            },
+            "event": {
+                "action": "risky_sensitive_action_allowed",
+                "category": [
+                    "configuration"
+                ],
+                "id": "1",
+                "kind": "event",
+                "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"login\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"67.43.156.13\",\"events\":{\"type\":\"login\",\"name\":\"risky_sensitive_action_allowed\",\"parameters\":[{\"name\":\"login_challenge_method\",\"value\":\"password\"},{\"name\":\"is_suspicious\",\"boolValue\":true},{\"name\":\"login_type\",\"value\":\"google_password\"},{\"name\":\"login_challenge_status\",\"value\":\"Challenge Passed.\"},{\"name\":\"sensitive_action_name\",\"value\":\"Allowing access to data\"}]}}",
+                "outcome": "success",
+                "provider": "login",
+                "type": [
+                    "info"
+                ]
+            },
+            "google_workspace": {
+                "actor": {
+                    "type": "USER"
+                },
+                "event": {
+                    "type": "login"
+                },
+                "kind": "admin#reports#activity",
+                "login": {
+                    "challenge_method": "password",
+                    "challenge_status": "Challenge Passed.",
+                    "is_suspicious": true,
+                    "sensitive_action_name": "Allowing access to data",
+                    "type": "google_password"
+                },
+                "organization": {
+                    "domain": "elastic.com"
+                }
+            },
+            "organization": {
+                "id": "1"
+            },
+            "related": {
+                "ip": [
+                    "67.43.156.13"
+                ],
+                "user": [
+                    "foo"
+                ]
+            },
+            "source": {
+                "as": {
+                    "number": 35908
+                },
+                "geo": {
+                    "continent_name": "Asia",
+                    "country_iso_code": "BT",
+                    "country_name": "Bhutan",
+                    "location": {
+                        "lat": 27.5,
+                        "lon": 90.5
+                    }
+                },
+                "ip": "67.43.156.13",
+                "user": {
+                    "domain": "bar.com",
+                    "email": "foo@bar.com",
+                    "id": "1",
+                    "name": "foo"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "domain": "bar.com",
+                "email": "foo@bar.com",
+                "id": "1",
+                "name": "foo"
+            }
+        },
+        {
+            "@timestamp": "2025-02-27T05:59:58.481Z",
+            "ecs": {
+                "version": "8.16.0"
+            },
+            "event": {
+                "action": "login_verification",
+                "category": [
+                    "authentication"
+                ],
+                "id": "123",
+                "kind": "event",
+                "original": "{\"actor\":{\"email\":\"tl.zeous.daclitan@company.com\",\"profileId\":\"111111111\"},\"etag\":\"Q2W123123123123\",\"events\":{\"name\":\"login_verification\",\"parameters\":[{\"name\":\"login_type\",\"value\":\"google_password\"},{\"multiValue\":[\"security_key\"],\"name\":\"login_challenge_method\"},{\"name\":\"login_challenge_status\",\"value\":\"passed\"},{\"boolValue\":true,\"name\":\"is_second_factor\"}],\"type\":\"login\"},\"id\":{\"applicationName\":\"login\",\"customerId\":\"123\",\"time\":\"2025-02-27T05:59:58.481Z\",\"uniqueQualifier\":\"123\"},\"ipAddress\":\"81.2.69.144\",\"kind\":\"admin#reports#activity\"}",
+                "outcome": "success",
+                "provider": "login",
+                "type": [
+                    "info"
+                ]
+            },
+            "google_workspace": {
+                "event": {
+                    "type": "login"
+                },
+                "kind": "admin#reports#activity",
+                "login": {
+                    "challenge_method": [
+                        "security_key"
+                    ],
+                    "challenge_status": "passed",
+                    "is_second_factor": true,
+                    "type": "google_password"
+                }
+            },
+            "organization": {
+                "id": "123"
+            },
+            "related": {
+                "ip": [
+                    "81.2.69.144"
+                ],
+                "user": [
+                    "tl.zeous.daclitan"
+                ]
+            },
+            "source": {
+                "geo": {
+                    "city_name": "London",
+                    "continent_name": "Europe",
+                    "country_iso_code": "GB",
+                    "country_name": "United Kingdom",
+                    "location": {
+                        "lat": 51.5142,
+                        "lon": -0.0931
+                    },
+                    "region_iso_code": "GB-ENG",
+                    "region_name": "England"
+                },
+                "ip": "81.2.69.144",
+                "user": {
+                    "domain": "company.com",
+                    "email": "tl.zeous.daclitan@company.com",
+                    "id": "111111111",
+                    "name": "tl.zeous.daclitan"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "domain": "company.com",
+                "email": "tl.zeous.daclitan@company.com",
+                "id": "111111111",
+                "name": "tl.zeous.daclitan"
             }
         }
     ]

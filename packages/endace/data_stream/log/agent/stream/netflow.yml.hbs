@@ -1,0 +1,44 @@
+protocols: [v1, v5, v6, v7, v8, v9, ipfix]
+host: '{{host}}:{{port}}'
+max_message_size: '{{max_message_size}}'
+expiration_timeout: '{{expiration_timeout}}'
+queue_size: {{queue_size}}
+{{#if timeout}}
+timeout: '{{timeout}}'
+{{/if}}
+{{#if read_buffer}}
+read_buffer: '{{read_buffer}}'
+{{/if}}
+{{#if internal_networks}}
+internal_networks:
+{{#each internal_networks as |network|}}
+  - {{network}}
+{{/each}}
+{{/if}}
+{{#if custom_definitions}}
+custom_definitions:
+{{#each custom_definitions as |def|}}
+- '{{def}}'
+{{/each}}
+{{/if}}
+{{#if detect_sequence_reset}}
+detect_sequence_reset: {{detect_sequence_reset}}
+{{/if}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_fields:
+    target: "_conf"
+    fields:
+      endace_url: {{ endace_url }}
+      endace_datasources: {{ endace_datasources }}
+      endace_tools: {{ endace_tools }}
+      endace_view_window: {{ endace_view_window }}
+{{#if processors}}
+{{processors}}
+{{/if}}

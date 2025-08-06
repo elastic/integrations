@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects suspicious child process from the kernel thread (kthreadd) parent process. Attackers may execute payloads from kernel space via kthreadd to perform actions on the host and evade detection. Through the usage of the new_terms rule type, this rule can identify uncommon child processes that may indicate the presence of a malicious process.",
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Unusual Execution from Kernel Thread (kthreadd) Parent",
+        "new_terms_fields": [
+            "process.name",
+            "host.id"
+        ],
+        "query": "host.os.type:linux and event.category:process and event.type:start and event.action:exec and process.parent.name:kthreadd and (\n  process.executable:(/dev/shm/* or /tmp/* or /var/tmp/* or /var/www/*) or\n  process.name:(bash or csh or curl or dash or fish or id or ksh or nohup or setsid or sh or tcsh or wget or whoami or zsh)\n) and\nprocess.command_line:(\n  */dev/shm/* or */dev/tcp/* or */etc/init.d* or */etc/ld.so* or */etc/profile* or */etc/rc.local* or */etc/shadow* or */etc/ssh* or\n  */etc/sudoers* or */home/*/.ssh/* or */root/.ssh* or */tmp/* or */var/log/* or */var/run/* or */var/tmp/* or */var/www/* or\n  *base64* or *cron* or *xxd* or *~/.ssh/*\n) and not (\n  process.name:(true or cifs.upcall or dpkg or flock or gdbus or getopt or grep or mount or touch or umount or uname) or\n  process.command_line:(\n    \"sh -c /bin/true\" or */bin/ps* or */usr/bin/find* or */usr/bin/grep* or *ds_agent* or *gitlabrunner* or *nagios* or\n    *omsagent* or *pgrep*\n  ) or\n  process.executable:(\n    /lib/systemd/systemd-cgroups-agent or /proc/self/exe or /usr/local/axs-haproxy-monitoring/haproxy_stats.sh or /tmp/newroot/* or\n    /var/lib/docker/overlay2/* or /vz/root/*\n  )\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "656739a8-2786-402b-8ee1-22e0762b63ba",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\n\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "656739a8-2786-402b-8ee1-22e0762b63ba_1",
+    "type": "security-rule"
+}

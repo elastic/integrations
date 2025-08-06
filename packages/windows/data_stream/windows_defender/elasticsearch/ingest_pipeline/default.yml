@@ -5,7 +5,7 @@ processors:
 
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
   - set:
       field: log.level
       copy_from: winlog.level
@@ -161,6 +161,7 @@ processors:
       field: winlog.event_data.Path
       patterns:
         - "file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
+        - "(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
       ignore_missing: true
   - split:
       field: winlog.event_data.Path
@@ -188,6 +189,7 @@ processors:
       field: winlog.event_data.FileName
       patterns:
         - 'file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?'
+        - '(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?'
       ignore_missing: true
   - set:
       field: "file.path"

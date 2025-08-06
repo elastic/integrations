@@ -38,8 +38,6 @@
 - external: ecs
   name: dns.type
 - external: ecs
-  name: ecs.version
-- external: ecs
   name: event.action
 - external: ecs
   name: event.category
@@ -77,6 +75,8 @@
   name: file.size
 - external: ecs
   name: file.type
+- external: ecs
+  name: group.id
 - external: ecs
   name: host.geo.city_name
 - external: ecs
@@ -122,10 +122,6 @@
 - external: ecs
   name: observer.serial_number
 - external: ecs
-  name: observer.type
-- external: ecs
-  name: observer.vendor
-- external: ecs
   name: observer.version
 - external: ecs
   name: host.os.type
@@ -143,10 +139,26 @@
   name: process.entity_id
 - external: ecs
   name: process.executable
+  multi_fields:
+    - name: caseless
+      ignore_above: 1024
+      normalizer: lowercase
+      type: keyword
+    - name: text
+      type: match_only_text
 - external: ecs
   name: process.name
+  multi_fields:
+    - name: caseless
+      ignore_above: 1024
+      normalizer: lowercase
+      type: keyword
+    - name: text
+      type: match_only_text
 - external: ecs
   name: process.exit_code
+- name: process.group.id
+  type: keyword
 - external: ecs
   name: process.hash.md5
 - external: ecs

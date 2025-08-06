@@ -1,7 +1,10 @@
-format_version: "3.0.3"
+format_version: "3.4.0"
 name: zscaler_zia
 title: Zscaler Internet Access
-version: "3.6.3"
+# When updating version, make sure the pkg_version parameter in
+# the check_template_version script in ingest pipelines is
+# updated to match.
+version: "3.15.1"
 description: Collect logs from Zscaler Internet Access (ZIA) with Elastic Agent.
 type: integration
 categories:
@@ -11,7 +14,7 @@ source:
   license: "Elastic-2.0"
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.18.0 || ^9.0.0"
   elastic:
     subscription: "basic"
 screenshots:
@@ -60,6 +63,14 @@ policy_templates:
   - name: zscaler_zia
     title: Zscaler Internet Access logs
     description: Collect Zscaler Internet Access logs.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: tcp
         vars:
@@ -74,7 +85,7 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false
@@ -100,6 +111,12 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
+          - name: strict_fields
+            type: bool
+            title: Require Strict Field/Version Check
+            description: Whether to check for template version mismatch.
+            required: false
+            show_user: false
         title: Collect Zscaler Internet Access logs via TCP input
         description: Collecting Zscaler Internet Access logs via TCP input.
       - type: http_endpoint
@@ -117,7 +134,7 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false
@@ -157,6 +174,13 @@ policy_templates:
             required: false
             show_user: false
             secret: true
+          - name: strict_fields
+            type: bool
+            title: Require Strict Field/Version Check
+            description: Whether to check for template version mismatch.
+            default: true
+            required: false
+            show_user: false
       - type: cel
         title: Collect Zscaler Internet Access logs via API
         description: Collecting Zscaler Internet Access logs via API.
@@ -208,7 +232,7 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false

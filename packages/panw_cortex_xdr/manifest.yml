@@ -1,13 +1,28 @@
 name: panw_cortex_xdr
 title: Palo Alto Cortex XDR
-version: "1.32.0"
+version: "2.4.0"
 description: Collect logs from Palo Alto Cortex XDR with Elastic Agent.
 type: integration
-format_version: "3.0.2"
-categories: [security, edr_xdr]
+format_version: "3.4.0"
+categories:
+  - security
+  - edr_xdr
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.18.0 || ^9.0.0"
+screenshots:
+  - src: /img/panw_cortex_xdr-alerts.png
+    title: Alerts Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/panw_cortex_xdr-events.png
+    title: Events Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/panw_cortex_xdr-incidents.png
+    title: Incidents Dashboard
+    size: 600x600
+    type: image/png
 icons:
   - src: /img/icon-cortex.svg
     title: Palo Alto
@@ -17,10 +32,24 @@ policy_templates:
   - name: xdr
     title: Palo Alto Cortex XDR API
     description: Collect logs from Palo Alto Cortex XDR API
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: httpjson
-        title: "Collect logs from Palo Alto Cortex XDR"
-        description: "Collect logs from Palo Alto Cortex XDR (input: httpjson)"
+        title: "Collect logs from Palo Alto Cortex XDR using HTTPJSON input"
+        description: "Collect logs from Palo Alto Cortex XDR using HTTPJSON input"
+      - type: cel
+        title: "Collect logs from Palo Alto Cortex XDR using CEL input"
+        description: "Collect logs from Palo Alto Cortex XDR using CEL input"
+      - type: gcs
+        title: "Collect logs from Palo Alto Cortex XDR using GCS (Google Cloud Storage)"
+        description: "Collect logs from Palo Alto Cortex XDR using GCS (Google Cloud Storage)"
 owner:
   github: elastic/security-service-integrations
   type: elastic

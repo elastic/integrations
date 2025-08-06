@@ -14,8 +14,7 @@ state:
   limit: {{limit}}
   page_limit: {{page_limit}}
   filter: {{filter}}
-program: |-
-  
+program: |
   (
   	state.?cursor.auth_data.expires.optMap(t,
   		t.parse_time(time_layout.RFC1123) - now() > duration("5m")
@@ -35,22 +34,45 @@ program: |-
   					"accessKey": state.auth_access_key,
   				}.encode_json(),
   			}
-  		).do_request().as(resp,
+  		).do_request().as(resp, resp.StatusCode == 200 ?
   			bytes(resp.Body).decode_json().as(body,
   				{
   					"token": body.data.token,
   					"expires": body.data.expires,
   				}
   			)
+  		:
+  			state.with(
+  				{
+  					"events": {
+  						"error": {
+  							"code": string(resp.StatusCode),
+  							"id": string(resp.Status),
+  							"message": "POST " + state.url.trim_right("/") + "/auth/external: " + (
+  								size(resp.Body) != 0 ?
+  									string(resp.Body)
+  								:
+  									string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  							),
+  						},
+  					},
+  					"want_more": false,
+  				}
+  			)
   		)
-  ).as(auth_data,
+  ).as(v, has(v.?events.error) ?
+    v
+  : v.as(auth_data,
   	(state.?cursor.task_id.orValue(null) == null) ?
   		// No task ID - Submit a query and get its task ID.
   		{
   			"startTime": state.?cursor.next_startTime.orValue(
   				timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
   			),
-  			"endTime": timestamp(now() - duration("1m")).format(time_layout.RFC3339),
+  			"endTime": state.?cursor.next_endTime.orValue(null) == null ?
+  				timestamp(now() - duration("1m")).format(time_layout.RFC3339)
+  			:
+  				state.cursor.next_endTime,
   		}.as(timeframe,
   			request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query").with(
   				{
@@ -97,7 +119,10 @@ program: |-
   									"auth_data": auth_data,
   									"task_id": body.data.taskId,
   									"page_token": null,
+  									"current_startTime": timeframe.startTime,
+  									"current_endTime": timeframe.endTime,
   									"next_startTime": timeframe.endTime,
+  									"next_endTime": null,
   								},
   							}
   						)
@@ -125,6 +150,7 @@ program: |-
   					}
   				)
   			:
+  			(resp.StatusCode == 200) ?
   				bytes(resp.Body).decode_json().as(body,
   					(body.data.state == "Ready") ?
   						// 'Ready' (Results found) - Save the first page token.
@@ -150,6 +176,23 @@ program: |-
   									{
   										"auth_data": auth_data,
   										"task_id": null,
+  										"next_startTime": state.cursor.current_startTime,
+  									}
+  								),
+  							}
+  						)
+  					: (body.data.state == "Canceled") ?
+  						// 'Canceled' (Error or timeout) - Clear the task ID and reset the sequence for the same timeframe.
+  						state.with(
+  							{
+  								"events": [],
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  										"task_id": null,
+  										"next_startTime": state.cursor.current_startTime,
+  										"next_endTime": state.cursor.current_endTime,
   									}
   								),
   							}
@@ -167,6 +210,33 @@ program: |-
   								),
   							}
   						)
+  				)
+  			:
+  				// Clear the task ID, and reset the sequence for the same timeframe.
+  				state.with(
+  					{
+  						"events": {
+  							"error": {
+  								"code": string(resp.StatusCode),
+  								"id": string(resp.Status),
+  								"message": "GET " + state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query: " + (
+  									size(resp.Body) != 0 ?
+  										string(resp.Body)
+  									:
+  										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  								),
+  							},
+  						},
+  						"want_more": false,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_data": auth_data,
+  								"task_id": null,
+  								"next_startTime": state.cursor.current_startTime,
+  								"next_endTime": state.cursor.current_endTime,
+  							}
+  						),
+  					}
   				)
   		)
   	:
@@ -194,6 +264,34 @@ program: |-
   					}
   				)
   			:
+  			(resp.StatusCode == 503) ?
+  				// 503 Service Unavailable - Clear the task ID and page token, and end the sequence.
+  				state.with(
+  					{
+  						"events": {
+  							"error": {
+  								"code": string(resp.StatusCode),
+  								"id": string(resp.Status),
+  								"message": "POST " + state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/retrieve: " + (
+  									size(resp.Body) != 0 ?
+  										string(resp.Body)
+  									:
+  										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  								),
+  							},
+  						},
+  						"want_more": false,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_data": auth_data,
+  								"task_id": null,
+  								"page_token": null,
+  							}
+  						),
+  					}
+  				)
+  			:
+  			(resp.StatusCode == 200) ?
   				bytes(resp.Body).decode_json().as(body,
   					(body.data.nextPageToken != "NULL") ?
   						// Not the last page - Save the next page token and continue.
@@ -211,6 +309,7 @@ program: |-
   						)
   					:
   						// Last page - Clear the task ID and page token, and end the sequence.
+  						// Next sequence starts pulling data from the last timestamp received.
   						state.with(
   							{
   								"events": body.data.records.map(e, {"message": e.encode_json()}),
@@ -220,13 +319,46 @@ program: |-
   										"auth_data": auth_data,
   										"task_id": null,
   										"page_token": null,
+  										"next_startTime": has(body.?data.records) && body.data.records.size() > 0 ?
+  											optional.of(body.data.records.map(t, timestamp(t.time)).max().format(time_layout.RFC3339))
+  										:
+  											state.cursor.current_endTime,
+  										"next_endTime": null,
   									}
   								),
   							}
   						)
   				)
+  			:
+  				// Clear the task ID and page token, and reset the sequence for the same timeframe.
+  				state.with(
+  					{
+  						"events": {
+  							"error": {
+  								"code": string(resp.StatusCode),
+  								"id": string(resp.Status),
+  								"message": "POST " + state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/retrieve: " + (
+  									size(resp.Body) != 0 ?
+  										string(resp.Body)
+  									:
+  										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  								),
+  							},
+  						},
+  						"want_more": false,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_data": auth_data,
+  								"task_id": null,
+  								"page_token": null,
+  								"next_startTime": state.cursor.current_startTime,
+  								"next_endTime": state.cursor.current_endTime,
+  							}
+  						),
+  					}
+  				)
   		)
-  )
+  ))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

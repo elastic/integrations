@@ -1,7 +1,7 @@
-format_version: "3.0.2"
+format_version: "3.2.3"
 name: sentinel_one
 title: SentinelOne
-version: "1.27.0"
+version: "1.36.0"
 description: Collect logs from SentinelOne with Elastic Agent.
 type: integration
 categories:
@@ -9,7 +9,7 @@ categories:
   - edr_xdr
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.18.0 || ^9.0.0"
 screenshots:
   - src: /img/sentinel-one-screenshot.png
     title: SentinelOne Threat Dashboard Screenshot
@@ -24,6 +24,14 @@ policy_templates:
   - name: sentinel_one
     title: SentinelOne
     description: Collect logs from SentinelOne.
+    deployment_modes: 
+      default:
+        enabled: true 
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: httpjson
         title: Collect SentinelOne logs via API
@@ -37,10 +45,15 @@ policy_templates:
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing
+            default: false
             multi: false
             required: false
             show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+              Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+              tracer will delete any stored traces.
+              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)          - name: api_token
           - name: api_token
             type: password
             title: API Token
@@ -54,10 +67,17 @@ policy_templates:
             required: false
             show_user: false
             description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: site_ids
+            type: text
+            title: Site IDs
+            multi: false
+            required: false
+            show_user: false
+            description: Comma separated list of Site IDs to filter by. Example - "225494730938493804,225494730938493915".
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false

@@ -1,0 +1,184 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{username}}
+  password: {{password}}
+  offset: 0
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - user
+    - password
+program: |
+  (
+    has(state.?next.access_token) ?
+      state
+    :
+      (
+        state.?want_more.orValue(false) ?
+          state
+        :
+          state.with({
+            "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+            "end_time": now.format(time_layout.RFC3339),
+          })
+      ).as(state,
+        // To generate the authentication token.
+        post_request(
+          state.url.trim_right("/") + "/authenticate",
+          "application/json",
+          {
+            "username": state.user,
+            "password": state.password,
+          }.encode_json()
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body, {
+              "next": {
+                "access_token": body.token,
+              },
+              "url": state.url,
+              "user": state.user,
+              "password": state.password,
+              "offset": state.offset,
+              "batch_size": state.batch_size,
+              "initial_interval": state.initial_interval,
+              "start_time": state.start_time,
+              "end_time": state.end_time,
+              "cursor": {
+                ?"last_timestamp": state.?cursor.last_timestamp,
+              },
+            })
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST " + state.url.trim_right("/") + "/authenticate: " + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+              "offset": 0,
+              "batch_size": state.batch_size,
+              "url": state.url,
+              "user": state.user,
+              "password": state.password,
+              "initial_interval": state.initial_interval,
+              "cursor": {
+                ?"last_timestamp": state.?cursor.last_timestamp,
+              },
+            }
+        )
+      )
+  ).as(state,
+    has(state.?events.error) ?
+    	state
+    :
+      request("GET",
+        state.url.trim_right("/") + "/audits/incidents?" + {
+          "from": [state.start_time],
+          "to": [state.end_time],
+          "limit": [string(state.batch_size)],
+          "offset": [string(state.offset)],
+        }.format_query()
+      ).with({
+        "Header":{
+          "Authorization": ["Bearer " + state.next.access_token],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,{
+            "events": (body != null && body.size() > 0 ?
+              body.map(e, {
+                "message": e.encode_json(),
+              })
+            :
+              []
+            ),
+            "cursor": {
+              ?"last_timestamp": body != null && body.size() > 0 ?
+                (
+                  has(state.?cursor.last_timestamp) && body.map(e, e.time).max() < state.cursor.last_timestamp ?
+                    optional.of(state.cursor.last_timestamp)
+                  :
+                    optional.of(body.map(e, e.time).max())
+                )
+              :
+                state.?cursor.last_timestamp
+            },
+            "next": {
+              ?"access_token": body != null && body.size() > 0 ? optional.of(state.next.access_token) : optional.none(),
+            },
+            "batch_size": state.batch_size,
+            "url": state.url,
+            "user": state.user,
+            "password": state.password,
+            "initial_interval": state.initial_interval,
+            "start_time": state.start_time,
+            "end_time": state.end_time,
+            "offset": body != null && body.size() > 0 ? int(state.offset) + body.size() : 0,
+            "want_more": body != null && body.size() > 0,
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/audits/incidents: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "offset": 0,
+            "batch_size": state.batch_size,
+            "url": state.url,
+            "user": state.user,
+            "password": state.password,
+            "initial_interval": state.initial_interval,
+            "cursor": {
+              ?"last_timestamp": state.?cursor.last_timestamp,
+            },
+          }
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

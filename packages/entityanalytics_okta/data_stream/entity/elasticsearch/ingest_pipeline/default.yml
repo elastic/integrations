@@ -1,0 +1,74 @@
+---
+description: Pipeline for processing Okta entities.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+
+  - remove:
+      field: event.action
+      if: ctx.event?.action != "started" && ctx.event?.action != "completed"
+      ignore_missing: true
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - pipeline:
+      name: '{{ IngestPipeline "user" }}'
+      tag: pipeline_to_user
+      if: ctx.user?.id != null
+  - pipeline:
+      name: '{{ IngestPipeline "device" }}'
+      tag: pipeline_to_device
+      if: ctx.device?.id != null
+  - rename:
+      field: okta_domain
+      target_field: host.name
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: okta_domain
+            target_field: okta.okta_domain
+            ignore_failure: true
+
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

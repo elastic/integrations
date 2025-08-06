@@ -1,7 +1,7 @@
-format_version: "3.0.2"
+format_version: "3.4.0"
 name: tenable_io
 title: Tenable Vulnerability Management
-version: "3.6.1"
+version: "4.2.1"
 description: Collect logs from Tenable Vulnerability Management with Elastic Agent.
 type: integration
 categories:
@@ -9,7 +9,7 @@ categories:
   - vulnerability_management
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.19.0 || ^9.1.0"
 screenshots:
   - src: /img/tenable_io-screenshot.png
     title: Tenable Vulnerability Management dashboard screenshot
@@ -24,6 +24,14 @@ policy_templates:
   - name: tenable_io
     title: Tenable Vulnerability Management
     description: Collect logs from Tenable Vulnerability Management.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: cel
         title: Collect Tenable Vulnerability Management logs via API
@@ -39,10 +47,12 @@ policy_templates:
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing
+            default: false
             multi: false
             required: false
             show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
           - name: access_key
             type: password
             title: Access Key
@@ -69,7 +79,7 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false

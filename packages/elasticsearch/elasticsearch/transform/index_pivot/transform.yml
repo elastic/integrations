@@ -1,5 +1,5 @@
 source:
-  index: "metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-8*,metricbeat-*"
+  index: "metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*"
   query:
     bool:
       filter:
@@ -80,19 +80,19 @@ pivot:
         buckets_path:
           start: "start[elasticsearch.index.primaries.docs.count]"
           end: "end[elasticsearch.index.primaries.docs.count]"
-        script: "Math.max(0, params.end-params.start)"
+        script: "params.end-params.start"
     elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta:
       bucket_script:
         buckets_path:
           start: "start[elasticsearch.index.primaries.store.total_data_set_size_in_bytes]"
           end: "end[elasticsearch.index.primaries.store.total_data_set_size_in_bytes]"
-        script: "Math.max(0, params.end-params.start)"
+        script: "params.end-params.start"
     elasticsearch.index.total.store.size_in_bytes_delta:
       bucket_script:
         buckets_path:
           start: "start[elasticsearch.index.total.store.size_in_bytes]"
           end: "end[elasticsearch.index.total.store.size_in_bytes]"
-        script: "Math.max(0, params.end-params.start)"
+        script: "params.end-params.start"
     elasticsearch.index.total.search.query_total_delta:
       bucket_script:
         buckets_path:
@@ -119,7 +119,7 @@ pivot:
         script: "Math.max(0, params.end-params.start)"
 dest:
   index: "monitoring-indices"
-  pipeline: "1.16.0-monitoring_indices"
+  pipeline: "1.19.0-monitoring_indices"
 description: This transform runs every 10 minutes to compute extra metrics for the Elasticsearch indices.
 frequency: 10m
 settings:
@@ -131,5 +131,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.3.0
   run_as_kibana_system: false

@@ -3,20 +3,37 @@
 This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes the following datasets for retrieving indicators from the AbuseCH API:
 
 - `url` dataset: Supports URL based indicators from AbuseCH API.
+- `ja3_fingerprints` dataset: Supports JA3 fingerprint based indicators from SSLBL AbuseCH API.
 - `malware` dataset: Supports Malware based indicators from AbuseCH API.
 - `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
+- `sslblacklist` dataset: Supports SSL certificate based indicators from SSLBL AbuseCH API.
 - `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
+
+## Note:
+
+AbuseCH requires using an `Auth Key` (API Key) in the requests for authentication.
+Requests without authentication will be denied by the API.
+
+More details on this topic can be found [here](https://abuse.ch/blog/community-first/).
+
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Expiration of Indicators of Compromise (IOCs)
 All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
 
-| Source Datastream                  | Destination Index Pattern                        | Destination Alias                       |
-|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
-| `logs-ti_abusech.url-*`            | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`            |
-| `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
-| `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
-| `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+| Source Datastream                    | Destination Index Pattern                        | Destination Alias                         |
+|:-------------------------------------|:-------------------------------------------------|-------------------------------------------|
+| `logs-ti_abusech.url-*`              | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`              |
+| `logs-ti_abusech.ja3_fingerprints-*` | `logs-ti_abusech_latest.dest_ja3_fingerprints-*` | `logs-ti_abusech_latest.ja3_fingerprints` |
+| `logs-ti_abusech.malware-*`          | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`          |
+| `logs-ti_abusech.malwarebazaar-*`    | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`    |
+| `logs-ti_abusech.sslblacklist-*`     | `logs-ti_abusech_latest.dest_sslblacklist-*`     | `logs-ti_abusech_latest.sslblacklist`     |
+| `logs-ti_abusech.threatfox-*`        | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`        |
 
 ### ILM Policy
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abusech.<datastream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<datastream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
@@ -29,6 +46,12 @@ The AbuseCH URL data_stream retrieves full list of active threat intelligence in
 
 {{fields "url"}}
 
+### JA3 Fingerprint Blacklist
+
+The AbuseCH JA3 fingerprint blacklist data_stream retrieves malicious JA3 fingerprints identified by SSLBL from the SSLBL API endpoint `https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv`.
+
+{{fields "ja3_fingerprints"}}
+
 ### Malware
 
 The AbuseCH malware data_stream retrieves threat intelligence indicators from the payload API endpoint `https://urlhaus-api.abuse.ch/v1/payloads/recent/`.
@@ -40,6 +63,12 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators from the MalwareBazaar API endpoint `https://mb-api.abuse.ch/api/v1/`.
 
 {{fields "malwarebazaar"}}
+
+### SSL Certificate Blacklist
+
+The SSL Certificate Blacklist contains SHA1 Fingerprint of all SSL certificates blacklisted on SSLBL from the SSLBL API endpoint `https://sslbl.abuse.ch/blacklist/sslblacklist.csv`.
+
+{{fields "sslblacklist"}}
 
 ### Threat Fox
 

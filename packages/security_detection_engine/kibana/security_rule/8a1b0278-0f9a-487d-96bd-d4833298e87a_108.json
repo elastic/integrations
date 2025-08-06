@@ -1,0 +1,110 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "An adversary may add the setuid or setgid bit to a file or directory in order to run a file with the privileges of the owning user or group. An adversary can take advantage of this to either do a shell escape or exploit a vulnerability in an application with the setuid or setgid bit to get code running in a different user\u2019s context. Additionally, adversaries can use this mechanism on their own malware to make sure they're able to execute in elevated contexts in the future.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "max_signals": 33,
+        "name": "SUID/SGID Bit Set",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating SUID/SGID Bit Set\n\nThe SUID/SGID bits in Unix-like systems allow files to execute with the privileges of the file owner or group, enabling necessary elevated permissions for certain applications. However, adversaries can exploit these bits to escalate privileges by modifying files to run with higher access rights. The detection rule identifies suspicious use of commands like `chmod` or `install` to set these bits, excluding known safe paths, to flag potential privilege escalation attempts.\n\n### Possible investigation steps\n\n- Review the process details to identify the user who executed the command, focusing on the process.name and process.args fields to understand the specific command and arguments used.\n- Check the process.parent.executable field to determine the parent process and assess whether it is a known legitimate process or potentially malicious.\n- Investigate the file or directory targeted by the SUID/SGID bit modification by examining the process.args field for any unusual or sensitive paths that could indicate privilege escalation attempts.\n- Correlate the event with other recent activities from the same user or system to identify any patterns or anomalies that could suggest malicious behavior.\n- Verify if the file or directory with modified SUID/SGID bits is part of a known safe path as listed in the exclusion criteria, and assess whether the modification is expected or authorized.\n\n### False positive analysis\n\n- System package installations or updates may trigger the rule when legitimate processes like package managers set SUID/SGID bits. To handle this, exclude paths related to package management, such as \"/var/lib/dpkg/info*\".\n- Docker or container-related operations might set these bits during normal operations. Exclude paths like \"/var/lib/docker/*\" to prevent false positives from container management activities.\n- Temporary directories used during system operations, such as \"/tmp/newroot/*\", can cause false alerts. Exclude these paths to avoid unnecessary alerts from temporary system processes.\n- Specific system services or applications, like \"/usr/bin/ssh-agent\", may require SUID/SGID bits for legitimate functionality. Exclude these known safe executables to reduce false positives.\n- Custom scripts or applications that are known to require elevated permissions should be reviewed and, if deemed safe, added to the exclusion list to prevent repeated false alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or privilege escalation.\n- Identify and terminate any suspicious processes associated with the use of `chmod` or `install` commands that have set the SUID/SGID bits, especially those not in the excluded safe paths.\n- Review and revert any unauthorized changes to file permissions, specifically those with SUID/SGID bits set, to their original state.\n- Conduct a thorough audit of user accounts and privileges on the affected system to ensure no unauthorized accounts or privilege escalations have occurred.\n- Implement additional monitoring on the affected system to detect any further attempts to exploit SUID/SGID bits, focusing on the specific commands and arguments identified in the detection query.\n- Escalate the incident to the security operations team for a deeper investigation into potential lateral movement or persistence mechanisms that may have been established by the adversary.\n- Apply patches and updates to the affected system and any vulnerable applications to mitigate known vulnerabilities that could be exploited in conjunction with SUID/SGID bit abuse.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and (\n  (process.name == \"chmod\" and (process.args : (\"+s\", \"u+s\", \"g+s\") or process.args regex \"[24][0-9]{3}\")) or\n  (process.name == \"install\" and process.args : \"-m\" and\n  (process.args : (\"+s\", \"u+s\", \"g+s\") or process.args regex \"[24][0-9]{3}\"))\n) and not (\n  process.parent.executable : (\n    \"/usr/NX/*\", \"/var/lib/docker/*\", \"/var/lib/dpkg/info*\", \"/tmp/newroot/*\",\n    \"/System/Library/PrivateFrameworks/PackageKit.framework/Versions/A/XPCServices/package_script_service.xpc/Contents/MacOS/package_script_service\"\n  ) or\n  process.args : (\n    \"/run/*\", \"/var/run/*\", \"/usr/bin/keybase-redirector\", \"/usr/local/share/fonts\", \"/usr/bin/ssh-agent\"\n  )\n)\n",
+        "references": [
+            "https://www.elastic.co/security-labs/primer-on-persistence-mechanisms"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "8a1b0278-0f9a-487d-96bd-d4833298e87a",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.001",
+                                "name": "Setuid and Setgid",
+                                "reference": "https://attack.mitre.org/techniques/T1548/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 108
+    },
+    "id": "8a1b0278-0f9a-487d-96bd-d4833298e87a_108",
+    "type": "security-rule"
+}

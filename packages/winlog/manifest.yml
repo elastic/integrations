@@ -3,7 +3,7 @@ name: winlog
 title: Custom Windows Event Logs
 description: Collect and parse logs from any Windows event log channel with Elastic Agent.
 type: input
-version: "2.2.0"
+version: "2.4.0"
 conditions:
   kibana:
     version: '^8.10.1 || ^9.0.0'
@@ -22,7 +22,8 @@ policy_templates:
         type: text
         title: Channel Name
         description: >-
-          Name of Windows event log channel (eg. Microsoft-Windows-PowerShell/Operational)
+          Name of Windows event log channel (eg. Microsoft-Windows-PowerShell/Operational).
+          It expects a single channel name. To collect multiple channels, add multiple integrations.
         required: true
         show_user: true
       - name: data_stream.dataset
@@ -78,6 +79,21 @@ policy_templates:
         required: false
         show_user: false
         default: 0
+      - name: level
+        type: text
+        title: Level
+        description: >-
+          A list of event levels to include. The value is a comma-separated list of levels.
+          Accepted levels are: `critical`, `error`, `warning`, `information`, and `verbose`.
+        required: false
+        show_user: false
+      - name: xml_query
+        type: text
+        title: XML Query
+        description: >-
+          Provide a custom XML query. This option is mutually exclusive with the `name`, `event_id`, `ignore_older`, `level`, and `providers` options. These options should be included in the XML query directly. Furthermore, an id must be provided. Custom XML queries provide more flexibility and advanced options than the simpler query options.
+        required: false
+        show_user: false
       - name: tags
         type: text
         title: Tags

@@ -5,10 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - fail:
+  - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process.
+      description: error message set and no data to process.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -35,6 +35,7 @@ processors:
         - json.lastReported
         - json.campaignId
         - json.messageId
+        - json.judgementStatus
       tag: fingerprint_ai_security_mailbox
       target_field: _id
       ignore_missing: true

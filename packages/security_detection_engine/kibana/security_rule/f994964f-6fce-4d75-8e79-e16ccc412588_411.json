@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a user reports suspicious activity for their Okta account. These events should be investigated, as they can help security teams identify when an adversary is attempting to gain access to their network.",
+        "false_positives": [
+            "A user may report suspicious activity on their Okta account in error."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-okta*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Suspicious Activity Reported by Okta User",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Activity Reported by Okta User\n\nOkta is a widely used identity management service that facilitates secure user authentication and access control. Adversaries may exploit compromised credentials to gain unauthorized access, posing a threat to network security. The detection rule monitors for user-reported suspicious activity, signaling potential unauthorized access attempts. By analyzing these alerts, security teams can swiftly identify and mitigate threats, leveraging Okta's logging capabilities to trace and respond to malicious actions.\n\n### Possible investigation steps\n\n- Review the specific event details in the Okta logs where event.dataset is okta.system and event.action is user.account.report_suspicious_activity_by_enduser to gather initial context about the reported activity.\n- Identify the user who reported the suspicious activity and check their recent login history and access patterns for any anomalies or deviations from their typical behavior.\n- Correlate the reported suspicious activity with other security logs and alerts to determine if there are any related incidents or patterns indicating a broader attack.\n- Verify if there are any known vulnerabilities or compromised credentials associated with the user's account that could have been exploited.\n- Contact the user to gather additional information about the suspicious activity they observed and confirm whether they recognize any recent access attempts or changes to their account.\n- Assess the risk and potential impact of the suspicious activity on the network and determine if any immediate containment or remediation actions are necessary.\n\n### False positive analysis\n\n- Users frequently accessing their accounts from new devices or locations may trigger false positives. Implement geofencing or device recognition to reduce these alerts.\n- Routine administrative actions, such as password resets or account updates, might be misinterpreted as suspicious. Exclude these actions from alerts if they are performed by known administrators.\n- Automated scripts or applications using service accounts can generate alerts if not properly configured. Ensure these accounts are whitelisted or have appropriate permissions set.\n- Employees using VPNs or proxy services for remote work can cause location-based false positives. Consider marking known VPN IP addresses as safe.\n- High-volume login attempts from legitimate users, such as during password recovery, can be mistaken for suspicious activity. Monitor for patterns and adjust thresholds accordingly.\n\n### Response and remediation\n\n- Immediately isolate the affected user account by temporarily disabling it to prevent further unauthorized access.\n- Notify the user and relevant stakeholders about the suspicious activity and the actions being taken to secure the account.\n- Conduct a password reset for the affected user account and enforce multi-factor authentication (MFA) if not already enabled.\n- Review recent login activity and access logs for the affected account to identify any unauthorized access or data exfiltration attempts.\n- Escalate the incident to the security operations center (SOC) for further investigation and to determine if other accounts or systems have been compromised.\n- Implement additional monitoring on the affected account and related systems to detect any further suspicious activity.\n- Update security policies and procedures based on findings to prevent similar incidents in the future, ensuring alignment with MITRE ATT&CK framework recommendations for Initial Access and Valid Accounts.",
+        "query": "event.dataset:okta.system and event.action:user.account.report_suspicious_activity_by_enduser\n",
+        "references": [
+            "https://developer.okta.com/docs/reference/api/system-log/",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://www.elastic.co/security-labs/testing-okta-visibility-and-detection-dorothy",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f994964f-6fce-4d75-8e79-e16ccc412588",
+        "setup": "The Okta Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Use Case: Identity and Access Audit",
+            "Data Source: Okta",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 411
+    },
+    "id": "f994964f-6fce-4d75-8e79-e16ccc412588_411",
+    "type": "security-rule"
+}

@@ -27,6 +27,12 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Context Aware Access](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/context-aware-access) [help](https://support.google.com/a/answer/9394107?hl=en#zippy=) | The Context Aware Access activity report returns information about various types of Context-Aware Access Audit activity events. |
 | [GCP](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gcp) | The GCP activity report returns information about various types of Google Cloud Platform activity events. |
 | [Chrome](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chrome) | The Chrome activity reports return information about Chrome browser and Chrome OS events. |
+| [Data Studio](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/data-studio) | Track and audit user interactions and changes made to Looker Studio assets. |
+| [Calendar](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/calendar) | The Calendar activity report returns information about how your account's users manage and modify their Google Calendar events. |
+| [Chat](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chat) | The Chat activity report returns information about how your account's users use and manage Spaces. |
+| [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
+| [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
+| [Keep](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/keep) | The Keep activity report returns information about how your account's users manage and modify their notes. |
 
 ## Requirements
 
@@ -43,7 +49,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `chrome`, `context_aware_access`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -122,6 +128,12 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
+
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Logs
 
@@ -528,6 +540,7 @@ An example event for `login` looks as following:
 | google_workspace.login.failure_type | Login failure type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.login.is_second_factor |  | boolean |
 | google_workspace.login.is_suspicious |  | boolean |
+| google_workspace.login.sensitive_action_name |  | keyword |
 | google_workspace.login.timestamp | UNIX timestmap of login in microseconds. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | long |
 | google_workspace.login.type | Login credentials type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
@@ -881,6 +894,7 @@ An example event for `admin` looks as following:
 | event.module | Event module | constant_keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.admin.alert.id |  | keyword |
 | google_workspace.admin.alert.name | The alert name. | keyword |
 | google_workspace.admin.api.client.name | The API client name. | keyword |
 | google_workspace.admin.api.scopes | The API scopes. | keyword |
@@ -894,6 +908,8 @@ An example event for `admin` looks as following:
 | google_workspace.admin.application.package_id | The mobile application package ID. | keyword |
 | google_workspace.admin.bulk_upload.failed | Number of failed records in bulk upload operation. | long |
 | google_workspace.admin.bulk_upload.total | Number of total records in bulk upload operation. | long |
+| google_workspace.admin.chart.filters |  | keyword |
+| google_workspace.admin.chart.name |  | keyword |
 | google_workspace.admin.chrome_licenses.allowed | Licences enabled. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-org-settings | keyword |
 | google_workspace.admin.chrome_licenses.enabled | Licences enabled. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-org-settings | keyword |
 | google_workspace.admin.chrome_os.session_type | Chrome OS session type. | keyword |
@@ -928,6 +944,12 @@ An example event for `admin` looks as following:
 | google_workspace.admin.group.email | The group's primary email address. | keyword |
 | google_workspace.admin.group.priorities | Group priorities. | keyword |
 | google_workspace.admin.info_type | This will be used to state what kind of information was changed. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-domain-settings | keyword |
+| google_workspace.admin.investigation.action |  | keyword |
+| google_workspace.admin.investigation.data_source |  | keyword |
+| google_workspace.admin.investigation.entity_ids |  | keyword |
+| google_workspace.admin.investigation.object_identifier |  | keyword |
+| google_workspace.admin.investigation.query |  | keyword |
+| google_workspace.admin.investigation.url_display_text |  | keyword |
 | google_workspace.admin.managed_configuration | The name of the managed configuration. | keyword |
 | google_workspace.admin.mdm.token | The MDM vendor enrollment token. | keyword |
 | google_workspace.admin.mdm.vendor | The MDM vendor's name. | keyword |
@@ -1103,33 +1125,42 @@ An example event for `drive` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| google_workspace.actor.application_name | Name of the application used to perform the action. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.drive.accessed_url | The URLs that were accessed. | keyword |
 | google_workspace.drive.actor_is_collaborator_account | Whether the actor is a collaborator account. | boolean |
 | google_workspace.drive.added_role | Added membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.api_method | The API method used to generate the event. | keyword |
 | google_workspace.drive.billable | Whether this activity is billable. | boolean |
+| google_workspace.drive.copy_type | Indicates whether the original item and new item are owned by the same organization. | keyword |
+| google_workspace.drive.deletion_reason | The reason an item was deleted. | keyword |
 | google_workspace.drive.destination_folder_id |  | keyword |
 | google_workspace.drive.destination_folder_title |  | keyword |
+| google_workspace.drive.encryption_enforcement_option | The client-side encryption policy being applied to the user at time of the item's creation. | keyword |
 | google_workspace.drive.file.id |  | keyword |
 | google_workspace.drive.file.owner.email |  | keyword |
 | google_workspace.drive.file.owner.is_shared_drive | Boolean flag denoting whether owner is a shared drive. | boolean |
 | google_workspace.drive.file.type | Document Drive type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.is_encrypted | Whether the file is client-side encrypted. | boolean |
 | google_workspace.drive.membership_change_type | Type of change in Team Drive membership of a user/group. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.new_publish_visibility | New Publish Visibility Value. | keyword |
 | google_workspace.drive.new_value | When a setting or property of the file changes, the new value for it will appear here. | keyword |
+| google_workspace.drive.old_publish_visibility | Old Publish Visibility Value. | keyword |
 | google_workspace.drive.old_value | When a setting or property of the file changes, the old value for it will appear here. | keyword |
 | google_workspace.drive.old_visibility | When visibility changes, this holds the old value. | keyword |
 | google_workspace.drive.originating_app_id | The Google Cloud Project ID of the application that performed the action. | keyword |
 | google_workspace.drive.owner_is_team_drive | Whether the owner is a Team Drive. | boolean |
 | google_workspace.drive.primary_event | Whether this is a primary event. A single user action in Drive may generate several events. | boolean |
 | google_workspace.drive.removed_role | Removed membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.script_id | The document ID of the executing script. | keyword |
 | google_workspace.drive.shared_drive_id | The unique identifier of the Team Drive. Only populated for for events relating to a Team Drive or item contained inside a Team Drive. | keyword |
 | google_workspace.drive.shared_drive_settings_change_type | Type of change in Team Drive settings. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.sheets_import_range_recipient_doc | Doc ID of the recipient of a sheets import range. | keyword |
 | google_workspace.drive.source_folder_id |  | keyword |
 | google_workspace.drive.source_folder_title |  | keyword |
 | google_workspace.drive.target | Target user or group. | keyword |
-| google_workspace.drive.target_domain | The domain for which the acccess scope was changed. This can also be the alias all to indicate the access scope was changed for all domains that have visibility for this document. | keyword |
+| google_workspace.drive.target_domain | The domain for which the access scope was changed. This can also be the alias all to indicate the access scope was changed for all domains that have visibility for this document. | keyword |
 | google_workspace.drive.target_user | The email address of the user or group whose access permissions were changed, or the name of the domain for which access permissions were changed. | keyword |
 | google_workspace.drive.visibility | Visibility of target file. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.visibility_change | When visibility changes, this holds the new overall visibility of the file. | keyword |
@@ -1840,6 +1871,7 @@ An example event for `device` looks as following:
 | google_workspace.device.failed_passwd_attempts | Parameter to indicate the number of failed screen unlock attempts. | long |
 | google_workspace.device.id | Parameter to indicate the Device Id. | keyword |
 | google_workspace.device.ios_vendor_id | Parameter to indicate the iOS Vendor Id. | keyword |
+| google_workspace.device.last_sync_audit_date |  | date |
 | google_workspace.device.model | Parameter to indicate the device model. | keyword |
 | google_workspace.device.new_device_id | Parameter to indicate the new Device Id. | keyword |
 | google_workspace.device.new_value | Parameter to indicate the new value. | keyword |
@@ -2280,6 +2312,7 @@ An example event for `token` looks as following:
 | google_workspace.token.client.type | The client type. | keyword |
 | google_workspace.token.method_name | The method name which was used in the OAuth Activity. | keyword |
 | google_workspace.token.num_response_bytes | The number of response bytes in the OAuth Activity. | long |
+| google_workspace.token.product_bucket |  | keyword |
 | google_workspace.token.scope.data | Scope Data. | flattened |
 | google_workspace.token.scope.value | Scopes under which access was granted / revoked. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -2803,15 +2836,15 @@ An example event for `chrome` looks as following:
 {
     "@timestamp": "2024-12-09T14:18:25.405Z",
     "agent": {
-        "ephemeral_id": "7917124f-6a0b-493b-be4b-a928a4f17334",
-        "id": "499a39d7-b13c-4994-a354-0d3791cf15e6",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "22ff6e77-fce6-4e45-bc2d-52ade8e25589",
+        "id": "32a76848-9087-44d6-9609-47bbf0751dd4",
+        "name": "elastic-agent-93760",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_workspace.chrome",
-        "namespace": "12964",
+        "namespace": "88541",
         "type": "logs"
     },
     "device": {
@@ -2823,16 +2856,16 @@ An example event for `chrome` looks as following:
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "499a39d7-b13c-4994-a354-0d3791cf15e6",
-        "snapshot": false,
-        "version": "8.16.0"
+        "id": "32a76848-9087-44d6-9609-47bbf0751dd4",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "action": "browser_extension_install",
         "agent_id_status": "verified",
         "dataset": "google_workspace.chrome",
         "id": "-3640711002716937498",
-        "ingested": "2024-12-24T07:36:34Z",
+        "ingested": "2025-04-22T12:02:30Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"kalpesh.kumar@example.io\",\"profileId\":\"109689693170624712102\"},\"etag\":\"\\\"CfV-pEPVZc7PJf2fWsHJTliD34MdGbO8iFIk3L4uBwQ/cBsNSJx2A9Lg8kiQCGLddmq827A\\\"\",\"events\":{\"name\":\"BROWSER_EXTENSION_INSTALL\",\"parameters\":[{\"intValue\":\"1733753905405\",\"name\":\"TIMESTAMP\"},{\"name\":\"EVENT_REASON\",\"value\":\"BROWSER_EXTENSION_INSTALL\"},{\"name\":\"APP_ID\",\"value\":\"lmjegmlicamnimmfhcmpkclmigmmcbeh\"},{\"name\":\"APP_NAME\",\"value\":\"Application Launcher For Drive (by Google)\"},{\"name\":\"BROWSER_VERSION\",\"value\":\"123.0.6312.112\"},{\"name\":\"CHROME_ORG_UNIT_ID\",\"value\":\"02gajno12larrqx\"},{\"name\":\"CLIENT_TYPE\",\"value\":\"CHROME_OS_DEVICE\"},{\"name\":\"DEVICE_NAME\",\"value\":\"NXKUTSI002429051947600\"},{\"name\":\"DEVICE_PLATFORM\",\"value\":\"ChromeOS 15786.48.2\"},{\"name\":\"DEVICE_USER\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"DIRECTORY_DEVICE_ID\",\"value\":\"efa9510f-8cd2-4d85-b6c2-939cfb335e9e\"},{\"name\":\"EVENT_RESULT\",\"value\":\"REPORTED\"},{\"name\":\"EXTENSION_ACTION\",\"value\":\"INSTALL\"},{\"name\":\"EXTENSION_SOURCE\",\"value\":\"CHROME_WEBSTORE\"},{\"name\":\"EXTENSION_VERSION\",\"value\":\"3.10\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"example.io\"},{\"name\":\"PROFILE_USER_NAME\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"USER_AGENT\",\"value\":\"Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\"},{\"name\":\"VIRTUAL_DEVICE_ID\",\"value\":\"3d69c5a5-0afc-474b-a1a3-d3dc617e2a60\"}],\"type\":\"BROWSER_EXTENSION_INSTALL_TYPE\"},\"id\":{\"applicationName\":\"chrome\",\"customerId\":\"C03puekhd\",\"time\":\"2024-12-09T14:18:25.405Z\",\"uniqueQualifier\":\"-3640711002716937498\"},\"kind\":\"admin#reports#activity\"}",
         "outcome": "success",
@@ -3000,6 +3033,973 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.user_agent | User agent event parameter. | keyword |
 | google_workspace.chrome.user_justification | A parameter that contains a justification message provided by users. | keyword |
 | google_workspace.chrome.virtual_device_id | Virtual device ID of the browser on which the event happened. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Data Studio
+
+This is the `data_studio` dataset.
+
+An example event for `data_studio` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-26T09:47:49.748Z",
+    "agent": {
+        "ephemeral_id": "b77a02e9-85bf-41aa-9b44-811d3c8bf3b4",
+        "id": "3b862dd5-96d5-421f-b5a0-887b788df98e",
+        "name": "elastic-agent-92555",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.data_studio",
+        "namespace": "12604",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "3b862dd5-96d5-421f-b5a0-887b788df98e",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "delete-distribution-content",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "google_workspace.data_studio",
+        "id": "1",
+        "ingested": "2025-04-22T12:03:39Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"events\":{\"name\":\"DELETE_DISTRIBUTION_CONTENT\",\"parameters\":[{\"name\":\"ASSET_ID\",\"value\":\"abc-123\"},{\"name\":\"ASSET_NAME\",\"value\":\"[Sample]ReportName\"},{\"name\":\"OWNER_EMAIL\",\"value\":\"foo@bar.com\"},{\"name\":\"ASSET_TYPE\",\"value\":\"REPORT\"},{\"name\":\"VISIBILITY\",\"value\":\"PEOPLE_WITHIN_DOMAIN_WITH_LINK\"},{\"name\":\"PARENT_WORKSPACE_ID\",\"value\":\"\"},{\"name\":\"CONNECTOR_TYPE\",\"value\":\"\"},{\"name\":\"DISTRIBUTION_CONTENT_NAME\",\"value\":\"[Sample]ReportName\"},{\"name\":\"DISTRIBUTION_CONTENT_OWNER_EMAIL\",\"value\":\"foo@bar.com\"},{\"name\":\"DISTRIBUTION_CONTENT_ID\",\"value\":\"abc-123\"},{\"name\":\"DISTRIBUTION_CONTENT_TYPE\",\"value\":\"SCHEDULE\"}],\"type\":\"ACCESS\"},\"id\":{\"applicationName\":\"data_studio\",\"customerId\":\"1\",\"time\":\"2025-03-26T09:47:49.748Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\"}",
+        "provider": "data_studio",
+        "type": [
+            "deletion"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "data_studio": {
+            "asset_id": "abc-123",
+            "asset_name": "[Sample]ReportName",
+            "asset_type": "REPORT",
+            "distribution_content_id": "abc-123",
+            "distribution_content_name": "[Sample]ReportName",
+            "distribution_content_owner_email": "foo@bar.com",
+            "distribution_content_type": "SCHEDULE",
+            "name": "DELETE_DISTRIBUTION_CONTENT",
+            "owner_email": "foo@bar.com",
+            "type": "ACCESS",
+            "visibility": "PEOPLE_WITHIN_DOMAIN_WITH_LINK"
+        },
+        "kind": "admin#reports#activity"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Data Studio",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-data_studio"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.data_studio.asset_id | The id of the asset affected by the event. | keyword |
+| google_workspace.data_studio.asset_name | The name of the asset affected by the event. | keyword |
+| google_workspace.data_studio.asset_type | The type of the asset. Possible values are `DATA_SOURCE`, `EXPLORER`, `REPORT`, `WORKSPACE`. | keyword |
+| google_workspace.data_studio.connector_type | The type of connector used for data integration. This defines how Data Studio connects to and retrieves data from various sources, such as Google Analytics, Google Sheets, and BigQuery, for reporting and visualization. | keyword |
+| google_workspace.data_studio.current_value | The current value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.data_export_type | The type of data export. Possible values are `CSV`, `CSV_EXCEL`, `EXTRACTED_DATA_SOURCE`, `SHEETS`. | keyword |
+| google_workspace.data_studio.distribution_content_id |  | keyword |
+| google_workspace.data_studio.distribution_content_name |  | keyword |
+| google_workspace.data_studio.distribution_content_owner_email |  | keyword |
+| google_workspace.data_studio.distribution_content_type |  | keyword |
+| google_workspace.data_studio.embedded_in_report_id | The ID of the report where the data source is embedded. | keyword |
+| google_workspace.data_studio.name |  | keyword |
+| google_workspace.data_studio.new_value | The new value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.old_value | The old value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.owner_email | The email address of the asset owner. | keyword |
+| google_workspace.data_studio.parent_workspace_id | The parent workspace ID of the asset. | keyword |
+| google_workspace.data_studio.previous_value | The previous value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.prior_visibility | The prior Visibility. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.target_domain | The targeted domain for which the link sharing access type of the asset was changed. | keyword |
+| google_workspace.data_studio.target_user_email | The targeted user's email for which the sharing permission has been changed. | keyword |
+| google_workspace.data_studio.type |  | keyword |
+| google_workspace.data_studio.visibility | The visibility of an asset. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Calendar
+
+This is the `calendar` dataset.
+
+An example event for `calendar` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-01T07:00:40.262Z",
+    "agent": {
+        "ephemeral_id": "c496161a-177e-4359-8324-e11405aeeaad",
+        "id": "1ab21f00-c503-4805-b1de-01dacd186aef",
+        "name": "elastic-agent-44155",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.calendar",
+        "namespace": "50432",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "1ab21f00-c503-4805-b1de-01dacd186aef",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "delete-calendar",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "google_workspace.calendar",
+        "id": "1",
+        "ingested": "2025-04-22T12:01:05Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A\",\"events\":{\"name\":\"delete_calendar\",\"parameters\":[{\"name\":\"calendar_id\",\"value\":\"c_abc123@group.calendar.google.com\"},{\"name\":\"api_kind\",\"value\":\"web\"},{\"name\":\"user_agent\",\"value\":\"Mozilla/5.0\"}],\"type\":\"calendar_change\"},\"id\":{\"applicationName\":\"calendar\",\"customerId\":\"1\",\"time\":\"2025-04-01T07:00:40.262Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
+        "provider": "calendar",
+        "type": [
+            "deletion"
+        ]
+    },
+    "google_workspace": {
+        "calendar": {
+            "api_kind": "web",
+            "name": "delete_calendar",
+            "type": "calendar_change"
+        },
+        "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Calendar",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-calendar"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Other",
+        "original": "Mozilla/5.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.calendar.access_level | The access level for calendar. | keyword |
+| google_workspace.calendar.api_kind | Indicates where a request for an action came from. | keyword |
+| google_workspace.calendar.country | The country of calendar. | keyword |
+| google_workspace.calendar.description | The description of calendar. | keyword |
+| google_workspace.calendar.event.appointment_schedule_title | The title of the calendar appointment schedule. | keyword |
+| google_workspace.calendar.event.client_side_encrypted | Whether the calendar event is client-side encrypted or not. | keyword |
+| google_workspace.calendar.event.end_time | The end time of the event in seconds, stored in unix time. | date |
+| google_workspace.calendar.event.grantee_email | The email address of the user for whom the request to transfer event ownership has been made. | keyword |
+| google_workspace.calendar.event.guest | The email address of a guest user for an event. | keyword |
+| google_workspace.calendar.event.id | The unique identification of an event. | keyword |
+| google_workspace.calendar.event.is_recurring | Whether the calendar event is a recurring event. | boolean |
+| google_workspace.calendar.event.old_title | If the title of a calendar event has been changed, this is the previous title of the event. | keyword |
+| google_workspace.calendar.event.organizer_calendar_id | The calendar Id of the organizer of an event. | keyword |
+| google_workspace.calendar.event.recurring | Whether the calendar event is a recurring event. | keyword |
+| google_workspace.calendar.event.response_status | The response status of event guest. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/calendar#change_event_guest_response. | keyword |
+| google_workspace.calendar.event.start_time | The start time of the event in seconds, stored in unix time. | date |
+| google_workspace.calendar.event.title | The title of an event. | keyword |
+| google_workspace.calendar.id | Calendar Id of the relevant calendar in context of this action (e.g., the calendar that an event is on, or a calendar being subscribed to). | keyword |
+| google_workspace.calendar.interop.error_code | A short human-readable error code / error description in English. | keyword |
+| google_workspace.calendar.interop.remote_ews_url | URL of the remote Exchange server that Google Calendar EWS server has contacted. | keyword |
+| google_workspace.calendar.location | The location associated with the calendar event. | keyword |
+| google_workspace.calendar.name |  | keyword |
+| google_workspace.calendar.notification.message_id | The notification message ID. | keyword |
+| google_workspace.calendar.notification.method | The method used to trigger a notification. Possible values are `alert`, `default`, `email`, `sms`. | keyword |
+| google_workspace.calendar.notification.recipient_email | The notification recipient email address. | keyword |
+| google_workspace.calendar.notification.type | The type of a notification. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/calendar#notification_triggered. | keyword |
+| google_workspace.calendar.requested_period_end | End of the time window for which the availability was requested. | date |
+| google_workspace.calendar.requested_period_start | Start of the time window for which the availability was requested. | date |
+| google_workspace.calendar.secs_in_advance |  | long |
+| google_workspace.calendar.subscriber_calendar_id | The calendar ID of subscriber. | keyword |
+| google_workspace.calendar.timezone | The timezone of calendar. | keyword |
+| google_workspace.calendar.title | The title of calendar. | keyword |
+| google_workspace.calendar.type |  | keyword |
+| google_workspace.calendar.user_agent | The user agent from the request that triggered this action. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Chat
+
+This is the `chat` dataset.
+
+An example event for `chat` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-26T05:55:02.063Z",
+    "agent": {
+        "ephemeral_id": "afc7ce98-0520-45e0-94c4-64274b308642",
+        "id": "411b5487-ebfa-4a91-89da-d7e59f3f1cd2",
+        "name": "elastic-agent-11706",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.chat",
+        "namespace": "37789",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "411b5487-ebfa-4a91-89da-d7e59f3f1cd2",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "room-name-updated",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "google_workspace.chat",
+        "id": "1",
+        "ingested": "2025-04-16T08:53:19Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A/\",\"events\":{\"name\":\"room_name_updated\",\"parameters\":[{\"name\":\"room_id\",\"value\":\"1\"},{\"name\":\"actor\",\"value\":\"foo@bar.com\"},{\"name\":\"room_name\",\"value\":\"TEST3\"},{\"name\":\"external_room\",\"value\":\"DISABLED\"},{\"name\":\"actor_type\",\"value\":\"NON_ADMIN\"},{\"name\":\"conversation_type\",\"value\":\"SPACE\"},{\"name\":\"conversation_ownership\",\"value\":\"INTERNALLY_OWNED\"}],\"type\":\"user_action\"},\"id\":{\"applicationName\":\"chat\",\"customerId\":\"1\",\"time\":\"2025-03-26T05:55:02.063Z\",\"uniqueQualifier\":\"1\"},\"kind\":\"admin#reports#activity\"}",
+        "provider": "chat",
+        "type": [
+            "change"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "chat": {
+            "actor": "foo@bar.com",
+            "actor_type": "NON_ADMIN",
+            "conversation_ownership": "INTERNALLY_OWNED",
+            "conversation_type": "SPACE",
+            "external_room": "DISABLED",
+            "name": "room_name_updated",
+            "room_id": "1",
+            "room_name": "TEST3",
+            "type": "user_action"
+        },
+        "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A/",
+        "kind": "admin#reports#activity"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Chat",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-chat"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.chat.actor |  | keyword |
+| google_workspace.chat.actor_type | Description of the actor type. Possible values are `ADMIN`, `NON_ADMIN`. | keyword |
+| google_workspace.chat.attachment_hash | Attachment Hash. | keyword |
+| google_workspace.chat.attachment_name | Attachment Name. | keyword |
+| google_workspace.chat.attachment_status | Whether there is an attachment associated with the message that the event occurred in. Possible values are `HAS_ATTACHMENT`, `NO_ATTACHMENT`. | keyword |
+| google_workspace.chat.attachment_url | The url of chat attachment. | keyword |
+| google_workspace.chat.conversation_ownership | Whether the conversation that the event occurred in is owned by the customer or other customers. Possible values are `EXTERNALLY_OWNED`, `INTERNALLY_OWNED`. | keyword |
+| google_workspace.chat.conversation_type | The conversation type of the chat that the event occurred in. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/chat. | keyword |
+| google_workspace.chat.dlp_scan_status | Description of the status of a data loss prevention (DLP) scan of a message or attachment. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/chat#message_posted. | keyword |
+| google_workspace.chat.emoji_shortcode | Emoji Shortcode. | keyword |
+| google_workspace.chat.external_room |  | keyword |
+| google_workspace.chat.filename | The file name of an emoji being created or deleted. | keyword |
+| google_workspace.chat.message_id |  | keyword |
+| google_workspace.chat.message_type | The message type of the message that the event occurred in. For a list of possible values refere to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/chat#message_posted. | keyword |
+| google_workspace.chat.name |  | keyword |
+| google_workspace.chat.report_id | The full resource name of the report, which can be used to fetch reports via the Chat GET or LIST APIs. | keyword |
+| google_workspace.chat.report_type | Description of the report type for a report made in a Space. | keyword |
+| google_workspace.chat.retention_state |  | keyword |
+| google_workspace.chat.room_id | Room Id. | keyword |
+| google_workspace.chat.room_name |  | keyword |
+| google_workspace.chat.target_user_role | Description of the new role type. Possible values are `MEMBER`, `SPACE_MANAGER`. | keyword |
+| google_workspace.chat.target_users | Target Users. | keyword |
+| google_workspace.chat.type |  | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Vault
+
+This is the `vault` dataset.
+
+An example event for `vault` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-10T19:05:24.881Z",
+    "agent": {
+        "ephemeral_id": "540f8dff-4158-4152-a7b6-757f8019ae43",
+        "id": "e5b82ff4-853f-4f9f-9a68-54de01dc5631",
+        "name": "elastic-agent-58720",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.vault",
+        "namespace": "52776",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "e5b82ff4-853f-4f9f-9a68-54de01dc5631",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "view-per-matter-litigation-hold-report",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "google_workspace.vault",
+        "id": "1",
+        "ingested": "2025-04-23T06:26:01Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/77VsZvNcux1EnUIu_SyN08-cHo8\",\"events\":{\"name\":\"view_per_matter_litigation_hold_report\",\"parameters\":[{\"name\":\"matter_id\",\"value\":\"78504485-73d5-4b01-ae1a-63ebc1ae66eb\"},{\"name\":\"resource_name\",\"value\":\"0\"},{\"name\":\"additional_details\",\"value\":\"matter_name: \\\"Demo\\\"\\n\"}],\"type\":\"user_action\"},\"id\":{\"applicationName\":\"vault\",\"customerId\":\"1\",\"time\":\"2025-04-10T19:05:24.881Z\",\"uniqueQualifier\":\"1\"},\"kind\":\"admin#reports#activity\"}",
+        "provider": "vault",
+        "type": [
+            "access"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "etag": "XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/77VsZvNcux1EnUIu_SyN08-cHo8",
+        "kind": "admin#reports#activity",
+        "vault": {
+            "additional_details": {
+                "matter_name": "Demo"
+            },
+            "additional_details_raw": "matter_name: \"Demo\"\n",
+            "matter_id": "78504485-73d5-4b01-ae1a-63ebc1ae66eb",
+            "name": "view_per_matter_litigation_hold_report",
+            "resource_name": "0",
+            "type": "user_action"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Vault",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-vault"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| google_workspace.vault.additional_details.apply_only_to_deleted_objects |  | boolean |
+| google_workspace.vault.additional_details.data_region |  | keyword |
+| google_workspace.vault.additional_details.export_format |  | keyword |
+| google_workspace.vault.additional_details.export_linked_drive_files |  | boolean |
+| google_workspace.vault.additional_details.export_name |  | keyword |
+| google_workspace.vault.additional_details.matter_name |  | keyword |
+| google_workspace.vault.additional_details.period |  | keyword |
+| google_workspace.vault.additional_details.query |  | keyword |
+| google_workspace.vault.additional_details.show_locker_content |  | boolean |
+| google_workspace.vault.additional_details.type |  | keyword |
+| google_workspace.vault.additional_details.use_improved_export |  | boolean |
+| google_workspace.vault.additional_details_raw | Additional details pertaining to an audit log. | keyword |
+| google_workspace.vault.matter_id | The Matter ID an audit pertains to. | keyword |
+| google_workspace.vault.name |  | keyword |
+| google_workspace.vault.organizational_unit_name | The organizational unit name. | keyword |
+| google_workspace.vault.query.mode | The mode of a search. Possible values are All data, Held data, Unprocessed data. | keyword |
+| google_workspace.vault.query.terms |  | keyword |
+| google_workspace.vault.query.time_zone |  | keyword |
+| google_workspace.vault.query.type |  | keyword |
+| google_workspace.vault.query_raw | The user inputted query for search and exports. | keyword |
+| google_workspace.vault.resource_name | The resource name of the action, such as hold name or saved query name. | keyword |
+| google_workspace.vault.resource_url | The document URL of the document view. | keyword |
+| google_workspace.vault.target_user | The targeted user (such as user put on hold). | keyword |
+| google_workspace.vault.type |  | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Meet
+
+This is the `meet` dataset.
+
+An example event for `meet` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-11T09:23:00.703059Z",
+    "agent": {
+        "ephemeral_id": "7a575721-1942-4427-82ec-22448e27a2d1",
+        "id": "eb41b16b-f309-4682-9d3a-30342d680fe9",
+        "name": "elastic-agent-32126",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.meet",
+        "namespace": "56950",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "eb41b16b-f309-4682-9d3a-30342d680fe9",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "invitation-sent",
+        "agent_id_status": "verified",
+        "dataset": "google_workspace.meet",
+        "id": "1",
+        "ingested": "2025-05-05T10:30:54Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A\",\"events\":{\"name\":\"invitation_sent\",\"parameters\":[{\"boolValue\":false,\"name\":\"is_external\"},{\"name\":\"meeting_code\",\"value\":\"NTBTYDTXBE\"},{\"name\":\"conference_id\",\"value\":\"-PeisjX_5iUtKPuGffkJDaBcdEfgh\"},{\"name\":\"action_time\",\"value\":\"2025-04-11T09:23:00.703059Z\"},{\"intValue\":\"1\",\"name\":\"target_user_count\"},{\"name\":\"identifier\",\"value\":\"foo@bar.com\"},{\"name\":\"identifier_type\",\"value\":\"email_address\"}],\"type\":\"conference_action\"},\"id\":{\"applicationName\":\"meet\",\"customerId\":\"1\",\"time\":\"2025-04-11T09:23:00.703Z\",\"uniqueQualifier\":\"1\"},\"kind\":\"admin#reports#activity\"}",
+        "provider": "meet",
+        "type": [
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A",
+        "kind": "admin#reports#activity",
+        "meet": {
+            "conference_id": "-PeisjX_5iUtKPuGffkJDaBcdEfgh",
+            "endpoint": {
+                "identifier": "foo@bar.com",
+                "identifier_type": "email_address",
+                "is_external": false
+            },
+            "meeting_code": "NTBTYDTXBE",
+            "name": "invitation_sent",
+            "target": {
+                "user_count": 1
+            },
+            "type": "conference_action"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Meet",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-meet"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.meet.action_description | The description of a abuse report. | keyword |
+| google_workspace.meet.action_reason | The reason for submitting a abuse report. | keyword |
+| google_workspace.meet.action_time | The time of an action. | date |
+| google_workspace.meet.broadcast_state | The state of this Meet broadcast. | keyword |
+| google_workspace.meet.calendar_event_id | The identifier of the Google Calendar event associated with the conference. | keyword |
+| google_workspace.meet.conference_id | The unique identifier of the conference. | keyword |
+| google_workspace.meet.endpoint.audio.recv_packet_loss_max | The maximum packet loss for received audio streams (percent). | long |
+| google_workspace.meet.endpoint.audio.recv_packet_loss_mean | The mean packet loss for received audio streams (percent). | long |
+| google_workspace.meet.endpoint.audio.recv_seconds | The duration during which the participant received any audio (seconds). | long |
+| google_workspace.meet.endpoint.audio.send_bitrate_kbps_mean | The mean bitrate of the sent audio stream (kbit/s). | long |
+| google_workspace.meet.endpoint.audio.send_packet_loss_max | The maximum packet loss for the sent audio stream (percent). | long |
+| google_workspace.meet.endpoint.audio.send_packet_loss_mean | The mean packet loss for the sent audio stream (percent). | long |
+| google_workspace.meet.endpoint.audio.send_seconds | The duration during which the participant sent audio (seconds). | long |
+| google_workspace.meet.endpoint.device_type | The participant's device type. | keyword |
+| google_workspace.meet.endpoint.display_name | Human readable name of the endpoint that is displayed in the meeting. | keyword |
+| google_workspace.meet.endpoint.duration_seconds | The duration for which the participant stayed in the meeting (seconds). | long |
+| google_workspace.meet.endpoint.end_of_call_rating | The call rating given by the participant at the end of the call, ranging from 1 to 5. | long |
+| google_workspace.meet.endpoint.id | The unique endpoint identifier for the current call. | keyword |
+| google_workspace.meet.endpoint.identifier | The unique participant identifier (for example, an email address, phone number, or device ID). | keyword |
+| google_workspace.meet.endpoint.identifier_type | Indicates the type of the participant identifier. | keyword |
+| google_workspace.meet.endpoint.ip_address | The participant's external IP address. | ip |
+| google_workspace.meet.endpoint.is_external | Indicates if the participant is external to your organization. | boolean |
+| google_workspace.meet.endpoint.location_country | The country from which the participant joined. | keyword |
+| google_workspace.meet.endpoint.location_region | The city or geographical region within a country from which the participant joined. | keyword |
+| google_workspace.meet.endpoint.network.congestion | The fraction of time where the network did not have enough bandwidth to send all the data to Google servers (percent). | long |
+| google_workspace.meet.endpoint.network.estimated_download_kbps_mean | The estimated bandwidth used by received media streams (kbps). | long |
+| google_workspace.meet.endpoint.network.estimated_upload_kbps_mean | The estimated bandwidth used by sent media streams (kbps). | long |
+| google_workspace.meet.endpoint.network.recv_jitter_msec_max | The maximum network jitter for received packets (milliseconds). | long |
+| google_workspace.meet.endpoint.network.recv_jitter_msec_mean | The mean network jitter for received packets (milliseconds). | long |
+| google_workspace.meet.endpoint.network.rtt_msec_mean | The mean network round-trip time (milliseconds). | long |
+| google_workspace.meet.endpoint.network.send_jitter_msec_mean | The mean network jitter for sent packets (milliseconds). | long |
+| google_workspace.meet.endpoint.network.transport_protocol | The network protocol that was used. | keyword |
+| google_workspace.meet.endpoint.screencast.recv_bitrate_kbps_mean | The mean bitrate of the received screencasts (kbit/s). | long |
+| google_workspace.meet.endpoint.screencast.recv_fps_mean | The mean frame rate of received screencasts (FPS). | long |
+| google_workspace.meet.endpoint.screencast.recv_long_side_median_pixels | The median of the long side of the received screencasts (pixels). | long |
+| google_workspace.meet.endpoint.screencast.recv_packet_loss_max | The maximum packet loss for received screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.recv_packet_loss_mean | The mean packet loss for received screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.recv_seconds | The duration during which the participant received any screencast (seconds). | long |
+| google_workspace.meet.endpoint.screencast.recv_short_side_median_pixels | The median of the short side of the received screencasts (pixels). | long |
+| google_workspace.meet.endpoint.screencast.send_bitrate_kbps_mean | The mean bitrate of sent screencasts (kbit/s). | long |
+| google_workspace.meet.endpoint.screencast.send_fps_mean | The mean frame rate of sent screencasts (FPS). | long |
+| google_workspace.meet.endpoint.screencast.send_long_side_median_pixels | The median of the long side of the sent screencasts (pixels). | long |
+| google_workspace.meet.endpoint.screencast.send_packet_loss_max | The maximum packet loss for sent screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.send_packet_loss_mean | The mean packet loss for sent screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.send_seconds | The duration during which the participant sent a screencast (seconds). | long |
+| google_workspace.meet.endpoint.screencast.send_short_side_median_pixels | The median of the short side of the sent screencasts (pixels). | long |
+| google_workspace.meet.endpoint.start_timestamp_seconds | The time when the participant joined the meeting (in epoch seconds). | long |
+| google_workspace.meet.endpoint.video.recv_fps_mean | The mean frame rate of received video streams (FPS). | long |
+| google_workspace.meet.endpoint.video.recv_long_side_median_pixels | The median of the long side of the received video streams (pixels). | long |
+| google_workspace.meet.endpoint.video.recv_packet_loss_max | The maximum packet loss for received video streams (percent). | long |
+| google_workspace.meet.endpoint.video.recv_packet_loss_mean | The mean packet loss for received video streams (percent). | long |
+| google_workspace.meet.endpoint.video.recv_seconds | The duration during which the participant received any video (seconds). | long |
+| google_workspace.meet.endpoint.video.recv_short_side_median_pixels | The median of the short side of the received video streams (pixels). | long |
+| google_workspace.meet.endpoint.video.send_bitrate_kbps_mean | The mean bitrate of the sent video stream (kbit/s). | long |
+| google_workspace.meet.endpoint.video.send_fps_mean | The mean frame rate of the sent video stream (FPS). | long |
+| google_workspace.meet.endpoint.video.send_long_side_median_pixels | The median of the long side of the sent video stream (pixels). | long |
+| google_workspace.meet.endpoint.video.send_packet_loss_max | The maximum packet loss for the sent video stream (percent). | long |
+| google_workspace.meet.endpoint.video.send_packet_loss_mean | The mean packet loss for the sent video stream (percent). | long |
+| google_workspace.meet.endpoint.video.send_seconds | The duration during which the participant sent video (seconds). | long |
+| google_workspace.meet.endpoint.video.send_short_side_median_pixels | The median of the short side of the sent video stream (pixels). | long |
+| google_workspace.meet.livestream.endpoint.ecdn_location | The Enterprise Content Delivery Network (eCDN) location for a Meet livestream viewer. | keyword |
+| google_workspace.meet.livestream.endpoint.ecdn_network | The eCDN network for a Meet livestream viewer. | keyword |
+| google_workspace.meet.livestream.endpoint.private_ip_address | The private IP address for a Meet livestream viewer. | ip |
+| google_workspace.meet.livestream.view_page_id | The id for the Meet conference livestream view page. | keyword |
+| google_workspace.meet.meeting_code | The meeting code for the Google Meet conference. | keyword |
+| google_workspace.meet.name |  | keyword |
+| google_workspace.meet.organizer_email | The email address of the meeting creator. | keyword |
+| google_workspace.meet.product_type | The type of meeting product (Classic Hangouts/Google Meet). | keyword |
+| google_workspace.meet.streaming_session_state | The state of this Meet streaming session. | keyword |
+| google_workspace.meet.target.display_names | The target display names for this action. | keyword |
+| google_workspace.meet.target.email | The target email for this action. | keyword |
+| google_workspace.meet.target.phone_number | The target phone number for this action. | keyword |
+| google_workspace.meet.target.user_count | Target user count. | long |
+| google_workspace.meet.type |  | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Keep
+
+This is the `keep` dataset.
+
+An example event for `keep` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-27T12:45:08.310Z",
+    "agent": {
+        "ephemeral_id": "e43a76f4-47c9-40b4-b16e-547081b85cca",
+        "id": "d2812dfd-bd3b-46f8-b372-9357a26b4580",
+        "name": "elastic-agent-49635",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.keep",
+        "namespace": "61415",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "d2812dfd-bd3b-46f8-b372-9357a26b4580",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "uploaded-attachment",
+        "agent_id_status": "verified",
+        "dataset": "google_workspace.keep",
+        "id": "0",
+        "ingested": "2025-04-29T06:58:21Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh-SHfJfeOMlTPu983WfVweBonaAPdmU\",\"events\":{\"name\":\"uploaded_attachment\",\"parameters\":[{\"name\":\"owner_email\",\"value\":\"foo@bar.com\"},{\"name\":\"note_name\",\"value\":\"https://keep.googleapis.com/v1/notes/abc-xyz\"},{\"name\":\"attachment_name\",\"value\":\"https://keep.googleapis.com/v1/notes/abc-xyz/attachments/abcdefgh\"}],\"type\":\"user_action\"},\"id\":{\"applicationName\":\"keep\",\"customerId\":\"1\",\"time\":\"2025-03-27T12:45:08.310Z\",\"uniqueQualifier\":\"0\"},\"kind\":\"admin#reports#activity\"}",
+        "provider": "keep",
+        "type": [
+            "change"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "etag": "abcdefgh-SHfJfeOMlTPu983WfVweBonaAPdmU",
+        "keep": {
+            "attachment_name": "https://keep.googleapis.com/v1/notes/abc-xyz/attachments/abcdefgh",
+            "name": "uploaded_attachment",
+            "note_name": "https://keep.googleapis.com/v1/notes/abc-xyz",
+            "owner_email": "foo@bar.com",
+            "type": "user_action"
+        },
+        "kind": "admin#reports#activity"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Keep",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-keep"
+    ],
+    "url": {
+        "full": "https://keep.googleapis.com/v1/notes/abc-xyz"
+    },
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.keep.attachment_name | Attachment resource URI. | keyword |
+| google_workspace.keep.name |  | keyword |
+| google_workspace.keep.note_name | Note resource URI. | keyword |
+| google_workspace.keep.owner_email | Note owner email. | keyword |
+| google_workspace.keep.type |  | keyword |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 

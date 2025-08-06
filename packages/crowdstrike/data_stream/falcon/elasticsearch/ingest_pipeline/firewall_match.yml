@@ -102,11 +102,32 @@ processors:
       target_field: event.code
       ignore_missing: true
       tag: rename_event_type
-  - set:
-      field: network.direction
-      value: ingress
-      tag: set_ingress_direction
-      if: ctx.crowdstrike?.event?.ConnectionDirection == "1"
+  - script:
+        tag: script-set-network-direction
+        description: Set network.direction
+        lang: painless
+        if : ctx.crowdstrike?.event?.ConnectionDirection != null
+        source: |
+          def result = [];
+          if (ctx.crowdstrike.event.ConnectionDirection == "0") {
+            result.add('egress');
+          } else if (ctx.crowdstrike.event.ConnectionDirection == "1") {
+            result.add('ingress');
+          } else if (ctx.crowdstrike.event.ConnectionDirection == "3") {
+            result.add('egress');
+            result.add('ingress');
+          } else if (ctx.crowdstrike.event.ConnectionDirection == "4") {
+            result.add('unknown');
+          }
+          if (result.size() > 0) {
+            ctx.network = ctx.network ?: [:];
+            ctx.network.direction = ctx.network.direction ?: [:];
+          }
+          if (result.size() == 1) {
+            ctx.network.direction = result[0];
+          } else if (result.size() > 1) {
+            ctx.network.direction = result;
+          }
   - rename:
       field: crowdstrike.event.RemoteAddress
       target_field: source.ip
@@ -133,11 +154,6 @@ processors:
       ignore_missing: true
       tag: convert_remote_port
       if: ctx.crowdstrike?.event?.RemotePort != null && ctx.network?.direction == "ingress"
-  - set:
-      field: network.direction
-      value: egress
-      tag: set_egress_direction
-      if: ctx.crowdstrike?.event?.ConnectionDirection == "2"
   - rename:
       field: crowdstrike.event.RemoteAddress
       target_field: destination.ip

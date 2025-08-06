@@ -1,17 +1,17 @@
 format_version: 3.3.2
 name: cloud_asset_inventory
-title: "Cloud Asset Inventory"
-version: "0.8.0"
+title: "Cloud Asset Discovery"
+version: "1.0.0"
 source:
   license: "Elastic-2.0"
-description: "Discover and Create Cloud Assets Inventory"
+description: "Discover and Create Cloud Assets Discovery"
 type: integration
 categories:
   - security
   - cloudsecurity_cdr
 conditions:
   kibana:
-    version: ">=8.18.0"
+    version: ">=9.1.0"
   elastic:
     subscription: basic
     capabilities:
@@ -25,7 +25,7 @@ icons:
 vars: []
 policy_templates:
   - name: asset_inventory
-    title: Cloud Asset Inventory
+    title: Cloud Asset Discovery
     description: Discover assets in your Cloud Environment and store within Elastic Search
     deployment_modes:
       default:
@@ -46,8 +46,8 @@ policy_templates:
       - asset_inventory
     inputs:
       - type: cloudbeat/asset_inventory_aws
-        title: AWS Asset Inventory
-        description: AWS Asset Inventory
+        title: AWS Asset Discovery
+        description: AWS Asset Discovery
         vars:
           - name: cloud_formation_template
             type: text
@@ -57,7 +57,7 @@ policy_templates:
             show_user: false
             description: Template URL to Cloud Formation Quick Create Stack
             # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
-            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-ACCOUNT_TYPE-8.17.0.yml&stackName=Elastic-Cloud-Security-Posture-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-ACCOUNT_TYPE-9.1.0.yml&stackName=Elastic-Cloud-Asset-Discovery&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
           - name: cloud_formation_credentials_template
             type: text
             title: CloudFormation Credentials Template
@@ -66,10 +66,20 @@ policy_templates:
             show_user: false
             description: Template URL to Cloud Formation Cloud Credentials Stack
             # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
-            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-direct-access-key-ACCOUNT_TYPE-8.17.0.yml
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-direct-access-key-ACCOUNT_TYPE-9.1.0.yml
+          - name: cloud_formation_cloud_connectors_template
+            type: text
+            title: CloudFormation Cloud Connectors Template
+            multi: false
+            required: true
+            show_user: false
+            description: Template URL to Cloud Formation Cloud Connectors Stack
+            # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
+            # RESOURCE_ID is the project id for serverless / kibana component id for ess
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-cloud-connectors-ACCOUNT_TYPE-9.1.0.yml&param_ElasticResourceId=RESOURCE_ID
       - type: cloudbeat/asset_inventory_azure
-        title: Azure Asset Inventory
-        description: Azure Asset Inventory
+        title: Azure Asset Discovery
+        description: Azure Asset Discovery
         vars:
           - name: arm_template_url
             type: text
@@ -79,10 +89,10 @@ policy_templates:
             show_user: false
             description: A URL to the ARM Template for creating a new deployment
             # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
-            default: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fcloudbeat%2F8.17%2Fdeploy%2Fasset-inventory-arm%2FARM-for-ACCOUNT_TYPE.json
+            default: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fcloudbeat%2F9.1%2Fdeploy%2Fasset-inventory-arm%2FARM-for-ACCOUNT_TYPE.json
       - type: cloudbeat/asset_inventory_gcp
-        title: GCP Asset Inventory
-        description: GCP Asset Inventory
+        title: GCP Asset Discovery
+        description: GCP Asset Discovery
         vars:
           - name: cloud_shell_url
             type: text
@@ -91,7 +101,7 @@ policy_templates:
             required: true
             show_user: false
             description: A URL to CloudShell for creating a new deployment
-            default: https://shell.cloud.google.com/cloudshell/?ephemeral=true&cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Felastic%2Fcloudbeat&cloudshell_git_branch=8.17&cloudshell_workspace=deploy%2Fdeployment-manager&show=terminal
+            default: https://shell.cloud.google.com/cloudshell/?ephemeral=true&cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Felastic%2Fcloudbeat&cloudshell_git_branch=9.1&cloudshell_workspace=deploy%2Fdeployment-manager&show=terminal
     categories:
       - security
       - cloud

@@ -1,0 +1,82 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of the Automator Workflows process followed by a network connection from it's XPC service. Adversaries may drop a custom workflow template that hosts malicious JavaScript for Automation (JXA) code as an alternative to using osascript.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network*",
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Automator Workflows Execution",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Automator Workflows Execution\n\nAutomator, a macOS utility, allows users to automate repetitive tasks through workflows. Adversaries can exploit this by embedding malicious JavaScript for Automation (JXA) in custom workflows, executing harmful scripts. The detection rule identifies this threat by monitoring the Automator process and subsequent network activity, flagging potential misuse when these actions occur in quick succession.\n\n### Possible investigation steps\n\n- Review the process execution details for the Automator process on the affected host, focusing on the timestamp and user context to determine if the execution was expected or authorized.\n- Examine the network activity associated with the com.apple.automator.runner process to identify any unusual or suspicious external connections, including destination IP addresses and domains.\n- Check for any recent changes or additions to Automator workflows on the host, especially those containing JavaScript for Automation (JXA) code, to identify potential malicious modifications.\n- Investigate the user account associated with the Automator process execution to determine if there are any signs of compromise or unauthorized access.\n- Correlate the alert with other security events or logs from the same host around the same timeframe to identify any additional indicators of compromise or related suspicious activities.\n\n### False positive analysis\n\n- Legitimate Automator workflows: Users may have legitimate workflows that trigger network connections, such as automated data uploads or API calls. To handle these, identify and document known safe workflows and create exceptions for them in the detection rule.\n- Frequent developer activity: Developers using Automator for testing or development purposes might frequently trigger this rule. Consider excluding specific user accounts or development environments from the rule to reduce noise.\n- System maintenance tasks: Some system maintenance or administrative tasks might use Automator workflows that connect to the network. Review and whitelist these tasks if they are verified as non-threatening.\n- Third-party applications: Certain third-party applications may use Automator workflows as part of their normal operation. Identify these applications and exclude their processes from the rule if they are deemed safe.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS host from the network to prevent further malicious activity and potential lateral movement.\n- Terminate the Automator process and any associated XPC services, such as \"com.apple.automator.runner,\" to stop the execution of the malicious workflow.\n- Conduct a thorough review of the affected system to identify and remove any malicious JavaScript for Automation (JXA) scripts or custom workflow templates that may have been dropped by the adversary.\n- Restore the system from a known good backup if any unauthorized changes or persistent threats are detected that cannot be easily remediated.\n- Escalate the incident to the security operations team for further analysis and to determine if additional systems may be affected.\n- Implement additional monitoring on the affected host and similar systems to detect any recurrence of suspicious Automator activity, focusing on process and network activity patterns.\n- Update endpoint protection and intrusion detection systems to recognize and block similar threats in the future, leveraging the MITRE ATT&CK framework details for enhanced detection capabilities.",
+        "query": "sequence by host.id with maxspan=30s\n [process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.name == \"automator\"]\n [network where host.os.type == \"macos\" and process.name:\"com.apple.automator.runner\"]\n",
+        "references": [
+            "https://posts.specterops.io/persistent-jxa-66e1c3cd1cf5"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5d9f8cfc-0d03-443e-a167-2b0597ce0965",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 109
+    },
+    "id": "5d9f8cfc-0d03-443e-a167-2b0597ce0965_109",
+    "type": "security-rule"
+}

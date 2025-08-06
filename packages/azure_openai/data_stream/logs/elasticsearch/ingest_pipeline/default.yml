@@ -190,6 +190,79 @@ processors:
       target_field: azure.open_ai.properties.backend_response_body.usage.output_tokens
       ignore_missing: true
   - rename:
+      field: azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.URL
+      target_field: azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.url
+      ignore_missing: true
+  ## Get content filtered results category and severity level for prompt blockers. The category name comes as field name so it is not possible to visualize the category.
+  ## Performing this only for standard categories, hate, self_harm, violence and sexual. Picked based on the values displayed in Azure.
+  - script:
+      lang: painless
+      ignore_failure: true
+      source: >-
+        List prompt_categories = new ArrayList();
+        Map self_harm_category = new HashMap();
+        if(ctx.azure?.open_ai?.properties?.backend_response_body?.error?.innererror?.content_filter_result?.self_harm?.filtered == true) {
+          self_harm_category.put("category_name", "self_harm");
+          self_harm_category.put("severity", ctx.azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.self_harm.severity);
+        }
+        prompt_categories.add(self_harm_category);
+        Map sexual_category = new HashMap();
+        if(ctx.azure?.open_ai?.properties?.backend_response_body?.error?.innererror?.content_filter_result?.sexual?.filtered == true) {
+          sexual_category.put("category_name", "sexual");
+          sexual_category.put("severity", ctx.azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.sexual.severity);
+        }
+        prompt_categories.add(sexual_category);
+        Map hate_category = new HashMap();
+        if(ctx.azure?.open_ai?.properties?.backend_response_body?.error?.innererror?.content_filter_result?.hate?.filtered == true) {
+          hate_category.put("category_name", "hate");
+          hate_category.put("severity", ctx.azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.hate.severity);
+        }
+        prompt_categories.add(hate_category);
+        Map violence_category = new HashMap();
+        if(ctx.azure?.open_ai?.properties?.backend_response_body?.error?.innererror?.content_filter_result?.violence?.filtered == true) {
+          violence_category.put("category_name", "violence");
+          violence_category.put("severity", ctx.azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result.violence.severity);
+        }
+        prompt_categories.add(violence_category);
+        
+        ctx.azure.open_ai.properties.backend_response_body.error.innererror.content_filtered_categories = prompt_categories;
+
+## Get content filtered results category and severity level for response blockers. The category name comes as field name so it is not possible to visualize the category.
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx.azure?.open_ai?.properties?.backend_response_body?.choices != null
+      source: >-
+          List response_categories = new ArrayList();
+          for(choice in ctx.azure.open_ai.properties.backend_response_body.choices)
+            {
+              if(choice.content_filter_results?.self_harm?.filtered == true) {
+                Map self_harm_category = new HashMap();
+                self_harm_category.put("category_name", "self_harm");
+                self_harm_category.put("severity", choice.content_filter_results.self_harm.severity);
+                response_categories.add(self_harm_category);
+              }
+              if(choice.content_filter_results?.sexual?.filtered == true) {
+                Map sexual_category = new HashMap();
+                sexual_category.put("category_name", "sexual");
+                sexual_category.put("severity", choice.content_filter_results.sexual.severity);
+                response_categories.add(sexual_category);
+              }
+              if(choice.content_filter_results?.hate?.filtered == true) {
+                Map hate_category = new HashMap();
+                hate_category.put("category_name", "hate");
+                hate_category.put("severity", choice.content_filter_results.hate.severity);
+                response_categories.add(hate_category);
+              }
+              if(choice.content_filter_results?.violence?.filtered == true) {
+                Map violence_category = new HashMap();
+                violence_category.put("category_name", "violence");
+                violence_category.put("severity", choice.content_filter_results.violence.severity);
+                response_categories.add(violence_category);
+              }
+          }
+          ctx.azure.open_ai.properties.backend_response_body.content_filtered_categories = response_categories;
+  - rename:
       field: azure.open_ai.properties.method
       target_field: http.request.method
       ignore_missing: true

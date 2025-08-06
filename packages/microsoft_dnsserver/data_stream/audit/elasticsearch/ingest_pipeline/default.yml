@@ -3,7 +3,7 @@ description: Pipeline for processing DNS Server Audit logs
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: 8.17.0
       tag: set_ecs_version
   - set:
       field: event.kind
@@ -282,11 +282,27 @@ processors:
       copy_from: microsoft_dnsserver.audit.ttl
       ignore_empty_value: true
       tag: set_dns_answers_ttl
-  - set:
-      field: dns.question.name
-      copy_from: microsoft_dnsserver.audit.question_name
-      ignore_empty_value: true
-      tag: set_dns_question_name
+  - gsub:
+      field: microsoft_dnsserver.audit.question_name
+      target_field: _temp.question_name
+      tag: gsub_trim_trailing_dot
+      pattern: \.$
+      replacement: ""
+      ignore_missing: true
+  - registered_domain:
+      field: _temp.question_name
+      tag: registered_domain_question_name
+      target_field: dns.question
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: dns.question.domain
+      tag: rename_dns_question_domain
+      target_field: dns.question.name
+      ignore_missing: true
   - set:
       field: dns.question.type
       copy_from: microsoft_dnsserver.audit.question_type
@@ -308,6 +324,10 @@ processors:
       copy_from: microsoft_dnsserver.audit.bytes_sent
       ignore_empty_value: true
       tag: set_network_bytes
+  - remove:
+      field: _temp
+      ignore_missing: true
+      tag: remove_temp_question_name
 
 # Source IP
   - convert:

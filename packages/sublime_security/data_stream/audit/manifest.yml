@@ -34,11 +34,16 @@ streams:
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
+        default: false
         multi: false
         required: false
         show_user: false
         description: >-
-          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
       - name: tags
         type: text
         title: Tags
@@ -144,7 +149,7 @@ streams:
         required: false
         show_user: true
         default: 5
-        description: The maximum number of SQS messages that can be inflight at any time.
+        description: Deprecated in agent version 8.16.0, this parameter is ignored if present, use number_of_workers instead. The maximum number of SQS messages that can be inflight at any time.
       - name: file_selectors
         type: yaml
         title: '[SQS] File Selectors'
@@ -152,7 +157,7 @@ streams:
         required: false
         show_user: false
         description: >-
-          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
+          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global content_type and expand_event_list_from_field values are ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
       - name: external_id
         type: text
         title: External ID

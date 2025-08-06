@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule leverages the `auditd_manager` integration to detect user or group creation or modification events on Linux systems. Threat actors may attempt to create or modify users or groups to establish persistence on the system.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "User or Group Creation/Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating User or Group Creation/Modification\n\nIn Linux environments, user and group management is crucial for access control and system administration. Adversaries may exploit this by creating or modifying accounts to maintain unauthorized access. The detection rule utilizes audit logs to monitor successful user or group changes, flagging potential persistence tactics by correlating specific actions with known threat behaviors.\n\n### Possible investigation steps\n\n- Review the audit logs to identify the specific user or group account that was created or modified, focusing on the event.action field values such as \"changed-password\", \"added-user-account\", or \"added-group-account-to\".\n- Check the timestamp of the event to determine when the account change occurred and correlate it with any other suspicious activities or alerts around the same time.\n- Investigate the source of the event by examining the host information, particularly the host.os.type field, to understand which system the changes were made on.\n- Identify the user or process that initiated the account change by reviewing the associated user information in the audit logs, which may provide insights into whether the action was authorized or potentially malicious.\n- Cross-reference the identified user or group changes with known threat actor behaviors or recent incidents to assess if the activity aligns with any known persistence tactics.\n\n### False positive analysis\n\n- Routine administrative tasks may trigger alerts when system administrators create or modify user or group accounts as part of regular maintenance. To manage this, consider creating exceptions for known administrative accounts or scheduled maintenance windows.\n- Automated scripts or configuration management tools that manage user accounts can generate false positives. Identify these tools and exclude their actions from triggering alerts by whitelisting their processes or user accounts.\n- System updates or software installations that require user or group modifications might be flagged. Review the context of these changes and exclude specific update processes or installation scripts from the rule.\n- Temporary user accounts created for short-term projects or testing purposes can be mistaken for unauthorized access attempts. Implement a naming convention for temporary accounts and exclude them from the rule to reduce noise.\n- Changes made by trusted third-party services or applications that integrate with the system may appear suspicious. Verify these services and add them to an exception list to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Review the audit logs to identify the specific user or group accounts that were created or modified, and disable or remove any unauthorized accounts.\n- Reset passwords for any compromised or suspicious accounts to prevent further unauthorized access.\n- Conduct a thorough review of system and application logs to identify any additional unauthorized changes or suspicious activities that may have occurred.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems have been compromised.\n- Implement additional monitoring on the affected system and similar systems to detect any further unauthorized account activities.\n- Review and update access control policies and procedures to prevent similar incidents in the future, ensuring that only authorized personnel have the ability to create or modify user and group accounts.",
+        "query": "iam where host.os.type == \"linux\" and event.type in (\"creation\", \"change\") and auditd.result == \"success\" and\nevent.action in (\"changed-password\", \"added-user-account\", \"added-group-account-to\") and process.name != null\n",
+        "references": [
+            "https://www.elastic.co/security-labs/primer-on-persistence-mechanisms"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "auditd.result",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "fcf733d5-7801-4eb0-92ac-8ffacf3658f2",
+        "setup": "## Setup\n\nThis rule requires data coming in from Auditd Manager.\n\n### Auditd Manager Integration Setup\nThe Auditd Manager Integration receives audit events from the Linux Audit Framework which is a part of the Linux kernel.\nAuditd Manager provides a user-friendly interface and automation capabilities for configuring and monitoring system auditing through the auditd daemon. With `auditd_manager`, administrators can easily define audit rules, track system events, and generate comprehensive audit reports, improving overall security and compliance in the system.\n\n#### The following steps should be executed in order to add the Elastic Agent System integration \"auditd_manager\" on a Linux System:\n- Go to the Kibana home page and click \u201cAdd integrations\u201d.\n- In the query bar, search for \u201cAuditd Manager\u201d and select the integration to see more details about it.\n- Click \u201cAdd Auditd Manager\u201d.\n- Configure the integration name and optionally add a description.\n- Review optional and advanced settings accordingly.\n- Add the newly installed \u201cauditd manager\u201d to an existing or a new agent policy, and deploy the agent on a Linux system from which auditd log files are desirable.\n- Click \u201cSave and Continue\u201d.\n- For more details on the integration refer to the [helper guide](https://docs.elastic.co/integrations/auditd_manager).\n\n#### Rule Specific Setup Note\nAuditd Manager subscribes to the kernel and receives events as they occur without any additional configuration.\nHowever, if more advanced configuration is required to detect specific behavior, audit rules can be added to the integration in either the \"audit rules\" configuration box or the \"auditd rule files\" box by specifying a file to read the audit rules from.\nFor this detection rule to trigger, the following additional audit rules are required to be added to the integration:\n```\n-w /usr/sbin/groupadd -p x -k group_modification\n-w /sbin/groupadd -p x -k group_modification\n-w /usr/sbin/groupmod -p x -k group_modification\n-w /sbin/groupmod -p x -k group_modification\n-w /usr/sbin/addgroup -p x -k group_modification\n-w /sbin/addgroup -p x -k group_modification\n-w /usr/sbin/usermod -p x -k user_modification\n-w /sbin/usermod -p x -k user_modification\n-w /usr/sbin/userdel -p x -k user_modification\n-w /sbin/userdel -p x -k user_modification\n-w /usr/sbin/useradd -p x -k user_modification\n-w /sbin/useradd -p x -k user_modification\n-w /usr/sbin/adduser -p x -k user_modification\n-w /sbin/adduser -p x -k user_modification\n```\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/",
+                        "subtechnique": [
+                            {
+                                "id": "T1136.001",
+                                "name": "Local Account",
+                                "reference": "https://attack.mitre.org/techniques/T1136/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "fcf733d5-7801-4eb0-92ac-8ffacf3658f2_5",
+    "type": "security-rule"
+}

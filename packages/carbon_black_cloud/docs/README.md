@@ -2,9 +2,6 @@
 
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
-## Version 2.0.0+ Update Disclaimer
-Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary). After this, the current alert data stream will become unusable. To enable a smooth transition we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0` schema changes. This data stream has significant changes compared to the original data stream and is only available for our new `CEL input` which is currently tagged as `[Beta]`. Please consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. After July 31, 2024, the old alerts v6 data stream will be deprecated and removed from the HTTPJSON input and only the new `alert_v7` data stream will exist under the `CEL input`.
-
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
 data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
@@ -12,19 +9,13 @@ a breaking change while upgrading to version 1.21 and above. A separate SQS queu
 older versions.
 
 ## HTTPJSON vs CEL 
-Version 2.0.0 introduces the use of the CEL input. This input method is currently marked as [Beta] while the older HTTPJSON input method has been
-marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes and will not support the new `alert_v7` data stream.
+Version 2.0.0 introduces the use of the CEL input. The HTTPJSON input method has been marked as [Legacy], it will not receive enhancement changes and will not support the new `alert_v7` data stream.
 
 ## Note (Important)
 1. Do not enable both the HTTPJSON and CEL input methods within a single data stream; having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
 
-2. When using the AWS-S3 input, use either the old alert data stream or the new [Beta] alert_v7 data stream that supports the Data Forwarder 2.0 schema.
-
-3. The `alert_v7` data stream is supported by our new `Alert V7` dashboards. The old `Alert` dashboards will not reflect the new changes.
-
-
 ## Compatibility
-This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
+This module has been tested against `Alerts API (v7)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
 
 ## Requirements
 
@@ -36,7 +27,6 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
   | Data Stream Name  | Bucket List Prefix     |
   | ----------------- | ---------------------- |
   | Alert_v7          | alert_logs_v7          |
-  | Alert             | alert_logs             |
   | Endpoint Event    | endpoint_event_logs    |
   | Watchlist Hit     | watchlist_hit_logs     |
 
@@ -49,7 +39,7 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
      2. Setup event notification from the S3 bucket using the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
         - Event type: `All object create events` (`s3:ObjectCreated:*`)
          - Destination: SQS Queue
-         - Prefix (filter): enter the prefix for this data stream, e.g. `alert_logs/`
+         - Prefix (filter): enter the prefix for this data stream, e.g. `alert_logs_v7/`
          - Select the SQS queue that has been created for this data stream
 
 **Note**:
@@ -73,8 +63,8 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 
 | Data stream                 | Access Level and Permissions               |
 | --------------------------- | ------------------------------------------ |
-| Audit   	                  | API                                        |
-| Alert                       | Custom orgs.alerts (Read)                  |
+| Audit                       | API                                        |
+| Alert v7                    | Custom orgs.alerts (Read)                  |
 | Asset Vulnerability Summary | Custom vulnerabilityAssessment.data (Read) |
 
 
@@ -90,11 +80,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "a820562f-e713-4f48-81bc-7f329f192335",
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "d9810f80-bccc-4900-886c-c14f1747369d",
+        "id": "e535dae1-9d56-4f72-9e5b-bd456d3edb8f",
+        "name": "elastic-agent-33765",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "audit": {
@@ -105,35 +95,37 @@ An example event for `audit` looks as following:
     "client": {
         "ip": "10.10.10.10",
         "user": {
-            "id": "abc@demo.com"
+            "domain": "demo.com",
+            "email": "abc@demo.com",
+            "id": "abc@demo.com",
+            "name": "abc"
         }
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.audit",
-        "namespace": "ep",
+        "namespace": "18603",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "e535dae1-9d56-4f72-9e5b-bd456d3edb8f",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-04-19T16:30:46.573Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2023-04-19T16:30:50Z",
+        "ingested": "2025-06-02T15:02:56Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
         "reason": "Logged in successfully"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "organization": {
         "name": "cb-xxxx-xxxx.com"
@@ -141,6 +133,10 @@ An example event for `audit` looks as following:
     "related": {
         "ip": [
             "10.10.10.10"
+        ],
+        "user": [
+            "abc@demo.com",
+            "abc"
         ]
     },
     "tags": [
@@ -173,192 +169,6 @@ An example event for `audit` looks as following:
 
 ### Alert
 
-This is the `alert` dataset.
-
-An example event for `alert` looks as following:
-
-```json
-{
-    "@timestamp": "2020-11-17T22:05:13.000Z",
-    "agent": {
-        "ephemeral_id": "0c34bcbb-0fe1-4219-a711-8a44cb9e8b75",
-        "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.8.0"
-    },
-    "carbon_black_cloud": {
-        "alert": {
-            "category": "warning",
-            "device": {
-                "location": "UNKNOWN",
-                "os": "WINDOWS"
-            },
-            "last_update_time": "2020-11-17T22:05:13.000Z",
-            "legacy_alert_id": "C8EB7306-AF26-4A9A-B677-814B3AF69720",
-            "organization_key": "ABCD6X3T",
-            "policy": {
-                "applied": "APPLIED",
-                "id": 6997287,
-                "name": "Standard"
-            },
-            "product_id": "0x5406",
-            "product_name": "U3 Cruzer Micro",
-            "reason_code": "6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC",
-            "run_state": "DID_NOT_RUN",
-            "sensor_action": "DENY",
-            "serial_number": "0875920EF7C2A304",
-            "target_value": "MEDIUM",
-            "threat_cause": {
-                "cause_event_id": "FCEE2AF0-D832-4C9F-B988-F11B46028C9E",
-                "threat_category": "NON_MALWARE",
-                "vector": "REMOVABLE_MEDIA"
-            },
-            "threat_id": "t5678",
-            "type": "DEVICE_CONTROL",
-            "vendor_id": "0x0781",
-            "vendor_name": "SanDisk",
-            "workflow": {
-                "changed_by": "Carbon Black",
-                "last_update_time": "2020-11-17T22:02:16.000Z",
-                "state": "OPEN"
-            }
-        }
-    },
-    "data_stream": {
-        "dataset": "carbon_black_cloud.alert",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
-        "snapshot": true,
-        "version": "8.8.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "created": "2023-04-19T16:35:34.619Z",
-        "dataset": "carbon_black_cloud.alert",
-        "end": "2020-11-17T22:02:16.000Z",
-        "id": "test1",
-        "ingested": "2023-04-19T16:35:38Z",
-        "kind": "alert",
-        "original": "{\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_id\":2,\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
-        "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
-        "severity": 3,
-        "start": "2020-11-17T22:02:16.000Z"
-    },
-    "host": {
-        "hostname": "DESKTOP-002",
-        "id": "2",
-        "name": "DESKTOP-002",
-        "os": {
-            "type": "windows",
-            "version": "Windows 10 x64"
-        }
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "related": {
-        "hosts": [
-            "DESKTOP-002"
-        ],
-        "user": [
-            "test34@demo.com"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "carbon_black_cloud-alert"
-    ],
-    "user": {
-        "name": "test34@demo.com"
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| carbon_black_cloud.alert.blocked_threat_category | The category of threat which we were able to take action on. | keyword |
-| carbon_black_cloud.alert.category | The category of the alert. | keyword |
-| carbon_black_cloud.alert.count |  | long |
-| carbon_black_cloud.alert.created_by_event_id | Event identifier that initiated the alert. | keyword |
-| carbon_black_cloud.alert.device.location | The Location of device. | keyword |
-| carbon_black_cloud.alert.device.os | OS of the device. | keyword |
-| carbon_black_cloud.alert.document_guid | Unique ID of document. | keyword |
-| carbon_black_cloud.alert.ioc.field | The field the indicator of comprise (IOC) hit contains. | keyword |
-| carbon_black_cloud.alert.ioc.hit | IOC field value or IOC query that matches. | keyword |
-| carbon_black_cloud.alert.ioc.id | The identifier of the IOC that cause the hit. | keyword |
-| carbon_black_cloud.alert.kill_chain_status | The stage within the Cyber Kill Chain sequence most closely associated with the attributes of the alert. | keyword |
-| carbon_black_cloud.alert.last_update_time | The last time the alert was updated as an ISO 8601 UTC timestamp. | date |
-| carbon_black_cloud.alert.legacy_alert_id | The legacy identifier for the alert. | keyword |
-| carbon_black_cloud.alert.not_blocked_threat_category | Other potentially malicious activity involved in the threat that we weren't able to take action on (either due to policy config, or not having a relevant rule). | keyword |
-| carbon_black_cloud.alert.notes_present | Indicates if notes are associated with the threat_id. | boolean |
-| carbon_black_cloud.alert.organization_key | The unique identifier for the organization associated with the alert. | keyword |
-| carbon_black_cloud.alert.policy.applied | Whether a policy was applied. | keyword |
-| carbon_black_cloud.alert.policy.id | The identifier for the policy associated with the device at the time of the alert. | long |
-| carbon_black_cloud.alert.policy.name | The name of the policy associated with the device at the time of the alert. | keyword |
-| carbon_black_cloud.alert.product_id | The hexadecimal id of the USB device's product. | keyword |
-| carbon_black_cloud.alert.product_name | The name of the USB device’s vendor. | keyword |
-| carbon_black_cloud.alert.reason_code | Shorthand enum for the full-text reason. | keyword |
-| carbon_black_cloud.alert.report.id | The identifier of the report that contains the IOC. | keyword |
-| carbon_black_cloud.alert.report.name | The name of the report that contains the IOC. | keyword |
-| carbon_black_cloud.alert.run_state | Whether the threat in the alert ran. | keyword |
-| carbon_black_cloud.alert.sensor_action | The action taken by the sensor, according to the rule of the policy. | keyword |
-| carbon_black_cloud.alert.serial_number | The serial number of the USB device. | keyword |
-| carbon_black_cloud.alert.status | status of alert. | keyword |
-| carbon_black_cloud.alert.tags | Tags associated with the alert. | keyword |
-| carbon_black_cloud.alert.target_value | The priority of the device assigned by the policy. | keyword |
-| carbon_black_cloud.alert.threat_activity.c2 | Whether the alert involved a command and control (c2) server. | keyword |
-| carbon_black_cloud.alert.threat_activity.dlp | Whether the alert involved data loss prevention (DLP). | keyword |
-| carbon_black_cloud.alert.threat_activity.phish | Whether the alert involved phishing. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.md5 | MD5 of the threat cause actor. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.name | The name can be one of the following: process commandline, process name, or analytic matched threat. Analytic matched threats are Exploit, Malware, PUP, or Trojan. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.process_pid | Process identifier (PID) of the actor process. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.sha256 | SHA256 of the threat cause actor. | keyword |
-| carbon_black_cloud.alert.threat_cause.cause_event_id | ID of the Event that triggered the threat. | keyword |
-| carbon_black_cloud.alert.threat_cause.process.guid | The global unique identifier of the process. | keyword |
-| carbon_black_cloud.alert.threat_cause.process.parent.guid | The global unique identifier of the process. | keyword |
-| carbon_black_cloud.alert.threat_cause.reputation | Reputation of the threat cause. | keyword |
-| carbon_black_cloud.alert.threat_cause.threat_category | Category of the threat cause. | keyword |
-| carbon_black_cloud.alert.threat_cause.vector | The source of the threat cause. | keyword |
-| carbon_black_cloud.alert.threat_id | The identifier of a threat which this alert belongs. Threats are comprised of a combination of factors that can be repeated across devices. | keyword |
-| carbon_black_cloud.alert.threat_indicators.process_name | Process name associated with threat. | keyword |
-| carbon_black_cloud.alert.threat_indicators.sha256 | Sha256 associated with threat. | keyword |
-| carbon_black_cloud.alert.threat_indicators.ttps | Tactics, techniques and procedures associated with threat. | keyword |
-| carbon_black_cloud.alert.type | Type of alert. | keyword |
-| carbon_black_cloud.alert.vendor_id | The hexadecimal id of the USB device's vendor. | keyword |
-| carbon_black_cloud.alert.vendor_name | The name of the USB device’s vendor. | keyword |
-| carbon_black_cloud.alert.watchlists.id | The identifier of watchlist. | keyword |
-| carbon_black_cloud.alert.watchlists.name | The name of the watchlist. | keyword |
-| carbon_black_cloud.alert.workflow.changed_by | The name of user who changed the workflow. | keyword |
-| carbon_black_cloud.alert.workflow.comment | Comment associated with workflow. | keyword |
-| carbon_black_cloud.alert.workflow.last_update_time | The last update time of workflow. | date |
-| carbon_black_cloud.alert.workflow.remediation | N/A. | keyword |
-| carbon_black_cloud.alert.workflow.state | The state of workflow. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-
-
-### Alert
-
 This is the `alert_v7` dataset.
 
 An example event for `alert_v7` looks as following:
@@ -367,11 +177,11 @@ An example event for `alert_v7` looks as following:
 {
     "@timestamp": "2024-03-13T08:02:36.578Z",
     "agent": {
-        "ephemeral_id": "9c46ff77-c269-4593-a3d8-efd89fbdca66",
-        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c2c6749d-d46f-46f3-a093-004c49de4b47",
+        "id": "3089d948-58aa-4f94-a411-b2e5ad49775b",
+        "name": "elastic-agent-84943",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "alert": {
@@ -482,23 +292,23 @@ An example event for `alert_v7` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.alert_v7",
-        "namespace": "ep",
+        "namespace": "16313",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
+        "id": "3089d948-58aa-4f94-a411-b2e5ad49775b",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "carbon_black_cloud.alert_v7",
         "end": "2024-03-13T08:00:09.894Z",
         "id": "1c6aba68-24cc-41e3-ad8e-4b545a587b55",
-        "ingested": "2024-04-10T09:06:02Z",
+        "ingested": "2025-06-02T14:53:39Z",
         "kind": "alert",
         "original": "{\"alert_notes_present\":false,\"alert_url\":\"defense.conferdeploy.net/alerts?s[c][query_string]=id:1c6aba68-24cc-41e3-ad8e-4b545a587b55\\u0026orgKey=7DESJ9GN\",\"asset_group\":[],\"backend_timestamp\":\"2024-03-13T08:03:29.540Z\",\"backend_update_timestamp\":\"2024-03-13T08:03:29.540Z\",\"childproc_cmdline\":\"\",\"childproc_guid\":\"\",\"childproc_username\":\"\",\"detection_timestamp\":\"2024-03-13T08:02:36.578Z\",\"determination\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"value\":\"NONE\"},\"device_external_ip\":\"75.98.230.194\",\"device_id\":6612391,\"device_internal_ip\":\"172.16.100.140\",\"device_location\":\"UNKNOWN\",\"device_name\":\"EIP\\\\WW-20002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_policy\":\"default\",\"device_policy_id\":6525,\"device_target_value\":\"MEDIUM\",\"device_uem_id\":\"\",\"device_username\":\"EIP\\\\Administrator\",\"first_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"id\":\"1c6aba68-24cc-41e3-ad8e-4b545a587b55\",\"ioc_hit\":\"(fileless_scriptload_cmdline:Register-ScheduledTask OR fileless_scriptload_cmdline:New-ScheduledTask OR scriptload_content:Register-ScheduledTask OR scriptload_content:New-ScheduledTask) AND NOT (process_cmdline:windows\\\\\\\\ccm\\\\\\\\systemtemp OR crossproc_name:windows\\\\\\\\ccm\\\\\\\\ccmexec.exe OR (process_publisher:\\\"VMware, Inc.\\\" AND process_publisher_state:FILE_SIGNATURE_STATE_TRUSTED))\",\"ioc_id\":\"d1080521-e617-4e45-94e0-7a145c62c90a\",\"is_updated\":false,\"last_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"mdr_alert\":false,\"mdr_alert_notes_present\":false,\"mdr_threat_notes_present\":false,\"ml_classification_anomalies\":[],\"ml_classification_final_verdict\":\"NOT_ANOMALOUS\",\"ml_classification_global_prevalence\":\"LOW\",\"ml_classification_org_prevalence\":\"LOW\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\Windows\\\\system32\\\\svchost.exe -k netsvcs -p -s Schedule\",\"parent_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_guid\":\"7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275\",\"parent_md5\":\"145dcf6706eeea5b066885ee17964c09\",\"parent_name\":\"c:\\\\windows\\\\system32\\\\svchost.exe\",\"parent_pid\":1916,\"parent_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_sha256\":\"f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"policy_applied\":\"NOT_APPLIED\",\"primary_event_id\":\"re9M9hp8TbGLqyk6QXqQqA-0\",\"process_cmdline\":\"\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" -EP Bypass \\\\\\\\eip.demo\\\\sysvol\\\\EIP.DEMO\\\\scripts\\\\Luminol.ps1\",\"process_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"process_guid\":\"7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe\",\"process_issuer\":[\"Microsoft Windows Production PCA 2011\"],\"process_md5\":\"2e5a8590cf6848968fc23de3fa1e25f1\",\"process_name\":\"c:\\\\windows\\\\system32\\\\windowspowershell\\\\v1.0\\\\powershell.exe\",\"process_pid\":5172,\"process_publisher\":[\"Microsoft Windows\"],\"process_reputation\":\"TRUSTED_WHITE_LIST\",\"process_sha256\":\"9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"reason\":\"Process powershell.exe was detected by the report \\\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\\\" in watchlist \\\"AMSI Threat Intelligence\\\"\",\"reason_code\":\"c21ca826-573a-3d97-8c1e-93c8471aab7f:8033b29d-81d2-3c47-82d2-f4a7f398b85d\",\"report_description\":\"Newer Powershell versions introduced built-in cmdlets to manage scheduled tasks natively without calling out to typical scheduled task processes like at.exe or schtasks.exe. This detection looks for behaviors related to the fileless execution of scheduled tasks. If you are responding to this alert, be sure to correlate the fileless scriptload events with events typically found in your environment Generally, attackers will create scheduled tasks with binaries that are located in user writable directories like AppData, Temp, or public folders.\",\"report_id\":\"LrKOC7DtQbm4g8w0UFruQg-d1080521-e617-4e45-94e0-7a145c62c90a\",\"report_link\":\"https://attack.mitre.org/techniques/T1053/\",\"report_name\":\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\",\"report_tags\":[\"execution\",\"privesc\",\"persistence\",\"t1053\",\"windows\",\"amsi\",\"attack\",\"attackframework\"],\"run_state\":\"RAN\",\"sensor_action\":\"ALLOW\",\"severity\":5,\"tags\":null,\"threat_id\":\"C21CA826573A8D974C1E93C8471AAB7F\",\"threat_notes_present\":false,\"type\":\"WATCHLIST\",\"user_update_timestamp\":null,\"watchlists\":[{\"id\":\"Ci7w5B4URg6HN60hatQMQ\",\"name\":\"AMSI Threat Intelligence\"}],\"workflow\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"closure_reason\":\"NO_REASON\",\"status\":\"OPEN\"}}",
         "reason": "Process powershell.exe was detected by the report \"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\" in watchlist \"AMSI Threat Intelligence\"",
@@ -1086,13 +896,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-19T16:29:52.808Z",
+    "@timestamp": "2025-06-02T14:58:13.698Z",
     "agent": {
-        "ephemeral_id": "7a1f920f-4945-405b-9e1f-67f8a3601fdb",
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cec373bd-24d4-48f5-9a22-d7630b36e420",
+        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "name": "elastic-agent-11440",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -1112,22 +922,21 @@ An example event for `asset_vulnerability_summary` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "namespace": "ep",
+        "namespace": "93728",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-04-19T16:29:52.808Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2023-04-19T16:29:56Z",
+        "ingested": "2025-06-02T14:58:16Z",
         "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
@@ -1142,7 +951,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "related": {
         "hosts": [

@@ -1,0 +1,101 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Monitors for /proc/*/maps file reads. The /proc/*/maps file in Linux provides a memory map for a specific process, detailing the memory segments, permissions, and what files are mapped to these segments. Attackers may read a process's memory map to identify memory addresses for code injection or process hijacking.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious /proc/maps Discovery",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious /proc/maps Discovery\n\nIn Linux environments, the `/proc/*/maps` files provide detailed memory mapping of processes, crucial for system diagnostics. However, adversaries exploit this by reading these files to pinpoint memory addresses for malicious activities like code injection. The detection rule identifies suspicious reads of these files by monitoring specific command executions, such as `cat` or `grep`, initiated from common shell environments, flagging potential reconnaissance attempts.\n\n### Possible investigation steps\n\n- Review the process details, including the process name and arguments, to confirm if the access to /proc/*/maps was initiated by a legitimate user or application. Pay special attention to the process.name and process.args fields.\n- Check the process.entry_leader.name to determine the shell environment from which the command was executed, and assess if this aligns with typical user behavior or known scripts.\n- Investigate the user account associated with the process to determine if there are any signs of compromise or unusual activity, such as recent logins from unfamiliar IP addresses or changes in user permissions.\n- Examine the parent process and any related child processes to understand the broader context of the command execution, looking for any signs of a script or automated task that might have triggered the alert.\n- Correlate this event with other security alerts or logs from the same host or user to identify any patterns or sequences of suspicious activities that could indicate a larger attack or reconnaissance effort.\n\n### False positive analysis\n\n- System diagnostics tools may read /proc/*/maps files as part of routine checks. Identify these tools and create exceptions for their processes to avoid unnecessary alerts.\n- Developers and system administrators might manually inspect /proc/*/maps during debugging or performance tuning. Establish a list of known users and processes that perform these actions regularly and exclude them from triggering the rule.\n- Automated scripts for monitoring or logging purposes could access /proc/*/maps files. Review these scripts and whitelist them if they are verified to be non-malicious.\n- Security software might access these files as part of its scanning operations. Confirm the legitimacy of such software and add it to an exception list to prevent false positives.\n- Consider the context of the process entry leader. If certain shell environments are used predominantly for legitimate administrative tasks, adjust the rule to reduce sensitivity for those specific environments.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent potential lateral movement by the adversary.\n- Terminate any suspicious processes identified as reading the `/proc/*/maps` files using commands like `cat` or `grep` from unauthorized shell environments.\n- Conduct a memory analysis on the affected system to identify any injected code or unauthorized modifications in the process memory.\n- Review and audit user accounts and permissions on the affected system to ensure that only authorized users have access to sensitive files and directories.\n- Implement stricter access controls and monitoring on `/proc/*/maps` files to limit exposure and detect unauthorized access attempts.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.\n- Update and enhance endpoint detection and response (EDR) solutions to improve monitoring and alerting for similar suspicious activities in the future.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\") and\nprocess.name in (\"cat\", \"grep\", \"tail\", \"less\", \"more\", \"egrep\", \"fgrep\") and process.args like \"/proc/*/maps\"\n",
+        "references": [
+            "https://github.com/arget13/DDexec"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "2f95540c-923e-4f57-9dae-de30169c68b9",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1057",
+                        "name": "Process Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1057/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 7
+    },
+    "id": "2f95540c-923e-4f57-9dae-de30169c68b9_7",
+    "type": "security-rule"
+}

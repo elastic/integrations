@@ -63,10 +63,11 @@ streams:
         default: https://api.github.com
       - name: ssl
         type: yaml
-        title: SSL
+        title: SSL Configuration
         multi: false
         required: false
         show_user: false
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
       - name: proxy_url
         type: text
         title: Proxy URL
@@ -98,3 +99,328 @@ streams:
         required: false
         show_user: false
         description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+  - input: azure-eventhub
+    description: Collect GitHub audit logs from Azure Event Hub
+    title: GitHub Audit Logs from Azure Event Hub
+    template_path: azure-eventhub.yml.hbs
+    enabled: false
+    vars:
+      - name: eventhub
+        type: text
+        title: Event Hub
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          Elastic recommends using one event hub for each integration. Visit [Create an event hub](https://docs.elastic.co/integrations/azure#create-an-event-hub) to learn more. Use event hub names up to 30 characters long to avoid compatibility issues.
+      - name: consumer_group
+        type: text
+        title: Consumer Group
+        multi: false
+        required: true
+        show_user: true
+        default: $Default
+        description: >-
+          We recommend using a dedicated consumer group for the azure input. Reusing consumer groups among non-related consumers can cause unexpected behavior and possibly lost events.
+      - name: connection_string
+        type: password
+        title: Connection String
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+        description: >-
+          The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
+      - name: storage_account
+        type: text
+        title: Storage Account
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          The name of the storage account where the consumer group's state/offsets will be stored and updated.
+      - name: storage_account_key
+        type: password
+        title: Storage Account Key
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          The storage account key, this key will be used to authorize access to data in your storage account.
+        secret: true
+      - name: storage_account_container
+        type: text
+        title: Storage Account Container
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type. DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+      - name: resource_manager_endpoint
+        type: text
+        title: Resource Manager Endpoint
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          By default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - github-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve github.audit fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: aws-s3
+    template_path: aws-s3.yml.hbs
+    title: Collect Audit logs via AWS S3 or SQS
+    description: Collect Audit logs via AWS S3 or SQS input.
+    enabled: false
+    vars:
+      - name: collect_s3_logs
+        required: true
+        show_user: true
+        title: Collect logs via S3 Bucket
+        description: To collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+        type: bool
+        multi: false
+        default: false
+      - name: access_key_id
+        type: password
+        title: Access Key ID
+        multi: false
+        required: false
+        show_user: true
+        description: First part of access key. This parameter along with the secret_access_key parameter is required if we are not providing shared_credential_file.
+        secret: true
+      - name: secret_access_key
+        type: password
+        title: Secret Access Key
+        multi: false
+        required: false
+        show_user: true
+        description: Second part of access key. This parameter along with the access_key_id parameter is required if we are not providing shared_credential_file.
+        secret: true
+      - name: region
+        type: text
+        title: '[SQS] Region'
+        multi: false
+        required: false
+        show_user: true
+        description: The name of the AWS region of the end point. If this option is given it takes precedence over the region name obtained from the queue_url value.
+      - name: session_token
+        type: password
+        title: Session Token
+        multi: false
+        required: false
+        show_user: true
+        description: Required when using temporary security credentials.
+        secret: true
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        multi: false
+        required: false
+        show_user: false
+        description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - secret_access_key and access_key_id.
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        multi: false
+        required: false
+        show_user: false
+        description: Profile name in shared credentials file.
+      - name: role_arn
+        type: text
+        title: Role ARN
+        multi: false
+        required: false
+        show_user: false
+        description: AWS IAM Role to assume.
+      - name: default_region
+        type: text
+        title: Default AWS Region
+        multi: false
+        required: false
+        show_user: false
+        default: ""
+        description: >-
+          Default region to query if no other region is set. Most AWS services offer a regional endpoint that can be used to make requests. Some services, such as IAM, do not support regions. If a region is not provided by any other way (environment variable, credential or instance profile), the value set here will be used.
+      - name: endpoint
+        type: text
+        title: Endpoint
+        multi: false
+        required: false
+        show_user: false
+        description: URL of the entry point for an AWS web service.
+      - name: fips_enabled
+        type: bool
+        title: FIPS Enabled
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+      - name: bucket_arn
+        type: text
+        title: '[S3] Bucket ARN'
+        multi: false
+        required: false
+        show_user: true
+        description: ARN of the AWS S3 bucket that will be polled for list operation. It is a required parameter for collecting logs via the AWS S3.
+      - name: bucket_list_prefix
+        type: text
+        title: '[S3] Bucket Prefix'
+        multi: false
+        required: false
+        show_user: true
+        description: Prefix to apply for the list request to the S3 bucket.
+      - name: interval
+        type: text
+        title: '[S3] Interval'
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: Listing of the S3 bucket will be polled according to the time interval defined by bucket_list_interval config. Default value is 120 secs. Supported units for this parameter are h/m/s.
+      - name: number_of_workers
+        type: integer
+        title: Number of Workers
+        multi: false
+        required: false
+        show_user: true
+        default: 5
+        description: Number of workers that will process the S3 or SQS objects listed.
+      - name: queue_url
+        type: text
+        title: '[SQS] Queue URL'
+        multi: false
+        required: false
+        show_user: true
+        description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+      - name: visibility_timeout
+        type: text
+        title: '[SQS] Visibility Timeout'
+        multi: false
+        required: false
+        show_user: true
+        default: 300s
+        description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. The maximum is 12 hours. Supported units for this parameter are h/m/s.
+      - name: api_timeout
+        type: text
+        title: '[SQS] API Timeout'
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value. Supported units for this parameter are h/m/s.
+      - name: file_selectors
+        type: yaml
+        title: '[SQS] File Selectors'
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
+      - name: external_id
+        type: text
+        title: External ID
+        multi: false
+        required: false
+        show_user: false
+        description: External ID to use when assuming a role in another account.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - github.audit
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve github.audit fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----

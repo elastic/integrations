@@ -1,12 +1,11 @@
 config_version: 2
 resource:
-  url: "{{api_host}}/api/v1/computers-inventory"
+  url: "{{api_host}}"
   timeout: {{http_client_timeout}}
-{{#if enable_request_tracer}}
   tracer:
-    filename: "../../logs/jamf_pro-versions/http-request-trace-*.ndjson"
+    enabled: {{enable_request_tracer}}
+    filename: "../../logs/cel/http-request-trace-*.ndjson"
     maxbackups: 5
-{{/if}}
 auth:
   oauth2:
     client:
@@ -16,7 +15,6 @@ auth:
     endpoint_params:
       grant_type: "client_credentials"
 interval: {{interval}}
-max_executions: {{max_executions}}
 
 tags:
 {{#if preserve_original_event}}
@@ -30,14 +28,19 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 keep_null: true
+redact:
+    fields: ~
 program: |-
   request(
   	"GET",
-  	state.url.trim_right("/") + "?" + {
+  	state.url.trim_right("/") + "/api/v1/computers-inventory?" + {
   		"section": state.sections,
   		"page-size": [string(state.page_size)],
   		"sort": ["general.reportDate:asc"],
-  		?"filter": state.?cursor.last_report_date.optMap(d, ["general.reportDate>=\"" + d + "\""]),
+  		?"filter": state.?cursor.last_report_date.orValue("") != "" ?
+   			optional.of(["general.reportDate>=\"" + state.cursor.last_report_date + "\""])
+   		:
+   			optional.none(),
   	}.format_query()
   ).with(
   	{
@@ -62,9 +65,9 @@ program: |-
   						?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
   					}
   				),
-  				"want_more": size(body.results) >= state.page_size,
   				"cursor": state.?cursor.orValue({}).with(
   					{
+  						?"prev_last_report_date": state.?cursor.last_report_date,
   						?"last_report_date": (size(body.results) > 0) ?
   							optional.of(
   								body.results[size(body.results) - 1].general.reportDate.as(d,
@@ -76,7 +79,9 @@ program: |-
   					}
   				),
   			}
-  		)
+  		).as(state, state.with({
+  			"want_more": size(body.results) >= state.page_size && (state.?cursor.prev_last_report_date != state.?cursor.last_report_date)
+  		}))
   	)
   )
 state:

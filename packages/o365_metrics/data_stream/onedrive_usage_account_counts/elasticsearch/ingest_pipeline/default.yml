@@ -3,17 +3,17 @@ description: Pipeline for processing o365 onedrive usage account counts
 processors:
   - set:
       field: ecs.version
-      value: "8.16.0"        
+      value: "8.16.0"
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.onedrive_usage_account_counts != null && ctx.onedrive_usage_account_counts == null && ctx.event?.original == null
+      message: error message set and no data to process
   - set:
       copy_from: onedrive_usage_account_counts
       field: event.original
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
-  # - fail:
-  #     tag: cel_failure
-  #     if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-  #     message: error message set and no data to process
   - json:
       field: onedrive_usage_account_counts
       target_field: o365.metrics.onedrive.usage.account.counts
@@ -93,12 +93,8 @@ processors:
   - fingerprint:
       fields:
         - o365.metrics.onedrive.usage.account.counts.report.date
-      target_field: _id  
-  - remove: 
-      field:
         - o365.metrics.onedrive.usage.account.counts.site_type
-      ignore_missing: true
-
+      target_field: _id  
   - script:
       lang: painless
       tag: script_to_remove_null_values

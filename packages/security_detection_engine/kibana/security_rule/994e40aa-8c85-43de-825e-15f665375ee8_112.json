@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "A supervised machine learning model (ProblemChild) has identified a suspicious Windows process event with high probability of it being malicious activity. Alternatively, the model's blocklist identified the event as being malicious.",
+        "from": "now-10m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.process-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Machine Learning Detected a Suspicious Windows Event with a High Malicious Probability Score",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Machine Learning Detected a Suspicious Windows Event with a High Malicious Probability Score\n\nThe detection leverages a machine learning model, ProblemChild, to identify potentially malicious Windows processes by analyzing patterns and assigning a high probability score to suspicious activities. Adversaries may exploit legitimate processes to evade detection, often using techniques like masquerading. This rule flags high-risk events by focusing on processes with a high malicious probability score or those identified by a blocklist, excluding known benign activities.\n\n### Possible investigation steps\n\n- Review the process details flagged by the ProblemChild model, focusing on those with a prediction probability greater than 0.98 or identified by the blocklist.\n- Examine the command-line arguments of the suspicious process to identify any unusual or unexpected patterns, excluding those matching known benign patterns like \"*C:\\\\WINDOWS\\\\temp\\\\nessus_*.txt*\" or \"*C:\\\\WINDOWS\\\\temp\\\\nessus_*.tmp*\".\n- Check the parent process of the flagged event to determine if it is a legitimate process or if it has been potentially compromised.\n- Investigate the user account associated with the process to assess if it has been involved in any other suspicious activities or if it has elevated privileges that could be exploited.\n- Correlate the event with other security alerts or logs to identify any related activities or patterns that could indicate a broader attack campaign.\n- Consult threat intelligence sources to determine if the process or its associated indicators are linked to known malicious activities or threat actors.\n\n### False positive analysis\n\n- Nessus scan files in the Windows temp directory may trigger false positives due to their temporary nature and frequent legitimate use. Users can mitigate this by adding exceptions for file paths like C:\\WINDOWS\\temp\\nessus_*.txt and C:\\WINDOWS\\temp\\nessus_*.tmp.\n- Legitimate software updates or installations might be flagged if they mimic known malicious patterns. Users should review the process details and whitelist trusted software update processes.\n- System administration tools that perform actions similar to those used in attacks could be misidentified. Users should verify the legitimacy of these tools and exclude them from the rule if they are part of regular administrative tasks.\n- Custom scripts or automation tools that are not widely recognized might be flagged. Users should ensure these scripts are secure and add them to an allowlist if they are part of routine operations.\n- Frequent false positives from specific processes can be managed by adjusting the threshold of the machine learning model or refining the blocklist to better distinguish between benign and malicious activities.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of potential malicious activity.\n- Terminate the suspicious process identified by the ProblemChild model to halt any ongoing malicious actions.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any additional threats.\n- Review and analyze the process execution history and associated files to understand the scope of the compromise and identify any persistence mechanisms.\n- Restore any altered or deleted files from backups, ensuring that the backup is clean and free from malware.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for similar processes and activities to detect and respond to future attempts at masquerading or defense evasion.",
+        "query": "process where ((problemchild.prediction == 1 and problemchild.prediction_probability > 0.98) or\nblocklist_label == 1) and not process.args : (\"*C:\\\\WINDOWS\\\\temp\\\\nessus_*.txt*\", \"*C:\\\\WINDOWS\\\\temp\\\\nessus_*.tmp*\")\n",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/problemchild",
+            "https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "problemchild",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "blocklist_label",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "problemchild.prediction",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "problemchild.prediction_probability",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "994e40aa-8c85-43de-825e-15f665375ee8",
+        "setup": "## Setup\n\nThe rule requires the Living off the Land (LotL) Attack Detection integration assets to be installed, as well as Windows process events collected by integrations such as Elastic Defend or Winlogbeat.\n\n### LotL Attack Detection Setup\nThe LotL Attack Detection integration detects living-off-the-land activity in Windows process events.\n\n#### Prerequisite Requirements:\n- Fleet is required for LotL Attack Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Windows process events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration or Winlogbeat(https://www.elastic.co/guide/en/beats/winlogbeat/current/_winlogbeat_overview.html).\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To set up and run Winlogbeat, follow [this](https://www.elastic.co/guide/en/beats/winlogbeat/current/winlogbeat-installation-configuration.html) guide.\n\n#### The following steps should be executed to install assets associated with the LotL Attack Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Living off the Land Attack Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Configure the ingest pipeline**.\n",
+        "severity": "high",
+        "tags": [
+            "OS: Windows",
+            "Data Source: Elastic Endgame",
+            "Use Case: Living off the Land Attack Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/",
+                        "subtechnique": [
+                            {
+                                "id": "T1036.004",
+                                "name": "Masquerade Task or Service",
+                                "reference": "https://attack.mitre.org/techniques/T1036/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 112
+    },
+    "id": "994e40aa-8c85-43de-825e-15f665375ee8_112",
+    "type": "security-rule"
+}

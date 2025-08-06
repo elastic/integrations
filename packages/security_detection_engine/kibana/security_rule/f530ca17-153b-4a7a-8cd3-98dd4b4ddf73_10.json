@@ -1,0 +1,102 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when the openssl command-line utility is used to encrypt multiple files on a host within a short time window. Adversaries may encrypt data on a single or multiple systems in order to disrupt the availability of their target's data and may attempt to hold the organization's data to ransom for the purposes of extortion.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Data Encryption via OpenSSL Utility",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Data Encryption via OpenSSL Utility\n\nOpenSSL is a widely-used command-line tool for secure data encryption and decryption. Adversaries may exploit OpenSSL to encrypt files rapidly across systems, aiming to disrupt data availability or demand ransom. The detection rule identifies suspicious OpenSSL usage by monitoring rapid file encryption activities, focusing on specific command patterns and excluding benign operations, thus highlighting potential malicious behavior.\n\n### Possible investigation steps\n\n- Review the process execution details on the host identified by host.id to confirm the presence of the openssl command and its associated arguments, ensuring they match the suspicious pattern specified in the query.\n- Examine the user.name associated with the process to determine if the activity aligns with expected behavior for that user or if it indicates potential unauthorized access.\n- Investigate the parent process identified by process.parent.entity_id to understand the context in which the openssl command was executed, checking for any unusual or unexpected parent processes.\n- Check for any recent file modifications or creations on the host that coincide with the time window of the alert to assess the impact of the encryption activity.\n- Look for additional related alerts or logs from the same host or user within a similar timeframe to identify any patterns or further suspicious activities that could indicate a broader attack.\n\n### False positive analysis\n\n- Legitimate batch encryption operations by system administrators or automated scripts may trigger the rule. To handle this, identify and whitelist specific scripts or user accounts that perform regular encryption tasks.\n- Backup processes that use OpenSSL for encrypting data before storage can be mistaken for malicious activity. Exclude known backup processes by specifying their parent process names or paths.\n- Developers or security teams testing encryption functionalities might inadvertently match the rule's criteria. Create exceptions for development environments or specific user accounts involved in testing.\n- Automated data transfer services that encrypt files for secure transmission could be flagged. Identify these services and exclude their associated processes or user accounts from the rule.\n- Regularly review and update the exclusion list to ensure it reflects current operational practices and does not inadvertently allow malicious activities.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further spread of the encryption activity and potential lateral movement by the adversary.\n- Terminate any suspicious OpenSSL processes identified on the host to halt ongoing encryption activities.\n- Conduct a forensic analysis of the affected host to identify the scope of the encryption, including which files were encrypted and any potential data exfiltration.\n- Restore encrypted files from the most recent clean backup to ensure data availability and integrity, ensuring that the backup is free from any malicious alterations.\n- Change all credentials and keys that may have been exposed or used on the affected host to prevent unauthorized access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.\n- Implement enhanced monitoring and logging for OpenSSL usage across the network to detect and respond to similar threats more effectively in the future.",
+        "query": "sequence by host.id, user.name, process.parent.entity_id with maxspan=5s\n  [ process where host.os.type == \"linux\" and event.action == \"exec\" and\n    process.name == \"openssl\" and process.parent.name : (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"perl*\", \"php*\", \"python*\", \"xargs\") and\n    process.args == \"-in\" and process.args == \"-out\" and\n    process.args in (\"-k\", \"-K\", \"-kfile\", \"-pass\", \"-iv\", \"-md\") and\n    /* excluding base64 encoding options and including encryption password or key params */\n    not process.args in (\"-d\", \"-a\", \"-A\", \"-base64\", \"-none\", \"-nosalt\") ] with runs=10\n",
+        "references": [
+            "https://www.welivesecurity.com/2017/06/30/telebots-back-supply-chain-attacks-against-ukraine/",
+            "https://www.trendmicro.com/en_us/research/21/f/bash-ransomware-darkradiation-targets-red-hat--and-debian-based-linux-distributions.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f530ca17-153b-4a7a-8cd3-98dd4b4ddf73",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1486",
+                        "name": "Data Encrypted for Impact",
+                        "reference": "https://attack.mitre.org/techniques/T1486/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 10
+    },
+    "id": "f530ca17-153b-4a7a-8cd3-98dd4b4ddf73_10",
+    "type": "security-rule"
+}

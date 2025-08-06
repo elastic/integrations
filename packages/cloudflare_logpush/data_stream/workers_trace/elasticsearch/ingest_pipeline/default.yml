@@ -57,6 +57,7 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.workers_trace.type
+      ignore_empty_value: true
       tag: set_event_action
 
   # Set event.outcome
@@ -89,6 +90,11 @@ processors:
       ignore_missing: true
       tag: rename_dispatch_namespace
   - rename:
+      field: json.Entrypoint
+      target_field: cloudflare_logpush.workers_trace.entrypoint
+      ignore_missing: true
+      tag: rename_entrypoint
+  - rename:
       field: json.Event
       target_field: cloudflare_logpush.workers_trace.event
       ignore_missing: true
@@ -113,6 +119,11 @@ processors:
       target_field: cloudflare_logpush.workers_trace.script.tags
       ignore_missing: true
       tag: rename_script_tags
+  - rename:
+      field: json.ScriptVersion
+      target_field: cloudflare_logpush.workers_trace.script.version
+      ignore_missing: true
+      tag: rename_script_version
 
   - script:
       description: Convert Workers Trace Events keys to snake case recursively.

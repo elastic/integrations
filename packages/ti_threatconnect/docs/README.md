@@ -10,72 +10,48 @@ An **Indicator** inside [ThreatConnect](https://docs.threatconnect.com/en/latest
 
 Reference for [REST APIs](https://docs.threatconnect.com/en/latest/rest_api/rest_api.html#getting-started) of ThreatConnect.
 
+## Compatibility
+
+This module has been tested against the **ThreatConnect API Version v3**.
+The minimum required ThreatConnect Platform version is **7.3.1**.
+
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Versions
-
-The minimum required versions for the Elastic Stack is **8.12.0**.
-
-The minimum required ThreatConnect Platform version is 7.3.1 This integration module uses the ThreatConnect V3 API.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.11.0**.
-This module has been tested against the **ThreatConnect API Version v3**.
-The minimum required ThreatConnect Platform version needs to be **7.3.1**.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect data from ThreatConnect, the following parameters from your ThreatConnect instance are required:
+To collect data from ThreatConnect, the following parameters from your ThreatConnect instance are required:
 
-1. Access Id
-2. Secret Key
-3. URL
+- Access Id
+- Secret Key
+- URL
 
-To create an API user account, please refer to [this](https://knowledge.threatconnect.com/docs/creating-user-accounts) article.
+To create an API user account, refer to this [article](https://knowledge.threatconnect.com/docs/creating-user-accounts).
 
-### Enabling the integration in Elastic:
-1. In Kibana, go to Management > Integrations.
-2. In the "Search for integrations" search bar, type ThreatConnect.
-3. Click on the "ThreatConnect" integration from the search results.
-4. Click on the "Add ThreatConnect" button to add the integration.
-5. Configure all required integration parameters, including Access Id, Secret Key, and URL, to enable data collection from the ThreatConnect REST API.
-6. Save the integration.
+### Enable the integration in Elastic
 
-## Indicators Expiration
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **ThreatConnect**.
+3. Select the **ThreatConnect** integration and add it.
+4. Configure all required integration parameters, including Access Id, Secret Key, and URL, to enable data collection from the ThreatConnect REST API.
+5. Save the integration.
+
+## Indicator expiration
 
 The ingested indicators expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to facilitate only active indicators be available to the end users. Since we want to retain only valuable information and avoid duplicated data, the ThreatConnect Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_threatconnect_latest.dest_indicator-*`.
 **Please, refer to this index in order to set alerts and so on.**
 
-#### Handling Orphaned Indicators
+#### Handling orphaned indicators
 
-In order to prevent orphaned indicators that may never expire in the destination index users can configure IOC Expiration Duration parameter while setting up the integration. This parameter deletes all data inside the destination index logs-ti_threatconnect_latest.dest_indicator after this specified duration is reached.
+To prevent orphaned indicators that may never expire in the destination index, you can configure IOC Expiration Duration parameter while setting up the integration. This parameter deletes all data inside the destination index logs-ti_threatconnect_latest.dest_indicator after this specified duration is reached.
 
 ### How it works
 
 This is possible thanks to a transform rule installed along with the integration. The transform rule parses the data stream content that is pulled from ThreatConnect and only adds new indicators.
-
 Both the data stream and the latest index have applied expiration through ILM and a retention policy in the transform respectively.
 
-## Logs Reference
+## Logs reference
 
 ### Indicator
 
@@ -361,6 +337,8 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.associated_cases | A list of Cases associated to the Indicator. | flattened |
 | threat_connect.indicator.associated_groups.data.assignments.data.type | Valid values for the type of assignment are Assigned and Escalate. | keyword |
 | threat_connect.indicator.associated_groups.data.assignments.data.user.id | Unique identifier of users assigned to the Task or to whom the Task will be escalated. | keyword |
+| threat_connect.indicator.associated_groups.data.attributes.type |  | keyword |
+| threat_connect.indicator.associated_groups.data.attributes.value |  | keyword |
 | threat_connect.indicator.associated_groups.data.body | The Emails body. | keyword |
 | threat_connect.indicator.associated_groups.data.created_by.first_name | First name of user. | keyword |
 | threat_connect.indicator.associated_groups.data.created_by.id | Unique Identifier of the user who created the group. | keyword |
@@ -508,11 +486,12 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.source | The Indicators source. | keyword |
 | threat_connect.indicator.subject | The subject line of the email associated with the Email Subject Indicator. | keyword |
 | threat_connect.indicator.summary | Summary or description of the indicator. | keyword |
-| threat_connect.indicator.tags.data.last_used | Date and time when tag was last used. | date |
-| threat_connect.indicator.tags.data.name | Name of tag. | keyword |
-| threat_connect.indicator.tags.data.owner | The Organization, Community, or Source to which the Tag belongs. | keyword |
+| threat_connect.indicator.tags.data.last_used | Date and time when the tag was last used. | date |
+| threat_connect.indicator.tags.data.name | Name of the tag. | keyword |
+| threat_connect.indicator.tags.data.owner | The Organization, Community, or Source to which the tag belongs. | keyword |
 | threat_connect.indicator.tags.data.platforms.count | Count of platforms. | long |
 | threat_connect.indicator.tags.data.platforms.data | Platform on which tag is added. | keyword |
+| threat_connect.indicator.tags.data.tactics | Attack tactics associated with the tag. | keyword |
 | threat_connect.indicator.tags.data.technique.id | Unique Identifier of tag technique. | keyword |
 | threat_connect.indicator.text | The URL associated with the URL Indicator. | keyword |
 | threat_connect.indicator.threat_assess.confidence | The confidence level associated with the threat assessment. | double |

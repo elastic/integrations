@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing alert logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -18,6 +29,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
@@ -127,10 +143,29 @@ processors:
       field: json.agentRealtimeInfo.os
       target_field: sentinel_one.alert.agent.os.type
       ignore_missing: true
-  - set:
-      field: host.os.type
-      copy_from: sentinel_one.alert.agent.os.type
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
       if: ctx.sentinel_one?.alert?.agent?.os?.type != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String os_type = ctx.sentinel_one.alert.agent.os.type.toLowerCase();
+        for (String os: params.os_type) {
+          if (os_type.contains(os)) {
+            ctx.host.os.put('type', os);
+            return;
+          }
+        }
   - date:
       field: json.alertInfo.createdAt
       if: ctx.json?.alertInfo?.createdAt != null
@@ -453,6 +488,10 @@ processors:
       field: json.ruleInfo.name
       target_field: rule.name
       ignore_missing: true
+  - set:
+      field: message
+      copy_from: rule.name
+      if: ctx.rule?.name != null
   - rename:
       field: json.ruleInfo.scopeLevel
       target_field: sentinel_one.alert.rule.scope_level
@@ -461,6 +500,27 @@ processors:
       field: json.ruleInfo.severity
       target_field: sentinel_one.alert.rule.severity
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.sentinel_one?.alert?.rule?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.sentinel_one.alert.rule.severity;
+        if (risk_score_value.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ruleInfo.treatAsThreat
       target_field: sentinel_one.alert.rule.treat_as_threat

@@ -16,10 +16,16 @@ streams:
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
+        default: false
         multi: false
         required: false
         show_user: false
-        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename)
+          for details.
       - name: client_secret
         type: password
         title: Client Secret
@@ -35,6 +41,14 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+        description: How far back to pull the logs from Microsoft Defender Endpoint API. Supported units for this parameter are h/m/s.
       - name: interval
         type: text
         title: Interval

@@ -1,0 +1,152 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the use of Distributed Component Object Model (DCOM) to execute commands from a remote host, which are launched via the HTA Application COM Object. This behavior may indicate an attacker abusing a DCOM application to move laterally while attempting to evade detection.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Incoming DCOM Lateral Movement via MSHTA",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Incoming DCOM Lateral Movement via MSHTA\n\nDCOM allows software components to communicate over a network, enabling remote execution of applications like MSHTA, which runs HTML applications. Adversaries exploit this by executing commands remotely, bypassing traditional security measures. The detection rule identifies suspicious MSHTA activity by monitoring process starts and network traffic, focusing on unusual port usage and remote IP addresses, indicating potential lateral movement attempts.\n\n### Possible investigation steps\n\n- Review the process start event for mshta.exe on the affected host to gather details such as the process entity ID, command-line arguments, and parent process information to understand how mshta.exe was executed.\n- Analyze the network traffic associated with the mshta.exe process, focusing on the source and destination IP addresses and ports, to identify any unusual or unauthorized remote connections.\n- Check the source IP address involved in the network event to determine if it is known or associated with any previous suspicious activity or if it belongs to an internal or external network.\n- Investigate the timeline of events on the host to identify any preceding or subsequent suspicious activities that might indicate a broader attack pattern or lateral movement attempts.\n- Correlate the findings with other security logs and alerts from the same host or network segment to identify any additional indicators of compromise or related malicious activities.\n- Assess the risk and impact of the detected activity by considering the host's role within the network and any sensitive data or systems it may have access to.\n\n### False positive analysis\n\n- Legitimate administrative tasks using MSHTA for remote management can trigger the rule. Identify and document these tasks, then create exceptions for known administrative IP addresses or specific user accounts.\n- Automated software updates or deployments that utilize MSHTA may appear as suspicious activity. Monitor and whitelist the IP addresses and ports associated with these updates to prevent false positives.\n- Internal network scanning tools or security assessments might mimic lateral movement behavior. Coordinate with IT and security teams to recognize these activities and exclude them from triggering alerts.\n- Custom applications that leverage MSHTA for inter-process communication could be flagged. Review these applications and exclude their known processes or network patterns from the detection rule.\n- Remote desktop or support tools that use MSHTA for legitimate purposes should be identified. Whitelist these tools by their process names or associated network traffic to reduce unnecessary alerts.\n\n### Response and remediation\n\n- Isolate the affected host immediately from the network to prevent further lateral movement and potential data exfiltration.\n- Terminate the mshta.exe process on the affected host to stop any ongoing malicious activity.\n- Conduct a thorough examination of the affected host to identify any additional malicious files or processes, focusing on those initiated around the time of the alert.\n- Reset credentials for any accounts that were active on the affected host during the time of the alert to prevent unauthorized access.\n- Review and restrict DCOM permissions and configurations on the affected host and other critical systems to limit the potential for similar attacks.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if other systems have been compromised.\n- Update detection mechanisms and threat intelligence feeds to enhance monitoring for similar DCOM-based lateral movement attempts in the future.",
+        "query": "sequence with maxspan=1m\n  [process where host.os.type == \"windows\" and event.type == \"start\" and\n     process.name : \"mshta.exe\" and process.args : \"-Embedding\"\n  ] by host.id, process.entity_id\n  [network where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"mshta.exe\" and\n     network.direction : (\"incoming\", \"ingress\") and network.transport == \"tcp\" and\n     source.port > 49151 and destination.port > 49151 and source.ip != \"127.0.0.1\" and source.ip != \"::1\"\n  ] by host.id, process.entity_id\n",
+        "references": [
+            "https://codewhitesec.blogspot.com/2018/07/lethalhta.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.direction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "622ecb68-fa81-4601-90b5-f8cd661e4520",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.003",
+                                "name": "Distributed Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1021/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.005",
+                                "name": "Mshta",
+                                "reference": "https://attack.mitre.org/techniques/T1218/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 209
+    },
+    "id": "622ecb68-fa81-4601-90b5-f8cd661e4520_209",
+    "type": "security-rule"
+}

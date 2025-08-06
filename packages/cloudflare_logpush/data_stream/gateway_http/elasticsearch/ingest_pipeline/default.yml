@@ -36,7 +36,7 @@ processors:
   - set:
       field: event.kind
       value: event
-# ECS fields
+# ECS fields
   - script:
       lang: painless
       tag: painless_datetime_to_milli
@@ -80,6 +80,7 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.gateway_http.action
+      ignore_empty_value: true
   - rename:
       field: json.DeviceID
       target_field: cloudflare_logpush.gateway_http.host.id
@@ -87,6 +88,7 @@ processors:
   - set:
       field: host.id
       copy_from: cloudflare_logpush.gateway_http.host.id
+      ignore_empty_value: true
   - rename:
       field: json.DeviceName
       target_field: cloudflare_logpush.gateway_http.host.name
@@ -94,6 +96,7 @@ processors:
   - set:
       field: host.name
       copy_from: cloudflare_logpush.gateway_http.host.name
+      ignore_empty_value: true
   - rename:
       field: json.DestinationIP
       target_field: cloudflare_logpush.gateway_http.destination.ip
@@ -101,10 +104,12 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_http.destination.ip
-# Geo enrichment (destination IP)
+      ignore_empty_value: true
+# Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -128,6 +133,7 @@ processors:
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.gateway_http.destination.port
+      ignore_empty_value: true
   - rename:
       field: json.HTTPMethod
       target_field: cloudflare_logpush.gateway_http.request.method
@@ -135,6 +141,7 @@ processors:
   - set:
       field: http.request.method
       copy_from: cloudflare_logpush.gateway_http.request.method
+      ignore_empty_value: true
   - rename:
       field: json.HTTPStatusCode
       target_field: cloudflare_logpush.gateway_http.response.status_code
@@ -142,6 +149,7 @@ processors:
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.gateway_http.response.status_code
+      ignore_empty_value: true
   - rename:
       field: json.HTTPVersion
       target_field: cloudflare_logpush.gateway_http.request.version
@@ -149,6 +157,7 @@ processors:
   - set:
       field: http.version
       copy_from: cloudflare_logpush.gateway_http.request.version
+      ignore_empty_value: true
   - rename:
       field: json.Referer
       target_field: cloudflare_logpush.gateway_http.request.referrer
@@ -156,6 +165,7 @@ processors:
   - set:
       field: http.request.referrer
       copy_from: cloudflare_logpush.gateway_http.request.referrer
+      ignore_empty_value: true
   - rename:
       field: json.SourceIP
       target_field: cloudflare_logpush.gateway_http.source.ip
@@ -163,10 +173,12 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_http.source.ip
-# Geo enrichment (source IP)
+      ignore_empty_value: true
+# Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -190,6 +202,7 @@ processors:
   - set:
       field: source.port
       copy_from: cloudflare_logpush.gateway_http.source.port
+      ignore_empty_value: true
   - rename:
       field: json.URL
       target_field: cloudflare_logpush.gateway_http.url
@@ -205,6 +218,7 @@ processors:
   - set:
       field: user_agent.original
       copy_from: cloudflare_logpush.gateway_http.user_agent
+      ignore_empty_value: true
   - rename:
       field: json.UserID
       target_field: cloudflare_logpush.gateway_http.user.id
@@ -212,6 +226,7 @@ processors:
   - set:
       field: user.id
       copy_from: cloudflare_logpush.gateway_http.user.id
+      ignore_empty_value: true
   - rename:
       field: json.Email
       target_field: cloudflare_logpush.gateway_http.user.email
@@ -219,10 +234,19 @@ processors:
   - set:
       field: user.email
       copy_from: cloudflare_logpush.gateway_http.user.email
+      ignore_empty_value: true
 # Custom fields
   - rename:
       field: json.AccountID
       target_field: cloudflare_logpush.gateway_http.account_id
+      ignore_missing: true
+  - rename:
+      field: json.ApplicationIDs
+      target_field: cloudflare_logpush.gateway_http.application.ids
+      ignore_missing: true
+  - rename:
+      field: json.ApplicationNames
+      target_field: cloudflare_logpush.gateway_http.application.names
       ignore_missing: true
   - rename:
       field: json.BlockedFileHash
@@ -245,12 +269,40 @@ processors:
       target_field: cloudflare_logpush.gateway_http.blocked_file.type
       ignore_missing: true
   - rename:
+      field: json.CategoryIDs
+      target_field: cloudflare_logpush.gateway_http.category.ids
+      ignore_missing: true
+  - rename:
+      field: json.CategoryNames
+      target_field: cloudflare_logpush.gateway_http.category.names
+      ignore_missing: true
+  - rename:
+      field: json.DestinationIPContinentCode
+      target_field: cloudflare_logpush.gateway_http.destination_ip.continent_code
+      ignore_missing: true
+  - rename:
+      field: json.DestinationIPCountryCode
+      target_field: cloudflare_logpush.gateway_http.destination_ip.country_code
+      ignore_missing: true
+  - rename:
       field: json.DownloadedFileNames
       target_field: cloudflare_logpush.gateway_http.downloaded_files
       ignore_missing: true
   - rename:
+      field: json.DownloadMatchedDlpProfileEntries
+      target_field: cloudflare_logpush.gateway_http.download_matched_dlp.profile_entries
+      ignore_missing: true
+  - rename:
+      field: json.DownloadMatchedDlpProfiles
+      target_field: cloudflare_logpush.gateway_http.download_matched_dlp.profiles
+      ignore_missing: true
+  - rename:
       field: json.FileInfo
       target_field: cloudflare_logpush.gateway_http.file_info
+      ignore_missing: true
+  - rename:
+      field: json.ForensicCopyStatus
+      target_field: cloudflare_logpush.gateway_http.forensic_copy_status
       ignore_missing: true
   - rename:
       field: json.HTTPHost
@@ -269,20 +321,65 @@ processors:
       target_field: cloudflare_logpush.gateway_http.policy.name
       ignore_missing: true
   - rename:
+      field: json.PrivateAppAUD
+      target_field: cloudflare_logpush.gateway_http.private_app_aud
+      ignore_missing: true
+  - rename:
+      field: json.ProxyEndpoint
+      target_field: cloudflare_logpush.gateway_http.proxy_endpoint
+      ignore_missing: true
+  - convert:
+      field: json.Quarantined
+      target_field: cloudflare_logpush.gateway_http.quarantined
+      type: boolean
+      ignore_missing: true
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - rename:
       field: json.RequestID
       target_field: cloudflare_logpush.gateway_http.request_id
+      ignore_missing: true
+  - rename:
+      field: json.SessionID
+      target_field: cloudflare_logpush.gateway_http.session_id
       ignore_missing: true
   - rename:
       field: json.SourceInternalIP
       target_field: cloudflare_logpush.gateway_http.source.internal_ip
       ignore_missing: true
   - rename:
+      field: json.SourceIPContinentCode
+      target_field: cloudflare_logpush.gateway_http.source_ip.continent_code
+      ignore_missing: true
+  - rename:
+      field: json.SourceIPCountryCode
+      target_field: cloudflare_logpush.gateway_http.source_ip.country_code
+      ignore_missing: true
+  - rename:
       field: json.UntrustedCertificateAction
       target_field: cloudflare_logpush.gateway_http.untrusted_certificate_action
       ignore_missing: true
   - rename:
+      field: json.UploadMatchedDlpProfileEntries
+      target_field: cloudflare_logpush.gateway_http.upload_matched_dlp.profile_entries
+      ignore_missing: true
+  - rename:
+      field: json.UploadMatchedDlpProfiles
+      target_field: cloudflare_logpush.gateway_http.upload_matched_dlp.profiles
+      ignore_missing: true
+  - rename:
       field: json.UploadedFileNames
       target_field: cloudflare_logpush.gateway_http.uploaded_files
+      ignore_missing: true
+  - rename:
+      field: json.VirtualNetworkID
+      target_field: cloudflare_logpush.gateway_http.virtual_network.id
+      ignore_missing: true
+  - rename:
+      field: json.VirtualNetworkName
+      target_field: cloudflare_logpush.gateway_http.virtual_network.name
       ignore_missing: true
 # Create related fields
   - append:

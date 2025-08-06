@@ -21,7 +21,7 @@ processors:
   - set:
       field: event.type
       value: [info]
-# ECS fields
+# ECS fields
   - script:
       lang: painless
       tag: painless_datetime_to_milli
@@ -65,6 +65,7 @@ processors:
   - set:
       field: host.id
       copy_from: cloudflare_logpush.gateway_dns.host.id
+      ignore_empty_value: true
   - rename:
       field: json.DeviceName
       target_field: cloudflare_logpush.gateway_dns.host.name
@@ -72,6 +73,7 @@ processors:
   - set:
       field: host.name
       copy_from: cloudflare_logpush.gateway_dns.host.name
+      ignore_empty_value: true
   - rename:
       field: json.Email
       target_field: cloudflare_logpush.gateway_dns.user.email
@@ -79,6 +81,7 @@ processors:
   - set:
       field: user.email
       copy_from: cloudflare_logpush.gateway_dns.user.email
+      ignore_empty_value: true
   - rename:
       field: json.DstIP
       target_field: cloudflare_logpush.gateway_dns.destination.ip
@@ -86,10 +89,12 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_dns.destination.ip
-# Geo enrichment (destination IP)
+      ignore_empty_value: true
+# Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -113,6 +118,7 @@ processors:
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.gateway_dns.destination.port
+      ignore_empty_value: true
   - rename:
       field: json.Protocol
       target_field: cloudflare_logpush.gateway_dns.protocol
@@ -120,6 +126,7 @@ processors:
   - set:
       field: network.protocol
       copy_from: cloudflare_logpush.gateway_dns.protocol
+      ignore_empty_value: true
   - rename:
       field: json.QueryName
       target_field: cloudflare_logpush.gateway_dns.question.name
@@ -127,6 +134,7 @@ processors:
   - set:
       field: dns.question.name
       copy_from: cloudflare_logpush.gateway_dns.question.name
+      ignore_empty_value: true
   - rename:
       field: json.QueryTypeName
       target_field: cloudflare_logpush.gateway_dns.question.type
@@ -134,7 +142,8 @@ processors:
   - set:
       field: dns.question.type
       copy_from: cloudflare_logpush.gateway_dns.question.type
-# Set event.outcome based on the response code
+      ignore_empty_value: true
+# Set event.outcome based on the response code
   - set:
       field: event.outcome
       value: success
@@ -163,6 +172,7 @@ processors:
   - set:
       field: dns.answers
       copy_from: cloudflare_logpush.gateway_dns.answers
+      ignore_empty_value: true
   - rename:
       field: json.ResolvedIPs
       target_field: cloudflare_logpush.gateway_dns.resolved_ip
@@ -170,6 +180,7 @@ processors:
   - set:
       field: dns.resolved_ip
       copy_from: cloudflare_logpush.gateway_dns.resolved_ip
+      ignore_empty_value: true
   - rename:
       field: json.SrcIP
       target_field: cloudflare_logpush.gateway_dns.source.ip
@@ -177,10 +188,12 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_dns.source.ip
-# Geo enrichment (source IP)
+      ignore_empty_value: true
+# Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -228,9 +241,96 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.colo.id
       ignore_missing: true
   - rename:
+      field: json.AccountID
+      target_field: cloudflare_logpush.gateway_dns.account_id
+      ignore_missing: true
+  - rename:
       field: json.ApplicationID
       target_field: cloudflare_logpush.gateway_dns.application_id
       ignore_missing: true
+  - rename:
+      field: json.ApplicationName
+      target_field: cloudflare_logpush.gateway_dns.application_name
+      ignore_missing: true
+  - convert:
+      field: json.AuthoritativeNameServerIPs
+      target_field: cloudflare_logpush.gateway_dns.authoritative_name_server_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.CNAMECategoryIDs
+      target_field: cloudflare_logpush.gateway_dns.cname_category.ids
+      ignore_missing: true
+  - rename:
+      field: json.CNAMECategoryNames
+      target_field: cloudflare_logpush.gateway_dns.cname_category.names
+      ignore_missing: true
+  - rename:
+      field: json.CNAMEs
+      target_field: cloudflare_logpush.gateway_dns.cname
+      ignore_missing: true
+  - rename:
+      field: json.CNAMEsReversed
+      target_field: cloudflare_logpush.gateway_dns.cname_reversed
+      ignore_missing: true
+  - convert:
+      field: json.CustomResolveDurationMs
+      target_field: cloudflare_logpush.gateway_dns.custom_resolver.duration_milli
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.CustomResolverAddress
+      target_field: cloudflare_logpush.gateway_dns.custom_resolver.address
+      ignore_missing: true
+  - rename:
+      field: json.CustomResolverPolicyID
+      target_field: cloudflare_logpush.gateway_dns.custom_resolver.policy.ids
+      ignore_missing: true
+  - rename:
+      field: json.CustomResolverPolicyName
+      target_field: cloudflare_logpush.gateway_dns.custom_resolver.policy.names
+      ignore_missing: true
+  - rename:
+      field: json.CustomResolverResponse
+      target_field: cloudflare_logpush.gateway_dns.custom_resolver.response
+      ignore_missing: true
+  - rename:
+      field: json.DoHSubdomain
+      target_field: cloudflare_logpush.gateway_dns.doh_subdomain
+      ignore_missing: true
+  - rename:
+      field: json.DoTSubdomain
+      target_field: cloudflare_logpush.gateway_dns.dot_subdomain
+      ignore_missing: true
+  - rename:
+      field: json.EDEErrors
+      target_field: cloudflare_logpush.gateway_dns.extended_dns_error_codes
+      ignore_missing: true
+  - rename:
+      field: json.InitialCategoryIDs
+      target_field: cloudflare_logpush.gateway_dns.initial_category.ids
+      ignore_missing: true
+  - rename:
+      field: json.InitialCategoryNames
+      target_field: cloudflare_logpush.gateway_dns.initial_category.names
+      ignore_missing: true
+  - convert:
+      field: json.IsResponseCached
+      target_field: cloudflare_logpush.gateway_dns.is_response_cached
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Location
       target_field: cloudflare_logpush.gateway_dns.location.name
@@ -248,16 +348,46 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.matched.category.names
       ignore_missing: true
   - rename:
-      field: json.Policy
-      target_field: cloudflare_logpush.gateway_dns.policy.name
+      field: json.MatchedIndicatorFeedIDs
+      target_field: cloudflare_logpush.gateway_dns.matched.indicator_feed.ids
+      ignore_missing: true
+  - rename:
+      field: json.MatchedIndicatorFeedNames
+      target_field: cloudflare_logpush.gateway_dns.matched.indicator_feed.names
       ignore_missing: true
   - rename:
       field: json.PolicyID
       target_field: cloudflare_logpush.gateway_dns.policy.id
       ignore_missing: true
   - rename:
+      field: json.PolicyName
+      target_field: cloudflare_logpush.gateway_dns.policy.name
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.gateway_dns.policy.name
+      value: '{{{json.Policy}}}'
+      if: ctx.cloudflare_logpush?.gateway_dns?.policy?.name != null && ctx.json?.Policy != null && ctx.json.Policy != '' && ctx.json.Policy != ctx.cloudflare_logpush?.gateway_dns?.policy?.name
+      allow_duplicates: false
+  - rename:
+      field: json.Policy
+      target_field: cloudflare_logpush.gateway_dns.policy.name
+      if: ctx.cloudflare_logpush?.gateway_dns?.policy?.name == null
+      ignore_missing: true
+  - rename:
       field: json.QueryCategoryIDs
       target_field: cloudflare_logpush.gateway_dns.question.category.ids
+      ignore_missing: true
+  - rename:
+      field: json.QueryID
+      target_field: cloudflare_logpush.gateway_dns.question.id
+      ignore_missing: true
+  - rename:
+      field: json.QueryIndicatorFeedIDs
+      target_field: cloudflare_logpush.gateway_dns.question.indicator_feed.ids
+      ignore_missing: true
+  - rename:
+      field: json.QueryIndicatorFeedNames
+      target_field: cloudflare_logpush.gateway_dns.question.indicator_feed.names
       ignore_missing: true
   - rename:
       field: json.QueryCategoryNames
@@ -276,8 +406,57 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.question.type_id
       ignore_missing: true
   - rename:
+      field: json.ResolvedIPCategoryIDs
+      target_field: cloudflare_logpush.gateway_dns.resolved_ip_details.category.ids
+      ignore_missing: true
+  - rename:
+      field: json.ResolvedIPCategoryNames
+      target_field: cloudflare_logpush.gateway_dns.resolved_ip_details.category.names
+      ignore_missing: true
+  - rename:
+      field: json.ResolvedIPContinentCodes
+      target_field: cloudflare_logpush.gateway_dns.resolved_ip_details.continent_codes
+      ignore_missing: true
+  - rename:
+      field: json.ResolvedIPCountryCodes
+      target_field: cloudflare_logpush.gateway_dns.resolved_ip_details.country_codes
+      ignore_missing: true
+  - convert:
+      field: json.ResolvedIPs
+      target_field: cloudflare_logpush.gateway_dns.resolved_ip_details.ips
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ResolverPolicyID
+      target_field: cloudflare_logpush.gateway_dns.resolver.policy.ids
+      ignore_missing: true
+  - rename:
+      field: json.ResolverPolicyName
+      target_field: cloudflare_logpush.gateway_dns.resolver.policy.names
+      ignore_missing: true
+  - rename:
       field: json.ResolverDecision
       target_field: cloudflare_logpush.gateway_dns.resolver_decision
+      ignore_missing: true
+  - rename:
+      field: json.ResourceRecords
+      target_field: cloudflare_logpush.gateway_dns.resource_records.object
+      ignore_missing: true
+  - rename:
+      field: json.ResourceRecordsJSON
+      target_field: cloudflare_logpush.gateway_dns.resource_records.json
+      ignore_missing: true
+  - rename:
+      field: json.SrcIPContinentCode
+      target_field: cloudflare_logpush.gateway_dns.source_id.continent_code
+      ignore_missing: true
+  - rename:
+      field: json.SrcIPCountryCode
+      target_field: cloudflare_logpush.gateway_dns.source_id.country_code
       ignore_missing: true
   - rename:
       field: json.TimeZoneInferredMethod

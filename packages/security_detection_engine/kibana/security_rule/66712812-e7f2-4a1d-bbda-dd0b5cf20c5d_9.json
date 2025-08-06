@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "An FTP (file transfer protocol) brute force attack is a method where an attacker systematically tries different combinations of usernames and passwords to gain unauthorized access to an FTP server, and if successful, the impact can include unauthorized data access, manipulation, or theft, compromising the security and integrity of the server and potentially exposing sensitive information. This rule identifies multiple consecutive authentication failures targeting a specific user account from the same source address and within a short time interval, followed by a successful authentication.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Successful Linux FTP Brute Force Attack Detected",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Successful Linux FTP Brute Force Attack Detected\n\nFTP is a protocol used for transferring files between systems, often requiring authentication. Adversaries exploit this by attempting numerous username-password combinations to gain unauthorized access, potentially leading to data breaches. The detection rule identifies a pattern of repeated failed login attempts from a single source, followed by a successful login, indicating a possible brute force attack.\n\n### Possible investigation steps\n\n- Review the source IP address (auditd.data.addr) involved in the failed and successful login attempts to determine if it is known or associated with previous malicious activity.\n- Analyze the timeline of the failed login attempts followed by the successful login to assess the likelihood of a brute force attack, considering the maxspan of 5 seconds.\n- Check the user account (related.user) targeted by the login attempts to determine if it is a high-value account or has been involved in previous security incidents.\n- Investigate the host (host.id) where the login attempts occurred to identify any other suspicious activities or anomalies around the time of the alert.\n- Correlate the detected activity with other logs or alerts from the same time period to identify potential lateral movement or further compromise within the network.\n\n### False positive analysis\n\n- Repeated failed logins from automated scripts or monitoring tools can trigger false positives. Identify and whitelist IP addresses of known internal systems or services that perform regular FTP checks.\n- Users with incorrect credentials saved in FTP clients may cause multiple failed attempts before a successful login. Educate users on updating saved credentials and consider excluding specific user accounts from the rule if they frequently trigger alerts.\n- Scheduled tasks or cron jobs that attempt to connect with outdated credentials can result in false positives. Review and update scheduled tasks to ensure they use current credentials, and exclude these tasks from monitoring if they are non-threatening.\n- High-volume legitimate FTP traffic from trusted partners or vendors might mimic brute force patterns. Establish a list of trusted external IP addresses and exclude them from the rule to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Reset the compromised user account's password and any other accounts that may have been accessed using the same credentials.\n- Review and analyze the logs from the affected system to identify any unauthorized changes or data access that occurred during the breach.\n- Implement IP blocking or rate limiting for the source address identified in the alert to prevent further brute force attempts from the same origin.\n- Conduct a thorough security assessment of the FTP server configuration to ensure it adheres to best practices, such as disabling anonymous access and enforcing strong password policies.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems were affected.\n- Enhance monitoring and alerting for similar brute force patterns by ensuring that detection rules are tuned to capture variations in attack techniques.",
+        "query": "sequence by host.id, auditd.data.addr, related.user with maxspan=5s\n  [authentication where host.os.type == \"linux\" and event.action == \"authenticated\" and\n   auditd.data.terminal == \"ftp\" and event.outcome == \"failure\" and auditd.data.addr != null and\n   auditd.data.addr != \"0.0.0.0\" and auditd.data.addr != \"::\"] with runs=10\n  [authentication where host.os.type == \"linux\" and event.action  == \"authenticated\" and\n   auditd.data.terminal == \"ftp\" and event.outcome == \"success\" and auditd.data.addr != null and\n   auditd.data.addr != \"0.0.0.0\" and auditd.data.addr != \"::\"] | tail 1\n",
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "auditd.data.addr",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "auditd.data.terminal",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "related.user",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "66712812-e7f2-4a1d-bbda-dd0b5cf20c5d",
+        "setup": "## Setup\n\nThis rule requires data coming in from one of the following integrations:\n- Auditbeat\n- Auditd Manager\n\n### Auditbeat Setup\nAuditbeat is a lightweight shipper that you can install on your servers to audit the activities of users and processes on your systems. For example, you can use Auditbeat to collect and centralize audit events from the Linux Audit Framework. You can also use Auditbeat to detect changes to critical files, like binaries and configuration files, and identify potential security policy violations.\n\n#### The following steps should be executed in order to add the Auditbeat on a Linux System:\n- Elastic provides repositories available for APT and YUM-based distributions. Note that we provide binary packages, but no source packages.\n- To install the APT and YUM repositories follow the setup instructions in this [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setup-repositories.html).\n- To run Auditbeat on Docker follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-docker.html).\n- To run Auditbeat on Kubernetes follow the setup instructions in the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/running-on-kubernetes.html).\n- For complete \u201cSetup and Run Auditbeat\u201d information refer to the [helper guide](https://www.elastic.co/guide/en/beats/auditbeat/current/setting-up-and-running.html).\n\n### Auditd Manager Integration Setup\nThe Auditd Manager Integration receives audit events from the Linux Audit Framework which is a part of the Linux kernel.\nAuditd Manager provides a user-friendly interface and automation capabilities for configuring and monitoring system auditing through the auditd daemon. With `auditd_manager`, administrators can easily define audit rules, track system events, and generate comprehensive audit reports, improving overall security and compliance in the system.\n\n#### The following steps should be executed in order to add the Elastic Agent System integration \"auditd_manager\" on a Linux System:\n- Go to the Kibana home page and click \u201cAdd integrations\u201d.\n- In the query bar, search for \u201cAuditd Manager\u201d and select the integration to see more details about it.\n- Click \u201cAdd Auditd Manager\u201d.\n- Configure the integration name and optionally add a description.\n- Review optional and advanced settings accordingly.\n- Add the newly installed \u201cauditd manager\u201d to an existing or a new agent policy, and deploy the agent on a Linux system from which auditd log files are desirable.\n- Click \u201cSave and Continue\u201d.\n- For more details on the integration refer to the [helper guide](https://docs.elastic.co/integrations/auditd_manager).\n\n#### Rule Specific Setup Note\nAuditd Manager subscribes to the kernel and receives events as they occur without any additional configuration.\nHowever, if more advanced configuration is required to detect specific behavior, audit rules can be added to the integration in either the \"audit rules\" configuration box or the \"auditd rule files\" box by specifying a file to read the audit rules from.\n- For this detection rule no additional audit rules are required to be added to the integration.\n",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Auditd Manager",
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            },
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 9
+    },
+    "id": "66712812-e7f2-4a1d-bbda-dd0b5cf20c5d_9",
+    "type": "security-rule"
+}

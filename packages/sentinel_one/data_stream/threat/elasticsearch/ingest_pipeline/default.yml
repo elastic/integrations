@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing threat logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -12,10 +23,33 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
       ignore_failure: true
+  - script:
+      description: Drops null/empty values from event recursively. Done to avoid work on empty values.
+      lang: painless
+      if: ctx.json != null
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
   - fingerprint:
       fields:
         - json.threatInfo.createdAt
@@ -73,9 +107,17 @@ processors:
       field: json.agentDetectionInfo.agentDomain
       target_field: sentinel_one.threat.detection.agent.domain
       ignore_missing: true
+  - split:
+      field: json.agentDetectionInfo.agentIpV4
+      target_field: json.agentDetectionInfo.agentIpV4
+      tag: split_agentIpV4
+      separator: ','
+      preserve_trailing: false
+      ignore_missing: true
   - convert:
       field: json.agentDetectionInfo.agentIpV4
       target_field: sentinel_one.threat.detection.agent.ipv4
+      tag: convert_agentIpV4_to_ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -84,16 +126,28 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{sentinel_one.threat.detection.agent.ipv4}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: sentinel_one.threat.detection.agent.ipv4
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv4 != null
-      allow_duplicates: false
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
       ignore_failure: true
+  - split:
+      field: json.agentDetectionInfo.agentIpV6
+      target_field: json.agentDetectionInfo.agentIpV6
+      tag: split_agentIpV6
+      separator: ','
+      preserve_trailing: false
+      ignore_missing: true
   - convert:
       field: json.agentDetectionInfo.agentIpV6
       target_field: sentinel_one.threat.detection.agent.ipv6
+      tag: convert_agentIpV6_to_ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -102,12 +156,16 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{sentinel_one.threat.detection.agent.ipv6}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: sentinel_one.threat.detection.agent.ipv6
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv6 != null
-      allow_duplicates: false
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
       ignore_failure: true
   - rename:
       field: json.agentDetectionInfo.agentLastLoggedInUpn
@@ -168,6 +226,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.agentDetectionInfo.externalIp
+      tag: convert_externalIp_to_ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -176,7 +235,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - geoip:
       field: json.agentDetectionInfo.externalIp
       target_field: host.geo
@@ -324,13 +383,29 @@ processors:
       field: json.agentRealtimeInfo.agentOsRevision
       target_field: sentinel_one.threat.agent.os.version
       ignore_missing: true
-  - rename:
-      field: json.agentRealtimeInfo.agentOsType
-      target_field: host.os.type
-      ignore_missing: true
-  - lowercase:
-      field: host.os.type
-      ignore_missing: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.json?.agentRealtimeInfo?.agentOsType != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String agent_os_type = ctx.json.agentRealtimeInfo.agentOsType.toLowerCase();
+        for (String os: params.os_type) {
+          if (agent_os_type.contains(os)) {
+            ctx.host.os.put('type', os);
+            return;
+          }
+        }
   - rename:
       field: json.agentRealtimeInfo.agentUuid
       target_field: sentinel_one.threat.agent.uuid
@@ -532,7 +607,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.description
-      target_field: message
+      target_field: sentinel_one.threat.description
       ignore_missing: true
   - set:
       field: event.id
@@ -693,7 +768,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -707,7 +782,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -721,7 +796,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -735,7 +810,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -749,7 +824,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -763,7 +838,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -777,7 +852,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -788,7 +863,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -797,7 +872,16 @@ processors:
           target_field: _ingest._value.latest_report
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
+  - foreach:
+      field: json.mitigationStatus
+      processor:
+        rename:
+          field: _ingest._value.reportId
+          target_field: _ingest._value.report_id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -808,7 +892,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -819,7 +903,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -833,7 +917,7 @@ processors:
             - _ingest._value.mitigationStartedAt
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - rename:
       field: json.mitigationStatus
       target_field: sentinel_one.threat.mitigation_status
@@ -1142,6 +1226,10 @@ processors:
       field: json.threatInfo.threatName
       target_field: sentinel_one.threat.name
       ignore_missing: true
+  - set:
+      field: message
+      value: 'Threat Detected: {{{sentinel_one.threat.name}}} ({{{sentinel_one.threat.confidence_level}}})'
+      if: ctx.sentinel_one?.threat.name != null && ctx.sentinel_one?.threat?.confidence_level != null
   - rename:
       field: json.whiteningOptions
       target_field: sentinel_one.threat.whitening_option
@@ -1176,4 +1264,7 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,68 @@
+{
+    "attributes": {
+        "anomaly_threshold": 50,
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an unusually high number of authentication attempts.",
+        "false_positives": [
+            "Security audits may trigger this alert. Conditions that generate bursts of failed logins, such as misconfigured applications or account lockouts could trigger this alert."
+        ],
+        "from": "now-45m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "suspicious_login_activity",
+        "name": "Unusual Login Activity",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Login Activity\nThe 'Unusual Login Activity' detection leverages machine learning to identify anomalies in authentication patterns, flagging potential brute force attacks. Adversaries exploit credential access by attempting numerous logins to gain unauthorized entry. This rule assesses login frequency and patterns, alerting analysts to deviations indicative of credential abuse, thus enhancing threat detection and identity audit processes.\n\n### Possible investigation steps\n\n- Review the source IP addresses associated with the unusual login attempts to determine if they are known or suspicious.\n- Check the user accounts involved in the alert for any recent changes or unusual activity, such as password resets or privilege escalations.\n- Analyze the timestamps of the login attempts to identify patterns or timeframes that may indicate automated or scripted attacks.\n- Correlate the login attempts with other security events or logs to identify any concurrent suspicious activities, such as failed login attempts or access to sensitive resources.\n- Investigate the geographic locations of the login attempts to see if they align with the user's typical login behavior or if they suggest potential compromise.\n- Assess the risk score and severity of the alert in the context of the organization's security posture and any ongoing threats or incidents.\n\n### False positive analysis\n\n- High login activity from automated scripts or scheduled tasks can trigger false positives. Identify and whitelist these known scripts to prevent unnecessary alerts.\n- Employees using shared accounts may cause an increase in login attempts. Implement user-specific accounts and monitor shared account usage to reduce false positives.\n- Frequent logins from IT personnel conducting routine maintenance can be misinterpreted as unusual activity. Exclude these users or adjust thresholds for specific roles to minimize false alerts.\n- Users with legitimate reasons for high login frequency, such as customer support staff, should be identified and their activity patterns analyzed to adjust detection parameters accordingly.\n- Remote workers using VPNs or accessing systems from multiple locations might trigger alerts. Consider location-based exceptions for known remote access points to avoid false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected user accounts to prevent further unauthorized access and contain the threat.\n- Reset passwords for the compromised accounts and enforce multi-factor authentication (MFA) to enhance security.\n- Conduct a thorough review of recent login activity and access logs to identify any unauthorized access or data exfiltration.\n- Notify the security operations team to monitor for any further suspicious activity and ensure continuous surveillance of the affected systems.\n- Escalate the incident to the incident response team if there is evidence of data compromise or if the attack persists despite initial containment efforts.\n- Implement additional monitoring rules to detect similar brute force attempts in the future, focusing on login frequency and patterns.\n- Review and update access controls and authentication policies to prevent recurrence, ensuring they align with best practices for credential security.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^1.64.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "4330272b-9724-4bc6-a3ca-f1532b81e5c2",
+        "setup": "## Setup\n\nThis rule requires the installation of associated Machine Learning jobs, as well as data coming in from one of the following integrations:\n- Elastic Defend\n- Auditd Manager\n- System\n\n### Anomaly Detection Setup\n\nOnce the rule is enabled, the associated Machine Learning job will start automatically. You can view the Machine Learning job linked under the \"Definition\" panel of the detection rule. If the job does not start due to an error, the issue must be resolved for the job to commence successfully. For more details on setting up anomaly detection jobs, refer to the [helper guide](https://www.elastic.co/guide/en/kibana/current/xpack-ml-anomalies.html).\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration to your system:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n### Auditd Manager Integration Setup\nThe Auditd Manager Integration receives audit events from the Linux Audit Framework which is a part of the Linux kernel.\nAuditd Manager provides a user-friendly interface and automation capabilities for configuring and monitoring system auditing through the auditd daemon. With `auditd_manager`, administrators can easily define audit rules, track system events, and generate comprehensive audit reports, improving overall security and compliance in the system.\n\n#### The following steps should be executed in order to add the Elastic Agent System integration \"auditd_manager\" to your system:\n- Go to the Kibana home page and click \u201cAdd integrations\u201d.\n- In the query bar, search for \u201cAuditd Manager\u201d and select the integration to see more details about it.\n- Click \u201cAdd Auditd Manager\u201d.\n- Configure the integration name and optionally add a description.\n- Review optional and advanced settings accordingly.\n- Add the newly installed \u201cauditd manager\u201d to an existing or a new agent policy, and deploy the agent on a Linux system from which auditd log files are desirable.\n- Click \u201cSave and Continue\u201d.\n- For more details on the integration refer to the [helper guide](https://docs.elastic.co/integrations/auditd_manager).\n\n#### Rule Specific Setup Note\nAuditd Manager subscribes to the kernel and receives events as they occur without any additional configuration.\nHowever, if more advanced configuration is required to detect specific behavior, audit rules can be added to the integration in either the \"audit rules\" configuration box or the \"auditd rule files\" box by specifying a file to read the audit rules from.\n- For this detection rule no additional audit rules are required.\n\n### System Integration Setup\nThe System integration allows you to collect system logs and metrics from your servers with Elastic Agent.\n\n#### The following steps should be executed in order to add the Elastic Agent System integration \"system\" to your system:\n- Go to the Kibana home page and click \u201cAdd integrations\u201d.\n- In the query bar, search for \u201cSystem\u201d and select the integration to see more details about it.\n- Click \u201cAdd System\u201d.\n- Configure the integration name and optionally add a description.\n- Review optional and advanced settings accordingly.\n- Add the newly installed \u201csystem\u201d to an existing or a new agent policy, and deploy the agent on your system from which system log files are desirable.\n- Click \u201cSave and Continue\u201d.\n- For more details on the integration refer to the [helper guide](https://docs.elastic.co/integrations/system).\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 106
+    },
+    "id": "4330272b-9724-4bc6-a3ca-f1532b81e5c2_106",
+    "type": "security-rule"
+}

@@ -5,15 +5,22 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - fail:
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process
+      description: error message set and no data to process.
   - rename:
       field: message
       target_field: event.original
       tag: rename_message
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       tag: json_decoding
@@ -99,6 +106,7 @@ processors:
       target_field: ses.incident.device_time
       formats:
         - UNIX_MS
+        - ISO8601
       if: ctx.ses?.incident?.device_time != null && ctx.ses.incident.device_time != ''
       on_failure:
         - remove:
@@ -112,6 +120,7 @@ processors:
       tag: date_timestamp_from_time
       formats:
         - UNIX_MS
+        - ISO8601
       if: ctx.ses?.incident?.time != null && ctx.ses.incident.time != ''
       on_failure:
         - remove:
@@ -126,6 +135,7 @@ processors:
       target_field: ses.incident.time
       formats:
         - UNIX_MS
+        - ISO8601
       if: ctx.ses?.incident?.time != null && ctx.ses.incident.time != ''
       on_failure:
         - remove:

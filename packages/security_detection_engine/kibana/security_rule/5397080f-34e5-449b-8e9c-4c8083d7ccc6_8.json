@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "A statistical model has identified command-and-control (C2) beaconing activity. Beaconing can help attackers maintain stealthy communication with their C2 servers, receive instructions and payloads, exfiltrate data and maintain persistence in a network.",
+        "from": "now-1h",
+        "index": [
+            "ml_beaconing.all"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Statistical Model Detected C2 Beaconing Activity",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Statistical Model Detected C2 Beaconing Activity\n\nStatistical models analyze network traffic patterns to identify anomalies indicative of C2 beaconing, a tactic used by attackers to maintain covert communication with compromised systems. Adversaries exploit this by sending periodic signals to C2 servers, often mimicking legitimate traffic. The detection rule leverages statistical analysis to flag unusual beaconing while excluding known benign processes, thus highlighting potential threats without overwhelming analysts with false positives.\n\n### Possible investigation steps\n\n- Review the network traffic logs to identify the source and destination IP addresses associated with the beaconing activity flagged by the statistical model.\n- Cross-reference the identified IP addresses with threat intelligence databases to determine if they are associated with known malicious C2 servers.\n- Analyze the frequency and pattern of the beaconing signals to assess whether they mimic legitimate traffic or exhibit characteristics typical of C2 communication.\n- Investigate the processes running on the source system to identify any suspicious or unauthorized applications that may be responsible for the beaconing activity.\n- Check for any recent changes or anomalies in the system's configuration or installed software that could indicate a compromise.\n- Examine the historical network activity of the source system to identify any other unusual patterns or connections that may suggest a broader compromise.\n\n### False positive analysis\n\n- The rule may flag legitimate processes that exhibit periodic network communication patterns similar to C2 beaconing. Processes like \"metricbeat.exe\" and \"packetbeat.exe\" are known to generate regular network traffic for monitoring purposes.\n- Users can manage these false positives by adding exceptions for these known benign processes in the detection rule, ensuring they are not flagged as threats.\n- Regularly review and update the list of excluded processes to include any new legitimate applications that may mimic beaconing behavior, reducing unnecessary alerts.\n- Consider implementing a whitelist approach for processes that are verified as non-threatening, allowing the statistical model to focus on truly anomalous activities.\n- Engage with network and security teams to understand the normal traffic patterns of your environment, which can help in refining the detection rule and minimizing false positives.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further communication with the C2 server and limit potential data exfiltration.\n- Terminate any suspicious processes identified by the alert that are not part of the known benign list, ensuring that any malicious activity is halted.\n- Conduct a thorough scan of the isolated system using updated antivirus and anti-malware tools to identify and remove any malicious software or files.\n- Review and analyze network logs to identify any other systems that may have communicated with the same C2 server, and apply similar containment measures to those systems.\n- Restore the affected system from a known good backup to ensure that any persistent threats are removed, and verify the integrity of the restored system.\n- Implement network segmentation to limit the ability of compromised systems to communicate with critical infrastructure and sensitive data.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional measures are needed to prevent recurrence.",
+        "query": "beacon_stats.is_beaconing: true and\nnot process.name: (\"WaAppAgent.exe\" or \"metricbeat.exe\" or \"packetbeat.exe\" or \"WindowsAzureGuestAgent.exe\" or \"HealthService.exe\" or \"Widgets.exe\" or \"lsass.exe\" or \"msedgewebview2.exe\" or\n                   \"MsMpEng.exe\" or \"OUTLOOK.EXE\" or \"msteams.exe\" or \"FileSyncHelper.exe\" or \"SearchProtocolHost.exe\" or \"Creative Cloud.exe\" or \"ms-teams.exe\" or \"ms-teamsupdate.exe\" or\n                   \"curl.exe\" or \"rundll32.exe\" or \"MsSense.exe\" or \"wermgr.exe\" or \"java\" or \"olk.exe\" or \"iexplore.exe\" or \"NetworkManager\" or \"packetbeat\" or \"Ssms.exe\" or \"NisSrv.exe\" or\n                   \"gamingservices.exe\" or \"appidcertstorecheck.exe\" or \"POWERPNT.EXE\" or \"miiserver.exe\" or \"Grammarly.Desktop.exe\" or \"SnagitEditor.exe\" or \"CRWindowsClientService.exe\" or\n                   \"agentbeat\" or \"dnf\" or \"yum\" or \"apt\"\n                  )\n",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/beaconing",
+            "https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic"
+        ],
+        "related_integrations": [
+            {
+                "package": "beaconing",
+                "version": "^1.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "beacon_stats.is_beaconing",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "5397080f-34e5-449b-8e9c-4c8083d7ccc6",
+        "setup": "## Setup\n\nThe rule requires the Network Beaconing Identification integration assets to be installed, as well as network logs collected by the Elastic Defend or Network Packet Capture integrations.\n\n### Network Beaconing Identification Setup\nThe Network Beaconing Identification integration consists of a statistical framework to identify C2 beaconing activity in network logs.\n\n#### Prerequisite Requirements:\n- Fleet is required for Network Beaconing Identification.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Network events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) or [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n\n#### The following steps should be executed to install assets associated with the Network Beaconing Identification integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Network Beaconing Identification and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Network",
+            "Use Case: C2 Beaconing Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1102",
+                        "name": "Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1102/",
+                        "subtechnique": [
+                            {
+                                "id": "T1102.002",
+                                "name": "Bidirectional Communication",
+                                "reference": "https://attack.mitre.org/techniques/T1102/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 8
+    },
+    "id": "5397080f-34e5-449b-8e9c-4c8083d7ccc6_8",
+    "type": "security-rule"
+}

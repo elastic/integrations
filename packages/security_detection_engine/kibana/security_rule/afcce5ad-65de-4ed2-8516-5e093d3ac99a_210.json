@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Indicates the creation of a scheduled task. Adversaries can use these to establish persistence, move laterally, and/or escalate privileges.",
+        "false_positives": [
+            "Legitimate scheduled tasks may be created during installation of new software."
+        ],
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Local Scheduled Task Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Local Scheduled Task Creation\n\nScheduled tasks in Windows automate routine tasks, but adversaries exploit them for persistence, lateral movement, or privilege escalation. They may use command-line tools like `schtasks.exe` to create tasks under non-system accounts. The detection rule identifies suspicious task creation by monitoring specific processes and command-line arguments, excluding those initiated by system-level users, to flag potential misuse.\n\n### Possible investigation steps\n\n- Review the process entity ID to identify the parent process that initiated the scheduled task creation. This can provide context on whether the task was created by a legitimate application or a potentially malicious one.\n- Examine the command-line arguments used with schtasks.exe, specifically looking for unusual or suspicious parameters that might indicate malicious intent, such as unexpected task names or execution paths.\n- Check the user account associated with the task creation to determine if it is a non-system account and assess whether this account should have the capability to create scheduled tasks.\n- Investigate the integrity level of the process to confirm it is not running with elevated privileges, which could indicate an attempt to bypass security controls.\n- Correlate the event with other recent activities on the host, such as file modifications or network connections, to identify any patterns or additional indicators of compromise.\n- Review the code signature of the initiating process to determine if it is trusted or untrusted, which can help assess the legitimacy of the process creating the task.\n\n### False positive analysis\n\n- Scheduled tasks created by legitimate administrative tools or scripts may trigger false positives. Users should identify and whitelist these known benign processes to prevent unnecessary alerts.\n- Routine maintenance tasks initiated by IT departments, such as software updates or system checks, can be mistaken for suspicious activity. Exclude these tasks by specifying their unique process names or command-line arguments.\n- Tasks created by trusted third-party applications for legitimate purposes might be flagged. Review and exclude these applications by verifying their code signatures and adding them to an exception list.\n- Automated tasks set up by non-system accounts for regular operations, like backups or monitoring, can be misinterpreted. Document these tasks and exclude them based on their specific parameters or user accounts involved.\n- Consider excluding tasks with a consistent and verified schedule that aligns with organizational policies, as these are less likely to be malicious.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent potential lateral movement by the adversary.\n- Terminate any suspicious scheduled tasks identified by the alert using Task Scheduler or command-line tools like schtasks.exe to stop further execution.\n- Review and remove any unauthorized scheduled tasks created by non-system accounts to eliminate persistence mechanisms.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious artifacts.\n- Analyze the user account involved in the task creation for signs of compromise, and reset credentials if necessary to prevent further unauthorized access.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for scheduled task creation events to detect similar threats in the future, ensuring alerts are configured to notify the appropriate teams promptly.",
+        "query": "sequence with maxspan=1m\n  [process where host.os.type == \"windows\" and event.type == \"start\" and\n    ((process.name : (\"cmd.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"wmic.exe\", \"mshta.exe\",\n                      \"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\", \"WmiPrvSe.exe\", \"wsmprovhost.exe\", \"winrshost.exe\") or\n    process.pe.original_file_name : (\"cmd.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"wmic.exe\", \"mshta.exe\",\n                                     \"powershell.exe\", \"pwsh.dll\", \"powershell_ise.exe\", \"WmiPrvSe.exe\", \"wsmprovhost.exe\",\n                                     \"winrshost.exe\")) or\n    ?process.code_signature.trusted == false)] by process.entity_id\n  [process where host.os.type == \"windows\" and event.type == \"start\" and\n    (process.name : \"schtasks.exe\" or process.pe.original_file_name == \"schtasks.exe\") and\n    process.args : (\"/create\", \"-create\") and process.args : (\"/RU\", \"/SC\", \"/TN\", \"/TR\", \"/F\", \"/XML\") and\n    /* exclude SYSTEM Integrity Level - look for task creations by non-SYSTEM user */\n    not (?process.Ext.token.integrity_level_name : \"System\" or ?winlog.event_data.IntegrityLevel : \"System\")\n  ] by process.parent.entity_id\n",
+        "references": [
+            "https://www.elastic.co/security-labs/hunting-for-persistence-using-elastic-security-part-1",
+            "https://www.elastic.co/security-labs/hunting-for-persistence-using-elastic-security-part-2",
+            "https://www.elastic.co/security-labs/invisible-miners-unveiling-ghostengine",
+            "https://www.elastic.co/security-labs/elastic-protects-against-data-wiper-malware-targeting-ukraine-hermeticwiper"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.token.integrity_level_name",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.IntegrityLevel",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "afcce5ad-65de-4ed2-8516-5e093d3ac99a",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 210
+    },
+    "id": "afcce5ad-65de-4ed2-8516-5e093d3ac99a_210",
+    "type": "security-rule"
+}

@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Elastic Endgame detected Credential Dumping. Click the Elastic Endgame icon in the event.module column or the link in the rule.reference column for additional information.",
+        "from": "now-2m",
+        "index": [
+            "endgame-*"
+        ],
+        "interval": "1m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 1000,
+        "name": "Credential Dumping - Detected - Elastic Endgame",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Credential Dumping - Detected - Elastic Endgame\n\nElastic Endgame is a security solution that monitors and detects suspicious activities, such as credential dumping, which is a technique used by adversaries to extract sensitive authentication data. Attackers exploit this to gain unauthorized access to systems. The detection rule identifies such threats by analyzing alerts and specific event actions related to credential theft, ensuring timely threat detection and response.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the presence of event.kind:alert and event.module:endgame, ensuring the alert is related to the Elastic Endgame detection.\n- Examine the event.action and endgame.event_subtype_full fields for the value cred_theft_event to understand the specific credential theft activity detected.\n- Check the associated host and user information to identify the potentially compromised system and user accounts.\n- Investigate the timeline of events leading up to and following the alert to identify any suspicious activities or patterns that may indicate further compromise.\n- Correlate the alert with other security events or logs to determine if this is part of a larger attack or isolated incident.\n- Assess the risk score and severity to prioritize the response and determine if immediate action is required to contain the threat.\n- Consult the MITRE ATT&CK framework for additional context on the T1003 technique to understand potential attacker methods and improve defensive measures.\n\n### False positive analysis\n\n- Routine administrative tasks that involve legitimate credential access tools may trigger alerts. Users can create exceptions for known administrative accounts or tools that are frequently used in these tasks.\n- Security software updates or scans that access credential stores might be flagged. Exclude these processes by identifying their specific event actions and adding them to the exception list.\n- Automated scripts for system maintenance that require credential access could be misidentified. Review and whitelist these scripts by their unique identifiers or execution paths.\n- Legitimate software installations that require elevated privileges may cause alerts. Monitor and exclude these installation processes by verifying their source and purpose.\n- Regularly scheduled backups that access credential data might be detected. Ensure these backup processes are recognized and excluded by specifying their event actions in the rule configuration.\n\n### Response and remediation\n\n- Isolate the affected system immediately to prevent further unauthorized access and lateral movement within the network.\n- Terminate any suspicious processes identified as part of the credential dumping activity to halt ongoing malicious actions.\n- Change all potentially compromised credentials, prioritizing those with elevated privileges, to mitigate unauthorized access risks.\n- Conduct a thorough review of access logs and system events to identify any additional compromised accounts or systems.\n- Restore affected systems from a known good backup to ensure the integrity of the system and data.\n- Implement enhanced monitoring on the affected systems and accounts to detect any signs of recurring or related malicious activity.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional containment or remediation actions are necessary.",
+        "query": "event.kind:alert and event.module:endgame and endgame.metadata.type:detection and (event.action:cred_theft_event or endgame.event_subtype_full:cred_theft_event)\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "endgame.event_subtype_full",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "endgame.metadata.type",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "571afc56-5ed9-465d-a2a9-045f099f6e7e",
+        "setup": "## Setup\n\n### Additional notes\n\nFor information on troubleshooting the maximum alerts warning please refer to this [guide](https://www.elastic.co/guide/en/security/current/alerts-ui-monitor.html#troubleshoot-max-alerts).\n",
+        "severity": "high",
+        "tags": [
+            "Data Source: Elastic Endgame",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 105
+    },
+    "id": "571afc56-5ed9-465d-a2a9-045f099f6e7e_105",
+    "type": "security-rule"
+}

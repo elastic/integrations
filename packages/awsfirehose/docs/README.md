@@ -50,14 +50,19 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 ## Instructions
 1. Install the relevant integrations in Kibana
 
-    In order to make the most of your data, install AWS integrations to load index templates, ingest pipelines, and 
-    dashboards into Kibana. In Kibana, navigate to **Management** > **Integrations** in the sidebar.
+    To effectively utilize your data, you need to install the necessary integrations. Log in to Kibana, navigate to **Management** > **Integrations** in the sidebar.
+
+    - First Install the **Amazon Data Firehose Integration**. This integration will receive and route your Firehose data to various backend datasets. Find it by searching or browse the catalog.
+    
+    ![Amazon Data Firehose](../img/amazonfirehose.png)
+    
+    - Second install the **AWS integration**. This integration provides assets such as index templates, ingest pipelines, and dashboards that will serve as the destination points for the data routed by the Firehose Integration.
     Find the **AWS** integration by searching or browsing the catalog.
     
     ![AWS integration](../img/aws.png)
     
     Navigate to the **Settings** tab and click **Install AWS assets**. Confirm by clicking **Install AWS** in the popup.
-    
+
     ![Install AWS assets](../img/install-assets.png)
 
 2. Create a delivery stream in Amazon Data Firehose
@@ -69,7 +74,7 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     
     **Choose source and destination**
     
-    Unless you are streaming data from Kinesis Data Streams, set source to Direct PUT (see Setup guide for more details on data sources).
+    Unless you are streaming data from Kinesis Data Streams, set source to **Direct PUT** (see Setup guide for more details on data sources).
     
     Set destination to **Elastic**.
     
@@ -81,44 +86,40 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     
     **Destination settings**
 
-    1. Set **Elastic endpoint URL** to point to your Elasticsearch cluster running in Elastic Cloud.
-    This endpoint can be found in the Elastic Cloud console. An example is https://my-deployment-28u274.es.eu-west-1.aws.found.io.
+    1. Set **Elastic endpoint URL** to point to your **Elasticsearch** cluster running in Elastic Cloud.
+    This endpoint can be found from the [Elastic Cloud console](https://cloud.elastic.co/).
 
-    2. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the
-    instructions under API Keys. If you are using an API key with “Restricted privileges”, be sure to review the Indices
-    privileges to provide at least "auto_configure" & "write" permissions for the indices you will be using with this
-    delivery stream. By default, logs will be stored in `logs-awsfirehose-default` index and metrics will be stored in
-    `metrics-aws.cloudwatch-default` index. Therefore, Elastic highly recommends giving `logs-awsfirehose-default` and 
-    `metrics-aws.cloudwatch-default` indices with "write" privilege.
+    2. **API key** is the base64 encoded Elastic API key.
+    This can be created in Kibana by following the instructions under API Keys.
+    If you are using an API key with Restricted privileges, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the indices you will be using with this delivery stream.
+    By default, logs will be stored in `logs-awsfirehose-default` data stream and metrics will be stored in `metrics-aws.cloudwatch-default` data stream.
+    Therefore, Elastic highly recommends giving `logs-awsfirehose-default` and `metrics-aws.cloudwatch-default` indices with "write" privilege.
 
-    3. We recommend leaving **Content encoding** set to **GZIP** for improved network efficiency.
+    3. We recommend setting **Content encoding** to **GZIP** to reduce the data transfer costs.
 
-    4. **Retry duration** determines how long Firehose continues retrying the request in the event of an error.
-    A duration of 60-300s should be suitable for most use cases.
+    4. **Retry duration** determines how long Firehose continues retrying the request in the event of an error. 
+    A duration between 60 and 300 seconds should be suitable for most use cases.
 
-    5. Elastic requires a **Buffer size** of `1MiB` to avoid exceeding the Elasticsearch `http.max_content_length`
-    setting (typically 100MB) when the buffer is uncompressed.
+    5. Elastic requires a **Buffer size** of `1MiB` to avoid exceeding the Elasticsearch `http.max_content_length` setting (typically 100MB) when the buffer is uncompressed.
 
     6. The default **Buffer interval** of `60s` is recommended to ensure data freshness in Elastic.
 
     7. **Parameters**
 
-       1. Elastic recommends only setting the `es_datastream_name` parameter when ingesting logs that are not supported
-       by this Firehose integration. If this parameter is not specified, data is sent to the `logs-awsfirehose-default`
-       index by default and the routing rules defined in this integration will be applied automatically.
-       Please make sure the index specified with this `es_datastream_name` parameter has the proper permission given by
-       the API key.
-       ![Firehose Destination Settings](../img/destination-settings.png)
+       1. `es_datastream_name`: Accepts a data stream name of your choice.
+       You can configure this when you ingest data formats that are not officially supported and managed through your customized data streams.
+       Also, you may use this to separate your ingested data from default indexes.
+       By default, logs will be stored in indexes of `logs-awsfirehose-default` (index template `logs-awsfirehose`) data stream and metrics will be stored in indexes of `metrics-aws.cloudwatch-default` (index template `metrics-aws.cloudwatch`) data stream.
+       When configuring, please make sure configured **API key** has required permissions to ingest data into the configured data stream. 
 
-       2. The **include_cw_extracted_fields** parameter is optional and can be set when using a CloudWatch logs subscription
-       filter as the Firehose data source. When set to true, extracted fields generated by the filter pattern in the
-       subscription filter will be collected. Setting this parameter can add many fields into each record and may significantly
-       increase data volume in Elasticsearch. As such, use of this parameter should be carefully considered and used only when
-       the extracted fields are required for specific filtering and/or aggregation.
+       2. `include_cw_extracted_fields`: Optional parameter that can be set when using a CloudWatch logs subscription filter as the Firehose data source.
+       When set to true, extracted fields generated by the filter pattern in the subscription filter will be collected.
+       Setting this parameter can add many fields into each record and may significantly increase data volume in Elasticsearch.
+       As such, use of this parameter should be carefully considered and used only when the extracted fields are required for specific filtering and/or aggregation.
 
-       3. The **include_event_original** field is optional and should only be used for debugging purposes. When set to `true`, each
-       log record will contain an additional field named `event.original`, which contains the raw (unprocessed) log message.
-       This parameter will increase the data volume in Elasticsearch and should be used with care.
+    8. **Backup settings** It is recommended to configure S3 backup for failed records. These backups can be used to restore lost data caused by unforeseen service outages.
+
+        ![Firehose Destination Settings](../img/destination-settings.png)
 
 3. Send data to the Firehose delivery stream
     1. logs
@@ -141,7 +142,7 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 | aws.cloudwatch.log_group | CloudWatch log group name. | keyword |
 | aws.cloudwatch.log_stream | CloudWatch log stream name. | keyword |
 | aws.firehose.arn | Firehose ARN. | keyword |
-| aws.firehose.parameters.\* | Key-value pairs users set up when creating the Kinesis Data Firehose. These parameters are included in each HTTP call. | flattened |
+| aws.firehose.parameters | Key-value pairs users set up when creating the Kinesis Data Firehose. These parameters are included in each HTTP call. | flattened |
 | aws.firehose.request_id | Firehose request ID. | keyword |
 | aws.firehose.subscription_filters | Firehose request ID. | keyword |
 | aws.kinesis.name | Kinesis name. | keyword |
@@ -163,7 +164,7 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 | aws.dimensions.\* | Metric dimensions. | keyword |  |
 | aws.exporter.arn | The metric stream Amazon Resource Name (ARN). | keyword |  |
 | aws.firehose.arn | Amazon Resource Name (ARN) for the firehose stream. | keyword |  |
-| aws.firehose.parameters.\* | Key-value pairs users set up when creating the Kinesis Data Firehose. These parameters are included in each HTTP call. | flattened |  |
+| aws.firehose.parameters | Key-value pairs users set up when creating the Kinesis Data Firehose. These parameters are included in each HTTP call. | flattened |  |
 | aws.firehose.request_id | HTTP request opaque GUID. | keyword |  |
 | aws.metrics_names_fingerprint | Autogenerated ID representing the fingerprint of the list of metrics names. For metrics coming in from Firehose, there can be cases two documents have the same timestamp, dimension, namespace, accountID, exportARN and region BUT from two different requests. With TSDB enabled, we will see documents missing if without aws.metrics_names_fingerprint field. | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |

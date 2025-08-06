@@ -64,6 +64,23 @@ processors:
         }
 
   #
+  # Parse message repeats
+  #
+  # This populates the _temp_.cisco.message_repeats field by looking in _temp_.full_message
+  # for the "message repeated X times" string and extracting the number of repeats.
+  # It then removes the 'message repeated' portion of the log message.
+  - grok:
+      tag: grok_message_repeats
+      field: _temp_.full_message
+      patterns:
+        - "(?<_temp_.message_prefix>.*)message repeated (?<INT:_temp_.cisco.message_repeats:int>\\d+) times: \\[\\s(?<_temp_.extracted_message>.*)\\]"
+      if: ctx._temp_?.full_message != null && ctx._temp_.full_message.contains('message repeated')
+  - script:
+      tag: script_message_repeats
+      if: ctx._temp_?.message_prefix != null && ctx._temp_?.extracted_message != null
+      source: ctx._temp_.full_message = ctx._temp_.message_prefix + ctx._temp_.extracted_message;
+
+  #
   # Parse FTD/ASA style message
   #
   # This parses the header of an EMBLEM-style message for FTD and ASA prefixes.
@@ -143,24 +160,9 @@ processors:
       field: "_temp_.raw_date"
       formats:
         - "ISO8601"
-        - "MMM  d HH:mm:ss"
-        - "MMM dd HH:mm:ss"
-        - "EEE MMM  d HH:mm:ss"
-        - "EEE MMM dd HH:mm:ss"
-        - "MMM  d HH:mm:ss z"
-        - "MMM dd HH:mm:ss z"
-        - "EEE MMM  d HH:mm:ss z"
-        - "EEE MMM dd HH:mm:ss z"
-        - "MMM  d yyyy HH:mm:ss"
-        - "MMM dd yyyy HH:mm:ss"
-        - "EEE MMM  d yyyy HH:mm:ss"
-        - "EEE MMM dd yyyy HH:mm:ss"
-        - "MMM  d yyyy HH:mm:ss z"
-        - "MMM dd yyyy HH:mm:ss z"
-        - "MMM  d yyyy HH:mm:ss.SSS z"
-        - "MMM dd yyyy HH:mm:ss.SSS z"
-        - "EEE MMM  d yyyy HH:mm:ss z"
-        - "EEE MMM dd yyyy HH:mm:ss z"
+        - "[EEE ]MMM [ ]d[ yyyy] HH:mm:ss[.SSS][ z]"
+        - "[EEE ]MMM [ ]d[ yyyy] HH:mm:ss[.SSSSSS][ z]"
+        - "[EEE ]MMM [ ]d[ yyyy] HH:mm:ss[.SSSSSSSSS][ z]"
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
@@ -172,24 +174,9 @@ processors:
             field: "_temp_.raw_date"
             formats:
               - "ISO8601"
-              - "MMM  d HH:mm:ss"
-              - "MMM dd HH:mm:ss"
-              - "EEE MMM  d HH:mm:ss"
-              - "EEE MMM dd HH:mm:ss"
-              - "MMM  d HH:mm:ss z"
-              - "MMM dd HH:mm:ss z"
-              - "EEE MMM  d HH:mm:ss z"
-              - "EEE MMM dd HH:mm:ss z"
-              - "MMM  d yyyy HH:mm:ss"
-              - "MMM dd yyyy HH:mm:ss"
-              - "EEE MMM  d yyyy HH:mm:ss"
-              - "EEE MMM dd yyyy HH:mm:ss"
-              - "MMM  d yyyy HH:mm:ss z"
-              - "MMM dd yyyy HH:mm:ss z"
-              - "MMM  d yyyy HH:mm:ss.SSS z"
-              - "MMM dd yyyy HH:mm:ss.SSS z"
-              - "EEE MMM  d yyyy HH:mm:ss z"
-              - "EEE MMM dd yyyy HH:mm:ss z"
+              - "[EEE ]MMM [ ]d[ yyyy] HH:mm:ss[.SSS][ z]"
+              - "[EEE ]MMM [ ]d[ yyyy] HH:mm:ss[.SSSSSS][ z]"
+              - "[EEE ]MMM [ ]d[ yyyy] HH:mm:ss[.SSSSSSSSS][ z]"
 
   #
   # Set log.level
@@ -435,6 +422,12 @@ processors:
       field: message
       description: "113009"
       pattern: 'AAA retrieved default group policy %{_temp_.cisco.group_policy} for user %{source.user.name}'
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113011'"
+      tag: parse_113011
+      field: message
+      description: "113011"
+      pattern: 'AAA retrieved user specific group policy (%{_temp_.cisco.group_policy}) for user = %{source.user.name}'
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       tag: parse_113012
@@ -670,12 +663,16 @@ processors:
       field: "message"
       description: "313009"
       pattern: "Denied invalid %{network.transport} code %{_temp_.cisco.icmp_code}, for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '315011'"
       tag: parse_315011
       field: "message"
       description: "315011"
-      pattern: 'SSH session from %{source.ip} on interface %{_temp_.cisco.source_interface} for user %{source.user.name} disconnected by SSH server, reason: %{event.reason}'
+      patterns:
+        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
+        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
+      pattern_definitions:
+        CISCO_USER: '\"?(?:\*{5}|%{USERNAME:source.user.name})\"?'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '322001'"
       tag: parse_322001
@@ -979,6 +976,13 @@ processors:
         - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User( %{NOTSPACE:source.user.name})? IP %{NOTSPACE:destination.address} AnyConnect session (resumed connection|resumed. Connection) from( IP)? %{NOTSPACE:source.address}\.$'
       pattern_definitions:
         NOTBRACKET: "[^<>]+"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '717022'"
+      tag: parse_717022
+      field: message
+      description: "717022"
+      patterns:
+        - 'Certificate was successfully validated. serial number:\s*%{NOTSPACE:_temp_.cisco.serial_number}, subject name:\s*%{NOTSPACE:_temp_.cisco.distinguished_name}\.'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '721016'"
       tag: parse_721016
@@ -992,7 +996,7 @@ processors:
       description: "721018"
       pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP%{?} %{destination.ip} has been deleted.'
   - grok:
-      if: "['722011', '722022', '722023', '722028', '722032', '722033', '722034', '722037', '722051'].contains(ctx._temp_.cisco.message_id)"
+      if: "['722011', '722022', '722023', '722028', '722032', '722033', '722034', '722035', '722037', '722051'].contains(ctx._temp_.cisco.message_id)"
       tag: parse_svc_message
       field: "message"
       description: "svc_message"
@@ -1013,6 +1017,15 @@ processors:
       field: "event.reason"
       description: "722034"
       pattern: 'New %{network.transport} SVC connection, no existing connection.'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722041'"
+      tag: parse_svc_message_772041
+      field: "message"
+      description: "svc_message"
+      patterns:
+        - '^TunnelGroup <%{NOTBRACKET:_temp_.cisco.tunnel_group}> GroupPolicy <%{NOTBRACKET:_temp_.cisco.group_policy}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> %{GREEDYDATA:event.reason}$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '722051'"
       tag: parse_722051
@@ -1102,6 +1115,17 @@ processors:
       patterns:
         - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, %{GREEDYDATA:event.reason}$'
         - '^IPAA: %{GREEDYDATA:event.reason}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '751025'"
+      tag: parse_751025
+      patterns:
+        - '^%{DATA} Username:%{USER:source.user.name}\s+%{GREEDYDATA}$'
+      pattern_definitions:
+        GROUP: "(?:%{IKEGROUP}|%{NONIKEGROUP})"
+        IKEGROUP: "IKEv2 Group"
+        NONIKEGROUP: "Group"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
       tag: parse_805001
@@ -1242,7 +1266,65 @@ processors:
       trim_key: " "
       trim_value: " "
 
-  #
+  - kv:
+      if: 'ctx._temp_.cisco?.distinguished_name != null && ctx._temp_.cisco.distinguished_name.contains(",")'
+      field: "_temp_.cisco.distinguished_name"
+      tag: "kv_distinguished_name"
+      description: "Split distinguished_name into constituent parts"
+      field_split: ","
+      value_split: "="
+      target_field: "_temp_.cisco.dn_parts"
+      trim_key: " "
+      trim_value: " "
+
+  - script:
+      lang: painless
+      description: >-
+        Sets the parts to the correct names
+      params:
+        "ST": "state_or_province"
+        "S": "state_or_province"
+        "P": "state_or_province"
+        "CN": "common_name"
+        "C": "country"
+        "L": "locality"
+        "O": "organization"
+        "OU": "organizational_unit"
+      source: |
+          if (ctx._temp_?.cisco?.dn_parts == null) {
+            return;
+          }
+          def parts = [:];
+          ctx._temp_.cisco.dn_parts.forEach((k,v) -> {
+            if (params.containsKey(k)) {
+              parts[params[k]] = (v instanceof List) ? v : [v];   // `[v]` is a Painless list literal
+            } else {
+              return false;
+            }
+          });
+          ctx._temp_.cisco.dn_parts = parts;
+
+  - rename:
+      description: Rename found x509 parts into ECS.
+      if: 'ctx._temp_?.cisco?.dn_parts != null'
+      tag: rename_distinguished_name_parts
+      field: _temp_.cisco.dn_parts
+      target_field: tls.server.x509.subject
+
+  - rename:
+      description: Rename found x509 distinguished_name into ECS.
+      if: 'ctx._temp_?.cisco?.distinguished_name != null'
+      tag: rename_distinguished_name
+      field: _temp_.cisco.distinguished_name
+      target_field: tls.server.x509.subject.distinguished_name
+
+  - rename:
+      description: Rename found x509 parts into ECS.
+      if: 'ctx._temp_?.cisco?.serial_number != null'
+      tag: renamd_serial_number
+      field: _temp_.cisco.serial_number
+      target_field: tls.server.x509.serial_number
+
   # Remove _temp_.full_message.
   #
   # The field has been used as temporary buffer while decoding. The full message
@@ -1832,16 +1914,16 @@ processors:
       tag: convert_destination_user_security_group_tag
       type: long
       ignore_missing: true
-  - remove: 
-      field: 
+  - remove:
+      field:
         - _temp_.cisco.source_user_or_sgt
         - _temp_.cisco.destination_user_or_sgt
       ignore_missing: true
   # Remove empty fields source_username, destination_username
-  - remove: 
+  - remove:
       field: _temp_.cisco.source_username
       if: ctx._temp_?.cisco?.source_username != null && ctx._temp_.cisco.source_username == ""
-  - remove: 
+  - remove:
       field: _temp_.cisco.destination_username
       if: ctx._temp_?.cisco?.destination_username != null && ctx._temp_.cisco.destination_username == ""
   - set:
@@ -2482,6 +2564,11 @@ processors:
           type: [ allowed, info ]
           outcome: success
           action: logged-in
+        "113011":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
         "113012":
           category: [ authentication, network ]
           type: [ allowed, info ]
@@ -2874,8 +2961,14 @@ processors:
           outcome: success
         "722034":
           type: [ connection, info ]
+        "722035":
+          type: [ connection, info ]
+          outcome: failure
         "722037":
           type: [ connection, end ]
+        "722041":
+          type: [ connection, info ]
+          outcome: failure
         "722051":
           type: [ connection, info ]
           outcome: success
@@ -2950,6 +3043,13 @@ processors:
       value: "{{{destination.user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name == null
+  # Remove quotes from fields
+  - gsub:
+      if: ctx.user?.name != null
+      tag: trim_user_name_whitespace
+      pattern: "^['\"]|['\"]$"
+      replacement: ""
+      field: user.name
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
@@ -3099,7 +3199,7 @@ on_failure:
       ignore_missing: true
   # Remove _temp_/_conf to avoid adding a lot of unnecessary fields to the index.
   - remove:
-      field: 
+      field:
         - _temp_
         - _conf
       ignore_missing: true

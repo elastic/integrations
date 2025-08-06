@@ -1,0 +1,211 @@
+---
+description: Pipeline for processing AI Security Mailbox Not Analyzed logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      tag: rename_message_to_event_original
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      tag: fingerprint_event
+      fields:
+        - event.original
+      target_field: _id
+      ignore_missing: true
+  # Observer fields
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Abnormal
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Inbound Email Security
+  # Event fields
+  - append:
+      tag: append_event_category
+      field: event.category
+      value: email
+  - append:
+      tag: append_event_type
+      field: event.type
+      value: info
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  # Process original fields
+  - convert:
+      tag: convert_abx_message_id
+      field: json.abx_message_id
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.abx_message_id
+      type: string
+      ignore_missing: true
+  - set:
+      tag: set_event_id
+      field: event.id
+      copy_from: abnormal_security.ai_security_mailbox_not_analyzed.abx_message_id
+      ignore_empty_value: true
+  - rename:
+      tag: rename_reported_datetime
+      field: json.reported_datetime
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.reported_time
+      ignore_missing: true
+  - date:
+      tag: date_reported_datetime
+      field: abnormal_security.ai_security_mailbox_not_analyzed.reported_time
+      formats:
+        - ISO8601
+      if: ctx.abnormal_security?.ai_security_mailbox_not_analyzed?.reported_time != null && ctx.abnormal_security.ai_security_mailbox_not_analyzed.reported_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_subject
+      field: json.subject
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.subject
+      ignore_missing: true
+  - set:
+      tag: set_email_subject
+      field: email.subject
+      copy_from: abnormal_security.ai_security_mailbox_not_analyzed.subject
+      ignore_empty_value: true
+  - rename:
+      tag: rename_recipient_email
+      field: json.recipient.email
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.recipient.address
+      if: ctx.json?.recipient?.email != null && ctx.json.recipient.email != ''
+  - append:
+      tag: append_email_to_address
+      field: email.to.address
+      value: '{{{abnormal_security.ai_security_mailbox_not_analyzed.recipient.address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.ai_security_mailbox_not_analyzed?.recipient?.address != null
+  - append:
+      tag: append_recipient_address
+      field: related.user
+      value: '{{{abnormal_security.ai_security_mailbox_not_analyzed.recipient.address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.ai_security_mailbox_not_analyzed?.recipient?.address != null
+  - rename:
+      tag: rename_recipient_name
+      field: json.recipient.name
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.recipient.name
+      if: ctx.json?.recipient?.name != null && ctx.json.recipient.name != ''
+  - append:
+      tag: append_recipient_name
+      field: related.user
+      value: '{{{abnormal_security.ai_security_mailbox_not_analyzed.recipient.name}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.ai_security_mailbox_not_analyzed?.recipient?.name != null
+  - rename:
+      tag: rename_reporter_email
+      field: json.reporter.email
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.reporter.address
+      if: ctx.json?.reporter?.email != null && ctx.json.reporter.email != ''
+  - append:
+      tag: append_reporter_address
+      field: related.user
+      value: '{{{abnormal_security.ai_security_mailbox_not_analyzed.reporter.address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.ai_security_mailbox_not_analyzed?.reporter?.address != null
+  - rename:
+      tag: rename_reporter_name
+      field: json.reporter.name
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.reporter.name
+      if: ctx.json?.reporter?.name != null && ctx.json.reporter.name != ''
+  - append:
+      tag: append_reporter_name
+      field: related.user
+      value: '{{{abnormal_security.ai_security_mailbox_not_analyzed.reporter.name}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.ai_security_mailbox_not_analyzed?.reporter?.name != null
+  - rename:
+      tag: rename_not_analyzed_reason
+      field: json.not_analyzed_reason
+      target_field: abnormal_security.ai_security_mailbox_not_analyzed.reason
+      if: ctx.json?.not_analyzed_reason != null && ctx.json.not_analyzed_reason != ''
+  - set:
+      tag: set_event_reason
+      field: event.reason
+      copy_from: abnormal_security.ai_security_mailbox_not_analyzed.reason
+      ignore_empty_value: true
+  # Cleaning
+  - remove:
+      tag: remove_custom_duplicate_fields
+      field:
+        - abnormal_security.ai_security_mailbox_not_analyzed.reason
+        - abnormal_security.ai_security_mailbox_not_analyzed.recipient.address
+        - abnormal_security.ai_security_mailbox_not_analyzed.reported_time
+        - abnormal_security.ai_security_mailbox_not_analyzed.subject
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      tag: remove_json
+      field: json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      tag: set_pipeline_error_into_event_kind
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,133 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{url}}
+# There is a limit of 10 API requests per second for each tenant. This includes all endpoints.
+resource.rate_limit.limit: 4
+resource.rate_limit.burst: 1
+state:
+  token_id: "{{token_id}}"
+  api_token: {{api_token}}
+  initial_interval: {{initial_interval}}
+  path: /public_api/v2/alerts/get_alerts_multi_events
+  want_more: false
+  filter_time_field: server_creation_time
+  sort_time_field: creation_time
+  sort_time_order: asc
+  {{!-- dynamic batch_size is not supported by the API and defaults to 100 --}}
+  batch_size: 100
+{{#if advanced_sec_level }}
+  advanced_sec_level: true
+{{/if}}
+redact:
+  fields:
+    - token_id
+    - api_token
+program: |
+  (
+    state.want_more ?
+      state.?cursor.filter_time
+    :
+      optional.of(state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval)) * 1000))
+  ).as(filter_time, state.with(
+    post_request(
+      state.url.trim_right("/") + state.path, "application/json", {
+        "request_data": {
+          "sort": {
+            "field": state.sort_time_field,
+            "keyword": state.sort_time_order,
+          },
+          ?"filters": filter_time.optMap(f, [{
+            "field": state.filter_time_field,
+            "operator": "gte",
+            "value": f,
+          }]),
+          ?"search_from": state.?search_from,
+          ?"search_to": state.?search_to,
+        }
+      }.encode_json()
+    ).as(req, has(state.advanced_sec_level) ?
+      {
+        "timestamp": int(now) * 1000,
+        "nonce": uuid().sha256().hex(),
+      }.as(t, t.with({
+        "auth": (string(state.api_token) + string(t.nonce) + string(t.timestamp)).sha256().hex(),
+      })).as(h, req.with({
+        "Header":{
+          "x-xdr-timestamp": [string(h.timestamp)],
+          "x-xdr-nonce": [string(h.nonce)],
+          "Authorization": [string(h.auth)],
+          "x-xdr-auth-id": [string(state.token_id)],
+        }
+      }))
+    :
+      req.with({
+        "Header":{
+          "Authorization": [string(state.api_token)],
+          "x-xdr-auth-id": [string(state.token_id)],
+        }
+      })
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, 
+        (
+          int(state.?search_from.orValue(0)) + body.reply.alerts.size() < body.reply.total_count
+        ).as(want_more, {
+          ?"search_from": want_more ? optional.of(int(state.?search_from.orValue(0)) + body.reply.alerts.size()) : optional.none(),
+          ?"search_to": want_more ? optional.of(int(state.?search_from.orValue(0)) + body.reply.alerts.size() + int(state.batch_size)) : optional.none(),
+          "want_more": want_more,
+          "events": body.reply.alerts.map(e, {
+            "message": e.encode_json(),
+          }),
+          "cursor": {
+            ?"last_timestamp": (
+              body.?reply.alerts.orValue([]).size() > 0 ?
+                optional.of(body.reply.alerts.map(e, int(e.local_insert_ts)).max())
+              :
+                state.?cursor.last_timestamp
+            ),
+            ?"filter_time": filter_time,
+          },
+        })
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + state.path + ": " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+fields_under_root: true
+fields:
+  _conf:
+    api: v2
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

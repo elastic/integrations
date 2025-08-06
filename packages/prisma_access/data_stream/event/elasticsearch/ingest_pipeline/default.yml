@@ -117,11 +117,6 @@ processors:
       value: protocol
       tag: append_event_type_protocol
       if: ctx.cef?.device?.event_class_id == 'SCTP'
-  - append:
-      field: event.type
-      value: indicator
-      tag: append_event_type_indicator
-      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions != null && !['url','file'].contains(ctx.cef.extensions.Name))
   - rename:
       field: cef.extensions.PanOSAccessPointName
       tag: rename_extension_PanOSAccessPointName
@@ -1440,28 +1435,90 @@ processors:
       value: "{{{prisma_access.event.dns.resolver_ip}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.dns?.resolver_ip != null
+  - set:
+      field: _temp.dnsResponseIsArray
+      value: true
+      if: ctx.cef?.extensions?.PanOSDNSResponse != null && ctx.cef.extensions.PanOSDNSResponse.startsWith('[') && ctx.cef.extensions.PanOSDNSResponse.endsWith(']')
+  - gsub:
+      field: cef.extensions.PanOSDNSResponse
+      pattern: '[\[\]]'
+      replacement: ''
+      if: ctx._temp?.dnsResponseIsArray == true
+  - split:
+      field: cef.extensions.PanOSDNSResponse
+      separator: ',\s*'
+      if: ctx._temp?.dnsResponseIsArray == true
+  - foreach:
+      field: cef.extensions.PanOSDNSResponse
+      tag: convert_extension_PanOSDNSResponse_to_ip_array
+      if: ctx._temp?.dnsResponseIsArray == true
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_extension_PanOSDNSResponse_to_ip_element
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: dns.answers.data
+                value: '{{{_ingest._value}}}'
+                allow_duplicates: false
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+  - foreach:
+      field: cef.extensions.PanOSDNSResponse
+      tag: convert_extension_PanOSDNSResponse_to_ip_collect
+      if: ctx._temp?.dnsResponseIsArray == true
+      ignore_failure: true
+      processor:
+        append:
+          field: prisma_access.event.dns.response.value
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - convert:
       field: cef.extensions.PanOSDNSResponse
       tag: convert_extension_PanOSDNSResponse_to_ip
       target_field: prisma_access.event.dns.response.value
       type: ip
+      if: ctx._temp?.dnsResponseIsArray != true
       ignore_missing: true
       on_failure:
         - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+            field: dns.answers.data
+            value: '{{{cef.extensions.PanOSDNSResponse}}}'
+            allow_duplicates: false
+  - foreach:
+      field: prisma_access.event.dns.response.value
+      if: ctx.prisma_access?.event?.dns?.response?.value instanceof List
+      tag: collect_response_into_dns_resolved_ip
+      processor:
+        append:
+          field: dns.resolved_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: dns.resolved_ip
       tag: append_prisma_access_event_dns_response_value_into_dns_resolved_ip
       value: "{{{prisma_access.event.dns.response.value}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.dns?.response?.value != null
+      if: ctx.prisma_access?.event?.dns?.response?.value != null && !(ctx.prisma_access.event.dns.response.value instanceof List)
+  - foreach:
+      field: prisma_access.event.dns.response.value
+      if: ctx.prisma_access?.event?.dns?.response?.value instanceof List
+      tag: collect_response_into_related_ip
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.ip
       tag: append_event_dns_response_into_related_ip
       value: "{{{prisma_access.event.dns.response.value}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.dns?.response?.value != null
+      if: ctx.prisma_access?.event?.dns?.response?.value != null && !(ctx.prisma_access.event.dns.response.value instanceof List)
   - rename:
       field: cef.extensions.PanOSDNSResponseCode
       tag: rename_extension_PanOSDNSResponseCode
@@ -3668,6 +3725,29 @@ processors:
       tag: rename_extension_PanOSRecordType
       target_field: prisma_access.event.record_type
       ignore_missing: true
+  - split:
+      field: prisma_access.event.record_type
+      tag: split_dns_answers_array_from_record_type
+      target_field: _temp.dns_answers
+      if: ctx.prisma_access?.event?.record_type != null && ctx.prisma_access.event.record_type.contains(',')
+      separator: ','
+  - foreach:
+      field: _temp.dns_answers
+      tag: collect_temp_answers_type_into_dns_answers_type
+      if: ctx._temp?.dns_answers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: dns.answers.type
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - set:
+      field: dns.answers.type
+      tag: set_dns_answers_type_from_record_type
+      copy_from: prisma_access.event.record_type
+      if: ctx.dns?.answers?.type == null
+      ignore_empty_value: true
   - rename:
       field: cef.extensions.PanOSReferer
       tag: rename_extension_PanOSReferer
@@ -5272,8 +5352,10 @@ processors:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - remove:
-      field: cef
-      tag: remove_cef
+      field:
+        - cef
+        - _temp
+      tag: clean_up
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.

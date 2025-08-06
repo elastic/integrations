@@ -15,6 +15,7 @@ processors:
       patterns:
       - (?m)%{TIMESTAMP_ISO8601:kafka.log.timestamp}. %{LOGLEVEL:log.level} +%{JAVALOGMESSAGE:message}
         \(%{JAVACLASS:kafka.log.class}\)$[ \n]*(?'kafka.log.trace.full'.*)
+      - "(?m)%{TIMESTAMP_ISO8601:kafka.log.timestamp} %{LOGLEVEL:log.level}\\s+%{JAVACLASS:kafka.log.class}: \\[%{NOTSPACE:kafka.log.thread}\\]: %{GREEDYDATA:message}"
       - (?m)\[%{TIMESTAMP_ISO8601:kafka.log.timestamp}\] \[%{LOGLEVEL:log.level} ?\]
         \[%{NOTSPACE:kafka.log.thread}\] \[%{NOTSPACE:kafka.log.class}\] \- %{GREEDYDATA:message}
   - grok:
@@ -78,11 +79,6 @@ processors:
             ctx.event.type = ["info"];
           }
         }
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: error.message

@@ -1,0 +1,165 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to bypass User Account Control (UAC) by abusing an elevated COM Interface to launch a rogue Windows ClipUp program. Attackers may attempt to bypass UAC to stealthily execute code with elevated permissions.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "UAC Bypass Attempt with IEditionUpgradeManager Elevated COM Interface",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating UAC Bypass Attempt with IEditionUpgradeManager Elevated COM Interface\n\nUser Account Control (UAC) is a security feature in Windows designed to prevent unauthorized changes by prompting for elevated permissions. The IEditionUpgradeManager COM interface can be exploited by attackers to bypass UAC, allowing them to execute code with elevated privileges without user consent. This detection rule identifies such attempts by monitoring for the execution of the ClipUp program from non-standard paths, initiated by a specific COM interface, indicating potential misuse for privilege escalation.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of ClipUp.exe running from a non-standard path, as indicated by the process.executable field not matching \"C:\\Windows\\System32\\ClipUp.exe\".\n- Investigate the parent process, dllhost.exe, to determine if it was legitimately initiated or if it shows signs of compromise, focusing on the process.parent.args field to verify the use of the specific COM interface CLSID: /Processid:{BD54C901-076B-434E-B6C7-17C531F4AB41}.\n- Check the user account context under which ClipUp.exe was executed to assess if it aligns with expected user behavior or if it suggests unauthorized access.\n- Correlate this event with other security logs and alerts from data sources like Elastic Endgame, Elastic Defend, Sysmon, Microsoft Defender for Endpoint, or SentinelOne to identify any related suspicious activities or patterns.\n- Examine recent changes or anomalies in system configurations or installed software that might indicate preparation for or execution of a UAC bypass attempt.\n- If available, review network activity logs for any unusual outbound connections or data exfiltration attempts following the execution of ClipUp.exe.\n\n### False positive analysis\n\n- Legitimate software updates or installations may trigger the rule if they temporarily use non-standard paths for ClipUp.exe. Verify the source and purpose of the process to determine if it is part of a legitimate update or installation.\n- Custom scripts or administrative tools that utilize ClipUp.exe from non-standard paths for legitimate purposes can cause false positives. Review the script or tool usage and consider excluding these specific paths if they are verified as safe.\n- Software testing environments where ClipUp.exe is executed from non-standard paths for testing purposes may trigger the rule. Implement exclusions for known testing environments to prevent unnecessary alerts.\n- Automated deployment tools that use ClipUp.exe from non-standard paths as part of their deployment process can be mistaken for malicious activity. Confirm the deployment tool's behavior and add exceptions for its known operations.\n- In environments where multiple users have administrative privileges, legitimate administrative actions might inadvertently match the rule's criteria. Regularly audit administrative actions and consider excluding known benign activities.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement.\n- Terminate the ClipUp.exe process if it is running from a non-standard path to stop any ongoing malicious activity.\n- Conduct a thorough review of the system's recent activity logs to identify any additional unauthorized changes or suspicious behavior.\n- Restore any altered system files or configurations to their original state using known good backups or system restore points.\n- Update and patch the operating system and all installed software to the latest versions to mitigate known vulnerabilities.\n- Implement application whitelisting to prevent unauthorized programs from executing, focusing on blocking non-standard paths for critical system executables.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on other systems within the network.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"Clipup.exe\" and\n  not process.executable : \"C:\\\\Windows\\\\System32\\\\ClipUp.exe\" and process.parent.name : \"dllhost.exe\" and\n  /* CLSID of the Elevated COM Interface IEditionUpgradeManager */\n  process.parent.args : \"/Processid:{BD54C901-076B-434E-B6C7-17C531F4AB41}\"\n",
+        "references": [
+            "https://github.com/hfiref0x/UACME"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.22.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b90cdde7-7e0d-4359-8bf0-2c112ce2008a",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1559",
+                        "name": "Inter-Process Communication",
+                        "reference": "https://attack.mitre.org/techniques/T1559/",
+                        "subtechnique": [
+                            {
+                                "id": "T1559.001",
+                                "name": "Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1559/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 311
+    },
+    "id": "b90cdde7-7e0d-4359-8bf0-2c112ce2008a_311",
+    "type": "security-rule"
+}

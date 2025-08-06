@@ -8,6 +8,7 @@ processors:
         - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
         - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{GREEDYMULTILINE:system.syslog.message}'
         - '%{TIMESTAMP_ISO8601:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
+        - '%{TIMESTAMP_ISO8601:system.syslog.timestamp} %{GREEDYMULTILINE:system.syslog.message}'
       pattern_definitions:
         GREEDYMULTILINE: |-
           (.|
@@ -24,11 +25,6 @@ processors:
   - pipeline:
       if: ctx.input?.type == "log"
       name: '{{ IngestPipeline "log" }}'
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: error.message

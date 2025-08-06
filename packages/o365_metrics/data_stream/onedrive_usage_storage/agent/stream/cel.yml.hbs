@@ -15,13 +15,47 @@ auth.oauth2:
 {{else if azure_tenant_id}}
     azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
-
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{url}}
 {{#if resource_ssl}}
 resource.ssl: 
   {{resource_ssl}}
 {{/if}}
-
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+{{#if resource_redirect_forward_headers}}
+resource.redirect.forward_headers: {{resource_redirect_forward_headers}}
+{{/if}}
+{{#if resource_redirect_headers_ban_list}}
+resource.redirect.headers_ban_list:
+{{#each resource_redirect_headers_ban_list as |item|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if resource_redirect_max_redirects}}
+resource.redirect.max_redirects: {{resource_redirect_max_redirects}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 {{/if}}
@@ -61,7 +95,7 @@ program: |
         resp.StatusCode == 200
         ?
           bytes(resp.Body).mime("text/csv; header=present").as(body, {
-                                     "body": body.map(e, {"onedrive_usage_storage": e.encode_json()}),                     
+                                     "events": body.map(e, {"onedrive_usage_storage": e.encode_json()}),                     
 
           })
         :

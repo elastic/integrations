@@ -1,0 +1,144 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of sc.exe to create, modify, or start services on remote hosts. This could be indicative of adversary lateral movement but will be noisy if commonly done by admins.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Service Command Lateral Movement",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Service Command Lateral Movement\n\nThe Service Control Manager in Windows allows for the management of services, which are crucial for system operations. Adversaries exploit this by using `sc.exe` to manipulate services on remote systems, facilitating lateral movement. The detection rule identifies suspicious `sc.exe` usage by monitoring for service-related commands targeting remote hosts, which may indicate unauthorized access attempts. This rule helps differentiate between legitimate administrative actions and potential threats.\n\n### Possible investigation steps\n\n- Review the process details to confirm the use of sc.exe, focusing on the process.entity_id and process.args fields to understand the specific service-related actions attempted.\n- Examine the network activity associated with the sc.exe process, particularly the destination.ip field, to identify the remote host targeted by the command and assess if it is a legitimate administrative target.\n- Check the event logs on the remote host for any corresponding service creation, modification, or start events to verify if the actions were successfully executed and to gather additional context.\n- Investigate the user account associated with the sc.exe process to determine if it has the necessary permissions for such actions and if the account usage aligns with expected behavior.\n- Correlate the alert with other recent alerts or logs involving the same process.entity_id or destination.ip to identify any patterns or additional suspicious activities that may indicate a broader attack campaign.\n\n### False positive analysis\n\n- Routine administrative tasks using sc.exe on remote systems can trigger false positives. Identify and document regular maintenance schedules and responsible personnel to differentiate these from potential threats.\n- Automated scripts or management tools that use sc.exe for legitimate service management may cause alerts. Review and whitelist these scripts or tools by their process entity IDs to reduce noise.\n- Internal IT operations often involve creating or modifying services remotely. Establish a baseline of normal activity patterns and exclude these from alerts by setting exceptions for known IP addresses or user accounts.\n- Software deployment processes that involve service configuration changes can be mistaken for lateral movement. Coordinate with software deployment teams to understand their processes and exclude these activities from detection.\n- Regularly review and update the exclusion list to ensure it reflects current operational practices and does not inadvertently allow malicious activity.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further lateral movement and unauthorized access to other systems.\n- Terminate any suspicious `sc.exe` processes identified on the affected system to halt any ongoing malicious activity.\n- Review and reset credentials for any accounts that were used in the suspicious `sc.exe` activity to prevent unauthorized access.\n- Conduct a thorough examination of the affected system for any additional signs of compromise, such as unauthorized services or changes to existing services.\n- Restore the affected system from a known good backup if any malicious modifications or persistent threats are detected.\n- Implement network segmentation to limit the ability of adversaries to move laterally across the network in the future.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "sequence by process.entity_id with maxspan = 1m\n  [process where host.os.type == \"windows\" and event.type == \"start\" and\n     (process.name : \"sc.exe\" or process.pe.original_file_name : \"sc.exe\") and\n      process.args : \"\\\\\\\\*\" and process.args : (\"binPath=*\", \"binpath=*\") and\n      process.args : (\"create\", \"config\", \"failure\", \"start\")]\n  [network where host.os.type == \"windows\" and process.name : \"sc.exe\" and destination.ip != \"127.0.0.1\"]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "d61cbcf8-1bc1-4cff-85ba-e7b21c5beedc",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.003",
+                                "name": "Windows Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1569",
+                        "name": "System Services",
+                        "reference": "https://attack.mitre.org/techniques/T1569/",
+                        "subtechnique": [
+                            {
+                                "id": "T1569.002",
+                                "name": "Service Execution",
+                                "reference": "https://attack.mitre.org/techniques/T1569/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 210
+    },
+    "id": "d61cbcf8-1bc1-4cff-85ba-e7b21c5beedc_210",
+    "type": "security-rule"
+}

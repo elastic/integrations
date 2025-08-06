@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts that can be used to record webcam video. Attackers can capture this information to extort or spy on victims.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Script with Webcam Video Capture Capabilities",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating PowerShell Script with Webcam Video Capture Capabilities\n\nPowerShell, a powerful scripting language in Windows, can interface with system components like webcams for legitimate tasks such as video conferencing. However, adversaries exploit this by crafting scripts to covertly record video, infringing on privacy. The detection rule identifies suspicious script patterns and API calls linked to webcam access, flagging potential misuse for further investigation.\n\n### Possible investigation steps\n\n- Review the PowerShell script block text associated with the alert to identify any suspicious patterns or API calls, such as \"NewFrameEventHandler\" or \"VideoCaptureDevice\".\n- Check the process execution details, including the parent process, to determine how the PowerShell script was initiated and if it was part of a legitimate application or task.\n- Investigate the user account under which the PowerShell script was executed to assess if the account has a history of suspicious activity or if it has been compromised.\n- Examine the host's recent activity logs for any other unusual behavior or alerts that might correlate with the webcam access attempt, such as unauthorized access attempts or data exfiltration.\n- Verify if the host has any legitimate applications that might use webcam access, and cross-reference with the script's behavior to rule out false positives.\n\n### False positive analysis\n\n- Legitimate video conferencing applications may trigger the detection rule due to their use of similar API calls and script patterns. Users can create exceptions for known and trusted applications by whitelisting their process names or script signatures.\n- Security testing tools that simulate webcam access for vulnerability assessments might be flagged. To handle this, users should exclude these tools from monitoring during scheduled testing periods.\n- System diagnostics or maintenance scripts that access webcam components for hardware checks can be mistaken for malicious activity. Users should document and exclude these scripts if they are part of routine system operations.\n- Educational or training software that uses webcam access for interactive sessions may be incorrectly identified. Users can mitigate this by adding these applications to an allowlist after verifying their legitimacy.\n- Custom scripts developed in-house for specific business needs that involve webcam access should be reviewed and, if deemed safe, excluded from the detection rule to prevent unnecessary alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious PowerShell processes identified by the detection rule to stop ongoing webcam recording activities.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any malicious scripts or software.\n- Review and revoke any unauthorized access permissions or credentials that may have been compromised during the incident.\n- Restore the system from a known good backup if any critical system files or configurations have been altered by the malicious script.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for PowerShell activities across the network to detect and respond to similar threats more effectively in the future.",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    \"NewFrameEventHandler\" or\n    \"VideoCaptureDevice\" or\n    \"DirectX.Capture.Filters\" or\n    \"VideoCompressors\" or\n    \"Start-WebcamRecorder\" or\n    (\n      (\"capCreateCaptureWindowA\" or\n       \"capCreateCaptureWindow\" or\n       \"capGetDriverDescription\") and\n      (\"avicap32.dll\" or \"avicap32\")\n    )\n  )\n",
+        "references": [
+            "https://github.com/EmpireProject/Empire/blob/master/lib/modules/powershell/collection/WebcamRecorder.py"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "eb44611f-62a8-4036-a5ef-587098be6c43",
+        "setup": "## Setup\n\nThe 'PowerShell Script Block Logging' logging policy must be enabled.\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration >\nAdministrative Templates >\nWindows PowerShell >\nTurn on PowerShell Script Block Logging (Enable)\n```\n\nSteps to implement the logging policy via registry:\n\n```\nreg add \"hklm\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\" /v EnableScriptBlockLogging /t REG_DWORD /d 1\n```\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1125",
+                        "name": "Video Capture",
+                        "reference": "https://attack.mitre.org/techniques/T1125/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 109
+    },
+    "id": "eb44611f-62a8-4036-a5ef-587098be6c43_109",
+    "type": "security-rule"
+}

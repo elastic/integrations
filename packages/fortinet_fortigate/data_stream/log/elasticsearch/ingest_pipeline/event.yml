@@ -206,6 +206,11 @@ processors:
       target_field: url
       keep_original: false
       if: ctx.fortinet?.firewall?.url != null
+      on_failure:
+        - set:
+            tag: event_set_url_original_on_fail
+            field: url.original
+            copy_from: fortinet.firewall.url
   # Need to do a set, then remove since rename w/ override
   # is not supported in 8.3.0
   - set:

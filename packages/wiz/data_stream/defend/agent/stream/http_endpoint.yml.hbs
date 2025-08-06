@@ -1,0 +1,82 @@
+listen_address: {{listen_address}}
+listen_port: {{listen_port}}
+{{#if url}}
+url: {{url}}
+{{/if}}
+basic_auth: {{basic_auth}}
+{{#if basic_auth}}
+username: {{username}}
+password: {{password}}
+{{/if}}
+{{#if token}}
+secret.header: Authorization
+secret.value: Bearer {{token}}
+{{/if}}
+prefix: "json"
+program: |
+  obj.triggeringEvents.map(r, {
+    ?"trigger": obj.?trigger,
+    ?"id": obj.?id,
+    ?"threatId": obj.?threatId,
+    ?"threatURL": obj.?threatURL,
+    ?"title": obj.?title,
+    ?"source": obj.?source,
+    ?"detectionUrl": obj.?detectionUrl,
+    ?"description": obj.?description,
+    ?"severity": obj.?severity,
+    "createdAt": string(obj.createdAt),
+    ?"tdrId": obj.?tdrId,
+    ?"tdrSource": obj.?tdrSource,
+    ?"mitreTactics": obj.?mitreTactics,
+    ?"mitreTechniques": obj.?mitreTechniques,
+    ?"cloudAccounts": obj.?cloudAccounts,
+    ?"cloudOrganizations": obj.?cloudOrganizations,
+    ?"timeframe": obj.?timeframe,
+    ?"primaryActor": obj.?primaryActor,
+    ?"primaryResource": obj.?primaryResource,
+    ?"triggeringEventsCount": obj.?triggeringEventsCount,
+    "triggeringEvent": {
+      ?"actor": obj.actors.filter(a, a.id == r.actor.id)[?0],
+      ?"actorIP": r.?actorIP,
+      ?"actorIPMeta": r.?actorIPMeta,
+      ?"category": r.?category,
+      ?"cloudPlatform": r.?cloudPlatform,
+      ?"cloudProviderUrl": r.?cloudProviderUrl,
+      ?"description": r.?description,
+      ?"eventTime": r.?eventTime,
+      ?"externalId": r.?externalId,
+      ?"id": r.?id,
+      ?"name": r.?name,
+      ?"origin": r.?origin,
+      "resources": obj.resources.filter(re, r.resources.exists(r, r.id == re.id)),
+      ?"runtimeDetails": r.?runtimeDetails,
+      ?"source": r.?source,
+      ?"status": r.?status
+    }
+  })
+{{#if preserve_original_event}}
+preserve_original_event: true
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+preserve_duplicate_custom_fields: true
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

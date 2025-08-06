@@ -17,22 +17,24 @@ The package collects log events either sent via log stream webhooks, or by API r
 
 The agent running this integration must be able to accept requests from the Internet in order for Auth0 to be able connect. Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
 
-For more information, see Auth0's webpage on [integration to Elastic Security](https://marketplace.auth0.com/integrations/elastic-security).
+This integration method is also documented on the Auth0 webpage for the [Elastic Security integration](https://marketplace.auth0.com/integrations/elastic-security).
 
 ### Configure the Auth0 integration
 
 1. Click on **Collect Auth0 log streams events via Webhooks** to enable it.
-2. Enter values for "Listen Address", "Listen Port" and "Webhook path" to form the endpoint URL. Make note of the **Endpoint URL** `https://{AGENT_ADDRESS}:8383/auth0/logs`.
-3. Enter value for "Secret value". This must match the "Authorization Token" value entered when configuring the "Custom Webhook" from Auth0 cloud.
-4. Enter values for "TLS". Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
+2. Enter values for **Listen Address**, **Listen Port** and **Webhook Path**.
+3. Enter value for **Authorization Token**. This must match the value entered when configuring the "Custom Webhook" in Auth0 cloud.
+4. In the "Advanced options" section, enter settings for **SSL Configuration**. Auth0 requires that webhook requests use HTTPS. So you must either configure the integration with a valid TLS certificate here, or use a separarately configured reverse proxy in front of the agent.
+
+Using the external address of the agent to which the integration is added, and the configured "Listen Port" and "Webhook Path", make a note of the full endpoint URL. It will have the form `https://{AGENT_ADDRESS}:{LISTEN_PORT}{WEBHOOK_PATH}` (for example, `https://agent01.external.example.com:8383/auth0/logs`).
 
 ### Creating the stream in Auth0
 
 1. From the Auth0 management console, navigate to **Logs > Streams** and click **+ Create Stream**.
 2. Choose **Custom Webhook**.
 3. Name the new **Event Stream** appropriately (e.g. Elastic) and click **Create**.
-4. In **Payload URL**, paste the **Endpoint URL** collected during Step 1 of **Configure the Auth0 integration** section.
-5. In **Authorization Token**, paste the **Authorization Token**. This must match the value entered in Step 2 of **Configure the Auth0 integration** section.
+4. In **Payload URL**, enter the endpoint URL set up in the **Configure the Auth0 integration** section.
+5. In **Authorization Token**, enter the **Authorization Token**. This must match the value entered in Step 3 of the **Configure the Auth0 integration** section.
 6. In **Content Type**, choose  **application/json**.
 7. In **Content Format**, choose **JSON Lines**.
 8. Click **Save**.
@@ -101,6 +103,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.strategy_type | Type of strategy involved in the event. | keyword |
 | auth0.logs.data.tenant_name | The name of the auth0 tenant. | keyword |
 | auth0.logs.data.type | Type of event. | keyword |
+| auth0.logs.data.type_id | The short Auth0 type identifier. | keyword |
 | auth0.logs.data.user_agent | User agent string from the client device that caused the event. | text |
 | auth0.logs.data.user_id | ID of the user involved in the event. | keyword |
 | auth0.logs.data.user_name | Name of the user involved in the event. | keyword |
@@ -119,11 +122,11 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2021-11-03T03:06:05.696Z",
     "agent": {
-        "ephemeral_id": "ca08f8bd-d4b8-4ea2-aefa-eb285a0b32c6",
-        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
-        "name": "elastic-agent-75377",
+        "ephemeral_id": "c332091a-27ef-4163-97f1-602c0c5722d2",
+        "id": "0f4499f8-3f89-4f53-945d-1f033cc2bf93",
+        "name": "elastic-agent-42968",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.1"
     },
     "auth0": {
         "logs": {
@@ -156,22 +159,23 @@ An example event for `logs` looks as following:
                     }
                 },
                 "hostname": "dev-yoj8axza.au.auth0.com",
-                "type": "Failed login"
+                "type": "Failed login",
+                "type_id": "f"
             }
         }
     },
     "data_stream": {
         "dataset": "auth0.logs",
-        "namespace": "12089",
+        "namespace": "49995",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
+        "id": "0f4499f8-3f89-4f53-945d-1f033cc2bf93",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": "failed-login",
@@ -181,7 +185,7 @@ An example event for `logs` looks as following:
         ],
         "dataset": "auth0.logs",
         "id": "90020211103030609732115389415260839021644201259064885298",
-        "ingested": "2024-11-11T15:35:02Z",
+        "ingested": "2025-05-30T14:06:51Z",
         "kind": "event",
         "original": "{\"data\":{\"connection_id\":\"\",\"date\":\"2021-11-03T03:06:05.696Z\",\"description\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"details\":{\"body\":{},\"error\":{\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"oauthError\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.\",\"payload\":{\"attempt\":\"http://localhost:3000/callback\",\"authorized\":[],\"client\":{\"clientID\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\"},\"code\":\"unauthorized_client\",\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"name\":\"CallbackMismatchError\",\"status\":403},\"type\":\"callback-url-mismatch\"},\"qs\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"redirect_uri\":\"http://localhost:3000/callback\",\"response_type\":\"code\",\"scope\":\"openid profile\",\"state\":\"Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4=\"}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103030609732115389415260839021644201259064885298\",\"type\":\"f\",\"user_agent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\"},\"log_id\":\"90020211103030609732115389415260839021644201259064885298\"}",
         "outcome": "failure",
@@ -227,7 +231,7 @@ An example event for `logs` looks as following:
         "os": {
             "name": "Ubuntu"
         },
-        "version": "93.0."
+        "version": "93.0"
     }
 }
 ```

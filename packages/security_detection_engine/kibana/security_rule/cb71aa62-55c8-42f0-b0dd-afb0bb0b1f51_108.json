@@ -1,0 +1,92 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious modifications of the calendar file by an unusual process. Adversaries may create a custom calendar notification procedure to execute a malicious program at a recurring interval to establish persistence.",
+        "false_positives": [
+            "Trusted applications for managing calendars and reminders."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Suspicious Calendar File Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Calendar File Modification\n\nCalendar files on macOS can be manipulated to trigger events, potentially allowing adversaries to execute malicious programs at set intervals, thus achieving persistence. This detection rule identifies unusual processes modifying calendar files, excluding known legitimate applications. By focusing on unexpected executables altering these files, it helps uncover potential threats exploiting calendar notifications for malicious purposes.\n\n### Possible investigation steps\n\n- Review the process executable path that triggered the alert to determine if it is a known or unknown application, focusing on paths not excluded by the rule.\n- Examine the modification timestamp of the calendar file to correlate with any known user activity or scheduled tasks that might explain the change.\n- Check the user account associated with the file modification to assess if the activity aligns with typical user behavior or if it suggests unauthorized access.\n- Investigate any recent installations or updates of applications on the system that might have introduced new or unexpected executables.\n- Look for additional indicators of compromise on the host, such as unusual network connections or other file modifications, to assess if the calendar file change is part of a broader attack.\n\n### False positive analysis\n\n- Legitimate third-party calendar applications may modify calendar files as part of their normal operation. Users can create exceptions for these known applications by adding their executable paths to the exclusion list.\n- Automated backup or synchronization tools might access and modify calendar files. Identify these tools and exclude their processes to prevent false alerts.\n- User scripts or automation workflows that interact with calendar files for personal productivity purposes can trigger this rule. Review and whitelist these scripts if they are verified as non-malicious.\n- System updates or maintenance tasks occasionally modify calendar files. Monitor the timing of such events and correlate them with known update schedules to differentiate between legitimate and suspicious activities.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent potential lateral movement or further execution of malicious programs.\n- Terminate any suspicious processes identified as modifying calendar files that are not part of the known legitimate applications list.\n- Restore the calendar files from a known good backup to ensure no malicious events are scheduled.\n- Conduct a thorough scan of the system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious software.\n- Review and audit user accounts and permissions on the affected system to ensure no unauthorized access or privilege escalation has occurred.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if other systems may be affected.\n- Implement additional monitoring and alerting for unusual calendar file modifications across the network to enhance detection of similar threats in the future.",
+        "query": "event.category:file and host.os.type:macos and event.action:modification and\n  file.path:/Users/*/Library/Calendars/*.calendar/Events/*.ics and\n  process.executable:\n  (* and not\n    (\n      /System/Library/* or\n      /System/Applications/Calendar.app/Contents/MacOS/* or\n      /System/Applications/Mail.app/Contents/MacOS/Mail or\n      /usr/libexec/xpcproxy or\n      /sbin/launchd or\n      /Applications/*\n    )\n  )\n",
+        "references": [
+            "https://labs.f-secure.com/blog/operationalising-calendar-alerts-persistence-on-macos",
+            "https://github.com/FSecureLABS/CalendarPersist",
+            "https://github.com/D00MFist/PersistentJXA/blob/master/CalendarPersist.js"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "cb71aa62-55c8-42f0-b0dd-afb0bb0b1f51",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 108
+    },
+    "id": "cb71aa62-55c8-42f0-b0dd-afb0bb0b1f51_108",
+    "type": "security-rule"
+}

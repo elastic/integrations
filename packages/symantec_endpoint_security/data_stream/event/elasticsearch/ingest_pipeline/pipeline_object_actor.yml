@@ -219,6 +219,18 @@ processors:
       allow_duplicates: false
       if: ctx.ses?.actor?.file?.name != null
   - append:
+      field: file.name
+      tag: append_file_name_from_actor_file_original_name
+      value: '{{{ses.actor.file.original_name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.actor?.file?.original_name != null
+  - append:
+      field: file.directory
+      tag: append_file_name_from_actor_file_folder
+      value: '{{{ses.actor.file.folder}}}'
+      allow_duplicates: false
+      if: ctx.ses?.actor?.file?.folder != null
+  - append:
       field: file.path
       tag: append_file_path_from_actor_file_path
       value: '{{{ses.actor.file.path}}}'
@@ -1271,6 +1283,18 @@ processors:
       if: ctx.ses?.actor?.user?.uid != null && ctx.ses.actor.user.uid != ''
   - append:
       field: related.user
+      tag: append_related_user_from_actor_user_sid
+      value: '{{{ses.actor.user.sid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.actor?.user?.sid != null && ctx.ses.actor.user.sid != ''
+  - append:
+      field: user.id
+      tag: append_user_id_from_actor_user_sid
+      value: '{{{ses.actor.user.sid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.actor?.user?.sid != null && ctx.ses.actor.user.sid != ''
+  - append:
+      field: related.user
       tag: append_related_user_from_actor_user_name
       value: '{{{ses.actor.user.name}}}'
       allow_duplicates: false
@@ -1292,10 +1316,12 @@ processors:
         - ses.actor.cmd_line
         - ses.actor.file.accessed
         - ses.actor.file.created
+        - ses.actor.file.folder
         - ses.actor.file.md5
         - ses.actor.file.mime_type
         - ses.actor.file.modified
         - ses.actor.file.name
+        - ses.actor.file.original_name
         - ses.actor.file.path
         - ses.actor.file.sha1
         - ses.actor.file.sha2
@@ -1304,6 +1330,7 @@ processors:
         - ses.actor.file.size
         - ses.actor.file.src_name
         - ses.actor.user.domain
+        - ses.actor.user.sid
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

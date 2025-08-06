@@ -6,53 +6,54 @@
 
 This integration supports ingestion of logs from Azure Network Watcher VNet, via [Azure Blob Storage](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html) input.
 
-- **Log** is used to retrieve VNet Flow data. See more details in the documentation [here](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview).
+- **Log** is used to retrieve VNet Flow data. For more details, check the [Microsoft documentation](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview).
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect data from Azure Network Watcher VNet follow the below steps:
+### Collect data from Azure Network Watcher VNet
 
-1. In the [Azure portal](https://portal.azure.com/), go to your **storage account**.
-2. Under **Security + networking**, Click On **Access keys**. Your account access keys appear, as well as the complete connection string for each key.
-3. Click On **Show** keys to show your **access keys** and **connection strings** and to enable buttons to copy the values.
-4. Under key1, find the Key value. Click On the Copy button to copy the **account key**. Same way you can copy the **storage account name** shown above keys.
-5. Go to **Containers** under **Data storage** in your storage account to copy the **container name**.
+1. On the [Azure portal](https://portal.azure.com/), go to your storage account.
+2. Under **Security + networking**, click **Access keys**. Your account access keys appear, as well as the complete connection string for each key.
+3. Click **Show keys** to show your **access keys** and **connection strings** to enable buttons to copy the values.
+4. Under **key1**, find the key value. Click **Copy** to copy the **account key**. In the same way, copy the storage account name shown above the keys.
+5. In your storage account, go to **Data storage** > **Containers** to copy the container name.
+6. Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options. For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
 
-**Note**:  Enable virtual network flow logs using the steps provided in [reference](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-portal).
+- How to setup the `auth.oauth2` credentials can be found in the Azure documentation [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- For more details about the Azure Blob Storage input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).
 
-### Enabling the integration in Elastic:
+Note:
+- Follow [these steps](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-portal) to enable virtual network flow logs.
+- The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
+- We recommend assigning either the **Storage Blob Data Reader** or **Storage Blob Data Owner** role. The **Storage Blob Data Reader** role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The **Storage Blob Data Owner** role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Azure Network Watcher VNet`.
-3. Select the "Azure Network Watcher VNet" integration from the search results.
-4. Select "Add Azure Network Watcher VNet" to add the integration.
-5. While adding the integration, to collect logs via Azure Blob Storage, keep **Collect VNet logs via Azure Blob Storage** toggle on and then configure following parameters:
-   - account name
-   - containers
-   - service account key/service account uri
+### Enable the integration in Elastic
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Azure Network Watcher VNet**.
+3. Select the **Azure Network Watcher VNet** integration and add it.
+5. To collect logs via Azure Blob Storage, select **Collect VNet logs via Azure Blob Storage** and configure the following parameters:
+   For OAuth2 (Microsoft Entra ID RBAC):
+   - Toggle on **Collect logs using OAuth2 authentication**
+   - Account Name
+   - Client ID
+   - Client Secret
+   - Tenant ID
+   - Container Details.
+
+   For Service Account Credentials:
+   - Service Account Key or the URI
+   - Account Name
+   - Container Details
 6. Save the integration.
+
+## Limitations
+
+The filebeat's [Azure Blob Storage](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html#attrib-expand_event_list_from_field) input can only split events based on a key at root level of JSON. Also the Elasticsearch ingest pipeline [cannot split a message into multiple documents](https://github.com/elastic/elasticsearch/issues/56769). Due to these limitations, the Azure Network Watcher VNet integration cannot split `flowTuples` records, exported via field `azure_network_watcher_vnet.log.records.flows.groups.tuples`, into multiple documents. Each document contains multiple `flowTuples` grouped together. This grouping leads to a loss of direct correlation between fields across a single tuple.
 
 ## Logs Reference
 

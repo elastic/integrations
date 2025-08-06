@@ -1,7 +1,7 @@
-format_version: 3.0.2
+format_version: 3.4.0
 name: wiz
 title: Wiz
-version: "2.7.0"
+version: "3.7.0"
 description: Collect logs from Wiz with Elastic Agent.
 type: integration
 categories:
@@ -9,7 +9,7 @@ categories:
   - cloudsecurity_cdr
 conditions:
   kibana:
-    version: "^8.16.0"
+    version: "~8.16.6 || ~8.17.4 || ^8.18.0 || ^9.0.0"
   elastic:
     subscription: "basic"
 screenshots:
@@ -37,6 +37,10 @@ screenshots:
     title: Misconfiguration Findings view with Wiz data in Elastic Security Screenshot
     size: 600x600
     type: image/png
+  - src: /img/wiz-defend-dashboard.png
+    title: Wiz Defend Dashboard Screenshot
+    size: 600x600
+    type: image/png
 icons:
   - src: /img/wiz-logo.svg
     title: Wiz logo
@@ -46,6 +50,14 @@ policy_templates:
   - name: wiz
     title: Wiz logs
     description: Collect Wiz logs.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: cel
         title: Collect Wiz logs via API
@@ -54,14 +66,14 @@ policy_templates:
           - name: client_id
             type: text
             title: Client ID
-            description: Client ID for the Wiz.
+            description: Client ID for the Wiz environment.
             multi: false
             required: true
             show_user: true
           - name: client_secret
             type: password
             title: Client Secret
-            description: Client Secret for the Wiz.
+            description: Client Secret for the Wiz environment.
             multi: false
             required: true
             show_user: true
@@ -91,7 +103,7 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false
@@ -117,6 +129,9 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
+      - type: http_endpoint
+        title: Collect Wiz Defend logs via HTTP Endpoint
+        description: Collecting Detection events from Wiz Defend via HTTP Endpoint.
 owner:
   github: elastic/security-service-integrations
   type: elastic

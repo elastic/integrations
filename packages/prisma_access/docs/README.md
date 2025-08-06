@@ -50,39 +50,20 @@ The Palo Alto Prisma Access integration collects 16 types of event types:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-For step-by-step instructions on how to forward logs to syslog server from your Palo Alto Prisma Access instance, see the
+For step-by-step instructions on how to forward logs to syslog server from your Palo Alto Prisma Access instance, check the
 [Forward Logs to a Syslog Server](https://docs.paloaltonetworks.com/strata-logging-service/administration/forward-logs/forward-logs-to-syslog-server) guide.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Palo Alto Prisma Access`.
-3. Select the "Palo Alto Prisma Access" integration from the search results.
-4. Select "Add Palo Alto Prisma Access" to add the integration.
-5. Add all the required integration configuration parameters according to the enabled input type.
-6. Click on "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Palo Alto Prisma Access**.
+3. Select the **Palo Alto Prisma Access** integration and add it.
+4. Add all the required integration configuration parameters.
+5. Save the integration.
 
 ## Logs Reference
 
@@ -98,9 +79,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2019-07-25T23:30:12.000-05:00",
     "agent": {
-        "ephemeral_id": "cbff23b6-6c63-45bd-9fec-4d5ca3d75727",
-        "id": "7b106bd2-a2ca-4877-9577-96012c934f32",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e760d78d-40a7-4817-88e4-6861a5bf52f6",
+        "id": "f366820a-d07d-4f0f-a8d5-2d00f4cd53e7",
+        "name": "elastic-agent-96039",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -113,7 +94,7 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "prisma_access.event",
-        "namespace": "44529",
+        "namespace": "45869",
         "type": "logs"
     },
     "destination": {
@@ -133,7 +114,7 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7b106bd2-a2ca-4877-9577-96012c934f32",
+        "id": "f366820a-d07d-4f0f-a8d5-2d00f4cd53e7",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -146,7 +127,7 @@ An example event for `event` looks as following:
         "created": "2021-03-01T20:35:54.000Z",
         "dataset": "prisma_access.event",
         "id": "xxxxxxxxxxxxx",
-        "ingested": "2024-07-29T07:37:02Z",
+        "ingested": "2025-02-11T03:37:47Z",
         "kind": "event",
         "original": "Mar 1 20:35:56 81.2.69.142 928 <14>1 2021-03-01T20:35:56.500Z stream-logfwd20-587718190-02280003-lvod-harness-mjdh logforwarder - panwlogs - CEF:0|Palo Alto Networks|LF|2.0|CONFIG|config|3|ProfileToken=xxxxx dtz=UTC rt=Mar 01 2021 20:35:54 deviceExternalId=xxxxxxdfrrxx PanOSEventTime=Jul 25 2019 23:30:12 duser=col-34 dntdom=globex.org duid=12345 PanOSEventDetails=change before issuer validity expires PanOSIsDuplicateLog=false PanOSIsPrismaNetwork=false PanOSIsPrismaUsers=false cat=xxxxx PanOSLogExported=false PanOSLogSource=firewall PanOSLogSourceTimeZoneOffset=-05:00 PanOSSeverity=warn PanOSTenantID=xxxxxxxxxxxxx PanOSVirtualSystemID=0 src=81.2.69.144 cs3=vsys2 cs3Label=VirtualLocation act=commit-all duser0=Panorama-admin destinationServiceName=dns PanOSEventResult=retrievd msg=uploaded details externalId=xxxxxxxxxxxxx PanOSDGHierarchyLevel1=0 PanOSDGHierarchyLevel2=0 PanOSDGHierarchyLevel3=0 PanOSDGHierarchyLevel4=0 PanOSVirtualSystemName=<{xwo X dvchost=PA-VM PanOSEventDescription=\\r_IYytr PanOSTimeGeneratedHighResolution=Jul 25 2019 23:30:12",
         "timezone": "-05:00",
@@ -160,7 +141,7 @@ An example event for `event` looks as following:
     "log": {
         "level": "warn",
         "source": {
-            "address": "192.168.240.7:60494"
+            "address": "192.168.80.3:49564"
         }
     },
     "message": "uploaded details",

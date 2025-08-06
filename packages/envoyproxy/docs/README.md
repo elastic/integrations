@@ -46,15 +46,15 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-04-08T16:16:55.931Z",
     "agent": {
-        "ephemeral_id": "b251a806-74d2-4f75-bb84-142e7f931c17",
-        "id": "c3ca3082-b848-456d-b798-5b7c6044cec3",
-        "name": "elastic-agent-33100",
+        "ephemeral_id": "ee68951f-ee1f-45ae-8e2b-47fadcd1aa7d",
+        "id": "75199e22-366d-48f5-95d2-29840b5c0730",
+        "name": "elastic-agent-18673",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "9.0.0"
     },
     "data_stream": {
         "dataset": "envoyproxy.log",
-        "namespace": "34940",
+        "namespace": "46375",
         "type": "logs"
     },
     "destination": {
@@ -66,9 +66,9 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c3ca3082-b848-456d-b798-5b7c6044cec3",
-        "snapshot": false,
-        "version": "8.15.1"
+        "id": "75199e22-366d-48f5-95d2-29840b5c0730",
+        "snapshot": true,
+        "version": "9.0.0"
     },
     "envoyproxy": {
         "log": {
@@ -84,10 +84,10 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
-        "created": "2024-11-14T14:19:50.685Z",
+        "created": "2025-02-11T12:38:13.677Z",
         "dataset": "envoyproxy.log",
         "duration": 5000000,
-        "ingested": "2024-11-14T14:19:51Z",
+        "ingested": "2025-02-11T12:38:14Z",
         "kind": "event",
         "original": "[2019-04-08T16:16:55.931Z] \"GET /service/1 HTTP/1.1\" 200 - 0 89 5 4 \"-\" \"curl/7.54.0\" \"c219f6da-2b7f-483e-9ced-ec323d9330a9\" \"localhost:8000\" \"172.27.0.3:80\"",
         "outcome": "success",
@@ -116,8 +116,9 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "30",
-            "inode": "57",
+            "device_id": "64768",
+            "fingerprint": "64a922ed2775bc79e703cb91d8c21d2b5fa2924b41167308d87dfdcb05962d51",
+            "inode": "273536519",
             "path": "/tmp/service_logs/envoy.log"
         },
         "offset": 82
@@ -173,6 +174,7 @@ An example event for `log` looks as following:
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Log offset. | long |
@@ -434,6 +436,14 @@ An example event for `stats` looks as following:
 | envoy.tcp.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
 | envoy.tcp.\*.value | Envoyproxy gauges | object | gauge |
 | envoy.tcp.prefix | Stats prefix for the TCP Proxy network filter | keyword |  |
+| envoy.thread_local_cluster_manager.\*.count | Envoyproxy counters | object | counter |
+| envoy.thread_local_cluster_manager.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.value | Envoyproxy gauges | object | gauge |
 | envoy.thrift.\*.count | Envoyproxy counters | object | counter |
 | envoy.thrift.\*.max | Envoyproxy max timers metric | object |  |
 | envoy.thrift.\*.mean | Envoyproxy mean timers metric | object |  |

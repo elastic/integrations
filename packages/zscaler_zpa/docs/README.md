@@ -12,7 +12,7 @@ ECS fields where applicable and the remaining fields are written under
 1. Enable the integration with the TCP input.
 2. Configure the Zscaler LSS Log Receiver to send logs to the Elastic Agent
 that is running this integration. See [_Setup Log Receiver_](https://help.zscaler.com/zpa/configuring-log-receiver). Use the IP address/hostname of the Elastic Agent as the 'Log Receiver Domain or IP Address', and use the listening port of the Elastic Agent as the 'TCP Port' on the _Add Log Receiver_ configuration screen.
-3. *Please make sure to use the given response formats.*
+3. *Please make sure to use the latest version of given response formats.*
 
 ## ZPA Log Receiver Setup
 
@@ -35,9 +35,9 @@ Default port: _9015_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-connector-status-log-fields
 
-Zscaler response format:  
+Zscaler App Connector Status response format (v2):  
 ```
-{"LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"Platform": %j{Platform},"ZEN": %j{ZEN},"Connector": %j{Connector},"ConnectorGroup": %j{ConnectorGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"ServiceCount": %d{ServiceCount},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostUpTime": %j{HostUpTime},"ConnectorUpTime": %j{ConnectorUpTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx}}\n
+{"LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"Platform": %j{Platform},"ZEN": %j{ZEN},"Connector": %j{Connector},"ConnectorGroup": %j{ConnectorGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"ServiceCount": %d{ServiceCount},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostStartTime": %j{HostStartTime},"ConnectorStartTime": %j{ConnectorStartTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx}}\n
 ```
 
 Sample Response: 
@@ -51,7 +51,7 @@ Default port: _9016_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-audit-log-fields
 
-Zscaler response format:  
+Zscaler Audit response format (v1):  
 ```
 {"ModifiedTime":%j{modifiedTime:iso8601},"CreationTime":%j{creationTime:iso8601},"ModifiedBy":%d{modifiedBy},"RequestID":%j{requestId},"SessionID":%j{sessionId},"AuditOldValue":%j{auditOldValue},"AuditNewValue":%j{auditNewValue},"AuditOperationType":%j{auditOperationType},"ObjectType":%j{objectType},"ObjectName":%j{objectName},"ObjectID":%d{objectId},"CustomerID":%d{customerId},"User":%j{modifiedByUser},"ClientAuditUpdate":%d{isClientAudit}}\n
 ```
@@ -67,7 +67,7 @@ Default port: _9017_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-browser-access-log-fields
 
-Zscaler response format:  
+Zscaler Browser Access response format (v1):  
 ```
 {"LogTimestamp":%j{LogTimestamp:time},"ConnectionID":%j{ConnectionID},"Exporter":%j{Exporter},"TimestampRequestReceiveStart":%j{TimestampRequestReceiveStart:iso8601},"TimestampRequestReceiveHeaderFinish":%j{TimestampRequestReceiveHeaderFinish:iso8601},"TimestampRequestReceiveFinish":%j{TimestampRequestReceiveFinish:iso8601},"TimestampRequestTransmitStart":%j{TimestampRequestTransmitStart:iso8601},"TimestampRequestTransmitFinish":%j{TimestampRequestTransmitFinish:iso8601},"TimestampResponseReceiveStart":%j{TimestampResponseReceiveStart:iso8601},"TimestampResponseReceiveFinish":%j{TimestampResponseReceiveFinish:iso8601},"TimestampResponseTransmitStart":%j{TimestampResponseTransmitStart:iso8601},"TimestampResponseTransmitFinish":%j{TimestampResponseTransmitFinish:iso8601},"TotalTimeRequestReceive":%d{TotalTimeRequestReceive},"TotalTimeRequestTransmit":%d{TotalTimeRequestTransmit},"TotalTimeResponseReceive":%d{TotalTimeResponseReceive},"TotalTimeResponseTransmit":%d{TotalTimeResponseTransmit},"TotalTimeConnectionSetup":%d{TotalTimeConnectionSetup},"TotalTimeServerResponse":%d{TotalTimeServerResponse},"Method":%j{Method},"Protocol":%j{Protocol},"Host":%j{Host},"URL":%j{URL},"UserAgent":%j{UserAgent},"XFF":%j{XFF},"NameID":%j{NameID},"StatusCode":%d{StatusCode},"RequestSize":%d{RequestSize},"ResponseSize":%d{ResponseSize},"ApplicationPort":%d{ApplicationPort},"ClientPublicIp":%j{ClientPublicIp},"ClientPublicPort":%d{ClientPublicPort},"ClientPrivateIp":%j{ClientPrivateIp},"Customer":%j{Customer},"ConnectionStatus":%j{ConnectionStatus},"ConnectionReason":%j{ConnectionReason},"Origin":%j{Origin},"CorsToken":%j{CorsToken}}\n
 ```
@@ -83,7 +83,7 @@ Default port: _9018_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-user-activity-log-fields
 
-Zscaler response format:  
+Zscaler User Activity response format (v1):  
 ```
 {"LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"ConnectionID": %j{ConnectionID},"InternalReason": %j{InternalReason},"ConnectionStatus": %j{ConnectionStatus},"IPProtocol": %d{IPProtocol},"DoubleEncryption": %d{DoubleEncryption},"Username": %j{Username},"ServicePort": %d{ServicePort},"ClientPublicIP": %j{ClientPublicIP},"ClientPrivateIP": %j{ClientPrivateIP},"ClientLatitude": %f{ClientLatitude},"ClientLongitude": %f{ClientLongitude},"ClientCountryCode": %j{ClientCountryCode},"ClientZEN": %j{ClientZEN},"Policy": %j{Policy},"Connector": %j{Connector},"ConnectorZEN": %j{ConnectorZEN},"ConnectorIP": %j{ConnectorIP},"ConnectorPort": %d{ConnectorPort},"Host": %j{Host},"Application": %j{Application},"AppGroup": %j{AppGroup},"Server": %j{Server},"ServerIP": %j{ServerIP},"ServerPort": %d{ServerPort},"PolicyProcessingTime": %d{PolicyProcessingTime},"ServerSetupTime": %d{ServerSetupTime},"TimestampConnectionStart": %j{TimestampConnectionStart:iso8601},"TimestampConnectionEnd": %j{TimestampConnectionEnd:iso8601},"TimestampCATx": %j{TimestampCATx:iso8601},"TimestampCARx": %j{TimestampCARx:iso8601},"TimestampAppLearnStart": %j{TimestampAppLearnStart:iso8601},"TimestampZENFirstRxClient": %j{TimestampZENFirstRxClient:iso8601},"TimestampZENFirstTxClient": %j{TimestampZENFirstTxClient:iso8601},"TimestampZENLastRxClient": %j{TimestampZENLastRxClient:iso8601},"TimestampZENLastTxClient": %j{TimestampZENLastTxClient:iso8601},"TimestampConnectorZENSetupComplete": %j{TimestampConnectorZENSetupComplete:iso8601},"TimestampZENFirstRxConnector": %j{TimestampZENFirstRxConnector:iso8601},"TimestampZENFirstTxConnector": %j{TimestampZENFirstTxConnector:iso8601},"TimestampZENLastRxConnector": %j{TimestampZENLastRxConnector:iso8601},"TimestampZENLastTxConnector": %j{TimestampZENLastTxConnector:iso8601},"ZENTotalBytesRxClient": %d{ZENTotalBytesRxClient},"ZENBytesRxClient": %d{ZENBytesRxClient},"ZENTotalBytesTxClient": %d{ZENTotalBytesTxClient},"ZENBytesTxClient": %d{ZENBytesTxClient},"ZENTotalBytesRxConnector": %d{ZENTotalBytesRxConnector},"ZENBytesRxConnector": %d{ZENBytesRxConnector},"ZENTotalBytesTxConnector": %d{ZENTotalBytesTxConnector},"ZENBytesTxConnector": %d{ZENBytesTxConnector},"Idp": %j{Idp},"ClientToClient": %j{c2c},"ConnectorZENSetupTime":%d{ConnectorZENSetupTime},"ConnectionSetupTime":%d{ConnectionSetupTime}}\n
 ```
@@ -101,9 +101,9 @@ Default port: _9019_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-user-status-log-fields
 
-Zscaler response format:  
+Zscaler User Status response format (v2):  
 ```
-{"LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"Username": %j{Username},"SessionID": %j{SessionID},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"ZEN": %j{ZEN},"CertificateCN": %j{CertificateCN},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"Idp": %j{Idp},"Hostname": %j{Hostname},"Platform": %j{Platform},"ClientType": %j{ClientType},"TrustedNetworks": [%j(,){TrustedNetworks}],"TrustedNetworksNames": [%j(,){TrustedNetworksNames}],"SAMLAttributes": %j{SAMLAttributes},"PosturesHit": [%j(,){PosturesHit}],"PosturesMiss": [%j(,){PosturesMiss}],"ZENLatitude": %f{ZENLatitude},"ZENLongitude": %f{ZENLongitude},"ZENCountryCode": %j{ZENCountryCode},"FQDNRegistered": %j{fqdn_registered},"FQDNRegisteredError": %j{fqdn_register_error}}\n
+{"LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"Username": %j{Username},"SessionID": %j{SessionID},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"ZEN": %j{ZEN},"CertificateCN": %j{CertificateCN},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"Idp": %j{Idp},"Hostname": %j{Hostname},"Platform": %j{Platform},"ClientType": %j{ClientType},"TrustedNetworks": [%j(,){TrustedNetworks}],"TrustedNetworksNames": [%j(,){TrustedNetworksNames}],"SAMLAttributes": %j{SAMLAttributes},"PosturesHit": [%j(,){PosturesHit}],"PosturesMiss": [%j(,){PosturesMiss}],"ZENLatitude": %f{ZENLatitude},"ZENLongitude": %f{ZENLongitude},"ZENCountryCode": %j{ZENCountryCode},"FQDNRegistered": %j{FQDNRegistered},"FQDNRegisteredError": %j{FQDNRegisteredError}}\n
 ```
 
 Sample Response: 
@@ -131,9 +131,7 @@ Sample Response:
 | zscaler_zpa.app_connector_status.connector.group | The App Connector group name. | keyword |
 | zscaler_zpa.app_connector_status.connector.name | The App Connector name. | keyword |
 | zscaler_zpa.app_connector_status.connector_start_time | Time in seconds at which App Connector was started. | date |
-| zscaler_zpa.app_connector_status.connector_up_time | Time in seconds at which App Connector was started. | date |
 | zscaler_zpa.app_connector_status.host_start_time | Time in seconds at which host was started. | date |
-| zscaler_zpa.app_connector_status.host_up_time | Time in seconds at which host was started. | date |
 | zscaler_zpa.app_connector_status.interface.name | The name of the interface to default route. | keyword |
 | zscaler_zpa.app_connector_status.interface.received.bytes | The bytes received on the interface. | double |
 | zscaler_zpa.app_connector_status.interface.received.discards | The discards received on the interface. | double |
@@ -162,12 +160,11 @@ An example event for `app_connector_status` looks as following:
 {
     "@timestamp": "2019-07-03T05:17:22.000Z",
     "agent": {
-        "ephemeral_id": "5d064a52-4363-49de-a8f9-2d063c2aad0c",
-        "hostname": "docker-fleet-agent",
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "d17efff8-cfb0-4db3-8432-845f1e8207eb",
+        "id": "48f957e1-2579-4999-8de0-124eb4b4003d",
+        "name": "elastic-agent-26656",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.13.0"
     },
     "client": {
         "nat": {
@@ -176,16 +173,16 @@ An example event for `app_connector_status` looks as following:
     },
     "data_stream": {
         "dataset": "zscaler_zpa.app_connector_status",
-        "namespace": "ep",
+        "namespace": "13721",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
+        "id": "48f957e1-2579-4999-8de0-124eb4b4003d",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -193,9 +190,9 @@ An example event for `app_connector_status` looks as following:
             "package"
         ],
         "dataset": "zscaler_zpa.app_connector_status",
-        "ingested": "2023-02-22T12:08:34Z",
+        "ingested": "2025-04-07T06:34:44Z",
         "kind": "event",
-        "original": "{\"LogTimestamp\":\"Wed Jul 3 05:17:22 2019\",\"Customer\":\"Customer Name\",\"SessionID\":\"8A64Qwj9zCkfYDGJVoUZ\",\"SessionType\":\"ZPN_ASSISTANT_BROKER_CONTROL\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.20.3\",\"Platform\":\"el7\",\"ZEN\":\"US-NY-8179\",\"Connector\":\"Some App Connector\",\"ConnectorGroup\":\"Some App Connector Group\",\"PrivateIP\":\"10.0.0.4\",\"PublicIP\":\"0.0.0.0\",\"Latitude\":47,\"Longitude\":-122,\"CountryCode\":\"\",\"TimestampAuthentication\":\"2019-06-27T05:05:23.348Z\",\"TimestampUnAuthentication\":\"\",\"CPUUtilization\":1,\"MemUtilization\":20,\"ServiceCount\":2,\"InterfaceDefRoute\":\"eth0\",\"DefRouteGW\":\"10.0.0.1\",\"PrimaryDNSResolver\":\"168.63.129.16\",\"HostStartTime\":\"1513229995\",\"HostUpTime\":\"1513229995\",\"ConnectorUpTime\":\"1555920005\",\"ConnectorStartTime\":\"1555920005\",\"NumOfInterfaces\":2,\"BytesRxInterface\":319831966346,\"PacketsRxInterface\":1617569938,\"ErrorsRxInterface\":0,\"DiscardsRxInterface\":0,\"BytesTxInterface\":192958782635,\"PacketsTxInterface\":1797471190,\"ErrorsTxInterface\":0,\"DiscardsTxInterface\":0,\"TotalBytesRx\":10902554,\"TotalBytesTx\":48931771}",
+        "original": "{\"LogTimestamp\":\"Wed Jul 3 05:17:22 2019\",\"Customer\":\"Customer Name\",\"SessionID\":\"8A64Qwj9zCkfYDGJVoUZ\",\"SessionType\":\"ZPN_ASSISTANT_BROKER_CONTROL\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.20.3\",\"Platform\":\"el7\",\"ZEN\":\"US-NY-8179\",\"Connector\":\"Some App Connector\",\"ConnectorGroup\":\"Some App Connector Group\",\"PrivateIP\":\"10.0.0.4\",\"PublicIP\":\"0.0.0.0\",\"Latitude\":47,\"Longitude\":-122,\"CountryCode\":\"\",\"TimestampAuthentication\":\"2019-06-27T05:05:23.348Z\",\"TimestampUnAuthentication\":\"\",\"CPUUtilization\":1,\"MemUtilization\":20,\"ServiceCount\":2,\"InterfaceDefRoute\":\"eth0\",\"DefRouteGW\":\"10.0.0.1\",\"PrimaryDNSResolver\":\"168.63.129.16\",\"HostStartTime\":\"1513229995\",\"ConnectorStartTime\":\"1555920005\",\"NumOfInterfaces\":2,\"BytesRxInterface\":319831966346,\"PacketsRxInterface\":1617569938,\"ErrorsRxInterface\":0,\"DiscardsRxInterface\":0,\"BytesTxInterface\":192958782635,\"PacketsTxInterface\":1797471190,\"ErrorsTxInterface\":0,\"DiscardsTxInterface\":0,\"TotalBytesRx\":10902554,\"TotalBytesTx\":48931771}",
         "type": [
             "info"
         ]
@@ -218,7 +215,7 @@ An example event for `app_connector_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:59424"
+            "address": "172.20.0.3:44536"
         }
     },
     "observer": {
@@ -260,9 +257,7 @@ An example event for `app_connector_status` looks as following:
                 "name": "Some App Connector"
             },
             "connector_start_time": "2019-04-22T08:00:05.000Z",
-            "connector_up_time": "2019-04-22T08:00:05.000Z",
             "host_start_time": "2017-12-14T05:39:55.000Z",
-            "host_up_time": "2017-12-14T05:39:55.000Z",
             "interface": {
                 "name": "eth0",
                 "received": {
@@ -332,25 +327,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-17T04:29:38.000Z",
     "agent": {
-        "ephemeral_id": "f7eff07b-58ba-49bf-a364-5df94e1adfb6",
-        "hostname": "docker-fleet-agent",
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e758c9d6-e963-40d8-a5f9-5976463b25e6",
+        "id": "8a994ef1-4b96-4eb4-9626-07c926e2bef3",
+        "name": "elastic-agent-73196",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "zscaler_zpa.audit",
-        "namespace": "ep",
+        "namespace": "42685",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
+        "id": "8a994ef1-4b96-4eb4-9626-07c926e2bef3",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -360,9 +354,10 @@ An example event for `audit` looks as following:
         "created": "2021-11-17T04:29:38.000Z",
         "dataset": "zscaler_zpa.audit",
         "id": "11111111-1111-1111-1111-111111111111",
-        "ingested": "2023-02-22T12:09:19Z",
+        "ingested": "2025-05-30T08:14:28Z",
         "kind": "event",
         "original": "{\"ModifiedTime\":\"2021-11-17T04:29:38.000Z\",\"CreationTime\":\"2021-11-17T04:29:38.000Z\",\"ModifiedBy\":12345678901234567,\"RequestID\":\"11111111-1111-1111-1111-111111111111\",\"SessionID\":\"1idn23nlfm2q1txa5h3r4mep6\",\"AuditOldValue\":\"\",\"AuditNewValue\":\"{\\\"id\\\":\\\"72058340288495701\\\",\\\"name\\\":\\\"Some-Name\\\",\\\"domainOrIpAddress\\\":\\\"1.0.0.1\\\",\\\"description\\\":\\\"This is a description field\\\",\\\"enabled\\\":\\\"true\\\"}\",\"AuditOperationType\":\"Create\",\"ObjectType\":\"Server\",\"ObjectName\":\"Some-Name\",\"ObjectID\":12345678901234567,\"CustomerID\":98765432109876543,\"User\":\"zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com\",\"ClientAuditUpdate\":0}",
+        "outcome": "success",
         "type": [
             "creation"
         ]
@@ -372,7 +367,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:55180"
+            "address": "172.19.0.3:47260"
         }
     },
     "organization": {
@@ -384,6 +379,7 @@ An example event for `audit` looks as following:
         ],
         "user": [
             "12345678901234567",
+            "zpaadmin",
             "zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com"
         ]
     },
@@ -397,8 +393,10 @@ An example event for `audit` looks as following:
         "zscaler_zpa-audit"
     ],
     "user": {
+        "domain": "xxxxxxxxxxxxxxxxx.zpa-customer.com",
+        "email": "zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com",
         "id": "12345678901234567",
-        "name": "zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com"
+        "name": "zpaadmin"
     },
     "zscaler_zpa": {
         "audit": {
@@ -704,12 +702,11 @@ An example event for `user_activity` looks as following:
 {
     "@timestamp": "2019-05-31T17:35:42.000Z",
     "agent": {
-        "ephemeral_id": "47a2e053-f9d2-4244-b6bd-9acf12361804",
-        "hostname": "docker-fleet-agent",
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "dc5b8414-8d42-4bd7-820f-f19b6f07188b",
+        "id": "43113495-332c-42b0-a84a-dfd7a28a3adc",
+        "name": "elastic-agent-20487",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.13.0"
     },
     "client": {
         "geo": {
@@ -723,16 +720,16 @@ An example event for `user_activity` looks as following:
     },
     "data_stream": {
         "dataset": "zscaler_zpa.user_activity",
-        "namespace": "ep",
+        "namespace": "11041",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
+        "id": "43113495-332c-42b0-a84a-dfd7a28a3adc",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -740,7 +737,7 @@ An example event for `user_activity` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zpa.user_activity",
-        "ingested": "2023-02-22T12:10:47Z",
+        "ingested": "2025-05-25T22:58:32Z",
         "kind": "event",
         "original": "{\"LogTimestamp\": \"Fri May 31 17:35:42 2019\",\"Customer\": \"Customer XYZ\",\"SessionID\": \"LHJdkjmNDf12nclBsvwA\",\"ConnectionID\": \"SqyZIMkg0JTj7EABsvwA,Q+EjXGdrvbF2lPiBbedm\",\"InternalReason\": \"\",\"ConnectionStatus\": \"active\",\"IPProtocol\": 6,\"DoubleEncryption\": 0,\"Username\": \"ZPA LSS Client\",\"ServicePort\": 10011,\"ClientPublicIP\": \"81.2.69.193\",\"ClientLatitude\": 45.000000,\"ClientLongitude\": -119.000000,\"ClientCountryCode\": \"US\",\"ClientZEN\": \"broker2b.pdx\",\"Policy\": \"ABC Lab Apps\",\"Connector\": \"ZDEMO ABC\",\"ConnectorZEN\": \"broker2b.pdx\",\"ConnectorIP\": \"67.43.156.12\",\"ConnectorPort\": 60266,\"Host\": \"175.16.199.1\",\"Application\": \"ABC Lab Apps\",\"AppGroup\": \"ABC Lab Apps\",\"Server\": \"0\",\"ServerIP\": \"175.16.199.1\",\"ServerPort\": 10011,\"PolicyProcessingTime\": 28,\"CAProcessingTime\": 1330,\"ConnectorZENSetupTime\": 191017,\"ConnectionSetupTime\": 192397,\"ServerSetupTime\": 465,\"AppLearnTime\": 0,\"TimestampConnectionStart\": \"2019-05-30T08:20:42.230Z\",\"TimestampConnectionEnd\": \"\",\"TimestampCATx\": \"2019-05-30T08:20:42.230Z\",\"TimestampCARx\": \"2019-05-30T08:20:42.231Z\",\"TimestampAppLearnStart\": \"\",\"TimestampZENFirstRxClient\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENFirstTxClient\": \"\",\"TimestampZENLastRxClient\": \"2019-05-31T17:34:27.348Z\",\"TimestampZENLastTxClient\": \"\",\"TimestampConnectorZENSetupComplete\": \"2019-05-30T08:20:42.422Z\",\"TimestampZENFirstRxConnector\": \"\",\"TimestampZENFirstTxConnector\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENLastRxConnector\": \"\",\"TimestampZENLastTxConnector\": \"2019-05-31T17:34:27.348Z\",\"ZENTotalBytesRxClient\": 2406926,\"ZENBytesRxClient\": 7115,\"ZENTotalBytesTxClient\": 0,\"ZENBytesTxClient\": 0,\"ZENTotalBytesRxConnector\": 0,\"ZENBytesRxConnector\": 0,\"ZENTotalBytesTxConnector\": 2406926,\"ZENBytesTxConnector\": 7115,\"Idp\": \"Example IDP Config\",\"ClientToClient\": \"0\"}",
         "type": [
@@ -758,11 +755,11 @@ An example event for `user_activity` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:60604"
+            "address": "172.19.0.3:52362"
         }
     },
     "network": {
-        "type": "ipv6"
+        "transport": "tcp"
     },
     "organization": {
         "name": "Customer XYZ"

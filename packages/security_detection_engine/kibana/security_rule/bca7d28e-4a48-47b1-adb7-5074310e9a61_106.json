@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a service account is disabled in Google Cloud Platform (GCP). A service account is a special type of account used by an application or a virtual machine (VM) instance, not a person. Applications use service accounts to make authorized API calls, authorized as either the service account itself, or as G Suite or Cloud Identity users through domain-wide delegation. An adversary may disable a service account in order to disrupt to disrupt their target's business operations.",
+        "false_positives": [
+            "Service accounts may be disabled by system administrators. Verify that the behavior was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-gcp*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GCP Service Account Disabled",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GCP Service Account Disabled\n\nIn Google Cloud Platform, service accounts are crucial for applications and VMs to perform authorized actions without user intervention. Adversaries may disable these accounts to disrupt services, impacting business operations. The detection rule identifies successful disablement actions in audit logs, signaling potential malicious activity by correlating specific event actions and outcomes, thus enabling timely investigation and response.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action:google.iam.admin.v*.DisableServiceAccount to identify the exact time and source of the disablement action.\n- Identify the user or service account that performed the disablement by examining the actor information in the audit logs.\n- Check for any recent changes or unusual activities associated with the disabled service account, such as modifications to permissions or roles.\n- Investigate any related events or actions in the audit logs around the same timeframe to identify potential patterns or additional suspicious activities.\n- Assess the impact of the disabled service account on business operations by determining which applications or services were using the account.\n- Contact relevant stakeholders or application owners to verify if the disablement was authorized or if it was an unexpected action.\n\n### False positive analysis\n\n- Routine maintenance activities by administrators may involve disabling service accounts temporarily. To manage this, create exceptions for known maintenance periods or specific administrator actions.\n- Automated scripts or tools used for testing or deployment might disable service accounts as part of their process. Identify these scripts and exclude their actions from triggering alerts by using specific identifiers or tags.\n- Organizational policy changes or restructuring might lead to intentional service account disablement. Document these changes and update the detection rule to recognize these legitimate actions.\n- Service accounts associated with deprecated or retired applications may be disabled as part of cleanup efforts. Maintain an updated list of such applications and exclude related disablement actions from alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected service account by revoking its permissions to prevent further unauthorized actions.\n- Review the audit logs to identify any other suspicious activities associated with the disabled service account and assess the potential impact on business operations.\n- Re-enable the service account if it is determined to be legitimate and necessary for business functions, ensuring that it is secured with appropriate permissions and monitoring.\n- Notify the security team and relevant stakeholders about the incident for awareness and further investigation.\n- Implement additional monitoring and alerting for similar disablement actions on service accounts to detect and respond to future incidents promptly.\n- Conduct a root cause analysis to understand how the service account was disabled and address any security gaps or misconfigurations that allowed the incident to occur.\n- Consider implementing additional security measures such as multi-factor authentication and least privilege access to enhance the protection of service accounts.",
+        "query": "event.dataset:gcp.audit and event.action:google.iam.admin.v*.DisableServiceAccount and event.outcome:success\n",
+        "references": [
+            "https://cloud.google.com/iam/docs/service-accounts"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "bca7d28e-4a48-47b1-adb7-5074310e9a61",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 106
+    },
+    "id": "bca7d28e-4a48-47b1-adb7-5074310e9a61_106",
+    "type": "security-rule"
+}

@@ -1,31 +1,82 @@
 ---
-description: Pipeline for processing AWS Inspector Findings logs.
+description: Pipeline for processing Amazon Inspector Findings logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
+      tag: set_ecs_version
       value: '8.11.0'
   - set:
       field: event.kind
+      tag: set_event_kind
       value: event
-  - set:
+  - append:
+      field: event.category
+      tag: append_vulnerability_into_event_category
+      value: vulnerability
+  - append:
       field: event.type
-      value: [info]
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Amazon Inspector
+  - set:
+      field: vulnerability.scanner.vendor
+      tag: set_vulnerability_scanner_vendor
+      value: Amazon Inspector
+  # Remove cloud.* fields populated by beat.
+  # These fields correspond to EA rather than AWS hosts and could be misleading.
+  - remove:
+      field: cloud
+      tag: remove_cloud_fields
+      ignore_missing: true
+      description: Remove ECS cloud fields that are populated from EA metadata.
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider
+      value: aws
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
-      if: 'ctx.event?.original == null'
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
+      tag: json_event_original
       target_field: json
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - event.original
+      tag: fingerprint_inspector
       target_field: _id
       ignore_missing: true
   - date:
       field: json.updatedAt
+      tag: date_updatedAt
       if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
       target_field: aws.inspector.updated_at
       formats:
@@ -35,64 +86,212 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
+      tag: set_@timestamp_from_updated_at
       copy_from: aws.inspector.updated_at
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.description
+      tag: rename_description
       target_field: aws.inspector.description
       ignore_missing: true
   - set:
       field: message
+      tag: set_message_from_description
       copy_from: aws.inspector.description
-      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.description
+      tag: set_vulnerability_description
+      copy_from: aws.inspector.description
+      ignore_empty_value: true
   - rename:
       field: json.awsAccountId
+      tag: rename_awsAccountId
       target_field: aws.inspector.aws_account_id
       ignore_missing: true
   - set:
       field: cloud.account.id
+      tag: set_cloud_account_id_from_aws_account_id
       copy_from: aws.inspector.aws_account_id
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.severity
+      tag: rename_severity
       target_field: aws.inspector.severity
       ignore_missing: true
+  - script:
+      description: Map vulnerability.severity to CVSS standard
+      tag: script_to_map_severity_to_CVSS
+      lang: painless
+      if: ctx.aws?.inspector?.severity != null
+      source: >
+        String severity = ctx.aws.inspector.severity.toLowerCase();
+        if (severity == 'untriaged') {
+          ctx.vulnerability.put('severity', 'Unknown');
+        } else if (severity == 'informational') {
+          ctx.vulnerability.put('severity', 'Low');
+        } else if (severity == 'low') {
+          ctx.vulnerability.put('severity', 'Low');
+        } else if (severity == 'medium') {
+          ctx.vulnerability.put('severity', 'Medium');
+        } else if (severity == 'high') {
+          ctx.vulnerability.put('severity', 'High');
+        } else if (severity == 'critical') {
+          ctx.vulnerability.put('severity', 'Critical');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.networkReachabilityDetails.protocol
+      tag: rename_networkReachabilityDetails_protocol
       target_field: aws.inspector.network_reachability_details.protocol
       ignore_missing: true
   - set:
       field: network.transport
+      tag: set_network_transport_from_network_reachability_details_protocol
       copy_from: aws.inspector.network_reachability_details.protocol
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - rename:
+      field: json.codeVulnerabilityDetails.cwes
+      tag: rename_codeVulnerabilityDetails_cwes
+      target_field: aws.inspector.code_vulnerability_details.cwes
+      ignore_missing: true
+  - rename:
+      field: json.codeVulnerabilityDetails.detectorId
+      tag: rename_codeVulnerabilityDetails_detectorId
+      target_field: aws.inspector.code_vulnerability_details.detector_id
+      ignore_missing: true
+  - rename:
+      field: json.codeVulnerabilityDetails.detectorName
+      tag: rename_codeVulnerabilityDetails_detectorName
+      target_field: aws.inspector.code_vulnerability_details.detector_name
+      ignore_missing: true
+  - rename:
+      field: json.codeVulnerabilityDetails.detectorTags
+      tag: rename_codeVulnerabilityDetails_detectorTags
+      target_field: aws.inspector.code_vulnerability_details.detector_tags
+      ignore_missing: true
+  - convert:
+      field: json.codeVulnerabilityDetails.filePath.endLine
+      tag: convert_codeVulnerabilityDetails_filePath_endLine_to_long
+      type: long
+      target_field: aws.inspector.code_vulnerability_details.file_path.end_line
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.codeVulnerabilityDetails.filePath.fileName
+      tag: rename_codeVulnerabilityDetails_filePath_fileName
+      target_field: aws.inspector.code_vulnerability_details.file_path.name
+      ignore_missing: true
+  - rename:
+      field: json.codeVulnerabilityDetails.filePath.filePath
+      tag: rename_codeVulnerabilityDetails_filePath_filePath
+      target_field: aws.inspector.code_vulnerability_details.file_path.path
+      ignore_missing: true
+  - convert:
+      field: json.codeVulnerabilityDetails.filePath.startLine
+      tag: convert_codeVulnerabilityDetails_filePath_startLine_to_long
+      type: long
+      target_field: aws.inspector.code_vulnerability_details.file_path.start_line
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.codeVulnerabilityDetails.referenceUrls
+      tag: rename_codeVulnerabilityDetails_referenceUrls
+      target_field: aws.inspector.code_vulnerability_details.reference_urls
+      ignore_missing: true
+  - rename:
+      field: json.codeVulnerabilityDetails.ruleId
+      tag: rename_codeVulnerabilityDetails_ruleId
+      target_field: aws.inspector.code_vulnerability_details.rule_id
+      ignore_missing: true
+  - rename:
+      field: json.codeVulnerabilityDetails.sourceLambdaLayerArn
+      tag: rename_codeVulnerabilityDetails_sourceLambdaLayerArn
+      target_field: aws.inspector.code_vulnerability_details.source_lambda_layer_arn
+      ignore_missing: true
+  - convert:
+      field: json.epss.score
+      tag: convert_epss_score_to_double
+      type: double
+      target_field: aws.inspector.epss.score
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.exploitabilityDetails.lastKnownExploitAt
+      tag: date_exploitabilityDetails_lastKnownExploitAt
+      if: ctx.json?.exploitabilityDetails?.lastKnownExploitAt != null && ctx.json.exploitabilityDetails.lastKnownExploitAt != ''
+      target_field: aws.inspector.exploitability_details.last_known_exploit_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.exploitAvailable
+      tag: rename_exploitAvailable
+      target_field: aws.inspector.exploit_available
       ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.referenceUrls
+      tag: rename_packageVulnerabilityDetails_referenceUrls
       target_field: aws.inspector.package_vulnerability_details.reference_urls
       ignore_missing: true
   - set:
       field: vulnerability.reference
+      tag: set_vulnerability_reference_from_package_vulnerability_details_reference_urls
       copy_from: aws.inspector.package_vulnerability_details.reference_urls
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.packageVulnerabilityDetails.vulnerabilityId
+      tag: rename_packageVulnerabilityDetails_vulnerabilityId
       target_field: aws.inspector.package_vulnerability_details.vulnerability_id
       ignore_missing: true
   - set:
       field: vulnerability.id
+      tag: set_vulnerability_id_from_package_vulnerability_details_vulnerability_id
       copy_from: aws.inspector.package_vulnerability_details.vulnerability_id
-      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.cve
+      tag: set_vulnerability_cve_from_package_vulnerability_details_vulnerability_id
+      copy_from: aws.inspector.package_vulnerability_details.vulnerability_id
+      ignore_empty_value: true
+      if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY' && ctx.aws.inspector.package_vulnerability_details?.vulnerability_id?.startsWith('CVE') == true
+  - set:
+      field: vulnerability.enumeration
+      tag: set_vulnerability_enumeration
+      value: CVE
+      if: ctx.vulnerability?.cve != null
   - rename:
       field: json.findingArn
+      tag: rename_findingArn
       target_field: aws.inspector.finding_arn
       ignore_missing: true
   - date:
       field: json.firstObservedAt
+      tag: date_firstObservedAt
       if: ctx.json?.firstObservedAt != null && ctx.json.firstObservedAt != ''
       target_field: aws.inspector.first_observed_at
       formats:
@@ -102,51 +301,75 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.fixAvailable
+      tag: rename_fixAvailable
       target_field: aws.inspector.fix_available
       ignore_missing: true
   - convert:
       field: json.inspectorScore
+      tag: convert_inspectorScore_to_double
       type: double
       target_field: aws.inspector.inspector_score
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.adjustments
+      tag: rename_inspectorScoreDetails_adjustedCvss_adjustments
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.adjustments
       ignore_missing: true
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.cvssSource
+      tag: rename_inspectorScoreDetails_adjustedCvss_cvssSource
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.cvss_source
       ignore_missing: true
   - convert:
       field: json.inspectorScoreDetails.adjustedCvss.score
+      tag: convert_inspectorScoreDetails_adjustedCvss_score_to_double
       type: double
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.score.value
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base
+      copy_from: aws.inspector.inspector_score_details.adjusted_cvss.score.value
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.classification
+      tag: set_vulnerability_classification
+      value: CVSS
+      if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY' && ctx.aws.inspector.inspector_score_details?.adjusted_cvss?.score?.value != null
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.scoreSource
+      tag: rename_inspectorScoreDetails_adjustedCvss_scoreSource
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.score.source
       ignore_missing: true
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.scoringVector
+      tag: rename_inspectorScoreDetails_adjustedCvss_scoringVector
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.scoring_vector
       ignore_missing: true
   - rename:
       field: json.inspectorScoreDetails.adjustedCvss.version
+      tag: rename_inspectorScoreDetails_adjustedCvss_version
       target_field: aws.inspector.inspector_score_details.adjusted_cvss.version
       ignore_missing: true
+  - set:
+      field: vulnerability.score.version
+      tag: set_vulnerability_score_version
+      copy_from: aws.inspector.inspector_score_details.adjusted_cvss.version
+      ignore_empty_value: true
   - date:
       field: json.lastObservedAt
+      tag: date_lastObservedAt
       if: ctx.json?.lastObservedAt != null && ctx.json.lastObservedAt != ''
       target_field: aws.inspector.last_observed_at
       formats:
@@ -156,54 +379,66 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.networkReachabilityDetails.networkPath.steps
       if: ctx.json?.networkReachabilityDetails?.networkPath?.steps instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.componentId
+          tag: rename_networkReachabilityDetails_networkPath_steps_componentId
           target_field: _ingest._value.component.id
           ignore_missing: true
   - foreach:
       field: json.networkReachabilityDetails.networkPath.steps
       if: ctx.json?.networkReachabilityDetails?.networkPath?.steps instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.componentType
+          tag: rename_networkReachabilityDetails_networkPath_steps_componentType
           target_field: _ingest._value.component.type
+          ignore_missing: true
+  - foreach:
+      field: json.networkReachabilityDetails.networkPath.steps
+      if: ctx.json?.networkReachabilityDetails?.networkPath?.steps instanceof List
+      processor:
+        rename:
+          field: _ingest._value.componentArn
+          tag: rename_networkReachabilityDetails_networkPath_steps_componentArn
+          target_field: _ingest._value.component.arn
           ignore_missing: true
   - rename:
       field: json.networkReachabilityDetails.networkPath.steps
+      tag: rename_networkReachabilityDetails_networkPath_steps
       target_field: aws.inspector.network_reachability_details.network_path.steps
       ignore_missing: true
   - convert:
       field: json.networkReachabilityDetails.openPortRange.begin
+      tag: convert_networkReachabilityDetails_openPortRange_begin_to_long
       type: long
       target_field: aws.inspector.network_reachability_details.open_port_range.begin
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.networkReachabilityDetails.openPortRange.end
+      tag: convert_networkReachabilityDetails_openPortRange_end_to_long
       type: long
       target_field: aws.inspector.network_reachability_details.open_port_range.end
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.packageVulnerabilityDetails.cvss
       if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
-      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.baseScore
+          tag: convert_packageVulnerabilityDetails_cvss_baseScore_to_double
           type: double
           target_field: _ingest._value.base_score
           ignore_missing: true
@@ -213,70 +448,47 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.packageVulnerabilityDetails.cvss
       if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
-      ignore_failure: true
       processor:
         remove:
           field: _ingest._value.baseScore
+          tag: remove_packageVulnerabilityDetails_cvss_baseScore
           ignore_missing: true
   - foreach:
       field: json.packageVulnerabilityDetails.cvss
       if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: vulnerability.score.base
-          value: '{{{_ingest._value.base_score}}}'
-          allow_duplicates: true
-          ignore_failure: true
-  - convert:
-      field: vulnerability.score.base
-      type: double
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.packageVulnerabilityDetails.cvss
-      if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: vulnerability.score.version
-          value: '{{{_ingest._value.version}}}'
-          allow_duplicates: true
-          ignore_failure: true
-  - foreach:
-      field: json.packageVulnerabilityDetails.cvss
-      if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.scoringVector
+          tag: rename_packageVulnerabilityDetails_cvss_scoringVector
           target_field: _ingest._value.scoring_vector
           ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.cvss
+      tag: rename_packageVulnerabilityDetails_cvss
       target_field: aws.inspector.package_vulnerability_details.cvss
       ignore_missing: true
   - rename:
       field: json.networkReachabilityDetails.networkPath.steps
+      tag: rename_networkReachabilityDetails_networkPath_steps
       target_field: aws.inspector.network_reachability_details.network_path.steps
       ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.relatedVulnerabilities
+      tag: rename_packageVulnerabilityDetails_relatedVulnerabilities
       target_field: aws.inspector.package_vulnerability_details.related_vulnerabilities
       ignore_missing: true
   - rename:
       field: json.packageVulnerabilityDetails.source
+      tag: rename_packageVulnerabilityDetails_source
       target_field: aws.inspector.package_vulnerability_details.source.value
       ignore_missing: true
   - uri_parts:
       field: json.packageVulnerabilityDetails.sourceUrl
+      tag: uri_parts_packageVulnerabilityDetails_sourceUrl
       target_field: aws.inspector.package_vulnerability_details.source.url
       if: ctx.json?.packageVulnerabilityDetails?.sourceUrl != null
       keep_original: true
@@ -286,9 +498,10 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.packageVulnerabilityDetails.vendorCreatedAt
+      tag: date_packageVulnerabilityDetails_vendorCreatedAt
       if: ctx.json?.packageVulnerabilityDetails?.vendorCreatedAt != null && ctx.json.packageVulnerabilityDetails.vendorCreatedAt != ''
       target_field: aws.inspector.package_vulnerability_details.vendor.created_at
       formats:
@@ -298,17 +511,20 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.published_date
+      tag: set_vulnerability_published_date
+      copy_from: aws.inspector.package_vulnerability_details.vendor.created_at
+      ignore_empty_value: true
   - rename:
       field: json.packageVulnerabilityDetails.vendorSeverity
+      tag: rename_packageVulnerabilityDetails_vendorSeverity
       target_field: aws.inspector.package_vulnerability_details.vendor.severity
       ignore_missing: true
-  - set:
-      field: vulnerability.severity
-      copy_from: aws.inspector.package_vulnerability_details.vendor.severity
-      ignore_failure: true
   - date:
       field: json.packageVulnerabilityDetails.vendorUpdatedAt
+      tag: date_packageVulnerabilityDetails_vendorUpdatedAt
       if: ctx.json?.packageVulnerabilityDetails?.vendorUpdatedAt!= null && ctx.json.packageVulnerabilityDetails.vendorUpdatedAt != ''
       target_field: aws.inspector.package_vulnerability_details.vendor.updated_at
       formats:
@@ -318,63 +534,125 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.packageVulnerabilityDetails.vulnerablePackages
       if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.filePath
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_filePath
           target_field: _ingest._value.file_path
           ignore_missing: true
   - foreach:
       field: json.packageVulnerabilityDetails.vulnerablePackages
       if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.fixedInVersion
-          target_field: _ingest._value.fixed_inversion
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_fixedInVersion
+          target_field: _ingest._value.fixed_in_version
           ignore_missing: true
   - foreach:
       field: json.packageVulnerabilityDetails.vulnerablePackages
       if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.packageManager
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_packageManager
           target_field: _ingest._value.package_manager
           ignore_missing: true
   - foreach:
       field: json.packageVulnerabilityDetails.vulnerablePackages
       if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
-      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.sourceLambdaLayerArn
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_sourceLambdaLayerArn
+          target_field: _ingest._value.source_lambda_layer_arn
+          ignore_missing: true
+  - foreach:
+      field: json.packageVulnerabilityDetails.vulnerablePackages
+      if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
       processor:
         rename:
           field: _ingest._value.sourceLayerHash
+          tag: rename_packageVulnerabilityDetails_vulnerablePackages_sourceLayerHash
           target_field: _ingest._value.source_layer_hash
           ignore_missing: true
   - foreach:
       field: json.packageVulnerabilityDetails.vulnerablePackages
       if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
-      ignore_failure: true
       processor:
         append:
           field: related.hash
+          tag: append_packageVulnerabilityDetails_vulnerablePackages_source_layer_hash_into_related_hash
           value: '{{{_ingest._value.source_layer_hash}}}'
           allow_duplicates: false
-          ignore_failure: true
   - rename:
       field: json.packageVulnerabilityDetails.vulnerablePackages
+      tag: rename_packageVulnerabilityDetails_vulnerablePackages
       target_field: aws.inspector.package_vulnerability_details.vulnerable_packages
       ignore_missing: true
+  # Introduce aws.inspector.package_nested field with nested type to associate relationship between version, name, fixed_version, path, etc.
+  - set:
+      field: aws.inspector.package_nested
+      tag: set_package_nested_from_package_vulnerability_details_vulnerable_packages
+      copy_from: aws.inspector.package_vulnerability_details.vulnerable_packages
+      ignore_empty_value: true
+  - foreach:
+      field: aws.inspector.package_vulnerability_details.vulnerable_packages
+      if: ctx.aws?.inspector?.package_vulnerability_details?.vulnerable_packages instanceof List
+      processor:
+        append:
+          field: package.architecture
+          tag: append_package_vulnerability_details_vulnerable_packages_arch_into_package_architecture
+          value: '{{{_ingest._value.arch}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws.inspector.package_vulnerability_details.vulnerable_packages
+      if: ctx.aws?.inspector?.package_vulnerability_details?.vulnerable_packages instanceof List
+      processor:
+        append:
+          field: package.name
+          tag: append_package_vulnerability_details_vulnerable_packages_name_into_package_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws.inspector.package_vulnerability_details.vulnerable_packages
+      if: ctx.aws?.inspector?.package_vulnerability_details?.vulnerable_packages instanceof List
+      processor:
+        append:
+          field: package.version
+          tag: append_package_vulnerability_details_vulnerable_packages_version_into_package_version
+          value: '{{{_ingest._value.version}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws.inspector.package_vulnerability_details.vulnerable_packages
+      if: ctx.aws?.inspector?.package_vulnerability_details?.vulnerable_packages instanceof List
+      processor:
+        append:
+          field: package.path
+          tag: append_package_vulnerability_details_vulnerable_packages_file_path_into_package_path
+          value: '{{{_ingest._value.file_path}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws.inspector.package_vulnerability_details.vulnerable_packages
+      if: ctx.aws?.inspector?.package_vulnerability_details?.vulnerable_packages instanceof List
+      processor:
+        append:
+          field: package.fixed_version
+          tag: append_package_vulnerability_details_vulnerable_packages_fixed_in_version_into_package_fixed_version
+          value: '{{{_ingest._value.fixed_in_version}}}'
+          allow_duplicates: false
   - rename:
       field: json.remediation.recommendation.text
+      tag: rename_remediation_recommendation_text
       target_field: aws.inspector.remediation.recommendation.text
       ignore_missing: true
   - uri_parts:
       field: json.remediation.recommendation.Url
+      tag: uri_parts_remediation_recommendation_Url
       target_field: aws.inspector.remediation.recommendation.url
       if: ctx.json?.remediation?.recommendation?.Url != null
       keep_original: true
@@ -384,290 +662,591 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.iamInstanceProfileArn
+          tag: rename_resources_details_awsEc2Instance_iamInstanceProfileArn
           target_field: _ingest._value.details.aws.ec2_instance.iam_instance_profile_arn
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.imageId
+          tag: rename_resources_details_awsEc2Instance_imageId
           target_field: _ingest._value.details.aws.ec2_instance.image_id
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.ipV4Addresses
+          tag: rename_resources_details_awsEc2Instance_ipV4Addresses
           target_field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
-          ignore_failure: true
+          ignore_missing: true
           processor:
             convert:
               field: _ingest._value
-              target_field: _ingest._value
+              tag: convert_details_aws_ec2_instance_ipv4_addresses_to_ip
               type: ip
-              ignore_failure: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
-          ignore_failure: true
+          ignore_missing: true
           processor:
             append:
               field: related.ip
+              tag: append_resources_details_aws_ec2_instance_ipv4_addresses_into_related_ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
-              ignore_failure: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.ipV6Addresses
+          tag: rename_resources_details_awsEc2Instance_ipV6Addresses
           target_field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
-          ignore_failure: true
+          ignore_missing: true
           processor:
             convert:
               field: _ingest._value
-              target_field: _ingest._value
+              tag: convert_details_aws_ec2_instance_ipv6_addresses_to_ip
               type: ip
-              ignore_failure: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
-          ignore_failure: true
+          ignore_missing: true
           processor:
             append:
               field: related.ip
+              tag: append_resources_details_aws_ec2_instance_ipv6_addresses_into_related_ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
-              ignore_failure: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.keyName
+          tag: rename_resources_details_awsEc2Instance_keyName
           target_field: _ingest._value.details.aws.ec2_instance.key_name
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         date:
           field: _ingest._value.details.awsEc2Instance.launchedAt
+          tag: date_resources_details_awsEc2Instance_launchedAt
           target_field: _ingest._value.details.aws.ec2_instance.launched_at
           formats:
             - ISO8601
             - UNIX
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-          ignore_failure: true
+          on_failure:
+            - remove:
+                field: _ingest._value.details.awsEc2Instance.launchedAt
+                ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            - _ingest._value.details.awsEc2Instance.launchedAt
-          ignore_missing: true
-  - foreach:
-      field: json.resources
-      if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.platform
+          tag: rename_resources_details_awsEc2Instance_platform
           target_field: _ingest._value.details.aws.ec2_instance.platform
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.subnetId
+          tag: rename_resources_details_awsEc2Instance_subnetId
           target_field: _ingest._value.details.aws.ec2_instance.subnet_id
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.type
+          tag: rename_resources_details_awsEc2Instance_type
           target_field: _ingest._value.details.aws.ec2_instance.type
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEc2Instance.vpcId
+          tag: rename_resources_details_awsEc2Instance_vpcId
           target_field: _ingest._value.details.aws.ec2_instance.vpc_id
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.architecture
+          tag: rename_resources_details_awsEcrContainerImage_architecture
           target_field: _ingest._value.details.aws.ecr_container_image.architecture
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.author
+          tag: rename_resources_details_awsEcrContainerImage_author
           target_field: _ingest._value.details.aws.ecr_container_image.author
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.imageHash
+          tag: rename_resources_details_awsEcrContainerImage_imageHash
           target_field: _ingest._value.details.aws.ecr_container_image.image.hash
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         append:
           field: related.hash
+          tag: append_resources_details_awsEcrContainerImage_imageHash_into_related_hash
           value: '{{{_ingest._value.details.aws.ecr_container_image.image.hash}}}'
           allow_duplicates: false
-          ignore_failure: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.imageTags
+          tag: rename_resources_details_awsEcrContainerImage_imageTags
           target_field: _ingest._value.details.aws.ecr_container_image.image.tags
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.details.awsEcrContainerImage.inUseCount
+          tag: convert_resources_details_awsEcrContainerImage_inUseCount_to_long
+          type: long
+          target_field: _ingest._value.details.aws.ecr_container_image.in_use_count
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.details.awsEcrContainerImage.inUseCount
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.details.awsEcrContainerImage.lastInUseAt
+          tag: date_resources_details_awsEcrContainerImage_lastInUseAt
+          target_field: _ingest._value.details.aws.ecr_container_image.last_in_use_at
+          formats:
+            - ISO8601
+            - UNIX
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          on_failure:
+            - remove:
+                field: _ingest._value.details.awsEcrContainerImage.lastInUseAt
+                ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.platform
+          tag: rename_resources_details_awsEcrContainerImage_platform
           target_field: _ingest._value.details.aws.ecr_container_image.platform
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         date:
           field: _ingest._value.details.awsEcrContainerImage.pushedAt
+          tag: date_resources_details_awsEcrContainerImage_pushedAt
           target_field: _ingest._value.details.aws.ecr_container_image.pushed_at
           formats:
             - ISO8601
             - UNIX
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-          ignore_failure: true
+          on_failure:
+            - remove:
+                field: _ingest._value.details.awsEcrContainerImage.pushedAt
+                ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            - _ingest._value.details.awsEcrContainerImage.pushedAt
-          ignore_missing: true
-  - foreach:
-      field: json.resources
-      if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.registry
+          tag: rename_resources_details_awsEcrContainerImage_registry
           target_field: _ingest._value.details.aws.ecr_container_image.registry
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
       processor:
         rename:
           field: _ingest._value.details.awsEcrContainerImage.repositoryName
+          tag: rename_resources_details_awsEcrContainerImage_repositoryName
           target_field: _ingest._value.details.aws.ecr_container_image.repository_name
           ignore_missing: true
   - foreach:
       field: json.resources
       if: ctx.json?.resources instanceof List
-      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction.codeSha256
+          tag: rename_resources_details_awsLambdaFunction_codeSha256
+          target_field: _ingest._value.details.awsLambdaFunction.code_sha256
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
       processor:
         append:
-          field: cloud.region
-          value: '{{{_ingest._value.region}}}'
+          field: related.hash
+          tag: append_resource_details_awsLambdaFunction_code_sha256_into_related_hash
+          value: '{{{_ingest._value.details.awsLambdaFunction.code_sha256}}}'
           allow_duplicates: false
-          ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction.executionRoleArn
+          tag: rename_resources_details_awsLambdaFunction_executionRoleArn
+          target_field: _ingest._value.details.awsLambdaFunction.execution_role_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction.functionName
+          tag: rename_resources_details_awsLambdaFunction_functionName
+          target_field: _ingest._value.details.awsLambdaFunction.function_name
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        date:
+          field: _ingest._value.details.awsLambdaFunction.lastModifiedAt
+          tag: date_resources_details_awsLambdaFunction_lastModifiedAt
+          target_field: _ingest._value.details.awsLambdaFunction.last_modified_at
+          formats:
+            - ISO8601
+            - UNIX
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          on_failure:
+            - remove:
+                field: _ingest._value.details.awsLambdaFunction.lastModifiedAt
+                ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction.packageType
+          tag: rename_resources_details_awsLambdaFunction_packageType
+          target_field: _ingest._value.details.awsLambdaFunction.package_type
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction.vpcConfig.securityGroupIds
+          tag: rename_resources_details_awsLambdaFunction_vpcConfig_securityGroupIds
+          target_field: _ingest._value.details.awsLambdaFunction.vpc_config.security_group_ids
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction.vpcConfig.subnetIds
+          tag: rename_resources_details_awsLambdaFunction_vpcConfig_subnetIds
+          target_field: _ingest._value.details.awsLambdaFunction.vpc_config.subnet_ids
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction.vpcConfig.vpcId
+          tag: rename_resources_details_awsLambdaFunction_vpcConfig_vpcId
+          target_field: _ingest._value.details.awsLambdaFunction.vpc_config.vpc_id
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.details.awsEc2Instance.launchedAt
+            - _ingest._value.details.awsEcrContainerImage.inUseCount
+            - _ingest._value.details.awsEcrContainerImage.lastInUseAt
+            - _ingest._value.details.awsEcrContainerImage.pushedAt
+            - _ingest._value.details.awsLambdaFunction.lastModifiedAt
+          tag: remove_resources_fields
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.awsLambdaFunction
+          tag: rename_resources_details_awsLambdaFunction
+          target_field: _ingest._value.details.aws.lambda_function
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.codeRepository.integrationArn
+          tag: rename_resources_details_codeRepository_integrationArn
+          target_field: _ingest._value.details.code_repository.integration_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.codeRepository.projectName
+          tag: rename_resources_details_codeRepository_projectName
+          target_field: _ingest._value.details.code_repository.project_name
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      processor:
+        rename:
+          field: _ingest._value.details.codeRepository.providerType
+          tag: rename_resources_details_codeRepository_providerType
+          target_field: _ingest._value.details.code_repository.provider_type
+          ignore_missing: true
   - rename:
       field: json.resources
+      tag: rename_resources
       target_field: aws.inspector.resources
       ignore_missing: true
+  - script:
+      description: Extract fields from aws.inspector.resources with single resource.
+      tag: script_extract_fields_from_single_resource
+      lang: painless
+      if: ctx.aws?.inspector?.resources instanceof List && ctx.aws.inspector.resources.size() == 1
+      source: |-
+        // Arrays won't work in general in current UI of Cloud Security Posture workflow. In Amazon Inspector, a finding may contain multiple resources, but rarely.
+        // When a finding has single-resource, we extract fields as single-value so that the Vulnerability Findings UI behaves as expected for almost all cases.
+        // But in the rare multi-resource case, we extract fields into an array to not miss any affected resources for a finding. 
+        // This trade-off is okay as not many findings will be affected. When our UI natively supports multi-resources, the single-value resource extraction must be removed.
+        
+        def resources = ctx.aws.inspector.resources;
+
+        // Define fields to be extracted.
+        ctx.resource = ctx.resource ?: [:];
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        ctx.host.ip = ctx.host.ip ?: [];
+        ctx.cloud = ctx.cloud ?: [:];
+        ctx.cloud.instance = ctx.cloud.instance ?: [:];
+        ctx.cloud.machine = ctx.cloud.machine ?: [:];
+
+        // This extraction logic is only for single resource case. Multiple resources are extracted inside script - script_extract_fields_from_multiple_resources.
+        if (resources.size() == 1){
+          def res = resources[0];
+
+          ctx.resource.id = res.id;
+          ctx.resource.name = res.tags?.Name;
+          ctx.resource.type = res.type;
+          ctx.cloud.region = res.region;
+
+          if (res.type == 'AWS_EC2_INSTANCE') {
+            ctx.cloud.instance.id = res.id;
+            ctx.cloud.machine.type = res.details?.aws?.ec2_instance?.type;
+            ctx.host.id = res.id;
+            ctx.host.name = res.tags?.Name;
+            ctx.host.type = res.details?.aws?.ec2_instance?.type;
+            ctx.host.os.platform = res.details?.aws?.ec2_instance?.platform;
+            if (res.details?.aws?.ec2_instance?.ipv4_addresses instanceof List) {
+              for (ipv4 in res.details?.aws?.ec2_instance?.ipv4_addresses) {
+                ctx.host.ip.add(ipv4);
+              }
+            }
+            if (res.details?.aws?.ec2_instance?.ipv6_addresses instanceof List) {
+              for (ipv6 in res.details?.aws?.ec2_instance?.ipv6_addresses) {
+                ctx.host.ip.add(ipv6);
+              }
+            }
+            def platform = res.details?.aws?.ec2_instance?.platform?.toLowerCase();
+            if (platform?.contains('windows') == true) {
+              ctx.host.os.type = 'windows';
+            } else if (platform?.contains('linux') == true) {
+              ctx.host.os.type = 'linux';
+            } else if (platform?.contains('macos') == true) {
+              ctx.host.os.type = 'macos';
+            }
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Extract fields from aws.inspector.resources with multiple resources.
+      tag: script_extract_fields_from_multiple_resources
+      lang: painless
+      if: ctx.aws?.inspector?.resources instanceof List && ctx.aws.inspector.resources.size() > 1
+      source: |-
+        def resources = ctx.aws.inspector.resources;
+
+        // Define fields to be extracted.
+        ctx.resource = ctx.resource ?: [:];
+        ctx.resource.id = ctx.resource.id ?: [];
+        ctx.resource.name = ctx.resource.name ?: [];
+
+        ctx.host = ctx.host ?: [:];
+        ctx.host.id = ctx.host.id ?: [];
+        ctx.host.name = ctx.host.name ?: [];
+        ctx.host.ip = ctx.host.ip ?: [];
+        ctx.host.type = ctx.host.type ?: [];
+        ctx.host.os = ctx.host.os ?: [:];
+        ctx.host.os.platform = ctx.host.os.platform ?: [];
+        ctx.host.os.type = ctx.host.os.type ?: [];
+
+        ctx.cloud = ctx.cloud ?: [:];
+        ctx.cloud.instance = ctx.cloud.instance ?: [:];
+        ctx.cloud.instance.id = ctx.cloud.instance.id ?: [];
+        ctx.cloud.machine = ctx.cloud.machine ?: [:];
+        ctx.cloud.machine.type = ctx.cloud.machine.type ?: [];
+        ctx.cloud.region = ctx.cloud.region ?: [];
+
+        for (res in resources) {
+          ctx.resource.id.add(res.id);
+          ctx.resource.name.add(res.tags?.Name);
+          ctx.resource.type.add(res.type);
+          ctx.cloud.region.add(res.region);
+
+          if (res.type == 'AWS_EC2_INSTANCE') {
+            ctx.cloud.instance.id.add(res.id);
+            ctx.cloud.machine.type.add(res.details?.aws?.ec2_instance?.type);
+            ctx.host.id.add(res.id);
+            ctx.host.name.add(res.tags?.Name);
+            ctx.host.type.add(res.details?.aws?.ec2_instance?.type);
+            ctx.host.os.platform.add(res.details?.aws?.ec2_instance?.platform);
+            if (res.details?.aws?.ec2_instance?.ipv4_addresses instanceof List) {
+              for (ipv4 in res.details?.aws?.ec2_instance?.ipv4_addresses) {
+                ctx.host.ip.add(ipv4);
+              }
+            }
+            if (res.details?.aws?.ec2_instance?.ipv6_addresses instanceof List) {
+              for (ipv6 in res.details?.aws?.ec2_instance?.ipv6_addresses) {
+                ctx.host.ip.add(ipv6);
+              }
+            }
+            def platform = res.details?.aws?.ec2_instance?.platform?.toLowerCase();
+            if (platform?.contains('windows') == true) {
+              ctx.host.os.type = 'windows';
+            } else if (platform?.contains('linux') == true) {
+              ctx.host.os.type = 'linux';
+            } else if (platform?.contains('macos') == true) {
+              ctx.host.os.type = 'macos';
+            }
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.status
+      tag: rename_status
       target_field: aws.inspector.status
       ignore_missing: true
   - rename:
       field: json.title
+      tag: rename_title
       target_field: aws.inspector.title
       ignore_missing: true
+  - set:
+      field: vulnerability.title
+      tag: set_vulnerability_title
+      copy_from: aws.inspector.title
+      ignore_empty_value: true
   - rename:
       field: json.type
+      tag: rename_type
       target_field: aws.inspector.type
       ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      value: '{{vulnerability.id}}|{{resource.id}}|{{package.name}}|{{package.version}}|{{@timestamp}}'
+      if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY'
+  - set:
+      field: aws.inspector.transform_unique_id
+      tag: set_transform_unique_id
+      value: '{{vulnerability.id}}|{{resource.id}}|{{package.name}}|{{package.version}}'
+      if: ctx.aws?.inspector?.type == 'PACKAGE_VULNERABILITY'
   - remove:
       field:
         - json
+      tag: remove_json
       ignore_missing: true
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
@@ -678,47 +1257,60 @@ processors:
         - aws.inspector.network_reachability_details.protocol
         - aws.inspector.package_vulnerability_details.reference_urls
         - aws.inspector.package_vulnerability_details.vulnerability_id
-        - aws.inspector.package_vulnerability_details.vendor.severity
+        - aws.inspector.package_vulnerability_details.vendor.created_at
+        - aws.inspector.inspector_score_details.adjusted_cvss.score.value
+        - aws.inspector.inspector_score_details.adjusted_cvss.version
+        - aws.inspector.title
+      tag: remove_preserve_duplicate_custom_fields
       ignore_missing: true
-  - foreach:
-      field: aws.inspector.resources
-      if: ctx.aws?.inspector?.resources instanceof List
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            - _ingest._value.region
-          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-          ignore_missing: true
-  - foreach:
-      field: aws.inspector.package_vulnerability_details.cvss
-      if: ctx.aws?.inspector?.package_vulnerability_details?.cvss instanceof List
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            - _ingest._value.base_score
-            - _ingest._value.version
-          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-          ignore_missing: true
   - script:
-      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
       lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        dropEmptyFields(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -2,6 +2,7 @@ type: logs
 title: Palo Alto Cortex XDR Alerts API
 streams:
   - input: httpjson
+    enabled: false
     vars:
       - name: url
         type: text
@@ -100,6 +101,13 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve mimecast SIEM logs fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
       - name: processors
         type: yaml
         title: Processors
@@ -110,5 +118,123 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: httpjson.yml.hbs
-    title: Palo Alto Cortex XDR Alerts
-    description: Palo Alto Cortex XDR Alerts API
+    title: Palo Alto Cortex XDR Alerts from v1 API - Deprecated
+    description: Palo Alto Cortex XDR Alerts from v1 API. This API is deprecated. Please use v2 API instead.
+  - input: cel
+    vars:
+      - name: url
+        type: text
+        title: Palo Alto Cortex XDR API Domain
+        multi: false
+        required: true
+        show_user: true
+        description: The URL hosting the API endpoint.
+        default: https://test.xdr.eu.paloaltonetworks.com
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+      - name: api_token
+        type: password
+        title: Palo Alto Cortex XDR API Token
+        multi: false
+        required: true
+        show_user: true
+        description: API token from the XDR UI.
+        secret: true
+      - name: token_id
+        type: text
+        title: Palo Alto Cortex XDR API Token ID
+        multi: false
+        required: true
+        show_user: true
+        default: 1
+        description: The token ID related to the above API token
+        secret: false
+      - name: advanced_sec_level
+        type: bool
+        title: Advanced security level
+        multi: false
+        required: false
+        show_user: true
+        description: Whether the API tokeny was issued with an 'Advanced' security level.
+        default: false
+      - name: request_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: true
+        default: 30s
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+        description: How often the API is polled for new alerts. Supported units for this parameter are h/m/s.
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: How far back in time to look for alerts the first time running. Supported units for this parameter are h/m/s.
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: true
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-server-config) for details.
+        default: |
+          #certificate: "/etc/server/cert.pem"
+          #key: "/etc/server/key.pem"
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - panw_cortex_xdr
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve mimecast SIEM logs fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: cel.yml.hbs
+    title: Palo Alto Cortex XDR Alerts from v2 API
+    description: Collect Palo Alto Cortex XDR Alerts from v2 API.

@@ -3,7 +3,7 @@ description: Pipeline for Jamf Protect Telemetry logs.
 processors:
     - set:
         field: ecs.version
-        value: '8.11.0'
+        value: '8.17.0'
     - json:
         field: message
         target_field: jamf_protect.telemetry
@@ -142,8 +142,13 @@ processors:
 #######################
     - rename:
         field: jamf_protect.telemetry.host.serial
-        target_field: device.id
+        target_field: device.serial_number
         ignore_missing: true
+    - set:
+        field: device.id
+        value: '{{{ device.serial_number }}}'
+        if: ctx.device?.serial_number != null
+        ignore_failure: true
     - set:
         field: device.manufacturer
         value: Apple
@@ -307,7 +312,33 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_bios_uefi" }}'
         if: ctx.event.action == "bios_uefi"
-
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_gatekeeper_user_override" }}'
+        if: ctx.event.action == "gatekeeper_user_override"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_network_connect" }}'
+        if: ctx.event.action == "network_connect"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_tcc_modify" }}'
+        if: ctx.event.action == "tcc_modify"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_pty_grant" }}'
+        if: ctx.event.action == "pty_grant"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_pty_close" }}'
+        if: ctx.event.action == "pty_close"
+    - convert:
+        field: process.code_signature.flags
+        type: string
+        ignore_missing: true
+    - convert:
+        field: process.parent.code_signature.flags
+        type: string
+        ignore_missing: true
+    - convert:
+        field: process.responsible.code_signature.flags
+        type: string
+        ignore_missing: true
 #############
 ## Cleanup ##
 #############
@@ -330,6 +361,9 @@ processors:
         - jamf_protect.telemetry.thread.uuid
         - jamf_protect.telemetry.time
         - jamf_protect.telemetry.version
+        - jamf_protect.telemetry.global_seq_num
+        - jamf_protect.telemetry.timestamp
+        - jamf_protect.telemetry.process_token
         - message
         ignore_missing: true
     - script:

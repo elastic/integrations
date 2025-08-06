@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "A sudoers file specifies the commands users or groups can run and from which terminals. Adversaries can take advantage of these configurations to execute commands as other users or spawn processes with higher privileges.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential Privilege Escalation via Sudoers File Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Privilege Escalation via Sudoers File Modification\n\nThe sudoers file is crucial in Unix-like systems, defining user permissions for executing commands with elevated privileges. Adversaries may exploit this by modifying the file to allow unauthorized privilege escalation, often using the NOPASSWD directive to bypass password prompts. The detection rule identifies suspicious process activities, such as attempts to alter sudoers configurations, by monitoring specific command patterns indicative of such exploits.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific process that triggered the alert, focusing on the process.args field to confirm the presence of the *NOPASSWD*ALL* pattern.\n- Examine the process execution context, including the user account under which the process was initiated, to determine if it aligns with expected behavior or if it indicates potential misuse.\n- Check the system's sudoers file for recent modifications, especially looking for unauthorized entries or changes that include the NOPASSWD directive.\n- Investigate the command history of the user associated with the alert to identify any suspicious activities or commands executed around the time of the alert.\n- Correlate the event with other logs or alerts from the same host or user to identify any patterns or additional indicators of compromise that might suggest a broader attack.\n\n### False positive analysis\n\n- Routine administrative tasks may trigger the rule if administrators frequently update the sudoers file to add legitimate NOPASSWD entries for automation purposes. To manage this, create exceptions for known administrative scripts or processes that are regularly reviewed and approved.\n- Configuration management tools like Ansible or Puppet might modify the sudoers file as part of their normal operation. Exclude these tools from triggering alerts by identifying their specific process names or paths and adding them to an exception list.\n- Development environments where developers are granted temporary elevated privileges for testing purposes can cause false positives. Implement a policy to log and review these changes separately, ensuring they are reverted after use.\n- Automated scripts that require passwordless sudo access for operational efficiency might be flagged. Document these scripts and their usage, and configure the detection system to ignore these specific, well-documented cases.\n- System updates or patches that modify sudoers configurations as part of their installation process can be mistaken for malicious activity. Monitor update schedules and correlate them with alerts to identify and exclude these benign changes.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or privilege escalation.\n- Review and revert any unauthorized changes to the sudoers file by restoring it from a known good backup or manually correcting the entries to remove any NOPASSWD directives added by the adversary.\n- Conduct a thorough audit of user accounts and permissions on the affected system to identify and remove any unauthorized accounts or privilege assignments.\n- Reset passwords for all accounts with elevated privileges on the affected system to ensure that compromised credentials cannot be reused.\n- Deploy endpoint detection and response (EDR) tools to monitor for any further suspicious activities or attempts to modify the sudoers file across the network.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if the threat has spread to other systems.\n- Implement additional logging and alerting for changes to the sudoers file and other critical configuration files to enhance detection of similar threats in the future.",
+        "query": "event.category:process and event.type:start and process.args:(echo and *NOPASSWD*ALL*)\n",
+        "references": [
+            "https://www.elastic.co/security-labs/primer-on-persistence-mechanisms"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "76152ca1-71d0-4003-9e37-0983e12832da",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.003",
+                                "name": "Sudo and Sudo Caching",
+                                "reference": "https://attack.mitre.org/techniques/T1548/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 106
+    },
+    "id": "76152ca1-71d0-4003-9e37-0983e12832da_106",
+    "type": "security-rule"
+}

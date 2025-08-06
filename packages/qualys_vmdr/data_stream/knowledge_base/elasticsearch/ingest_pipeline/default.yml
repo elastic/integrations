@@ -5,10 +5,21 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - fail:
-      tag: cel_failure
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: event.kind
       tag: set_event_kind_1
@@ -584,6 +595,17 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.PATCH_PUBLISHED_DATE
+      tag: date_PATCH_PUBLISHED_DATE
+      target_field: qualys_vmdr.knowledge_base.patch_published_date
+      formats:
+        - ISO8601
+      if: ctx.json?.PATCH_PUBLISHED_DATE != null && ctx.json.PATCH_PUBLISHED_DATE != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle case when CHANGE_LOG_LIST.CHANGE_LOG_INFO is an object
   - rename:
       field: json.CHANGE_LOG_LIST.CHANGE_LOG_INFO
@@ -772,8 +794,14 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      if: ctx.event?.original == null
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - remove:
       tag: remove_json
       field:

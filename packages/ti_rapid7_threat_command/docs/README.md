@@ -17,7 +17,6 @@ The Rapid7 Threat Command integration collects three types of data: ioc, alert, 
 ## Compatibility
 
 - This integration has been tested against Rapid7 Threat Command `IOC API v2`, `Alert API v1`, and `Vulnerability API v1`.
-
 - Rapid7 Threat Command integration is compatible with Elastic stack `v8.12.0` and newer.
 
 ## Requirements
@@ -28,61 +27,41 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 ### Elastic Agent
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Other prerequisites
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **kibana.version** required is **8.12.0**.
 
-Check the prerequisites for [Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-setup.html#transform-setup).
-
-Check the prerequisites for [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/action-types.html).
+Check the prerequisites for:
+- [Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-setup.html#transform-setup).
+- [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/action-types.html).
 
 ## Setup
 
 ### Integration settings
 
-#### IOC Expiration Duration
+#### IOC expiration duration
 
-This setting enforces all active Indicators of Compromise (IOCs) to expire after this duration since their last seen time indicated in the feed. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g `10d`). If invalid units are provided, default value `90d` i.e., 90 days is used to expire the indicators. More details on indicator expiration, read [Expiration of Indicators of Compromise (IOCs)](https://www.elastic.co/docs/current/integrations/ti_rapid7_threat_command#expiration-of-indicators-of-compromise-\(iocs\)) section.
+This setting enforces all active Indicators of Compromise (IOCs) to expire after this duration since their last seen time indicated in the feed. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g `10d`). If invalid units are provided, default value `90d` i.e., 90 days is used to expire the indicators. For more details on indicator expiration, check the [Expiration of Indicators of Compromise (IOCs)](https://www.elastic.co/docs/current/integrations/ti_rapid7_threat_command#expiration-of-indicators-of-compromise-\(iocs\)) documentation.
 
 #### Filtering IOCs
 
-In order to filter the results based on severity and type, one can make use of **IOC Severities** and **IOC Types** parameters:
+To filter the results based on severity and type, you can use the **IOC Severities** and **IOC Types** parameters:
 
 - Allowed values for IOC Severities: High, Medium, Low, PendingEnrichment.
-
 - Allowed values for IOC Types: IpAddresses, Urls, Domains, Hashes, Emails.
 
-#### Filtering Alerts
+#### Filtering alerts
 
-In order to filter the results based on severity, type, and status, one can make use of **Alert Severities**, **Alert Types**, **Fetch Closed Alerts** parameters:
+To filter the results based on severity, type, and status, you can use the **Alert Severities**, **Alert Types**, **Fetch Closed Alerts** parameters:
 
 - Allowed values for Alert Severities: High, Medium, Low.
-
 - Allowed values for Alert Types: AttackIndication, DataLeakage, Phishing, BrandSecurity, ExploitableData, vip.
 
 **Note**: Individual policies need to be configured to retrieve both **Closed** and **Open** alerts.
 
-#### Filtering Vulnerabilities
+#### Filtering vulnerabilities
 
-In order to filter the results based on severity, one can make use of the **Vulnerability Severities** parameter:
+To filter the results based on severity, you can use the **Vulnerability Severities** parameter:
 
 - Allowed values for Vulnerability Severities: Critical, High, Medium, Low.
 
@@ -90,7 +69,7 @@ Click on **Add row** to filter out data using multiple values of the parameter.
 
 ### Major changes after integration version `1.16.0`
 
-**If the integration is being upgraded from version <=1.16.0 to >=2.0.0, one or more actions in below sections are required for the integration to work.**
+If the integration is being upgraded from version <=1.16.0 to >=2.0.0, one or more actions in below sections are required for the integration to work.
 
 #### Removal of custom rules
 
@@ -102,7 +81,7 @@ The integration versions until `1.16.0` added custom security detection rules fo
 | `Rapid7 Threat Command IOCs Correlation`           | `Threat Intel Hash Indicator Match`, `Threat Intel IP Address Indicator Match`, `Threat Intel URL Indicator Match`, `Threat Intel Windows Registry Indicator Match`                                                      |
 | `Rapid7 Threat Command CVEs Correlation`           | `Rapid7 Threat Command CVEs Correlation`                            |
 
-After upgrading to `2.0.0`, users are advised to disable and delete old rules to avoid duplicate [Security Alerts](https://www.elastic.co/guide/en/security/current/alerts-ui-manage.html). Users must also install and enable new rules in their place as documented [here](#install-and-enable-detection-rule-in-elasticsearch).
+After upgrading to `2.0.0`, disable and delete old rules to avoid duplicate [Security Alerts](https://www.elastic.co/guide/en/security/current/alerts-ui-manage.html). You must also install and enable new rules in their place as documented [here](#install-and-enable-detection-rule-in-elasticsearch).
 
 #### Removal of custom views and dashboards
 
@@ -148,7 +127,7 @@ Due to the addition of [fleet-managed transforms](#removal-of-custom-transforms)
 
 The ILM policies can be modified as per user needs.
 
-### Detection Rules
+### Detection rules
 
 As noted in above sections, there are 5 prebuilt detection rules that are available and need to be added by the users. 4 rules are for matching indicators, while 1 rule is for matching vulnerabilities. Following are the rules:
 
@@ -158,7 +137,7 @@ As noted in above sections, there are 5 prebuilt detection rules that are availa
 - Threat Intel Windows Registry Indicator Match.
 - Rapid7 Threat Command CVEs Correlation.
 
-#### Install and Enable Detection Rule in Elasticsearch
+#### Install and enable detection rule in Elasticsearch
 
 1. In Kibana, go to **Security > Rules > Detection rules (SIEM)**.
 2. Click on **Add Elastic Rules**.
@@ -166,15 +145,15 @@ As noted in above sections, there are 5 prebuilt detection rules that are availa
 4. Click on **Install rule** to install the rule.
 4. To enable a detection rule, switch on the rule’s **Enabled** toggle.
 
-### Add Connectors for rules
+### Add connectors for rules
 
 1. In Kibana, go to **Security > Rules > Detection rules (SIEM)**.
 2. Under **Installed Rules**, click on each of the 5 rules from above.
-3. Click on `Edit rule settings`.
+3. Click **Edit rule settings**.
 4. Under **Actions** tab, choose a connector from the list `Select a connector type`.
 5. [Configure the connector](https://www.elastic.co/guide/en/kibana/current/action-types.html).
 
-For more details on Rule Actions, read [Rule Actions](https://www.elastic.co/guide/en/kibana/current/create-and-manage-rules.html#defining-rules-actions-details). For adding Webhook Connector to Rule Actions, read [Webhook - Case Management](https://www.elastic.co/guide/en/kibana/current/cases-webhook-action-type.html).
+For more details on Rule Actions, refer to [Rule Actions](https://www.elastic.co/guide/en/kibana/current/create-and-manage-rules.html#defining-rules-actions-details). For adding Webhook Connector to Rule Actions, read [Webhook - Case Management](https://www.elastic.co/guide/en/kibana/current/cases-webhook-action-type.html).
 
 ## Limitations
 

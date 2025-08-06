@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when an external (anonymous) user has viewed, copied or downloaded an encryption key file from a Google Workspace drive. Adversaries may gain access to encryption keys stored in private drives from rogue access links that do not have an expiration. Access to encryption keys may allow adversaries to access sensitive data or authenticate on behalf of users.",
+        "false_positives": [
+            "A user may generate a shared access link to encryption key files to share with others. It is unlikely that the intended recipient is an external or anonymous user."
+        ],
+        "from": "now-130m",
+        "index": [
+            "filebeat-*",
+            "logs-google_workspace*"
+        ],
+        "interval": "10m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Google Workspace Drive Encryption Key(s) Accessed from Anonymous User",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Google Workspace Drive Encryption Key(s) Accessed from Anonymous User\n\nGoogle Workspace Drive allows users to store and share files, including sensitive encryption keys. If shared improperly, these keys can be accessed by unauthorized users, potentially leading to data breaches. Adversaries exploit links with open access to obtain these keys. The detection rule identifies suspicious activities, such as anonymous access to key files, by monitoring file actions and link visibility settings.\n\n### Possible investigation steps\n\n- Review the file activity logs to identify the specific file(s) accessed by the anonymous user, focusing on actions such as \"copy\", \"view\", or \"download\" and the file extensions listed in the query.\n- Check the sharing settings of the accessed file(s) to confirm if they are set to \"people_with_link\" and assess whether this level of access is appropriate for the file's sensitivity.\n- Investigate the source of the rogue access link by examining any recent changes to the file's sharing settings or any unusual activity in the file's access history.\n- Identify and contact the file owner or relevant stakeholders to verify if the sharing of the file was intentional and authorized.\n- Assess the potential impact of the accessed encryption key(s) by determining what systems or data they protect and evaluate the risk of unauthorized access.\n- Consider revoking or changing the encryption keys if unauthorized access is confirmed to mitigate potential security risks.\n\n### False positive analysis\n\n- Shared project files with encryption keys may trigger alerts if accessed by external collaborators. To manage this, ensure that only trusted collaborators have access and consider using Google Workspace's sharing settings to restrict access to specific users.\n- Automated backup systems that access encryption keys for legitimate purposes might be flagged. Verify the source of access and, if legitimate, create an exception for the backup system's IP address or service account.\n- Internal users accessing encryption keys via shared links for routine tasks could be misidentified as anonymous users. Encourage users to access files through authenticated sessions and adjust monitoring rules to recognize internal IP ranges or user accounts.\n- Third-party integrations that require access to encryption keys might cause false positives. Review the integration's access patterns and whitelist known, secure integrations to prevent unnecessary alerts.\n- Temporary access links for external audits or compliance checks can be mistaken for unauthorized access. Use time-bound access links and document these activities to differentiate them from potential threats.\n\n### Response and remediation\n\n- Immediately revoke access to the specific Google Workspace Drive file by changing its sharing settings to restrict access to only authorized users.\n- Conduct a thorough review of the file's access history to identify any unauthorized access and determine the scope of potential data exposure.\n- Notify the security team and relevant stakeholders about the incident, providing details of the unauthorized access and any potential data compromise.\n- Rotate and replace any encryption keys that were accessed or potentially compromised to prevent unauthorized use.\n- Implement additional monitoring and alerting for similar file types and sharing settings to detect future unauthorized access attempts.\n- Escalate the incident to senior management and, if necessary, involve legal or compliance teams to assess any regulatory implications.\n- Review and update access policies and sharing settings within Google Workspace to ensure that sensitive files are not shared with open access links.\n\n\n\n### Important Information Regarding Google Workspace Event Lag Times\n- As per Google's documentation, Google Workspace administrators may observe lag times ranging from minutes up to 3 days between the time of an event's occurrence and the event being visible in the Google Workspace admin/audit logs.\n- This rule is configured to run every 10 minutes with a lookback time of 130 minutes.\n- To reduce the risk of false negatives, consider reducing the interval that the Google Workspace (formerly G Suite) Filebeat module polls Google's reporting API for new events.\n- By default, `var.interval` is set to 2 hours (2h). Consider changing this interval to a lower value, such as 10 minutes (10m).\n- See the following references for further information:\n  - https://support.google.com/a/answer/7061566\n  - https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-google_workspace.html",
+        "query": "file where event.dataset == \"google_workspace.drive\" and event.action : (\"copy\", \"view\", \"download\") and\n    google_workspace.drive.visibility: \"people_with_link\" and source.user.email == \"\" and\n    file.extension: (\n        \"token\",\"assig\", \"pssc\", \"keystore\", \"pub\", \"pgp.asc\", \"ps1xml\", \"pem\", \"gpg.sig\", \"der\", \"key\",\n        \"p7r\", \"p12\", \"asc\", \"jks\", \"p7b\", \"signature\", \"gpg\", \"pgp.sig\", \"sst\", \"pgp\", \"gpgz\", \"pfx\", \"crt\",\n        \"p8\", \"sig\", \"pkcs7\", \"jceks\", \"pkcs8\", \"psc1\", \"p7c\", \"csr\", \"cer\", \"spc\", \"ps2xml\")\n",
+        "references": [
+            "https://support.google.com/drive/answer/2494822",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two"
+        ],
+        "related_integrations": [
+            {
+                "package": "google_workspace",
+                "version": "^2.31.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.drive.visibility",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "980b70a0-c820-11ed-8799-f661ea17fbcc",
+        "setup": "The Google Workspace Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Google Workspace",
+            "Use Case: Configuration Audit",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.004",
+                                "name": "Private Keys",
+                                "reference": "https://attack.mitre.org/techniques/T1552/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 7
+    },
+    "id": "980b70a0-c820-11ed-8799-f661ea17fbcc_7",
+    "type": "security-rule"
+}

@@ -1,0 +1,147 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies executables with names resembling legitimate business applications but lacking signatures from the original developer. Attackers may trick users into downloading malicious executables that masquerade as legitimate applications via malicious ads, forum posts, and tutorials, effectively gaining initial access.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Masquerading as Business App Installer",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Masquerading as Business App Installer\n\nBusiness applications are integral to productivity, often downloaded and installed by users. Adversaries exploit this by creating malicious executables with names mimicking legitimate apps, tricking users into installing them. The detection rule identifies such threats by checking for unsigned executables in download directories, ensuring they don't masquerade as trusted applications.\n\n### Possible investigation steps\n\n- Review the process name and executable path to confirm if it matches any known legitimate business application names listed in the rule, such as Slack, WebEx, or Teams, and verify if it was executed from a typical download directory.\n- Check the process code signature status and subject name to determine if the executable is unsigned or signed by an untrusted entity, which could indicate a masquerading attempt.\n- Investigate the source of the download by examining browser history, email attachments, or any recent file transfers to identify potential phishing attempts or malicious download sources.\n- Analyze the process execution context, including parent processes and command-line arguments, to understand how the executable was launched and if it aligns with typical user behavior.\n- Look for any network connections initiated by the process to identify suspicious outbound traffic or connections to known malicious IP addresses or domains.\n- Cross-reference the executable's hash with threat intelligence databases to check for known malware signatures or previous reports of malicious activity.\n- If the executable is determined to be suspicious, isolate the affected system and perform a full malware scan to prevent further compromise.\n\n### False positive analysis\n\n- Unsigned executables from legitimate developers may trigger alerts if they are not properly signed or if the signature is not recognized. Users can create exceptions for specific executables by verifying the developer's authenticity and adding them to a trusted list.\n- Custom or in-house developed applications that mimic business app names but are unsigned can cause false positives. Organizations should ensure these applications are signed with a trusted certificate or add them to an exclusion list after verifying their safety.\n- Software updates or beta versions of legitimate applications might not have updated signatures, leading to false positives. Users should verify the source of the update and, if legitimate, temporarily exclude these versions from the rule.\n- Applications installed in non-standard directories that match the naming patterns but are legitimate can be excluded by specifying trusted paths or directories in the rule configuration.\n- Third-party tools or utilities that integrate with business applications and use similar naming conventions might be flagged. Users should verify these tools and, if safe, add them to an exception list to prevent future alerts.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of the potential threat and to contain any malicious activity.\n- Terminate the suspicious process identified by the alert to stop any ongoing malicious actions.\n- Quarantine the executable file flagged by the detection rule to prevent execution and further analysis.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious files or remnants.\n- Review and analyze the process execution logs and any related network activity to understand the scope of the intrusion and identify any other potentially compromised systems.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement application whitelisting to prevent unauthorized executables from running, ensuring only trusted and signed applications are allowed to execute.",
+        "query": "process where host.os.type == \"windows\" and\n  event.type == \"start\" and process.executable : \"?:\\\\Users\\\\*\\\\Downloads\\\\*\" and\n  not process.code_signature.status : (\"errorCode_endpoint*\", \"errorUntrustedRoot\", \"errorChaining\") and\n  (\n    /* Slack */\n    (process.name : \"*slack*.exe\" and not\n      (process.code_signature.subject_name in (\n        \"Slack Technologies, Inc.\",\n        \"Slack Technologies, LLC\"\n       ) and process.code_signature.trusted == true)\n    ) or\n\n    /* WebEx */\n    (process.name : \"*webex*.exe\" and not\n      (process.code_signature.subject_name in (\"Cisco WebEx LLC\", \"Cisco Systems, Inc.\") and process.code_signature.trusted == true)\n    ) or\n\n    /* Teams */\n    (process.name : \"teams*.exe\" and not\n      (process.code_signature.subject_name == \"Microsoft Corporation\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Discord */\n    (process.name : \"*discord*.exe\" and not\n      (process.code_signature.subject_name == \"Discord Inc.\" and process.code_signature.trusted == true)\n    ) or\n\n    /* WhatsApp */\n    (process.name : \"*whatsapp*.exe\" and not\n      (process.code_signature.subject_name in (\n        \"WhatsApp LLC\",\n        \"WhatsApp, Inc\",\n        \"24803D75-212C-471A-BC57-9EF86AB91435\"\n       ) and process.code_signature.trusted == true)\n    ) or\n\n    /* Zoom */\n    (process.name : (\"*zoom*installer*.exe\", \"*zoom*setup*.exe\", \"zoom.exe\")  and not\n      (process.code_signature.subject_name == \"Zoom Video Communications, Inc.\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Outlook */\n    (process.name : \"*outlook*.exe\" and not\n      (\n        (process.code_signature.subject_name == \"Microsoft Corporation\" and process.code_signature.trusted == true) or\n        (\n          process.name: \"MSOutlookHelp-PST-Viewer.exe\" and process.code_signature.subject_name == \"Aryson Technologies Pvt. Ltd\" and\n          process.code_signature.trusted == true\n        )\n      )\n    ) or\n\n    /* Thunderbird */\n    (process.name : \"*thunderbird*.exe\" and not\n      (process.code_signature.subject_name == \"Mozilla Corporation\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Grammarly */\n    (process.name : \"*grammarly*.exe\" and not\n      (process.code_signature.subject_name == \"Grammarly, Inc.\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Dropbox */\n    (process.name : \"*dropbox*.exe\" and not\n      (process.code_signature.subject_name == \"Dropbox, Inc\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Tableau */\n    (process.name : \"*tableau*.exe\" and not\n      (process.code_signature.subject_name == \"Tableau Software LLC\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Google Drive */\n    (process.name : \"*googledrive*.exe\" and not\n      (process.code_signature.subject_name == \"Google LLC\" and process.code_signature.trusted == true)\n    ) or\n\n    /* MSOffice */\n    (process.name : \"*office*setup*.exe\" and not\n      (process.code_signature.subject_name == \"Microsoft Corporation\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Okta */\n    (process.name : \"*okta*.exe\" and not\n      (process.code_signature.subject_name == \"Okta, Inc.\" and process.code_signature.trusted == true)\n    ) or\n\n    /* OneDrive */\n    (process.name : \"*onedrive*.exe\" and not\n      (process.code_signature.subject_name == \"Microsoft Corporation\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Chrome */\n    (process.name : \"*chrome*.exe\" and not\n      (process.code_signature.subject_name in (\"Google LLC\", \"Google Inc\") and process.code_signature.trusted == true)\n    ) or\n\n    /* Firefox */\n    (process.name : \"*firefox*.exe\" and not\n      (process.code_signature.subject_name == \"Mozilla Corporation\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Edge */\n    (process.name : (\"*microsoftedge*.exe\", \"*msedge*.exe\") and not\n      (process.code_signature.subject_name == \"Microsoft Corporation\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Brave */\n    (process.name : \"*brave*.exe\" and not\n      (process.code_signature.subject_name == \"Brave Software, Inc.\" and process.code_signature.trusted == true)\n    ) or\n\n    /* GoogleCloud Related Tools */\n    (process.name : \"*GoogleCloud*.exe\" and not\n      (process.code_signature.subject_name == \"Google LLC\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Github Related Tools */\n    (process.name : \"*github*.exe\" and not\n      (process.code_signature.subject_name == \"GitHub, Inc.\" and process.code_signature.trusted == true)\n    ) or\n\n    /* Notion */\n    (process.name : \"*notion*.exe\" and not\n      (process.code_signature.subject_name == \"Notion Labs, Inc.\" and process.code_signature.trusted == true)\n    )\n  )\n",
+        "references": [
+            "https://www.rapid7.com/blog/post/2023/08/31/fake-update-utilizes-new-idat-loader-to-execute-stealc-and-lumma-infostealers"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "feafdc51-c575-4ed2-89dd-8e20badc2d6c",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: Elastic Defend",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/",
+                        "subtechnique": [
+                            {
+                                "id": "T1036.001",
+                                "name": "Invalid Code Signature",
+                                "reference": "https://attack.mitre.org/techniques/T1036/001/"
+                            },
+                            {
+                                "id": "T1036.005",
+                                "name": "Match Legitimate Resource Name or Location",
+                                "reference": "https://attack.mitre.org/techniques/T1036/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1189",
+                        "name": "Drive-by Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1189/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 8
+    },
+    "id": "feafdc51-c575-4ed2-89dd-8e20badc2d6c_8",
+    "type": "security-rule"
+}

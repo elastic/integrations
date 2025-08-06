@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Asset Host Detection data.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -30,10 +41,26 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
-  - fail:
-      tag: cel_failure
+  - rename:
+      field: interval_id
+      tag: rename_interval_id
+      target_field: qualys_vmdr.asset_host_detection.interval_id
+      ignore_missing: true
+  - date:
+      field: interval_start
+      tag: date_interval_start
+      target_field: qualys_vmdr.asset_host_detection.interval_start
+      formats:
+        - ISO8601
+      if: ctx.interval_start != null && ctx.interval_start != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process
+      description: error message set and no data to process.
   - set:
       field: event.kind
       tag: set_event_kind_1
@@ -41,11 +68,15 @@ processors:
   - set:
       field: event.category
       tag: set_event_catgeory
-      value: [host]
+      value: [vulnerability]
   - set:
       field: event.type
       tag: set_event_type
       value: [info]
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: 'Qualys VMDR'
   - set:
       field: vulnerability.scanner.vendor
       tag: set_vulnerability_scanner_vendor
@@ -54,6 +85,22 @@ processors:
       field: message
       tag: json_message
       target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.interval_id
+      tag: rename_json_interval_id
+      target_field: qualys_vmdr.asset_host_detection.interval_id
+      ignore_missing: true
+  - date:
+      field: json.interval_start
+      tag: date_json_interval_start
+      target_field: qualys_vmdr.asset_host_detection.interval_start
+      formats:
+        - ISO8601
+      if: ctx.json?.interval_start != null && ctx.json.interval_start != ''
       on_failure:
         - append:
             field: error.message
@@ -83,12 +130,6 @@ processors:
       tag: rename_DNS_DATA.FQDN
       target_field: qualys_vmdr.asset_host_detection.dns_data.fqdn
       ignore_missing: true
-  - append:
-      field: related.hosts
-      tag: append_fqdn_into_related_hosts
-      value: '{{{qualys_vmdr.asset_host_detection.dns_data.fqdn}}}'
-      allow_duplicates: false
-      if: ctx.qualys_vmdr?.asset_host_detection?.dns_data?.fqdn != null
   - rename:
       field: json.DNS_DATA.HOSTNAME
       tag: rename_DNS_DATA.HOSTNAME
@@ -100,11 +141,43 @@ processors:
       value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
       allow_duplicates: false
       if: ctx.qualys_vmdr?.asset_host_detection?.dns_data?.hostname != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.fqdn}}}'
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_if_null
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
+      if: ctx.host?.name == null
+      ignore_empty_value: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_fqdn_into_related_hosts
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.fqdn}}}'
+      allow_duplicates: false
+      if: ctx.qualys_vmdr?.asset_host_detection?.dns_data?.fqdn != null
   - rename:
       field: json.ID
       tag: rename_ID
       target_field: qualys_vmdr.asset_host_detection.id
       ignore_missing: true
+  - set:
+      field: resource.id
+      tag: set_resource_id
+      copy_from: qualys_vmdr.asset_host_detection.id
+      ignore_empty_value: true
+  - set:
+      field: resource.name
+      tag: set_resource_name
+      copy_from: host.name
+      ignore_empty_value: true
   - set:
       field: host.id
       tag: set_host_id
@@ -206,6 +279,35 @@ processors:
       field: host.os.full
       tag: set_host_os_full
       copy_from: qualys_vmdr.asset_host_detection.os
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_linux
+      value: linux
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('linux')
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_windows
+      value: windows
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('windows')
+      ignore_empty_value: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type
+      copy_from: host.os.platform
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_darwin
+      value: darwin
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('macos')
+      ignore_empty_value: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_macos
+      value: macos
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('macos')
       ignore_empty_value: true
   - rename:
       field: json.TRACKING_METHOD
@@ -915,6 +1017,12 @@ processors:
             ctx.cloud.project = new HashMap();
           }
           ctx.cloud.project.id = projIDs;
+          if (ctx.cloud?.account?.id == null) {
+            if (ctx.cloud.account == null) {
+              ctx.cloud.account = new HashMap();
+            }
+            ctx.cloud.account.id = projIDs;
+          }
         }
         if (names.length != 0) {
           if (ctx.cloud == null) {
@@ -924,6 +1032,12 @@ processors:
             ctx.cloud.project = new HashMap();
           }
           ctx.cloud.project.name = names;
+          if (ctx.cloud?.account?.name == null) {
+            if (ctx.cloud.account == null) {
+              ctx.cloud.account = new HashMap();
+            }
+            ctx.cloud.account.name = names;
+          }
         }
         if (regions.length != 0) {
           if (ctx.cloud == null) {
@@ -992,6 +1106,11 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_UNIQUE_VULN_ID
       target_field: qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id
       ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id
+      ignore_empty_value: true
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.PROTOCOL != null
       field: qualys_vmdr.asset_host_detection.vulnerability.PROTOCOL
@@ -1066,6 +1185,84 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_RESULTS_1
       target_field: qualys_vmdr.asset_host_detection.vulnerability.results
       ignore_missing: true
+  # The next two gsub processors facilitate `splitOnToken` in the subsequent script processor, which otherwise cannot split \n or \t.
+  - gsub:
+      field: qualys_vmdr.asset_host_detection.vulnerability.results
+      description: To facilitate splitOnToken in the subsequent script processor, which otherwise cannot split on \n.
+      pattern: '\n'
+      replacement: ';;'
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
+      tag: gsub_qualys_vmdr_asset_host_detection_vulnerability_results_line
+      ignore_missing: true
+  - gsub:
+      field: qualys_vmdr.asset_host_detection.vulnerability.results
+      pattern: '\t'
+      description: To facilitate splitOnToken in the subsequent script processor, which otherwise cannot split on \t.
+      replacement: '||'
+      tag: gsub_qualys_vmdr_asset_host_detection_vulnerability_results_tab
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_extract_package_fields
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null
+      description: Extract package fields
+      source: |-
+        String results = ctx.qualys_vmdr.asset_host_detection.vulnerability.results;
+        if (results.startsWith("Package||")) {
+          if (ctx.package == null) {
+            ctx.package = new HashMap();
+            ctx.qualys_vmdr.asset_host_detection.package_nested = new ArrayList();
+          }
+          if (ctx.package.name == null) {
+            ctx.package.name = new ArrayList();
+          }
+          if (ctx.package.version == null) {
+            ctx.package.version = new ArrayList();
+          }
+          if (ctx.package.fixed_version == null) {
+            ctx.package.fixed_version = new ArrayList();
+          }
+          def res = results.splitOnToken(";;");
+          for (int i=1; i < res.length; i++) {
+            def pkg_nest = [:];
+            def pkg = res[i].splitOnToken("||");
+            if (pkg.length < 1) {
+              continue;
+            }
+            ctx.package.name.add(pkg[0]);
+            pkg_nest.name = pkg[0];
+            if (pkg.length < 2) {
+              continue;
+            }
+            ctx.package.version.add(pkg[1]);
+            pkg_nest.version = pkg[1];
+            if (pkg.length == 3) {
+              ctx.package.fixed_version.add(pkg[2]);
+              pkg_nest.fixed_version = pkg[2];
+            }
+            ctx.qualys_vmdr.asset_host_detection.package_nested.add(pkg_nest);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.package.name
+      tag: set_vulnerability_package_name
+      copy_from: package.name
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.package.version
+      tag: set_vulnerability_package_version
+      copy_from: package.version
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.package.fixed_version
+      tag: set_vulnerability_package_fixed_version
+      copy_from: package.fixed_version
+      ignore_empty_value: true
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.STATUS != null
       field: qualys_vmdr.asset_host_detection.vulnerability.STATUS
@@ -1288,98 +1485,92 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_qds_factors_#text_2
       target_field: qualys_vmdr.asset_host_detection.vulnerability.qds_factors.text
       ignore_missing: true
-  - script:
-      lang: painless
-      tag: script_to_assign_vulnerability_score_base
-      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.qds_factors instanceof List
-      description: Assign vulnerbaility.score.base from array field qualys_vmdr.asset_host_detection.vulnerability.qds_factors
-      source: |-
-        def cvss_score;
-        if (ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors instanceof List) {
-          for (def attr: ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors) {
-            if (attr.text == null && attr.text == "") {
-              continue;
-            }
-            if (attr.name == "CVSS") {
-              cvss_score = attr.text;
-            }
-          }
-          if (cvss_score != null) {
-            if (ctx.vulnerability == null) {
-              ctx.vulnerability = new HashMap();
-            }
-            if (ctx.vulnerability.score == null) {
-              ctx.vulnerability.score = new HashMap();
-            }
-            ctx.vulnerability.score.base = Float.parseFloat(cvss_score);
-            ctx.vulnerability.classification = "CVSS";
-          }
-        }
+  # Handle KNOWLEDGE_BASE
+  - append:
+      field: error.message
+      if: ctx.json?.KNOWLEDGE_BASE == null || ctx.json.KNOWLEDGE_BASE.size() == 0
+      value: 'Qualys QID not found in the Knowledge Base'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_knowledge_base" }}'
+      if: ctx.json?.KNOWLEDGE_BASE != null && ctx.json.KNOWLEDGE_BASE.size() > 0
+      tag: pipeline_knowledge_base
+      ignore_missing_pipeline: true
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_knowledge_base_cvss_v3_base
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.base
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.score.version
+      tag: set_vulnerability_score_version_from_knowledge_base_cvss_v3_version
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.version
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base != null
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_knowledge_base_cvss_base
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base == null
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_knowledge_base_cvss_base_obj_#text
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base_obj.#text
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base == null
+  - grok:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.vector_string
+      tag: grok_to_extract_vulnerability_score_version
+      patterns:
+        - '^CVSS:%{DATA:vulnerability.score.version}/%{GREEDYDATA}$'
+        - '^%{GREEDYDATA}$'
+      ignore_missing: true
+      if: ctx.vulnerability?.score?.version == null
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      lang: painless
-      tag: script_to_assign_vulnerability_score_version
-      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.qds_factors instanceof List
-      description: Assign vulnerbaility.score.version from array field qualys_vmdr.asset_host_detection.vulnerability.qds_factors
-      source: |-
-        def cvss_version;
-        def pattern = /CVSS:([234]\.\d)/;
-        
-        if (ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors instanceof List) {
-          for (def attr: ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors) {
-            if (attr.text == null && attr.value == "") {
-              continue;
-            }
-            if (attr.name == "CVSS_vector") {
-              def matcher = pattern.matcher(attr.text);
-              if (matcher.find()) {
-                  cvss_version = matcher.group(1);
-              } 
-            }
-          }
-          
-          if (cvss_version != null) {
-            if (ctx.vulnerability == null) {
-              ctx.vulnerability = new HashMap();
-            }
-            if (ctx.vulnerability.score == null) {
-              ctx.vulnerability.score = new HashMap();
-              
-            }
-            ctx.vulnerability.score.version = cvss_version;
-          }
-        }
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: vulnerability.score.base
+      tag: convert_vulnerability_score_base_to_float
+      type: float
+      ignore_missing: true
+      if: ctx.vulnerability?.score?.base != ''
       on_failure:
+        - remove:
+            field: vulnerability.score.base
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.classification
+      tag: set_vulnerability_classification
+      value: CVSS
+      if: ctx.vulnerability?.score?.base != null
   - script:
       lang: painless
       tag: script_to_assign_vulnerability_severity
       if: ctx.vulnerability?.score?.base != null
-      description: Assign vulnerbaility.severity from field vulnerability.score.base
+      description: Assign vulnerability.severity from field vulnerability.score.base
       source: |-
         // CVSS score between 9.0 and 10.0)
         if (9.0 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "critical";
+          ctx.vulnerability.severity = "Critical";
         }
         // CVSS score between 7.0 and 8.9
         else if (7.0 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "high";
+          ctx.vulnerability.severity = "High";
         }
         // CVSS score between 4.0 and 6.9
         else if (4.0 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "medium";
+          ctx.vulnerability.severity = "Medium";
         }
         // CVSS score between 0.1 and 3.9
         else if (0.1 <= ctx.vulnerability.score.base) {
-          ctx.vulnerability.severity = "low";
+          ctx.vulnerability.severity = "Low";
         }
         else if (ctx.vulnerability.score.base == 0) {
-          ctx.vulnerability.severity = "none";
+          ctx.vulnerability.severity = "None";
         }
       on_failure:
         - append:
@@ -1388,8 +1579,14 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      if: ctx.event?.original == null
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - fingerprint:
       tag: fingerprint_event_original
       description: >
@@ -1412,6 +1609,8 @@ processors:
       field:
         - json
         - message
+        - interval_id
+        - interval_start
         - _conf
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_FOUND_DATETIME
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_REOPENED_DATETIME
@@ -1496,6 +1695,7 @@ processors:
       if: ctx.error?.message != null
   - append:
       field: tags
+      tag: append_tags_preserve_original_event_1
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null

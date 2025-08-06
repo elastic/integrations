@@ -1,0 +1,62 @@
+source:
+  index: "logs-*"
+  query:
+    bool:
+      filter:
+        - range:
+              '@timestamp':
+                gte: now-1M
+        - exists:
+            field: okta.event_type
+        - term:
+            'data_stream.dataset': "okta.system"
+        - term:
+            'okta.outcome.result': "SUCCESS"
+        - terms:
+            'okta.event_type': ["user.session.start","user.session.end"]
+dest:
+  index: ml_okta_multiple_user_sessions_pad-0.0.1
+  aliases:
+    - alias: ml_okta_multiple_user_sessions_pad.latest
+      move_on_creation: true
+    - alias: ml_okta_multiple_user_sessions_pad.all
+      move_on_creation: false
+description: This transform runs hourly and collects user session information for Okta events for the Privileged Access Detection package.
+frequency: 1h
+pivot:
+  aggregations:
+    okta_distinct_ips:
+      cardinality:
+        field: client.ip
+    okta_distinct_countries:
+      cardinality:
+        field: client.geo.country_name
+    'okta_session_info.has_end_event':
+      filter:
+        term:
+          'okta.event_type': "user.session.end"
+  group_by:
+    'source.user.name':
+      terms:
+        field: source.user.name
+    'agent.name':
+      terms:
+        field: agent.name
+    'source.user.full_name':
+      terms:
+        field: source.user.full_name
+    '@timestamp':
+      date_histogram:
+        field: '@timestamp'
+        fixed_interval: 30m
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    delay: 60s
+    field: '@timestamp'
+_meta:
+  fleet_transform_version: 0.0.2
+  run_as_kibana_system: false

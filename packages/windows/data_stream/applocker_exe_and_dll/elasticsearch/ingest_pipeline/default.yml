@@ -5,7 +5,7 @@ processors:
 
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.17.0'
   - set:
       field: log.level
       copy_from: winlog.level
@@ -47,6 +47,13 @@ processors:
       ignore_missing: true
 
   ## User fields.
+
+  # Map Windows Process ID to ECS process.pid
+  - set:
+      field: process.pid
+      copy_from: winlog.process.pid
+      ignore_empty_value: true
+      if: ctx.winlog?.process?.pid != null
 
   - set:
       field: user.id

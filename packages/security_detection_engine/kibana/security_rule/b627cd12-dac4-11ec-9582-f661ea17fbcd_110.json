@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the Elastic endpoint agent has stopped and is no longer running on the host. Adversaries may attempt to disable security monitoring tools in an attempt to evade detection or prevention capabilities during an intrusion. This may also indicate an issue with the agent itself and should be addressed to ensure defensive measures are back in a stable state.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Elastic Agent Service Terminated",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Elastic Agent Service Terminated\n\nThe Elastic Agent is a crucial component for monitoring and securing endpoints across various operating systems. It ensures continuous security oversight by collecting and analyzing data. Adversaries may attempt to disable this agent to evade detection, compromising system defenses. The detection rule identifies suspicious termination activities by monitoring specific processes and commands across Windows, Linux, and macOS, flagging potential defense evasion attempts.\n\n### Possible investigation steps\n\n- Review the event logs to identify the exact process and command used to terminate the Elastic Agent, focusing on the process names and arguments such as \"net.exe\", \"sc.exe\", \"systemctl\", and \"pkill\" with arguments like \"stop\", \"uninstall\", or \"disable\".\n- Check the timeline of events around the termination to identify any preceding suspicious activities or anomalies that might indicate an adversary's presence or actions.\n- Investigate the user account associated with the process termination to determine if it was authorized or if there are signs of account compromise.\n- Examine the host for any other signs of tampering or compromise, such as unauthorized changes to system configurations or the presence of other malicious processes.\n- Verify the current status of the Elastic Agent on the affected host and attempt to restart it if it is not running, ensuring that security monitoring is restored.\n- Correlate this event with other alerts or logs from the same host or network to identify potential patterns or coordinated attack activities.\n\n### False positive analysis\n\n- Routine maintenance activities may trigger the rule if administrators use commands like systemctl or service to stop the Elastic Agent for updates or configuration changes. To manage this, create exceptions for known maintenance windows or authorized personnel.\n- Automated scripts or deployment tools that temporarily disable the Elastic Agent during software installations or updates can cause false positives. Identify these scripts and whitelist their execution paths or specific arguments.\n- Testing environments where Elastic Agent is frequently started and stopped for development purposes might generate alerts. Exclude these environments by specifying their hostnames or IP addresses in the rule exceptions.\n- Security tools or processes that interact with the Elastic Agent, such as backup solutions or system monitoring tools, might inadvertently stop the service. Review these interactions and adjust the rule to ignore specific process names or arguments associated with these tools.\n- User-initiated actions, such as troubleshooting or system performance optimization, may involve stopping the Elastic Agent. Educate users on the impact of these actions and establish a protocol for notifying the security team when such actions are necessary.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further unauthorized access or potential lateral movement by adversaries.\n- Verify the status of the Elastic Agent on the affected host and attempt to restart the service. If the service fails to restart, investigate potential causes such as corrupted files or missing dependencies.\n- Conduct a thorough review of recent process execution logs on the affected host to identify any unauthorized or suspicious activities that may have led to the termination of the Elastic Agent.\n- If malicious activity is confirmed, perform a comprehensive malware scan and remove any identified threats. Ensure that the host is clean before reconnecting it to the network.\n- Review and update endpoint security configurations to prevent unauthorized termination of security services. This may include implementing stricter access controls or using application whitelisting.\n- Escalate the incident to the security operations team for further analysis and to determine if additional hosts are affected or if there is a broader security incident underway.\n- Document the incident, including all actions taken and findings, to enhance future response efforts and update incident response plans as necessary.",
+        "query": "process where\n/* net, sc or wmic stopping or deleting Elastic Agent on Windows */\n(event.type == \"start\" and\n  process.name : (\"net.exe\", \"sc.exe\", \"wmic.exe\",\"powershell.exe\",\"taskkill.exe\",\"PsKill.exe\",\"ProcessHacker.exe\") and\n  process.args : (\"stopservice\",\"uninstall\", \"stop\", \"disabled\",\"Stop-Process\",\"terminate\",\"suspend\") and\n  process.args : (\"elasticendpoint\", \"Elastic Agent\",\"elastic-agent\",\"elastic-endpoint\"))\nor\n/* service or systemctl used to stop Elastic Agent on Linux */\n(event.type == \"end\" and\n  (process.name : (\"systemctl\", \"service\") and\n    process.args : \"elastic-agent\" and\n    process.args : (\"stop\", \"disable\"))\n  or\n  /* pkill , killall used to stop Elastic Agent on Linux */\n  ( event.type == \"end\" and process.name : (\"pkill\", \"killall\") and process.args: \"elastic-agent\")\n  or\n  /* Unload Elastic Agent extension on MacOS */\n  (process.name : \"kextunload\" and\n    process.args : \"com.apple.iokit.EndpointSecurity\" and\n    event.action : \"end\"))\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b627cd12-dac4-11ec-9582-f661ea17fbcd",
+        "setup": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 110
+    },
+    "id": "b627cd12-dac4-11ec-9582-f661ea17fbcd_110",
+    "type": "security-rule"
+}

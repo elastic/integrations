@@ -5,9 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - fail:
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process.
+      description: error message set and no data to process.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -31,7 +32,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dot_expander:
-      field: digital_guardian.arc
+      field: "*"
+      path: digital_guardian.arc
   - script:
       description: Drops null/empty/na values recursively.
       tag: script_to_remove_na_values
@@ -189,6 +191,24 @@ processors:
         - "yyyy-MM-dd HH:mm:ss"
         - "ISO8601"
       if: ctx.digital_guardian?.arc?.inc_mtime != null
+  - date:
+      field: digital_guardian.arc.dg_alert.alert_etl
+      tag: date_dg_alert_alert_etl
+      target_field: digital_guardian.arc.dg_alert.alert_etl
+      formats:
+        - "yyyy-MM-dd hh:mm:ss a"
+        - "yyyy-MM-dd HH:mm:ss"
+        - "ISO8601"
+      if: ctx.digital_guardian?.arc?.dg_alert?.alert_etl != null
+  - date:
+      field: digital_guardian.arc.dg_alert.alert_etu
+      tag: date_dg_alert_alert_etu
+      target_field: digital_guardian.arc.dg_alert.alert_etu
+      formats:
+        - "yyyy-MM-dd hh:mm:ss a"
+        - "yyyy-MM-dd HH:mm:ss"
+        - "ISO8601"
+      if: ctx.digital_guardian?.arc?.dg_alert?.alert_etu != null
 
 # Choose a @timestamp value for the event
   - set:

@@ -1,0 +1,104 @@
+---
+processors:
+# Handle case changes.
+  - rename:
+      tag: rename_GrandParentCommandLine_GrandparentCommandLine
+      field: crowdstrike.event.GrandParentCommandLine
+      target_field: crowdstrike.event.GrandparentCommandLine
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFileName_GrandparentImageFileName
+      field: crowdstrike.event.GrandParentImageFileName
+      target_field: crowdstrike.event.GrandparentImageFileName
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFilePath_GrandparentImageFilePath
+      field: crowdstrike.event.GrandParentImageFilePath
+      target_field: crowdstrike.event.GrandparentImageFilePath
+      ignore_failure: true
+# EppDetectionSummaryEvent renames
+  - rename:
+      tag: rename_Hostname_ComputerName
+      field: crowdstrike.event.Hostname
+      target_field: crowdstrike.event.ComputerName
+      ignore_failure: true
+  - rename:
+      tag: rename_LogonDomain_MachineDomain
+      field: crowdstrike.event.LogonDomain
+      target_field: crowdstrike.event.MachineDomain
+      ignore_failure: true
+  - rename:
+      tag: rename_AgentId_SensorId
+      field: crowdstrike.event.AgentId
+      target_field: crowdstrike.event.SensorId
+      ignore_failure: true
+  - rename:
+      tag: rename_Name_DetectName
+      field: crowdstrike.event.Name
+      target_field: crowdstrike.event.DetectName
+      ignore_failure: true
+
+# EppDetectionSummaryEvent converts
+  - convert:
+      field: crowdstrike.event.LocalIPv6
+      tag: convert_crowdstrike_LocalIPv6_ip
+      type: ip
+      if: ctx.crowdstrike?.event?.LocalIPv6 != null && ctx.crowdstrike.event.LocalIPv6 != ''
+      on_failure:
+        - remove:
+            field: crowdstrike.event.LocalIPv6
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: crowdstrike.event.FilesAccessed
+      tag: convert_crowdstrike_filesaccessed_timestamp_array
+      if: ctx.crowdstrike?.event?.FilesAccessed instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_filesaccessed_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: crowdstrike.event.FilesWritten
+      tag: convert_crowdstrike_fileswritten_timestamp_array
+      if: ctx.crowdstrike?.event?.FilesWritten instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_fileswritten_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - pipeline:
+      name: '{{ IngestPipeline "detection_summary" }}'
+      tag: pipeline_detection_summary
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

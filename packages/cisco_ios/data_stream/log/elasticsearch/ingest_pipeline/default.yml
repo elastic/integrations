@@ -33,30 +33,66 @@ processors:
       ignore_missing: true
   - grok:
       field: event.original
+      tag: grok_kiwi_header
+      description: |- 
+        The Kiwi syslog header is expected to be in the following format:
+        <PRI>Original Address=IP [RFC 5424 header] [Cisco IOS log]
+        
+        This grok pattern currently only extracts the Cisco IOS log from
+        the event. It does not extract any Kiwi syslog header fields.
+      patterns:
+        - '^<%{NONNEGINT:log.syslog.priority:long}>Original Address=(?:%{DATA} ){7}%{GREEDYDATA:_temp_.message}$'
+        - '^%{GREEDYDATA:_temp_.message}$'
+  - grok:
+      field: _temp_.message
       tag: grok_header
       patterns:
-        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{TIMESTAMP_ISO8601:_temp_.cisco_timestamp} %{NOTSPACE:log.syslog.hostname} %{GREEDYDATA:_temp_.message}$'
-        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} %{CISCO_HOSTNAME:log.syslog.hostname}: (?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{TIMESTAMP_ISO8601:_temp_.cisco_timestamp} %{CISCO_HOSTNAME:log.syslog.hostname} %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} (?:%{CISCO_HOSTNAME:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
-        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP})[:]? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{CISCO_TIMESTAMP:_temp_.timestamp}: %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname})(?:: \*%{DATA}:|:?)? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP:_temp_.timestamp}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(?:(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): )?%{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
-        - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(\\*)?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
-        - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )%{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
         ISO8601_TIMEZONE: "(?:Z|[+-]%{HOUR}(?::?%{MINUTE}))"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?"
         CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP_EX:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
         CISCOTIMESTAMP_EX: '(%{CISCOTIMESTAMP})|(%{YEAR} %{MONTH} %{MONTHDAY} %{TIME})'
-        CISCO_UPTIME: '[0-9a-zA-Z]+'
-        CISCO_HOSTNAME: '[a-zA-Z][.0-9a-zA-Z_-]{0,253}[0-9a-zA-Z]?'
-        CISCO_TZ: '[a-zA-Z]{1,4}([+-]\d{1,2}|[+-]\d{2}:\d{2})?'
+        CISCO_UPTIME: '(?:\d{1,4}:\d{2}:\d{2}|(?:(\d+)y)?(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?)'
+        CISCO_HOSTNAME: '[0-9a-zA-Z][.0-9a-zA-Z_-]{0,253}[0-9a-zA-Z]?'
+        CISCO_TZ: '[a-zA-Z]{1,7}([+-]\d{1,2}|[+-]\d{2}:\d{2})?'
   - grok:
       field: _temp_.message
-      tag: grok_message
+      tag: grok_message_at_top_level
       patterns:
         - '^%%{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA}%%{GREEDYDATA:message}$' # Extract part after % in message
         - '^%{GREEDYDATA:_temp_.generic_message}$'
+  # Handle all-digit hostnames as sequence numbers
+  - grok:
+      field: log.syslog.hostname
+      patterns:
+        - '^%{NUMBER:_temp_.sequence}$'
+      ignore_missing: true
+      ignore_failure: true 
+  - set:
+      field: cisco.ios.sequence
+      copy_from: _temp_.sequence
+      if: ctx._temp_?.sequence != null
+  - remove:
+      field: log.syslog.hostname
+      if: ctx._temp_?.sequence != null
+      ignore_missing: true
+  - remove:
+      field: _temp_.sequence
+      if: ctx._temp_?.sequence != null
+      ignore_missing: true
+  - remove:
+      field: log.syslog
+      if: "ctx.log?.syslog != null && ctx.log.syslog.isEmpty()"
+      ignore_missing: true
   - set:
       field: event.sequence
       copy_from: cisco.ios.sequence
@@ -87,7 +123,7 @@ processors:
         UTC as before.
       if: ctx._temp_?.cisco_timestamp != null
       source: |-
-        String get_timezone(def ctx) { 
+        String get_timezone(def ctx) {
           if (ctx._temp_?.tz != null) {
             if (ctx._conf?.tz_map != null) {
               for (def item : ctx._conf.tz_map) {
@@ -96,24 +132,24 @@ processors:
                 }
               }
             }
-          
+
             if (ctx._temp_.tz.length() <= 4) {
               // all time zone abbreviations need to be uppercase
               return ctx._temp_.tz.toUpperCase();
             }
-              
+
             return ctx._temp_.tz;
           }
-          
+
           if (ctx._conf?.tz_offset != null) {
               ctx.event.timezone = ctx._conf.tz_offset;
               return ctx._conf.tz_offset;
           }
-        
+
           ctx.event.timezone = 'UTC';
           return 'UTC';
         }
-        
+
         def event_timezone = get_timezone(ctx);
         if (!event_timezone.contains('+') && !event_timezone.contains('-') && !(event_timezone.length() > 4)) {
           // timezone abbreviation e.g. CEST need to be put inside the timestamp
@@ -191,11 +227,22 @@ processors:
       type: long
       tag: convert_sequence
       ignore_missing: true
+  - trim:
+      field: event.code
+      tag: trim_event_code
+      ignore_missing: true
   - dissect:
       field: message
       tag: dissect_gp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
       if: "['IPACCESSLOGP', 'ACCESSLOGP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)"
+      ignore_failure: true
+  - dissect:
+      field: message
+      tag: dissect_gp_access_list
+      pattern: "access-list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
+      if: "['IPACCESSLOGP', 'ACCESSLOGP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)"
+      ignore_failure: true
   - dissect:
       field: message
       tag: dissect_gdp
@@ -231,6 +278,11 @@ processors:
       tag: dissect_logout
       pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
       if: "ctx.event?.code == 'LOGOUT'"
+  - dissect:
+      field: message
+      tag: dissect_invalid_replay_ctr
+      if: "ctx.event?.code == 'INVALID_REPLAY_CTR'"
+      pattern: "%{} Invalid replay counter from client %{source.mac} - got %{}, expected %{}"
   - grok:
       field: message
       tag: grok_badauth
@@ -241,7 +293,7 @@ processors:
   - grok:
       field: message
       tag: grok_message_rp_join
-      patterns: 
+      patterns:
         - 'Received \(%{PIM_SOURCE}, %{DATA:cisco.ios.pim.group.ip}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
       pattern_definitions:
         PIM_SOURCE: (%{IP:cisco.ios.pim.source.ip}|%{DATA})
@@ -257,7 +309,7 @@ processors:
   - set:
        field: event.reason
        value: "Invalid RP"
-       if: ctx.event?.code == "INVALID_RP_JOIN"      
+       if: ctx.event?.code == "INVALID_RP_JOIN"
   - convert:
       field: destination.address
       target_field: destination.ip
@@ -418,9 +470,18 @@ processors:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
-  - rename: 
+  - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
+      ignore_missing: true
+
+  - gsub:
+      field: source.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
       ignore_missing: true
 
   - append:

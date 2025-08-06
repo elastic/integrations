@@ -1,0 +1,145 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a script interpreter or signed binary is launched via a non-standard working directory. An attacker may use this technique to evade defenses.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Execution from a Mounted Device",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Execution from a Mounted Device\n\nIn Windows environments, script interpreters and signed binaries are essential for executing legitimate tasks. However, adversaries can exploit these by launching them from non-standard directories, such as mounted devices, to bypass security measures. The detection rule identifies such anomalies by monitoring processes initiated from unexpected directories, especially when triggered by common parent processes like explorer.exe, thus flagging potential defense evasion attempts.\n\n### Possible investigation steps\n\n- Review the process details to confirm the executable path and working directory, ensuring they match the criteria of being launched from a non-standard directory (e.g., not from \"C:\\\\\").\n- Investigate the parent process, explorer.exe, to determine if there are any unusual activities or user actions that might have triggered the suspicious execution.\n- Check the user account associated with the process to verify if the activity aligns with their typical behavior or if the account might be compromised.\n- Analyze the command line arguments used by the suspicious process to identify any potentially malicious scripts or commands being executed.\n- Correlate the event with other security alerts or logs from the same host to identify any patterns or additional indicators of compromise.\n- Examine the mounted device from which the process was executed to determine its origin, legitimacy, and any associated files that might be malicious.\n\n### False positive analysis\n\n- Legitimate software installations or updates may trigger the rule if they are executed from a mounted device. Users can create exceptions for known software update processes that are verified as safe.\n- Portable applications running from USB drives or external storage can be flagged. To mitigate this, users should whitelist specific applications that are frequently used and deemed non-threatening.\n- IT administrative scripts executed from network shares or mounted drives for maintenance tasks might be detected. Users can exclude these scripts by specifying trusted network paths or script names.\n- Development environments where scripts are tested from non-standard directories can cause alerts. Developers should ensure their working directories are recognized as safe or use designated development machines with adjusted monitoring rules.\n- Backup or recovery operations that utilize mounted devices for script execution may be misidentified. Users should identify and exclude these operations by defining exceptions for known backup tools and processes.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further malicious activity and lateral movement.\n- Terminate any suspicious processes identified by the detection rule, such as those initiated by script interpreters or signed binaries from non-standard directories.\n- Conduct a forensic analysis of the mounted device and the affected system to identify any malicious payloads or scripts and remove them.\n- Review and restore any altered system configurations or registry settings to their original state to ensure system integrity.\n- Update and patch the system to close any vulnerabilities that may have been exploited by the attacker.\n- Monitor for any recurrence of similar activities by enhancing logging and alerting mechanisms, focusing on process execution from non-standard directories.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.executable : \"C:\\\\*\" and\n  (process.working_directory : \"?:\\\\\" and not process.working_directory: \"C:\\\\\") and\n  process.parent.name : \"explorer.exe\" and\n  process.name : (\"rundll32.exe\", \"mshta.exe\", \"powershell.exe\", \"pwsh.exe\", \"cmd.exe\", \"regsvr32.exe\",\n                  \"cscript.exe\", \"wscript.exe\")\n",
+        "references": [
+            "https://www.microsoft.com/security/blog/2021/05/27/new-sophisticated-email-based-attack-from-nobelium/",
+            "https://www.volexity.com/blog/2021/05/27/suspected-apt29-operation-launches-election-fraud-themed-phishing-campaigns/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8a1d4831-3ce6-4859-9891-28931fa6101d",
+        "setup": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.005",
+                                "name": "Mshta",
+                                "reference": "https://attack.mitre.org/techniques/T1218/005/"
+                            },
+                            {
+                                "id": "T1218.010",
+                                "name": "Regsvr32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/010/"
+                            },
+                            {
+                                "id": "T1218.011",
+                                "name": "Rundll32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/011/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 210
+    },
+    "id": "8a1d4831-3ce6-4859-9891-28931fa6101d_210",
+    "type": "security-rule"
+}

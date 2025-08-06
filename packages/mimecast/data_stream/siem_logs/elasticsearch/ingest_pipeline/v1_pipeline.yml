@@ -239,6 +239,10 @@ processors:
       field: mimecast.RejInfo
       target_field: event.reason
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.RejType != null && ctx.mimecast.RejType != ''
   - rename:
       field: mimecast.RejType
       target_field: error.type
@@ -266,6 +270,10 @@ processors:
       field: mimecast.AttNames
       target_field: email.attachments.file.name
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.Hld != null && ctx.mimecast.Hld != ''
   - rename:
       field: mimecast.Hld
       target_field: event.reason
@@ -290,6 +298,10 @@ processors:
       if: 'ctx.tls?.established instanceof String && ctx.tls.established.toLowerCase() == "no"'
 
   ### AV LOGS
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.fileExt != null && ctx.mimecast.fileExt != ''
   - rename:
       field: mimecast.fileExt
       target_field: email.attachments.file.extension
@@ -329,18 +341,30 @@ processors:
       ignore_missing: true
 
   ### SPAM EVENT THREAD LOGS
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.SourceIP != null && ctx.mimecast.SourceIP != ''
   - rename:
       field: mimecast.SourceIP
       target_field: source.ip
       ignore_missing: true
 
   ### SIEM Email Protect Logs
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.URL != null && ctx.mimecast.URL != ''
   - rename:
       field: mimecast.URL
       target_field: url.full
       ignore_missing: true
 
   ### SIEM Impersonation logs                       
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.TaggedMalicious == true || ctx.mimecast?.TaggedMalicious == 'true'
   - rename:
       field: mimecast.Action
       target_field: event.action
@@ -461,31 +485,6 @@ processors:
         - mimecast.sender
         - mimecast.Sender
       ignore_missing: true
-  - script:
-      lang: painless
-      description: This script processor iterates over the whole document to remove fields with null values.
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
-          }
-          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-        }
-        void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-        }
-        handleMap(ctx);
 
 # Error handling
 on_failure:

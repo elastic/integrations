@@ -1,3 +1,7 @@
+{{#if condition}}
+condition: {{condition}}
+{{/if}}
+
 data_stream:
   dataset: {{data_stream.dataset}}
 interval: {{resource_interval}}
@@ -13,6 +17,13 @@ redact.delete: {{delete_redacted_fields}}
 redact.fields:
 {{#each redact_fields as |field|}}
   - {{field}}
+{{/each}}
+{{/if}}
+
+{{#if allowed_environment}}
+allowed_environment:
+{{#each allowed_environment as |l|}}
+  - {{l}}
 {{/each}}
 {{/if}}
 
@@ -148,10 +159,10 @@ resource.rate_limit.limit: {{resource_rate_limit_limit}}
 resource.rate_limit.burst: {{resource_rate_limit_burst}}
 {{/if}}
 
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 
 {{#if tags}}
 tags:

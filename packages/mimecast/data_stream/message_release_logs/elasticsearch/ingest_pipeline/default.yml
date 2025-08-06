@@ -5,15 +5,23 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - fail:
-      tag: cel_failure
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process
+      description: error message set and no data to process.
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
@@ -191,6 +199,10 @@ processors:
       field: event.kind
       value: event
   - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.rejectReason != null && ctx.mimecast.rejectReason != ''
+  - set:
       field: event.reason
       copy_from: mimecast.rejectReason
       ignore_empty_value: true
@@ -204,22 +216,31 @@ processors:
 
   - script:
       description: Drops null/empty values recursively
+      tag: script_to_drop_null_values
       lang: painless
       ignore_failure: true
       source: |
-        boolean drop(Object o) {
-          if (o == null || o == "") {
-            return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
-          }
-          return false;
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        drop(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - rename:
       tag: move_fields_into_place
       field: mimecast

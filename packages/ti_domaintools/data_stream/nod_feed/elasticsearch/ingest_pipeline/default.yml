@@ -1,0 +1,57 @@
+---
+description: Pipeline for processing nod feed
+processors:
+- set:
+    field: domaintools.feed
+    value: 'nod'
+- json:
+    field: message
+    target_field: domaintools
+
+  ############################
+  # Generic indicator fields #
+  ############################
+
+- set:
+    field: threat.indicator.type
+    value: domain-name
+- set:
+    field: threat.indicator.name
+    copy_from: domaintools.domain
+
+  ######################
+  # Threat feed fields #
+  ######################
+
+- set:
+    field: threat.feed.description
+    value: 'Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network.'
+- set:
+    field: threat.feed.name
+    value: 'DomainTools NOD'
+- set:
+    field: threat.feed.reference
+    value: https://docs.techdocs.ci.domaintools.cloud/feeds/realtime/userguide/
+
+  ####################
+  # Event ECS fields #
+  ####################
+
+- set:
+    field: ecs.version
+    value: '8.17.0'
+- set:
+    field: event.kind
+    value: enrichment
+- set:
+    field: event.category
+    value: ['threat']
+- set:
+    field: event.type
+    value: ['indicator']
+
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
+

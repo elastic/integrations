@@ -1,0 +1,160 @@
+rules:
+  # OAuth Token Endpoint
+  - path: /oauth/token
+    methods:
+      - POST
+    query_params:
+      grant_type: client_credentials
+      client_id: qwerty
+      client_secret: eweqweqwqew
+    request_headers:
+      Content-Type:
+        - application/x-www-form-urlencoded
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "access_token": "xxxxxxxxxxxxx",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+          }
+  # Search Events Endpoint for the 2nd pagination
+  - path: /v2024/search/events
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer xxxxxxxxxxxxx
+      Content-Type:
+        - application/json
+    request_body: /^\{"query":\{"query":"\*"\},"queryResultFilter":\{\},"queryType":"SAILPOINT","searchAfter":\["2024-12-13T19:42:26\.121Z"\],"sort":\["created"\]\}/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          []
+  # Search Events Endpoint for the 1st pagination
+  - path: /v2024/search/events
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer xxxxxxxxxxxxx
+      Content-Type:
+        - application/json
+    request_body: /{"query":\{"query":"\*"\},"queryResultFilter":\{\},"queryType":"SAILPOINT","searchAfter":\["2024-12-13T19:41:24\.124Z"\],"sort":\["created"\]\}/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "created": "2024-12-13T19:41:25.121Z",
+              "id": "cb2fc359e6b31aad1fdc2d290e5279a71cf747eda0221d8f46e1f775bba21c89",
+              "action": "AUTHENTICATION-103",
+              "type": "AUTH",
+              "actor": { "name": "test.user" },
+              "_type": "event"
+            },
+            {
+              "created": "2024-12-13T19:42:26.121Z",
+              "id": "cb2fc359e6b31aad1fdc2d290e5279a71cf747eda0221d8f46e1f775bba21c99",
+              "action": "AUTHENTICATION-103",
+              "type": "AUTH",
+              "actor": { "name": "test.user" },
+              "_type": "event"
+            }
+          ]
+  # Search Events Endpoint initial
+  - path: /v2024/search/events
+    methods:
+      - POST
+    request_headers:
+      Authorization:
+        - Bearer xxxxxxxxxxxxx
+      Content-Type:
+        - application/json
+    request_body: /^\{"query":\{"query":"\*"\},"queryResultFilter":\{\},"queryType":"SAILPOINT","searchAfter":\["[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z"\],"sort":\["created"\]\}/
+    query_params:
+      limit: "2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          [
+            {
+              "created": "2024-12-12T10:58:27.962Z",
+              "pod": "se01-useast1",
+              "org": "ta-partner14055",
+              "id": "f514ad697321c49b61b65ec9b5099a192eb598d2c520d4e09f958f7abdfc16dd",
+              "action": "USER_PASSWORD_UPDATE_PASSED",
+              "type": "PASSWORD_ACTIVITY",
+              "actor": { "name": "test.user" },
+              "target": { "name": "test.user" },
+              "stack": "pigs",
+              "details": "38eef046d4594d7e9186cee997232f3d",
+              "trackingNumber": "fb38cc3fb990451dab51133aed21268a",
+              "ipAddress": "216.160.83.56",
+              "attributes": {
+                "accountId": "test.user",
+                "sourceName": "IdentityNow",
+                "info": "Password workflow invoked successfully. Request Id :923169315cab448cac82091dc4827f38",
+                "hostName": "216.160.83.56",
+                "pod": "se01-useast1",
+                "org": "ta-partner14055",
+                "scope": ["sp:scopes:all"]
+              },
+              "objects": ["USER", "PASSWORD"],
+              "operation": "UPDATE",
+              "status": "PASSED",
+              "technicalName": "USER_PASSWORD_UPDATE_PASSED",
+              "name": "Update User Password Passed",
+              "synced": "2024-12-23T10:58:32.977Z",
+              "_type": "event",
+              "_version": "v2"
+            },
+            {
+              "created": "2024-12-13T19:41:24.124Z",
+              "id": "f514ad697321c49b61b65ec9b5099a192eb598d2c520d4e09f958f7abdfc16dd",
+              "action": "USER_PASSWORD_UPDATE_PASSED",
+              "type": "PASSWORD_ACTIVITY",
+              "actor": { "name": "test.user" },
+              "target": { "name": "test.user" },
+              "stack": "pigs",
+              "pod": "se01-useast1",
+              "org": "ta-partner14055",
+              "details": "38eef046d4594d7e9186cee997232f3d",
+              "trackingNumber": "fb38cc3fb990451dab51133aed21268a",
+              "ipAddress": "216.160.83.56",
+              "attributes": {
+                "accountId": "test.user",
+                "sourceName": "IdentityNow",
+                "info": "Password workflow invoked successfully. Request Id :923169315cab448cac82091dc4827f38",
+                "hostName": "216.160.83.56",
+                "pod": "se01-useast1",
+                "org": "ta-partner14055",
+                "scope": ["sp:scopes:all"]
+              },
+              "objects": ["USER", "PASSWORD"],
+              "operation": "UPDATE",
+              "status": "PASSED",
+              "technicalName": "USER_PASSWORD_UPDATE_PASSED",
+              "name": "Update User Password Passed",
+              "synced": "2024-12-23T10:58:32.977Z",
+              "_type": "event",
+              "_version": "v2"
+            }
+          ]

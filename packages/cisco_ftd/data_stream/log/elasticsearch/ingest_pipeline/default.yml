@@ -316,8 +316,16 @@ processors:
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106102' || ctx._temp_.cisco.message_id == '106103'"
       field: "message"
-      description: "106103"
+      description: "106102, 106103"
       pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} for user %{user.name} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
+  - grok:
+      if: "['109201', '109202', '109204', '109207', '109210'].contains(ctx._temp_.cisco.message_id)"
+      field: "message"
+      description: "109201, 109202, 109204, 109207, 109210"
+      patterns:
+        - "UAUTH: Session(=| )%{DATA}, User(=| )%{NOTCOMMA:user.name}, Assigned IP(=| )%{IP:source.address}, Succe%{GREEDYDATA}"
+      pattern_definitions:
+        NOTCOMMA: "[^,]+"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '111004'"
       field: "message"
@@ -341,12 +349,14 @@ processors:
       description: "111004"
       value: "change"
       if: "ctx._temp_.cisco.message_id == '111004'"
+  # Note: This one does not in any way adhere to the documentation on cisco's site for these message ids
   - grok:
-      if: "ctx._temp_.cisco.message_id == '111009'"
-      description: "111009"
+      if: '["111008", "111009"].contains(ctx._temp_.cisco.message_id)'
+      description: "111008, 111009"
       field: "message"
       patterns:
         - "^%{NOTSPACE} '%{NOTSPACE:server.user.name}' executed %{NOTSPACE} %{GREEDYDATA:_temp_.cisco.command_line_arguments}"
+        - "^%{NOTSPACE} '%{NOTSPACE:server.user.name}' executed the '%{DATA}' command"
   - grok:
       if: "ctx._temp_.cisco.message_id == '111010'"
       field: "message"
@@ -371,13 +381,37 @@ processors:
         REASON: (AAA failure|Account has been disabled)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
+      if: "ctx._temp_.cisco.message_id == '113008'"
+      description: "113008"
+      field: "message"
+      patterns:
+        - "AAA transaction status ACCEPT(%{SPACE})?: user = ?(%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '113009'"
+      description: "113009"
+      field: "message"
+      patterns:
+        - "AAA retrieved default group policy \\(%{DATA:source.user.group.name}\\) for user = ?(%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       field: "message"
       description: "113012"
       patterns:
       - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '113014'"
+      description: "113014"
+      field: "message"
+      patterns:
+          - "AAA authentication server not accessible(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       field: "message"
@@ -424,6 +458,19 @@ processors:
         NOTCOLON: "[^:]*"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         TYPE: "%{WORD}-%{WORD}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '210022'"
+      field: "message"
+      description: "210022"
+      tag: "210022"
+      pattern: "LU missed %{_temp_.cisco.missed_updates_count} updates"
+
+  - convert:
+      if: ctx._temp_?.cisco?.missed_updates_count != null
+      field: _temp_.cisco.missed_updates_count
+      target_field: _temp_.cisco.missed_updates_count
+      tag: convert-missed_updates_to_integer
+      type: integer
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -452,6 +499,7 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
+      tag: handle_305012
       if: "ctx._temp_.cisco.message_id == '305012'"
       field: "message"
       description: "305012"
@@ -461,7 +509,7 @@ processors:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - set:
       if: '["302020"].contains(ctx._temp_.cisco.message_id)'
@@ -773,6 +821,11 @@ processors:
       description: "507003"
       pattern: "%{network.transport} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} terminated by inspection engine, reason - %{message}"
   - dissect:
+      if: '["602101"].contains(ctx._temp_.cisco.message_id)'
+      field: "message"
+      description: "602101"
+      pattern: 'PMTU-D packet %{source.bytes} bytes greater than effective mtu %{_temp_.cisco.effective_mtu}, dest_addr=%{destination.address}, src_addr=%{source.address}, prot=%{network.protocol}'
+  - dissect:
       if: '["605004", "605005"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
       description: "605004, 605005"
@@ -844,8 +897,17 @@ processors:
       field: "message"
       description: "722051"
       patterns:
-        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
-        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 Address %{IP:_temp_.cisco.assigned_ip} %{GREEDYDATA}"
+        - "Group <%{NOTANGLE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> IPv4 [Aa]ddress <%{IP:_temp_.cisco.assigned_ip}> IPv6 [Aa]ddress <%{IP:_temp_.cisco.assigned_ipv6}> %{GREEDYDATA}"
+        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 [Aa]ddress %{IP:_temp_.cisco.assigned_ip} IPv6 [Aa]ddress %{IP:_temp_.cisco.assigned_ipv6} %{GREEDYDATA}"
+      pattern_definitions:
+        NOTANGLE: "[^>]+"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722055'"
+      field: "message"
+      description: "722055"
+      patterns:
+        - "Group <%{NOTANGLE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> Client [Tt]ype: %{GREEDYDATA:user_agent.original}"
+        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} Client [Tt]ype: %{GREEDYDATA:user_agent.original}"
       pattern_definitions:
         NOTANGLE: "[^>]+"
   - grok:
@@ -859,6 +921,11 @@ processors:
       field: "message"
       description: "734001"
       pattern: "DAP: User %{user.email}, Addr %{source.address}, Connection %{_temp_.cisco.connection_type}: The following DAP records were selected for this connection: %{_temp_.cisco.dap_records->}"
+  - dissect:
+      if: "['746012', '746013'].contains(ctx._temp_.cisco.message_id)"
+      field: "message"
+      description: "746012, 746013"
+      pattern: "user-identity: %{} IP-User mapping %{source.address} - %{source.user.name} %{_temp_.operation.status} - %{event.reason}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
       field: "message"
@@ -912,6 +979,24 @@ processors:
       patterns:
         - "Authentication: rejected, group = %{NOTSPACE:source.user.group.name} user = %{USER:source.user.name} , Session Type: %{NOTSPACE:_temp_.cisco.session_type}"
         - "Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '716058'"
+      field: "message"
+      description: "716058"
+      patterns:
+        - "Group <%{NOTANGLE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> AnyConnect session lost connection. Waiting to resume."
+        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} AnyConnect session lost connection. Waiting to resume."
+      pattern_definitions:
+        NOTANGLE: "[^>]+"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '716059'"
+      field: "message"
+      description: "716059"
+      patterns:
+        - "Group <%{NOTANGLE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> AnyConnect session resumed(. C| c)onnection from IP <%{IP:_temp_.cisco.mapped_source_ip}>."
+        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} AnyConnect session resumed(. C| c)onnection from IP %{IP:_temp_.cisco.mapped_source_ip}."
+      pattern_definitions:
+        NOTANGLE: "[^>]+"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '750003'"
       field: "message"
@@ -939,11 +1024,19 @@ processors:
       field: "event.outcome"
       value: "success"
   - set:
-      if: '["113004", "113012"].contains(ctx._temp_.cisco.message_id)'
+      if: '["746012", "746013"].contains(ctx._temp_.cisco.message_id) && ctx._temp_.operation.status == "Succeeded"'
       field: "event.outcome"
       value: "success"
   - set:
-      if: '["113002", "113005", "113021"].contains(ctx._temp_.cisco.message_id)'
+      if: '["746012", "746013"].contains(ctx._temp_.cisco.message_id) && ctx._temp_.operation.status != "Succeeded"'
+      field: "event.outcome"
+      value: "failure"
+  - set:
+      if: '["113004", "113008", "113009", "113012"].contains(ctx._temp_.cisco.message_id)'
+      field: "event.outcome"
+      value: "success"
+  - set:
+      if: '["113002", "113005", "113014", "113021"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
       value: "failure"
   - set:
@@ -971,15 +1064,19 @@ processors:
       field: "event.outcome"
       value: "failure"
   - set:
-      if: '["113039"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113039", "746012"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "client-vpn-connected"
+  - set:
+      if: '["602101"].contains(ctx._temp_.cisco.message_id)'
+      field: "event.action"
+      value: "vpn-pmtu-d"
   - set:
       if: '["113029","113030","113031","113032","113033","113034","113035","113036","113037","113038","113040"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "client-vpn-error"
   - set:
-      if: '["113019"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113019", "746013"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "client-vpn-disconnected"
   - set:
@@ -991,11 +1088,11 @@ processors:
       field: "event.action"
       value: "error"
   - set:
-      if: '["113005", "113021", "605004", "611102", "716039"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113005", "113014", "113021", "605004", "611102", "716039"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "logon-failed"
   - set:
-      if: '["113004", "113012", "611101", "734001"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113004", "113008", "113009", "113012", "611101", "734001"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "logged-in"
   - append:
@@ -1015,13 +1112,14 @@ processors:
       field: "message"
       if: '["302014", "302016", "302018", "302021", "302036", "302304", "302306"].contains(ctx._temp_.cisco.message_id)'
       description: "302014, 302016, 302018, 302021, 302036, 302304, 302306"
+      tag: parse_teardown_message
       patterns:
-        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
-        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator}
-        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
-        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) \(%{CISCO_USER:_temp_.cisco.termination_user}\)
-        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason}
-        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes})
+        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
+        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator}
+        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
+        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) \(%{CISCO_USER:_temp_.cisco.termination_user}\)
+        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason}
+        - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes})
         - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\s*(?:\(%{CISCO_USER:_temp_.cisco.source_username}\))?(\s*type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
@@ -1168,6 +1266,10 @@ processors:
         EgressZone:
           target: egress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.egress.zone]
+        EncryptPeerIP:
+          target: encrypt_peer_ip
+          id: ["430001", "430002", "430003"]
         Endpoint Profile:
           target: endpoint_profile
           id: ["430002", "430003"]
@@ -1241,6 +1343,7 @@ processors:
         IngressZone:
           target: ingress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.ingress.zone]
         InitiatorBytes:
           target: initiator_bytes
           id: ["430003"]
@@ -1402,6 +1505,9 @@ processors:
         VLAN_ID:
           target: vlan_id
           id: ["430001", "430002", "430003"]
+        VPN_Action:
+          target: vpn_action
+          id: ["430001", "430002", "430003"]
         WebApplication:
           target: web_application
           ecs: [network.application]
@@ -1446,6 +1552,7 @@ processors:
                                     'dst_port',
                                     'egress_interface',
                                     'egress_zone',
+                                    'encrypt_peer_ip',
                                     'file_action',
                                     'file_count',
                                     'file_direction',
@@ -1493,6 +1600,7 @@ processors:
                                     'url_reputation',
                                     'user',
                                     'user_agent',
+                                    'vpn_action',
                                     'web_application']);
         ctx._temp_.cisco['security'] = dest;
         ctx._temp_.cisco['security_event'] = dest_event;
@@ -1540,6 +1648,11 @@ processors:
       tag: convert-security_event_dst_ip
       field: _temp_.cisco.security_event.dst_ip
       target_field: _temp_.cisco.security_event.dst_ip
+      type: ip
+  - convert:
+      if: ctx._temp_?.cisco?.security_event?.encrypt_peer_ip != null
+      tag: convert-security_event_encrypt_peer_ip
+      field: _temp_.cisco.security_event.encrypt_peer_ip
       type: ip
   - convert:
       if: ctx._temp_?.cisco?.security_event?.dst_port != null
@@ -1768,7 +1881,15 @@ processors:
   #
   # Parse Source/Dest Username/Domain
   #
+  - gsub:
+      tag: strip_extra_escapes_from_source_username
+      field: "_temp_.cisco.source_username"
+      if: 'ctx._temp_?.cisco?.source_username != null'
+      ignore_failure: true
+      pattern: '\\{2,}'
+      replacement: '\\'
   - grok:
+      tag: simplify_source_username
       field: "_temp_.cisco.source_username"
       if: 'ctx._temp_?.cisco?.source_username != null'
       ignore_failure: true
@@ -2147,6 +2268,10 @@ processors:
       field: destination.nat.port
       type: long
       ignore_missing: true
+  - convert:
+      if: "ctx._temp_?.cisco?.effective_mtu != null"
+      field: _temp_.cisco.effective_mtu
+      type: long
   #
   # Zone-based Network Directionality
   #
@@ -2607,6 +2732,11 @@ processors:
       field: related.ip
       value: "{{{destination.nat.ip}}}"
       if: "ctx.destination?.nat?.ip != null"
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{cisco.ftd.security_event.encrypt_peer_ip}}}'
+      if: ctx.cisco?.ftd?.security_event?.encrypt_peer_ip != null
       allow_duplicates: false
   - append:
       field: related.user

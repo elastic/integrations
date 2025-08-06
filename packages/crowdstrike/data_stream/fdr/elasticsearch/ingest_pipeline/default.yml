@@ -1,18 +1,39 @@
 ---
 description: Pipeline for processing sample logs
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   ## Message decoding.
   - rename:
-      tag: message-to-original
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
-      tag: json-decoding
-      description: Decodes original JSON into `crowdstrike` field.
       field: event.original
+      tag: json_event_original
       target_field: crowdstrike
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       tag: remove-metadata-aid
       field: metadata.host.aid
@@ -30,6 +51,21 @@ processors:
         - append:
             field: error.message
             value: "'{{{ _ingest.on_failure_processor_tag }}}' rename failed with message {{{ _ingest.on_failure_message }}}"
+  - convert:
+      field: crowdstrike.UTCTimestamp
+      target_field: _temp.utc_timestamp
+      type: long
+      ignore_failure: true
+  - date:
+      tag: date-timestamp-utc
+      description: Parse timestamp from event.
+      field: _temp.utc_timestamp
+      target_field: event.created
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: >
+        ctx.event?.created == null && ctx._temp?.utc_timestamp instanceof long && ctx._temp.utc_timestamp < (long)1e10
   - date:
       tag: date-timestamp-utc
       description: Parse timestamp from event.
@@ -39,7 +75,11 @@ processors:
         - UNIX_MS
         - ISO8601
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.UTCTimestamp != null &&
+        ctx.crowdstrike.UTCTimestamp != "" &&
+        ctx.crowdstrike.UTCTimestamp != "none"
   - date:
       tag: date-timestamp
       description: Parse timestamp from event.
@@ -49,7 +89,11 @@ processors:
         - UNIX_MS
         - ISO8601
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.timestamp != null &&
+        ctx.crowdstrike.timestamp != "" &&
+        ctx.crowdstrike.timestamp != "none"
   - date:
       tag: date-event-created
       description: Parse timestamp from event.
@@ -59,7 +103,11 @@ processors:
         - UNIX
         - ISO8601
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.CreationTimeStamp != null &&
+        ctx.crowdstrike.CreationTimeStamp != "" &&
+        ctx.crowdstrike.CreationTimeStamp != "none"
   - date:
       tag: date-Time
       description: Parse Time from event.
@@ -69,7 +117,11 @@ processors:
         - ISO8601
         - UNIX
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.Time != null &&
+        ctx.crowdstrike.Time != "" &&
+        ctx.crowdstrike.Time != "none"
   - date:
       tag: date-_time
       description: Parse _time from event.
@@ -79,7 +131,11 @@ processors:
         - ISO8601
         - UNIX
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?._time != null &&
+        ctx.crowdstrike._time != "" &&
+        ctx.crowdstrike._time != "none"
   - set:
       tag: set-timestamp
       field: "@timestamp"
@@ -128,12 +184,14 @@ processors:
         }
   - date:
       tag: date-start-timestamp
-      if: ctx.crowdstrike?.StartTime != null
       field: crowdstrike.StartTime
       target_field: crowdstrike.StartTime
       formats:
         - UNIX
-      ignore_failure: true
+      if: >
+        ctx.crowdstrike?.StartTime != null &&
+        ctx.crowdstrike.StartTime != "" &&
+        ctx.crowdstrike.StartTime != "none"
   - script:
       tag: date-end-timestamp-from-nt
       description: Conditionally convert EndTime from Windows NT timestamp format to UNIX.
@@ -155,20 +213,25 @@ processors:
         }
   - date:
       tag: date-end-timestamp
-      if: ctx.crowdstrike?.EndTime != null
       field: crowdstrike.EndTime
       target_field: crowdstrike.EndTime
       formats:
         - UNIX
-      ignore_failure: true
+      if: >
+        ctx.crowdstrike?.EndTime != null &&
+        ctx.crowdstrike.EndTime != "" &&
+        ctx.crowdstrike.EndTime != "none"
   - date:
       tag: date-scores-modified_time
-      if: ctx.crowdstrike?.scores?.modified_time != null
       field: crowdstrike.scores.modified_time
       target_field: crowdstrike.scores.modified_time
       formats:
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: >
+        ctx.crowdstrike?.scores?.modified_time != null &&
+        ctx.crowdstrike.scores.modified_time != "" &&
+        ctx.crowdstrike.scores.modified_time != "none"
       on_failure:
         - remove:
             field: crowdstrike.scores.modified_time
@@ -194,6 +257,142 @@ processors:
       ignore_missing: true
       if: ctx.crowdstrike?.HostHiddenStatus == null
 
+# Handle case changes.
+  - rename:
+      tag: rename_GrandParentCommandLine_GrandparentCommandLine
+      field: crowdstrike.GrandParentCommandLine
+      target_field: crowdstrike.GrandparentCommandLine
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFileName_GrandparentImageFileName
+      field: crowdstrike.GrandParentImageFileName
+      target_field: crowdstrike.GrandparentImageFileName
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFilePath_GrandparentImageFilePath
+      field: crowdstrike.GrandParentImageFilePath
+      target_field: crowdstrike.GrandparentImageFilePath
+      ignore_failure: true
+
+  # Assign severities to conform to security rules values
+  #
+  # 21 = Low
+  # 47 = Medium
+  # 73 = High
+  # 99 = Critical
+  #
+  # Leave crowdstrike values in place, since they have their own semantics.
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.crowdstrike?.alert?.severity instanceof long && ctx.crowdstrike.alert.severityName == null
+      source: |-
+        long severity = ctx.crowdstrike.alert.severity;
+        if (0 <= severity && severity < 20) {
+          ctx.crowdstrike.alert.severityName = "info";
+        } if (20 <= severity && severity < 40) {
+          ctx.crowdstrike.alert.severityName = "low";
+        } if (40 <= severity && severity < 60) {
+          ctx.crowdstrike.alert.severityName = "medium";
+        } if (60 <= severity && severity < 80) {
+          ctx.crowdstrike.alert.severityName = "high";
+        } if (80 <= severity && severity <= 100) {
+          ctx.crowdstrike.alert.severityName = "critical";
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.SeverityName instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String name = ctx.crowdstrike.SeverityName;
+        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("info") || name.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (name.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (name.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (name.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+# EppDetectionSummaryEvent renames
+  - rename:
+      tag: rename_Hostname_ComputerName
+      field: crowdstrike.Hostname
+      target_field: crowdstrike.ComputerName
+      ignore_failure: true
+  - rename:
+      tag: rename_LogonDomain_MachineDomain
+      field: crowdstrike.LogonDomain
+      target_field: crowdstrike.MachineDomain
+      ignore_failure: true
+  - rename:
+      tag: rename_AgentId_SensorId
+      field: crowdstrike.AgentId
+      target_field: crowdstrike.SensorId
+      ignore_failure: true
+  - rename:
+      tag: rename_Name_DetectName
+      field: crowdstrike.Name
+      target_field: crowdstrike.DetectName
+      ignore_failure: true
+
+# EppDetectionSummaryEvent converts
+  - convert:
+      field: crowdstrike.LocalIPv6
+      tag: convert_crowdstrike_LocalIPv6_ip
+      type: ip
+      if: ctx.crowdstrike?.LocalIPv6 != null && ctx.crowdstrike.LocalIPv6 != ''
+      on_failure:
+        - remove:
+            field: crowdstrike.LocalIPv6
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: crowdstrike.FilesAccessed
+      tag: convert_crowdstrike_filesaccessed_timestamp_array
+      if: ctx.crowdstrike?.FilesAccessed instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_filesaccessed_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: crowdstrike.FilesWritten
+      tag: convert_crowdstrike_fileswritten_timestamp_array
+      if: ctx.crowdstrike?.FilesWritten instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_fileswritten_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
 # Handle additional added fields. 
   - convert:
       tag: convert_CurrentLocalIP_ip
@@ -201,11 +400,15 @@ processors:
       type: ip
       if: (ctx.crowdstrike?.CurrentLocalIP != null && ctx.crowdstrike?.CurrentLocalIP != "")
   - date:
+      tag: date-first-discovery-date
       field: crowdstrike.FirstDiscoveredDate
       target_field: crowdstrike.FirstDiscoveredDate
       formats:
         - UNIX
-      if: ctx.crowdstrike?.FirstDiscoveredDate != null && ctx.crowdstrike?.FirstDiscoveredDate != ""
+      if: >
+        ctx.crowdstrike?.FirstDiscoveredDate != null &&
+        ctx.crowdstrike.FirstDiscoveredDate != "" &&
+        ctx.crowdstrike.FirstDiscoveredDate != "none"
   - convert:
       field: crowdstrike.aipCount
       type: integer
@@ -219,19 +422,31 @@ processors:
       type: integer
       if: (ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != "")
 
+  ## AWS S3 input does _id-Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, even the _id-Based Deduplication
+        needs to be removed.
+      if: ctx._conf?.enable_deduplication == false
+      ignore_missing: true
+      
   - fingerprint:
       fields:
         - '@timestamp'
         - crowdstrike.id
         - crowdstrike.aid
         - crowdstrike.cid
+      tag: fingerprint_crowdstrike_fdr
+      description: >
+        When deduplication is enabled, fingerprint the a set of crowdstrike fields 
+        in attempt to prevent the same event from being indexed more than once.
+      if: ctx._conf?.enable_deduplication == true
       target_field: _id
       ignore_missing: true
-
-  ## ECS fields.
-  - set:
-      field: ecs.version
-      value: '8.11.0'
 
   ## Categorization.
   - script:
@@ -239,6 +454,51 @@ processors:
       description: Categorize events.
       lang: painless
       params:
+        ActiveDirectoryServiceAccessRequest:
+          category: [ database ]
+          type: [ access ]
+          kind: event
+          outcome: success
+        ActiveDirectoryAuthentication:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        ActiveDirectoryServiceAccessRequestFailure:
+          category: [ database ]
+          type: [ access ]
+          kind: event
+          outcome: failure
+        ActiveDirectoryIncomingLdapSearchRequest:
+          category: [ database ]
+          type: [ access ]
+          kind: event
+          outcome: unknown
+        ActiveDirectoryAuthenticationFailure:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: failure
+        ActiveDirectoryInteractiveDomainLogon:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        ActiveDirectoryIncomingDceRpcRequest:
+          category: [ api ]
+          type: [ start ]
+          kind: event
+          outcome: unknown
+        ActiveDirectoryIncomingPsExecExecution2:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        ActiveDirectoryIncomingDceRpcEpmRequest:
+          category: [ api ]
+          type: [ start ]
+          kind: event
+          outcome: unknown
         AcUninstallConfirmation:
           category: [ package ]
           type: [ deletion ]
@@ -309,6 +569,10 @@ processors:
           type: [ access, change ]
           kind: event
           outcome: success
+        ClassifiedModuleLoad:
+          category: [ library ]
+          type: [ start ]
+          kind: event
         CloudAssociateTreeIdWithRoot:
           category: [ malware ]
           type: [ deletion ]
@@ -635,8 +899,8 @@ processors:
           kind: event
           outcome: success
         ImageHash:
-          category: [ process ]
-          type: [ change ]
+          category: [ library ]
+          type: [ start ]
           kind: event
           outcome: success
         InjectedThread:
@@ -1179,6 +1443,11 @@ processors:
           type: [ change ]
           kind: event
           outcome: success
+        SudoCommandAttempt:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: unknown
         SuspiciousCreateSymbolicLink:
           category: [ malware, file ]
           type: [ creation, info ]
@@ -1265,9 +1534,9 @@ processors:
           kind: event
           outcome: failure
         UnsignedModuleLoad:
-          category: [ process ]
-          type: [ change ]
-          kind: alert
+          category: [ library ]
+          type: [ start ]
+          kind: event
           outcome: success
         UpdateManifestDownloadComplete:
           category: [ file ]
@@ -1385,18 +1654,38 @@ processors:
             }
           });
         }
+  ## Cached event category for category-dependent processors.
+  - set:
+      field: _temp.isFile
+      value: true
+      if: ctx.event?.category?.contains('file') == true
+  - set:
+      field: _temp.isLibrary
+      value: true
+      if: ctx.event?.category?.contains('library') == true
+  - set:
+      field: _temp.isNetwork
+      value: true
+      if: ctx.event?.category?.contains('network') == true
+  - set:
+      field: _temp.isProcess
+      value: true
+      if: ctx.event?.category?.contains('process') == true
 
   ## Event fields.
-  - rename:
-      field: crowdstrike.id
-      target_field: event.id
-      ignore_missing: true
+  - set:
+      field: event.id
+      description: Concat the fields used in fingerprint.
+      tag: set_event_id
+      if: ctx.crowdstrike?.id != null || ctx.crowdstrike?.aid != null || ctx.crowdstrike?.cid != null
+      value: >-
+        {{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}
   - rename:
       field: crowdstrike.event_simpleName
       target_field: event.action
       ignore_missing: true
 
-## Prepare data.
+  ## Prepare data.
   - script:
       tag: convert-count-fields-to-long
       description: Convert all count fields to number.
@@ -1438,8 +1727,8 @@ processors:
         for (entry in params.entrySet()) {
           def key = entry.getKey().toString();
           def value = ctx.crowdstrike[key];
-          ctx.crowdstrike.remove(key);
           if (hashIsEmpty(value)) {
+            ctx.crowdstrike.remove(key);
             continue;
           }
 
@@ -1447,7 +1736,7 @@ processors:
           related.hash.add(value);
         }
 
-        ctx._temp = new HashMap();
+        ctx._temp = ctx._temp ?: [:];
         ctx._temp.hashes = hashes;
         if (related.hash.length > 0) {
           ctx.related = related;
@@ -1490,12 +1779,6 @@ processors:
       target_field: observer.version
       ignore_missing: true
       ignore_failure: true
-  - set:
-      field: observer.vendor
-      value: crowdstrike
-  - set:
-      field: observer.type
-      value: agent
   - foreach:
       if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
       field: observer.ip
@@ -1514,6 +1797,10 @@ processors:
           allow_duplicates: false
 
   ## Host fields.
+  - set:
+      field: host.id
+      copy_from: crowdstrike.aid
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.ComputerName
       target_field: host.hostname
@@ -1603,6 +1890,10 @@ processors:
       field: host.os.type
       value: windows
       if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Win"
+  - set:
+      field: host.os.type
+      value: ios
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "iOS"
   - rename:
       field: crowdstrike.OSVersionString
       target_field: host.os.version
@@ -1633,19 +1924,19 @@ processors:
             return b;
         }
 
-        // readNextArg splits command line string cmd into next
-        // argument and command line remainder.
-        def readNextArg(String cmd) {
+        // readNextArg splits command line string into next
+        // argument and command line remainder offset.
+        def readNextArg(String line, int offset) {
             def b = new StringBuilder();
             boolean inquote;
             int nslash;
-            for (; cmd.length() > 0; cmd = cmd.substring(1)) {
-                def c = cmd.charAt(0);
+            for (; offset < line.length(); offset++) {
+                def c = line.charAt(offset);
                 if (c == (char)' ' || c == (char)0x09) {
                     if (!inquote) {
                         return [
                             "arg":  appendBSBytes(b, nslash).toString(),
-                            "rest": cmd.substring(1)
+                            "offset": offset+1
                         ];
                     }
                 } else if (c == (char)'"') {
@@ -1654,9 +1945,9 @@ processors:
                         // use "Prior to 2008" rule from
                         // http://daviddeley.com/autohotkey/parameters/parameters.htm
                         // section 5.2 to deal with double double quotes
-                        if (inquote && cmd.length() > 1 && cmd.charAt(1) == (char)'"') {
+                        if (inquote && offset+1 < line.length() && line.charAt(offset+1) == (char)'"') {
                             b.append(c);
-                            cmd = cmd.substring(1);
+                            offset++;
                         }
                         inquote = !inquote;
                     } else {
@@ -1674,7 +1965,7 @@ processors:
             }
             return [
                 "arg":  appendBSBytes(b, nslash).toString(), 
-                "rest": ''
+                "offset": line.length()
             ];
         }
 
@@ -1682,15 +1973,19 @@ processors:
         // strings, following the Windows conventions documented
         // at http://daviddeley.com/autohotkey/parameters/parameters.htm#WINARGV
         // Original implementation found at: https://github.com/golang/go/commit/39c8d2b7faed06b0e91a1ad7906231f53aab45d1
-        def commandLineToArgv(String cmd) {
+        def commandLineToArgv(String line) {
             def args = new ArrayList();
-            while (cmd.length() > 0) {
-                if (cmd.charAt(0) == (char)' ' || cmd.charAt(0) == (char)0x09) {
-                    cmd = cmd.substring(1);
+            for (int i = 0; i < line.length();) {
+                if (line.charAt(i) == (char)' ' || line.charAt(i) == (char)0x09) {
+                    i++;
                     continue;
                 }
-                def next = readNextArg(cmd);
-                cmd = next.rest;
+                def next = readNextArg(line, i);
+                i = next.offset;
+                if (next.arg == '') {
+                    // Empty strings will be removed later so don't bother adding them.
+                    continue;
+                }
                 args.add(next.arg);
             }
             return args;
@@ -1702,10 +1997,12 @@ processors:
   - rename:
       field: crowdstrike.ImageFileName
       target_field: process.executable
+      if: ctx._temp?.isLibrary != true
       ignore_missing: true
   - script:
       tag: process-name
       lang: painless
+      if: ctx.process?.executable != null && ctx.process.executable != ""
       description: Calculate process.name
       source: |-
         def executable = ctx.process.executable;
@@ -1717,8 +2014,6 @@ processors:
           name = executable.splitOnToken("/")[-1];
         }
         ctx.process.put("name", name);
-
-      if: ctx.process?.executable != null && ctx.process.executable != ""
   - convert:
       field: crowdstrike.ExitCode
       type: long
@@ -1749,32 +2044,54 @@ processors:
           ctx.process.uptime = (long) ((e-s)/1000L);
         }
       if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
+  - script:
+      tag: parse-raw-pids
+      lang: painless
+      description: Parse raw process id's so that they roll over if out of 32-bit range
+      source: |-
+        def parsePid(String pid) {
+          try {
+            return Long.parseUnsignedLong(pid);
+          } catch (Exception e) {
+            return pid;
+          }
+        }
+        if (ctx.crowdstrike?.RawProcessId != null) {
+          ctx.crowdstrike.RawProcessId = parsePid(ctx.crowdstrike.RawProcessId);
+        }
+        if (ctx.crowdstrike?.EtwRawProcessId != null) {
+          ctx.crowdstrike.EtwRawProcessId = parsePid(ctx.crowdstrike.EtwRawProcessId);
+        }
   - date:
+      tag: date-process-start-time
       field: crowdstrike.ProcessStartTime
       target_field: crowdstrike.ProcessStartTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != ""
+      if: >
+        ctx.crowdstrike?.ProcessStartTime != null &&
+        ctx.crowdstrike.ProcessStartTime != "" &&
+        ctx.crowdstrike.ProcessStartTime != "none"
   - rename:
       field: crowdstrike.ProcessStartTime
       target_field: process.start
       ignore_missing: true
       if: ctx.crowdstrike?.ProcessStartTime != ""
   - date:
+      tag: date-process-end-time
       field: crowdstrike.ProcessEndTime
       target_field: crowdstrike.ProcessEndTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
+      if: >
+        ctx.crowdstrike?.ProcessEndTime != null &&
+        ctx.crowdstrike.ProcessEndTime != "" &&
+        ctx.crowdstrike.ProcessEndTime != "none"
   - rename:
       field: crowdstrike.ProcessEndTime
       target_field: process.end
       ignore_missing: true
       if: ctx.crowdstrike?.ProcessEndTime != ""
-  - convert:
-      field: crowdstrike.RawProcessId
-      type: long
-      ignore_missing: true
   - rename:
       field: crowdstrike.RawProcessId
       target_field: process.pid
@@ -1795,6 +2112,11 @@ processors:
       field: crowdstrike.ParentProcessId
       target_field: process.parent.entity_id
       ignore_missing: true
+  - set:
+      field: process.name
+      copy_from: crowdstrike.ContextBaseFileName
+      if: ctx._temp?.isNetwork == true
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.ParentBaseFileName
       target_field: process.parent.name
@@ -1812,7 +2134,14 @@ processors:
       target_field: process.entity_id
       ignore_missing: true
       ignore_failure: true
-      if: ctx.process?.entity_id == null
+      if: ctx.process?.entity_id == null && ctx.host?.os?.type != 'windows'
+  - convert:
+      field: crowdstrike.ContextProcessId
+      type: long
+      target_field: process.pid
+      if: ctx._temp?.isLibrary == true && ctx.crowdstrike?.ContextProcessId != '' && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: crowdstrike.ContextThreadId
       type: long
@@ -1824,10 +2153,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.process?.thread?.id == null
-  - convert:
-      field: crowdstrike.EtwRawProcessId
-      type: long
-      ignore_missing: true
   - rename:
       field: crowdstrike.EtwRawProcessId
       target_field: process.pid
@@ -1850,6 +2175,232 @@ processors:
       field: _temp.hashes
       target_field: process.hash
       if: ctx.event?.action != null && (ctx.event.action.contains("Process") || ctx.event.action.contains("Service")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.IntegrityLevel != null
+      params:
+        levels:
+          '0': UNTRUSTED
+          '4096': LOW
+          '8192': MEDIUM
+          '8448': MEDIUM_PLUS
+          '12288': HIGH
+          '16384': SYSTEM
+          '20480': PROTECTED
+      source: |-
+        String level = params.get('levels')[ctx.crowdstrike.IntegrityLevel];
+        if (level != null) {
+          ctx.process = ctx.process ?: [:];
+          ctx.process.Ext = ctx.process.Ext ?: [:];
+          ctx.process.Ext.token = ctx.process.Ext.token ?: [:];
+          ctx.process.Ext.token.integrity_level_name = level;
+        }
+  - set:
+      field: process.pe.original_file_name
+      copy_from: crowdstrike.OriginalFilename
+      if: ctx.host?.os?.type == 'windows'
+      ignore_empty_value: true
+  - convert:
+      field: process.pgid
+      target_field: process.group_leader.entity_id
+      type: string
+      if: ctx._temp?.isProcess == true && ctx.host?.os?.type == 'linux'
+      ignore_missing: true
+  - set:
+      field: process.real_user.id
+      copy_from: crowdstrike.RUID
+      if: ctx.host?.os?.type == 'linux'
+      ignore_empty_value: true
+  - set:
+      field: process.real_user.id
+      copy_from: crowdstrike.RUID
+      ignore_empty_value: true
+  - set:
+      field: user.Ext.real.id
+      copy_from: process.real_user.id
+      ignore_empty_value: true
+  - set:
+      field: process.real_group.id
+      copy_from: crowdstrike.RGID
+      if: ctx.host?.os?.type == 'linux'
+      ignore_empty_value: true
+  - set:
+      field: group.Ext.real.id
+      copy_from: process.real_group.id
+      ignore_empty_value: true
+  - set:
+      field: process.group.id
+      copy_from: crowdstrike.GID
+      if: ctx.host?.os?.type == 'linux'
+      ignore_empty_value: true
+  - set:
+      field: group.id
+      copy_from: process.group.id
+      ignore_empty_value: true
+
+  ## Library fields.
+  - rename:
+      field: process.name
+      target_field: dll.name
+      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+  - rename:
+      field: process.executable
+      target_field: dll.path
+      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.MD5HashData
+      target_field: dll.hash.md5
+      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SHA1HashData
+      target_field: dll.hash.sha1
+      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SHA256HashData
+      target_field: dll.hash.sha256
+      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.ModuleSize
+      type: long
+      target_field: dll.Ext.size
+      if: ctx.crowdstrike?.ModuleSize != '' && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx._temp?.isLibrary == true && ctx.crowdstrike?.ImageFileName != null && ctx.host?.os?.type == 'windows'
+      ignore_failure: true
+      source: |-
+        int idx = ctx.crowdstrike.ImageFileName.lastIndexOf('\\');
+        if (idx >= 0) {
+          ctx.dll = ctx.dll ?: [:];
+          ctx.dll.name = ctx.crowdstrike.ImageFileName.substring(idx+1);
+        }
+  - rename:
+      field: crowdstrike.ImageFileName
+      target_field: dll.path
+      ignore_missing: true
+      if: ctx.event?.action == 'ClassifiedModuleLoad' && ctx.host?.os?.type == 'windows'
+  - script:
+      lang: painless
+      if: ctx._temp?.isLibrary == true && ctx.crowdstrike?.TargetImageFileName != null && ctx.host?.os?.type == 'windows'
+      ignore_failure: true
+      source: |-
+        int idx = ctx.crowdstrike.TargetImageFileName.lastIndexOf('\\');
+        if (idx >= 0) {
+          ctx.process = ctx.process ?: [:];
+          ctx.process.name = ctx.crowdstrike.TargetImageFileName.substring(idx+1);
+        }
+  - rename:
+      field: crowdstrike.TargetImageFileName
+      target_field: process.executable
+      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.event?.action == 'ClassifiedModuleLoad' && ctx.crowdstrike?.ImageSignatureLevel != null && ctx.crowdstrike.ImageSignatureLevel != ''
+      ignore_failure: true
+      source: |-
+        long signatureLevel = Long.parseLong(ctx.crowdstrike.ImageSignatureLevel);
+        ctx.dll = ctx.dll ?: [:];
+        ctx.dll.code_signature = ctx.dll.code_signature ?: [:];
+        if (signatureLevel > 0) {
+          ctx.dll.code_signature.exists = signatureLevel > 1;
+        }
+        ctx.dll.code_signature.trusted = signatureLevel > 1;
+
+  ## Registry fields.
+  - append:
+      field: registry.data.strings
+      value: '{{{crowdstrike.RegStringValue}}}'
+      if: ctx.crowdstrike?.RegStringValue != null && ctx.crowdstrike.RegStringValue != ''
+      allow_duplicates: false
+  - set:
+      field: registry.path
+      value: '{{{crowdstrike.RegObjectName}}}\{{{crowdstrike.RegValueName}}}'
+      if: ctx.crowdstrike?.RegObjectName != null && ctx.crowdstrike.RegObjectName != '' && ctx.crowdstrike?.RegValueName != null && ctx.crowdstrike.RegValueName != ''
+  - set:
+      field: registry.value
+      copy_from: crowdstrike.RegValueName
+      ignore_empty_value: true
+  - gsub:
+      field: crowdstrike.RegObjectName
+      target_field: registry.key
+      pattern: '^\\REGISTRY\\(?:USER|MACHINE)'
+      replacement: ''
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.RegOperationType != null
+      params:
+        op_types:
+          '1':
+            type: change
+            action: modification
+          '3':
+            type: creation
+            action: creation
+          '5':
+            type: change
+            action: modification
+          '8':
+            type: access
+            action: open
+          '9':
+            type: access
+            action: query
+      source: |-
+        def op = params.get('op_types')[ctx.crowdstrike.RegOperationType];
+        if (op != null) {
+          ctx.event = ctx.event ?: [:];
+          if (ctx.event.type instanceof List) {
+            Set type = new HashSet();
+            for (String t: ctx.event.type) {
+              type.add(t);
+            }
+            type.add(op.type);
+            ctx.event.type = type;
+          } else if (ctx.event.type instanceof String) {
+            String type = ctx.event.type;
+            ctx.event.type = [];
+            ctx.event.type.add(type);
+            ctx.event.type.add(op.type);
+          } else {
+            ctx.event.type = [];
+            ctx.event.type.add(op.type);
+          }
+          ctx.event.action = op.action;
+        }
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.RegType != null
+      params:
+        data_types:
+          '0': REG_NONE
+          '1': REG_SZ
+          '2': REG_EXPAND_SZ
+          '3': REG_BINARY
+          '4': REG_DWORD
+          '5': REG_DWORD_BIG_ENDIAN
+          '6': REG_LINK
+          '7': REG_MULTI_SZ
+          '8': REG_RESOURCE_LIST
+          '9': REG_FULL_RESOURCE_DESCRIPTOR
+          '10': REG_RESOURCE_REQUIREMENTS_LIST
+          '11': REG_QWORD
+      source: |-
+        String data_type = params.get('data_types')[ctx.crowdstrike.RegType];
+        if (data_type != null) {
+          ctx.registry = ctx.registry ?: [:];
+          ctx.registry.data = ctx.registry.data ?: [:];
+          ctx.registry.data.type = data_type;
+        }
 
   ## User fields.
   - rename:
@@ -1861,6 +2412,17 @@ processors:
       target_field: user.name
       ignore_missing: true
       if: ctx.crowdstrike?.info?.user?.UserName != null && ctx.user?.name == null
+  - split:
+      field: crowdstrike.info.user.User
+      target_field: "_temp.info_user_parts"
+      separator: '\\{1,2}'
+      if: ctx.crowdstrike?.info?.user?.User != null
+  - set:
+      field: user.domain
+      value: "{{{_temp.info_user_parts.0}}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx._temp?.info_user_parts != null && ctx._temp.info_user_parts.size() == 2
   - rename:
       field: crowdstrike.info.user.User
       target_field: user.name
@@ -1898,13 +2460,92 @@ processors:
       value: "{{{_temp.user_parts.1}}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+      if: ctx.user?.domain == null && ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - append:
+      field: user.domain
+      value: "{{{_temp.user_parts.1}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.domain != null && ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2 && ctx.user.domain != ctx._temp.user_parts[0]
   - set:
       field: user.full_name
       value: "{{{_temp.user_parts.0}}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - set:
+      field: user.name
+      copy_from: crowdstrike.SourceAccountSamAccountName
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      copy_from: crowdstrike.SourceAccountUserName
+      if: >-
+        ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory') &&
+        ctx.crowdstrike?.SourceAccountUserName instanceof String && ctx.crowdstrike.SourceAccountUserName.contains('@')
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      copy_from: crowdstrike.SourceEndpointAccountObjectSid
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      copy_from: crowdstrike.SourceAccountDomain
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: crowdstrike.OriginalUserName
+      if: ctx.event?.action == 'TokenImpersonated'
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      copy_from: crowdstrike.OriginalUserSid
+      if: ctx.event?.action == 'TokenImpersonated'
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      copy_from: crowdstrike.ImpersonatedUserName
+      if: ctx.event?.action == 'TokenImpersonated'
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: crowdstrike.OriginalUserName
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      value: root
+      if: (ctx.user?.name == null || ctx.user.name == '') && ctx.event?.action == 'SudoCommandAttempt'
+  - set:
+      field: user.id
+      copy_from: crowdstrike.OriginalUserID
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      value: 0
+      if: ctx.user?.id == null && ctx.event?.action == 'SudoCommandAttempt'
+  - set:
+      field: user.target.name
+      copy_from: crowdstrike.NewUsername
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      value: root
+      if: (ctx.user?.target?.name == null || ctx.user.target.name == '') && ctx.event?.action == 'SudoCommandAttempt'
+  - set:
+      field: user.target.id
+      copy_from: crowdstrike.NewUserID
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.target.id
+      value: 0
+      if: ctx.user?.target?.id == null && ctx.event?.action == 'SudoCommandAttempt'
   - append:
       field: related.user
       value: "{{{user.name}}}"
@@ -1922,6 +2563,24 @@ processors:
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.full_name != null
+  - append:
+      field: related.user
+      value: "{{{user.target.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      value: "{{{user.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.id != null
 
   ## Networking fields.
   - set:
@@ -2114,7 +2773,7 @@ processors:
   - set:
       field: url.scheme
       value: http
-      if: ctx.crowdstrike?.DownloadPort != 443
+      if: ctx.crowdstrike?.DownloadPort != null && ctx.crowdstrike.DownloadPort != 443
   - set:
       field: url.full
       value: "{{{url.scheme}}}://{{{server.address}}}{{{url.path}}}"
@@ -2183,17 +2842,26 @@ processors:
   - set:
       field: dns.type
       value: query
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+  - set:
+      field: network.protocol
+      value: dns
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - registered_domain:
       field: crowdstrike.DomainName
       target_field: dns.question
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: dns.question.name
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.dns?.question?.name == null && ctx.event.action.contains("DnsRequest")
   - script:
       tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
@@ -2246,7 +2914,7 @@ processors:
         "257": CAA
         "32768": TA
         "32769": DLV
-      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
+      if: ctx.event?.action != null && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty() && ctx.event.action.contains("DnsRequest")
       source: |-
         def t = params[ctx.crowdstrike.RequestType];
         if (t != null) {
@@ -2256,6 +2924,18 @@ processors:
           ctx.dns.question.type = t;
           ctx.crowdstrike.remove("RequestType");
         }
+
+  # SMB fields.
+  - registered_domain:
+      field: crowdstrike.DomainName
+      target_field: destination
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains("SmbServerShareOpenedEtw")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: destination.domain
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.destination?.domain == null && ctx.event.action.contains("SmbServerShareOpenedEtw")
 
   ## File fields.
   - convert:
@@ -2330,6 +3010,27 @@ processors:
       field: _temp.hashes
       target_field: file.hash
       if: ctx.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
+  - set:
+      field: process.name
+      copy_from: crowdstrike.ContextBaseFileName
+      if: ctx.event?.action != null && ctx.event.action.endsWith('Written')
+      ignore_empty_value: true
+  - set:
+      field: process.executable
+      copy_from: crowdstrike.ContextImageFileName
+      if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'windows'
+      ignore_empty_value: true
+  - set:
+      field: process.entity_id
+      copy_from: crowdstrike.ContextProcessId
+      if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'linux'
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      copy_from: crowdstrike.SHA256HashData
+      if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'linux'
+      ignore_empty_value: true
+
   ## Device Fields.
   - set:
       field: device.id
@@ -2341,6 +3042,12 @@ processors:
       copy_from: crowdstrike.DeviceId
       ignore_empty_value: true
       tag: rename_event_deviceid
+      if: ctx.device?.id == null
+  - set:
+      field: device.id
+      copy_from: observer.serial_number
+      ignore_empty_value: true
+      tag: set_device_id_from_observer_serial_number
       if: ctx.device?.id == null
 
   ## Crowdstrike fields.
@@ -2354,11 +3061,41 @@ processors:
       separator: ",\\s?"
       ignore_missing: true
       ignore_failure: true
-  - split:
-      field: crowdstrike.Tags
-      separator: ",\\s?"
-      ignore_missing: true
-      ignore_failure: true
+  - script:
+      tag: convert-Tags
+      description: Convert tags for indexing as keyword.
+      lang: painless
+      if : ctx.crowdstrike?.Tags != null
+      source: |
+          def result = [];
+
+          if (ctx.crowdstrike.Tags instanceof String) {
+            def parts = ctx.crowdstrike.Tags.splitOnToken(",");
+            for (def part : parts) {
+              def trimmed = part.trim();
+              if (trimmed != "") {
+                result.add(trimmed);
+              }
+            }
+
+          } else if (ctx.crowdstrike.Tags instanceof Map) {
+            for (def entry : ctx.crowdstrike.Tags.entrySet()) {
+              result.add(entry.getKey() + ":" + entry.getValue());
+            }
+
+          } else if (ctx.crowdstrike.Tags instanceof List) {
+            for (def tag : ctx.crowdstrike.Tags) {
+              if (tag instanceof Map) {
+                // this format is seen in the falcon data stream
+                result.add(tag["Key"] + ":" + tag["ValueString"]);
+              } else if (tag instanceof String) {
+                // this isn't expected but avoid throwing away indexable data
+                result.add(tag);
+              }
+            }
+          }
+
+          ctx.crowdstrike.Tags = result;
   - split:
       field: crowdstrike.CallStackModuleNames
       separator: "\\|"
@@ -2390,54 +3127,87 @@ processors:
       separator: '\s+'
       ignore_missing: true
   - date:
+      tag: date-LogonTime
       field: crowdstrike.LogonTime
       target_field: crowdstrike.LogonTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.LogonTime != null && ctx.crowdstrike?.LogonTime != ""
+      if: >
+        ctx.crowdstrike?.LogonTime != null &&
+        ctx.crowdstrike.LogonTime != "" &&
+        ctx.crowdstrike.LogonTime != "none"
   - date:
+      tag: date-LogoffTime
       field: crowdstrike.LogoffTime
       target_field: crowdstrike.LogoffTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.LogoffTime != null && ctx.crowdstrike?.LogoffTime != ""
+      if: >
+        ctx.crowdstrike?.LogoffTime != null &&
+        ctx.crowdstrike.LogoffTime != "" &&
+        ctx.crowdstrike.LogoffTime != "none"
   - date:
+      tag: date-ConnectTime
       field: crowdstrike.ConnectTime
       target_field: crowdstrike.ConnectTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ConnectTime != null && ctx.crowdstrike?.ConnectTime != ""
+      if: >
+        ctx.crowdstrike?.ConnectTime != null &&
+        ctx.crowdstrike.ConnectTime != "" &&
+        ctx.crowdstrike.ConnectTime != "none"
   - date:
+      tag: date-PreviousConnectTime
       field: crowdstrike.PreviousConnectTime
       target_field: crowdstrike.PreviousConnectTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.PreviousConnectTime != null && ctx.crowdstrike?.PreviousConnectTime != ""
+      if: >
+        ctx.crowdstrike?.PreviousConnectTime != null &&
+        ctx.crowdstrike.PreviousConnectTime != "" &&
+        ctx.crowdstrike.PreviousConnectTime != "none"
   - date:
+      tag: date-AgentLocalTime
       field: crowdstrike.AgentLocalTime
       target_field: crowdstrike.AgentLocalTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.AgentLocalTime != null && ctx.crowdstrike?.AgentLocalTime != ""
+      if: >
+        ctx.crowdstrike?.AgentLocalTime != null &&
+        ctx.crowdstrike.AgentLocalTime != "" &&
+        ctx.crowdstrike.AgentLocalTime != "none"
+      ignore_failure: true
   - date:
+      tag: date-FirstSeen
       field: crowdstrike.FirstSeen
       target_field: crowdstrike.FirstSeen
       formats:
         - UNIX
-      if: ctx.crowdstrike?.FirstSeen != null && ctx.crowdstrike?.FirstSeen != ""
+      if: >
+        ctx.crowdstrike?.FirstSeen != null &&
+        ctx.crowdstrike.FirstSeen != "" &&
+        ctx.crowdstrike.FirstSeen != "none"
   - date:
+      tag: date-ContextTimeStamp
       field: crowdstrike.ContextTimeStamp
       target_field: crowdstrike.ContextTimeStamp
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != ""
+      if: >
+        ctx.crowdstrike?.ContextTimeStamp != null &&
+        ctx.crowdstrike.ContextTimeStamp != "" &&
+        ctx.crowdstrike.ContextTimeStamp != "none"
   - date:
+      tag: date-BiosReleaseDate
       field: crowdstrike.BiosReleaseDate
       target_field: crowdstrike.BiosReleaseDate
       formats:
         - MM/dd/yyyy
         - strict_date_optional_time
-      if: ctx.crowdstrike?.BiosReleaseDate != null && ctx.crowdstrike?.BiosReleaseDate != ""
+      if: >
+        ctx.crowdstrike?.BiosReleaseDate != null &&
+        ctx.crowdstrike.BiosReleaseDate != "" &&
+        ctx.crowdstrike.BiosReleaseDate != "none"
   - convert:
       field: crowdstrike.AgentTimeOffset
       target_field: crowdstrike.AgentTimeOffset
@@ -2490,7 +3260,186 @@ processors:
       value: "{{{crowdstrike.info.user.LastLoggedOnHost}}}"
       allow_duplicates: false
       if: ctx.crowdstrike?.info?.user?.LastLoggedOnHost != null
-
+  - script:
+      tag: remove-long-fields
+      if: ctx._conf?.long_fields == 'delete_long_fields' && ctx._conf?.long_fields_max_length != null
+      description: Remove long fields based on user input stored in _conf.long_fields*.
+      lang: painless
+      source: |
+        def potential_long_fields = new ArrayList(['DylibPath',
+                                                  'EnvironmentVariablesString',
+                                                  'TaskXml',
+                                                  'ScriptContentBytes',
+                                                  'RegBinaryValue',
+                                                  'ScriptContent',
+                                                  'FileContent',
+                                                  'VersionInfo',
+                                                  'OciContainerConfigImage',
+                                                  'OciContainerConfigLabels',
+                                                  'OciContainerConfigTty',
+                                                  'OciContainerEngineType',
+                                                  'OciContainerHostConfigOomKillDisable',
+                                                  'OciContainerHostConfigPrivileged',
+                                                  'OciContainerHostConfigPublishAllPorts',
+                                                  'OciContainerHostConfigReadOnlyRootfs',
+                                                  'OciContainerImageId',
+                                                  'OciContainerInfoRetransmitted',
+                                                  'OciContainerMounts',
+                                                  'OciContainerName',
+                                                  'OciContainerNetworkSettingsIpAddress',
+                                                  'OciContainerStateOOMKilled',
+                                                  'OciContainerStatePid',
+                                                  'OciContainerConfigUser',
+                                                  'OciContainerHostConfigCgroup',
+                                                  'DevicePropertyClassGuid',
+                                                  'DevicePropertyClassName',
+                                                  'DevicePropertyLocationInformation',
+                                                  'ConfigurationDescriptorName',
+                                                  'InstanceMetadata',
+                                                  'InstanceMetadataSignature',
+                                                  'OciContainerAppName',
+                                                  'OciContainerAppVersion',
+                                                  'ManagedPdbBuildPath',
+                                                  'RegStringValue',
+                                                  'InterfaceKind',
+                                                  'ScriptContentScanId',
+                                                  'EfiVariableCustomModeAttributes',
+                                                  'EfiVariableDbAttributes',
+                                                  'EfiVariableDbSha256Hash',
+                                                  'EfiVariableKekAttributes',
+                                                  'EfiVariableKekSha256Hash',
+                                                  'EfiVariablePkAttributes',
+                                                  'EfiVariablePkSha256Hash',
+                                                  'EfiVariableSecureBootAttributes',
+                                                  'EfiVariableSetupModeAttributes',
+                                                  'EfiVariableSignatureSupportAttributes',
+                                                  'ExtendedAttributeValue',
+                                                  'EfiVariableSetupMode',
+                                                  'EfiVariableSignatureSupport',
+                                                  'MmioDataSmiEn',
+                                                  'MmioDataTco1Cnt',
+                                                  'PciConfigDataBdsm',
+                                                  'PciConfigDataBiosCntl',
+                                                  'PciConfigDataGgc',
+                                                  'PciConfigDataHfsts1',
+                                                  'PciConfigDataRemapbase',
+                                                  'PciConfigDataRemaplimit',
+                                                  'PciConfigDataTom',
+                                                  'PciConfigDataTouud',
+                                                  'PciConfigDataTsegmb',
+                                                  'SpibarDataBfpr',
+                                                  'SpibarDataFreg0',
+                                                  'SpibarDataFreg1',
+                                                  'SpibarDataFreg2',
+                                                  'SpibarDataFreg3',
+                                                  'SpibarDataFreg4',
+                                                  'SpibarDataHsfs',
+                                                  'SpibarDataPr0',
+                                                  'SpibarDataPr1',
+                                                  'SpibarDataPr2',
+                                                  'SpibarDataPr3',
+                                                  'SpibarDataPr4',
+                                                  'SpibarDataVscc0',
+                                                  'SpibarDataVscc1',
+                                                  'VolumeSnapshotName',
+                                                  'MmioDataGenPmconB',
+                                                  'VolumeSnapshotTimeStamp',
+                                                  'OciContainerHostConfigDevices',
+                                                  'OciContainerPhase',
+                                                  'PatternIdList',
+                                                  'RPath',
+                                                  'VolumeOriginPath',
+                                                  'AccountDomain',
+                                                  'AccountObjectGuid',
+                                                  'AccountObjectSid',
+                                                  'DcNumAttachments',
+                                                  'DcNumBlockingPolicies',
+                                                  'ExtendedAttributeValueReadable',
+                                                  'FileVaultIsEnabled',
+                                                  'SamAccountName',
+                                                  'ServiceDependOnService',
+                                                  'ApplicationName',
+                                                  'BluetoothDeviceName',
+                                                  'BluetoothServiceUuid_1',
+                                                  'BluetoothServiceUuid_2',
+                                                  'BluetoothServiceUuid_3',
+                                                  'BluetoothServiceUuid_4',
+                                                  'BluetoothServiceUuid_5',
+                                                  'BluetoothVendorIdSource',
+                                                  'CommandCount',
+                                                  'CommandCountMax',
+                                                  'ConnectionAddressIP6',
+                                                  'FirstCommand',
+                                                  'LastAdded',
+                                                  'LastDisplayed',
+                                                  'ThreadStartBytes',
+                                                  'VolumeDeviceVendor',
+                                                  'BluetoothClassOfDeviceValue',
+                                                  'BluetoothServiceName_3',
+                                                  'BiosChanged',
+                                                  'BluetoothServiceUuid_6',
+                                                  'ChangedPcrBitmap',
+                                                  'ExecutableBytes',
+                                                  'ObjectNameEtw',
+                                                  'ObjectTypeEtw',
+                                                  'Pcr0',
+                                                  'Pcr1',
+                                                  'Pcr2',
+                                                  'Pcr3',
+                                                  'Pcr4',
+                                                  'Pcr5',
+                                                  'Pcr6',
+                                                  'Pcr7',
+                                                  'RpcOpClassification',
+                                                  'ServiceAccessPropertiesEtw',
+                                                  'ServiceDelayedAutoStart',
+                                                  'SubjectDomainNameEtw',
+                                                  'BluetoothDeviceAppearanceValue',
+                                                  'BluetoothDeviceModelNumber',
+                                                  'BluetoothServiceName_1',
+                                                  'BluetoothServiceName_4',
+                                                  'BluetoothServiceName_5',
+                                                  'BluetoothServiceName_6',
+                                                  'BluetoothServiceName_7',
+                                                  'BluetoothServiceName_8',
+                                                  'BluetoothServiceUuidArray',
+                                                  'BluetoothServiceUuid_7',
+                                                  'BluetoothServiceUuid_8',
+                                                  'ClientId',
+                                                  'HttpInternalSource',
+                                                  'HttpMethod',
+                                                  'HttpRequestHeader',
+                                                  'HttpUrl',
+                                                  'IndividualDiskInfo',
+                                                  'KeyObject',
+                                                  'LastPendingUpdateInstalledTime',
+                                                  'LaunchItemType',
+                                                  'LaunchItemUrl',
+                                                  'LdapSearchFilterSample',
+                                                  'MemoryAvailable',
+                                                  'OciContainersStartedCount',
+                                                  'OciContainersStoppedCount',
+                                                  'PciConfigDataGenPmconA',
+                                                  'PciConfigDataMesegBase',
+                                                  'PciConfigDataSmramc',
+                                                  'PendingUpdateIds',
+                                                  'ProcessAttributes',
+                                                  'QuarantinedFileExtendedState',
+                                                  'QuarantinedFileName',
+                                                  'QuarantinedFileState',
+                                                  'RegCreateDisposition',
+                                                  'RegCreateOptions',
+                                                  'RegPostObjectName',
+                                                  'RegRootObjectName',
+                                                  'SourceThreadModule',
+                                                  'StorageUsageInfo',
+                                                  'SystemProcessCount',
+                                                  'UninstallPendingUpdateIds']);
+        for (String field: potential_long_fields) {
+          if (ctx.crowdstrike.get(field) != null && ctx.crowdstrike[field].length() > ctx._conf.long_fields_max_length) {
+            ctx.crowdstrike.remove(field);
+          }
+        }
   ## Cleanup.
   - remove:
       field: crowdstrike.event_platform
@@ -2499,6 +3448,21 @@ processors:
       if: ctx.host?.os?.type != null
   - remove:
       field:
+        - log.file.path
+        - log.offset
+      if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
+        - agent.ephemeral_id
+        - event.timezone
+        - log.offset
+      if: ctx._conf?.prune_fields == true
+      ignore_missing: true
+  - remove:
+      field:
+        - ecs.version
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
@@ -2509,33 +3473,32 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
-        - aws
+        - _conf
       ignore_missing: true
-      ignore_failure: true
   - script:
       tag: remove-nulls
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
         void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
             }
-          }
-          map.values().removeIf(v -> v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+            return v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-          list.removeIf(v -> v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         handleMap(ctx);
 on_failure:

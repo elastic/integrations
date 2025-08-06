@@ -1,6 +1,17 @@
 ---
 description: Pipeline for Okta system logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -45,7 +56,7 @@ processors:
       target_field: _id
       type: string
       ignore_failure: true
-      if: ctx?.json?.uuid != null && ctx?.json?.uuid != ""
+      if: ctx.json?.uuid != null && ctx.json?.uuid != ""
   - date:
       field: json.published
       formats:
@@ -71,7 +82,7 @@ processors:
         ["group.user_membership.add","group.user_membership.remove",
         "user.lifecycle.activate","user.lifecycle.create",
         "user.lifecycle.deactivate","user.lifecycle.suspend",
-        "user.lifecycle.unsuspend"].contains(ctx?.okta?.event_type)
+        "user.lifecycle.unsuspend"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
       field: event.category
@@ -83,51 +94,51 @@ processors:
         "policy.rule.deactivate","policy.rule.delete",
         "application.lifecycle.create","application.lifecycle.delete",
         "policy.rule.update","application.lifecycle.activate",
-        "application.lifecycle.deactivate","application.lifecycle.update"].contains(ctx?.okta?.event_type)
+        "application.lifecycle.deactivate","application.lifecycle.update"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
       field: event.category
       value: authentication
-      if: '["user.session.start","user.session.end","user.authentication.sso","policy.evaluate_sign_on"].contains(ctx?.okta?.event_type)'
+      if: '["user.session.start","user.session.end","user.authentication.sso","policy.evaluate_sign_on"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.category
       value: session
-      if: '["user.session.start","user.session.end"].contains(ctx?.okta?.event_type)'
+      if: '["user.session.start","user.session.end"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.type
       value: info
       if: |
         ["system.org.rate_limit.warning","system.org.rate_limit.violation",
-        "core.concurrency.org.limit.violation"].contains(ctx?.okta?.event_type)
+        "core.concurrency.org.limit.violation"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
       field: event.category
       value: network
-      if: '["security.request.blocked"].contains(ctx?.okta?.event_type)'
+      if: '["security.request.blocked"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.category
       value: network
       if: |
         ["system.org.rate_limit.warning","system.org.rate_limit.violation",
-        "core.concurrency.org.limit.violation","security.request.blocked"].contains(ctx?.okta?.event_type)
+        "core.concurrency.org.limit.violation","security.request.blocked"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
       field: event.type
       value: start
-      if: '["user.session.start"].contains(ctx?.okta?.event_type)'
+      if: '["user.session.start"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.type
       value: end
-      if: '["user.session.end"].contains(ctx?.okta?.event_type)'
+      if: '["user.session.end"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.type
       value: group
-      if: '["group.user_membership.add","group.user_membership.remove"].contains(ctx?.okta?.event_type)'
+      if: '["group.user_membership.add","group.user_membership.remove"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.type
@@ -137,7 +148,7 @@ processors:
         "user.lifecycle.deactivate","user.lifecycle.suspend",
         "user.lifecycle.unsuspend","user.authentication.sso",
         "user.session.start","user.session.end","application.user_membership.add",
-        "application.user_membership.remove","application.user_membership.change_username"].contains(ctx?.okta?.event_type)
+        "application.user_membership.remove","application.user_membership.change_username"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
       field: event.type
@@ -149,22 +160,22 @@ processors:
         "policy.lifecycle.activate","policy.lifecycle.deactivate",
         "policy.lifecycle.update","policy.rule.activate","policy.rule.add",
         "policy.rule.deactivate","policy.rule.update","application.user_membership.add",
-        "application.user_membership.remove","application.user_membership.change_username"].contains(ctx?.okta?.event_type)
+        "application.user_membership.remove","application.user_membership.change_username"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
       field: event.type
       value: creation
-      if: '["user.lifecycle.create","policy.lifecycle.create","application.lifecycle.create"].contains(ctx?.okta?.event_type)'
+      if: '["user.lifecycle.create","policy.lifecycle.create","application.lifecycle.create"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.type
       value: deletion
-      if: '["policy.lifecycle.delete","application.lifecycle.delete"].contains(ctx?.okta?.event_type)'
+      if: '["policy.lifecycle.delete","application.lifecycle.delete"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
       field: event.type
       value: info
-      if: '["policy.evaluate_sign_on"].contains(ctx?.okta?.event_type)'
+      if: '["policy.evaluate_sign_on"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - rename:
       field: json.uuid
@@ -176,22 +187,31 @@ processors:
       target_field: okta.actor.alternate_id
       ignore_missing: true
       ignore_failure: true
-  - grok:
-      field: okta.actor.alternate_id
-      patterns:
-        - "%{USER:user.name}"
-      ignore_missing: true
-      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: okta.actor.alternate_id
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      copy_from: user.name
+      ignore_empty_value: true
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - set:
       field: source.user.name
-      value: "{{{user.name}}}"
+      copy_from: user.name
       ignore_empty_value: true
-      if: ctx?.user?.name != null
+  - set:
+      field: source.user.email
+      copy_from: source.user.name
+      if: ctx.source?.user?.name != null && ctx.source.user.name.indexOf("@") > 0
   - set:
       field: client.user.name
-      value: "{{{user.name}}}"
+      copy_from: user.name
       ignore_empty_value: true
-      if: ctx?.user?.name != null
+  - set:
+      field: client.user.email
+      copy_from: client.user.name
+      if: ctx.client?.user?.name != null && ctx.client.user.name.indexOf("@") > 0
   - rename:
       field: json.actor.displayName
       target_field: okta.actor.display_name
@@ -301,6 +321,10 @@ processors:
       target_field: okta.transaction.detail.request_api_token_id
       ignore_missing: true
       ignore_failure: true
+  - rename:
+      field: json.transaction.detail.rootApiTokenId
+      target_field: okta.transaction.detail.root_api_token_id
+      ignore_missing: true
   - pipeline:
       if: ctx._conf?.remove_flattened_debug != true
       name: '{{ IngestPipeline "use_flattened_debug" }}'
@@ -342,6 +366,10 @@ processors:
       target_field: okta.authentication_context.issuer
       ignore_missing: true
       ignore_failure: true
+  - rename:
+      field: json.authenticationContext.rootSessionId
+      target_field: okta.authentication_context.root_session_id
+      ignore_missing: true
   - rename:
       field: json.securityContext.asNumber
       target_field: okta.security_context.as.number
@@ -398,11 +426,11 @@ processors:
   - set:
       field: client.ip
       copy_from: okta.client.ip
-      if: ctx?.okta?.client?.ip != null
+      if: ctx.okta?.client?.ip != null
   - set:
       field: source.ip
       copy_from: okta.client.ip
-      if: ctx?.okta?.client?.ip != null
+      if: ctx.okta?.client?.ip != null
   - convert:
       field: okta.event_type
       target_field: event.action
@@ -435,15 +463,15 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx?.okta?.outcome?.result_lower != null && (ctx?.okta?.outcome?.result_lower == "success" || ctx?.okta?.outcome?.result_lower == "allow")
+      if: ctx.okta?.outcome?.result_lower != null && (ctx.okta?.outcome?.result_lower == "success" || ctx.okta?.outcome?.result_lower == "allow")
   - set:
       field: event.outcome
       value: failure
-      if: ctx?.okta?.outcome?.result_lower != null && (ctx?.okta?.outcome?.result_lower == "failure" || ctx?.okta?.outcome?.result_lower == "deny")
+      if: ctx.okta?.outcome?.result_lower != null && (ctx.okta?.outcome?.result_lower == "failure" || ctx.okta?.outcome?.result_lower == "deny")
   - set:
       field: event.outcome
       value: unknown
-      if: ctx?.event?.outcome == null
+      if: ctx.event?.outcome == null
   - remove:
       field: okta.outcome.result_lower
       ignore_missing: true
@@ -533,52 +561,52 @@ processors:
       field: client.user.id
       value: "{{{okta.actor.id}}}"
       ignore_empty_value: true
-      if: ctx?.okta?.actor?.id != null
+      if: ctx.okta?.actor?.id != null
   - set:
       field: source.user.id
       value: "{{{okta.actor.id}}}"
       ignore_empty_value: true
-      if: ctx?.okta?.actor?.id != null
+      if: ctx.okta?.actor?.id != null
   - set:
       field: client.user.full_name
       value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
-      if: ctx?.okta?.actor?.display_name != null
+      if: ctx.okta?.actor?.display_name != null
   - set:
       field: source.user.full_name
       value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
-      if: ctx?.okta?.actor?.display_name != null
+      if: ctx.okta?.actor?.display_name != null
   - set:
       field: user.full_name
       value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
-      if: ctx?.okta?.actor?.display_name != null
+      if: ctx.okta?.actor?.display_name != null
   - append:
       field: related.user
       value: "{{{okta.actor.display_name}}}"
       allow_duplicates: false
-      if: ctx?.okta?.actor?.display_name != null
+      if: ctx.okta?.actor?.display_name != null
   - append:
       field: related.user
       value: "{{{user.target.full_name}}}"
       allow_duplicates: false
-      if: ctx?.user?.target?.full_name != null
+      if: ctx.user?.target?.full_name != null
   - append:
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
   - append:
       field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
   - remove:
       field: json
       ignore_missing: true
@@ -629,6 +657,26 @@ processors:
       field: _conf
       ignore_missing: true
       ignore_failure: true
+  - uri_parts:
+      field: okta_url
+      target_field: okta_url
+      keep_original: false
+      ignore_missing: true
+  - rename:
+      field: okta_url.domain
+      target_field: host.name
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: okta_url.domain
+            target_field: okta.okta_domain
+            on_failure:
+              - rename:
+                  field: okta_url.domain
+                  target_field: okta_domain
+  - remove:
+      field: okta_url
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

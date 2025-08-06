@@ -1,0 +1,66 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected data exfiltration to a particular geo-location (by IP address). Data transfers to geo-locations that are outside the normal traffic patterns of an organization could indicate exfiltration over command and control channels.",
+        "from": "now-6h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "ded_high_sent_bytes_destination_ip",
+        "name": "Potential Data Exfiltration Activity to an Unusual IP Address",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Data Exfiltration Activity to an Unusual IP Address\n\nMachine learning models analyze network traffic patterns to identify anomalies, such as data transfers to atypical geo-locations. Adversaries exploit command and control channels to exfiltrate data to these unusual IP addresses. This detection rule leverages ML to flag deviations from normal traffic, indicating potential exfiltration activities, thus aiding in early threat identification.\n\n### Possible investigation steps\n\n- Review the alert details to identify the unusual IP address and geo-location involved in the potential exfiltration activity.\n- Cross-reference the identified IP address with threat intelligence databases to determine if it is associated with known malicious activities or threat actors.\n- Analyze historical network traffic logs to determine if there have been previous connections to the same IP address or geo-location, and assess the volume and frequency of these connections.\n- Investigate the source device or user account associated with the alert to identify any unauthorized access or suspicious behavior leading up to the alert.\n- Check for any recent changes in network configurations or security policies that might have inadvertently allowed the data transfer to the unusual IP address.\n- Collaborate with the IT team to isolate the affected systems, if necessary, and prevent further data exfiltration while the investigation is ongoing.\n\n### False positive analysis\n\n- Legitimate business operations involving data transfers to new or infrequent geo-locations may trigger false positives. Users should review these activities and, if deemed non-threatening, add exceptions for these IP addresses.\n- Regularly scheduled data backups or transfers to cloud services located in different regions can be misidentified as exfiltration. Users can whitelist these services to prevent unnecessary alerts.\n- Remote work scenarios where employees connect from various locations might cause false positives. Implementing a policy to recognize and exclude known employee IP addresses can mitigate this issue.\n- Partner or vendor data exchanges that occur outside typical patterns should be evaluated. If these are routine and secure, users can create exceptions for these specific IP addresses to reduce false alerts.\n\n### Response and remediation\n\n- Isolate the affected systems immediately to prevent further data exfiltration. Disconnect them from the network to stop any ongoing communication with the unusual IP address.\n- Conduct a thorough analysis of the affected systems to identify any malicious software or unauthorized access points. Remove any identified threats and patch vulnerabilities.\n- Change all credentials and access keys that may have been compromised during the exfiltration activity. Ensure that new credentials follow best practices for security.\n- Review and update firewall rules and network access controls to block the identified unusual IP address and similar suspicious IP ranges.\n- Monitor network traffic closely for any signs of continued exfiltration attempts or communication with command and control channels. Use enhanced logging and alerting to detect any anomalies.\n- Escalate the incident to the organization's cybersecurity response team and, if necessary, report the breach to relevant authorities or regulatory bodies as per compliance requirements.\n- Conduct a post-incident review to identify gaps in the current security posture and implement measures to prevent recurrence, such as improving network segmentation and enhancing threat detection capabilities.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/ded",
+            "https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "ded",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "cc653d77-ddd2-45b1-9197-c75ad19df66c",
+        "setup": "## Setup\n\nThe rule requires the Data Exfiltration Detection integration assets to be installed, as well as network and file events collected by integrations such as Elastic Defend and Network Packet Capture (for network events only).\n\n### Data Exfiltration Detection Setup\nThe Data Exfiltration Detection integration detects data exfiltration activity by identifying abnormalities in network and file events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Data Exfiltration Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Network events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) or [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n\n#### The following steps should be executed to install assets associated with the Data Exfiltration Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Data Exfiltration Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Data Exfiltration Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1041",
+                        "name": "Exfiltration Over C2 Channel",
+                        "reference": "https://attack.mitre.org/techniques/T1041/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 7
+    },
+    "id": "cc653d77-ddd2-45b1-9197-c75ad19df66c_7",
+    "type": "security-rule"
+}

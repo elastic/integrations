@@ -1363,10 +1363,10 @@ processors:
       description: Drops null/empty values recursively.
       source: |-
         boolean drop(Object o) {
-          if (o == null || o == '' || o == '**' || o == '0') {
+          if (o == null || o == '' || o == '**' || o == '0' || (o instanceof String && ((String) o).trim() == '')) {
             return true;
           } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
+            ((Map) o).entrySet().removeIf(e -> e.getKey().trim() == '' || drop(e.getValue()));
             return (((Map) o).size() == 0);
           } else if (o instanceof List) {
             ((List) o).removeIf(v -> drop(v));

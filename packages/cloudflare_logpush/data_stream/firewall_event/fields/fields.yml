@@ -67,6 +67,18 @@
                 - name: agent
                   type: text
                   description: Visitor's user-agent string.
+    - name: content_scan
+      type: group
+      fields:
+        - name: results
+          type: keyword
+          description: List of content scan results.
+        - name: sizes
+          type: long
+          description: List of content object sizes.
+        - name: types
+          type: keyword
+          description: List of content types.
     - name: edge
       type: group
       fields:
@@ -85,6 +97,10 @@
     - name: kind
       type: keyword
       description: The kind of event, currently only possible values are.
+    - name: leaked_credential_check
+      type: keyword
+      description: >-
+        Result of the check for leaked credentials. Possible results are: password_leaked | username_and_password_leaked | username_password_similar | username_leaked | clean.
     - name: match_index
       type: long
       description: Rules match index in the chain.
@@ -112,12 +128,18 @@
         - name: id
           type: keyword
           description: The RayID of the request.
+    - name: ref
+      type: keyword
+      description: The user-defined identifier for the rule triggered by this request.
     - name: rule
       type: group
       fields:
         - name: id
           type: keyword
           description: The Cloudflare security product-specific RuleID triggered by this request.
+        - name: description
+          type: keyword
+          description: The Cloudflare security product-specific Description of the rule triggered by this request.
     - name: source
       type: keyword
       description: The Cloudflare security product triggered by this request.

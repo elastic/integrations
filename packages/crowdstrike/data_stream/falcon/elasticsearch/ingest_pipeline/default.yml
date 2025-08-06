@@ -1,19 +1,41 @@
 ---
 description: Ingest pipeline for normalizing CrowdStrike Falcon logs
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
   - rename:
       field: message
-      target_field: event.original
       tag: rename_message_to_event_original
+      target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
+      tag: json_event_original
       target_field: crowdstrike
-      tag: decode_json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field:
         - host.name
@@ -134,6 +156,29 @@ processors:
       copy_from: event.created
       tag: copy_timestamp_from_event_created
       if: ctx.crowdstrike?.event?.UTCTimestamp == null && ctx.event?.created != null
+  # Assign severities to conform to security rules values
+  #
+  # 21 = Low
+  # 47 = Medium
+  # 73 = High
+  # 99 = Critical
+  #
+  # Leave crowdstrike values in place, since they have their own semantics.
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.event?.SeverityName instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String name = ctx.crowdstrike.event.SeverityName;
+        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("info") || name.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (name.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (name.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (name.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
   - script:
       lang: painless
       tag: script_remove_null_event
@@ -206,6 +251,10 @@ processors:
       tag: pipeline_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "DetectionSummaryEvent"
   - pipeline:
+      name: '{{ IngestPipeline "epp_detection_summary" }}'
+      tag: pipeline_epp_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "EppDetectionSummaryEvent"
+  - pipeline:
       name: '{{ IngestPipeline "mobile_detection_summary" }}'
       tag: pipeline_mobile_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "MobileDetectionSummaryEvent"
@@ -258,16 +307,32 @@ processors:
       tag: pipeline_scheduled_report_notification_event
       if: ctx.crowdstrike?.metadata?.eventType == "ScheduledReportNotificationEvent"
   - set:
+      field: process.entity_id
+      tag: set_process_entity_id
+      value: '{{{process.pid}}}'
+      ignore_empty_value: true
+  - set:
+      field: process.parent.entity_id
+      tag: set_process_parent_entity_id
+      value: '{{{process.parent.pid}}}'
+      ignore_empty_value: true
+  - set:
       field: user.email
       copy_from: user.name
       tag: copy_user_email
-      if: ctx.user?.name != null && ctx.user?.name.contains("@")
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - append:
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
-      tag: append_related_user
+      tag: append_related_user_name
       if: ctx.user?.name != null && ctx.user?.name != ""
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      tag: append_related_user_email
+      if: ctx.user?.email != null
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -291,8 +356,11 @@ processors:
         - '@timestamp'
         - crowdstrike.event.SessionId
         - crowdstrike.event.DetectId
+        - crowdstrike.event.PID
+        - crowdstrike.event.RuleId
         - crowdstrike.metadata.eventType
         - crowdstrike.metadata.customerIDString
+        - crowdstrike.metadata.offset
       target_field: _id
       tag: fingerprint
       ignore_missing: true
@@ -392,6 +460,8 @@ processors:
         - crowdstrike.event.Disposition
         - crowdstrike.event.MatchedTimestamp
         - crowdstrike.event.Tags
+        - crowdstrike.event.UserId
+        - crowdstrike.event.UserName
       ignore_missing: true
 
 on_failure:

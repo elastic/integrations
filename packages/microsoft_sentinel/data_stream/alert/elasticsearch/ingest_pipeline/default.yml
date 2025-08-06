@@ -12,13 +12,24 @@ processors:
         - oberver.vendor
       ignore_missing: true
       description: Fields defined as constant_keyword are removed from _source for storage efficiency.
-  - fail:
+  - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process.
+      description: error message set and no data to process.
   - drop:
       if: ctx.message == "retry"
       tag: drop_retry_events
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -78,6 +89,11 @@ processors:
       tag: rename_properties_alertDisplayName
       target_field: microsoft_sentinel.alert.properties.alert.display_name
       ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_alert_properties_alert_display_name
+      copy_from: microsoft_sentinel.alert.properties.alert.display_name
+      ignore_empty_value: true
   - rename:
       field: json.properties.alertLink
       tag: rename_properties_alertLink
@@ -202,6 +218,11 @@ processors:
       tag: rename_properties_productName
       target_field: microsoft_sentinel.alert.properties.product.name
       ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_alert_properties_product_name
+      copy_from: microsoft_sentinel.alert.properties.product.name
+      ignore_empty_value: true
   - rename:
       field: json.properties.productVersion
       tag: rename_properties_productVersion
@@ -240,13 +261,13 @@ processors:
       source: >-
         def temp = ctx.microsoft_sentinel.alert.properties.severity.toLowerCase();
         if (temp == 'informational') {
-          ctx.event.severity = 0;
+          ctx.event.severity = 21;
         } else if (temp == 'low') {
-          ctx.event.severity = 1;
+          ctx.event.severity = 21;
         } else if (temp == 'medium') {
-          ctx.event.severity = 2;
+          ctx.event.severity = 47;
         } else if (temp == 'high') {
-          ctx.event.severity = 3;
+          ctx.event.severity = 73;
         }
       on_failure:
         - append:
@@ -402,6 +423,8 @@ processors:
         - microsoft_sentinel.alert.properties.start_time_utc
         - microsoft_sentinel.alert.properties.tactics
         - microsoft_sentinel.alert.properties.time_generated
+        - microsoft_sentinel.alert.properties.product.name
+        - microsoft_sentinel.alert.properties.alert.display_name
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

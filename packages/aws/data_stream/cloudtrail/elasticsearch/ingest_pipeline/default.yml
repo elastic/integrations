@@ -4,12 +4,12 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      if: 'ctx.event?.original == null'
+      if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
       ignore_missing: true
-      if: 'ctx.event?.original != null'
+      if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
       if: ctx['@timestamp'] != null
@@ -19,7 +19,7 @@ processors:
       field: event.original
       target_field: json
   - pipeline:
-      if: ctx?.json?.preview != null
+      if: ctx.json?.preview != null
       name: '{{ IngestPipeline "third-party" }}'
   - set:
       field: ecs.version
@@ -51,87 +51,112 @@ processors:
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
-      on_failure: 
+      tag: script_append_related_entity
+      if: ctx.json?.eventName != null && ctx.tags != null && ctx.tags.contains('actor_target_mapping')
+      on_failure:
+        - append:
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
         - set:
             description: Add error reason
             field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
+            value: |
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
       source: |
-        void addFields(Set entities, String[] fields) {
-            for (String field : fields) {
-              addField(entities, field);
-            }
+        void addFields(Set entities, List fields) {
+          for (String field : fields) {
+            addField(entities, field);
+          }
         }
 
         void addField(Set entities, String fieldName) {
-          addValue(entities, field(fieldName).get(null));
+          addValue(entities, $(fieldName, null));
         }
 
-        boolean addValues(Set entities, String[] values) {
-            boolean addedAll = true;
-            for (String value : values) {
-              addedAll = addedAll && addValue(entities, value);
-            }
-
-            return addedAll;
+        boolean addValues(Set entities, List values) {
+          boolean addedAll = true;
+          for (String value : values) {
+            addedAll = addedAll && addValue(entities, value);
+          }
+          return addedAll;
         }
 
         boolean addValue(Set entities, String value) {
           if (value == null || value == "") {
             return false;
           }
-
-         return entities.add(value);
+          return entities.add(value);
         }
 
-        // Using tree set to ensure a sorting is kept (testing purposes)
-        TreeSet entities = new TreeSet();
+        void enrichCloudformation(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "cloudformation.amazonaws.com") {
+            return;
+          }
 
-        addFields(entities, new String[]{
-          "json.userIdentity.accessKeyId",
-          "json.userIdentity.arn",
-          "json.userIdentity.sessionContext.sessionIssuer.arn",
-          "json.userIdentity.identityProvider",
-          "json.userIdentity.principalId",
-          "json.userIdentity.sessionContext.sessionIssuer.userName",
-          "json.userIdentity.sessionContext.webIdFederationData.federatedProvider",
-          "json.userIdentity.userName"
-        });
-        
-        field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(entities, f.ARN));
+          if (eventName == "CreateStackSet") {
+            addField(enrichCtx.target, "json.responseElements.stackSetId");
+          } else if (eventName == "CreateStack") {
+            addField(enrichCtx.target, "json.responseElements.stackId");
+          }
+        }
 
-        String eventSource = field("json.eventSource").get(null);
+        void enrichCloudtrail(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "cloudtrail.amazonaws.com") {
+            return;
+          }
 
-        if (eventSource == "sts.amazonaws.com") {
-          addFields(entities, new String[]{
-            "json.requestParameters.roleArn",
-            "json.sourceIdentity",
-            "json.additionalEventData.MFAIdentifier",
-            "json.responseElements.assumedRoleUser.arn",
-            "json.requestParameters.roleSessionName",
-            "json.responseElements.accessKeyId"
-          });
+          addFields(enrichCtx.related, [
+            "json.requestParameters.name",
+            "json.requestParameters.s3BucketName",
+            "json.responseElements.cloudWatchLogsLogGroupArn",
+            "json.responseElements.cloudWatchLogsRoleArn",
+            "json.responseElements.kmsKeyId",
+            "json.responseElements.snsTopicARN",
+            "json.responseElements.trailARN",
+            "json.responseElements.name"
+          ]);
 
-        } else if (eventSource == "iam.amazonaws.com") {
-          addFields(entities, new String[]{
-            "json.requestParameters.userName",
-            "json.requestParameters.accessKeyId",
-            "json.requestParameters.policyArn",
-            "json.requestParameters.roleName",
-            "json.requestParameters.policyName",
-            "json.requestParameters.serialNumber",
-            "json.responseElements.accessKey.userName",
-            "json.responseElements.accessKey.accessKeyId",
-            "json.responseElements.user.arn",
-            "json.responseElements.user.userId",
-            "json.responseElements.user.userName",
-            "json.responseElements.userId",
-            "json.responseElements.role.arn",
-            "json.responseElements.serialNumber"
-          });
+          if (eventName == "DeleteTrail"
+            || eventName == "StopLogging") {
+            addField(enrichCtx.target, "json.requestParameters.name");
+          } else if (eventName == "DescribeTrails") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+          }
+        }
 
-        } else if (eventSource == "ec2.amazonaws.com") {
-          addFields(entities, new String[]{
+        void enrichEc2InstanceConnect(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "ec2-instance-connect.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "SendSSHPublicKey"
+            || eventName == "SendSerialConsoleSSHPublicKey") {
+            addField(enrichCtx.target, "json.requestParameters.instanceId");
+          }
+        }
+
+        void enrichConfig(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "config.amazonaws.com") {
+            return;
+          }
+
+          addField(enrichCtx.related, "json.requestParameters.configurationRecorderName");
+
+          if (eventName == "StopConfigurationRecorder"
+                  || eventName == "StartConfigurationRecorder") {
+            addField(enrichCtx.target, "json.requestParameters.configurationRecorderName");
+          }
+        }
+
+        void enrichEc2(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "ec2.amazonaws.com") {
+              return;
+          }
+
+          addFields(enrichCtx.related, [
             "json.requestParameters.groupId",
             "json.requestParameters.groupName",
             "json.requestParameters.roleName",
@@ -146,114 +171,604 @@ processors:
             "json.responseElements.vpc.dhcpOptionsId",
             "json.responseElements.snapshotId",
             "json.responseElements.volumeId"
-          });
-          
-          field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValues(entities, new String[]{
+          ]);
+
+          $("json.responseElements.securityGroupRuleSet.items", []).stream().forEach(i -> {
+            addValues(enrichCtx.related, [
               i.groupId,
               i.referencedGroupInfo?.groupId,
               i.securityGroupRuleId
-            });
+            ]);
           });
 
-          field("json.responseElements.groupSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.groupId);
+          $("json.responseElements.groupSet.items", []).stream().forEach(i -> {
+            addValue(enrichCtx.related, i.groupId);
           });
 
-          field("json.requestParameters.groupSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.groupId);
+          $("json.requestParameters.groupSet.items", []).stream().forEach(i -> {
+            addValue(enrichCtx.related, i.groupId);
           });
 
-          field("json.requestParameters.instancesSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.instanceId);
+          $("json.requestParameters.instancesSet.items", []).stream().forEach(i -> {
+            addValue(enrichCtx.related, i.instanceId);
           });
 
-          field("json.responseElements.instancesSet.items").get(new ArrayList()).stream().forEach(instances -> {
-            addValues(entities, new String[]{
+          $("json.responseElements.instancesSet.items", []).stream().forEach(instances -> {
+            addValues(enrichCtx.related, [
               instances.subnetId,
               instances.vpcId,
               instances.instanceId,
               instances.imageId,
               instances.iamInstanceProfile?.arn
-            });
+            ]);
+
+            if (instances.networkInterfaceSet?.items == null) {
+              return true;
+            }
 
             instances.networkInterfaceSet?.items?.stream().forEach(networks -> {
-              addValues(entities, new String[]{
+              addValues(enrichCtx.related, [
                 networks.networkInterfaceId,
                 networks.vpcId,
                 networks.subnetId
-              });
+              ]);
+
+              if (networks.groupSet?.items == null) {
+                return true;
+              }
 
               networks.groupSet?.items?.stream().forEach(group -> {
-                addValue(entities, group.groupId);
+                addValue(enrichCtx.related, group.groupId);
               });
             });
           });
 
-          field("json.requestParameters.revokedSecurityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValues(entities, new String[]{
-              i.securityGroupRuleId, 
+          $("json.requestParameters.revokedSecurityGroupRuleSet.items", []).stream().forEach(i -> {
+            addValues(enrichCtx.related, [
+              i.securityGroupRuleId,
               i.groupId
-            });
+            ]);
           });
 
-        } else if (eventSource == "s3.amazonaws.com") {
-          addField(entities, "json.requestParameters.bucketName");
-        
-        } else if (eventSource == "cloudtrail.amazonaws.com") {
-          addFields(entities, new String[]{
-            "json.requestParameters.name",
-            "json.requestParameters.s3BucketName",
-            "json.responseElements.cloudWatchLogsLogGroupArn",
-            "json.responseElements.cloudWatchLogsRoleArn",
-            "json.responseElements.kmsKeyId",
-            "json.responseElements.snsTopicARN",
-            "json.responseElements.trailARN",
-            "json.responseElements.name"
-          });
-        
-        } else if (eventSource == "kms.amazonaws.com") {
-          addFields(entities, new String[]{
+          if (eventName == "AuthorizeSecurityGroupIngress"
+              || eventName == "AuthorizeSecurityGroupEgress") {
+            addField(enrichCtx.target, "json.requestParameters.groupId");
+            $("json.responseElements.securityGroupRuleSet.items", []).stream().forEach(f -> addValue(enrichCtx.target, f.securityGroupRuleId));
+
+          } else if (eventName == "CreateTrafficMirrorFilter") {
+            addField(enrichCtx.target, "json.responseElements.CreateTrafficMirrorFilterResponse.trafficMirrorFilter.trafficMirrorFilterId");
+
+          } else if (eventName == "CreateTrafficMirrorFilterRule") {
+            addField(enrichCtx.target, "json.responseElements.CreateTrafficMirrorFilterRuleResponse.trafficMirrorFilterRule.trafficMirrorFilterRuleId");
+
+          } else if (eventName == "CreateTrafficMirrorSession") {
+            addField(enrichCtx.target, "json.responseElements.CreateTrafficMirrorSessionResponse.trafficMirrorSession.trafficMirrorSessionId");
+
+          } else if (eventName == "CreateTrafficMirrorTarget") {
+            addField(enrichCtx.target, "json.responseElements.CreateTrafficMirrorTargetResponse.trafficMirrorTarget.trafficMirrorTargetId");
+
+          } else if (eventName == "DeleteFlowLogs") {
+            addField(enrichCtx.target, "json.requestParameters.DeleteFlowLogsRequest.FlowLogId.content");
+
+          } else if (eventName == "DeleteNetworkAcl") {
+            addField(enrichCtx.target, "json.requestParameters.networkAclId");
+
+          } else if (eventName == "DeleteNetworkAclEntry") {
+            addField(enrichCtx.target, "json.requestParameters.networkAclId");
+            def ruleNumber = $("json.requestParameters.ruleNumber", null);
+            if (ruleNumber != null) {
+              addValue(enrichCtx.target, String.valueOf(ruleNumber));
+            }
+
+          } else if (eventName == "GetPasswordData") {
+            addField(enrichCtx.target, "json.requestParameters.instanceId");
+
+          } else if (eventName == "ModifyImageAttribute") {
+            addField(enrichCtx.target, "json.requestParameters.imageId");
+
+          } else if (eventName == "ModifySnapshotAttribute") {
+            addField(enrichCtx.target, "json.requestParameters.snapshotId");
+
+          } else if (eventName == "DescribeSecurityGroups"
+                    || eventName == "DescribeNetworkInterfaces"
+                    || eventName == "DescribeRegions"
+                    || eventName == "DescribeVpcs"
+                    || eventName == "DescribeNetworkAcls"
+                    || eventName == "DescribeVolumes"
+          ) {
+            addField(enrichCtx.target, "json.recipientAccountId");
+          }
+        }
+
+        void enrichElasticFileSystem(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "elasticfilesystem.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteFileSystem") {
+            addField(enrichCtx.target, "json.requestParameters.fileSystemId");
+          } else if (eventName == "DeleteMountTarget") {
+            addField(enrichCtx.target, "json.requestParameters.mountTargetId");
+          }
+        }
+
+        void enrichEvents(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "events.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteRule") {
+            addField(enrichCtx.target, "json.requestParameters.name");
+          }
+        }
+
+        void enrichGuardDuty(def enrichCtx, def eventSource, def eventName)  {
+          if (eventSource != "guardduty.amazonaws.com") {
+              return;
+          }
+
+          addFields(enrichCtx.related, [
+            "json.requestParameters.detectorId",
+            "json.responseElements.detectorId"
+          ]);
+
+          if (eventName == "CreateDetector") {
+            addField(enrichCtx.target, "json.responseElements.detectorId");
+          } else if (eventName == "DeleteDetector") {
+            addField(enrichCtx.target, "json.requestParameters.detectorId");
+          }
+        }
+
+        void enrichIam(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "iam.amazonaws.com") {
+            return;
+          }
+
+          addFields(enrichCtx.related, [
+            "json.requestParameters.userName",
+            "json.requestParameters.serialNumber",
+            "json.requestParameters.accessKeyId",
+            "json.requestParameters.policyArn",
+            "json.requestParameters.roleName",
+            "json.requestParameters.policyName",
+            "json.requestParameters.serialNumber",
+            "json.responseElements.accessKey.userName",
+            "json.responseElements.accessKey.accessKeyId",
+            "json.responseElements.user.arn",
+            "json.responseElements.user.userId",
+            "json.responseElements.user.userName",
+            "json.responseElements.userId",
+            "json.responseElements.role.arn",
+            "json.responseElements.serialNumber"
+          ]);
+
+          if (eventName == "AttachGroupPolicy") {
+            addField(enrichCtx.target, "json.requestParameters.groupName");
+
+          } else if (eventName == "AttachRolePolicy"
+                    || eventName == "ListAttachedRolePolicies"
+                    || eventName == "UpdateAssumeRolePolicy") {
+            addField(enrichCtx.target, "json.requestParameters.roleName");
+
+          } else if (eventName == "AttachUserPolicy") {
+            addFields(enrichCtx.target, [
+              "json.requestParameters.policyArn",
+              "json.requestParameters.userName"
+            ]);
+
+          } else if (eventName == "CreateAccessKey") {
+            addFields(enrichCtx.target, [
+              "json.responseElements.accessKey.accessKeyId",
+              "json.requestParameters.userName"
+            ]);
+
+          } else if (eventName == "CreateUser"
+                    || eventName == "DeactivateMFADevice") {
+            addField(enrichCtx.target, "json.requestParameters.userName");
+
+          } else if (eventName == "DeleteVirtualMFADevice") {
+            addField(enrichCtx.target, "json.requestParameters.serialNumber");
+
+          } else if (eventName == "GetPolicy") {
+            addField(enrichCtx.target, "json.requestParameters.policyArn");
+
+          } else if (eventName == "CreatePolicy") {
+            addField(enrichCtx.target, "json.responseElements.policy.arn");
+
+          } else if (eventName == "ListRoles"
+                    || eventName == "ListUsers") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+          }
+        }
+
+        void enrichKms(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "kms.amazonaws.com") {
+            return;
+          }
+
+          addFields(enrichCtx.related, [
             "json.requestParameters.keyId",
             "json.responseElements.keyId",
             "json.responseElements.keyMetadata.arn",
             "json.responseElements.keyMetadata.keyId"
-          });
-        
-        } else if (eventSource == "config.amazonaws.com") {
-          addField(entities, "json.requestParameters.configurationRecorderName");
-        
-        } else if (eventSource == "lambda.amazonaws.com") {
-          addFields(entities, new String[]{
+          ]);
+
+          if (eventName == "DisableKey"
+            || eventName == "ScheduleKeyDeletion") {
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+          }
+        }
+
+        void enrichLambda(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "lambda.amazonaws.com") {
+            return;
+          }
+
+          addFields(enrichCtx.related, [
             "json.requestParameters.functionName",
             "json.responseElements.functionArn",
             "json.responseElements.functionName",
             "json.responseElements.role",
             "json.responseElements.vpcConfig.securityGroupIds",
             "json.responseElements.vpcConfig.subnetIds"
-          });
+          ]);
 
-        } else if (eventSource == "rds.amazonaws.com") {
-          addFields(entities, new String[]{
+          if (eventName == null) {
+            return;
+          }
+
+          if (eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
+            addField(enrichCtx.target, "json.requestParameters.functionName");
+
+          } else if (eventName.contains("ListFunctions")) {
+            addField(enrichCtx.target, "json.recipientAccountId");
+
+          }
+        }
+
+        void enrichLogs(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "logs.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteLogGroup") {
+            addField(enrichCtx.target, "json.requestParameters.logGroupName");
+
+          } else if (eventName == "DeleteLogStream") {
+            addField(enrichCtx.target, "json.requestParameters.logStreamName");
+
+          }
+        }
+
+        void enrichMonitoring(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "monitoring.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteAlarms") {
+            $("json.requestParameters.alarmNames", []).stream().forEach(f -> addValue(enrichCtx.target, f));
+
+          }
+        }
+
+        void enrichRds(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "rds.amazonaws.com") {
+            return;
+          }
+
+          addFields(enrichCtx.related, [
             "json.requestParameters.dBInstanceIdentifier",
             "json.requestParameters.dBInstanceArn",
             "json.responseElements.dBInstanceIdentifier",
             "json.responseElements.dbInstanceArn",
             "json.responseElements.dBSubnetGroup.vpcId",
             "json.responseElements.vpcSecurityGroups.vpcSecurityGroupId"
+          ]);
+
+          $("json.responseElements.dBSubnetGroup.subnets", []).stream().forEach(i -> {
+            addValue(enrichCtx.related, i.subnetIdentifier);
           });
 
-          field("json.responseElements.dBSubnetGroup.subnets").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.subnetIdentifier);
+          $("json.responseElements.vpcSecurityGroups", []).stream().forEach(i -> {
+            addValue(enrichCtx.related, i.vpcSecurityGroupId);
           });
 
-          field("json.responseElements.vpcSecurityGroups").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.vpcSecurityGroupId);
-          });
+          if (eventName == "DeleteDBCluster"
+            || eventName == "ModifyDBCluster"
+            || eventName == "StopDBCluster") {
+            addField(enrichCtx.target, "json.responseElements.dBClusterArn");
+
+          } else if (eventName == "DeleteDBInstance"
+                  || eventName == "ModifyDBInstance"
+                  || eventName == "RestoreDBInstanceFromDBSnapshot"
+                  || eventName == "RestoreDBInstanceFromS3"
+                  || eventName == "StopDBInstance") {
+            addField(enrichCtx.target, "json.responseElements.dBInstanceArn");
+
+          } else if (eventName == "DeleteGlobalCluster") {
+            addField(enrichCtx.target, "json.responseElements.globalClusterArn");
+
+          } else if (eventName == "ModifyDBClusterSnapshotAttribute") {
+            addField(enrichCtx.target, "json.responseElements.dBClusterSnapshotIdentifier");
+
+          } else if (eventName == "ModifyDBSnapshotAttribute") {
+            addField(enrichCtx.target, "json.responseElements.dBSnapshotIdentifier");
+
+          } else if (eventName == "DescribeDBInstances") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+
+          }
         }
-        
-        field("related.entity").set(entities);
-        
+
+        void enrichRolesAnywhere(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "rolesanywhere.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "CreateTrustAnchor") {
+            addField(enrichCtx.target, "json.responseElements.trustAnchor.trustAnchorArn");
+
+          }
+        }
+
+        void enrichRoute53Resolver(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "route53resolver.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteResolverQueryLogConfig") {
+            addField(enrichCtx.target, "json.responseElements.resolverQueryLogConfig.arn");
+          }
+        }
+
+        void enrichS3(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "s3.amazonaws.com") {
+            return;
+          }
+
+          addField(enrichCtx.related, "json.requestParameters.bucketName");
+
+          if (eventName == "CopyObject"
+            || eventName == "PutBucketLogging"
+            || eventName == "PutBucketVersioning"
+            || eventName == "PutObject"
+            || eventName == "GetBucketPolicy"
+            || eventName == "ListObjects"
+            || eventName == "HeadObject"
+            || eventName == "GetObject"
+            || eventName == "DeleteObject"
+            || eventName == "DeleteBucket") {
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+
+          } else if (eventName == "PutBucketReplication") {
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+            addField(enrichCtx.target, "json.requestParameters.ReplicationConfiguration.Rule.Destination.Bucket");
+
+          } else if (eventName == "ListBuckets") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+
+          }
+        }
+
+        void enrichSecretsManager(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "secretsmanager.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "BatchGetSecretValue") {
+            $("json.requestParameters.secretIdList", []).stream().forEach(f -> addValue(enrichCtx.target, f));
+
+          } else if (eventName == "GetSecretValue") {
+            addField(enrichCtx.target, "json.requestParameters.secretId");
+
+          }
+        }
+
+        void enrichSignin(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "signin.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "ConsoleLogin") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+          }
+        }
+
+        void enrichSsm(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "ssm.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "GetParameter"
+            || eventName == "GetParameters"
+            || eventName == "CreateControlChannel"
+            || eventName == "OpenControlChannel") {
+            $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.target, f.ARN));
+
+          } else if (eventName == "StartSession") {
+            addField(enrichCtx.target, "json.requestParameters.target");
+
+          } else if (eventName == "CreateDocument") {
+            addField(enrichCtx.target, "json.requestParameters.name");
+
+          } else if (eventName == "TerminateSession"
+                    || eventName == "OpenDataChannel") {
+            addField(enrichCtx.target, "json.requestParameters.sessionId");
+
+          } else if (eventName == "SendCommand") {
+            List instanceIds = $("json.requestParameters.instanceIds", []);
+
+            if (instanceIds.isEmpty()) {
+              instanceIds = $("json.requestParameters.targets", []).stream().flatMap(target -> target.values.stream()).collect(Collectors.toList());
+            }
+
+            if (instanceIds.size() == 1 && instanceIds.get(0) == "*") {
+              instanceIds = [ $("json.recipientAccountId", null) ]; // if all instances, point to full account
+            }
+
+            addValues(enrichCtx.target, instanceIds);
+
+          } else if (eventName == "ListInstanceAssociations") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+          }
+        }
+
+        void enrichSts(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "sts.amazonaws.com") {
+            return;
+          }
+
+          addFields(enrichCtx.related, [
+            "json.requestParameters.roleArn",
+            "json.sourceIdentity",
+            "json.additionalEventData.MFAIdentifier",
+            "json.responseElements.assumedRoleUser.arn",
+            "json.requestParameters.roleSessionName",
+            "json.responseElements.accessKeyId"
+          ]);
+
+          if (eventName == "AssumeRole") {
+            def userType = $("json.userIdentity.type", null);
+
+            if (userType == "AWSService") {
+              enrichCtx.actor = $("json.userIdentity.invokedBy", null);
+            } else if (userType == "AssumedRole") {
+              enrichCtx.actor = $("json.userIdentity.sessionContext.sessionIssuer.arn", null);
+            } else {
+              enrichCtx.actor = $("json.userIdentity.arn", null);
+            }
+
+            addField(enrichCtx.target, "json.requestParameters.roleArn");
+
+          } else if (eventName == "GetCallerIdentity") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+            enrichCtx.actor = $("json.userIdentity.arn", null);
+
+          }
+        }
+
+        void enrichWafv2(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "wafv2.amazonaws.com") {
+            return;
+          }
+
+          addFields(enrichCtx.related, [
+            "json.requestParameters.id",
+            "json.responseElements.summary"
+          ]);
+
+          if (eventName == "DeleteRuleGroup"
+              || eventName == "DeleteWebACL") {
+            addField(enrichCtx.target, "json.requestParameters.id");
+          }
+        }
+
+        void enrichSns(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "sns.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "CreateTopic") {
+            addField(enrichCtx.target, "json.responseElements.topicArn");
+          } else if (eventName == "Subscribe"
+                    || eventName == "Publish") {
+            addField(enrichCtx.target, "json.requestParameters.topicArn");
+          }
+
+        }
+
+        void enrichBedrock(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "bedrock.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "Converse") {
+            addField(enrichCtx.target, "json.requestParameters.modelId");
+
+          }
+        }
+
+        void enrichElasticLoadBalancing(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "elasticloadbalancing.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DescribeLoadBalancers") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+
+          }
+        }
+
+        void enrichDynamoDB(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "dynamodb.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "ListTables") {
+            addField(enrichCtx.target, "json.recipientAccountId");
+
+          }
+        }
+
+        // Using tree set to ensure a sorting is kept (testing purposes)
+        Map enrichCtx = [:];
+        enrichCtx.related = new TreeSet();
+        enrichCtx.target = new TreeSet();
+
+        enrichCtx.actor = $("json.userIdentity.arn", null); // default actor value
+        if (enrichCtx.actor == null) {
+          enrichCtx.actor = $("json.userIdentity.onBehalfOf.userId", null);
+        }
+
+        addFields(enrichCtx.related, [
+          "json.userIdentity.accessKeyId",
+          "json.userIdentity.arn",
+          "json.userIdentity.userName",
+          "json.userIdentity.sessionContext.sessionIssuer.arn",
+          "json.userIdentity.sessionContext.sessionIssuer.userName"
+        ]);
+
+        $("json.resources", []).stream().forEach(f -> addValue(enrichCtx.related, f.ARN));
+
+        String eventSource = $("json.eventSource", null);
+        String eventName = $("json.eventName", null);
+
+        enrichCloudformation(enrichCtx, eventSource, eventName);
+        enrichCloudtrail(enrichCtx, eventSource, eventName);
+        enrichConfig(enrichCtx, eventSource, eventName);
+        enrichEc2InstanceConnect(enrichCtx, eventSource, eventName);
+        enrichEc2(enrichCtx, eventSource, eventName);
+        enrichElasticFileSystem(enrichCtx, eventSource, eventName);
+        enrichEvents(enrichCtx, eventSource, eventName);
+        enrichGuardDuty(enrichCtx, eventSource, eventName);
+        enrichIam(enrichCtx, eventSource, eventName);
+        enrichKms(enrichCtx, eventSource, eventName);
+        enrichLambda(enrichCtx, eventSource, eventName);
+        enrichLogs(enrichCtx, eventSource, eventName);
+        enrichMonitoring(enrichCtx, eventSource, eventName);
+        enrichRds(enrichCtx, eventSource, eventName);
+        enrichRolesAnywhere(enrichCtx, eventSource, eventName);
+        enrichRoute53Resolver(enrichCtx, eventSource, eventName);
+        enrichS3(enrichCtx, eventSource, eventName);
+        enrichSecretsManager(enrichCtx, eventSource, eventName);
+        enrichSignin(enrichCtx, eventSource, eventName);
+        enrichSsm(enrichCtx, eventSource, eventName);
+        enrichSts(enrichCtx, eventSource, eventName);
+        enrichWafv2(enrichCtx, eventSource, eventName);
+        enrichSns(enrichCtx, eventSource, eventName);
+        enrichBedrock(enrichCtx, eventSource, eventName);
+        enrichElasticLoadBalancing(enrichCtx, eventSource, eventName);
+        enrichDynamoDB(enrichCtx, eventSource, eventName);
+
+        if (!enrichCtx.target.isEmpty()) {
+          field("target.entity.id").set(enrichCtx.target);
+          enrichCtx.related.addAll(enrichCtx.target);
+        }
+
+        field("actor.entity.id").set([ enrichCtx.actor ]);
+
+        field("related.entity").set(enrichCtx.related);
+
   - rename:
       field: json.eventVersion
       target_field: aws.cloudtrail.event_version
@@ -262,11 +777,6 @@ processors:
       field: json.userIdentity.type
       target_field: aws.cloudtrail.user_identity.type
       ignore_failure: true
-  - append:
-      field: related.user
-      value: '{{json.userIdentity.userName}}'
-      allow_duplicates: false
-      if: ctx.json?.userIdentity?.userName != null
   - rename:
       field: json.userIdentity.userName
       target_field: user.name
@@ -328,7 +838,7 @@ processors:
       ignore_failure: true
   - set:
       field: event.action
-      value: '{{json.eventName}}'
+      value: '{{{json.eventName}}}'
       ignore_failure: true
       ignore_empty_value: true
   - rename:
@@ -387,33 +897,51 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      source: |
-        if (ctx.aws.cloudtrail?.flattened == null) {
-            Map map = new HashMap();
-            ctx.aws.cloudtrail.put("flattened", map);
-          }
+      tag: script_cache_flattened_duplicates_configuration
+      source: |-
+        ctx._conf = ctx._conf ?: [:];
+        ctx._conf.keep_flattened_duplicates = ctx._conf.retain == null ||
+          ctx._conf.retain.contains('all') ||
+          ctx._conf.retain.contains('flattened') ||
+          ctx._conf.retain.contains('minimal');
+  - script:
+      description: >
+        Set values in aws.cloudtrail.request_parameters, aws.cloudtrail.response_elements, and
+        aws.cloudtrail.additional_eventdata. If _conf.keep_flattened_duplicates is true, also
+        copy into aws.cloudtrail.flattened. Since aws.cloudtrail.flattened is optionally present,
+        is MUST NEVER be used as an RHS in any processor.
+        Assignments of json.requestParameters, json.responseElements, json.additionalEventData
+        and json.serviceEventDetails to the corresponding flattened fields are shallow, so
+        sub-fields of these field MUST NEVER be renamed or otherwise mutated, that is, they
+        MUST NEVER be an LHS in any processor.
+      lang: painless
+      tag: script_duplicate_rules_fields
+      source: |-
+        if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail?.flattened == null) {
+          ctx.aws.cloudtrail.flattened = [:];
+        }
         if (ctx.json?.requestParameters != null) {
           ctx.aws.cloudtrail.request_parameters = ctx.json.requestParameters.toString();
-          if (ctx.aws.cloudtrail.request_parameters.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("request_parameters", ctx.json.requestParameters);
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.request_parameters.length() < 32766) {
+            ctx.aws.cloudtrail.flattened.request_parameters = ctx.json.requestParameters;
           }
         }
         if (ctx.json?.responseElements != null) {
           ctx.aws.cloudtrail.response_elements = ctx.json.responseElements.toString();
-          if (ctx.aws.cloudtrail.response_elements.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("response_elements", ctx.json.responseElements);
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.response_elements.length() < 32766) {
+            ctx.aws.cloudtrail.flattened.response_elements = ctx.json.responseElements;
           }
         }
         if (ctx.json?.additionalEventData != null) {
           ctx.aws.cloudtrail.additional_eventdata = ctx.json.additionalEventData.toString();
-          if (ctx.aws.cloudtrail.additional_eventdata.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("additional_eventdata", ctx.json.additionalEventData);
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.additional_eventdata.length() < 32766) {
+            ctx.aws.cloudtrail.flattened.additional_eventdata = ctx.json.additionalEventData;
           }
         }
         if (ctx.json?.serviceEventDetails != null) {
           ctx.aws.cloudtrail.service_event_details = ctx.json.serviceEventDetails.toString();
-          if (ctx.aws.cloudtrail.service_event_details.length() < 32766) {
-            ctx.aws.cloudtrail.flattened.put("service_event_details", ctx.json.serviceEventDetails);
+          if (ctx._conf.keep_flattened_duplicates && ctx.aws.cloudtrail.service_event_details.length() < 32766) {
+            ctx.aws.cloudtrail.flattened.service_event_details = ctx.json.serviceEventDetails;
           }
         }
       ignore_failure: true
@@ -446,27 +974,27 @@ processors:
       lang: painless
       source: >
         if (ctx.json?.resources instanceof List) {
-              def resources = ctx.json.resources;
-              
-              Map uniqueResources = new HashMap();
-              for (def originalResource : resources) {
-                if (originalResource instanceof Map) {
-                  Map resource = new HashMap();
-                  resource.putAll(originalResource);
-                  if (resource.containsKey('ARN')) {
-                    resource['arn'] = resource.remove('ARN');
-                  }
-                  if (resource.containsKey('accountId')) {
-                    resource['account_id'] = resource.remove('accountId');
-                  }
-                  String key = (resource.containsKey('arn') ? resource.arn : '') + '_' +
-                               (resource.containsKey('account_id') ? resource.account_id : '') + '_' +
-                               (resource.containsKey('type') ? resource.type : '');
-                  uniqueResources[key] = resource;
-                }
+          def resources = ctx.json.resources;
+
+          Map uniqueResources = [:];
+          for (def originalResource : resources) {
+            if (originalResource instanceof Map) {
+              Map resource = [:];
+              resource.putAll(originalResource);
+              if (resource.containsKey('ARN')) {
+                resource.arn = resource.remove('ARN');
               }
-             ctx.json.resources = new ArrayList(uniqueResources.values());
+              if (resource.containsKey('accountId')) {
+                resource.account_id = resource.remove('accountId');
+              }
+              String key = (resource.containsKey('arn') ? resource.arn : '') + '_' +
+                           (resource.containsKey('account_id') ? resource.account_id : '') + '_' +
+                           (resource.containsKey('type') ? resource.type : '');
+              uniqueResources[key] = resource;
             }
+          }
+          ctx.json.resources = new ArrayList(uniqueResources.values());
+        }
   - rename:
       field: json.resources
       target_field: aws.cloudtrail.resources
@@ -485,14 +1013,19 @@ processors:
       ignore_failure: true
   - append:
       field: related.user
-      value: '{{aws.cloudtrail.flattened.request_parameters.userName}}'
+      value: '{{json.requestParameters.userName}}'
       allow_duplicates: false
-      if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.userName != null
+      if: ctx.json?.requestParameters?.userName != null
   - append:
       field: related.user
-      value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
+      value: '{{json.requestParameters.newUserName}}'
       allow_duplicates: false
-      if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.newUserName != null
+      if: ctx.json?.requestParameters?.newUserName != null
+  - append:
+      field: related.user
+      value: '{{json.responseElements.user.userId}}'
+      allow_duplicates: false
+      if: ctx.json?.responseElements?.user?.userId != null
   - script:
       lang: painless
       ignore_failure: true
@@ -500,28 +1033,19 @@ processors:
         if (ctx.json?.eventName != 'ConsoleLogin') {
           return;
         }
-        Map aed_map = new HashMap();
-        if (ctx?.aws?.cloudtrail?.flattened?.additional_eventdata?.MobileVersion != null) {
-          if (ctx.aws.cloudtrail.flattened.additional_eventdata.MobileVersion == 'No') {
-            aed_map.put("mobile_version", false);
-          } else {
-            aed_map.put("mobile_version", true);
-          }
+        Map aed_map = [:];
+        if (ctx.json?.additionalEventData?.MobileVersion != null) {
+          aed_map.mobile_version = ctx.json.additionalEventData.MobileVersion != 'No';
         }
-        if (ctx?.aws?.cloudtrail?.flattened?.additional_eventdata?.LoginTo != null) {
-          aed_map.put("login_to", ctx.aws.cloudtrail.flattened.additional_eventdata.LoginTo);
+        if (ctx.json?.additionalEventData?.LoginTo != null) {
+          aed_map.login_to = ctx.json.additionalEventData.LoginTo;
         }
-        if (ctx?.aws?.cloudtrail?.flattened?.additional_eventdata?.MFAUsed != null) {
-          if (ctx.aws.cloudtrail.flattened.additional_eventdata.MFAUsed == 'No') {
-            aed_map.put("mfa_used", false);
-          } else {
-            aed_map.put("mfa_used", true);
-          }
+        if (ctx.json?.additionalEventData?.MFAUsed != null) {
+          aed_map.mfa_used = ctx.json.additionalEventData.MFAUsed != 'No';
         }
         if (aed_map.size() > 0) {
-          Map cl_map = new HashMap();
-          cl_map.put("additional_eventdata", aed_map);
-          ctx.aws.cloudtrail.put("console_login", cl_map);
+          ctx.aws.cloudtrail.console_login = [:];
+          ctx.aws.cloudtrail.console_login.additional_eventdata = aed_map;
         }
   - script:
       lang: painless
@@ -835,26 +1359,218 @@ processors:
           type:
             - user
             - change
+        GetCallerIdentity:
+          category:
+            - authentication
+          type:
+            - info
+        DescribeInstances:
+          category:
+            - host
+          type:
+            - info
+        DescribeSecurityGroups:
+          category:
+            - network
+          type:
+            - info
+        ListBuckets:
+          category:
+            - file
+          type:
+            - info
+        DescribeNetworkInterfaces:
+          category:
+            - network
+          type:
+            - info
+        DescribeRegions:
+          category:
+            - api
+          type:
+            - info
+        ListRoles:
+          category:
+            - iam
+          type:
+            - info
+        DescribeVpcs:
+          category:
+            - network
+          type:
+            - info
+        DescribeNetworkAcls:
+          category:
+            - network
+          type:
+            - info
+        DescribeLoadBalancers:
+          category:
+            - network
+          type:
+            - info
+        DescribeVolumes:
+          category:
+            - host
+          type:
+            - info
+        DescribeTrails:
+          category:
+            - configuration
+          type:
+            - info
+        ListFunctions:
+          category:
+            - package
+          type:
+            - info
+        ListTables:
+          category:
+            - database
+          type:
+            - info
+        ListInstanceAssociations:
+          category:
+            - host
+          type:
+            - info
+        DescribeDBInstances:
+          category:
+            - database
+          type:
+            - info
+        AuthorizeSecurityGroupIngress:
+          category:
+            - network
+          type:
+            - access
+        CreateTopic:
+          category:
+            - configuration
+          type:
+            - creation
+        Subscribe:
+          category:
+            - configuration
+          type:
+            - change
+        Publish:
+          category:
+            - api
+          type: []
+        SendCommand:
+          category:
+            - process
+          type: []
+        GetPolicy:
+          category:
+            - iam
+          type:
+            - info
+        CreatePolicy:
+          category:
+            - iam
+          type:
+            - creation
+        ListAttachedRolePolicies:
+          category:
+            - iam
+          type:
+            - info
+        AttachRolePolicy:
+          category:
+            - iam
+          type:
+            - change
+        Converse:
+          category:
+            - api
+          type: []
+        CreateDocument:
+          category:
+            - file
+          type:
+            - creation
+        StartSession:
+          category:
+            - session
+          type:
+            - start
+        CreateControlChannel:
+          category:
+            - session
+          type:
+            - start
+        OpenControlChannel:
+          category:
+            - session
+          type:
+            - start
+        CreateDataChannel:
+          category:
+            - session
+          type:
+            - start
+        OpenDataChannel:
+          category:
+            - session
+          type:
+            - start
+        TerminateSession:
+          category:
+            - session
+          type:
+            - end
+        ListObjects:
+          category:
+            - file
+          type:
+            - info
+        HeadObject:
+          category:
+            - file
+          type:
+            - info
+        GetObject:
+          category:
+            - file
+          type:
+            - info
+        PutObject:
+          category:
+            - file
+          type:
+            - change
+        DeleteTrail:
+          category:
+            - configuration
+          type:
+            - deletion
+        DeleteObject:
+          category:
+            - file
+          type:
+            - delete
       source: >-
         ctx.event.kind = 'event';
         ctx.event.type = ['info'];
 
-        if (ctx?.aws?.cloudtrail?.error_code != null || ctx?.aws?.cloudtrail?.error_message != null) {
-            ctx.event.outcome = 'failure'
+        if (ctx.aws?.cloudtrail?.error_code != null || ctx.aws?.cloudtrail?.error_message != null) {
+          ctx.event.outcome = 'failure'
         } else {
-            ctx.event.outcome = 'success'
+          ctx.event.outcome = 'success'
         }
 
-        if (ctx?.event?.action == null) {
-            return;
+        if (ctx.event?.action == null) {
+          return;
         }
 
-        if (ctx.event.action == 'ConsoleLogin' && ctx?.aws?.cloudtrail?.flattened?.response_elements.ConsoleLogin != null) {
-            ctx.event.outcome = Processors.lowercase(ctx.aws.cloudtrail.flattened.response_elements.ConsoleLogin);
+        if (ctx.event.action == 'ConsoleLogin' && ctx.json?.responseElements?.ConsoleLogin != null) {
+          ctx.event.outcome = Processors.lowercase(ctx.json.responseElements.ConsoleLogin);
         }
 
         if (params.get(ctx.event.action) == null) {
-            return;
+          return;
         }
 
         def hm = new HashMap(params.get(ctx.event.action));
@@ -875,7 +1591,7 @@ processors:
         ctx.json?.previousDigestHashAlgorithm != null && ctx.json?.previousDigestHashAlgorithm == 'SHA-256'
   - append:
       field: related.hash
-      value: '{{file.hash.sha256}}'
+      value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
   - rename:
       field: json.logFiles
@@ -931,47 +1647,51 @@ processors:
       field: json.digestSignatureAlgorithm
       target_field: aws.cloudtrail.digest.signature_algorithm
       ignore_failure: true
-  - rename:
-      field: json.insightDetails
-      target_field: aws.cloudtrail.insight_details
-      ignore_failure: true
   - set:
       field: group.id
-      value: '{{aws.cloudtrail.flattened.response_elements.group.groupId}}'
+      copy_from: json.responseElements.group.groupId
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: user.target.id
-      value: '{{aws.cloudtrail.flattened.response_elements.user.userId}}'
+      copy_from: json.responseElements.user.userId
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: user.changes.name
-      value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
+      copy_from: json.requestParameters.newUserName
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: group.name
-      value: '{{aws.cloudtrail.flattened.request_parameters.groupName}}'
+      copy_from: json.requestParameters.groupName
       ignore_empty_value: true
-      ignore_failure: true
   - set:
       field: user.target.name
-      value: '{{aws.cloudtrail.flattened.request_parameters.userName}}'
+      copy_from: json.requestParameters.userName
       ignore_empty_value: true
-      ignore_failure: true
+  - remove:
+      field:
+        - aws.cloudtrail.digest
+        - json.insightDetails
+      if: '!ctx._conf.keep_flattened_duplicates'
+      ignore_missing: true
   - rename:
       field: aws.cloudtrail.digest
       target_field: aws.cloudtrail.flattened.digest
       ignore_missing: true
   - rename:
-      field: aws.cloudtrail.insight_details
+      field: json.insightDetails
       target_field: aws.cloudtrail.flattened.insight_details
       ignore_missing: true
+  - remove:
+      field: json.tlsDetails
+      if: ctx.json?.tlsDetails?.tlsVersion == 'tlsVersion'
   - dissect:
       field: json.tlsDetails.tlsVersion
       pattern: "%{tls.version_protocol}v%{tls.version}"
       ignore_missing: true
+      on_failure:
+        - rename:
+            field: json.tlsDetails.tlsVersion
+            target_field: tls.version
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
@@ -983,9 +1703,108 @@ processors:
       field: json.tlsDetails.clientProvidedHostHeader
       target_field: tls.client.server_name
       ignore_missing: true
+  # Standardize user fields
+  - set:
+      field: user.email
+      copy_from: user.name
+      tag: set_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  # Don't dissect the user email into <user.name>@<user.domain>
+  # as the parts are meaningless on their own
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+
+  # Remove the fields that the user does not want.
+  # In the case that we did not want the flattened fields our work is already
+  # done, since we did not retain them. Otherwise we remove the relevant fields
+  # in the following two processors.
+  - script:
+      if: ctx._conf?.retain == 'minimal' && ctx.aws?.cloudtrail?.flattened != null
+      tag: script_retain_minimal_flattened
+      params:
+        # This list of fields is determined by enumerating all fields containing
+        # the string "cloudtrail.flattened" that are in .attributes.required_fields of the
+        # rules in security_detection_engine/kibana/security_rule.
+        # It must be kept up to date with the rules.
+        required_flattened_fields:
+          - aws.cloudtrail.flattened.additional_eventdata.SSEApplied
+          - aws.cloudtrail.flattened.request_parameters.cidrIp
+          - aws.cloudtrail.flattened.request_parameters.dryRun
+          - aws.cloudtrail.flattened.request_parameters.fromPort
+          - aws.cloudtrail.flattened.request_parameters.includeDeprecated
+          - aws.cloudtrail.flattened.request_parameters.policyArn
+          - aws.cloudtrail.flattened.request_parameters.serialNumber
+          - aws.cloudtrail.flattened.request_parameters.withDecryption
+          - aws.cloudtrail.flattened.request_parameters.x-amz-server-side-encryption-customer-algorithm
+      source: |-
+        def set(Map root, String path, def v) {
+          String[] elems = path.splitOnToken('.');
+          def dst = root;
+          for (int i = 0; i < elems.length-1; i++) {
+            dst = dst.computeIfAbsent(elems[i], _ -> [:]);
+          }
+          dst[elems[elems.length-1]] = v;
+        }
+        Map flattened = [:];
+        int prefix = "aws.cloudtrail.flattened.".length();
+        for (String f: params.required_flattened_fields) {
+          def v = $(f, null);
+          if (v == null) {
+            continue;
+          }
+          set(flattened, f.substring(prefix), v);
+        }
+        ctx.aws.cloudtrail.flattened = flattened;
   - remove:
-      field: json
+      field:
+        - aws.cloudtrail.response_elements
+        - aws.cloudtrail.request_parameters
+        - aws.cloudtrail.additional_eventdata
       ignore_missing: true
+      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'keyword' && ctx._conf.retain != 'minimal'
+
+  - remove:
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: remove_nulls
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null/empty values.
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
 on_failure:
   - set:
       field: event.kind

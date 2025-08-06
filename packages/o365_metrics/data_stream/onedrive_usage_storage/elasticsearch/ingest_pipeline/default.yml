@@ -3,17 +3,17 @@ description: Pipeline or processing o365 onedrive usage storage metrics.
 processors:
   - set:
       field: ecs.version
-      value: "8.16.0"        
+      value: "8.16.0"
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.onedrive_usage_storage != null && ctx.onedrive_usage_storage == null && ctx.event?.original == null
+      message: error message set and no data to process
   - set:
       copy_from: onedrive_usage_storage
       field: event.original
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
-  # - fail:
-  #     tag: cel_failure
-  #     if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-  #     message: error message set and no data to process
   - json:
       field: onedrive_usage_storage
       target_field: o365.metrics.onedrive.usage.storage  
@@ -69,10 +69,6 @@ processors:
       field: o365.metrics.onedrive.usage.storage.report_period
       target_field: o365.metrics.onedrive.usage.storage.report.period.day
       ignore_missing: true
-  - remove: 
-      field:
-        - o365.metrics.onedrive.usage.storage.site_type
-      ignore_missing: true
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_report_date
@@ -81,6 +77,7 @@ processors:
   - fingerprint:
       fields:
         - o365.metrics.onedrive.usage.storage.report.date
+        - o365.metrics.onedrive.usage.storage.site_type
       target_field: _id
 
   - script:

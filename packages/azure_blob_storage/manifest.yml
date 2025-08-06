@@ -3,10 +3,10 @@ name: azure_blob_storage
 title: Custom Azure Blob Storage Input
 description: Collect log data from configured Azure Blob Storage Container with Elastic Agent.
 type: input
-version: "2.1.1"
+version: "2.3.0"
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.16.0 || ^9.0.0"
 categories:
   - azure
   - observability
@@ -20,12 +20,41 @@ policy_templates:
     template_path: abs.yml.hbs
     description: Collect log data from configured Azure Blob Storage Container with Elastic Agent.
     vars:
+      - name: oauth2
+        required: true
+        show_user: true
+        title: Collect logs using OAuth2 authentication
+        description: To collect logs using OAuth2 authentication enable the toggle switch. By default, it will collect logs using service account key or URI.
+        type: bool
+        multi: false
+        default: false
       - name: account_name
         type: text
         title: Account Name
         description: |
           This attribute is required for various internal operations with respect to authentication, creating service clients and blob clients which are used internally for various processing purposes.
         required: true
+        show_user: true
+      - name: client_id
+        type: text
+        title: Client ID (OAuth2)
+        description: Client ID of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+        required: false
+        show_user: true
+        secret: true
+      - name: client_secret
+        type: password
+        title: Client Secret (OAuth2)
+        description: Client Secret of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+        required: false
+        show_user: true
+        secret: true
+      - name: tenant_id
+        type: text
+        title: Tenant ID (OAuth2)
+        description: Tenant ID of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+        multi: false
+        required: false
         show_user: true
       - name: service_account_key
         type: password

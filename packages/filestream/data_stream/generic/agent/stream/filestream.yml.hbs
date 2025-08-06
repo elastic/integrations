@@ -139,8 +139,21 @@ harvester_limit: {{harvester_limit}}
 {{/if}}
 
 {{#if fingerprint }}
+{{#unless file_identity_native }}
+file_identity.fingerprint: ~
 prospector.scanner.fingerprint.enabled: true
-file_identity.fingerprint.enabled: true
-file_identity.fingerprint.offset: {{ fingerprint_offset }}
-file_identity.fingerprint.length: {{ fingerprint_length  }}
+prospector.scanner.fingerprint.offset: {{ fingerprint_offset }}
+prospector.scanner.fingerprint.length: {{ fingerprint_length  }}
+{{/unless}}
+{{/if}}
+
+{{#if file_identity_native }}
+{{#unless fingerprint }}
+file_identity.native: ~
+prospector.scanner.fingerprint.enabled: false
+{{/unless}}
+{{/if}}
+
+{{#if condition }}
+condition: {{ condition }}
 {{/if}}

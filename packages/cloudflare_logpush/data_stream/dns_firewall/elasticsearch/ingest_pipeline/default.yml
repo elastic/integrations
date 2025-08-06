@@ -77,6 +77,7 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.dns_firewall.source.ip
+      ignore_empty_value: true
       tag: set_source_ip
 # Geo enrichment (source IP)
   - geoip:
@@ -112,6 +113,7 @@ processors:
   - set:
       field: dns.question.name
       copy_from: cloudflare_logpush.dns_firewall.question.name
+      ignore_empty_value: true
       tag: set_question_name
 
   - convert:
@@ -208,6 +210,11 @@ processors:
       target_field: cloudflare_logpush.dns_firewall.response.cached
       ignore_missing: true
       tag: rename_dns_response_cached
+  - rename:
+      field: json.ResponseReason
+      target_field: cloudflare_logpush.dns_firewall.response.reason
+      ignore_missing: true
+      tag: rename_dns_response_reason
   - rename:
       field: json.ResponseCachedStale
       target_field: cloudflare_logpush.dns_firewall.response.cached_stale

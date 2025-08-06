@@ -1,9 +1,6 @@
 - name: mongodb_atlas.organization
   type: group
   fields:
-    - name: access_list_entry
-      type: keyword
-      description: Access list entry of the API Key targeted by the event.
     - name: alert
       type: group
       fields:
@@ -31,15 +28,6 @@
     - name: collection.name
       type: keyword
       description: Name of the collection where the event occurred.
-    - name: current_value
-      type: group
-      fields:
-        - name: number
-          type: double
-          description: The value of the metric at the time of the event.
-        - name: units
-          type: keyword
-          description: Relevant units for the value.
     - name: database.name
       type: keyword
       description: Name of the database where the event occurred.
@@ -61,9 +49,18 @@
     - name: is_global_admin
       type: boolean
       description: Flag indicating whether the user who triggered this event is a MongoDB employee.
-    - name: metric.name
-      type: keyword
-      description: Name of the measurement whose value went outside the threshold.
+    - name: metric
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the measurement whose value went outside the threshold.
+        - name: unit
+          type: keyword
+          description: Unit for the value.
+        - name: value
+          type: double
+          description: Value of the metric.
     - name: operation.type
       type: keyword
       description: Type of operation that generated the event.
@@ -73,12 +70,21 @@
     - name: public_key
       type: keyword
       description: Public key associated with the API Key that triggered this event. If this field is present in the response, Cloud Manager does not return the username field.
-    - name: additional_info.*
+    - name: additional_info
       type: flattened
       description: Additional meta information about the event. Only present when includeRaw query parameter is true.
     - name: replicaset.name
       type: keyword
       description: Name of the replica set.
+    - name: resource
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Unique 24-hexadecimal digit string that identifies the resource associated with the event.
+        - name: type
+          type: keyword
+          description: Unique identifier of resource type.
     - name: shard.name
       type: keyword
       description: The name of the shard associated with the event.
@@ -91,3 +97,6 @@
     - name: team.id
       type: keyword
       description: Unique identifier for the Cloud Manager team associated with this event.
+    - name: whitelist_entry
+      type: keyword
+      description: Entry in the list of source host addresses that the API key accepts and this event targets.

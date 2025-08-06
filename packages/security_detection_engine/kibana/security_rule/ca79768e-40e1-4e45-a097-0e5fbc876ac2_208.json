@@ -1,0 +1,91 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a malware filter rule has been deleted or disabled in Microsoft 365. An adversary or insider threat may want to modify a malware filter rule to evade detection.",
+        "false_positives": [
+            "A malware filter rule may be deleted by a system or network administrator. Verify that the configuration change was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "from": "now-30m",
+        "index": [
+            "filebeat-*",
+            "logs-o365*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Microsoft 365 Exchange Malware Filter Rule Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Microsoft 365 Exchange Malware Filter Rule Modification\n\nMicrosoft 365 Exchange uses malware filter rules to protect email systems by identifying and blocking malicious content. Adversaries may attempt to disable or remove these rules to bypass security measures and facilitate attacks. The detection rule monitors audit logs for successful actions that alter these rules, signaling potential defense evasion tactics. This helps security analysts quickly identify and respond to unauthorized modifications.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.dataset:o365.audit entries with event.provider:Exchange to confirm the occurrence of the rule modification.\n- Identify the user account associated with the event.action:(\"Remove-MalwareFilterRule\" or \"Disable-MalwareFilterRule\") and verify if the action was authorized or expected.\n- Check the event.category:web logs for any related activities around the same timeframe to identify potential patterns or additional suspicious actions.\n- Investigate the event.outcome:success to ensure that the modification was indeed successful and assess the impact on the organization's security posture.\n- Correlate the identified actions with any recent security incidents or alerts to determine if this modification is part of a larger attack or threat campaign.\n- Review the user's recent activity and access logs to identify any other unusual or unauthorized actions that may indicate compromised credentials or insider threat behavior.\n\n### False positive analysis\n\n- Routine administrative changes to malware filter rules by authorized IT personnel can trigger alerts. To manage this, maintain a list of authorized users and their expected activities, and create exceptions for these users in the monitoring system.\n- Scheduled maintenance or updates to Microsoft 365 configurations might involve temporary disabling of certain rules. Document these activities and adjust the monitoring system to recognize these as non-threatening.\n- Automated scripts or third-party tools used for system management may perform actions that resemble rule modifications. Ensure these tools are properly documented and their actions are whitelisted if verified as safe.\n- Changes made during incident response or troubleshooting can appear as rule modifications. Coordinate with the incident response team to log these activities and exclude them from triggering alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected user accounts and systems to prevent further unauthorized modifications to the malware filter rules.\n- Re-enable or recreate the disabled or removed malware filter rules to restore the intended security posture of the Microsoft 365 environment.\n- Conduct a thorough review of recent email traffic and logs to identify any potential malicious content that may have bypassed the filters during the period of rule modification.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems or accounts have been compromised.\n- Implement enhanced monitoring and alerting for any future attempts to modify malware filter rules, ensuring rapid detection and response.\n- Review and update access controls and permissions for administrative actions within Microsoft 365 to limit the ability to modify security configurations to only essential personnel.\n- Document the incident, including actions taken and lessons learned, to improve future response efforts and update incident response plans accordingly.",
+        "query": "event.dataset:o365.audit and event.provider:Exchange and event.category:web and event.action:(\"Remove-MalwareFilterRule\" or \"Disable-MalwareFilterRule\") and event.outcome:success\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/powershell/module/exchange/remove-malwarefilterrule?view=exchange-ps",
+            "https://docs.microsoft.com/en-us/powershell/module/exchange/disable-malwarefilterrule?view=exchange-ps"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^2.11.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ca79768e-40e1-4e45-a097-0e5fbc876ac2",
+        "setup": "The Office 365 Logs Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Microsoft 365",
+            "Use Case: Configuration Audit",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 208
+    },
+    "id": "ca79768e-40e1-4e45-a097-0e5fbc876ac2_208",
+    "type": "security-rule"
+}

@@ -14,6 +14,32 @@ processors:
       target_field: json
   - drop:
       if: ctx.json?.entities instanceof List && ctx.json.entities.length == 0
+  - script:
+      lang: painless
+      if: ctx.json instanceof Map
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx.json);
   - set:
       field: _tmp.timestamp
       copy_from: json.timestamp
@@ -449,4 +475,8 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"

@@ -1,0 +1,143 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of a process with arguments pointing to the INetCache Folder. Adversaries may deliver malicious content via WININET during initial access.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Execution from INET Cache",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Execution from INET Cache\n\nThe INetCache folder stores temporary internet files, which can be exploited by adversaries to execute malicious payloads delivered via WININET. Attackers may disguise malware as legitimate files cached during browsing. The detection rule identifies suspicious processes initiated from this cache, especially when launched by common file explorers, signaling potential initial access or command and control activities.\n\n### Possible investigation steps\n\n- Review the process details to confirm the executable path and arguments match the INetCache folder pattern specified in the query.\n- Identify the parent process, such as explorer.exe, winrar.exe, 7zFM.exe, or Bandizip.exe, to determine if the process launch is consistent with typical user behavior or potentially malicious activity.\n- Check the user account associated with the process to assess if the activity aligns with the user's normal behavior or if the account may be compromised.\n- Investigate the file in the INetCache directory for known malware signatures or anomalies using antivirus or endpoint detection tools.\n- Analyze network activity from the host to identify any suspicious connections that may indicate command and control communication.\n- Correlate the event with other security alerts or logs to identify patterns or additional indicators of compromise related to the initial access or command and control tactics.\n\n### False positive analysis\n\n- Legitimate software updates or installations may temporarily use the INetCache folder for storing executable files. Users can create exceptions for known update processes by identifying their specific executable paths and excluding them from the rule.\n- Some browser extensions or plugins might cache executable files in the INetCache folder during normal operations. Users should monitor and whitelist these extensions if they are verified as safe and frequently trigger alerts.\n- Automated scripts or tools that interact with web content might inadvertently store executables in the INetCache folder. Users can adjust the rule to exclude these scripts by specifying their parent process names or paths.\n- Certain enterprise applications may use the INetCache folder for legitimate purposes. Users should collaborate with IT departments to identify these applications and configure exceptions based on their unique process signatures.\n- Regularly review and update the list of excluded processes to ensure that only verified and non-threatening activities are exempt from triggering alerts.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further communication with potential command and control servers.\n- Terminate any suspicious processes identified as originating from the INetCache folder to halt any ongoing malicious activity.\n- Delete any malicious files found within the INetCache directory to remove the immediate threat.\n- Conduct a full antivirus and antimalware scan on the affected system to identify and remove any additional threats.\n- Review and analyze recent email logs and web browsing history to identify potential phishing attempts or malicious downloads that may have led to the initial compromise.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for the INetCache directory and related processes to detect similar threats in the future.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : (\"explorer.exe\", \"winrar.exe\", \"7zFM.exe\", \"Bandizip.exe\") and\n  (\n    process.args : \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\IE\\\\*\" or\n    process.executable : (\n      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\IE\\\\*\",\n      \"\\\\Device\\\\HarddiskVolume?\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\IE\\\\*\"\n    )\n  )\n",
+        "references": [
+            "https://www.trendmicro.com/en_us/research/24/b/cve202421412-water-hydra-targets-traders-with-windows-defender-s.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "system",
+                "version": "^1.64.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.22.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "dca6b4b0-ae70-44eb-bb7a-ce6db502ee78",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.001",
+                                "name": "Spearphishing Attachment",
+                                "reference": "https://attack.mitre.org/techniques/T1566/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 207
+    },
+    "id": "dca6b4b0-ae70-44eb-bb7a-ce6db502ee78_207",
+    "type": "security-rule"
+}

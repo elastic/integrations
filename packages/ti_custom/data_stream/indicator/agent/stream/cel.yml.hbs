@@ -1,6 +1,8 @@
 config_version: 2
 interval: {{interval}}
-resource.timeout: 60s
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
 resource.url: {{url}}
 {{#if ssl}}
 resource.ssl: {{ssl}}
@@ -43,12 +45,19 @@ state:
   want_more: false
 {{#if api_key}}
   api_key: {{api_key}}
+{{#if key_type}}
+  key_type: {{key_type}}
+{{/if}}
 {{/if}}
 {{#if username}}
 {{#if password}}
   username: {{username}}
   password: {{password}}
 {{/if}}
+{{/if}}
+  accept_header: {{accept_header}}
+{{#if content_header}}
+  content_header: {{content_header}}
 {{/if}}
 {{#if limit}}
   limit: {{limit}}
@@ -82,10 +91,10 @@ program: |
         ).with(
             {
                 "Header": {
-                    "Content-Type": ["application/taxii+json;version=2.1"],
-                    "Accept": ["application/taxii+json;version=2.1"],
+                    "Accept": [string(state.accept_header)],
+                    ?"Content-Type": state.?content_header.orValue("") != "" ? optional.of([state.content_header]) : optional.none(),
                     "Authorization": (has(state.api_key) && state.api_key != "") ?
-                        ["Bearer " + string(state.api_key)]
+                        [state.?key_type.orValue("Bearer") + " " + string(state.api_key)]
                     : (state.?username.orValue("") != "" && state.?password.orValue("") != "") ?
                         ["Basic " + (state.username + ":" + state.password).base64()]
                     :
@@ -100,6 +109,8 @@ program: |
                             "message": e.encode_json(),
                         }
                     ),
+                    "accept_header": state.accept_header,
+                    "content_header": state.?content_header.orValue(""),
                     "url": state.url,
                     "api_key": state.?api_key.orValue(""),
                     "username": state.?username.orValue(""),

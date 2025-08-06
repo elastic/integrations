@@ -1,0 +1,428 @@
+---
+description: Pipeline for processing machine action logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Microsoft
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Defender for Endpoint
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: microsoft_defender_endpoint.machine_action.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: microsoft_defender_endpoint.machine_action.type
+      ignore_failure: true
+  - script:
+      description: Set ECS categorization fields
+      tag: set_ecs_categorization_fields
+      lang: painless
+      if: ctx.microsoft_defender_endpoint?.machine_action?.type != null
+      params:
+        RunAntiVirusScan:
+          type:
+            - info
+        Offboard:
+          type:
+            - info
+        LiveResponse:
+          type:
+            - info
+        CollectInvestigationPackage:
+          type:
+            - info
+        Isolate:
+          category:
+            - network
+          type:
+            - end
+        Unisolate:
+          category:
+            - network
+          type:
+            - start
+        StopAndQuarantineFile:
+          category:
+            - file
+          type:
+            - deletion
+        RestrictCodeExecution:
+          category:
+            - package
+          type:
+            - access
+        UnrestrictCodeExecution:
+          category:
+            - package
+          type:
+            - access
+      source: >-
+        if (params.get(ctx.microsoft_defender_endpoint.machine_action.type) == null) {
+          return;
+        }
+        params.get(ctx.microsoft_defender_endpoint.machine_action.type).forEach((k, v) -> {
+          ctx.event[k] = v
+        });
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: microsoft_defender_endpoint.machine_action.status
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.microsoft_defender_endpoint?.machine_action?.status != null && ctx.microsoft_defender_endpoint.machine_action.status.toLowerCase() == 'succeeded'
+      ignore_failure: true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.microsoft_defender_endpoint?.machine_action?.status != null && ctx.microsoft_defender_endpoint.machine_action.status.toLowerCase() == 'failed'
+      ignore_failure: true
+  - rename:
+      field: json.cancellationComment
+      tag: rename_cancellationComment
+      target_field: microsoft_defender_endpoint.machine_action.cancellation_comment
+      ignore_missing: true
+  - date:
+      field: json.cancellationDateTimeUtc
+      tag: date_cancellationDateTimeUtc
+      target_field: microsoft_defender_endpoint.machine_action.cancellation_date_time_utc
+      formats:
+        - strict_date_optional_time_nanos
+      if: ctx.json?.cancellationDateTimeUtc != null && ctx.json.cancellationDateTimeUtc != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.cancellationRequestor
+      tag: rename_cancellationRequestor
+      target_field: microsoft_defender_endpoint.machine_action.cancellation_requestor
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_microsoft_defender_endpoint_machine_action_cancellation_requestor_into_related_user
+      value: '{{{microsoft_defender_endpoint.machine_action.cancellation_requestor}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_defender_endpoint?.machine_action?.cancellation_requestor != null
+  - rename:
+      field: json.commands
+      tag: rename_commands
+      target_field: microsoft_defender_endpoint.machine_action.commands
+      ignore_missing: true
+  - rename:
+      field: json.computerDnsName
+      tag: rename_computerDnsName
+      target_field: microsoft_defender_endpoint.machine_action.computer_dns_name
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_machine_action_computer_dns_name
+      copy_from: microsoft_defender_endpoint.machine_action.computer_dns_name
+      ignore_empty_value: true
+  - set:
+      field: host.hostname
+      tag: set_host_name_from_machine_action_computer_dns_name
+      copy_from: microsoft_defender_endpoint.machine_action.computer_dns_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_microsoft_defender_endpoint_machine_action_computer_dns_name_into_related_hosts
+      value: '{{{microsoft_defender_endpoint.machine_action.computer_dns_name}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_defender_endpoint?.machine_action?.computer_dns_name != null
+  - date:
+      field: json.creationDateTimeUtc
+      tag: date_creationDateTimeUtc
+      target_field: microsoft_defender_endpoint.machine_action.creation_date_time_utc
+      formats:
+        - strict_date_optional_time_nanos
+      if: ctx.json?.creationDateTimeUtc != null && ctx.json.creationDateTimeUtc != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_machine_action_creation_date_time_utc
+      copy_from: microsoft_defender_endpoint.machine_action.creation_date_time_utc
+      ignore_empty_value: true
+  - rename:
+      field: json.errorHResult
+      tag: rename_errorHResult
+      target_field: microsoft_defender_endpoint.machine_action.error_h_result
+      ignore_missing: true
+  - convert:
+      field: json.errorHResult
+      tag: convert_errorHResult_to_long
+      target_field: microsoft_defender_endpoint.machine.error_h_result
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.externalID
+      tag: rename_externalID
+      target_field: microsoft_defender_endpoint.machine_action.external_id
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_microsoft_defender_endpoint_machine_action_external_id_into_related_user
+      value: '{{{microsoft_defender_endpoint.machine_action.external_id}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_defender_endpoint?.machine_action?.external_id != null
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: microsoft_defender_endpoint.machine_action.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_machine_action_id
+      copy_from: microsoft_defender_endpoint.machine_action.id
+      ignore_empty_value: true
+  - date:
+      field: json.lastUpdateDateTimeUtc
+      tag: date_lastUpdateDateTimeUtc
+      target_field: microsoft_defender_endpoint.machine_action.last_update_date_time_utc
+      formats:
+        - strict_date_optional_time_nanos
+      if: ctx.json?.lastUpdateDateTimeUtc != null && ctx.json.lastUpdateDateTimeUtc != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_machine_action_last_update_date_time_utc
+      copy_from: microsoft_defender_endpoint.machine_action.last_update_date_time_utc
+      ignore_empty_value: true
+  - rename:
+      field: json.machineId
+      tag: rename_machineId
+      target_field: microsoft_defender_endpoint.machine_action.machine_id
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_machine_action_machine_id
+      copy_from: microsoft_defender_endpoint.machine_action.machine_id
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_microsoft_defender_endpoint_machine_action_id_into_related_hosts
+      value: '{{{microsoft_defender_endpoint.machine_action.machine_id}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_defender_endpoint?.machine_action?.machine_id != null
+  - rename:
+      field: json.relatedFileInfo.fileIdentifier
+      tag: rename_relatedFileInfo_fileIdentifier
+      target_field: microsoft_defender_endpoint.machine_action.related_file_info.file_identifier
+      ignore_missing: true
+  - rename:
+      field: json.relatedFileInfo.fileIdentifierType
+      tag: rename_relatedFileInfo_fileIdentifierType
+      target_field: microsoft_defender_endpoint.machine_action.related_file_info.file_identifier_type
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_microsoft_defender_endpoint_machine_action_related_file_info_file_identifier_into_related_hash
+      value: '{{{microsoft_defender_endpoint.machine_action.related_file_info.file_identifier}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_defender_endpoint?.machine_action?.related_file_info?.file_identifier != null
+  - script:
+      description: Set file.hash.sha1, file.hash.md5, file.hash.sha256.
+      tag: script_set_file_hash_*
+      lang: painless
+      if : ctx.microsoft_defender_endpoint?.machine_action?.related_file_info?.file_identifier_type != null
+      source: >
+        ctx.file = ctx.file ?: [:];
+        ctx.file.hash = ctx.file.hash ?: [:];
+        String fileType = ctx.microsoft_defender_endpoint.machine_action.related_file_info.file_identifier_type.toLowerCase();
+        String fileHash = ctx.microsoft_defender_endpoint.machine_action.related_file_info.file_identifier;
+        if (fileType.contains('sha1')) {
+          ctx.file.hash.sha1 = fileHash;
+        } else if (fileType.contains('md5')) {
+          ctx.file.hash.md5 = fileHash;
+        } else if (fileType.contains('sha256')) {
+          ctx.file.hash.sha256 = fileHash;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.requestSource
+      tag: rename_requestSource
+      target_field: microsoft_defender_endpoint.machine_action.request_source
+      ignore_missing: true
+  - rename:
+      field: json.requestor
+      tag: rename_requestor
+      target_field: microsoft_defender_endpoint.machine_action.requestor
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_machine_action_requestor
+      copy_from: microsoft_defender_endpoint.machine_action.requestor
+      ignore_empty_value: true
+      if: ctx.microsoft_defender_endpoint?.machine_action?.requestor != null && ctx.microsoft_defender_endpoint.machine_action.requestor.indexOf("@") > 0
+  - set:
+      field: user.name
+      tag: set_user_name_from_machine_action_requestor
+      copy_from: microsoft_defender_endpoint.machine_action.requestor
+      ignore_empty_value: true
+      if: ctx.user?.email == null
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_email_into_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - rename:
+      field: json.requestorComment
+      tag: rename_requestorComment
+      target_field: microsoft_defender_endpoint.machine_action.requestor_comment
+      ignore_missing: true
+  - rename:
+      field: json.scope
+      tag: rename_scope
+      target_field: microsoft_defender_endpoint.machine_action.scope
+      ignore_missing: true
+  - rename:
+      field: json.title
+      tag: rename_title
+      target_field: microsoft_defender_endpoint.machine_action.title
+      ignore_missing: true
+  - rename:
+      field: json.troubleshootInfo
+      tag: rename_troubleshootInfo
+      target_field: microsoft_defender_endpoint.machine_action.troubleshoot_info
+      ignore_missing: true
+  - remove:
+      field:
+        - microsoft_defender_endpoint.machine_action.computer_dns_name
+        - microsoft_defender_endpoint.machine_action.creation_date_time_utc
+        - microsoft_defender_endpoint.machine_action.id
+        - microsoft_defender_endpoint.machine_action.last_update_date_time_utc
+        - microsoft_defender_endpoint.machine_action.machine_id
+        - microsoft_defender_endpoint.machine_action.requestor
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

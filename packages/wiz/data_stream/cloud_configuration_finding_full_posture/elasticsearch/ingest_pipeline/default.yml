@@ -1,0 +1,424 @@
+---
+description: Pipeline for processing Cloud Configuration Finding Full Posture logs
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.11.0'
+  - rename:
+      field: message
+      tag: rename_message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      tag: json_decoding
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: 'Wiz'
+  - rename:
+      field: json.resource.subscription.cloudProvider
+      tag: rename_cloudProvider
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.subscription.cloud_provider
+      ignore_missing: true
+  - lowercase:
+      field: wiz.cloud_configuration_finding_full_posture.resource.subscription.cloud_provider
+      target_field: cloud.provider
+      tag: set_cloud_provider_lowercase
+      ignore_missing: true
+  - rename:
+      field: json.resource.subscription.externalId
+      tag: rename_subscription_externalId
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.subscription.external_id
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.subscription.external_id
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.subscription.name
+      tag: rename_subscription_name
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.subscription.name
+      ignore_missing: true
+  - set:
+      field: cloud.account.name
+      tag: set_cloud_account_name
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.subscription.name
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.region
+      tag: rename_region
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.region
+      ignore_missing: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.region
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.cloudPlatform
+      tag: rename_cloud_plarform
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.cloud_platform
+      ignore_missing: true
+  - lowercase:
+      field: wiz.cloud_configuration_finding_full_posture.resource.cloud_platform
+      target_field: cloud.service.name
+      tag: set_cloud_service_name_lowercase
+      ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: configuration
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - date:
+      field: json.analyzedAt
+      target_field: wiz.cloud_configuration_finding_full_posture.analyzed_at
+      tag: date_set_analyzedat
+      formats:
+        - ISO8601
+      if: ctx.json?.analyzedAt != null && ctx.json.analyzedAt != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: wiz.cloud_configuration_finding_full_posture.analyzed_at
+      ignore_empty_value: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: wiz.cloud_configuration_finding_full_posture.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: wiz.cloud_configuration_finding_full_posture.id
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      value: state
+      tag: set_event_kind
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: wiz.cloud_configuration_finding_full_posture.name
+      ignore_missing: true
+  - rename:
+      field: json.rule.description
+      tag: rename_rule_description
+      target_field: wiz.cloud_configuration_finding_full_posture.rule.description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: wiz.cloud_configuration_finding_full_posture.rule.name
+      ignore_empty_value: true
+  - set:
+      field: rule.description
+      tag: set_rule_description
+      copy_from: wiz.cloud_configuration_finding_full_posture.rule.description
+      ignore_empty_value: true
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+  - rename:
+      field: json.rule.id
+      tag: rename_rule_id
+      target_field: wiz.cloud_configuration_finding_full_posture.rule.id
+      ignore_missing: true
+  - set:
+      field: rule.uuid
+      tag: set_rule_uuid
+      copy_from: wiz.cloud_configuration_finding_full_posture.rule.id
+      ignore_empty_value: true
+  - rename:
+      field: json.rule.shortId
+      tag: rename_rule_short_id
+      target_field: wiz.cloud_configuration_finding_full_posture.rule.short_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id
+      copy_from: wiz.cloud_configuration_finding_full_posture.rule.short_id
+      ignore_empty_value: true
+  - rename:
+      field: json.rule.name
+      tag: rename_rule_name
+      target_field: wiz.cloud_configuration_finding_full_posture.rule.name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: wiz.cloud_configuration_finding_full_posture.rule.name
+      ignore_empty_value: true
+  - rename:
+      field: json.rule.remediationInstructions
+      tag: rename_rule_remediation_instructions
+      target_field: wiz.cloud_configuration_finding_full_posture.rule.remediation_instructions
+      ignore_missing: true
+  - set:
+      field: rule.remediation
+      tag: set_rule_remediation
+      copy_from: wiz.cloud_configuration_finding_full_posture.rule.remediation_instructions
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.id
+      tag: rename_resource_id
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.id
+      ignore_missing: true
+  - rename:
+      field: json.resource.providerId
+      tag: rename_resource_providerId
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.provider_id
+      ignore_missing: true
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_provider_id
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.provider_id
+      ignore_empty_value: true
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_resource_id
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.id
+      ignore_empty_value: true
+      override: false  # This ensures the value isn't overwritten if already set
+  - rename:
+      field: json.resource.name
+      tag: rename_resource_name
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.name
+      ignore_missing: true
+  - set:
+      field: resource.name
+      tag: set_resource_name
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.name
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.type
+      tag: rename_resource_type
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.type
+      ignore_missing: true
+  - set:
+      field: resource.type
+      tag: set_resource_type
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.type
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.nativeType
+      tag: rename_resource_nativeType
+      target_field: wiz.cloud_configuration_finding_full_posture.resource.native_type
+      ignore_missing: true
+  - set:
+      field: resource.sub_type
+      tag: set_resource_sub_type
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.native_type
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_if_user_account
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.name
+      if: ctx?.resource?.type == 'USER_ACCOUNT'
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      tag: set_user_id_if_user_account
+      copy_from: wiz.cloud_configuration_finding_full_posture.resource.provider_id
+      if: ctx.resource?.type == 'USER_ACCOUNT'
+      ignore_empty_value: true
+  - lowercase:
+      field: wiz.cloud_configuration_finding_full_posture.resource.name
+      target_field: host.name
+      tag: set_host_name_lowercase_if_vm
+      if: ctx?.resource?.type == 'VIRTUAL_MACHINE'
+      ignore_missing: true
+  - rename:
+      field: json.result
+      tag: rename_result
+      target_field: wiz.cloud_configuration_finding_full_posture.result
+      ignore_missing: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: 'passed'
+      if: ctx?.wiz?.cloud_configuration_finding_full_posture?.result == 'PASS'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: 'failed'
+      if: ctx?.wiz?.cloud_configuration_finding_full_posture?.result == 'FAIL'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: 'unknown'
+      if: ctx?.wiz?.cloud_configuration_finding_full_posture?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding_full_posture?.result != 'FAIL'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: 'success'
+      if: ctx?.wiz?.cloud_configuration_finding_full_posture?.result == 'PASS'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: 'failure'
+      if: ctx?.wiz?.cloud_configuration_finding_full_posture?.result == 'FAIL'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: 'unknown'
+      if: ctx?.wiz?.cloud_configuration_finding_full_posture?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding_full_posture?.result != 'FAIL'
+      ignore_empty_value: true
+  - rename:
+      field: json.evidence.currentValue
+      tag: rename_evidence_current_value
+      target_field: wiz.cloud_configuration_finding_full_posture.evidence.current_value
+      ignore_missing: true
+  - set:
+      field: result.evidence.current_value
+      tag: set_result_evidence_current_value
+      copy_from: wiz.cloud_configuration_finding_full_posture.evidence.current_value
+      ignore_empty_value: true
+  - rename:
+      field: json.evidence.expectedValue
+      tag: rename_evidence_expected_value
+      target_field: wiz.cloud_configuration_finding_full_posture.evidence.expected_value
+      ignore_missing: true
+  - set:
+      field: result.evidence.expected_value
+      tag: set_result_evidence_expected_value
+      copy_from: wiz.cloud_configuration_finding_full_posture.evidence.expected_value
+      ignore_empty_value: true
+  - rename:
+      field: json.evidence.configurationPath
+      tag: rename_evidence_configuration_path
+      target_field: wiz.cloud_configuration_finding_full_posture.evidence.configuration_path
+      ignore_missing: true
+  - set:
+      field: result.evidence.configuration_path
+      tag: set_result_evidence_configuration_path
+      copy_from: wiz.cloud_configuration_finding_full_posture.evidence.configuration_path
+      ignore_empty_value: true
+  - rename:
+      field: json.evidence.cloudConfigurationLink
+      tag: rename_evidence_cloud_configuration_link
+      target_field: wiz.cloud_configuration_finding_full_posture.evidence.cloud_configuration_link
+      ignore_missing: true
+  - set:
+      field: result.evidence.cloud_configuration_link
+      tag: set_result_evidence_cloud_configuration_link
+      copy_from: wiz.cloud_configuration_finding_full_posture.evidence.cloud_configuration_link
+      ignore_empty_value: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference
+      copy_from: wiz.cloud_configuration_finding_full_posture.evidence.cloud_configuration_link
+      ignore_empty_value: true
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: wiz.cloud_configuration_finding_full_posture.status
+      ignore_missing: true
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field:
+        - wiz.cloud_configuration_finding_full_posture.analyzed_at
+        - wiz.cloud_configuration_finding_full_posture.resource.subscription.cloud_provider
+        - wiz.cloud_configuration_finding_full_posture.resource.subscription.external_id
+        - wiz.cloud_configuration_finding_full_posture.resource.subscription.name
+        - wiz.cloud_configuration_finding_full_posture.resource.region
+        - wiz.cloud_configuration_finding_full_posture.resource.name
+        - wiz.cloud_configuration_finding_full_posture.resource.type
+        - wiz.cloud_configuration_finding_full_posture.resource.sub_type
+        - wiz.cloud_configuration_finding_full_posture.resource.provider_id
+        - wiz.cloud_configuration_finding_full_posture.id
+        - wiz.cloud_configuration_finding_full_posture.name
+        - wiz.cloud_configuration_finding_full_posture.rule.description
+        - wiz.cloud_configuration_finding_full_posture.rule.name
+        - wiz.cloud_configuration_finding_full_posture.rule.id
+        - wiz.cloud_configuration_finding_full_posture.rule.short_id
+        - wiz.cloud_configuration_finding_full_posture.rule.remediation_instructions
+        - wiz.cloud_configuration_finding_full_posture.evidence.expected_value
+        - wiz.cloud_configuration_finding_full_posture.evidence.current_value
+        - wiz.cloud_configuration_finding_full_posture.evidence.configuration_path
+        - wiz.cloud_configuration_finding_full_posture.evidence.cloud_configuration_link
+        - wiz.cloud_configuration_finding_full_posture.status
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

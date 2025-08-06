@@ -27,12 +27,31 @@ Special comments that can be added in the Pull Request (by Elastic employees):
         - `/test stack 8.18.0-SNAPSHOT`
         - `/test stack 9.0.0-SNAPSHOT`
 
-There are some environment variables that can be added into this pipeline:
+There are some environment variables that can be added into this pipeline to enable customizations:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.
 - **STACK_VERSION**: Force the CI steps to spin up a specific Elastic stack version to run the tests. Default: unset.
-- **STACK_LOGSDB_ENABLED**: Enable LogsDB setting in Elasticsearch service. Default: false.
+    - If this variable is set, the packages tested are the ones that support that version according to the constraint set in their manifest (`conditions.kibana.version`).
+    - Examples:
+      | STACK_VERSION | Kibana constraint | Stack version used for testing |
+      | :---: | --- | :---: |
+      | `7.17.28` | `^7.17.0 \|\| ^8.15.0 \|\| ^9.0.0` | `^7.17.28` |
+      | `7.17.28` | `^^8.15.0 \|\| ^9.0.0` | Skip |
+      | `8.17.0-SNAPSHOT` | `^8.18.0 \|\| ^9.0.0` | Skip |
+      | `8.19.0-SNAPSHOT` | `^8.15.0 \|\| ^9.0.0` | `^8.19.0-SNAPSHOT` |
+      | `9.1.0-SNAPSHOT` | `^8.15.0 \|\| ^9.0.0` | `^9.1.0-SNAPSHOT` |
+- **STACK_LOGSDB_ENABLED**: Enable LogsDB setting in Elasticsearch service. Default: `false`.
+    - If this variable is set and `STACK_VERSION` is unset, the CI will ensure that the stack version running will be either the version used in PR builds or 8.17.0 (the GA version for LogsDB index mode), whichever is higher.
+    - Examples:
+      | Kibana constraint | Stack version used for testing |
+      | --- | :---: |
+      | `^8.15.0 \|\| ^9.0.0` | `^8.17.0` |
+      | `^8.18.0 \|\| ^9.0.0` | `^8.18.0` |
+      | `^7.18.0` | Skip |
+- **ELASTIC_SUBSCRIPTION**: Set the subscription to be used in the Elastic stack (`basic` or `trial`). Default: `trial`.
 - **PUBLISH_COVERAGE_REPORTS**: If `true`, it enables reporting coverage reports.
-Currently, it is just set for the build triggered with the current major Elastic stack from the daily job. Default: `false`.
+  Currently, it is just set for the build triggered with the current major Elastic stack from the daily job. Default: `false`.
+
+Apart from these environment variables, [these other environment variables](https://github.com/elastic/elastic-package/blob/main/README.md#useful-environment-variables) related to `elastic-package` can be set too for further customizations.
 
 These environment variables can be defined in different locations:
 - In the [global `env` section](https://github.com/elastic/integrations/blob/5276ef63712f8f2311818770881688870e8422fe/.buildkite/pipeline.yml#L2).
@@ -80,7 +99,7 @@ More details about this CI pipeline:
 
 For every Pull Request merged onto the `main` branch or any `backport-*` branches,
 this pipeline is triggered automatically https://buildkite.com/elastic/integrations-publish to publish new versions
-of the packages if any. These new versions are published and made available in https://epr.elastic.co
+of the packages if any. These new versions are published and made available in https://epr.elastic.co.
 
 Environment variables that can be defined in this pipeline:
 - **DRY_RUN**: If `true`, packages will not be published. Default: `false`.
@@ -129,21 +148,41 @@ This environment variable can be defined at:
 
 Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily/
 
-The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/5714f5665bbe3bc29b9e2444c6a94dbc2d5eebe9/catalog-info.yaml#L93).
+The schedules of this job can be checked [here](https://github.com/elastic/integrations/blob/27d5cd9bb5eee76ce4229312271ceddaba7ebc2c/catalog-info.yaml#L178-L204).
 
-The scenarios that are tested in this daily job are:
+In these daily jobs, the environment variable `FORCE_CHECK_ALL` is set to `true` ensuring that all packages that fulfill all the requirements set in the pipeline are tested. Those other requirements are related to setting `STACK_VERSION`, `STACK_LOGSDB_ENABLED`, etc... or other environment variables. More details about these environments variables [here](#pull-requests-and-pushes-to-specific-branches).
 
-- Test packages with a local Elastic stack running the latest 7.x version of the stack (7.17.X SNAPSHOT).
+The scenarios that are tested in this daily job testing all the affected packages are:
+
+- Local Elastic stack running the latest 7.x version of the stack:
+    - Environment variables:
+        - `STACK_VERSION=7.17.X-SNAPSHOT`
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest 8.x version of the stack (8.X.Y-SNAPSHOT).
+- Local Elastic stack running the latest 8.x version of the stack:
+    - Environment variables:
+        - `STACK_VERSION=8.X.Y-SNAPSHOT`
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest 8.x version of the stack with LogsDB setting enabled (8.X.Y-SNAPSHOT).
+- Local Elastic stack running the latest 8.x version of the stack with LogsDB setting enabled:
+    - Environment variables:
+        - `STACK_VERSION=8.X.Y-SNAPSHOT`
+        - `STACK_LOGSDB_ENABLED=true`
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest major version of the stack (currently 9.X.Y-SNAPSHOT).
+- Local Elastic stack running the latest major version of the stack:
+    - Environment variables:
+        - `STACK_VERSION=9.X.Y-SNAPSHOT`
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with an Elastic Serverless Observability project.
+- Local Elastic stack running the same stack version defined in the package manifest with "basic" subscription:
+    - Environment variables:
+        - `ELASTIC_SUBSCRIPTION=basic`
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+- Local Elastic stack running either the version used in PR builds or 8.17.0 (the GA version for LogsDB index mode), whichever is higher, with "basic" subscription and LogsDB index mode enabled.
+    - Environment variables:
+        - `ELASTIC_SUBSCRIPTION=basic`
+        - `STACK_LOGSDB_ENABLED=true`
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+- Elastic Serverless Observability project.
     - Triggered pipeline: https://buildkite.com/elastic/integration-serverless
-- Test packages with an Elastic Serverless Security project.
+- Elastic Serverless Security project.
     - Triggered pipeline: https://buildkite.com/elastic/integration-serverless
 
 Those tests that have failed in these scenarios will be reported as GitHub issues notifying the owner teams as defined in `.github/CODEOWNERS` file.
@@ -164,9 +203,13 @@ The schedule of this job can be checked [here](https://github.com/elastic/integr
 
 The scenarios that are tested in this weekly job are:
 
-- Test packages with a local Elastic stack running the latest 8.x version of the stack with Elastic Agent images based on Ubuntu images (8.X.Y-SNAPSHOT).
+- Test packages with a local Elastic stack running the latest 8.x version of the stack with Elastic Agent images based on Ubuntu images:
+    - Environment variables:
+        - `STACK_VERSION=8.X.Y-SNAPSHOT`
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest major version of the stack with Elastic Agent images based on non-Wolfi images (currently 9.X.Y-SNAPSHOT).
+- Test packages with a local Elastic stack running the latest major version of the stack with Elastic Agent images based on non-Wolfi images:
+    - Environment variables:
+        - `STACK_VERSION=9.X.Y-SNAPSHOT`
     - Triggered pipeline: https://buildkite.com/elastic/integrations
 
 Each step triggering a new pipeline can be customized through environment variables. Environment variables that can

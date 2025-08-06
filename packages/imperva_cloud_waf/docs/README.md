@@ -10,29 +10,11 @@ This integration supports ingestion of events from Imperva Cloud WAF, via AWS S3
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).  
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### Steps to setup Amazon S3 Connection(Push Mode):
+### Setup Amazon S3 Connection (Push Mode)
 
 1. Login to your [Imperva Cloud WAF console](https://authentication-management.service.imperva.com/login).
 2. On the sidebar, click Logs > Log Setup.
@@ -42,9 +24,9 @@ There are some minimum requirements for running Elastic Agent and for more infor
 5. Click Test connection to perform a full testing cycle in which a test file will be transferred to your designated folder. The test file does not contain real data, and will be removed by Incapsula when the transfer is complete.
 6. Configure the additional options:
     - Format. Select the format for the log files: CEF
-    - Compress logs. By default, log files are compressed. Clear this option to keep the logs uncompressed.
+    - Compress logs. By default, log files are compressed. Set the option to not compress files.
 
-### Steps to obtain API URL, API Key and API ID(Pull Mode):
+### Obtain API URL, API Key and API ID (Pull Mode)
 
 1. Login to your [Imperva Cloud WAF console](https://authentication-management.service.imperva.com/login).
 2. On the sidebar, click Logs > Log Setup.
@@ -53,14 +35,13 @@ There are some minimum requirements for running Elastic Agent and for more infor
 5. Copy **API ID** and **Log Server URI**.
 6. Configure the additional options:
     - Format. Select the format for the log files: CEF
-    - Compress logs. By default, log files are compressed. Clear this option to keep the logs uncompressed.
+    - Compress logs. By default, log files are compressed. Set the option to not compress files.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Imperva Cloud WAF
-3. Click on the "Imperva Cloud WAF" integration from the search results.
-4. Click on the "Add Imperva Cloud WAF" button to add the integration.
+1. In Kibana go to **Management** > **Integrations**.
+2. In the search bar, type **Imperva Cloud WAF**.
+3. Select the **Imperva Cloud WAF** integration and add it.
 5. While adding the integration, if you want to collect logs via AWS S3, keep **Collect Imperva Cloud WAF logs via AWS S3 or AWS SQS** toggle on and then configure following parameters:
    - access key id
    - secret access key
@@ -93,19 +74,19 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-01-31T09:22:42.456Z",
+    "@timestamp": "2025-03-21T16:26:32.183Z",
     "agent": {
-        "ephemeral_id": "7d22d234-404b-426a-be1c-8ca128c3357b",
-        "id": "1c0e504b-c5db-46af-aa55-bd7efb79ed8c",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "eb4bebd1-5ad1-4b86-8d31-d1db64d1488e",
+        "id": "cff3afe2-2775-4d3c-88f3-b1e55551f982",
+        "name": "elastic-agent-88200",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-imperva-cloud-waf-bucket-13510",
-                "name": "elastic-package-imperva-cloud-waf-bucket-13510"
+                "arn": "arn:aws:s3:::elastic-package-imperva-cloud-waf-bucket-18864",
+                "name": "elastic-package-imperva-cloud-waf-bucket-18864"
             },
             "object": {
                 "key": "events.log"
@@ -117,16 +98,16 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "imperva_cloud_waf.event",
-        "namespace": "ep",
+        "namespace": "56866",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1c0e504b-c5db-46af-aa55-bd7efb79ed8c",
+        "id": "cff3afe2-2775-4d3c-88f3-b1e55551f982",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -136,7 +117,7 @@ An example event for `event` looks as following:
         "code": "1",
         "dataset": "imperva_cloud_waf.event",
         "end": "2019-08-20T11:31:10.892Z",
-        "ingested": "2024-01-31T09:22:43Z",
+        "ingested": "2025-03-21T16:26:33Z",
         "kind": "event",
         "original": "CEF:0|Incapsula|SIEMintegration|1|1|Normal|0| sourceServiceName=site123.abcd.info siteid=1509732 suid=50005477 requestClientApplication=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0 deviceFacility=mia ccode=IL tag=www.elvis.com cicode=Rehovot cs7=31.8969 cs7Label=latitude cs8=34.8186 cs8Label=longitude Customer=CEFcustomer123 siteTag=my-site-tag start=1453290121336 request=site123.abcd.info/main.css ref=www.incapsula.com/lama requestmethod=GET cn1=200 app=HTTP deviceExternalID=33411452762204224 in=54 xff=44.44.44.44 cpt=443 src=12.12.12.12 ver=TLSv1.2 ECDHE-RSA-AES128-GCM-SHA256 end=1566300670892 additionalReqHeaders=[{\"Accept\":\"*/*\"},{\"x-v\":\"1\"},{\"x-fapi-interaction-id\":\"10.10.10.10\"}] additionalResHeaders=[{\"Content-Type\":\"text/html; charset\\=UTF-8\"}]",
         "severity": 0,
@@ -202,14 +183,16 @@ An example event for `event` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-imperva-cloud-waf-bucket-13510.s3.us-east-1.amazonaws.com/events.log"
+            "path": "https://elastic-package-imperva-cloud-waf-bucket-18864.s3.us-east-1.amazonaws.com/events.log"
         },
         "offset": 134
     },
     "message": "Normal",
     "network": {
         "application": "http",
-        "forwarded_ip": "44.44.44.44"
+        "forwarded_ip": [
+            "44.44.44.44"
+        ]
     },
     "observer": {
         "product": "SIEMintegration",

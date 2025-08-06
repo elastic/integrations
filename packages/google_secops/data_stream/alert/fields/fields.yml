@@ -1,0 +1,1147 @@
+- name: google_secops
+  type: group
+  fields:
+    - name: alert
+      type: group
+      fields:
+        - name: createdTime
+          type: date
+          description: "Time the detection was created."
+        - name: detection
+          type: group
+          fields:
+            - name: alertState
+              type: keyword
+              description: "Indicates whether the rule generating this detection currently has alerting enabled or disabled."
+            - name: description
+              type: keyword
+              description: "Description of the rule that generated the detection. This description is copied from the rule metadata's `description` key, if it is set."
+            - name: detectionFields
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                  description: 'Key for a field specified in the rule, for "MULTI_EVENT" rules.'
+                - name: source
+                  type: keyword
+                - name: value
+                  type: keyword
+                  description: 'Value for a field specified in the rule, for "MULTI_EVENT" rules.'
+            - name: outcomes
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                - name: value
+                  type: keyword
+            - name: riskScore
+              type: long
+            - name: risk_score
+              type: group
+              fields:
+                - name: int64Val
+                  type: long
+                - name: type
+                  type: keyword
+                - name: value
+                  type: long
+            - name: ruleId
+              type: keyword
+              description: "Identifier for the rule generating the detection."
+            - name: ruleLabels
+              type: group
+              fields:
+                - name: key
+                  type: keyword
+                  description: "Key for a field specified in the rule metadata."
+                - name: value
+                  type: keyword
+                  description: "Value for a field specified in the rule metadata."
+            - name: ruleName
+              type: keyword
+              description: "Name of the rule generating the detection, as parsed from `ruleText`."
+            - name: ruleType
+              type: keyword
+              description: 'Whether the rule generating this detection is a single event or multi-event rule ("SINGLE_EVENT" or "MULTI_EVENT").'
+            - name: ruleVersion
+              type: keyword
+              description: "Identifier for the rule version generating the detection."
+            - name: urlBackToProduct
+              type: keyword
+              description: "URL pointing to the Google Security Operations application page for this detection."
+            - name: variables
+              type: group
+              fields:
+                - name: risk_score
+                  type: group
+                  fields:
+                    - name: type
+                      type: keyword
+                    - name: value
+                      type: long
+                    - name: int64Val
+                      type: long
+        - name: detectionTime
+          type: date
+          description: "String representing the time period the detection was found in."
+        - name: event
+          type: group
+          fields:
+            - name: about
+              type: group
+              fields:
+                - name: file
+                  type: group
+                  fields:
+                    - name: fullPath
+                      type: keyword
+                      description: "The full path identifying the location of the file on the system."
+                - name: group
+                  type: group
+                  fields:
+                    - name: groupDisplayName
+                      type: keyword
+                      description: 'Group display name. e.g. "Finance".'
+                - name: labels
+                  type: group
+                  fields:
+                    - name: key
+                      type: keyword
+                      description: "The key."
+                    - name: value
+                      type: keyword
+                      description: "The value."
+                - name: url
+                  type: keyword
+                  description: "The URL."
+                - name: user
+                  type: group
+                  fields:
+                    - name: groupIdentifiers
+                      type: keyword
+                      description: "Product object identifiers of the group(s) the user belongs to A vendor-specific identifier to uniquely identify the group(s) the user belongs to (a GUID, LDAP OID, or similar)."
+                    - name: userDisplayName
+                      type: keyword
+                      description: 'The display name of the user (e.g. "John Locke").'
+                    - name: userid
+                      type: keyword
+                      description: "The ID of the user."
+            - name: additional
+              type: flattened
+            - name: extracted
+              type: flattened
+            - name: intermediary
+              type: group
+              fields:
+                - name: hostname
+                  type: keyword
+                  description: "Client hostname or domain name field. Hostname also doubles as the domain for remote entities."
+            - name: metadata
+              type: group
+              fields:
+                - name: baseLabels
+                  type: group
+                  fields:
+                    - name: allowScopedAccess
+                      type: boolean
+                    - name: ingestionKvLabels
+                      type: group
+                      fields:
+                        - name: key
+                          type: keyword
+                        - name: value
+                          type: keyword
+                    - name: logTypes
+                      type: keyword
+                - name: description
+                  type: keyword
+                  description: "A human-readable unparsable description of the event."
+                - name: enrichmentLabels
+                  type: group
+                  fields:
+                    - name: allowScopedAccess
+                      type: boolean
+                    - name: ingestionKvLabels
+                      type: group
+                      fields:
+                        - name: key
+                          type: keyword
+                        - name: value
+                          type: keyword
+                    - name: logTypes
+                      type: keyword
+                - name: eventTimestamp
+                  type: date
+                  description: "The GMT timestamp when the event was generated."
+                - name: eventType
+                  type: keyword
+                  description: "The event type. If an event has multiple possible types, this specifies the most specific type."
+                - name: id
+                  type: keyword
+                  description: "ID of the UDM event. Can be used for raw and normalized event retrieval."
+                - name: ingestedTimestamp
+                  type: date
+                  description: "The GMT timestamp when the event was ingested (received) by Google Security Operations."
+                - name: ingestionLabels
+                  type: group
+                  fields:
+                    - name: key
+                      type: keyword
+                    - name: value
+                      type: keyword
+                - name: logType
+                  type: keyword
+                  description: "The string value of log type."
+                - name: productDeploymentId
+                  type: keyword
+                  description: "The deployment identifier assigned by the vendor for a product deployment."
+                - name: productEventType
+                  type: keyword
+                  description: 'A short, descriptive, human-readable, product-specific event name or type (for example: "Scanned X", "User account created", "process_start").'
+                - name: productLogId
+                  type: keyword
+                  description: "A vendor-specific event identifier to uniquely identify the event (for example: a GUID)."
+                - name: productName
+                  type: keyword
+                  description: "The name of the product."
+                - name: urlBackToProduct
+                  type: keyword
+                  description: "A URL that takes the user to the source product console for this event."
+                - name: vendorName
+                  type: keyword
+                  description: "The name of the product vendor."
+            - name: network
+              type: group
+              fields:
+                - name: applicationProtocol
+                  type: keyword
+                  description: "The application protocol."
+                - name: dns
+                  type: group
+                  fields:
+                    - name: answers
+                      type: group
+                      fields:
+                        - name: data
+                          type: keyword
+                          description: "The payload or response to the DNS question for all responses encoded in UTF-8 format."
+                        - name: name
+                          type: keyword
+                          description: "The name of the owner of the resource record."
+                        - name: type
+                          type: keyword
+                          description: "The code specifying the type of the resource record."
+                    - name: questions
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: "The domain name."
+                        - name: type
+                          type: keyword
+                          description: "The code specifying the type of the query."
+                - name: dnsDomain
+                  type: keyword
+                  description: "DNS domain name."
+                - name: email
+                  type: group
+                  fields:
+                    - name: bcc
+                      type: keyword
+                      description: "A list of 'bcc' addresses."
+                    - name: cc
+                      type: keyword
+                      description: "A list of 'cc' addresses."
+                    - name: from
+                      type: keyword
+                      description: "The 'from' address."
+                    - name: replyTo
+                      type: keyword
+                      description: "The 'reply to' address."
+                    - name: subject
+                      type: keyword
+                      description: "The subject line(s) of the email."
+                    - name: to
+                      type: keyword
+                      description: "A list of 'to' addresses."
+                - name: ftp
+                  type: group
+                  fields:
+                    - name: command
+                      type: keyword
+                      description: "The FTP command."
+                - name: http
+                  type: group
+                  fields:
+                    - name: method
+                      type: keyword
+                      description: 'The HTTP request method (e.g. "GET", "POST", "PATCH", "DELETE").'
+                    - name: referralUrl
+                      type: keyword
+                      description: "The URL for the HTTP referer."
+                    - name: responseCode
+                      type: long
+                      description: "The response status code, for example 200, 302, 404, or 500."
+                    - name: userAgent
+                      type: keyword
+                      description: "The User-Agent request header which includes the application type, operating system, software vendor or software version of the requesting software user agent."
+                - name: ipProtocol
+                  type: keyword
+                  description: "The IP protocol."
+                - name: sessionId
+                  type: keyword
+                  description: "The ID of the network session."
+            - name: principal
+              type: group
+              fields:
+                - name: asset
+                  type: group
+                  fields:
+                    - name: assetId
+                      type: keyword
+                      description: "The asset ID."
+                    - name: attribute
+                      type: group
+                      fields:
+                        - name: labels
+                          type: group
+                          fields:
+                            - name: key
+                              type: keyword
+                              description: "The key."
+                            - name: value
+                              type: keyword
+                              description: "The value."
+                    - name: hardware
+                      type: group
+                      fields:
+                        - name: serialNumber
+                          type: keyword
+                          description: "Hardware serial number."
+                    - name: hostname
+                      type: keyword
+                      description: "Asset hostname or domain name field."
+                    - name: ip
+                      type: ip
+                      description: "A list of IP addresses associated with a network connection."
+                    - name: mac
+                      type: keyword
+                      description: "List of MAC addresses associated with a device."
+                    - name: platformSoftware
+                      type: group
+                      fields:
+                        - name: platform
+                          type: keyword
+                          description: "The platform operating system."
+                        - name: platformPatchLevel
+                          type: keyword
+                          description: 'The platform software patch level ( e.g. "Build 17134.48", "SP1").'
+                        - name: platformVersion
+                          type: keyword
+                          description: 'The platform software version ( e.g. "Microsoft Windows 1803").'
+                    - name: productObjectId
+                      type: keyword
+                      description: "A vendor-specific identifier to uniquely identify the entity (a GUID or similar)."
+                    - name: software
+                      type: group
+                      fields:
+                        - name: version
+                          type: keyword
+                          description: "The version of the software."
+                    - name: type
+                      type: keyword
+                      description: "The type of the asset (e.g. workstation or laptop or server)."
+                - name: assetId
+                  type: keyword
+                  description: "The asset ID."
+                - name: cloud
+                  type: group
+                  fields:
+                    - name: environment
+                      type: keyword
+                      description: "The Cloud environment."
+                - name: file
+                  type: group
+                  fields:
+                    - name: fullPath
+                      type: keyword
+                      description: "The full path identifying the location of the file on the system."
+                    - name: md5
+                      type: keyword
+                      description: "The MD5 hash of the file, as a hex-encoded string."
+                    - name: sha1
+                      type: keyword
+                      description: "The SHA1 hash of the file, as a hex-encoded string."
+                    - name: sha256
+                      type: keyword
+                      description: "The SHA256 hash of the file, as a hex-encoded string."
+                - name: group
+                  type: group
+                  fields:
+                    - name: groupDisplayName
+                      type: keyword
+                      description: 'Group display name. e.g. "Finance".'
+                - name: hostname
+                  type: keyword
+                  description: "Client hostname or domain name field. Hostname also doubles as the domain for remote entities."
+                - name: ip
+                  type: ip
+                  description: "A list of IP addresses associated with a network connection."
+                - name: ipGeoArtifact
+                  type: group
+                  fields:
+                    - name: ip
+                      type: ip
+                      description: "IP address of the artifact."
+                    - name: location
+                      type: group
+                      fields:
+                        - name: countryOrRegion
+                          type: keyword
+                          description: "The country or region."
+                        - name: regionCoordinates
+                          type: group
+                          fields:
+                            - name: lat
+                              type: double
+                              description: The latitude in degrees. .
+                            - name: lon
+                              type: double
+                              description: The longitude in degrees. .
+                        - name: state
+                          type: keyword
+                          description: "The state."
+                    - name: network
+                      type: group
+                      fields:
+                        - name: asn
+                          type: keyword
+                          description: "Autonomous system number."
+                        - name: carrierName
+                          type: keyword
+                          description: "Carrier identification."
+                - name: labels
+                  type: group
+                  fields:
+                    - name: key
+                      type: keyword
+                    - name: value
+                      type: keyword
+                - name: location
+                  type: group
+                  fields:
+                    - name: countryOrRegion
+                      type: keyword
+                      description: "The country or region."
+                - name: mac
+                  type: keyword
+                  description: "List of MAC addresses associated with a device."
+                - name: platform
+                  type: keyword
+                  description: "Platform."
+                - name: port
+                  type: long
+                  description: "Source or destination network port number when a specific network connection is described within an event."
+                - name: process
+                  type: group
+                  fields:
+                    - name: commandLine
+                      type: keyword
+                      description: "The command line command that created the process."
+                    - name: file
+                      type: group
+                      fields:
+                        - name: fullPath
+                          type: keyword
+                          description: "The full path identifying the location of the file on the system."
+                        - name: md5
+                          type: keyword
+                          description: "The MD5 hash of the file, as a hex-encoded string."
+                        - name: names
+                          type: keyword
+                          description: "Names fields."
+                        - name: sha1
+                          type: keyword
+                          description: "The SHA1 hash of the file, as a hex-encoded string."
+                        - name: sha256
+                          type: keyword
+                          description: "The SHA256 hash of the file, as a hex-encoded string."
+                        - name: signatureInfo
+                          type: group
+                          fields:
+                            - name: sigcheck
+                              type: group
+                              fields:
+                                - name: signers
+                                  type: group
+                                  fields:
+                                    - name: name
+                                      type: keyword
+                                      description: "Common name of the signers/certificate. The order of the signers matters. Each element is a higher level authority, the last being the root authority."
+                                - name: verificationMessage
+                                  type: keyword
+                                  description: 'Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found.'
+                    - name: parentProcess
+                      type: group
+                      fields:
+                        - name: commandLine
+                          type: keyword
+                          description: "The command line command that created the process."
+                        - name: file
+                          type: group
+                          fields:
+                            - name: fullPath
+                              type: keyword
+                              description: "The full path identifying the location of the file on the system."
+                            - name: md5
+                              type: keyword
+                              description: "The MD5 hash of the file, as a hex-encoded string."
+                            - name: names
+                              type: keyword
+                              description: "Names fields."
+                            - name: sha1
+                              type: keyword
+                              description: "The SHA1 hash of the file, as a hex-encoded string."
+                            - name: sha256
+                              type: keyword
+                              description: "The SHA256 hash of the file, as a hex-encoded string."
+                            - name: signatureInfo
+                              type: group
+                              fields:
+                                - name: sigcheck
+                                  type: group
+                                  fields:
+                                    - name: signers
+                                      type: group
+                                      fields:
+                                        - name: name
+                                          type: keyword
+                                          description: "Common name of the signers/certificate. The order of the signers matters. Each element is a higher level authority, the last being the root authority."
+                                    - name: verificationMessage
+                                      type: keyword
+                                      description: 'Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found.'
+                        - name: parentProcess
+                          type: group
+                          fields:
+                            - name: commandLine
+                              type: keyword
+                              description: "The command line command that created the process."
+                            - name: file
+                              type: group
+                              fields:
+                                - name: fullPath
+                                  type: keyword
+                                  description: "The full path identifying the location of the file on the system."
+                                - name: md5
+                                  type: keyword
+                                  description: "The MD5 hash of the file, as a hex-encoded string."
+                                - name: names
+                                  type: keyword
+                                  description: "Names fields."
+                                - name: sha1
+                                  type: keyword
+                                  description: "The SHA1 hash of the file, as a hex-encoded string."
+                                - name: sha256
+                                  type: keyword
+                                  description: "The SHA256 hash of the file, as a hex-encoded string."
+                                - name: signatureInfo
+                                  type: group
+                                  fields:
+                                    - name: sigcheck
+                                      type: group
+                                      fields:
+                                        - name: verificationMessage
+                                          type: keyword
+                                          description: 'Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found.'
+                            - name: parentProcess
+                              type: group
+                              fields:
+                                - name: commandLine
+                                  type: keyword
+                                  description: "The command line command that created the process."
+                                - name: file
+                                  type: group
+                                  fields:
+                                    - name: fullPath
+                                      type: keyword
+                                      description: "The full path identifying the location of the file on the system."
+                                    - name: md5
+                                      type: keyword
+                                      description: "The MD5 hash of the file, as a hex-encoded string."
+                                    - name: names
+                                      type: keyword
+                                      description: "Names fields."
+                                    - name: sha1
+                                      type: keyword
+                                      description: "The SHA1 hash of the file, as a hex-encoded string."
+                                    - name: sha256
+                                      type: keyword
+                                      description: "The SHA256 hash of the file, as a hex-encoded string."
+                                    - name: signatureInfo
+                                      type: group
+                                      fields:
+                                        - name: sigcheck
+                                          type: group
+                                          fields:
+                                            - name: verificationMessage
+                                              type: keyword
+                                              description: 'Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found.'
+                                - name: parentProcess
+                                  type: group
+                                  fields:
+                                    - name: commandLine
+                                      type: keyword
+                                      description: "The command line command that created the process."
+                                    - name: file
+                                      type: group
+                                      fields:
+                                        - name: fullPath
+                                          type: keyword
+                                          description: "The full path identifying the location of the file on the system."
+                                        - name: md5
+                                          type: keyword
+                                          description: "The MD5 hash of the file, as a hex-encoded string."
+                                        - name: names
+                                          type: keyword
+                                          description: "Names fields."
+                                        - name: sha1
+                                          type: keyword
+                                          description: "The SHA1 hash of the file, as a hex-encoded string."
+                                        - name: sha256
+                                          type: keyword
+                                          description: "The SHA256 hash of the file, as a hex-encoded string."
+                                        - name: signatureInfo
+                                          type: group
+                                          fields:
+                                            - name: sigcheck
+                                              type: group
+                                              fields:
+                                                - name: verificationMessage
+                                                  type: keyword
+                                                  description: 'Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found.'
+                                    - name: pid
+                                      type: keyword
+                                      description: "The process ID."
+                                    - name: productSpecificProcessId
+                                      type: keyword
+                                      description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                                - name: pid
+                                  type: keyword
+                                  description: "The process ID."
+                                - name: productSpecificProcessId
+                                  type: keyword
+                                  description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                            - name: pid
+                              type: keyword
+                              description: "The process ID."
+                            - name: productSpecificProcessId
+                              type: keyword
+                              description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                        - name: pid
+                          type: long
+                          description: "The process ID."
+                        - name: productSpecificProcessId
+                          type: keyword
+                          description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                    - name: pid
+                      type: long
+                      description: "The process ID."
+                    - name: productSpecificProcessId
+                      type: keyword
+                      description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                - name: processAncestors
+                  type: group
+                  fields:
+                    - name: file
+                      type: group
+                      fields:
+                        - name: fullPath
+                          type: keyword
+                          description: "The full path identifying the location of the file on the system."
+                    - name: parentProcess
+                      type: group
+                      fields:
+                        - name: commandLine
+                          type: keyword
+                          description: The command line command that created the process.
+                        - name: file
+                          type: group
+                          fields:
+                            - name: fullPath
+                              type: keyword
+                              description: The full path identifying the location of the file on the system.
+                            - name: md5
+                              type: keyword
+                              description: The MD5 hash of the file, as a hex-encoded string.
+                            - name: names
+                              type: keyword
+                              description: Names fields.
+                            - name: sha1
+                              type: keyword
+                              description: The SHA1 hash of the file, as a hex-encoded string.
+                            - name: sha256
+                              type: keyword
+                              description: The SHA256 hash of the file, as a hex-encoded string.
+                            - name: signatureInfo
+                              type: group
+                              fields:
+                                - name: sigcheck
+                                  type: group
+                                  fields:
+                                    - name: verificationMessage
+                                      type: keyword
+                                      description: Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found.
+                        - name: pid
+                          type: keyword
+                          description: "The process ID."
+                        - name: productSpecificProcessId
+                          type: keyword
+                          description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                    - name: pid
+                      type: keyword
+                      description: "The process ID."
+                - name: registry
+                  type: group
+                  fields:
+                    - name: registryKey
+                      type: keyword
+                      description: "Registry key associated with an application or system component (e.g., HKEY_, HKCU\\Environment...)."
+                    - name: registryValueName
+                      type: keyword
+                      description: "Name of the registry value associated with an application or system component (e.g. TEMP)."
+                - name: resource
+                  type: group
+                  fields:
+                    - name: attribute
+                      type: group
+                      fields:
+                        - name: cloud
+                          type: group
+                          fields:
+                            - name: project
+                              type: group
+                              fields:
+                                - name: name
+                                  type: keyword
+                                  description: "The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe."
+                                - name: resourceSubtype
+                                  type: keyword
+                                  description: 'Resource sub-type (e.g. "BigQuery", "Bigtable").'
+                    - name: name
+                      type: keyword
+                      description: "The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe."
+                - name: url
+                  type: keyword
+                  description: "The URL."
+                - name: user
+                  type: group
+                  fields:
+                    - name: attribute
+                      type: group
+                      fields:
+                        - name: labels
+                          type: group
+                          fields:
+                            - name: key
+                              type: keyword
+                            - name: value
+                              type: keyword
+                        - name: permissions
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: "Name of the permission (e.g. chronicle.analyst.updateRule)."
+                            - name: type
+                              type: keyword
+                              description: "Type of the permission."
+                        - name: roles
+                          type: group
+                          fields:
+                            - name: description
+                              type: keyword
+                              description: "System role description for user."
+                            - name: name
+                              type: keyword
+                              description: "System role name for user."
+                    - name: emailAddresses
+                      type: keyword
+                      description: "Email addresses of the user."
+                    - name: groupIdentifiers
+                      type: keyword
+                      description: "Product object identifiers of the group(s) the user belongs to A vendor-specific identifier to uniquely identify the group(s) the user belongs to (a GUID, LDAP OID, or similar)."
+                    - name: productObjectId
+                      type: keyword
+                      description: "A vendor-specific identifier to uniquely identify the entity (e.g. a GUID, LDAP, OID, or similar)."
+                    - name: userDisplayName
+                      type: keyword
+                      description: 'The display name of the user (e.g. "John Locke").'
+                    - name: userid
+                      type: keyword
+                      description: "The ID of the user."
+                    - name: windowsSid
+                      type: keyword
+                      description: "The Microsoft Windows SID of the user."
+            - name: securityResult
+              type: group
+              fields:
+                - name: about
+                  type: group
+                  fields:
+                    - name: resource
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                    - name: user
+                      type: group
+                      fields:
+                        - name: attribute
+                          type: group
+                          fields:
+                            - name: roles
+                              type: group
+                              fields:
+                                - name: name
+                                  type: keyword
+                                  description: "System role name for user."
+                        - name: emailAddresses
+                          type: keyword
+                          description: "Email addresses of the user."
+                - name: action
+                  type: keyword
+                  description: "Actions taken for this event."
+                - name: alertState
+                  type: keyword
+                  description: "The alerting types of this security result."
+                - name: category
+                  type: keyword
+                  description: "The security category."
+                - name: categoryDetails
+                  type: keyword
+                  description: 'For vendor-specific categories. For web categorization, put type in here such as "gambling" or "porn".'
+                - name: description
+                  type: keyword
+                  description: A human readable description (e.g. "user password was wrong").'
+                - name: detectionFields
+                  type: group
+                  fields:
+                    - name: key
+                      type: keyword
+                    - name: value
+                      type: keyword
+                - name: firstDiscoveredTime
+                  type: date
+                  description: "First time the IoC threat was discovered in the provider."
+                - name: priority
+                  type: keyword
+                  description: "The priority of the result."
+                - name: priorityDetails
+                  type: keyword
+                  description: "Vendor-specific information about the security result priority."
+                - name: ruleId
+                  type: keyword
+                  description: 'A vendor-specific ID and name for a rule, varying by observerer type (e.g. "08123", "5d2b44d0-5ef6-40f5-a704-47d61d3babbe").'
+                - name: ruleLabels
+                  type: group
+                  fields:
+                    - name: key
+                      type: keyword
+                    - name: value
+                      type: keyword
+                - name: ruleName
+                  type: keyword
+                  description: 'Name of the security rule (e.g. "BlockInboundToOracle").'
+                - name: ruleType
+                  type: keyword
+                  description: "The type of security rule."
+                - name: severity
+                  type: keyword
+                  description: "The severity of the result."
+                - name: severityDetails
+                  type: keyword
+                  description: "Vendor-specific severity."
+                - name: summary
+                  type: keyword
+                  description: 'A human readable summary (e.g. "failed login occurred").'
+                - name: threatId
+                  type: keyword
+                  description: "Vendor-specific ID for a threat."
+                - name: threatIdNamespace
+                  type: keyword
+                  description: "The attribute threat_id_namespace qualifies threat_id with an ID namespace to get an unique ID. The attribute threat_id by itself is not unique across Google SecOps as it is a vendor specific ID."
+                - name: threatName
+                  type: keyword
+                  description: 'A vendor-assigned classification common across multiple customers (e.g. "W32/File-A", "Slammer").'
+                - name: urlBackToProduct
+                  type: keyword
+                  description: "URL that takes the user to the source product console for this event."
+            - name: src
+              type: group
+              fields:
+                - name: asset
+                  type: group
+                  fields:
+                    - name: assetId
+                      type: keyword
+                      description: "The asset ID."
+                    - name: hostname
+                      type: keyword
+                      description: "Client hostname or domain name field. Hostname also doubles as the domain for remote entities."
+                    - name: ip
+                      type: ip
+                      description: "A list of IP addresses associated with a network connection."
+                    - name: mac
+                      type: keyword
+                      description: "List of MAC addresses associated with a device."
+                - name: assetId
+                  type: keyword
+                  description: "The asset ID."
+                - name: file
+                  type: group
+                  fields:
+                    - name: md5
+                      type: keyword
+                      description: "The MD5 hash of the file, as a hex-encoded string."
+                    - name: sha1
+                      type: keyword
+                      description: "The SHA1 hash of the file, as a hex-encoded string."
+                    - name: sha256
+                      type: keyword
+                      description: "The SHA256 hash of the file, as a hex-encoded string."
+                - name: hostname
+                  type: keyword
+                  description: "Client hostname or domain name field. Hostname also doubles as the domain for remote entities."
+                - name: ip
+                  type: ip
+                  description: "A list of IP addresses associated with a network connection."
+                - name: mac
+                  type: keyword
+                  description: "List of MAC addresses associated with a device."
+                - name: process
+                  type: group
+                  fields:
+                    - name: productSpecificProcessId
+                      type: keyword
+                      description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                - name: user
+                  type: group
+                  fields:
+                    - name: emailAddresses
+                      type: keyword
+                      description: "Email addresses of the user."
+                    - name: productObjectId
+                      type: keyword
+                      description: "A vendor-specific identifier to uniquely identify the entity (e.g. a GUID, LDAP, OID, or similar)."
+                    - name: userid
+                      type: keyword
+                      description: "The ID of the user."
+                    - name: windowsSid
+                      type: keyword
+                      description: "The Microsoft Windows SID of the user."
+            - name: target
+              type: group
+              fields:
+                - name: application
+                  type: keyword
+                  description: 'The name of an application or service. Some SSO solutions only capture the name of a target application such as "Atlassian" or "Google".'
+                - name: asset
+                  type: group
+                  fields:
+                    - name: assetId
+                      type: keyword
+                      description: "The asset ID. Value must contain the ':' character. For example, cs:abcdd23434."
+                    - name: hostname
+                      type: keyword
+                      description: "Asset hostname or domain name field."
+                    - name: ip
+                      type: ip
+                      description: "A list of IP addresses associated with an asset."
+                    - name: mac
+                      type: keyword
+                      description: "List of MAC addresses associated with an asset."
+                - name: assetId
+                  type: keyword
+                  description: "The asset ID."
+                - name: cloud
+                  type: group
+                  fields:
+                    - name: environment
+                      type: keyword
+                      description: "The Cloud environment."
+                    - name: project
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: "The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe."
+                - name: file
+                  type: group
+                  fields:
+                    - name: fullPath
+                      type: keyword
+                      description: "The full path identifying the location of the file on the system."
+                    - name: lastModificationTime
+                      type: date
+                      description: "Timestamp when the file was last updated."
+                    - name: md5
+                      type: keyword
+                      description: "The MD5 hash of the file, as a hex-encoded string."
+                    - name: names
+                      type: keyword
+                      description: "Names fields."
+                    - name: sha1
+                      type: keyword
+                      description: "The SHA1 hash of the file, as a hex-encoded string."
+                    - name: sha256
+                      type: keyword
+                      description: "The SHA256 hash of the file, as a hex-encoded string."
+                    - name: size
+                      type: keyword
+                      description: "The size of the file in bytes."
+                - name: group
+                  type: group
+                  fields:
+                    - name: groupDisplayName
+                      type: keyword
+                      description: 'Group display name. e.g. "Finance".'
+                - name: hostname
+                  type: keyword
+                  description: "Client hostname or domain name field. Hostname also doubles as the domain for remote entities."
+                - name: ip
+                  type: ip
+                  description: "A list of IP addresses associated with a network connection."
+                - name: labels
+                  type: group
+                  fields:
+                    - name: key
+                      type: keyword
+                    - name: value
+                      type: keyword
+                - name: mac
+                  type: keyword
+                  description: "List of MAC addresses associated with a device."
+                - name: port
+                  type: long
+                  description: "Source or destination network port number when a specific network connection is described within an event."
+                - name: process
+                  type: group
+                  fields:
+                    - name: commandLine
+                      type: keyword
+                      description: "The command line command that created the process."
+                    - name: file
+                      type: group
+                      fields:
+                        - name: firstSeenTime
+                          type: date
+                          description: "Timestamp the file was first seen in the customer's environment."
+                        - name: fullPath
+                          type: keyword
+                          description: "The full path identifying the location of the file on the system."
+                        - name: lastModificationTime
+                          type: date
+                          description: "Timestamp when the file was last updated."
+                    - name: parentProcess
+                      type: group
+                      fields:
+                        - name: commandLine
+                          type: keyword
+                          description: "The command line command that created the process."
+                        - name: file
+                          type: group
+                          fields:
+                            - name: fullPath
+                              type: keyword
+                              description: "The full path identifying the location of the file on the system."
+                    - name: pid
+                      type: keyword
+                      description: "The process ID."
+                    - name: productSpecificProcessId
+                      type: keyword
+                      description: "A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead."
+                - name: registry
+                  type: group
+                  fields:
+                    - name: registryKey
+                      type: keyword
+                      description: "Registry key associated with an application or system component (e.g., HKEY_, HKCU\\Environment...)."
+                    - name: registryValueData
+                      type: keyword
+                      description: "Data associated with a registry value (e.g. %USERPROFILE%\\Local Settings\\Temp)."
+                    - name: registryValueName
+                      type: keyword
+                      description: "Name of the registry value associated with an application or system component (e.g. TEMP)."
+                - name: resource
+                  type: group
+                  fields:
+                    - name: attribute
+                      type: group
+                      fields:
+                        - name: labels
+                          type: group
+                          fields:
+                            - name: key
+                              type: keyword
+                            - name: value
+                              type: keyword
+                    - name: name
+                      type: keyword
+                      description: "The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe."
+                    - name: productObjectId
+                      type: keyword
+                      description: "A vendor-specific identifier to uniquely identify the entity (a GUID, OID, or similar)."
+                    - name: resourceType
+                      type: keyword
+                      description: "Resource type."
+                - name: resourceAncestors
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: "The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe."
+                    - name: productObjectId
+                      type: keyword
+                      description: "A vendor-specific identifier to uniquely identify the entity (a GUID, OID, or similar)."
+                - name: user
+                  type: group
+                  fields:
+                    - name: emailAddresses
+                      type: keyword
+                      description: "Email addresses of the user."
+                    - name: groupIdentifiers
+                      type: keyword
+                      description: "Product object identifiers of the group(s) the user belongs to A vendor-specific identifier to uniquely identify the group(s) the user belongs to (a GUID, LDAP OID, or similar)."
+                    - name: productObjectId
+                      type: keyword
+                      description: A vendor-specific identifier to uniquely identify the entity (e.g. a GUID, LDAP, OID, or similar).
+                    - name: userDisplayName
+                      type: keyword
+                      description: 'The display name of the user (e.g. "John Locke").'
+                    - name: userid
+                      type: keyword
+                      description: "The ID of the user."
+                    - name: windowsSid
+                      type: keyword
+                      description: "The Microsoft Windows SID of the user."
+        - name: friendly_name
+          type: keyword
+          description: Alert Rule Name.
+        - name: id
+          type: keyword
+          description: 'Identifier for the detection. Same as "detection_id".'
+        - name: label
+          type: keyword
+          description: "The variable a given set of UDM events belongs to."
+        - name: timeWindow
+          type: group
+          fields:
+            - name: endTime
+              type: date
+              description: "String representing the end of the time window in which the detection was found, in RFC 3339 format."
+            - name: startTime
+              type: date
+              description: "String representing the start of the time window in which the detection was found, in RFC 3339 format."
+        - name: type
+          type: keyword
+          description: "Type of detection (type is always `RULE_DETECTION`)."

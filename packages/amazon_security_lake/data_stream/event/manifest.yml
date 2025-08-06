@@ -86,12 +86,26 @@ streams:
         description: Time interval for polling listing of the S3 bucket. It should be greater than 5m. Supported units are h/m/s.
       - name: number_of_workers
         type: integer
-        title: "[S3] Number of Workers"
+        title: "[S3/SQS] Number of Workers"
         multi: false
         required: false
         show_user: true
         default: 5
         description: Number of workers that will process the S3 objects listed. It is a required parameter for collecting logs via the AWS S3 Bucket.
+      - name: start_timestamp
+        type: text
+        title: "[S3] Start Timestamp"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, only read S3 objects with last modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format. For example, "2020-10-10T10:30:00Z" (UTC) or "2020-10-10T10:30:00Z+02:30" (with zone offset).
+      - name: ignore_older
+        type: text
+        title: "[S3] Ignore Older Timespan"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
       - name: queue_url
         type: text
         title: "[SQS] Queue URL"
@@ -121,7 +135,7 @@ streams:
         required: false
         show_user: true
         default: 5
-        description: The maximum number of SQS messages that can be inflight at any time.
+        description: Deprecated in agent version 8.16.0, this parameter is ignored if present, use number_of_workers instead. The maximum number of SQS messages that can be inflight at any time.
       - name: file_selectors
         type: yaml
         title: "[SQS] File Selectors"
@@ -241,7 +255,7 @@ streams:
       - name: ssl
         type: yaml
         title: SSL Configuration
-        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
         multi: false
         required: false
         show_user: false

@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation of a suspicious ImagePath value. This could be an indication of an adversary attempting to stealthily persist or escalate privileges through abnormal service creation.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious ImagePath Service Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious ImagePath Service Creation\n\nWindows services are crucial for running background processes. Adversaries exploit this by creating or modifying services with malicious ImagePath values to gain persistence or escalate privileges. The detection rule monitors registry changes to ImagePath entries, flagging unusual patterns like command shells or named pipes, which are often used in stealthy attacks. This helps identify and mitigate potential threats early.\n\n### Possible investigation steps\n\n- Review the registry event logs to identify the specific ImagePath value that triggered the alert, focusing on entries with command shells or named pipes, such as those containing \"%COMSPEC%*\" or \"*\\\\.\\\\pipe\\\\*\".\n- Investigate the associated service name and description in the registry path \"HKLM\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\" to determine if it is a legitimate service or potentially malicious.\n- Check the creation or modification timestamp of the suspicious ImagePath entry to correlate with other system events or user activities around the same time.\n- Analyze the parent process and user account responsible for the registry change to assess if it aligns with expected behavior or if it indicates unauthorized access.\n- Search for related network activity or connections, especially those involving named pipes, to identify any lateral movement or data exfiltration attempts.\n- Cross-reference the alert with threat intelligence sources to determine if the ImagePath value or associated service is linked to known malware or adversary techniques.\n\n### False positive analysis\n\n- Legitimate software updates or installations may modify ImagePath values, triggering alerts. Users can create exceptions for known software update processes to reduce noise.\n- System administrators might intentionally change service configurations for maintenance or optimization. Document and exclude these planned changes to prevent false positives.\n- Some enterprise applications use named pipes for inter-process communication, which could be flagged. Identify and whitelist these applications to avoid unnecessary alerts.\n- Security tools or scripts that automate service management might alter ImagePath values. Ensure these tools are recognized and excluded from monitoring to minimize false alerts.\n- Regularly review and update the list of exceptions to ensure they align with current organizational practices and software environments.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further malicious activity and lateral movement.\n- Terminate any suspicious processes associated with the identified ImagePath values, such as those involving command shells or named pipes.\n- Remove or disable the malicious service by reverting the ImagePath registry entry to its legitimate state or deleting the service if it is not required.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any additional threats or malware.\n- Review and restore any modified system files or configurations to their original state to ensure system integrity.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for similar registry changes and suspicious service creations to detect and respond to future threats promptly.",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n  registry.value : \"ImagePath\" and\n  registry.path : (\n    \"HKLM\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\",\n    \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\"\n    ) and\n  /* add suspicious registry ImagePath values here */\n  registry.data.strings : (\"%COMSPEC%*\", \"*\\\\.\\\\pipe\\\\*\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.22.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "36a8e048-d888-4f61-a8b9-0f9e2e40f317",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.003",
+                                "name": "Windows Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 311
+    },
+    "id": "36a8e048-d888-4f61-a8b9-0f9e2e40f317_311",
+    "type": "security-rule"
+}

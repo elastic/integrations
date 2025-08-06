@@ -1,5 +1,5 @@
 config_version: 2
-interval: "{{interval}}h"
+interval: "24h"
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
@@ -13,96 +13,107 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
-# Should be https://api.elastic-cloud.com/
-resource.url: {{url}}
+resource.url: "{{url}}/api/v2/billing/organizations/{{organization_id}}/costs/instances"
 state:
   api_key: {{api_key}}
-  organization_id: {{organization_id}}
-  lookbehind: "{{lookbehind}}h"
+  organization_id: "{{organization_id}}"
+  lookbehind: {{lookbehind}}
 redact:
   fields:
     - api_key
 program: |
-  (
-    state.with({
-      "url": state.url.trim_right("/") + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances",
-      "from": (
-        has(state.?cursor.last_to)
-        ?
-          state.cursor.last_to
-        :
-          (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind)).format(time_layout.RFC3339)
-      ),
-      "to": (
-        has(state.?cursor.last_to)
-        ?
-          (state.cursor.last_to.parse_time(time_layout.RFC3339) + duration("24h")).format(time_layout.RFC3339)
-        :
-          (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind) + duration("24h")).format(time_layout.RFC3339)
-      )
-    }).as(state,
-      // Check if we would try to fetch data in the future, in which case we back off
-      (state.to.parse_time(time_layout.RFC3339) > now())
-      ?
-        {
-          "events": [],
-          "cursor": {
-            // We don't change the last_to, we're just waiting
-            "last_to": state.to
-          },
-          "want_more": false,
-          "api_key": state.api_key,
-          "organization_id": state.organization_id,
-        }
+  state.with({
+    "from": (has(state.?cursor.last_to) ?
+        timestamp(state.cursor.last_to)
       :
-      get_request(state.url + "?from=" + state.from + "&to=" + state.to).with({
-        "Header": {
-          "Authorization": ["ApiKey " + state.api_key]
-        }
-      }).do_request().as(resp, resp.StatusCode == 200
-      ?
-        bytes(resp.Body).decode_json().as(body,
-          {
-            "events": body.instances.map(instance, instance.product_line_items.map(line_item,
-              {
-                "ess": {
-                  "billing": line_item.with({
-                    "deployment_name": instance.name,  // Include deployment name
-                    "deployment_id": instance.id,      // Include deployment ID
-                    "organization_id": state.organization_id,  // Include organization ID
-                    "from": state.from,
-                    "to": state.to,
-                  })
-                }
+        (now() - duration(string(int(state.lookbehind)*24) + "h"))
+    ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
+    "to": (has(state.?cursor.last_to) ?
+        (timestamp(state.cursor.last_to) + duration("24h"))
+      :
+        (now() - duration(string(int(state.lookbehind)*24) + "h") + duration("24h"))
+    ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
+  }.as(req, (req.to > now()) ?
+    // We would fetch data in the future, back off
+    {
+      "events": [],
+      "cursor": {
+        // We don't change the last_to, we're just waiting
+        "last_to": req.to
+      },
+      "want_more": false,
+    }
+  :
+    get_request(state.url + "?" +
+      {
+        "from": [req.from.format(time_layout.RFC3339)],
+        "to": [req.to.format(time_layout.RFC3339)],
+      }.format_query()
+    ).with({
+      "Header": {
+        "Authorization": ["ApiKey " + state.api_key]
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+    (
+      // Response is successful, but did we get any data?
+      bytes(resp.Body).decode_json().as(body, has(body.instances) && size(body.instances) > 0 ?
+        {
+          "events": body.instances.map(instance, instance.product_line_items.map(line_item,
+            {
+              "ess": {
+                "billing": line_item.with({
+                  "deployment_name": instance.name,  // Include deployment name
+                  "deployment_id": instance.id,      // Include deployment ID
+                  "organization_id": state.organization_id,  // Include organization ID
+                  "from": req.from.format(time_layout.RFC3339),
+                  "to": req.to.format(time_layout.RFC3339),
+                })
               }
-            )).flatten(),  // Pass line_items as events, with added info
-            "cursor": {
-              "last_to": state.to
-            },
-            // Are we more than 1 day behind?
-            "want_more": state.to.parse_time(time_layout.RFC3339) < now() - duration("24h"),
-            "api_key": state.api_key,
-            "organization_id": state.organization_id
-          }
-        )
-      :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET " + "?from=" + state.from + "&to=" + state.to + " failed: " + (
-                size(resp.Body) != 0 ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-              ),
-            },
+            }
+          )).flatten(), // Pass line_items as events, with added info
+          "cursor": {
+            "last_to": req.to
           },
-          "want_more": false,
+          // Are we more than 1 day behind?
+          "want_more": req.to < now() - duration("24h"),
+        }
+      :
+        // We don't have any data, but we still need to return an event
+        // Otherwise the "want_more" logic will not work
+        {
+          "events": [{
+            "fake": true,  // This will either way be dropped by the ingest pipeline
+          }],
+          "cursor": {
+            "last_to": req.to
+          },
+          // Are we more than 1 day behind?
+          "want_more": req.to < now() - duration("24h"),
         }
       )
     )
+    :
+      // Response was not successful, return an error event
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + resp.Request.URL + ": " +
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "cursor": {
+          "last_to": req.to
+        },
+        "want_more": req.to < now() - duration("24h"),
+      }
+    ))
   )
 {{#if tags.length}}
 tags:

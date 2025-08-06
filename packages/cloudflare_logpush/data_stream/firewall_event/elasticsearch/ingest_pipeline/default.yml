@@ -58,7 +58,7 @@ processors:
   - set:
       field: cloudflare_logpush.firewall_event.timestamp
       copy_from: '@timestamp'
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.Action
       target_field: cloudflare_logpush.firewall_event.action
@@ -66,7 +66,7 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.firewall_event.action
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       field: event.action
       ignore_missing: true
@@ -74,10 +74,27 @@ processors:
       field: json.ClientRequestMethod
       target_field: cloudflare_logpush.firewall_event.client.request.method
       ignore_missing: true
+  - rename:
+      field: json.ContentScanObjResults
+      target_field: cloudflare_logpush.firewall_event.content_scan.results
+      ignore_missing: true
+  - convert:
+      field: json.ContentScanObjSizes
+      target_field: cloudflare_logpush.firewall_event.content_scan.sizes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ContentScanObjTypes
+      target_field: cloudflare_logpush.firewall_event.content_scan.types
+      ignore_missing: true
   - set:
       field: http.request.method
       copy_from: cloudflare_logpush.firewall_event.client.request.method
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.EdgeResponseStatus
       target_field: cloudflare_logpush.firewall_event.edge.response.status
@@ -91,7 +108,7 @@ processors:
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.firewall_event.edge.response.status
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.RuleID
       target_field: cloudflare_logpush.firewall_event.rule.id
@@ -99,7 +116,15 @@ processors:
   - set:
       field: rule.id
       copy_from: cloudflare_logpush.firewall_event.rule.id
-      ignore_failure: true
+      ignore_empty_value: true
+  - rename:
+      field: json.Description
+      target_field: cloudflare_logpush.firewall_event.rule.description
+      ignore_missing: true
+  - set:
+      field: rule.description
+      copy_from: cloudflare_logpush.firewall_event.rule.description
+      ignore_empty_value: true
   - convert:
       field: json.ClientASN
       target_field: cloudflare_logpush.firewall_event.client.asn.value
@@ -113,7 +138,7 @@ processors:
   - set:
       field: source.as.number
       copy_from: cloudflare_logpush.firewall_event.client.asn.value
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientCountry
       target_field: cloudflare_logpush.firewall_event.client.country
@@ -121,7 +146,7 @@ processors:
   - set:
       field: source.geo.country_iso_code
       copy_from: cloudflare_logpush.firewall_event.client.country
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientIP
       target_field: cloudflare_logpush.firewall_event.client.ip
@@ -135,7 +160,7 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.firewall_event.client.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientASNDescription
       target_field: cloudflare_logpush.firewall_event.client.asn.description
@@ -212,7 +237,7 @@ processors:
   - set:
       field: url.scheme
       copy_from: cloudflare_logpush.firewall_event.client.request.scheme
-      ignore_failure: true
+      ignore_empty_value: true
   - user_agent:
       field: json.ClientRequestUserAgent
       if: ctx.json?.ClientRequestUserAgent != ''
@@ -228,6 +253,10 @@ processors:
   - rename:
       field: json.Kind
       target_field: cloudflare_logpush.firewall_event.kind
+      ignore_missing: true
+  - rename:
+      field: json.LeakedCredentialCheckResult
+      target_field: cloudflare_logpush.firewall_event.leaked_credential_check
       ignore_missing: true
   - convert:
       field: json.MatchIndex
@@ -258,12 +287,17 @@ processors:
       target_field: cloudflare_logpush.firewall_event.origin.ray.id
       ignore_missing: true
   - rename:
+      field: json.Ref
+      target_field: cloudflare_logpush.firewall_event.ref
+      ignore_missing: true
+  - rename:
       field: json.RayID
       target_field: cloudflare_logpush.firewall_event.ray.id
       ignore_missing: true
   - set:
       field: event.id
       copy_from: cloudflare_logpush.firewall_event.ray.id
+      ignore_empty_value: true
   - rename:
       field: json.Source
       target_field: cloudflare_logpush.firewall_event.source
@@ -300,6 +334,7 @@ processors:
         - cloudflare_logpush.firewall_event.client.request.method
         - cloudflare_logpush.firewall_event.edge.response.status
         - cloudflare_logpush.firewall_event.rule.id
+        - cloudflare_logpush.firewall_event.rule.description
         - cloudflare_logpush.firewall_event.client.asn.value
         - cloudflare_logpush.firewall_event.client.country
         - cloudflare_logpush.firewall_event.client.ip

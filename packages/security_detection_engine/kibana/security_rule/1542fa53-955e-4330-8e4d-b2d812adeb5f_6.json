@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies process execution from a removable media and by an unusual process. Adversaries may move onto systems, possibly those on disconnected or air-gapped networks, by copying malware to removable media and taking advantage of Autorun features when the media is inserted into a system and executes.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Execution from a Removable Media with Network Connection",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Execution from a Removable Media with Network Connection\n\nRemovable media, like USB drives, are often used for data transfer but can be exploited by adversaries to introduce malware into isolated systems. Attackers may leverage autorun features to execute malicious code upon insertion. The detection rule identifies suspicious process executions from USB devices, especially those lacking valid code signatures, and correlates them with network connection attempts, signaling potential unauthorized access efforts.\n\n### Possible investigation steps\n\n- Review the process execution details, focusing on the process.entity_id to identify the specific process that was executed from the USB device.\n- Check the process.Ext.device.bus_type and process.Ext.device.product_id fields to confirm the involvement of a USB device and gather information about the specific device used.\n- Investigate the process.code_signature fields to determine if the process lacks a valid code signature, which could indicate malicious intent.\n- Correlate the process execution with network connection attempts by examining the network event logs, particularly looking for any unusual or unauthorized connection attempts.\n- Assess the context of the network connection attempt, including the destination IP address and port, to evaluate the potential risk and intent of the connection.\n- Gather additional context by reviewing recent activity on the host, such as other process executions or file modifications, to identify any further signs of compromise.\n- If necessary, isolate the affected system to prevent further unauthorized access or data exfiltration while continuing the investigation.\n\n### False positive analysis\n\n- Legitimate software installations from USB drives may trigger the rule. To manage this, create exceptions for known software installers by verifying their code signatures and adding them to an allowlist.\n- IT administrators often use USB devices for system updates or maintenance. Identify and exclude these activities by correlating them with known administrator accounts or devices.\n- Some organizations use USB devices for regular data transfers. Establish a baseline of normal USB activity and exclude these patterns from triggering alerts.\n- Devices with expired but previously trusted code signatures might be flagged. Regularly update the list of trusted certificates and exclude processes with known expired signatures that are still considered safe.\n- Network connection attempts by legitimate applications running from USB drives can be mistaken for threats. Monitor and document these applications, then configure exceptions based on their process names and network behavior.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Disable autorun features on all systems to prevent automatic execution of potentially malicious code from removable media.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malware.\n- Review and block any suspicious network connections originating from the affected system to prevent communication with potential command and control servers.\n- Collect and preserve relevant logs and forensic evidence from the affected system and removable media for further analysis and potential legal action.\n- Escalate the incident to the security operations center (SOC) or incident response team for a comprehensive investigation and to determine if other systems may be affected.\n- Implement enhanced monitoring and alerting for similar activities, focusing on process executions from removable media and unauthorized network connection attempts.",
+        "query": "sequence by process.entity_id with maxspan=5m\n [process where host.os.type == \"windows\" and event.action == \"start\" and\n\n  /* Direct Exec from USB */\n  (process.Ext.device.bus_type : \"usb\" or process.Ext.device.product_id : \"USB *\") and\n  (process.code_signature.trusted == false or process.code_signature.exists == false) and\n\n  not process.code_signature.status : (\"errorExpired\", \"errorCode_endpoint*\")]\n [network where host.os.type == \"windows\" and event.action == \"connection_attempted\"]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.bus_type",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.product_id",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "1542fa53-955e-4330-8e4d-b2d812adeb5f",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1091",
+                        "name": "Replication Through Removable Media",
+                        "reference": "https://attack.mitre.org/techniques/T1091/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 6
+    },
+    "id": "1542fa53-955e-4330-8e4d-b2d812adeb5f_6",
+    "type": "security-rule"
+}

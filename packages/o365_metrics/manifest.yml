@@ -1,13 +1,13 @@
 name: o365_metrics
 title: Microsoft Office 365 Metrics
-version: "0.5.0"
-description: Collect metrics from Microsoft Office 365 with Elastic Agent.(This integration is currently in development and not yet ready for general use)
+version: "0.22.1"
+description: Collect metrics from Microsoft Office 365 with Elastic Agent.
 type: integration
 format_version: "3.0.2"
 categories: [observability, security]
 conditions:
   kibana:
-    version: "^8.16.0"
+    version: "^8.16.0 || ^9.0.0"
 icons:
   - src: /img/logo-integrations-microsoft-365.svg
     title: Microsoft Office 365 Metrics
@@ -29,6 +29,23 @@ icons:
     title: Microsoft 365 Groups Activity Group Detail Dashboard
     size: 2660x1030
     type: image/png
+screenshots:
+  - src: /img/dashboard-active-users-services-user-counts.png
+    title: active users services user counts metrics
+    size: 1518x873
+    type: image/png
+  - src: /img/dashboard-subscriptions.png
+    title: subscriptions metrics
+    size: 1518x873
+    type: image/png
+  - src: /img/dashboard-app-registrations.png
+    title: app registrtions metrics
+    size: 1518x873
+    type: image/png
+  - src: /img/dashboard-entra-id-users.png
+    title: subscriptions metrics
+    size: 1518x873
+    type: image/png
 policy_templates:
   - name: o365
     title: Office 365 metrics
@@ -44,6 +61,12 @@ policy_templates:
             show_user: true
             required: false
             default: https://graph.microsoft.com/v1.0
+          - name: url_management
+            type: text
+            title: Base URL of Azure Management API
+            show_user: true
+            required: false
+            default: https://management.azure.com
           - name: azure_tenant_id
             type: text
             title: Directory (tenant) ID
@@ -82,6 +105,16 @@ policy_templates:
             required: true
             show_user: false
             secret: false
+          - name: token_scopes_management
+            type: text
+            title: Token Scopes Management
+            multi: true
+            default:
+              - "https://management.microsoft.com/.default"
+            description: Scopes for OAuth2 Management token.
+            required: true
+            show_user: false
+            secret: false
           - name: proxy_url
             type: text
             title: Proxy URL
@@ -104,6 +137,70 @@ policy_templates:
             multi: false
             required: false
             default: 60s
+          - name: resource_retry_max_attempts
+            type: text
+            title: Resource Retry Max Attempts
+            description: The maximum number of retries for the HTTP client. Default is "5".
+            show_user: false
+            multi: false
+            required: false
+          - name: resource_retry_wait_min
+            type: text
+            title: Resource Retry Wait Min
+            description: The minimum time to wait before a retry is attempted. Default is "1s".
+            show_user: false
+            multi: false
+            required: false
+          - name: resource_retry_wait_max
+            type: text
+            title: Resource Retry Wait Max
+            description: The maximum time to wait before a retry is attempted. Default is "60s".
+            show_user: false
+            multi: false
+            required: false
+          - name: resource_redirect_forward_headers
+            type: bool
+            title: Resource Redirect Forward Headers
+            description: When set to true resource headers are forwarded in case of a redirect. Default is "false".
+            show_user: false
+            multi: false
+            required: false
+          - name: resource_redirect_headers_ban_list
+            type: text
+            title: Resource Redirect Headers Ban List
+            description: When Redirect Forward Headers is set to true, all headers except the ones defined in this list will be forwarded. All headers are forwarded by default.
+            show_user: false
+            multi: true
+            required: false
+          - name: resource_redirect_max_redirects
+            type: text
+            title: Resource Redirect Max Redirects
+            description: The maximum number of redirects to follow for a resource. Default is "10".
+            show_user: false
+            multi: false
+            required: false
+          - name: resource_rate_limit_limit
+            type: text
+            title: Resource Rate Limit
+            description: The value of the response that specifies the total limit.
+            show_user: false
+            multi: false
+            required: false
+          - name: resource_rate_limit_burst
+            type: text
+            title: Resource Rate Limit Burst
+            description: The maximum burst size. Burst is the maximum number of resource requests that can be made above the overall rate limit.
+            show_user: false
+            multi: false
+            required: false
+          - name: max_executions
+            type: integer
+            title: Maximum executions
+            description: Maximum pages fetched per cycle (default 1000). Increase this limit to fetch more pages; otherwise, requests beyond 1000 may cause an error due to execution limits.
+            multi: false
+            required: false
+            show_user: false
+            default: 1000
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

@@ -1,0 +1,995 @@
+---
+description: Pipeline for processing access session logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - rename:
+      field: json.body
+      tag: rename_body
+      target_field: beyondtrust_pra.access_session.body
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_access_session_body
+      copy_from: beyondtrust_pra.access_session.body
+      ignore_empty_value: true
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Privileged Remote Access
+  - set:
+      field: observer.type
+      tag: set_observer_type
+      value: Proxy
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: BeyondTrust
+  - rename:
+      field: json.destination.display_name
+      tag: rename_destination_display_name
+      target_field: beyondtrust_pra.access_session.destination.display_name
+      ignore_missing: true
+  - rename:
+      field: json.destination.gsnumber
+      tag: rename_destination_gsnumber
+      target_field: beyondtrust_pra.access_session.destination.gsnumber
+      ignore_missing: true
+  - rename:
+      field: json.destination.hostname
+      tag: rename_destination_hostname
+      target_field: beyondtrust_pra.access_session.destination.hostname
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_access_session_destination_hostname
+      copy_from: beyondtrust_pra.access_session.destination.hostname
+      ignore_empty_value: true
+  - rename:
+      field: json.destination.id
+      tag: rename_destination_id
+      target_field: beyondtrust_pra.access_session.destination.id
+      ignore_missing: true
+  - set:
+      field: destination.user.id
+      tag: set_destination_user_id_from_access_session_destination_id
+      copy_from: beyondtrust_pra.access_session.destination.id
+      ignore_empty_value: true
+  - set:
+      field: beyondtrust_pra.access_session.destination.invited
+      tag: set_destination_invited_true
+      value: true
+      if: ctx.json?.destination?.invited == 1
+  - set:
+      field: beyondtrust_pra.access_session.destination.invited
+      tag: set_destination_invited_false
+      value: false
+      if: ctx.json?.destination?.invited == 0
+  - convert:
+      field: beyondtrust_pra.access_session.destination.invited
+      tag: convert_destination_invited_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.destination.os
+      tag: rename_destination_os
+      target_field: beyondtrust_pra.access_session.destination.os
+      ignore_missing: true
+  - convert:
+      field: json.destination.private_ip
+      tag: convert_destination_private_ip_to_ip
+      target_field: beyondtrust_pra.access_session.destination.private_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.destination?.private_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.nat.ip
+      tag: set_destination_nat_ip_from_access_session_destination_private_ip
+      copy_from: beyondtrust_pra.access_session.destination.private_ip
+      ignore_empty_value: true
+  - convert:
+      field: json.destination.public_ip
+      tag: convert_destination_public_ip_to_ip
+      target_field: beyondtrust_pra.access_session.destination.public_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.destination?.public_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_access_session_destination_public_ip
+      copy_from: beyondtrust_pra.access_session.destination.public_ip
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      tag: geoip_destination_as
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - convert:
+      field: json.destination.seconds_involved
+      tag: convert_destination_seconds_involved_to_long
+      target_field: beyondtrust_pra.access_session.destination.seconds_involved
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.destination.session_owner
+      tag: convert_destination_session_owner_to_string
+      target_field: beyondtrust_pra.access_session.destination.session_owner
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.destination.type
+      tag: rename_destination_type
+      target_field: beyondtrust_pra.access_session.destination.type
+      ignore_missing: true
+  - rename:
+      field: json.destination.username
+      tag: rename_destination_username
+      target_field: beyondtrust_pra.access_session.destination.username
+      ignore_missing: true
+  - set:
+      field: destination.user.name
+      tag: set_destination_user_name_from_access_session_destination_username
+      copy_from: beyondtrust_pra.access_session.destination.username
+      ignore_empty_value: true
+  - rename:
+      field: json.encoded_body
+      tag: rename_encoded_body
+      target_field: beyondtrust_pra.access_session.encoded_body
+      ignore_missing: true
+  - rename:
+      field: json.event_type
+      tag: rename_event_type
+      target_field: beyondtrust_pra.access_session.event_type
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_access_session_event_type
+      copy_from: beyondtrust_pra.access_session.event_type
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action instanceof List
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: map_event_category_and_event_type_from_event_action
+      lang: painless
+      description: Map event.category and event.type from event.action
+      if : ctx.event?.action != null
+      params:
+        'command-shell-session-started':
+          category:
+            - intrusion_detection
+          type:
+            - info
+        'conference-member-added':
+          category:
+            - iam
+          type:
+            - user
+        'conference-member-departed':
+          category:
+            -  iam
+          type:
+            -  user
+        'conference-member-state-changed':
+          category:
+            -  iam
+          type:
+            - user
+            - change
+        'conference-owner-changed':	
+          category:
+            -  iam
+          type:
+            - admin
+            - change
+        'credential-injection-attempt':
+            category:
+              - authentication
+              - intrusion_detection
+            type:
+              - info
+        'credential-injection-attempt-failed':
+            category:
+              - authentication
+              - intrusion_detection
+            type:
+              - info
+              - denied
+        'directory-created':
+          category:
+            - file
+          type:
+            - creation
+        'file-deleted':
+          category:
+            - file
+          type:
+            - deletion
+        'file-download':
+          category:
+            - file
+          type:
+            - access
+        'file-download-failed':
+          category:
+            - file
+          type:
+            - access
+        'file-moved':
+          category:
+            - file
+          type:
+            - change
+        'file-upload':
+          category:
+            - file
+          type:
+            - access
+        'file-upload-failed':
+          category:
+            - file
+          type:
+            - access
+        'registry-exported':
+          category:
+            - registry
+          type:
+            - access
+        'registry-imported':
+          category: 
+            - registry
+          type:
+            - access
+        'registry-key-added':
+          category:
+            - registry
+          type:
+            - creation
+        'registry-key-deleted':
+          category:
+            - registry
+          type:
+            - deletion
+        'registry-key-renamed':
+          category:
+            - registry
+          type:
+            - change
+        'registry-value-added':
+          category:
+            - registry
+          type:
+            - creation
+        'registry-value-deleted':
+          category:
+            - registry
+          type:
+            - deletion
+        'registry-value-modified':
+          category:
+            - registry
+          type:
+            - change
+        'registry-value-renamed':
+          category:
+            - registry
+          type:
+            - change
+        'service-access-allowed':
+          category:
+            - configuration
+            - iam
+          type: 
+            - access
+        'session-end':
+          type:
+            - end
+        'session-start':
+          type:
+            - start 
+        'system-information-retrieved':
+          category:
+            - intrusion_detection
+            - configuration
+          type:
+            - info
+            - access
+      source: >-
+        if (params.get(ctx.event.action) == null) {
+          ctx.event.category = ["session"]; // As each event belongs to a session
+          ctx.event.type = ["info"]; // Remaining are of type info
+          return;
+        }
+         // As each event belongs to a session
+        def event_category = new ArrayList(["session"]);
+        params.get(ctx.event.action).forEach((k, v) -> {
+            if (k.equals("category")) {
+              event_category.addAll(v);
+            }else{
+                ctx.event[k] = v;
+            }  
+        });
+        ctx.event.category = event_category
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.filename
+      tag: rename_filename
+      target_field: beyondtrust_pra.access_session.filename
+      ignore_missing: true
+  - set:
+      field: file.name
+      tag: set_file_name_from_access_session_filename
+      copy_from: beyondtrust_pra.access_session.filename
+      ignore_empty_value: true
+  - convert:
+      field: json.filesize
+      tag: convert_filesize_to_long
+      target_field: beyondtrust_pra.access_session.filesize
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_access_session_filesize
+      copy_from: beyondtrust_pra.access_session.filesize
+      ignore_empty_value: true
+  - foreach:
+      field: json.files.file
+      if: ctx.json?.files?.file instanceof List
+      tag: foreach_files_filesize_to_long
+      processor:
+        convert:
+          field: _ingest._value.filesize
+          tag: convert_files_file_filesize_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.filesize
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.files.file
+      tag: rename_files_file
+      target_field: beyondtrust_pra.access_session.files.file
+      ignore_missing: true
+  - rename:
+      field: json.performed_by.display_name
+      tag: rename_performed_by_display_name
+      target_field: beyondtrust_pra.access_session.performed_by.display_name
+      ignore_missing: true
+  - rename:
+      field: json.performed_by.gsnumber
+      tag: rename_performed_by_gsnumber
+      target_field: beyondtrust_pra.access_session.performed_by.gsnumber
+      ignore_missing: true
+  - rename:
+      field: json.performed_by.hostname
+      tag: rename_performed_by_hostname
+      target_field: beyondtrust_pra.access_session.performed_by.hostname
+      ignore_missing: true
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_access_session_performed_by_hostname
+      copy_from: beyondtrust_pra.access_session.performed_by.hostname
+      ignore_empty_value: true
+  - rename:
+      field: json.performed_by.id
+      tag: rename_performed_by_id
+      target_field: beyondtrust_pra.access_session.performed_by.id
+      ignore_missing: true
+  - set:
+      field: source.user.id
+      tag: set_source_user_id_from_access_session_performed_by_id
+      copy_from: beyondtrust_pra.access_session.performed_by.id
+      ignore_empty_value: true
+  - set:
+      field: beyondtrust_pra.access_session.performed_by.invited
+      tag: set_performed_by_invited_true
+      value: true
+      if: ctx.json?.performed_by?.invited == 1
+  - set:
+      field: beyondtrust_pra.access_session.performed_by.invited
+      tag: set_performed_by_invited_false
+      value: false
+      if: ctx.json?.performed_by?.invited == 0
+  - convert:
+      field: beyondtrust_pra.access_session.performed_by.invited
+      tag: convert_performed_by_invited_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.performed_by.os
+      tag: rename_performed_by_os
+      target_field: beyondtrust_pra.access_session.performed_by.os
+      ignore_missing: true
+  - convert:
+      field: json.performed_by.private_ip
+      tag: convert_performed_by_private_ip_to_ip
+      target_field: beyondtrust_pra.access_session.performed_by.private_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.performed_by?.private_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.nat.ip
+      tag: set_source_nat_ip_from_access_session_performed_by_private_ip
+      copy_from: beyondtrust_pra.access_session.performed_by.private_ip
+      ignore_empty_value: true
+  - convert:
+      field: json.performed_by.public_ip
+      tag: convert_performed_by_public_ip_to_ip
+      target_field: beyondtrust_pra.access_session.performed_by.public_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.performed_by?.public_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_access_session_performed_by_public_ip
+      copy_from: beyondtrust_pra.access_session.performed_by.public_ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_as
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: host.geo
+      tag: set_host_geo_from_source_geo
+      copy_from: source.geo
+      ignore_empty_value: true
+  - append:
+      field: host.ip
+      value: "{{{source.ip}}}"
+      tag: append_host_ip_from_source_ip
+      if: ctx?.source?.ip != null
+  - convert:
+      field: json.performed_by.seconds_involved
+      tag: convert_performed_by_seconds_involved_to_long
+      target_field: beyondtrust_pra.access_session.performed_by.seconds_involved
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.performed_by.session_owner
+      tag: convert_performed_by_session_owner_to_string
+      target_field: beyondtrust_pra.access_session.performed_by.session_owner
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.performed_by.type
+      tag: rename_performed_by_type
+      target_field: beyondtrust_pra.access_session.performed_by.type
+      ignore_missing: true
+  - rename:
+      field: json.performed_by.username
+      tag: rename_performed_by_username
+      target_field: beyondtrust_pra.access_session.performed_by.username
+      ignore_missing: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_access_session_performed_by_username
+      copy_from: beyondtrust_pra.access_session.performed_by.username
+      ignore_empty_value: true
+  - rename:
+      field: json.session.command_shell_recordings.command_shell_recording
+      tag: rename_session_command_shell_recordings_command_shell_recording
+      target_field: beyondtrust_pra.access_session.session.command_shell_recordings.command_shell_recording
+      ignore_missing: true
+  - foreach:
+      field: json.session.custom_attributes.custom_attribute
+      if: ctx.json?.session?.custom_attributes?.custom_attribute instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+            field: _ingest._value.#text
+            tag: rename_session_custom_attributes_custom_attribute_#text
+            target_field: _ingest._value.text
+            ignore_missing: true
+  - rename:
+      field: json.session.custom_attributes
+      tag: rename_session_custom_attributes
+      target_field: beyondtrust_pra.access_session.session.custom_attributes
+      ignore_missing: true
+  - rename:
+      field: json.session.duration
+      tag: rename_session_duration
+      target_field: beyondtrust_pra.access_session.session.duration
+      ignore_missing: true
+  - rename:
+      field: json.session.end_time.#text
+      tag: rename_session_end_time_#text
+      target_field: beyondtrust_pra.access_session.session.end_time.text
+      ignore_missing: true
+  - date:
+      field: beyondtrust_pra.access_session.session.end_time.text
+      tag: date_session_end_time_#text
+      formats:
+        - ISO8601
+      if: ctx.beyondtrust_pra?.access_session?.session?.end_time?.text != null && ctx.beyondtrust_pra.access_session.session.end_time.text != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.session.end_time.timestamp
+      tag: date_session_end_time_timestamp
+      target_field: beyondtrust_pra.access_session.session.end_time.timestamp
+      formats:
+        - UNIX
+      if: ctx.json?.session?.end_time?.timestamp != null && ctx.json.session.end_time.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.session.file_move_count
+      tag: convert_session_file_move_count_to_long
+      target_field: beyondtrust_pra.access_session.session.file_move_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.session.file_transfer_count
+      tag: convert_session_file_transfer_count_to_long
+      target_field: beyondtrust_pra.access_session.session.file_transfer_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: 'json.session.jump_group.#text'
+      tag: rename_session_jump_group_#text
+      target_field: beyondtrust_pra.access_session.session.jump_group.text
+      ignore_missing: true
+  - rename:
+      field: json.session.jump_group.id
+      tag: rename_session_jump_group_id
+      target_field: beyondtrust_pra.access_session.session.jump_group.id
+      ignore_missing: true
+  - rename:
+      field: json.session.jump_group.type
+      tag: rename_session_jump_group_type
+      target_field: beyondtrust_pra.access_session.session.jump_group.type
+      ignore_missing: true
+  - rename:
+      field: 'json.session.jumpoint.#text'
+      tag: rename_session_jumpoint_#text
+      target_field: beyondtrust_pra.access_session.session.jumpoint.text
+      ignore_missing: true
+  - rename:
+      field: json.session.jumpoint.id
+      tag: rename_session_jumpoint_id
+      target_field: beyondtrust_pra.access_session.session.jumpoint.id
+      ignore_missing: true
+  - rename:
+      field: json.session.lseq
+      tag: rename_session_lseq
+      target_field: beyondtrust_pra.access_session.session.lseq
+      ignore_missing: true
+  - rename:
+      field: json.session.lsid
+      tag: rename_session_lsid
+      target_field: beyondtrust_pra.access_session.session.lsid
+      ignore_missing: true
+  - rename:
+      field: 'json.session.primary_customer.#text'
+      tag: rename_session_primary_customer_#text
+      target_field: beyondtrust_pra.access_session.session.primary_customer.text
+      ignore_missing: true
+  - rename:
+      field: json.session.primary_customer.gsnumber
+      tag: rename_session_primary_customer_gsnumber
+      target_field: beyondtrust_pra.access_session.session.primary_customer.gsnumber
+      ignore_missing: true
+  - rename:
+      field: 'json.session.primary_rep.#text'
+      tag: rename_session_primary_rep_#text
+      target_field: beyondtrust_pra.access_session.session.primary_rep.text
+      ignore_missing: true
+  - rename:
+      field: json.session.primary_rep.gsnumber
+      tag: rename_session_primary_rep_gsnumber
+      target_field: beyondtrust_pra.access_session.session.primary_rep.gsnumber
+      ignore_missing: true
+  - rename:
+      field: json.session.primary_rep.id
+      tag: rename_session_primary_rep_id
+      target_field: beyondtrust_pra.access_session.session.primary_rep.id
+      ignore_missing: true
+  - rename:
+      field: json.session.session_chat_download_url
+      tag: rename_session_session_chat_download_url
+      target_field: beyondtrust_pra.access_session.session.session_chat_download_url
+      ignore_missing: true
+  - rename:
+      field: json.session.session_chat_view_url
+      tag: rename_session_session_chat_view_url
+      target_field: beyondtrust_pra.access_session.session.session_chat_view_url
+      ignore_missing: true
+  - rename:
+      field: json.session.session_recording_download_url
+      tag: rename_session_session_recording_download_url
+      target_field: beyondtrust_pra.access_session.session.session_recording_download_url
+      ignore_missing: true
+  - rename:
+      field: json.session.session_recording_view_url
+      tag: rename_session_session_recording_view_url
+      target_field: beyondtrust_pra.access_session.session.session_recording_view_url
+      ignore_missing: true
+  - rename:
+      field: json.session.session_type
+      tag: rename_session_session_type
+      target_field: beyondtrust_pra.access_session.session.session_type
+      ignore_missing: true
+  - rename:
+      field: 'json.session.start_time.#text'
+      tag: rename_session_start_time_#text
+      target_field: beyondtrust_pra.access_session.session.start_time.text
+      ignore_missing: true
+  - date:
+      field: beyondtrust_pra.access_session.session.start_time.text
+      tag: date_session_start_time_#text
+      formats:
+        - ISO8601
+      if: ctx.beyondtrust_pra?.access_session?.session?.start_time?.text != null && ctx.beyondtrust_pra.access_session.session.start_time.text != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.session.start_time.timestamp
+      tag: date_session_start_time_timestamp
+      target_field: beyondtrust_pra.access_session.session.start_time.timestamp
+      formats:
+        - UNIX
+      if: ctx.json?.session?.start_time?.timestamp != null && ctx.json.session.start_time.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.system_information.category
+      if: ctx.json?.system_information?.category instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.data.row
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.field
+              ignore_failure: true
+              processor:
+                rename:
+                  field: _ingest._value.#text
+                  tag: rename_system_information_category_data_row_field_#text
+                  target_field: _ingest._value.text
+                  ignore_missing: true
+  - foreach:
+      field: json.system_information.category
+      if: ctx.json?.system_information?.category instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.description.field
+          ignore_failure: true
+          processor:
+            rename:
+              field: _ingest._value.#text
+              tag: rename_system_information_category_description_field_#text
+              target_field: _ingest._value.text
+              ignore_missing: true
+  - rename:
+      field: json.system_information.category
+      tag: rename_system_information_category
+      target_field: beyondtrust_pra.access_session.system_information.category
+      ignore_missing: true  
+  - date:
+      field: json.timestamp
+      tag: date_timestamp
+      target_field: beyondtrust_pra.access_session.timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_access_session_timestamp
+      copy_from: beyondtrust_pra.access_session.timestamp
+      ignore_empty_value: true
+  - rename:
+      field: json.data.value
+      tag: rename_data_value
+      target_field: beyondtrust_pra.access_session.data.value
+      ignore_missing: true
+  - rename:
+      field: json.data.name
+      tag: rename_data_name
+      target_field: beyondtrust_pra.access_session.data.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      allow_duplicates: false
+      if: ctx.destination?.ip !=null
+  - append:
+      field: related.ip
+      value: "{{{destination.nat.ip}}}"
+      allow_duplicates: false
+      if: ctx.destination?.nat?.ip !=null
+  - append:
+      field: related.ip
+      value: "{{{source.nat.ip}}}"
+      allow_duplicates: false
+      if: ctx.source?.nat?.ip !=null
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      allow_duplicates: false
+      if: ctx.source?.ip !=null
+  - append:
+      field: related.hosts
+      value: "{{{destination.domain}}}"
+      allow_duplicates: false
+      if: ctx.destination?.domain !=null
+  - append:
+      field: related.hosts
+      value: "{{{source.domain}}}"
+      allow_duplicates: false
+      if: ctx.source?.domain !=null
+  - append:
+      field: related.user
+      value: "{{{destination.user.id}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.id !=null
+  - append:
+      field: related.user
+      value: "{{{destination.user.name}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.name !=null
+  - append:
+      field: related.user
+      value: "{{{beyondtrust_pra.access_session.performed_by.display_name}}}"
+      allow_duplicates: false
+      if: ctx.beyondtrust_pra?.access_session?.performed_by?.display_name !=null
+  - append:
+      field: related.user
+      value: "{{{source.user.id}}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.id !=null
+  - append:
+      field: related.user
+      value: "{{{source.user.name}}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.name !=null
+  - remove:
+      field:
+        - beyondtrust_pra.access_session.body
+        - beyondtrust_pra.access_session.destination.hostname
+        - beyondtrust_pra.access_session.destination.id
+        - beyondtrust_pra.access_session.destination.private_ip
+        - beyondtrust_pra.access_session.destination.public_ip
+        - beyondtrust_pra.access_session.destination.username
+        - beyondtrust_pra.access_session.filename
+        - beyondtrust_pra.access_session.filesize
+        - beyondtrust_pra.access_session.performed_by.hostname
+        - beyondtrust_pra.access_session.performed_by.id
+        - beyondtrust_pra.access_session.performed_by.private_ip
+        - beyondtrust_pra.access_session.performed_by.public_ip
+        - beyondtrust_pra.access_session.performed_by.username
+        - beyondtrust_pra.access_session.timestamp
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

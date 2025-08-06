@@ -1,0 +1,78 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Elastic Endgame prevented Credential Manipulation. Click the Elastic Endgame icon in the event.module column or the link in the rule.reference column for additional information.",
+        "from": "now-2m",
+        "index": [
+            "endgame-*"
+        ],
+        "interval": "1m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 1000,
+        "name": "Credential Manipulation - Prevented - Elastic Endgame",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Credential Manipulation - Prevented - Elastic Endgame\n\nElastic Endgame is a security solution that prevents unauthorized credential manipulation, a tactic often used by adversaries to escalate privileges by altering access tokens. Attackers exploit this to gain elevated access within a system. The detection rule identifies such attempts by monitoring alerts for token manipulation events, leveraging Elastic Endgame's prevention capabilities to thwart these threats effectively.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the presence of event.kind:alert and event.module:endgame, ensuring the alert is related to Elastic Endgame's prevention capabilities.\n- Examine the event.action and endgame.event_subtype_full fields to identify the specific type of token manipulation event that was prevented.\n- Investigate the source and destination of the alert by analyzing associated IP addresses, user accounts, and hostnames to determine if the attempt was internal or external.\n- Check for any related alerts or logs around the same timeframe to identify potential patterns or coordinated attempts at credential manipulation.\n- Assess the impacted system's current security posture and review recent changes or anomalies in user behavior that might have led to the attempted manipulation.\n- Consult the MITRE ATT&CK framework for additional context on Access Token Manipulation (T1134) to understand potential adversary techniques and improve defensive measures.\n\n### False positive analysis\n\n- Routine administrative tasks involving legitimate token manipulation can trigger alerts. Review the context of the event to determine if it aligns with expected administrative activities.\n- Automated scripts or software updates that modify access tokens as part of their normal operation may cause false positives. Identify these processes and consider adding them to an exception list if they are verified as non-threatening.\n- Security tools or monitoring solutions that interact with access tokens for legitimate purposes might be flagged. Validate these tools and exclude them from the rule if they are confirmed to be safe.\n- User behavior that involves frequent token changes, such as developers testing applications, can lead to false positives. Monitor these activities and create exceptions for known users or groups performing these tasks regularly.\n- Ensure that the rule is not overly broad by refining the query to focus on specific actions or contexts that are more indicative of malicious behavior, reducing the likelihood of false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected system to prevent further unauthorized access or lateral movement within the network.\n- Revoke and reset any potentially compromised credentials associated with the affected system to mitigate unauthorized access.\n- Conduct a thorough review of access logs and token usage to identify any unauthorized access or privilege escalation attempts.\n- Restore the affected system from a known good backup to ensure the integrity of the system and its credentials.\n- Implement additional monitoring on the affected system and related accounts to detect any further suspicious activity.\n- Escalate the incident to the security operations team for a detailed investigation and to assess the potential impact on other systems.\n- Review and update access control policies to ensure that only necessary permissions are granted, reducing the risk of privilege escalation.",
+        "query": "event.kind:alert and event.module:endgame and endgame.metadata.type:prevention and (event.action:token_manipulation_event or endgame.event_subtype_full:token_manipulation_event)\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "endgame.event_subtype_full",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "endgame.metadata.type",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c9e38e64-3f4c-4bf3-ad48-0e61a60ea1fa",
+        "setup": "## Setup\n\n### Additional notes\n\nFor information on troubleshooting the maximum alerts warning please refer to this [guide](https://www.elastic.co/guide/en/security/current/alerts-ui-monitor.html#troubleshoot-max-alerts).\n",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Elastic Endgame",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 105
+    },
+    "id": "c9e38e64-3f4c-4bf3-ad48-0e61a60ea1fa_105",
+    "type": "security-rule"
+}

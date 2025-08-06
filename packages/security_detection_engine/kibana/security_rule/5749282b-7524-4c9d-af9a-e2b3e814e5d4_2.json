@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the use of system search utilities like grep and find to search for AWS credentials inside a container. Unauthorized access to these sensitive files could lead to further compromise of the container environment or facilitate a container breakout to the underlying cloud environment.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "AWS Credentials Searched For Inside A Container",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS Credentials Searched For Inside A Container\n\nContainers often house applications that interact with AWS services, necessitating the storage of AWS credentials. Adversaries may exploit this by using search utilities to locate these credentials, potentially leading to unauthorized access. The detection rule identifies suspicious use of search tools within containers, flagging attempts to locate AWS credentials by monitoring specific process names and arguments, thus helping to prevent credential theft and subsequent attacks.\n\n### Possible investigation steps\n\n- Review the process details to identify the specific search utility used (e.g., grep, find) and the arguments passed, focusing on those related to AWS credentials such as aws_access_key_id or aws_secret_access_key.\n- Check the user context under which the suspicious process was executed to assess whether it aligns with expected behavior for that user or role within the container.\n- Investigate the source of the container image to ensure it is from a trusted repository and has not been tampered with, which could indicate a supply chain compromise.\n- Analyze recent activity logs for the container to identify any other suspicious behavior or anomalies that might correlate with the search for AWS credentials, such as unexpected network connections or file modifications.\n- Review access logs for AWS services to detect any unauthorized or unusual access patterns that might suggest the use of compromised credentials.\n\n### False positive analysis\n\n- Routine maintenance scripts or automated processes may use search utilities to verify the presence of AWS credentials for legitimate configuration checks. To handle this, identify and whitelist these specific scripts or processes by their unique identifiers or execution paths.\n- Developers or system administrators might manually search for AWS credentials during debugging or configuration tasks. Implement a policy to log and review these activities, and consider excluding known user accounts or roles from triggering alerts during specific time windows or in designated environments.\n- Security audits or compliance checks often involve searching for sensitive information, including AWS credentials, to ensure proper security measures are in place. Coordinate with audit teams to schedule these activities and temporarily suppress alerts during these periods, or exclude specific audit tools from detection.\n- Continuous integration and deployment (CI/CD) pipelines might include steps that search for AWS credentials to validate environment configurations. Identify these pipelines and exclude their associated processes or container environments from triggering alerts, ensuring that only authorized CI/CD tools are used.\n\n### Response and remediation\n\n- Immediately isolate the affected container to prevent further unauthorized access or data exfiltration. This can be done by stopping the container or disconnecting it from the network.\n- Revoke any AWS credentials that were potentially exposed or accessed. This includes rotating keys and updating any services or applications that rely on these credentials.\n- Conduct a thorough review of the container's file system to identify any unauthorized changes or additional malicious files that may have been introduced.\n- Implement stricter access controls and monitoring on AWS credentials within containers, ensuring they are stored securely and accessed only by authorized processes.\n- Escalate the incident to the cloud security team to assess the potential impact on the broader cloud environment and determine if further investigation or response is needed.\n- Enhance logging and monitoring for similar activities across other containers and cloud environments to detect and respond to future attempts promptly.\n- Review and update container security policies to include best practices for credential management and access control, reducing the risk of similar incidents.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\nprocess.entry_leader.entry_meta.type == \"container\" and\nprocess.name in (\"grep\", \"egrep\", \"fgrep\", \"find\", \"locate\", \"mlocate\") and\nprocess.command_line like~ (\n  \"*aws_access_key_id*\", \"*aws_secret_access_key*\", \"*aws_session_token*\", \"*accesskeyid*\", \"*secretaccesskey*\",\n  \"*access_key*\", \"*.aws/credentials*\"\n)\n",
+        "references": [
+            "https://sysdig.com/blog/threat-detection-aws-cloud-containers/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.entry_meta.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5749282b-7524-4c9d-af9a-e2b3e814e5d4",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\n\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Container",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "5749282b-7524-4c9d-af9a-e2b3e814e5d4_2",
+    "type": "security-rule"
+}

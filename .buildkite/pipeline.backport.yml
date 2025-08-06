@@ -4,6 +4,8 @@ name: "integrations-backport"
 
 env:
   YQ_VERSION: 'v4.35.2'
+  # Agent images used in pipeline steps
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
 
 steps:
 
@@ -29,8 +31,12 @@ steps:
       key: "BASE_COMMIT"
       required: true
       default: ""
-    - text: "Enter package name"
+    - text: "Enter package name (as defined in manifest.yml)"
       key: "PACKAGE_NAME"
+      required: true
+      default: ""
+    - text: "Enter name of the folder for the package (in most cases coincides with PACKAGE_NAME)"
+      key: "PACKAGE_FOLDER_NAME"
       required: true
       default: ""
     - text: "Enter package version (examples: 1.5.7, 1.0.0-beta1)"
@@ -49,6 +55,13 @@ steps:
   - label: "Creating the backport branch"
     key: "create-backport-branch"
     command: ".buildkite/scripts/backport_branch.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    env:
+      GITHUB_EMAIL: "elasticmachine@elastic.co"
+      GITHUB_USERNAME: "elastic-vault-github-plugin-prod"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
     depends_on:
       - step: "input-variables"
         allow_failure: false

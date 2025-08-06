@@ -1,0 +1,91 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects attempts to exploit privilege escalation vulnerabilities related to the Adobe Acrobat Reader PrivilegedHelperTool responsible for installing updates. For more information, refer to CVE-2020-9615, CVE-2020-9614 and CVE-2020-9613 and verify that the impacted system is patched.",
+        "false_positives": [
+            "Trusted system or Adobe Acrobat Related processes."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Child Process of Adobe Acrobat Reader Update Service",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Child Process of Adobe Acrobat Reader Update Service\n\nAdobe Acrobat Reader's update service on macOS uses a privileged helper tool to manage updates, running with elevated permissions. Adversaries may exploit vulnerabilities in this service to escalate privileges by spawning unauthorized child processes. The detection rule identifies such anomalies by monitoring for unexpected child processes initiated by the update service, especially those not matching known legitimate executables, thus flagging potential exploitation attempts.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the parent process is com.adobe.ARMDC.SMJobBlessHelper and the user is root, as these are key indicators of potential exploitation.\n- Identify the child process executable that triggered the alert and determine if it is known or expected in the context of Adobe Acrobat Reader updates.\n- Check the system for any recent updates or patches related to Adobe Acrobat Reader to ensure they are up to date, particularly concerning CVE-2020-9615, CVE-2020-9614, and CVE-2020-9613.\n- Investigate the process tree to understand the sequence of events leading to the suspicious child process, looking for any unusual or unauthorized activities.\n- Examine system logs and other security tools for additional indicators of compromise or related suspicious activities around the time of the alert.\n- Assess the system for any signs of privilege escalation or unauthorized access, focusing on changes made by the suspicious process.\n\n### False positive analysis\n\n- Legitimate software updates or installations may trigger the rule if they spawn child processes not listed in the known legitimate executables. Users can mitigate this by monitoring update schedules and temporarily excluding these processes during known update windows.\n- Custom scripts or administrative tools executed by system administrators with root privileges might be flagged. To handle this, users can create exceptions for these specific scripts or tools if they are verified as safe and necessary for operations.\n- Security or system management tools that perform integrity checks or system modifications could be misidentified as suspicious. Users should review these tools and, if deemed safe, add them to the exclusion list to prevent false alerts.\n- Development or testing environments where new or experimental software is frequently run may generate false positives. In such cases, users can establish a separate monitoring profile with adjusted rules to accommodate the unique activities of these environments.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any suspicious child processes identified by the detection rule that do not match known legitimate executables, ensuring that no unauthorized processes are running.\n- Conduct a thorough review of system logs and process execution history to identify any additional indicators of compromise or unauthorized changes made by the suspicious process.\n- Apply the latest security patches and updates to Adobe Acrobat Reader and the macOS system to address vulnerabilities CVE-2020-9615, CVE-2020-9614, and CVE-2020-9613, ensuring the system is not susceptible to known exploits.\n- Restore any affected files or system configurations from a known good backup to ensure system integrity and remove any potential backdoors or malicious modifications.\n- Enhance monitoring and logging on the affected system to detect any future unauthorized process executions or privilege escalation attempts, ensuring quick detection and response.\n- Report the incident to the appropriate internal security team or external authorities if required, providing detailed information about the threat and actions taken for further investigation and compliance.",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n  process.parent.name like \"com.adobe.ARMDC.SMJobBlessHelper\" and\n  user.name == \"root\" and\n  not process.executable like (\"/Library/PrivilegedHelperTools/com.adobe.ARMDC.SMJobBlessHelper\",\n                               \"/usr/bin/codesign\",\n                               \"/private/var/folders/zz/*/T/download/ARMDCHammer\",\n                               \"/usr/sbin/pkgutil\",\n                               \"/usr/bin/shasum\",\n                               \"/usr/bin/perl*\",\n                               \"/usr/sbin/spctl\",\n                               \"/usr/sbin/installer\",\n                               \"/usr/bin/csrutil\")\n",
+        "references": [
+            "https://rekken.github.io/2020/05/14/Security-Flaws-in-Adobe-Acrobat-Reader-Allow-Malicious-Program-to-Gain-Root-on-macOS-Silently/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f85ce03f-d8a8-4c83-acdc-5c8cd0592be7",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 110
+    },
+    "id": "f85ce03f-d8a8-4c83-acdc-5c8cd0592be7_110",
+    "type": "security-rule"
+}

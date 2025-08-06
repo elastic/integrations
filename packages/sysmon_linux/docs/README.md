@@ -25,55 +25,54 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-24T17:05:31.000Z",
+    "@timestamp": "2025-10-24T17:05:31.000Z",
     "agent": {
-        "ephemeral_id": "9a76eca2-a433-4b6f-a30b-bac6e6d09995",
-        "id": "9f4e1395-4b95-476b-8057-130127354b7a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c3528964-47f7-4a97-968f-b24d27fb3f5e",
+        "id": "95b30c83-143a-4fd0-bbe5-4764610ade5c",
+        "name": "elastic-agent-46474",
         "type": "filebeat",
-        "version": "8.10.2"
+        "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "sysmon_linux.log",
-        "namespace": "ep",
+        "namespace": "83328",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9f4e1395-4b95-476b-8057-130127354b7a",
+        "id": "95b30c83-143a-4fd0-bbe5-4764610ade5c",
         "snapshot": false,
-        "version": "8.10.2"
+        "version": "8.17.3"
     },
     "event": {
         "action": "log",
         "agent_id_status": "verified",
         "dataset": "sysmon_linux.log",
-        "ingested": "2023-10-03T10:35:51Z",
+        "ingested": "2025-03-13T12:29:35Z",
         "kind": "event",
         "timezone": "+00:00"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "efe661d97f0c4d9883075c393da6b0d8",
+        "hostname": "elastic-agent-46474",
         "ip": [
-            "192.168.48.7"
+            "172.20.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-AC-12-00-07",
+            "02-42-AC-14-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-46474",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.90.1-microsoft-standard-WSL2",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "input": {
@@ -81,8 +80,8 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "device_id": 2080,
-            "inode": 91045,
+            "device_id": "2080",
+            "inode": "1097862",
             "path": "/tmp/service_logs/sysmon.log"
         },
         "offset": 0
@@ -133,9 +132,9 @@ An example event for `log` looks as following:
 | dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
-| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
-| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
 | dns.response_code | The DNS response code. | keyword |

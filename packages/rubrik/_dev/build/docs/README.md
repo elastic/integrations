@@ -1,26 +1,33 @@
 # Rubrik RSC Metrics Integration
 
-This integration periodically fetches metrics from [Rubrik GraphQL API](https://www.rubrik.com/resources/api-integration). It collects a wide range of metrics including virtual machines, filesets, volumes, node statistics, and drives performance.
+The Rubrik integration allows you to monitor your Rubrik Security Cloud (RSC) and Rubrik Cloud Data Management (CDM) environments. Rubrik provides a data security and protection platform that delivers backup, recovery, and threat detection across hybrid and multi-cloud environments.
 
-These metrics help you understand how to properly manage your Rubrik infrastructure.
+Use the Rubrik integration to collect metrics and logs related to snapshots, backups, SLA domains, storage usage, protection status, and RSC-managed clusters. The integration helps monitor a wide range of protected objects such as virtual machines, databases, filesets, and physical hosts. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting an issue.
+
+For example, you could use the data from this integration to detect SLA non-compliance, track the number of protected or unprotected objects, monitor backup job status, or investigate storage trends across clusters. You can also troubleshoot failed backup jobs, identify under-protected assets, and proactively respond to anomalies across your Rubrik-managed infrastructure.
 
 ## Compatibility
-
-The integration uses the [HTTP JSON input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) to collect metrics from Rubrik APIs.
+This integration has been tested with:
+- Rubrik Security Cloud(RSC)
+- Rubrik CDM 6.0x API
+- Rubrik CDM 9.1x API
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-## Configuration
+## Setup
 
 To configure this integration in Elastic, you need the following information:
 
-- Hostname
-- Client ID
-- Client Secret
-- Token URL
+ - **Hostname** is the account name of your Rubrik domain.
+ - **Client ID** is the client ID of the service account.
+ - **Client Secret** is the client secret of the service account.
+ - **Cluster UUID** is the ID of the registered Rubrik cluster.
+ - **Cluster IP** is the Rubrik cluster IP or a resolvable host name.
+
+NOTE: Cluster IP and Cluster UUID are required to access the Rubrik REST APIs. 
 
 For more details on these settings, refer to the [Rubrik official documentation](https://docs.rubrik.com/en-us/saas/saas/adding_a_service_account.html).
 
@@ -31,7 +38,7 @@ For more details on these settings, refer to the [Rubrik official documentation]
 3. Click on "Rubrik RSC Metrics" integration from the search results
 4. Click on the **Add Rubrik RSC Metrics Integration** button to add the integration
 
-## Metrics
+## Metrics Reference
 
 ### Managed Volumes
 
@@ -140,3 +147,41 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "global_cluster_performance"}}
 
 {{event "global_cluster_performance"}}
+
+### Node Statistics
+
+The `node_statistics` dataset provides metrics related to the performance of the Rubrik cluster nodes.
+
+**IMPORTANT: Setting `interval` to more than `1h` may cause documents to be dropped if node statistics metrics fall outside the index time range.**
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "node_statistics"}}
+
+{{event "node_statistics"}}
+
+### Unmanaged Objects
+
+The `unmanaged_objects` dataset provides unmanaged object snapshot and storage metrics.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "unmanaged_objects"}}
+
+{{event "unmanaged_objects"}}
+
+### SLA Domains
+
+The `sla_domains` dataset captures key metrics and configurations of Service Level Agreement (SLA) policy domains in a Rubrik environment, including details on the number of protected objects, such as virtual machines, databases, filesets, and hosts.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "sla_domains"}}
+
+{{event "sla_domains"}}
