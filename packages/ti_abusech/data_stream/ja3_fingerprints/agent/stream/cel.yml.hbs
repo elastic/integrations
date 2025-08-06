@@ -1,0 +1,78 @@
+config_version: 2
+interval: {{interval}}
+fields_under_root: true
+fields:
+  _conf:
+    interval: "{{interval}}"
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  column: [ja3, first_ts, last_ts, reason]
+redact:
+  fields: ~
+program: |-
+  state.with(
+    get(state.url).as(resp,
+      (resp.StatusCode == 200) ?
+        dyn(
+          {
+            "events": string(resp.Body).split("\n").map(l,
+              !l.has_prefix("#"),
+              {
+                "message": l.trim_space().split(",").transformMapEntry(i, e,
+                  {
+                    state.column[i]: state.column[i].has_suffix("ts") ?
+                      string(e.parse_time(time_layout.DateTime))
+                    :
+                      e,
+                  }
+                ).encode_json(),
+              }
+            ),
+          }
+        )
+      :
+        dyn(
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url + ":" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+          }
+        )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

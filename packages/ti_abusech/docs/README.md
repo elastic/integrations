@@ -3,8 +3,10 @@
 This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes the following datasets for retrieving indicators from the AbuseCH API:
 
 - `url` dataset: Supports URL based indicators from AbuseCH API.
+- `ja3_fingerprints` dataset: Supports JA3 fingerprint based indicators from SSLBL AbuseCH API.
 - `malware` dataset: Supports Malware based indicators from AbuseCH API.
 - `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
+- `sslblacklist` dataset: Supports SSL certificate based indicators from SSLBL AbuseCH API.
 - `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
 
 ## Note:
@@ -24,12 +26,14 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
 
-| Source Datastream                  | Destination Index Pattern                        | Destination Alias                       |
-|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
-| `logs-ti_abusech.url-*`            | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`            |
-| `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
-| `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
-| `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+| Source Datastream                    | Destination Index Pattern                        | Destination Alias                         |
+|:-------------------------------------|:-------------------------------------------------|-------------------------------------------|
+| `logs-ti_abusech.url-*`              | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`              |
+| `logs-ti_abusech.ja3_fingerprints-*` | `logs-ti_abusech_latest.dest_ja3_fingerprints-*` | `logs-ti_abusech_latest.ja3_fingerprints` |
+| `logs-ti_abusech.malware-*`          | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`          |
+| `logs-ti_abusech.malwarebazaar-*`    | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`    |
+| `logs-ti_abusech.sslblacklist-*`     | `logs-ti_abusech_latest.dest_sslblacklist-*`     | `logs-ti_abusech_latest.sslblacklist`     |
+| `logs-ti_abusech.threatfox-*`        | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`        |
 
 ### ILM Policy
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abusech.<datastream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<datastream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
@@ -56,6 +60,38 @@ The AbuseCH URL data_stream retrieves full list of active threat intelligence in
 | abusech.url.threat | The threat corresponding to this malware URL. | keyword |
 | abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
 | abusech.url.urlhaus_reference | Link to URLhaus entry. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+### JA3 Fingerprint Blacklist
+
+The AbuseCH JA3 fingerprint blacklist data_stream retrieves malicious JA3 fingerprints identified by SSLBL from the SSLBL API endpoint `https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv`.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abusech.ja3_fingerprints.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
+| abusech.ja3_fingerprints.urlhaus_reference | Link to URLhaus entry. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -149,6 +185,37 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+### SSL Certificate Blacklist
+
+The SSL Certificate Blacklist contains SHA1 Fingerprint of all SSL certificates blacklisted on SSLBL from the SSLBL API endpoint `https://sslbl.abuse.ch/blacklist/sslblacklist.csv`.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abusech.sslblacklist.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
