@@ -1,0 +1,101 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "This rule detects unusual file creations from a web server parent process. Adversaries may attempt to create files from a web server parent process to establish persistence, execute malicious scripts, or exfiltrate data. ES|QL rules have limited fields available in its alert documents. Make sure to review the original documents to aid in the investigation of this alert.",
+        "from": "now-61m",
+        "interval": "1h",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Unusual File Creation by Web Server",
+        "query": "from logs-endpoint.events.file-*\n| keep\n    @timestamp,\n    host.os.type,\n    event.type,\n    event.action,\n    user.name,\n    user.id,\n    process.name,\n    process.executable,\n    file.path,\n    agent.id,\n    host.name\n| where\n    @timestamp > now() - 1 hours and\n    host.os.type == \"linux\" and\n    event.type == \"change\" and\n    event.action in (\"rename\", \"creation\") and (\n        user.name in (\n            \"apache\", \"www-data\", \"httpd\", \"nginx\", \"lighttpd\", \"tomcat\", \"tomcat8\", \"tomcat9\", \"ftp\", \"ftpuser\", \"ftpd\"\n        ) or\n        user.id in (\"99\", \"33\", \"498\", \"48\")\n    ) and (\n        process.name in (\n            \"apache\", \"nginx\", \"apache2\", \"httpd\", \"lighttpd\", \"caddy\", \"node\", \"mongrel_rails\", \"java\", \"gunicorn\",\n            \"uwsgi\", \"openresty\", \"cherokee\", \"h2o\", \"resin\", \"puma\", \"unicorn\", \"traefik\", \"tornado\", \"hypercorn\",\n            \"daphne\", \"twistd\", \"yaws\", \"webfsd\", \"httpd.worker\", \"flask\", \"rails\", \"mongrel\"\n        ) or\n        process.name like \"php-*\" or\n        process.name like \"python*\" or\n        process.name like \"ruby*\" or\n        process.name like \"perl*\"\n    )\n| stats\n    Esql.event_count = count(),\n    Esql.agent_id_count_distinct = count_distinct(agent.id),\n    Esql.host_name_values = values(host.name),\n    Esql.agent_id_values = values(agent.id)\n  by process.executable, file.path\n| where\n    Esql.agent_id_count_distinct == 1 and\n    Esql.event_count < 5\n| sort Esql.event_count asc\n| limit 100\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "894b7cc9-040b-427c-aca5-36b40d3667bf",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Rule Type: BBR"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1505",
+                        "name": "Server Software Component",
+                        "reference": "https://attack.mitre.org/techniques/T1505/",
+                        "subtechnique": [
+                            {
+                                "id": "T1505.003",
+                                "name": "Web Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1505/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 4
+    },
+    "id": "894b7cc9-040b-427c-aca5-36b40d3667bf_4",
+    "type": "security-rule"
+}
