@@ -37,17 +37,13 @@ processors:
         // Define the list of fields to retain
         def fieldsToKeep = ["@timestamp"];
 
-        // Define regex patterns
-        def gtiPattern = /^temp_fields/;  // Matches keys starting with 'temp_fields'
-        def underscorePattern = /^_/;  // Matches keys starting with '_'
-
         // Get a copy of the current document keys
         def keys = new ArrayList(ctx.keySet());
 
         // Iterate over the keys
         for (def key : keys) {
-          // If the key is not in fieldsToKeep, does not match any Pattern, remove it
-          if (!fieldsToKeep.contains(key) && !(key =~ gtiPattern) && !(key =~ underscorePattern)) {
+          // Keep if the key is in fieldsToKeep, starts with "temp_fields" or starts with "_"
+          if (!fieldsToKeep.contains(key) && !key.startsWith("temp_fields") && !key.startsWith("_")) {
             ctx.remove(key);
           }
         }
@@ -119,6 +115,11 @@ processors:
       field: threat.feed.name
       tag: set_threat_feed_name
       copy_from: gti.threat.indicator.feed.name
+      ignore_empty_value: true
+  - set:
+      field: threat.feed.dashboard_id
+      tag: set_threat_feed_dashboard_id
+      copy_from: gti.threat.indicator.feed.dashboard_id
       ignore_empty_value: true
   - set:
       field: threat.indicator.as.number
