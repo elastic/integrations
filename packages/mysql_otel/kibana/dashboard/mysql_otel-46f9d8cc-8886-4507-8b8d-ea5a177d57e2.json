@@ -1,0 +1,453 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "33734093-5269-46b9-bb23-97f20f222c93": {
+                    "explicitInput": {
+                        "dataViewId": "metrics-*",
+                        "fieldName": "service.address",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "singleSelect": true,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Hostname"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "Overview of Replica Status (OTEL metrics)",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "mysqlreceiver.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "mysqlreceiver.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-ba462e4e-0982-4da8-bfbf-18a596a137d2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "ba462e4e-0982-4da8-bfbf-18a596a137d2": {
+                                            "columnOrder": [
+                                                "510fb717-12de-484a-a6fa-bf71b2ea9a56",
+                                                "7890605c-64f1-44cd-b59d-a0603bd40034",
+                                                "7890605c-64f1-44cd-b59d-a0603bd40034X0"
+                                            ],
+                                            "columns": {
+                                                "510fb717-12de-484a-a6fa-bf71b2ea9a56": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "7890605c-64f1-44cd-b59d-a0603bd40034": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "sql delay",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "s"
+                                                            }
+                                                        },
+                                                        "formula": "last_value(mysql.replica.sql_delay, kql='\"mysql.replica.sql_delay\": *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "7890605c-64f1-44cd-b59d-a0603bd40034X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "7890605c-64f1-44cd-b59d-a0603bd40034X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mysql.replica.sql_delay\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of sql delay",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mysql.replica.sql_delay"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "7890605c-64f1-44cd-b59d-a0603bd40034"
+                                        ],
+                                        "layerId": "ba462e4e-0982-4da8-bfbf-18a596a137d2",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "510fb717-12de-484a-a6fa-bf71b2ea9a56"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "SQL thread deay",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "c82ef6de-91ec-48b5-9b46-aa81e25a9da4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "c82ef6de-91ec-48b5-9b46-aa81e25a9da4",
+                "title": "SQL delay",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d02ddee5-cf58-4e13-91ce-83a2ea76470c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d02ddee5-cf58-4e13-91ce-83a2ea76470c": {
+                                            "columnOrder": [
+                                                "9364a455-81e5-4eb9-9107-105088ac4e44",
+                                                "5107cb8c-af44-45c8-b879-d0ac0f8c8aa8",
+                                                "5107cb8c-af44-45c8-b879-d0ac0f8c8aa8X0"
+                                            ],
+                                            "columns": {
+                                                "5107cb8c-af44-45c8-b879-d0ac0f8c8aa8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "seconds behind source",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "s"
+                                                            }
+                                                        },
+                                                        "formula": "last_value(mysql.replica.time_behind_source, kql='\"mysql.replica.time_behind_source\": *')",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "5107cb8c-af44-45c8-b879-d0ac0f8c8aa8X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "5107cb8c-af44-45c8-b879-d0ac0f8c8aa8X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mysql.replica.time_behind_source\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of seconds behind source",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mysql.replica.time_behind_source"
+                                                },
+                                                "9364a455-81e5-4eb9-9107-105088ac4e44": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "5107cb8c-af44-45c8-b879-d0ac0f8c8aa8"
+                                        ],
+                                        "layerId": "d02ddee5-cf58-4e13-91ce-83a2ea76470c",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "9364a455-81e5-4eb9-9107-105088ac4e44"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Replication lag",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "39323a03-48bd-4c64-b666-8a638292fc66",
+                    "w": 48,
+                    "x": 0,
+                    "y": 9
+                },
+                "panelIndex": "39323a03-48bd-4c64-b666-8a638292fc66",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Metrics MySQL OTEL Content Pack] Replica Status",
+        "version": 3
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-08-06T08:11:10.084Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "mysql_otel-46f9d8cc-8886-4507-8b8d-ea5a177d57e2",
+    "managed": false,
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c82ef6de-91ec-48b5-9b46-aa81e25a9da4:indexpattern-datasource-layer-ba462e4e-0982-4da8-bfbf-18a596a137d2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "39323a03-48bd-4c64-b666-8a638292fc66:indexpattern-datasource-layer-d02ddee5-cf58-4e13-91ce-83a2ea76470c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_33734093-5269-46b9-bb23-97f20f222c93:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
