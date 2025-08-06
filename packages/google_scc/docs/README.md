@@ -484,22 +484,22 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "37fbc612-cf62-42d7-b806-3a0752057c4c",
-        "id": "c80e7e48-a164-47b9-90e8-a021a5d6efea",
-        "name": "elastic-agent-98423",
+        "ephemeral_id": "5b983585-396a-46bd-b191-76846a049001",
+        "id": "7d2d3f11-f85a-4d15-8fb6-265d24df4fe0",
+        "name": "elastic-agent-43169",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "google_scc.finding",
-        "namespace": "95684",
+        "namespace": "19542",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c80e7e48-a164-47b9-90e8-a021a5d6efea",
+        "id": "7d2d3f11-f85a-4d15-8fb6-265d24df4fe0",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -508,7 +508,7 @@ An example event for `finding` looks as following:
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
         "id": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
-        "ingested": "2025-07-31T10:24:36Z",
+        "ingested": "2025-08-06T06:07:27Z",
         "kind": "event",
         "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}",
         "severity": 99,
@@ -810,6 +810,7 @@ An example event for `finding` looks as following:
 | google_scc.finding.vulnerability.security_bulletin.suggested_upgrade_version | This represents a version that the cluster receiving this notification should be upgraded to, based on its current version. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
