@@ -1,27 +1,8 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
-
 # MYSQL metrics for OpenTelemetry Collector
 
-<!-- The MYSQL OTEL integration allows you to monitor {name of service}. {name of service} is {describe service}.
+The MySQL metrics from MySQL OTEL integration allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
 
-Use the MYSQL OTEL integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
-
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
-
-## Data streams
-
-<!-- The MYSQL OTEL integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
-
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+The MySQL OTEL integration provides a visual representation of MySQL metrics collected via OpenTelemetry ([MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver)), enabling you to monitor database performance and troubleshoot issues effectively in real time.
 
 ## Requirements
 
@@ -34,22 +15,65 @@ Databases tested against:
 - MySQL 8.0, 9.4
 - MariaDB 10.11, 11.8
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
-
 ## Setup
 
-<!-- Any prerequisite instructions -->
+1. Install and configure the EDOT Collector or upstream Collector to export metrics to ElasticSearch, as shown in the following example:
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+```yaml
+receivers:
+  mysql:
+    endpoint: localhost:3306
+    username: <MYSQL_USER>
+    password: <MYSQL_PASSWORD>
+    database: <your database name>
+    collection_interval: 10s
+    initial_delay: 1s
+    statement_events:
+      digest_text_limit: 120
+      time_limit: 24h
+      limit: 250
+    metrics:
+      mysql.query.client.count:
+        enabled: true
+      mysql.client.network.io:
+        enabled: true
+      mysql.commands:
+        enabled: true
+      mysql.max_used_connections:
+        enabled: true
+      mysql.connection.errors:
+        enabled: true
+      mysql.table_open_cache:
+        enabled: true
+      mysql.replica.sql_delay:
+        enabled: true
+      mysql.replica.time_behind_source:
+        enabled: true
+processors:
+  resourcedetection:
+    detectors: ["system", "ec2"]
+exporters:
+  debug:
+    verbosity: detailed
+  elasticsearch/otel:
+    endpoints: https://elasticsearch:9200
+    user: <userid>
+    password: <pwd>
+    mapping:
+      mode: otel
+    metrics_dynamic_index:
+      enabled: true
+service:
+  pipelines:
+    metrics:
+      exporters: [debug, elasticsearch/otel]
+      processors: [resourcedetection]
+      receivers: [mysql]
+```
 
-<!-- Additional set up instructions -->
+Use this configuration to run the collector.
+
+The `resourcedetection` processor is required to get the host information for the dashboard.
 
 The following metrics should be enabled in the `mysqlreceiver` configuration:
 
@@ -77,40 +101,8 @@ mysql.replica.time_behind_source:
   enabled: true
 ```
 
-<!-- If applicable -->
-<!-- ## Logs reference -->
+## Metrics reference
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
+### MySQL metrics
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
-<!-- If applicable -->
-<!-- ## Metrics reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
+Please refer to [the documentation of the OpenTelemetry's MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/mysqlreceiver/documentation.md).
