@@ -22,7 +22,9 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 </Location>
 ```
 
-4. Finding the Apache config: Debian users can find the status module's configuration file at `/etc/apache2/mods-enabled/status.conf`. Users of other UNIX-like platforms (such as Red Hat–based systems, or macOS) will find their main configuration file at `/etc/apache2/apache2.conf`, `/etc/httpd/conf/httpd.conf`, or `/etc/apache2/httpd.conf`. In the main configuration file, locate the following line and ensure it is uncommented:
+4. Finding the Apache config: On Debian-based systems, the status module’s configuration file is typically located at `/etc/apache2/mods-enabled/status.conf`. On other UNIX-like platforms (such as Red Hat–based systems or macOS), you’ll usually find the main configuration file at one of the following paths: `/etc/apache2/apache2.conf`, `/etc/httpd/conf/httpd.conf`, or `/etc/apache2/httpd.conf`.
+
+Within the main configuration file, locate the following line and make sure it is uncommented:
 
 ```
 LoadModule status_module libexec/apache2/mod_status.so
