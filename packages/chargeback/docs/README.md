@@ -53,9 +53,9 @@ Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdow
 
 To use this integration, the following prerequisites must be met:
 
--	The monitoring cluster (the central cluster where all logs and metrics are collected across your organisation’s deployments) must be running Elasticsearch version 8.18.0+, as this integration makes use of the `ES|QL LOOKUP JOIN` feature introduced in that version.
-- The [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) (v1.4.1+) must be installed, and either deployed to a user-managed Elastic Agent or configured to run agentlessly.
--	The [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integration (v1.16.0+) must be installed. Deployment to an Elastic Agent is not required (i.e. no integration policy is needed). This is because the integration is only used to access and install its built-in assets.
--	The transform named `logs-elasticsearch.index_pivot-default-{VERSION}` must be running. This transform is provided by the Elasticsearch integration and is responsible for processing usage data from all relevant* deployments. `{VERSION}` refers to the version of the **Elasticsearch** integration that was installed (e.g. 1.16.0). The transform must be manually started in order for [usage data](https://www.elastic.co/docs/reference/integrations/elasticsearch/#indices-and-data-streams-usage-analysis) to be processed and available.
+- The monitoring cluster, where this integration is installed, must be on version 8.18.0+ due to its use of [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join).
+- The [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) integration (v1.4.1+) must be installed and running.
+- The [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integration (v1.16.0+) must be installed and collecting [usage data](https://www.elastic.co/docs/reference/integrations/elasticsearch/#indices-and-data-streams-usage-analysis) from all relevant deployments.
+- The Transform named `logs-elasticsearch.index_pivot-default-{VERSION}` must be running, which is an asset of the **Elasticsearch** integration.
 
-This integration must be installed on the **Monitoring cluster**, which is the designated cluster for aggregating usage and billing data across all deployments in your organisation. These deployments are referred to as the relevant deployments, and each of them must have their usage data shipped to the monitoring cluster for chargeback calculations.
+This integration must be installed on the **Monitoring cluster** where the above mentioned relevant usage and billing data is collected.
