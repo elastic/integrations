@@ -53,6 +53,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 The following metrics should be enabled in the `mysqlreceiver` configuration:
 
+For Database Overview dashboard:
 ```yaml
 mysql.query.client.count:
   enabled: true
@@ -65,6 +66,14 @@ mysql.max_used_connections:
 mysql.connection.errors:
   enabled: true
 mysql.table_open_cache:
+  enabled: true
+```
+
+For Replica Status dashboard:
+```yaml
+mysql.replica.sql_delay:
+  enabled: true
+mysql.replica.time_behind_source:
   enabled: true
 ```
 
