@@ -1,23 +1,25 @@
 # Use of "*" to use all namespaces defined.
 source:
   index:
-    - "logs-ti_greynoise.ip*"
+    - ".internal.alerts-security.alerts-default-*"
   query:
     bool:
-      must_not:
-        - exists:
-            field: error.message
+      filter:
+        - match_phrase:
+            kibana.alert.rule.tags: GreyNoise
+        - match_phrase:
+            kibana.alert.rule.category: Indicator Match Rule
 dest:
-  index: "logs-ti_greynoise_latest.ip-1"
+  index: "logs-ti_greynoise.enriched_ioc-1"
   aliases:
-    - alias: "logs-ti_greynoise_latest.ip"
+    - alias: "logs-ti_greynoise.enriched_ioc"
       move_on_creation: true
 latest:
   unique_key:
-    - threat.indicator.ip
+    - kibana.alert.uuid
   sort: "@timestamp"
 description: >-
-  Latest IP Address IOC from GreyNoise API. As IP Address IOC get updated, this transform stores only the latest state of each IP Address IOC inside the destination index. Thus the transform's destination index contains only the latest state of the IP Address IOC.
+  Detected IOC from the user's environment. As IOCs are identified, this transform filters and extracts necessary information before storing it inside the destination index.
 frequency: 30s
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
@@ -25,14 +27,14 @@ settings:
   unattended: true
 sync:
   time:
-    field: "event.ingested"
+    field: "@timestamp"
     # Updated to 120s because of refresh delay in Serverless. With default 60s,
     # sometimes transform wouldn't process all documents.
     delay: 120s
 retention_policy:
   time:
     field: '@timestamp'
-    max_age: 7d
+    max_age: 30d
 _meta:
   managed: false
   # Bump this version to delete, reinstall, and restart the transform during
