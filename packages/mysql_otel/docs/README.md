@@ -49,9 +49,6 @@ receivers:
         enabled: true
       mysql.replica.time_behind_source:
         enabled: true
-processors:
-  resourcedetection:
-    detectors: ["system", "ec2"]
 exporters:
   debug:
     verbosity: detailed
@@ -67,13 +64,10 @@ service:
   pipelines:
     metrics:
       exporters: [debug, elasticsearch/otel]
-      processors: [resourcedetection]
       receivers: [mysql]
 ```
 
 Use this configuration to run the collector.
-
-The `resourcedetection` processor is required to get the host information for the dashboard.
 
 The following metrics should be enabled in the `mysqlreceiver` configuration:
 
