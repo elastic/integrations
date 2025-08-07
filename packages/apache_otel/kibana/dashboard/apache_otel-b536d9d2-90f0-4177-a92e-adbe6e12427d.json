@@ -4,7 +4,7 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"065c9b34-5c24-4cff-bb24-df4df704593b\":{\"grow\":true,\"order\":0,\"type\":\"optionsListControl\",\"width\":\"medium\",\"explicitInput\":{\"id\":\"065c9b34-5c24-4cff-bb24-df4df704593b\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"host.hostname\",\"title\":\"Hostname\",\"searchTechnique\":\"prefix\",\"singleSelect\":true,\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}}}",
+            "panelsJSON": "{\"5c38d473-b1af-4040-970e-179545d8bb6b\":{\"grow\":true,\"order\":0,\"type\":\"optionsListControl\",\"width\":\"medium\",\"explicitInput\":{\"id\":\"5c38d473-b1af-4040-970e-179545d8bb6b\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"host.hostname\",\"title\":\"Hostname\",\"searchTechnique\":\"prefix\",\"singleSelect\":true,\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}}}",
             "showApplySelections": false
         },
         "description": "Overview of Apache server status",
@@ -36,7 +36,7 @@
                 ],
                 "query": {
                     "language": "kuery",
-                    "query": ""
+                    "query": "resource.attributes.apache.server.name : \"localhost\" "
                 }
             }
         },
@@ -75,7 +75,7 @@
                             },
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "tsvb_ad_hoc_metrics-*/@timestamp",
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "c9badb69-4816-487b-9355-d139ef8ea850": {
                                             "columnOrder": [
@@ -86,7 +86,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Uptime",
+                                                    "label": "Server Uptime",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -106,7 +106,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "tsvb_ad_hoc_metrics-*/@timestamp"
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -180,7 +180,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": " Total accesses",
+                                                    "label": " Total Requests Processed",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -251,7 +251,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Total egress",
+                                                    "label": "Total Egress (MB)",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -435,7 +435,7 @@
                                 "yRightExtent": {
                                     "mode": "full"
                                 },
-                                "yTitle": "Count"
+                                "yTitle": "Workers"
                             }
                         },
                         "title": "",
@@ -453,7 +453,7 @@
                     "y": 7
                 },
                 "panelIndex": "5c579eba-cacb-482c-87cf-bef375f9d39e",
-                "title": "Workers",
+                "title": "Apache Worker Pool (Idle vs Busy)",
                 "type": "lens"
             },
             {
@@ -609,17 +609,20 @@
                                                     "label": "Top 5 values of resource.attributes.apache.server.name",
                                                     "operationType": "terms",
                                                     "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "fcb57958-5c2b-42d6-8e82-026c11b9c4a6",
+                                                            "columnId": "25d0fc98-7b2c-4c11-b041-39cce4f45136",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
-                                                        "otherBucket": false,
+                                                        "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
@@ -767,9 +770,7 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "xlarge",
-                                    "legendStats": [
-                                        "currentAndLastValue"
-                                    ],
+                                    "legendStats": [],
                                     "maxLines": 1,
                                     "position": "right",
                                     "shouldTruncate": false,
@@ -778,7 +779,7 @@
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "yTitle": "Count"
+                                "yTitle": "Workers"
                             }
                         },
                         "title": "",
@@ -796,127 +797,7 @@
                     "y": 7
                 },
                 "panelIndex": "58fd9c89-cadf-4059-b124-37f5d8d2654b",
-                "title": "Scoreboard",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-9c48411c-649e-4e2c-976e-15a98bd84b1e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "9c48411c-649e-4e2c-976e-15a98bd84b1e": {
-                                            "columnOrder": [
-                                                "d268948d-fb3a-42f3-be99-e35966b7aa71",
-                                                "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34"
-                                            ],
-                                            "columns": {
-                                                "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total",
-                                                    "operationType": "max",
-                                                    "scale": "ratio",
-                                                    "sourceField": "metrics.apache.current_connections"
-                                                },
-                                                "d268948d-fb3a-42f3-be99-e35966b7aa71": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34"
-                                        ],
-                                        "layerId": "9c48411c-649e-4e2c-976e-15a98bd84b1e",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "d268948d-fb3a-42f3-be99-e35966b7aa71",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "color": "#00a69b",
-                                                "forAccessor": "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "auto",
-                                    "position": "right",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightExtent": {
-                                    "mode": "full"
-                                },
-                                "yTitle": "Connections"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "",
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "c1d17188-081d-41bf-8faf-0b331e875efe",
-                    "w": 24,
-                    "x": 0,
-                    "y": 22
-                },
-                "panelIndex": "c1d17188-081d-41bf-8faf-0b331e875efe",
-                "title": "Total connections",
+                "title": "Apache Worker States (Scoreboard)",
                 "type": "lens"
             },
             {
@@ -952,7 +833,13 @@
                                                     "label": "Load per 15 min",
                                                     "operationType": "average",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "metrics.apache.load.15"
@@ -964,7 +851,14 @@
                                                     "label": "Load per 1 min",
                                                     "operationType": "average",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 1
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "metrics.apache.load.1"
@@ -1011,7 +905,13 @@
                                                     "label": "Load per 5 min",
                                                     "operationType": "average",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "metrics.apache.load.5"
@@ -1056,16 +956,15 @@
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "xlarge",
-                                    "legendStats": [
-                                        "currentAndLastValue"
-                                    ],
+                                    "legendStats": [],
                                     "position": "right",
-                                    "shouldTruncate": false
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "yTitle": "Count"
+                                "yTitle": "Percentage"
                             }
                         },
                         "title": "",
@@ -1107,28 +1006,9 @@
                                             "columnOrder": [
                                                 "c3c68993-b7ea-43ec-99ff-57e89e39555b",
                                                 "5a671590-a106-4438-a96f-9f2f7164bffd",
-                                                "f136087d-75f7-40fe-842f-daa64ae7d1c7",
-                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782a",
-                                                "fe117f49-f67f-45da-8a40-6fc6369a4afc",
-                                                "a8748731-8651-4274-a524-9bcdbb7ce526",
-                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09"
+                                                "f136087d-75f7-40fe-842f-daa64ae7d1c7"
                                             ],
                                             "columns": {
-                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782a": {
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "attributes.level : \"self\" and attributes.mode : \"user\" "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Minimum of metrics.apache.cpu.time",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "metrics.apache.cpu.time"
-                                                },
                                                 "5a671590-a106-4438-a96f-9f2f7164bffd": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
@@ -1141,36 +1021,6 @@
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
-                                                },
-                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09": {
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "attributes.level : \"children\" and attributes.mode : \"system\" "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Minimum of metrics.apache.cpu.time",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "metrics.apache.cpu.time"
-                                                },
-                                                "a8748731-8651-4274-a524-9bcdbb7ce526": {
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "attributes.level : \"children\" and attributes.mode : \"user\" "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Minimum of metrics.apache.cpu.time",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "metrics.apache.cpu.time"
                                                 },
                                                 "c3c68993-b7ea-43ec-99ff-57e89e39555b": {
                                                     "dataType": "string",
@@ -1202,28 +1052,13 @@
                                                         "query": ""
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "CPU load",
+                                                    "label": "CPU Usage (%)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "metrics.apache.cpu.load"
-                                                },
-                                                "fe117f49-f67f-45da-8a40-6fc6369a4afc": {
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "attributes.level : \"self\" and attributes.mode : \"system\" "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Minimum of metrics.apache.cpu.time",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "metrics.apache.cpu.time"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1249,11 +1084,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "f136087d-75f7-40fe-842f-daa64ae7d1c7",
-                                            "491e0e96-f1b0-42a9-baf1-bdc77efb782a",
-                                            "fe117f49-f67f-45da-8a40-6fc6369a4afc",
-                                            "a8748731-8651-4274-a524-9bcdbb7ce526",
-                                            "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09"
+                                            "f136087d-75f7-40fe-842f-daa64ae7d1c7"
                                         ],
                                         "layerId": "6327731b-2cb9-4f8c-bc07-c8e799b56d37",
                                         "layerType": "data",
@@ -1265,18 +1096,17 @@
                                     }
                                 ],
                                 "legend": {
-                                    "isVisible": true,
+                                    "isVisible": false,
                                     "legendSize": "xlarge",
-                                    "legendStats": [
-                                        "currentAndLastValue"
-                                    ],
+                                    "legendStats": [],
                                     "position": "right",
-                                    "shouldTruncate": false
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": false
                                 },
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "yTitle": "Count"
+                                "yTitle": "Percentage"
                             }
                         },
                         "title": "",
@@ -1288,13 +1118,568 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "121c95cd-f349-4d48-9d80-daf03aa4172c",
+                    "i": "98d48750-a0fa-4a5a-a5b8-4144270cb775",
                     "w": 24,
                     "x": 24,
                     "y": 22
                 },
-                "panelIndex": "121c95cd-f349-4d48-9d80-daf03aa4172c",
-                "title": "CPU usage",
+                "panelIndex": "98d48750-a0fa-4a5a-a5b8-4144270cb775",
+                "title": "CPU Load",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-6327731b-2cb9-4f8c-bc07-c8e799b56d37",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "6327731b-2cb9-4f8c-bc07-c8e799b56d37": {
+                                            "columnOrder": [
+                                                "c3c68993-b7ea-43ec-99ff-57e89e39555b",
+                                                "5a671590-a106-4438-a96f-9f2f7164bffd",
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afc",
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526",
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09",
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782a",
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782aX0",
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782aX1",
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afcX0",
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afcX1",
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afcX2",
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526X0",
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526X1",
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526X2",
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X0",
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X1",
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X2",
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782aX2"
+                                            ],
+                                            "columns": {
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU User",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"self\" and attributes.mode : \"user\" ') / 100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "491e0e96-f1b0-42a9-baf1-bdc77efb782aX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782aX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU User",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.apache.cpu.time"
+                                                },
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782aX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "attributes.level : \"self\" and attributes.mode : \"user\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU User",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "491e0e96-f1b0-42a9-baf1-bdc77efb782aX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782aX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU User",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "491e0e96-f1b0-42a9-baf1-bdc77efb782aX1",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 110,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"self\" and attributes.mode : \"user\" ') / 100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "491e0e96-f1b0-42a9-baf1-bdc77efb782aX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "5a671590-a106-4438-a96f-9f2f7164bffd": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU children system",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"children\" and attributes.mode : \"system\" ') / 100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU children system",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.apache.cpu.time"
+                                                },
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "attributes.level : \"children\" and attributes.mode : \"system\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU children system",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU children system",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X1",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 116,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"children\" and attributes.mode : \"system\" ') / 100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU children user",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"children\" and attributes.mode : \"user\" ') / 100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "a8748731-8651-4274-a524-9bcdbb7ce526X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU children user",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.apache.cpu.time"
+                                                },
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "attributes.level : \"children\" and attributes.mode : \"user\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU children user",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "a8748731-8651-4274-a524-9bcdbb7ce526X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a8748731-8651-4274-a524-9bcdbb7ce526X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU children user",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "a8748731-8651-4274-a524-9bcdbb7ce526X1",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 114,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"children\" and attributes.mode : \"user\" ') / 100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "a8748731-8651-4274-a524-9bcdbb7ce526X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "c3c68993-b7ea-43ec-99ff-57e89e39555b": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of resource.attributes.apache.server.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "resource.attributes.apache.server.name"
+                                                },
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afc": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU system",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"self\" and attributes.mode : \"system\" ') / 100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "fe117f49-f67f-45da-8a40-6fc6369a4afcX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afcX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU system",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.apache.cpu.time"
+                                                },
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afcX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "attributes.level : \"self\" and attributes.mode : \"system\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU system",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "fe117f49-f67f-45da-8a40-6fc6369a4afcX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "fe117f49-f67f-45da-8a40-6fc6369a4afcX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU system",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "fe117f49-f67f-45da-8a40-6fc6369a4afcX1",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 112,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "differences(min(metrics.apache.cpu.time), kql='attributes.level : \"self\" and attributes.mode : \"system\" ') / 100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "fe117f49-f67f-45da-8a40-6fc6369a4afcX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "491e0e96-f1b0-42a9-baf1-bdc77efb782a",
+                                            "fe117f49-f67f-45da-8a40-6fc6369a4afc",
+                                            "a8748731-8651-4274-a524-9bcdbb7ce526",
+                                            "76ce0b8c-4cb2-4d26-93bc-20c1a6274b09"
+                                        ],
+                                        "layerId": "6327731b-2cb9-4f8c-bc07-c8e799b56d37",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c3c68993-b7ea-43ec-99ff-57e89e39555b",
+                                        "xAccessor": "5a671590-a106-4438-a96f-9f2f7164bffd"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "xlarge",
+                                    "legendStats": [],
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": "CPU Time (seconds)"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "3ea55df6-0412-4df3-b36c-f38c05ba184f",
+                    "w": 24,
+                    "x": 0,
+                    "y": 22
+                },
+                "panelIndex": "3ea55df6-0412-4df3-b36c-f38c05ba184f",
+                "title": "CPU Time Spent - by CPU Mode",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9c48411c-649e-4e2c-976e-15a98bd84b1e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "9c48411c-649e-4e2c-976e-15a98bd84b1e": {
+                                            "columnOrder": [
+                                                "d268948d-fb3a-42f3-be99-e35966b7aa71",
+                                                "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34",
+                                                "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34X0"
+                                            ],
+                                            "columns": {
+                                                "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "max(metrics.apache.current_connections)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.apache.current_connections"
+                                                },
+                                                "d268948d-fb3a-42f3-be99-e35966b7aa71": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34"
+                                        ],
+                                        "layerId": "9c48411c-649e-4e2c-976e-15a98bd84b1e",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "d268948d-fb3a-42f3-be99-e35966b7aa71",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#00a69b",
+                                                "forAccessor": "bcf5e58f-9ca6-4c82-a90d-3e4e12b3da34"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Connections"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "c1d17188-081d-41bf-8faf-0b331e875efe",
+                    "w": 24,
+                    "x": 24,
+                    "y": 37
+                },
+                "panelIndex": "c1d17188-081d-41bf-8faf-0b331e875efe",
+                "title": "Active Apache Connections",
                 "type": "lens"
             }
         ],
@@ -1340,22 +1725,27 @@
         },
         {
             "id": "metrics-*",
-            "name": "c1d17188-081d-41bf-8faf-0b331e875efe:indexpattern-datasource-layer-9c48411c-649e-4e2c-976e-15a98bd84b1e",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "913075a2-5cfb-4209-9df5-4a0e3770807b:indexpattern-datasource-layer-93d4224a-162f-4c5a-8eab-b51b2ae338d2",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "121c95cd-f349-4d48-9d80-daf03aa4172c:indexpattern-datasource-layer-6327731b-2cb9-4f8c-bc07-c8e799b56d37",
+            "name": "98d48750-a0fa-4a5a-a5b8-4144270cb775:indexpattern-datasource-layer-6327731b-2cb9-4f8c-bc07-c8e799b56d37",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_c21a4893-79db-4992-b4ac-4298abb71028:optionsListDataView",
+            "name": "3ea55df6-0412-4df3-b36c-f38c05ba184f:indexpattern-datasource-layer-6327731b-2cb9-4f8c-bc07-c8e799b56d37",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c1d17188-081d-41bf-8faf-0b331e875efe:indexpattern-datasource-layer-9c48411c-649e-4e2c-976e-15a98bd84b1e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_065c9b34-5c24-4cff-bb24-df4df704593b:optionsListDataView",
             "type": "index-pattern"
         }
     ],
