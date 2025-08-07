@@ -2,10 +2,10 @@
 
 ## Overview
 
-The abuse.ch integration for Elastic enables collection of logs from [abuse.ch](https://abuse.ch/). This integration facilitates the ingestion of threat intelligence indicators to be used for threat detection and event enrichment.
+The abuse.ch integration for Elastic enables collection of logs from [abuse.ch](https://abuse.ch/). abuse.ch provides actionable, community-driven threat intelligence data and help identify, track, and mitigate against malware and botnet-related cyber threats. This integration facilitates the ingestion of threat intelligence indicators to be used for threat detection and event enrichment.
 
 ### Compatibility
-This integration is compatible with `v1` version of URLhaus, MalwareBazaar, and ThreatFox APIs.
+This integration is compatible with `v1` version of abuse.ch URLhaus, MalwareBazaar, ThreatFox, and SSLBL APIs.
 
 ### How it works
 
