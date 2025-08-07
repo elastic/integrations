@@ -69,7 +69,7 @@ service:
 
 Use this configuration to run the collector.
 
-The following metrics should be enabled in the `mysqlreceiver` configuration:
+The following metrics should be enabled in the `mysqlreceiver` configuration for the dashboards to be populated:
 
 For Database Overview dashboard:
 ```yaml
