@@ -20,7 +20,7 @@ apache
 
 A data stream defines multiple {{es}} assets, like index templates, ingest pipelines, and field definitions. These assets are loaded into {{es}} when a user installs an integration using the {{fleet}} UI in {{kib}}.
 
-A data stream also defines a policy template. Policy templates include variables that allow users to configure the data stream using the {{fleet}} UI in {{kib}}. Then, the {{agent}} interprets the resulting policy to collect relevant information from the product or service being observed. Policy templates can also define an integration’s supported [`deployment_modes`](/extend/define-deployment-modes.md#deployment_modes).
+A data stream also defines a policy template. Policy templates include variables that allow users to configure the data stream using the {{fleet}} UI in {{kib}}. Then, the {{agent}} interprets the resulting policy to collect relevant information from the product or service being observed. Policy templates can also define an integration’s supported [`deployment_modes`](/extend/define-deployment-modes.md#set-deployment-modes).
 
 See [data streams](docs-content://reference/fleet/data-streams.md) for more information.
 

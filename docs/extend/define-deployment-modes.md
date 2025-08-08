@@ -42,10 +42,14 @@ policy_templates:
     ...
 ```
 
+1. Defines the supported deployment modes
+2. Disables agent deployment support
+3. Enables agentless deployment support
+
 Here, only agentless mode is enable for the "billing" template.
 
 
-## Hiding variables based on deployment mode [hide-in-deployment-mode]
+## Hiding variables based on deployment mode [hide-in-deployment-modes]
 
 Sometimes, you want certain configuration options to show up only in specific modes. Use the `hide_in_deployment_modes` property for this.
 
@@ -69,17 +73,20 @@ streams:
         multi: false
         required: false
         show_user: true
-        hide_in_deployment_modes:
-          - default             # Hidden in default mode, shown in agentless mode
+        hide_in_deployment_modes: <1>
+          - default
      - name: hidden_in_agentless
        type: text
        title: Hidden in agentless variable
        multi: false
        required: false
        show_user: true
-       hide_in_deployment_modes:
-         - agentless             # Hidden in agentless mode, shown in default mode
+       hide_in_deployment_modes: <2>
+         - agentless
 ```
+
+1. Disables visibility of the variable in default deployment mode
+2. Disables visibility of the variable in agentless deployment mode
 
 This helps keep the UI clean and relevant for each deployment type.
 For more information on variable property definitions, refer to [Define variable properties](/extend/finishing-touches.md#define-variable-properties).
