@@ -2,7 +2,7 @@
 
 The Azure Functions integration allows you to monitor Azure Functions. Azure Functions is an event-driven, serverless compute platform that helps you develop more efficiently using the programming language of your choice. Triggers cause a function to run. A trigger defines how a function is invoked and a function must have exactly one trigger. 
 
-Use Azure Functions to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
+Use Azure Functions to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer to common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
 
 ## Hosting plans and metrics
 
@@ -24,12 +24,13 @@ Supported log categories:
 
 #### Requirements and setup
 
-Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
 
 #### Configuration options
+
 `eventhub` :
   _string_
-An Event Hub is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+An Event Hub is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (for example, the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -39,9 +40,9 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
-The connection string is required to communicate with Event Hubs, see steps [here](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
+The connection string is required to communicate with Event Hubs. For more information, check the [Azure documentation](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
 
-A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the Azure logs package it can start back up at the spot that it stopped processing messages.
+A Blob Storage account is required to store/retrieve/update the offset or state of the eventhub messages. This means that after the Azure logs package is stopped, the Blob Storage can resume processing messages and backup from where it left off.
 
 `storage_account` :
 _string_
@@ -49,15 +50,15 @@ The name of the storage account where the state/offsets will be stored and updat
 
 `storage_account_key` :
 _string_
-The storage account key, this key will be used to authorize access to data in your storage account.
+The storage account key used to authorize data access in your storage account.
 
 `storage_account_container` :
 _string_
-The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You must use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). Do not reuse the same container name for more than one Azure log type. Refer to [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name, if not specified.
 
 `resource_manager_endpoint` :
 _string_
-Optional, by default we are using the Azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different Azure environment.
+Optional. By default, the integration uses the Azure public environment. To override, you can provide a specific Azure environment.
 
 Resource manager endpoints:
 
@@ -79,7 +80,7 @@ https://management.usgovcloudapi.net/
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Check the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information.
 
 {{fields "functionapplogs"}}
 
@@ -88,9 +89,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 #### Requirements
 
-To use this integration you will need:
+* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires the Monitoring Reader role to collect metrics from Function Apps. Check the Setup section for more details.
 
-* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires the Monitoring Reader role to access to be able to collect metrics from Function Apps. See more details in the Setup section.
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en/marketplace/apps/elastic.ec-azure-pp?tab=overview), or self-manage the Elastic Stack on your hardware.
 
 #### Setup
@@ -150,7 +150,7 @@ Take note of the content in the **Value** column in the **Client secrets** table
 7. Select **Assign access to** > **User, group, or service principal**, and select **Select members**. This page does not display Azure AD applications in the available options by default.
 8. To find your application, search by name (for example, "elastic-agent") and select it from the list.
 9. Click the **Select** button.
-10. Then click the **Review + assign** button.
+10. Click the **Review + assign** button.
 
 Take note of the following values, which you will use later when specifying settings.
 
@@ -161,14 +161,14 @@ Your App Registration is now ready to be used with the Elastic Agent.
 
 #### Additional Resources
 
-If you want to learn more about this process, you can read these two general guides from Microsoft:
+To learn more about this process, check the following Microsoft guides:
 
 * [Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) 
 * [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
 
 #### Main options
 
-The settings' main section contains all the options needed to access the Azure APIs and collect the Azure Functions metrics data. You will now use all the values from [App registration](#register-a-new-app) including:
+The settings main section contains all the options needed to access the Azure APIs and collect the Azure Functions metrics data. You will now use all the values from [App registration](#register-a-new-app) including:
 
 `Client ID` _string_
 : The unique identifier of the App Registration (sometimes referred to as Application ID).
@@ -187,7 +187,7 @@ The settings' main section contains all the options needed to access the Azure A
 There are two additional advanced options:
 
 `Resource Manager Endpoint` _string_
-: Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
+: Optional. By default, the integration uses the Azure public environment. To override, you can provide a specific resource manager endpoint to use a different Azure environment.
 
 Examples:
 
@@ -197,7 +197,7 @@ Examples:
 * `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
 
 `Active Directory Endpoint`  _string_
-: Optional. By default, the integration uses the associated Active Directory Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
+: Optional. By default, the integration uses the associated Active Directory Endpoint. To override, you can provide a specific active directory endpoint to use a different Azure environment.
 
 Examples:
 
@@ -212,6 +212,6 @@ Examples:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Check the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for more information.
 
 {{fields "metrics"}}
