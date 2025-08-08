@@ -76,7 +76,7 @@ vars:
 4. variable description (may contain some details)
 5. field type (according to the reference: text, password, bool, integer)
 6. the field has multiple values
-7. hides the variable in agentless mode (see [`hide_in_deployment_modes`](/extend/define-deployment-modes.md#hide_in_deployment_modes) for more information)
+7. hides the variable in agentless mode (see [`hide_in_deployment_modes`](/extend/define-deployment-modes.md#hide-in-deployment-modes) for more information)
 
 
 
