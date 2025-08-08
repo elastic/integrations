@@ -36,4 +36,8 @@ spec:
       name: test
       required: false
       $ref: "./test/spec.yml"
+    - description: Folder containing shared files.
+      type: folder
+      name: shared
+      $ref: "../../integration/spec.yml"
 ```
