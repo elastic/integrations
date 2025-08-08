@@ -20,53 +20,52 @@ state:
 redact:
   fields:
     - api_key
-program: |
+program: |-
   state.with(
-    request("GET", state.url).with({
-      "Header": {
-        "Authorization": ["ApiKey " + state.api_key]
+    request("GET", state.url).with(
+      {
+        "Header": {
+          "Authorization": ["ApiKey " + state.api_key],
+        },
       }
-    })
-    .do_request()
-    .as(resp, resp.StatusCode == 200
-    ?
-      bytes(resp.Body).decode_json().as(body,
-        {
-          "events": body.map(item,
-            {
-              "ess": {
-                "billing": {
-                  "organization_id": state.organization_id,
-                  "start": item.start,
-                  "end": item.end,
-                  "ecu_quantity": item.ecu_quantity,
-                  "ecu_balance": item.ecu_balance,
-                  "active": item.active,
-                  "type": item.type
-                }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        bytes(resp.Body).decode_json().as(body,
+          {
+            "events": body.map(item,
+              {
+                "ess": {
+                  "billing": {
+                    "organization_id": state.organization_id,
+                    "start": item.start,
+                    "end": item.end,
+                    "ecu_quantity": item.ecu_quantity,
+                    "ecu_balance": item.ecu_balance,
+                    "active": item.active,
+                    "type": item.type,
+                  },
+                },
               }
-            }
-          ),
+            ),
+            "want_more": false,
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + resp.Request.URL + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
           "want_more": false,
         }
-      )
-    :
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET " + resp.Request.URL + ": " +
-            (
-              (size(resp.Body) != 0) ?
-                string(resp.Body)
-              :
-                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-            ),
-          },
-        },
-        "want_more": false,
-      }
     )
   )
 {{#if tags.length}}
