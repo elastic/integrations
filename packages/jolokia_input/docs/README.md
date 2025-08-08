@@ -4,7 +4,7 @@ The Jolokia input package collects metrics from [Jolokia agents](https://jolokia
 
 The metrics are collected by communicating with a Jolokia HTTP/REST endpoint that exposes the JMX metrics over HTTP/REST/JSON.
 
-You can use this input for any service that collects metrics through Jolokia endpoint. You can provide custom mappings and custom ingets pipelines through the Kibana UI to get the tailored data.
+You can use this input for any service that collects metrics through Jolokia endpoint. Optionally, you can provide custom mappings and custom ingest pipelines through the Kibana UI to get the tailored data.
 
 ## Compatibility
 
@@ -50,7 +50,7 @@ password: your_password
 
 
 ### JMX Mappings and attributes
-The Jolokia input package can collect metrics from various JMX MBeans by configuring the `mbean` parameter. You can specify which MBeans and attributes to collect as show in below example:
+The Jolokia input package can collect metrics from various JMX MBeans by configuring the `mbean` parameter. You can specify which MBeans and attributes to collect as shown in example below.
 
 ```
 - mbean: 'java.lang:type=Runtime'
