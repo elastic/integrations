@@ -42,7 +42,7 @@ The {{kib}} Integration Manager shows screenshots related to the integration. Sc
 
 ## Create a README file [_create_a_readme_file]
 
-The README template is used to render the final README file, including exported fields. The template should be placed in the `package/<integration-name>/_dev/build/docs/README.md`. If the directory doesn’t exist, please create it.
+The README template is used to render the final README file, including exported fields. The template should be located in the `package/<integration-name>/_dev/build/docs/README.md`. The template will include guidance on the structure and content expected for the integration.
 
 To see how to use template functions, for example {{fields "data-stream-name"}}, review the MySQL docs template. If the same data stream name is used in both metrics and logs, please add -metrics and -logs in the template. For example, ELB is a data stream for log and also a data stream for metrics. In README.md template, {{fields "elb_logs"}} and {{fields "elb_metrics"}} are used to separate them.
 
