@@ -49,11 +49,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2024-02-15T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "39957f93-aff4-4e3f-84f0-66d18441ccd6",
-        "id": "7edf8be5-ad5d-4c57-a6bd-b86bddc66601",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "fc07fa12-f549-40b8-b71a-d49f02d4941d",
+        "id": "5f9e8c36-28d7-4df6-bdeb-68a9e24bfdc0",
+        "name": "elastic-agent-37763",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "cisa_kev": {
         "vulnerability": {
@@ -69,25 +69,24 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "cisa_kevs.vulnerability",
-        "namespace": "ep",
+        "namespace": "77864",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7edf8be5-ad5d-4c57-a6bd-b86bddc66601",
+        "id": "5f9e8c36-28d7-4df6-bdeb-68a9e24bfdc0",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2024-03-13T01:01:09.893Z",
         "dataset": "cisa_kevs.vulnerability",
-        "ingested": "2024-03-13T01:01:21Z",
+        "ingested": "2025-08-05T05:37:31Z",
         "kind": "enrichment",
         "original": "{\"cveID\":\"CVE-2020-3259\",\"dateAdded\":\"2024-02-15\",\"dueDate\":\"2024-03-07\",\"knownRansomwareCampaignUse\":\"Known\",\"notes\":\"https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-asaftd-info-disclose-9eJtycMB\",\"product\":\"Adaptive Security Appliance (ASA) and Firepower Threat Defense (FTD)\",\"requiredAction\":\"Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.\",\"shortDescription\":\"Cisco Adaptive Security Appliance (ASA) and Firepower Threat Defense (FTD) contain an information disclosure vulnerability. An attacker could retrieve memory contents on an affected device, which could lead to the disclosure of confidential information due to a buffer tracking issue when the software parses invalid URLs that are requested from the web services interface. This vulnerability affects only specific AnyConnect and WebVPN configurations.\",\"vendorProject\":\"Cisco\",\"vulnerabilityName\":\"Cisco ASA and FTD Information Disclosure Vulnerability\"}",
         "type": [
@@ -95,7 +94,7 @@ An example event for `vulnerability` looks as following:
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "tags": [
         "preserve_original_event",
