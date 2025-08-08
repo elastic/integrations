@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.12.1
-	github.com/elastic/elastic-package v0.113.0
+	github.com/elastic/elastic-package v0.114.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.8.8
 	github.com/elastic/package-registry v1.30.1
@@ -149,8 +149,8 @@ require (
 	github.com/nwaples/rardecode/v2 v2.1.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/errors v1.1.0 // indirect
-	github.com/olekukonko/ll v0.0.8 // indirect
-	github.com/olekukonko/tablewriter v1.0.8 // indirect
+	github.com/olekukonko/ll v0.0.9 // indirect
+	github.com/olekukonko/tablewriter v1.0.9 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/pkg/xattr v0.4.10 // indirect
