@@ -1,8 +1,16 @@
 # audit-logs
 
-audit-logs integration collects and parses Kubernetes audit logs.
+Audit-logs integration collects and parses Kubernetes audit logs.
 
-It requires access to the log files on each Kubernetes node where the audit logs are stored.
+Audit logs can be collected from managed Kubernetes services in cloud providers:
+
+- Amazon EKS: Configure the aws-cloudwatch input to collect audit logs from a CloudWatch log group where EKS audit logs are published.
+- Azure AKS: Use the azure-eventhub input to receive audit logs from an Event Hub configured to stream AKS diagnostic logs.
+- Google GKE: Use the gcp-pubsub input to subscribe to a Pub/Sub topic that receives GKE audit logs via Log Router sinks.
+
+To enable these, configure the corresponding input with access credentials and the appropriate log stream or topic.
+
+To collect audit logs from local k8s deployments, it requires access to the log files on each Kubernetes node where the audit logs are stored.
 This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
 
 An example event for `audit` looks as following:
@@ -137,6 +145,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.impersonatedUser.username | The name that uniquely identifies this user among all active users | keyword |
 | kubernetes.audit.kind | Kind of the audit event | keyword |
 | kubernetes.audit.level | AuditLevel at which event was generated | keyword |
+| kubernetes.audit.logName |  | keyword |
 | kubernetes.audit.objectRef.apiGroup | The name of the API group that contains the referred object. The empty string represents the core API group. | keyword |
 | kubernetes.audit.objectRef.apiVersion | The version of the API group that contains the referred object | keyword |
 | kubernetes.audit.objectRef.name |  | keyword |
@@ -145,6 +154,20 @@ An example event for `audit` looks as following:
 | kubernetes.audit.objectRef.resourceVersion |  | keyword |
 | kubernetes.audit.objectRef.subresource |  | keyword |
 | kubernetes.audit.objectRef.uid |  | keyword |
+| kubernetes.audit.operation.first |  | boolean |
+| kubernetes.audit.operation.id |  | keyword |
+| kubernetes.audit.operation.last |  | boolean |
+| kubernetes.audit.operation.producer |  | keyword |
+| kubernetes.audit.protoPayload.@type |  | keyword |
+| kubernetes.audit.protoPayload.authenticationInfo.principalEmail |  | keyword |
+| kubernetes.audit.protoPayload.authorizationInfo.granted |  | boolean |
+| kubernetes.audit.protoPayload.authorizationInfo.permission |  | keyword |
+| kubernetes.audit.protoPayload.authorizationInfo.resource |  | keyword |
+| kubernetes.audit.protoPayload.methodName |  | keyword |
+| kubernetes.audit.protoPayload.requestMetadata.callerIp |  | ip |
+| kubernetes.audit.protoPayload.requestMetadata.callerSuppliedUserAgent |  | keyword |
+| kubernetes.audit.protoPayload.resourceName |  | keyword |
+| kubernetes.audit.protoPayload.serviceName |  | keyword |
 | kubernetes.audit.requestObject.roleRef.name |  | keyword |
 | kubernetes.audit.requestObject.rules |  | nested |
 | kubernetes.audit.requestObject.spec.containers.command |  | text |
@@ -171,6 +194,10 @@ An example event for `audit` looks as following:
 | kubernetes.audit.requestObject.spec.volumes.hostPath |  | flattened |
 | kubernetes.audit.requestReceivedTimestamp | Time the request reached the apiserver | date |
 | kubernetes.audit.requestURI | RequestURI is the request URI as sent by the client to a server | keyword |
+| kubernetes.audit.resource.labels.cluster_name |  | keyword |
+| kubernetes.audit.resource.labels.location |  | keyword |
+| kubernetes.audit.resource.labels.project_id |  | keyword |
+| kubernetes.audit.resource.type |  | keyword |
 | kubernetes.audit.responseObject.roleRef.kind |  | keyword |
 | kubernetes.audit.responseObject.rules |  | nested |
 | kubernetes.audit.responseObject.spec.containers.securityContext.allowPrivilegeEscalation |  | boolean |
@@ -204,6 +231,8 @@ An example event for `audit` looks as following:
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
