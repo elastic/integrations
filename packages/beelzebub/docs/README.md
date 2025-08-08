@@ -78,11 +78,14 @@ All Beelzebub logs are available in the `beelzebub.logs` field group.
 | beelzebub.event.Client | Client identifier, e.g. SSH client ID and version | keyword |
 | beelzebub.event.Command | Command issued by client | keyword |
 | beelzebub.event.CommandOutput | Command response returned to client | text |
+| beelzebub.event.Cookies | Cookies sent by the client | text |
 | beelzebub.event.DateTime | Date log message created | date |
 | beelzebub.event.Description | Description of event | keyword |
 | beelzebub.event.Environ | Environment variables | keyword |
 | beelzebub.event.HTTPMethod | HTTP request method | keyword |
 | beelzebub.event.Headers.\* | HTTP request headers | keyword |
+| beelzebub.event.HeadersMap.\* | HTTP request headers | keyword |
+| beelzebub.event.HeadersText | HTTP request headers as a string | keyword |
 | beelzebub.event.HostHTTPRequest | HTTP host name | keyword |
 | beelzebub.event.ID | Unique ID for event | keyword |
 | beelzebub.event.Msg | Beelzebub described message | keyword |
