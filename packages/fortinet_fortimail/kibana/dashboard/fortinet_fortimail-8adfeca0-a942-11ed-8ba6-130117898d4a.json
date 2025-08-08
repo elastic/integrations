@@ -1,7 +1,18 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
         "description": "Overview of Fortinet FortiMail Antispam, Antivirus \u0026 Encryption Events.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -13,16 +24,37 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
+                            "key": "fortinet_fortimail.log.type",
                             "negate": false,
                             "params": {
-                                "query": "fortinet_fortimail.log"
+                                "query": "statistics"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "fortinet_fortimail.log"
+                                "fortinet_fortimail.log.type": "statistics"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "fortinet_fortimail.log.type",
+                            "negate": false,
+                            "params": {
+                                "query": "kevent"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "fortinet_fortimail.log.type": "kevent"
                             }
                         }
                     },
@@ -33,7 +65,7 @@
                         "meta": {
                             "alias": "Event Type",
                             "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
                             "key": "fortinet_fortimail.log.type",
                             "negate": false,
                             "params": [
@@ -65,6 +97,48 @@
                                 ]
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "fortinet_fortimail.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "fortinet_fortimail.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+                            "key": "fortinet_fortimail.log.type",
+                            "negate": false,
+                            "params": {
+                                "query": "event"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "fortinet_fortimail.log.type": "event"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -76,49 +150,58 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": true,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": true,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_257dd3cd-b3e2-4743-addd-298c941154f3_dashboard",
+                                "id": "257dd3cd-b3e2-4743-addd-298c941154f3",
+                                "label": "History",
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_4725bcfb-79e5-4bab-a147-4e3660c7899e_dashboard",
+                                "id": "4725bcfb-79e5-4bab-a147-4e3660c7899e",
+                                "label": "System",
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_d5b84f50-2735-431c-b7dd-cd6a6d94081a_dashboard",
+                                "id": "d5b84f50-2735-431c-b7dd-cd6a6d94081a",
+                                "label": "Email",
+                                "order": 2,
+                                "type": "dashboardLink"
                             }
-                        },
-                        "description": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "[History](#/dashboard/fortinet_fortimail-f352d950-a870-11ed-8ba6-130117898d4a) | [System](#/dashboard/fortinet_fortimail-d5803cc0-a937-11ed-8ba6-130117898d4a) | [Email](#/dashboard/fortinet_fortimail-c4b7f4d0-a93e-11ed-8ba6-130117898d4a)",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
+                        ]
+                    },
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 2,
-                    "i": "8e04ab8a-bd99-4ed2-9ce5-14f67831c865",
+                    "i": "4202e954-7f58-401e-be3e-1d258dcb8689",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "8e04ab8a-bd99-4ed2-9ce5-14f67831c865",
-                "type": "visualization",
-                "version": "8.3.0"
+                "panelIndex": "4202e954-7f58-401e-be3e-1d258dcb8689",
+                "type": "links"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -151,8 +234,7 @@
                     "y": 2
                 },
                 "panelIndex": "2c93d318-669e-4536-ad5a-be1400ec1a75",
-                "type": "visualization",
-                "version": "8.3.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -171,7 +253,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "91f29ea2-28fa-4a3f-87a8-bda18acaf98a": {
                                             "columnOrder": [
@@ -244,16 +326,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "d465f273-9a8f-4a08-8b84-d9adfc344edf"
-                                        ],
                                         "layerId": "91f29ea2-28fa-4a3f-87a8-bda18acaf98a",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "legendSize": "auto",
-                                        "metric": "c28b650a-89ee-41f5-b9e6-dce8a260b0b2",
+                                        "metrics": [
+                                            "c28b650a-89ee-41f5-b9e6-dce8a260b0b2"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "d465f273-9a8f-4a08-8b84-d9adfc344edf"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -275,8 +359,7 @@
                 },
                 "panelIndex": "daf9c218-a981-4dd1-9a2f-e0750a31c4fe",
                 "title": "Distribution of Antispam Events by Priority [Logs Fortinet FortiMail]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -295,7 +378,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "63b2f27f-538f-4e13-9356-eaf7ff4e1d25": {
                                             "columnOrder": [
@@ -421,12 +504,15 @@
                 },
                 "panelIndex": "716958c8-e162-4dcc-a35c-9c64b8aa4c9b",
                 "title": "Distribution of Antispam Events by Endpoint [Logs Fortinet FortiMail]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -459,8 +545,7 @@
                 },
                 "panelIndex": "9cefee8d-73bf-404b-84b2-3ecd4731aabc",
                 "title": "",
-                "type": "visualization",
-                "version": "8.3.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -479,7 +564,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "e20a930b-10cf-4ce4-83e5-d1a85b1c0092": {
                                             "columnOrder": [
@@ -552,16 +637,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "385736f5-015b-4650-8271-827efa5aaaeb"
-                                        ],
                                         "layerId": "e20a930b-10cf-4ce4-83e5-d1a85b1c0092",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "legendSize": "auto",
-                                        "metric": "435997ba-5373-4703-bc76-ec743f541862",
+                                        "metrics": [
+                                            "435997ba-5373-4703-bc76-ec743f541862"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "385736f5-015b-4650-8271-827efa5aaaeb"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -583,8 +670,7 @@
                 },
                 "panelIndex": "40f3d3b0-e2a4-4cd4-b392-dda4f1d8ea0b",
                 "title": "Distribution of Antivirus Events by Subtype [Logs Fortinet FortiMail]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -603,7 +689,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "565da57f-35bb-47b8-8c6e-263acbe77e39": {
                                             "columnOrder": [
@@ -676,16 +762,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "9cbf4a97-4148-4236-a463-9ae746f33081"
-                                        ],
                                         "layerId": "565da57f-35bb-47b8-8c6e-263acbe77e39",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "legendSize": "auto",
-                                        "metric": "7436c1f0-af5b-4b00-ab40-2f18bd98ce6d",
+                                        "metrics": [
+                                            "7436c1f0-af5b-4b00-ab40-2f18bd98ce6d"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "9cbf4a97-4148-4236-a463-9ae746f33081"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -707,12 +795,15 @@
                 },
                 "panelIndex": "3d808a1e-729b-4079-b86a-bf461cab6b0d",
                 "title": "Distribution of Antivirus Events by Priority [Logs Fortinet FortiMail]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -745,8 +836,7 @@
                 },
                 "panelIndex": "db623f0c-5a67-4d94-b45e-6e2d9d663ea3",
                 "title": "",
-                "type": "visualization",
-                "version": "8.3.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -765,7 +855,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "6325af1a-d658-4a3e-a2df-0244e6a15a89": {
                                             "columnOrder": [
@@ -838,16 +928,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "b46016d7-33e0-4414-a0a1-d0d0095a9fce"
-                                        ],
                                         "layerId": "6325af1a-d658-4a3e-a2df-0244e6a15a89",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "legendSize": "auto",
-                                        "metric": "a7c86fa9-b63c-4c1d-bc5d-22b1f6e30043",
+                                        "metrics": [
+                                            "a7c86fa9-b63c-4c1d-bc5d-22b1f6e30043"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "b46016d7-33e0-4414-a0a1-d0d0095a9fce"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -869,19 +961,17 @@
                 },
                 "panelIndex": "59b4f09d-8960-4174-8232-0bde19e7ecf7",
                 "title": "Distribution of Encryption Events by Priority [Logs Fortinet FortiMail]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Fortinet FortiMail] Antispam, Antivirus \u0026 Encryption",
-        "version": 1
+        "version": 3
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-08-08T18:06:48.485Z",
     "id": "fortinet_fortimail-8adfeca0-a942-11ed-8ba6-130117898d4a",
-    "migrationVersion": {
-        "dashboard": "8.3.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -891,6 +981,21 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
             "type": "index-pattern"
         },
         {
@@ -942,7 +1047,29 @@
             "id": "logs-*",
             "name": "59b4f09d-8960-4174-8232-0bde19e7ecf7:b323b805-60c3-4629-8d5e-989a6bca5302",
             "type": "index-pattern"
+        },
+        {
+            "id": "fortinet_fortimail-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "fortinet_fortimail-f352d950-a870-11ed-8ba6-130117898d4a",
+            "name": "4202e954-7f58-401e-be3e-1d258dcb8689:link_257dd3cd-b3e2-4743-addd-298c941154f3_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "fortinet_fortimail-d5803cc0-a937-11ed-8ba6-130117898d4a",
+            "name": "4202e954-7f58-401e-be3e-1d258dcb8689:link_4725bcfb-79e5-4bab-a147-4e3660c7899e_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "fortinet_fortimail-c4b7f4d0-a93e-11ed-8ba6-130117898d4a",
+            "name": "4202e954-7f58-401e-be3e-1d258dcb8689:link_d5b84f50-2735-431c-b7dd-cd6a6d94081a_dashboard",
+            "type": "dashboard"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
