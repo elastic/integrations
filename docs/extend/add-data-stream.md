@@ -26,18 +26,33 @@ See [data streams](docs-content://reference/fleet/data-streams.md) for more info
 
 ::::
 
+## How to add a data stream [how-to]
 
-Bootstrap a new data stream using the TUI wizard. In the directory of your package, run:
+1. Boostrap a new data stream
+
+In your package directory, run:
 
 ```bash
 elastic-package create data-stream
 ```
 
-Follow the prompts to name, title, and select your data stream type. Then, run this command each time you add a new data stream to your integration.
+Follow the prompts to set the name, title, and type (logs, metrics, etc.) for the data stream. Repeat this command for each new data stream you want to add.
 
-Next, manually adjust the data stream:
+2. Configure the data stream
 
-* define required variables
-* define used fields
-* define ingest pipeline definitions (if necessary)
-* update the {{agent}}'s stream configuration
+After bootstrapping, manually adjust the generated files to suit your use case:
+
+* Define required variables:
+In the policy template, specify variables that users can configure (e.g., paths, ports, log levels).
+* Define used fields:
+Edit the fields/ files to describe the structure and types of data your stream will ingest.
+* Define ingest pipeline definitions:
+If needed, create or update ingest pipelines to parse, enrich, or transform incoming data before it’s indexed.
+* Update the {{agent}} stream configuration:
+Ensure the {{agent}}’s stream configuration matches your data collection requirements and references the correct variables and pipelines.
+
+3. How data streams are used
+
+* When the integration is installed, each data stream is registered in {{es}} as a managed, time-based resource.
+* Data sent to the data stream is automatically routed to the correct backing indices, with lifecycle management (rollover, retention) handled by Elasticsearch.
+* Users can query, visualize, and analyze data from each stream in {{kib}}, using the single data stream name (e.g., `logs-apache.access`).
