@@ -410,7 +410,7 @@ rules:
           "events":[{"type":"ACCESS","name":"DELETE_DISTRIBUTION_CONTENT","parameters":[{"name":"ASSET_ID","value":"abc-123"},{"name":"ASSET_NAME","value":"[Sample]ReportName"},{"name":"OWNER_EMAIL","value":"foo@bar.com"},{"name":"ASSET_TYPE","value":"REPORT"},
           {"name":"VISIBILITY","value":"PEOPLE_WITHIN_DOMAIN_WITH_LINK"},{"name":"PARENT_WORKSPACE_ID","value":""},{"name":"CONNECTOR_TYPE","value":""},{"name":"DISTRIBUTION_CONTENT_NAME","value":"[Sample]ReportName"},
           {"name":"DISTRIBUTION_CONTENT_OWNER_EMAIL","value":"foo@bar.com"},{"name":"DISTRIBUTION_CONTENT_ID","value":"abc-123"},{"name":"DISTRIBUTION_CONTENT_TYPE","value":"SCHEDULE"}]}]}]}
-  - path: /bigquery/v2/projects/elastic-123/jobs
+  - path: /bigquery/v2/projects/1234567890000/jobs
     methods: ['POST']
     request_headers:
       - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
@@ -424,13 +424,13 @@ rules:
           {
             "kind": "bigquery#job",
             "etag": "zgooZ+v7kxN/GisZIXCg2g==",
-            "id": "elastic-123:US.job_AbcDeFTD3ygPaDMXO1xxxx",
-            "selfLink": "https://bigquery.googleapis.com/bigquery/v2/projects/elastic-123/jobs/job_AbcDeFTD3ygPaDMXO1xxxx?location=US",
+            "id": "1234567890000:US.job_AbcDeFTD3ygPaDMXO1xxxx",
+            "selfLink": "https://bigquery.googleapis.com/bigquery/v2/projects/1234567890000/jobs/job_AbcDeFTD3ygPaDMXO1xxxx?location=US",
             "user_email": "example@elastic.com",
             "configuration": {
               "query": {
                 "destinationTable": {
-                  "projectId": "elastic-123",
+                  "projectId": "1234567890000",
                   "datasetId": "_a6b6162f4ebef61627f8c1d8a802449cxxxxxxxx",
                   "tableId": "abcde_bzYpfAmojS4Fx4KZNjcriO3BKjcZKf2Jcxxxxxxxx"
                 },
@@ -441,7 +441,7 @@ rules:
               "jobType": "QUERY"
             },
             "jobReference": {
-              "projectId": "elastic-123",
+              "projectId": "1234567890000",
               "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
               "location": "US"
             },
@@ -461,7 +461,7 @@ rules:
             }
           }
           `}}
-  - path: /bigquery/v2/projects/elastic-123/jobs/job_AbcDeFTD3ygPaDMXO1xxxx
+  - path: /bigquery/v2/projects/1234567890000/jobs/job_AbcDeFTD3ygPaDMXO1xxxx
     methods: ['GET']
     request_headers:
       - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
@@ -475,10 +475,10 @@ rules:
           {
             "kind": "bigquery#job",
             "etag": "a1CbPBrasIpwqP6rpz/p/w==",
-            "id": "elastic-123:US.job_AbcDeFTD3ygPaDMXO1xxxx",
+            "id": "1234567890000:US.job_AbcDeFTD3ygPaDMXO1xxxx",
             "configuration": {},
             "jobReference": {
-              "projectId": "elastic-123",
+              "projectId": "1234567890000",
               "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
               "location": "US"
             },
@@ -491,7 +491,7 @@ rules:
             }
           }
           `}}
-  - path: /bigquery/v2/projects/elastic-123/queries/job_AbcDeFTD3ygPaDMXO1xxxx
+  - path: /bigquery/v2/projects/1234567890000/queries/job_AbcDeFTD3ygPaDMXO1xxxx
     methods: ['GET']
     query_params:
       maxResults: 1
@@ -508,50 +508,71 @@ rules:
           {{ minify_json `
           {
             "kind": "bigquery#getQueryResultsResponse",
-            "etag": "ImXlkK15pnTI/sxDsXncyQ==",
+            "etag": "qCjm0W1TI+8BPLuiAEuzJw==",
             "schema": {
               "fields": [
+                {
+                  "name": "domain_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "email",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_id",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "has_sensitive_content",
+                  "type": "BOOLEAN",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "ip_address",
+                  "type": "BYTES",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "record_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "time_usec",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "unique_identifier",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
                 {
                   "name": "event_info",
                   "type": "RECORD",
                   "mode": "NULLABLE",
                   "fields": [
                     {
-                      "name": "client_context",
-                      "type": "RECORD",
-                      "mode": "NULLABLE",
-                      "fields": [
-                        {
-                          "name": "client_type",
-                          "type": "STRING",
-                          "mode": "NULLABLE"
-                        },
-                        {
-                          "name": "session_context",
-                          "type": "RECORD",
-                          "mode": "NULLABLE",
-                          "fields": [
-                            {
-                              "name": "delegate_user_email",
-                              "type": "STRING",
-                              "mode": "NULLABLE"
-                            },
-                            {
-                              "name": "dusi",
-                              "type": "STRING",
-                              "mode": "NULLABLE"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "elapsed_time_usec",
+                      "name": "timestamp_usec",
                       "type": "INTEGER",
                       "mode": "NULLABLE"
                     },
                     {
-                      "name": "mail_event_type",
+                      "name": "elapsed_time_usec",
                       "type": "INTEGER",
                       "mode": "NULLABLE"
                     },
@@ -561,8 +582,854 @@ rules:
                       "mode": "NULLABLE"
                     },
                     {
-                      "name": "timestamp_usec",
+                      "name": "client_context",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "session_context",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "delegate_user_email",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "client_type",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "mail_event_type",
                       "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    }
+                  ]
+                },
+                {
+                  "name": "message_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "action_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "rfc2822_message_id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "subject",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "payload_size",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "source",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_displayname",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "destination",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_signature_verification_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_decryption_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_parsing_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_extraction_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rcpt_response",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_destinations",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "description",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_spam",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_policy_check_for_sender",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "num_message_attachments",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "attachment",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "sha256",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "file_extension_type",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "malware_family",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "file_name",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "connection_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "client_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_in_connect_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "failed_smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "REPEATED"
+                        },
+                        {
+                          "name": "smtp_tls_state",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_tls_version",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_tls_cipher",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_reply_code",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "tls_required_but_unavailable",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_out_remote_host",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_user_agent_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "is_intra_domain",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_published_domain",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "client_host_zone",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_response_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_geo_city",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_geo_country",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "authenticated_domain",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "is_internal",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dkim_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "spf_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "message_set",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smtp_relay_error",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "upload_error_category",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "triggered_rule_info",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "policy_holder_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "consequence",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "action",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "reason",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "subconsequence",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "action",
+                                  "type": "INTEGER",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "reason",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "string_match",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "predefined_detector_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "source",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "attachment_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "matched_string",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "match_expression",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "spam_label_modifier",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rule_type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rule_name",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_triggered_rule_info",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "structured_policy_log_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "exchange_journal_info",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "timestamp",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "unknown_recipients",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "recipients",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "rfc822_message_id",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "detected_file_types",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "category",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "mime_type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smime_sign_message",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_encrypt_message",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_packaging_success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_extraction_success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_content_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "link_domain",
+                      "type": "STRING",
+                      "mode": "REPEATED"
+                    },
+                    {
+                      "name": "spam_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "disposition",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "classification_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_whitelist_entry",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "classification_timestamp_usec",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "post_delivery_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "action_type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "interaction",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "link_url",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "drive_id",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "attachment",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "sha256",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "file_extension_type",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "malware_family",
+                                  "type": "INTEGER",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "file_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "data_classification",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "classified_entity",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "event_type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "labels",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "field_value_display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "previous_labels",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "field_value_display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "confidential_mode_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "is_confidential_mode",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "resource_details",
+                  "type": "RECORD",
+                  "mode": "REPEATED",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "title",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "type",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "application_id",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "applied_labels",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "id",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "title",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "field_values",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "id",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "display_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "unset_value",
+                              "type": "BOOLEAN",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "long_text_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "text_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "text_list_value",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "selection_value",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "badged",
+                                  "type": "BOOLEAN",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "selection_list_value",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "badged",
+                                  "type": "BOOLEAN",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "integer_value",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "user_value",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "email",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "user_list_value",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "email",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "date_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "reason",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "reason_type",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "reason",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "reason_type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "relation",
+                      "type": "STRING",
                       "mode": "NULLABLE"
                     }
                   ]
@@ -570,7 +1437,7 @@ rules:
               ]
             },
             "jobReference": {
-              "projectId": "elastic-123",
+              "projectId": "1234567890000",
               "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
               "location": "US"
             },
@@ -579,35 +1446,390 @@ rules:
               {
                 "f": [
                   {
+                    "v": null
+                  },
+                  {
+                    "v": "contact@elastic.com"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
+                    "v": "delivery"
+                  },
+                  {
+                    "v": "delivery_type"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
+                    "v": "MjE2LjE2MC44My41Ng=="
+                  },
+                  {
+                    "v": "gmail"
+                  },
+                  {
+                    "v": "1746050656256093"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
                     "v": {
                       "f": [
                         {
-                          "v": null
+                          "v": "1746050656256093"
                         },
                         {
-                          "v": "2157680"
-                        },
-                        {
-                          "v": "2"
+                          "v": "1589050"
                         },
                         {
                           "v": "true"
                         },
                         {
-                          "v": "1746430040289381"
+                          "v": null
+                        },
+                        {
+                          "v": "2"
                         }
                       ]
                     }
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "3"
+                        },
+                        {
+                          "v": "\u003c12345627134207078908@example.com\u003e"
+                        },
+                        {
+                          "v": "[Billing and Service Notice] Google Workspace service and pricing updates"
+                        },
+                        {
+                          "v": "33237"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "smtp-inbound"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "The Google Workspace Team"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "contact@elastic.com"
+                                  },
+                                  {
+                                    "v": "gmail-ui"
+                                  },
+                                  {
+                                    "v": ""
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "gmail-ui::contact@elastic.com"
+                        },
+                        {
+                          "v": ""
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": []
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "0"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "google.com"
+                              },
+                              {
+                                "v": "google.com"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "US"
+                              },
+                              {
+                                "v": [
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "google.com"
+                                        },
+                                        {
+                                          "v": "2"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "6"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "1"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "true"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "9"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "22"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "15"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "27"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "11"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "1"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": "c.gle"
+                            },
+                            {
+                              "v": "google.com"
+                            }
+                          ]
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": ""
+                              },
+                              {
+                                "v": null
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "v": []
                   }
                 ]
               }
             ],
-            "totalBytesProcessed": "1800",
+            "totalBytesProcessed": "32209830",
             "jobComplete": true,
             "cacheHit": false
           }
           `}}
-  - path: /bigquery/v2/projects/elastic-123/queries/job_AbcDeFTD3ygPaDMXO1xxxx
+  - path: /bigquery/v2/projects/1234567890000/queries/job_AbcDeFTD3ygPaDMXO1xxxx
     methods: ['GET']
     query_params:
       maxResults: 1
@@ -625,50 +1847,71 @@ rules:
           {
             "kind": "bigquery#getQueryResultsResponse",
             "pageToken": "page-3",
-            "etag": "gwAYkfAEygUVIbsYcdYYcg==",
+            "etag": "bxeBhKu3omfxB9AEbVSYKw==",
             "schema": {
               "fields": [
+                {
+                  "name": "domain_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "email",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_id",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "has_sensitive_content",
+                  "type": "BOOLEAN",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "ip_address",
+                  "type": "BYTES",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "record_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "time_usec",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "unique_identifier",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
                 {
                   "name": "event_info",
                   "type": "RECORD",
                   "mode": "NULLABLE",
                   "fields": [
                     {
-                      "name": "client_context",
-                      "type": "RECORD",
-                      "mode": "NULLABLE",
-                      "fields": [
-                        {
-                          "name": "client_type",
-                          "type": "STRING",
-                          "mode": "NULLABLE"
-                        },
-                        {
-                          "name": "session_context",
-                          "type": "RECORD",
-                          "mode": "NULLABLE",
-                          "fields": [
-                            {
-                              "name": "delegate_user_email",
-                              "type": "STRING",
-                              "mode": "NULLABLE"
-                            },
-                            {
-                              "name": "dusi",
-                              "type": "STRING",
-                              "mode": "NULLABLE"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "elapsed_time_usec",
+                      "name": "timestamp_usec",
                       "type": "INTEGER",
                       "mode": "NULLABLE"
                     },
                     {
-                      "name": "mail_event_type",
+                      "name": "elapsed_time_usec",
                       "type": "INTEGER",
                       "mode": "NULLABLE"
                     },
@@ -678,8 +1921,854 @@ rules:
                       "mode": "NULLABLE"
                     },
                     {
-                      "name": "timestamp_usec",
+                      "name": "client_context",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "session_context",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "delegate_user_email",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "client_type",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "mail_event_type",
                       "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    }
+                  ]
+                },
+                {
+                  "name": "message_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "action_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "rfc2822_message_id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "subject",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "payload_size",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "source",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_displayname",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "destination",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_signature_verification_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_decryption_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_parsing_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_extraction_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rcpt_response",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_destinations",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "description",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_spam",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_policy_check_for_sender",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "num_message_attachments",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "attachment",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "sha256",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "file_extension_type",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "malware_family",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "file_name",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "connection_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "client_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_in_connect_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "failed_smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "REPEATED"
+                        },
+                        {
+                          "name": "smtp_tls_state",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_tls_version",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_tls_cipher",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_reply_code",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "tls_required_but_unavailable",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_out_remote_host",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_user_agent_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "is_intra_domain",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_published_domain",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "client_host_zone",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_response_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_geo_city",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_geo_country",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "authenticated_domain",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "is_internal",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dkim_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "spf_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "message_set",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smtp_relay_error",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "upload_error_category",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "triggered_rule_info",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "policy_holder_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "consequence",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "action",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "reason",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "subconsequence",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "action",
+                                  "type": "INTEGER",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "reason",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "string_match",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "predefined_detector_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "source",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "attachment_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "matched_string",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "match_expression",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "spam_label_modifier",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rule_type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rule_name",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_triggered_rule_info",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "structured_policy_log_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "exchange_journal_info",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "timestamp",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "unknown_recipients",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "recipients",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "rfc822_message_id",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "detected_file_types",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "category",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "mime_type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smime_sign_message",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_encrypt_message",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_packaging_success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_extraction_success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_content_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "link_domain",
+                      "type": "STRING",
+                      "mode": "REPEATED"
+                    },
+                    {
+                      "name": "spam_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "disposition",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "classification_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_whitelist_entry",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "classification_timestamp_usec",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "post_delivery_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "action_type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "interaction",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "link_url",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "drive_id",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "attachment",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "sha256",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "file_extension_type",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "malware_family",
+                                  "type": "INTEGER",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "file_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "data_classification",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "classified_entity",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "event_type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "labels",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "field_value_display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "previous_labels",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "field_value_display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "confidential_mode_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "is_confidential_mode",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "resource_details",
+                  "type": "RECORD",
+                  "mode": "REPEATED",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "title",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "type",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "application_id",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "applied_labels",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "id",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "title",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "field_values",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "id",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "display_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "unset_value",
+                              "type": "BOOLEAN",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "long_text_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "text_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "text_list_value",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "selection_value",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "badged",
+                                  "type": "BOOLEAN",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "selection_list_value",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "badged",
+                                  "type": "BOOLEAN",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "integer_value",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "user_value",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "email",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "user_list_value",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "email",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "date_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "reason",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "reason_type",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "reason",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "reason_type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "relation",
+                      "type": "STRING",
                       "mode": "NULLABLE"
                     }
                   ]
@@ -687,7 +2776,7 @@ rules:
               ]
             },
             "jobReference": {
-              "projectId": "elastic-123",
+              "projectId": "1234567890000",
               "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
               "location": "US"
             },
@@ -696,35 +2785,368 @@ rules:
               {
                 "f": [
                   {
+                    "v": null
+                  },
+                  {
+                    "v": "contact@elastic.com"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
+                    "v": "delivery"
+                  },
+                  {
+                    "v": "delivery_type"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
+                    "v": "MjE2LjE2MC44My41Ng=="
+                  },
+                  {
+                    "v": "gmail"
+                  },
+                  {
+                    "v": "1746050656067743"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
                     "v": {
                       "f": [
                         {
-                          "v": null
+                          "v": "1746050656067743"
                         },
                         {
-                          "v": "195158"
-                        },
-                        {
-                          "v": "0"
+                          "v": "187337"
                         },
                         {
                           "v": "true"
                         },
                         {
-                          "v": "1746430040092391"
+                          "v": null
+                        },
+                        {
+                          "v": "0"
                         }
                       ]
                     }
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "2"
+                        },
+                        {
+                          "v": "\u003c12345627134207078908@example.com\u003e"
+                        },
+                        {
+                          "v": "[Billing and Service Notice] Google Workspace service and pricing updates"
+                        },
+                        {
+                          "v": "33237"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "smtp-inbound"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "The Google Workspace Team"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "contact@elastic.com"
+                                  },
+                                  {
+                                    "v": "gmail-ui"
+                                  },
+                                  {
+                                    "v": ""
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "gmail-ui::contact@elastic.com"
+                        },
+                        {
+                          "v": ""
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": []
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "0"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": [
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "google.com"
+                                        },
+                                        {
+                                          "v": "2"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "6"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "1"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "true"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "9"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "22"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "15"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "27"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "11"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "1"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "v": []
                   }
                 ]
               }
             ],
-            "totalBytesProcessed": "1800",
+            "totalBytesProcessed": "32209830",
             "jobComplete": true,
             "cacheHit": false
           }
           `}}
-  - path: /bigquery/v2/projects/elastic-123/queries/job_AbcDeFTD3ygPaDMXO1xxxx
+  - path: /bigquery/v2/projects/1234567890000/queries/job_AbcDeFTD3ygPaDMXO1xxxx
     methods: ['GET']
     query_params:
       maxResults: 1
@@ -741,50 +3163,71 @@ rules:
           {
             "kind": "bigquery#getQueryResultsResponse",
             "pageToken": "page-2",
-            "etag": "yYZwCiJNBuRYJB4uBAyxAg==",
+            "etag": "QhRBxxhNAyd0hjg9eVoJ6g==",
             "schema": {
               "fields": [
+                {
+                  "name": "domain_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "email",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_id",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_name",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "event_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "has_sensitive_content",
+                  "type": "BOOLEAN",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "ip_address",
+                  "type": "BYTES",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "record_type",
+                  "type": "STRING",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "time_usec",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
+                {
+                  "name": "unique_identifier",
+                  "type": "INTEGER",
+                  "mode": "NULLABLE"
+                },
                 {
                   "name": "event_info",
                   "type": "RECORD",
                   "mode": "NULLABLE",
                   "fields": [
                     {
-                      "name": "client_context",
-                      "type": "RECORD",
-                      "mode": "NULLABLE",
-                      "fields": [
-                        {
-                          "name": "client_type",
-                          "type": "STRING",
-                          "mode": "NULLABLE"
-                        },
-                        {
-                          "name": "session_context",
-                          "type": "RECORD",
-                          "mode": "NULLABLE",
-                          "fields": [
-                            {
-                              "name": "delegate_user_email",
-                              "type": "STRING",
-                              "mode": "NULLABLE"
-                            },
-                            {
-                              "name": "dusi",
-                              "type": "STRING",
-                              "mode": "NULLABLE"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "elapsed_time_usec",
+                      "name": "timestamp_usec",
                       "type": "INTEGER",
                       "mode": "NULLABLE"
                     },
                     {
-                      "name": "mail_event_type",
+                      "name": "elapsed_time_usec",
                       "type": "INTEGER",
                       "mode": "NULLABLE"
                     },
@@ -794,8 +3237,854 @@ rules:
                       "mode": "NULLABLE"
                     },
                     {
-                      "name": "timestamp_usec",
+                      "name": "client_context",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "session_context",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "delegate_user_email",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "client_type",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "mail_event_type",
                       "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    }
+                  ]
+                },
+                {
+                  "name": "message_info",
+                  "type": "RECORD",
+                  "mode": "NULLABLE",
+                  "fields": [
+                    {
+                      "name": "action_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "rfc2822_message_id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "subject",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "payload_size",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "source",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "from_header_displayname",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "destination",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "service",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "selector",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_signature_verification_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_decryption_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_parsing_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smime_extraction_success",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rcpt_response",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_destinations",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "description",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_spam",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "is_policy_check_for_sender",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "num_message_attachments",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "attachment",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "sha256",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "file_extension_type",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "malware_family",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "file_name",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "connection_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "client_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_in_connect_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "failed_smtp_out_connect_ip",
+                          "type": "STRING",
+                          "mode": "REPEATED"
+                        },
+                        {
+                          "name": "smtp_tls_state",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_tls_version",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_tls_cipher",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_reply_code",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "tls_required_but_unavailable",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_out_remote_host",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_user_agent_ip",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "is_intra_domain",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dmarc_published_domain",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "client_host_zone",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "smtp_response_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_geo_city",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_geo_country",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "authenticated_domain",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "is_internal",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "dkim_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "spf_pass",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "message_set",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smtp_relay_error",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "upload_error_category",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "triggered_rule_info",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "policy_holder_address",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "consequence",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "action",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "reason",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "subconsequence",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "action",
+                                  "type": "INTEGER",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "reason",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "string_match",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "predefined_detector_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "source",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "attachment_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "matched_string",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "match_expression",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "spam_label_modifier",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rule_type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "rule_name",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "flattened_triggered_rule_info",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "structured_policy_log_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "exchange_journal_info",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "timestamp",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "unknown_recipients",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "recipients",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "rfc822_message_id",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "detected_file_types",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "category",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "mime_type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "smime_sign_message",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_encrypt_message",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_packaging_success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_extraction_success",
+                      "type": "BOOLEAN",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "smime_content_type",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "link_domain",
+                      "type": "STRING",
+                      "mode": "REPEATED"
+                    },
+                    {
+                      "name": "spam_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "disposition",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "classification_reason",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "ip_whitelist_entry",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "classification_timestamp_usec",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "post_delivery_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "action_type",
+                          "type": "INTEGER",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "interaction",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "link_url",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "drive_id",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "attachment",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "sha256",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "file_extension_type",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "malware_family",
+                                  "type": "INTEGER",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "file_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "data_classification",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "classified_entity",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "event_type",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "labels",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "field_value_display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "previous_labels",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "field_value_display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "confidential_mode_info",
+                      "type": "RECORD",
+                      "mode": "NULLABLE",
+                      "fields": [
+                        {
+                          "name": "is_confidential_mode",
+                          "type": "BOOLEAN",
+                          "mode": "NULLABLE"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "resource_details",
+                  "type": "RECORD",
+                  "mode": "REPEATED",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "title",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "type",
+                      "type": "STRING",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "application_id",
+                      "type": "INTEGER",
+                      "mode": "NULLABLE"
+                    },
+                    {
+                      "name": "applied_labels",
+                      "type": "RECORD",
+                      "mode": "REPEATED",
+                      "fields": [
+                        {
+                          "name": "id",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "title",
+                          "type": "STRING",
+                          "mode": "NULLABLE"
+                        },
+                        {
+                          "name": "field_values",
+                          "type": "RECORD",
+                          "mode": "REPEATED",
+                          "fields": [
+                            {
+                              "name": "id",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "display_name",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "unset_value",
+                              "type": "BOOLEAN",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "long_text_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "text_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "text_list_value",
+                              "type": "STRING",
+                              "mode": "REPEATED"
+                            },
+                            {
+                              "name": "selection_value",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "badged",
+                                  "type": "BOOLEAN",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "selection_list_value",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "display_name",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                },
+                                {
+                                  "name": "badged",
+                                  "type": "BOOLEAN",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "integer_value",
+                              "type": "INTEGER",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "user_value",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "email",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "user_list_value",
+                              "type": "RECORD",
+                              "mode": "REPEATED",
+                              "fields": [
+                                {
+                                  "name": "email",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "date_value",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            },
+                            {
+                              "name": "reason",
+                              "type": "RECORD",
+                              "mode": "NULLABLE",
+                              "fields": [
+                                {
+                                  "name": "reason_type",
+                                  "type": "STRING",
+                                  "mode": "NULLABLE"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "reason",
+                          "type": "RECORD",
+                          "mode": "NULLABLE",
+                          "fields": [
+                            {
+                              "name": "reason_type",
+                              "type": "STRING",
+                              "mode": "NULLABLE"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "relation",
+                      "type": "STRING",
                       "mode": "NULLABLE"
                     }
                   ]
@@ -803,7 +4092,7 @@ rules:
               ]
             },
             "jobReference": {
-              "projectId": "elastic-123",
+              "projectId": "1234567890000",
               "jobId": "job_AbcDeFTD3ygPaDMXO1xxxx",
               "location": "US"
             },
@@ -812,30 +4101,336 @@ rules:
               {
                 "f": [
                   {
+                    "v": null
+                  },
+                  {
+                    "v": "contact@elastic.com"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
+                    "v": "delivery"
+                  },
+                  {
+                    "v": "delivery_type"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
+                    "v": "MjE2LjE2MC44My41Ng=="
+                  },
+                  {
+                    "v": "gmail"
+                  },
+                  {
+                    "v": "1746050655578390"
+                  },
+                  {
+                    "v": null
+                  },
+                  {
                     "v": {
                       "f": [
                         {
-                          "v": null
+                          "v": "1746050655578390"
                         },
                         {
-                          "v": "541484"
-                        },
-                        {
-                          "v": "0"
+                          "v": "678440"
                         },
                         {
                           "v": "true"
                         },
                         {
-                          "v": "1746430039747736"
+                          "v": null
+                        },
+                        {
+                          "v": "0"
                         }
                       ]
                     }
+                  },
+                  {
+                    "v": {
+                      "f": [
+                        {
+                          "v": "68"
+                        },
+                        {
+                          "v": "\u003c12345627134207078908@example.com\u003e"
+                        },
+                        {
+                          "v": "[Billing and Service Notice] Google Workspace service and pricing updates"
+                        },
+                        {
+                          "v": "33071"
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "foo@example.com"
+                              },
+                              {
+                                "v": "smtp-inbound"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "bar@gmail.com"
+                              },
+                              {
+                                "v": "The Google Workspace Team"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "contact@elastic.com"
+                                  },
+                                  {
+                                    "v": "gmail-ui"
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": null
+                                  },
+                                  {
+                                    "v": "1"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": "gmail-ui::contact@elastic.com"
+                        },
+                        {
+                          "v": "250 2.0.0 OK"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "false"
+                        },
+                        {
+                          "v": "0"
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": {
+                            "f": [
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": []
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "250"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "216.160.83.56"
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": "1"
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": null
+                              },
+                              {
+                                "v": [
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "google.com"
+                                        },
+                                        {
+                                          "v": "2"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "6"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "v": {
+                                      "f": [
+                                        {
+                                          "v": "example.bounces.google.com"
+                                        },
+                                        {
+                                          "v": "1"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "v": "false"
+                              },
+                              {
+                                "v": "true"
+                              },
+                              {
+                                "v": "true"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "v": [
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "9"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "22"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "v": {
+                                "f": [
+                                  {
+                                    "v": "15"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": []
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        },
+                        {
+                          "v": null
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "v": []
                   }
                 ]
               }
             ],
-            "totalBytesProcessed": "1800",
+            "totalBytesProcessed": "32209830",
             "jobComplete": true,
             "cacheHit": false
           }

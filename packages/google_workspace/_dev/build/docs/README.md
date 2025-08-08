@@ -55,7 +55,7 @@ Click the Advanced option of Google Workspace Audit Reports. The default value o
 
 # Google Workspace Gmail Logs
 
-The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this features. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
+The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this feature. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
 
 ## Requirements
 

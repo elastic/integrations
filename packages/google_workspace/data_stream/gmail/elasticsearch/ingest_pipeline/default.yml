@@ -51,15 +51,12 @@ processors:
         The transforming process involves iterating over field defined in schema and mapping the corresponding value from the row.
         It handles nested structures of type 'RECORD' by invoking transformDataRecord recursively.
         It handles fields having 'REPEATED' mode by creating a list of values and mapping it to the field name.
+        For more details on nested and repeated columns in table schemas, see https://cloud.google.com/bigquery/docs/nested-repeated.
       tag: script_to_transform_bigquery_api_result
       if: ctx.json != null
       lang: painless
       source: |-
         def transformDataRecord(def row, def schema) {
-          if (row == null || schema == null) {
-            return null;
-          }
-
           def transformedRecord = new HashMap();
 
           for (int i = 0; i < schema.size(); i++) {
@@ -77,7 +74,7 @@ processors:
                 if (fieldValue instanceof List && fieldValue.size() > 0) {
                   for (def item : fieldValue) {
                     // Recursively call transformDataRecord to transform each nested record.
-                    if (item != null && item instanceof Map) {
+                    if (item instanceof Map && item?.v?.f != null && field.fields != null) {
                       value_list.add(transformDataRecord(item.v.f, field.fields));
                     } else {
                       // Handle scalar values for 'REPEATED' mode.
@@ -90,8 +87,6 @@ processors:
                 // Handle non-repeated 'RECORD' fields.
                 if (fieldValue != null && fieldValue instanceof Map) {
                   transformedRecord[field.name] = transformDataRecord(fieldValue.f, field.fields);
-                } else {
-                  transformedRecord[field.name] = null;
                 }
               }
             } else {
@@ -111,7 +106,7 @@ processors:
         }
 
         // Entry point: Check whether row and schema exists.
-        if (ctx.json?.row?.f != null && ctx.json.schema != null) {
+        if (ctx.json?.row?.f != null && ctx.json.schema?.fields != null) {
           ctx.google_workspace = ctx.google_workspace ?: [:];
           ctx.google_workspace.gmail = ctx.google_workspace.gmail ?: [:];
           ctx.google_workspace.gmail = transformDataRecord(ctx.json.row.f, ctx.json.schema.fields);
@@ -697,6 +692,20 @@ processors:
       tag: set_email_subject_from_message_info_subject
       copy_from: google_workspace.gmail.message_info.subject
       ignore_empty_value: true
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_form_message_info_rfc2822_message_id
+      copy_from: google_workspace.gmail.message_info.rfc2822_message_id
+      ignore_empty_value: true
+  - dissect:
+      field: email.message_id
+      tag: dissect_email_message_id
+      if: ctx.email?.message_id != null && ctx.email.message_id.startsWith('<') && ctx.email.message_id.endsWith('>')
+      pattern: '<%{email.message_id}>'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Set email content type based on S/MIME type of a message.
       if: ctx.google_workspace?.gmail?.message_info?.smime_content_type != null
@@ -840,6 +849,7 @@ processors:
         - google_workspace.gmail.message_info.connection_info.ip_geo_country
         - google_workspace.gmail.message_info.connection_info.smtp_tls_cipher
         - google_workspace.gmail.message_info.connection_info.smtp_tls_version
+        - google_workspace.gmail.message_info.rfc2822_message_id
         - google_workspace.gmail.message_info.smtp_relay_error
         - google_workspace.gmail.message_info.source.address
       tag: remove_custom_duplicate_fields
@@ -847,7 +857,7 @@ processors:
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - foreach:
       field: google_workspace.gmail.message_info.destination
-      if: ctx.google_workspace?.gmail?.message_info?.destination instanceof List && ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      if: ctx.google_workspace?.gmail?.message_info?.destination instanceof List && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
       processor:
         remove:
           field: _ingest._value.address
