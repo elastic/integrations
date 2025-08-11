@@ -1,8 +1,8 @@
 # MYSQL metrics for OpenTelemetry Collector
 
-The MySQL metrics from MySQL OTEL integration allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
+The MySQL metrics from MySQL OTEL receiver allows you to monitor [MySQL](https://www.mysql.com), an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
 
-The MySQL OTEL integration provides a visual representation of MySQL metrics collected via OpenTelemetry ([MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver)), enabling you to monitor database performance and troubleshoot issues effectively in real time.
+The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics collected via OpenTelemetry ([MySQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver)), enabling you to monitor database performance and troubleshoot issues effectively in real time.
 
 ## Compatibility
 
