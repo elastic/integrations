@@ -10,6 +10,12 @@ The Sysdig integration collects three types of logs:
 
 **Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
 
+For vulnerability data, Each interval fetches all available scan results from the configured stage. Currently, only one stage can be configured at a time. Users wishing to collect scan results from different stages must configure additional integrations for each desired stage.
+
+Scan results are broken down into separate events for each package-vulnerability pair. If no vulnerability is found for a package, then only the package details will be included in the published event. If the scans contain no package information, then only the scan details will be included in the published event.
+
+In detail, a package is included in one layer, which can be built upon several base images. Furthermore, a package can have multiple vulnerabilities, each of which can have multiple risk accepts.
+
 ## Requirements
 
 ### Agent-based installation
@@ -46,6 +52,7 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 **Note**:
   - The URL may vary depending on your region. Please refer to the [Documentation](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints) to find the correct URL for your region.
   - If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the `Maximum Pages Per Interval` setting in the configuration.
+  - Users wishing to collect vulnerability scan results from multiple stages must configure individual integrations for each desired stage.
 
 ## Logs Reference
 
@@ -766,11 +773,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-04-12T06:00:56.541Z",
     "agent": {
-        "ephemeral_id": "0a02d87a-4628-43a8-9b24-6ccd4ce4b2d5",
-        "id": "293a79aa-47e9-44f8-a266-435dd0f5f4a8",
-        "name": "elastic-agent-26028",
+        "ephemeral_id": "edd7acb6-e05a-4b0c-b2d4-1829b5c379a3",
+        "id": "5febda80-7b8d-463d-8f2b-38961c964c62",
+        "name": "elastic-agent-75651",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.16.0"
     },
     "container": {
         "image": {
@@ -783,16 +790,16 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.vulnerability",
-        "namespace": "66490",
+        "namespace": "33886",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "293a79aa-47e9-44f8-a266-435dd0f5f4a8",
+        "id": "5febda80-7b8d-463d-8f2b-38961c964c62",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -801,9 +808,9 @@ An example event for `vulnerability` looks as following:
         ],
         "created": "2025-04-12T06:00:56.541Z",
         "dataset": "sysdig.vulnerability",
-        "ingested": "2025-07-01T08:51:19Z",
+        "ingested": "2025-08-11T13:03:09Z",
         "kind": "event",
-        "original": "{\"assetType\":\"containerImage\",\"createdAt\":\"2025-04-12T06:00:56Z\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"metadata\":{\"architecture\":\"arm64\",\"baseOs\":\"debian 12.9\",\"createdAt\":\"2025-02-05T21:27:16Z\",\"digest\":\"sha256:02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"labels\":{\"maintainer\":\"NGINX Docker Maintainers \\u003cdocker-maint@nginx.com\\u003e\"},\"os\":\"linux\",\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"size\":201371136},\"producer\":{\"producedAt\":\"2025-04-12T06:00:56.541163Z\"},\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"resultId\":\"18357cce62f36e3c914a3708a1224483\",\"stage\":\"registry\",\"vendor\":\"dockerv2\",\"vulnTotalBySeverity\":{\"critical\":9,\"high\":18,\"low\":7,\"medium\":35,\"negligible\":86}}",
+        "original": "{\"assetType\":\"containerImage\",\"createdAt\":\"2025-04-12T06:00:56Z\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"metadata\":{\"architecture\":\"arm64\",\"baseOs\":\"debian 12.9\",\"createdAt\":\"2025-02-05T21:27:16Z\",\"digest\":\"sha256:02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"labels\":{\"maintainer\":\"NGINX Docker Maintainers \\u003cdocker-maint@nginx.com\\u003e\"},\"os\":\"linux\",\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"size\":201371136},\"policies\":{\"evaluations\":[],\"globalEvaluation\":\"noPolicy\"},\"producer\":{\"producedAt\":\"2025-04-12T06:00:56.541163Z\"},\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"resultId\":\"18357cce62f36e3c914a3708a1224483\",\"stage\":\"registry\",\"vendor\":\"dockerv2\",\"vulnTotalBySeverity\":{\"critical\":9,\"high\":18,\"low\":7,\"medium\":35,\"negligible\":86}}",
         "type": [
             "info"
         ]
@@ -847,6 +854,9 @@ An example event for `vulnerability` looks as following:
                 "pull_string": "docker.cloudsmith.io/secure/sysdig/new_nginx:v1",
                 "size": 201371136
             },
+            "policies": {
+                "global_evaluation": "noPolicy"
+            },
             "pull_string": "docker.cloudsmith.io/secure/sysdig/new_nginx:v1",
             "stage": "registry",
             "vendor": "dockerv2",
@@ -881,12 +891,12 @@ An example event for `vulnerability` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
@@ -989,6 +999,22 @@ An example event for `vulnerability` looks as following:
 | sysdig.vulnerability.package.vulnerability.severity | Enum: "critical" "high" "medium" "low" "negligible". | keyword |
 | sysdig.vulnerability.package.vulnerability.solution_date |  | date |
 | sysdig.vulnerability.package.vulnerability.vulnerabilities_ref |  | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.identifier | Identifier of the bundle. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.name | Name of the bundle. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.description | rule description. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.evaluation_result | Enum: "passed" "failed" "notApplicable" "accepted" | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.failure_type | Enum: "pkgVulnFailure" "imageConfigFailure" rule failure type. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.predicates.type | predicate type. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.rule_id | rule's id. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.rule_type | rule type. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.type | Enum: "predefined" "custom" | keyword |
+| sysdig.vulnerability.policies.evaluations.created_at | datetime of creation. | date |
+| sysdig.vulnerability.policies.evaluations.description | policy evaluation description. | keyword |
+| sysdig.vulnerability.policies.evaluations.evaluation | Enum: "passed" "failed" "accepted" "noPolicy" | keyword |
+| sysdig.vulnerability.policies.evaluations.identifier | policy evaluation id. | keyword |
+| sysdig.vulnerability.policies.evaluations.name | policy evaluation name. | keyword |
+| sysdig.vulnerability.policies.evaluations.updated_at | datetime of last update. | date |
+| sysdig.vulnerability.policies.global_evaluation | Enum: "passed" "failed" "accepted" "noPolicy" | keyword |
 | sysdig.vulnerability.policy_evaluation_result | Enum: "passed" "failed" "accepted" "noPolicy" "notApplicable" Policy evaluation result. | keyword |
 | sysdig.vulnerability.producer.produced_at |  | date |
 | sysdig.vulnerability.pull_string | image pull string. | keyword |
