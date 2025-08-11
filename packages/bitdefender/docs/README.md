@@ -517,13 +517,13 @@ An example event for `push_configuration` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-15T09:30:33.869Z",
+    "@timestamp": "2025-08-04T05:45:30.706Z",
     "agent": {
-        "ephemeral_id": "d1d677fd-e585-4395-a4ee-8c3c2670cb99",
-        "id": "b2122e94-e7cd-4274-9c2e-856609628a36",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "6add488a-b2f6-487a-af12-30506202511b",
+        "id": "dc1ce160-e35b-4897-a9cb-680439488735",
+        "name": "elastic-agent-51646",
         "type": "filebeat",
-        "version": "8.14.3"
+        "version": "8.18.0"
     },
     "bitdefender": {
         "id": "1",
@@ -570,26 +570,25 @@ An example event for `push_configuration` looks as following:
     },
     "data_stream": {
         "dataset": "bitdefender.push_configuration",
-        "namespace": "ep",
+        "namespace": "20813",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b2122e94-e7cd-4274-9c2e-856609628a36",
+        "id": "dc1ce160-e35b-4897-a9cb-680439488735",
         "snapshot": false,
-        "version": "8.14.3"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-07-15T09:30:33.869Z",
         "dataset": "bitdefender.push_configuration",
-        "ingested": "2024-07-15T09:30:45Z",
+        "ingested": "2025-08-04T05:45:33Z",
         "original": "{\"id\":\"1\",\"jsonrpc\":\"2.0\",\"result\":{\"serviceSettings\":{\"requireValidSslCertificate\":true,\"url\":\"https://your.elastic.agent/bitdefender/push/notification\"},\"serviceType\":\"qradar\",\"status\":1,\"subscribeToEventTypes\":{\"adcloud\":true,\"antiexploit\":true,\"aph\":true,\"av\":true,\"avc\":true,\"dp\":true,\"endpoint-moved-in\":true,\"endpoint-moved-out\":true,\"exchange-malware\":true,\"exchange-user-credentials\":true,\"fw\":true,\"hd\":true,\"hwid-change\":true,\"install\":true,\"modules\":true,\"network-monitor\":true,\"network-sandboxing\":true,\"new-incident\":true,\"ransomware-mitigation\":true,\"registration\":true,\"security-container-update-available\":true,\"supa-update-status\":true,\"sva\":true,\"sva-load\":true,\"task-status\":true,\"troubleshooting-activity\":true,\"uc\":true,\"uninstall\":true}}}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "tags": [
         "preserve_original_event",
@@ -634,13 +633,13 @@ An example event for `push_statistics` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-27T07:28:05.023Z",
+    "@timestamp": "2025-08-04T05:53:31.451Z",
     "agent": {
-        "ephemeral_id": "7e1d4d9d-44a4-4ac8-ab34-72e2763c9bf6",
-        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "181a8db2-ef15-4ce1-b78b-fe1d67440dd6",
+        "id": "088aadd3-85d3-4553-8e87-2428b1e4e35a",
+        "name": "elastic-agent-40833",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.18.0"
     },
     "bitdefender": {
         "id": "test",
@@ -667,26 +666,25 @@ An example event for `push_statistics` looks as following:
     },
     "data_stream": {
         "dataset": "bitdefender.push_statistics",
-        "namespace": "ep",
+        "namespace": "74028",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
+        "id": "088aadd3-85d3-4553-8e87-2428b1e4e35a",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-27T07:28:05.023Z",
         "dataset": "bitdefender.push_statistics",
-        "ingested": "2023-01-27T07:28:06Z",
+        "ingested": "2025-08-04T05:53:34Z",
         "original": "{\"id\":\"test\",\"jsonrpc\":\"2.0\",\"result\":{\"count\":{\"errorMessages\":121,\"events\":1415824,\"sentMessages\":78368,\"testEvents\":0},\"error\":{\"configurationError\":0,\"connectionError\":7,\"serviceError\":114,\"statusCode2xx\":0,\"statusCode300\":0,\"statusCode400\":0,\"statusCode500\":0,\"timeout\":0},\"lastUpdateTime\":\"2023-01-27T09:19:22\"}}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "tags": [
         "preserve_original_event",
