@@ -42,7 +42,7 @@ Default value: `$Default`
 _string_
 The connection string is required to communicate with Event Hubs. For more information, check the [Azure documentation](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
 
-A Blob Storage account is required to store/retrieve/update the offset or state of the eventhub messages. This means that after the Azure logs package is stopped, the Blob Storage can resume processing messages and backup from where it left off.
+A Blob Storage account is required to store/retrieve/update the offset or state of the event hub messages. This means that after the Azure logs package is stopped, the Blob Storage can resume processing messages and back up from where it left off.
 
 `storage_account` :
 _string_
@@ -168,7 +168,7 @@ To learn more about this process, check the following Microsoft guides:
 
 #### Main options
 
-The settings main section contains all the options needed to access the Azure APIs and collect the Azure Functions metrics data. You will now use all the values from [App registration](#register-a-new-app) including:
+The Settings main section contains all the options needed to access the Azure APIs and collect the Azure Functions metrics data. You will now use all the values from [App registration](#register-a-new-app) including:
 
 `Client ID` _string_
 : The unique identifier of the App Registration (sometimes referred to as Application ID).
