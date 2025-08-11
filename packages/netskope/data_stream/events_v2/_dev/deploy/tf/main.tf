@@ -2,11 +2,11 @@
 
 provider "google" {
   default_labels = {
-  environment  = var.ENVIRONMENT
-  repo         = var.REPO
-  branch       = var.BRANCH
-  build        = var.BUILD_ID
-  created_date = var.CREATED_DATE
+  gcs_environment  = var.ENVIRONMENT
+  gcs_repo         = var.REPO
+  gcs_branch       = var.BRANCH
+  gcs_build        = var.BUILD_ID
+  gcs_created_date = var.CREATED_DATE
   }
 }
 
@@ -32,11 +32,11 @@ provider "aws" {
   region = "us-east-1"
   default_tags {
     tags = {
-      environment  = var.ENVIRONMENT
-      repo         = var.REPO
-      branch       = var.BRANCH
-      build        = var.BUILD_ID
-      created_date = var.CREATED_DATE
+      aws_environment  = var.ENVIRONMENT
+      aws_repo         = var.REPO
+      aws_branch       = var.BRANCH
+      aws_build        = var.BUILD_ID
+      aws_created_date = var.CREATED_DATE
     }
   }
 }
