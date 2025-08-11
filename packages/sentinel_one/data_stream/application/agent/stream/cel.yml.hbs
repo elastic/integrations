@@ -40,7 +40,6 @@ program: |
           resp.Body.decode_json().as(body,
             {
               "worklist": body,
-              "next": 0,
               "next_page": {
                 ?"token": body.?pagination.nextCursor.orValue(null) != null ? optional.of(body.pagination.nextCursor) : optional.none(),
               },
@@ -74,12 +73,12 @@ program: |
       : (has(state.worklist.data) && size(state.worklist.data) > 0) ?
           request("GET",
             state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints?" + {
-            "skipCount": ["true"],
-            "applicationName": [string(state.worklist.data[state.next].applicationName)],
-            "applicationVendor": [string(state.worklist.data[state.next].applicationVendor)],
-            "limit": [string(state.batch_size)],
-            ?"cursor": state.?next_chain.token.optMap(v, [v]),
-          }.format_query()
+              "skipCount": ["true"],
+              "applicationName": [string(state.worklist.data[0].applicationName)],
+              "applicationVendor": [string(state.worklist.data[0].applicationVendor)],
+              "limit": [string(state.batch_size)],
+              ?"cursor": state.?next_chain.token.optMap(v, [v]),
+            }.format_query()
           ).with({
             "Header":{
               "Authorization": ["ApiToken " + state.api_token],
@@ -92,17 +91,14 @@ program: |
                     "message": e.encode_json(),
                   })
                 :
-                  [{"message": "want_more"}]
+                  [{"message": "retry"}]
               ),
               "next_chain": {
                 ?"token": body.?pagination.nextCursor.orValue(null) != null ? optional.of(body.pagination.nextCursor) : optional.none(),
               },
-              "next": body.?pagination.nextCursor.orValue(null) != null ?
-                state.next
-              : (int(state.next) + 1 < size(state.worklist.data)) ? (int(state.next) + 1) : 0,
-              "worklist": body.?pagination.nextCursor.orValue(null) != null ?
-                state.worklist
-              : (int(state.next) + 1 < size(state.worklist.data)) ? state.worklist : {},
+              "worklist": {
+                "data": body.?pagination.nextCursor.orValue(null) != null ? state.worklist.data : tail(state.worklist.data),
+              },
               "want_more": state.?fetch_more.orValue(false) ? state.fetch_more : body.?pagination.nextCursor.orValue(null) != null,
             })
           :
