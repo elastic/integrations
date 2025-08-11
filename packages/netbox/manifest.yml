@@ -1,0 +1,84 @@
+format_version: 3.0.2
+name: netbox
+title: "NetBox"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Collect logs from NetBox with Elastic Agent"
+type: integration
+categories:
+  - network
+  - security
+  - web
+conditions:
+  kibana:
+    version: "^9.1.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/netbox-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: netbox
+    title: NetBox logs
+    description: Collect logs from NetBox
+    inputs:
+      - type: httpjson
+        title: Collect logs from NetBox API
+        description: Collecting devices and ipam logs from the NetBox API
+        vars:
+          - name: url
+            type: text
+            title: URL of NetBox API Server
+            description: The url of your NetBox API
+            show_user: true
+            required: true
+            default: https://localhost:8000
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: token
+            type: password
+            title: Netbox Authorization Token
+            description: |
+              Bearer Token, e.g. "eyJhbGciO..."
+            show_user: true
+            required: true
+            secret: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+          - name: disable_keep_alive
+            required: true
+            show_user: false
+            title: Disable HTTP Keep-Alives
+            description: Controls whether HTTP keep-alives are disabled.
+            type: bool
+            multi: false
+owner:
+  github: elastic/integrations
+  type: elastic
