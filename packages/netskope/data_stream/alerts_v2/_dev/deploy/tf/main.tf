@@ -1,3 +1,33 @@
+# GCS Setup
+
+provider "google" {
+  default_labels = {
+  environment  = var.ENVIRONMENT
+  repo         = var.REPO
+  branch       = var.BRANCH
+  build        = var.BUILD_ID
+  created_date = var.CREATED_DATE
+  }
+}
+
+resource "google_storage_bucket" "netskope_alert_bucket" {
+  name     = "elastic-package-gcs-bucket-${var.TEST_RUN_ID}"
+  location = var.BUCKET_REGION
+}
+# See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
+
+resource "google_storage_bucket_object" "netskope_alert_bucket_object" {
+  name   = var.OBJECT_NAME
+  bucket = google_storage_bucket.netskope_alert_bucket.name
+  source = var.FILE_PATH
+}
+
+output "netskope_alert_bucket_name" {
+  value = google_storage_bucket.netskope_alert_bucket.name
+}
+
+# AWS Setup
+
 provider "aws" {
   region = "us-east-1"
   default_tags {
@@ -12,11 +42,11 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "elastic-package-netskope-alert-v2-bucket-${var.TEST_RUN_ID}"
+  bucket = "elastic-package-netskope-bucket-${var.TEST_RUN_ID}"
 }
 
 resource "aws_sqs_queue" "queue" {
-  name       = "elastic-package-netskope-alert-v2-queue-${var.TEST_RUN_ID}"
+  name       = "elastic-package-netskope-queue-${var.TEST_RUN_ID}"
   policy     = <<POLICY
 {
   "Version": "2012-10-17",
@@ -25,7 +55,7 @@ resource "aws_sqs_queue" "queue" {
       "Effect": "Allow",
       "Principal": "*",
       "Action": "sqs:SendMessage",
-      "Resource": "arn:aws:sqs:*:*:elastic-package-netskope-alert-v2-queue-${var.TEST_RUN_ID}",
+      "Resource": "arn:aws:sqs:*:*:elastic-package-netskope-queue-${var.TEST_RUN_ID}",
       "Condition": {
         "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.bucket.arn}" }
       }

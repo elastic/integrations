@@ -1,0 +1,17 @@
+deployer: tf
+input: gcs
+wait_for_data_timeout: 10m
+data_stream:
+  vars:
+    csv_comma: ","
+    service_account_key: |
+      {{GOOGLE_CLOUD_KEYFILE_JSON}}
+    project_id: "{{GCLOUD_PROJECT}}"
+    buckets: |
+      - name: "{{TF_OUTPUT_netskope_alert_bucket_name}}"
+        poll: true
+        poll_interval: 15s
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+assert:
+  hit_count: 3
