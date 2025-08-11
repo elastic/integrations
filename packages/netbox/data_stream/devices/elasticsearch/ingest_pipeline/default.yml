@@ -1,0 +1,84 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      tag: remove_message
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: netbox.device
+  - gsub:
+      field: netbox.device.primary_ip.address
+      pattern: "/\\d+$"
+      replacement: ""
+      ignore_missing: true
+  - gsub:
+      field: netbox.device.primary_ip4.address
+      pattern: "/\\d+$"
+      replacement: ""
+      ignore_missing: true
+  - gsub:
+      field: netbox.device.primary_ip6.address
+      pattern: "/\\d+$"
+      replacement: ""
+      ignore_missing: true
+  - gsub:
+      field: netbox.device.oob_ip.address
+      pattern: "/\\d+$"
+      replacement: ""
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: [configuration]
+  - date:
+      field: netbox.device.created
+      target_field: netbox.device.created
+      formats:
+        - ISO8601
+  - date:
+      field: netbox.device.last_updated
+      target_field: netbox.device.last_updated
+      formats:
+        - ISO8601
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
