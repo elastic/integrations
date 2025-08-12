@@ -84,6 +84,6 @@ resource "aws_s3_object" "aws_object" {
   depends_on = [aws_sqs_queue.queue]
 }
 
-output "queue_url" {
+output "aws_queue_url" {
   value = aws_sqs_queue.queue.url
 }
