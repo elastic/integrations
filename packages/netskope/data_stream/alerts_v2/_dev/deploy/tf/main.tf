@@ -10,20 +10,20 @@ provider "google" {
   }
 }
 
-resource "google_storage_bucket" "netskope_alert_bucket" {
+resource "google_storage_bucket" "gcs_netskope_alert_bucket" {
   name     = "elastic-package-gcs-bucket-${var.TEST_RUN_ID}"
   location = var.BUCKET_REGION
 }
 # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
 
-resource "google_storage_bucket_object" "netskope_alert_bucket_object" {
+resource "google_storage_bucket_object" "gcs_netskope_alert_bucket_object" {
   name   = var.OBJECT_NAME
-  bucket = google_storage_bucket.netskope_alert_bucket.name
+  bucket = google_storage_bucket.gcs_netskope_alert_bucket.name
   source = var.FILE_PATH
 }
 
-output "netskope_alert_bucket_name" {
-  value = google_storage_bucket.netskope_alert_bucket.name
+output "gcs_netskope_alert_bucket_name" {
+  value = google_storage_bucket.gcs_netskope_alert_bucket.name
 }
 
 # AWS Setup
@@ -41,11 +41,11 @@ provider "aws" {
   }
 }
 
-resource "aws_s3_bucket" "bucket" {
+resource "aws_s3_bucket" "aws_bucket" {
   bucket = "elastic-package-netskope-bucket-${var.TEST_RUN_ID}"
 }
 
-resource "aws_sqs_queue" "queue" {
+resource "aws_sqs_queue" "aws_queue" {
   name       = "elastic-package-netskope-queue-${var.TEST_RUN_ID}"
   policy     = <<POLICY
 {
@@ -65,7 +65,7 @@ resource "aws_sqs_queue" "queue" {
 POLICY
 }
 
-resource "aws_s3_bucket_notification" "bucket_notification" {
+resource "aws_s3_bucket_notification" "aws_bucket_notification" {
   bucket = aws_s3_bucket.bucket.id
 
   queue {
@@ -74,7 +74,7 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   }
 }
 
-resource "aws_s3_object" "object" {
+resource "aws_s3_object" "aws_object" {
   bucket = aws_s3_bucket.bucket.id
   key    = "test-alerts-v2.csv.gz"
   content_base64   = base64gzip(file("./files/test-alerts-v2.csv"))
@@ -84,6 +84,6 @@ resource "aws_s3_object" "object" {
   depends_on = [aws_sqs_queue.queue]
 }
 
-output "queue_url" {
+output "aws_queue_url" {
   value = aws_sqs_queue.queue.url
 }
