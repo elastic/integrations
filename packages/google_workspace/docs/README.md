@@ -4101,9 +4101,9 @@ An example event for `gmail` looks as following:
 {
     "@timestamp": "2025-04-30T22:04:15.578Z",
     "agent": {
-        "ephemeral_id": "4326a58e-4ba7-49a7-82c8-c59b50fbe6ee",
-        "id": "76044ca4-4e4b-4fd7-b236-159baac757ca",
-        "name": "elastic-agent-30138",
+        "ephemeral_id": "084c6de7-6e79-4bf9-9773-60b2cb7a1091",
+        "id": "f823b770-089c-47ce-a795-99c0a1aae44b",
+        "name": "elastic-agent-84242",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -4127,14 +4127,14 @@ An example event for `gmail` looks as following:
     },
     "data_stream": {
         "dataset": "google_workspace.gmail",
-        "namespace": "91051",
+        "namespace": "76721",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "76044ca4-4e4b-4fd7-b236-159baac757ca",
+        "id": "f823b770-089c-47ce-a795-99c0a1aae44b",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -4160,7 +4160,7 @@ An example event for `gmail` looks as following:
         ],
         "dataset": "google_workspace.gmail",
         "duration": 678440000,
-        "ingested": "2025-08-08T06:30:42Z",
+        "ingested": "2025-08-12T10:29:01Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -4205,7 +4205,7 @@ An example event for `gmail` looks as following:
                 "description": "250 2.0.0 OK",
                 "destination": [
                     {
-                        "rcpt_response": "1",
+                        "selector": "1",
                         "service": "gmail-ui"
                     }
                 ],
@@ -4231,7 +4231,6 @@ An example event for `gmail` looks as following:
                     "service": "smtp-inbound"
                 }
             },
-            "record_type": "gmail",
             "time_usec": 1746050655578390
         }
     },

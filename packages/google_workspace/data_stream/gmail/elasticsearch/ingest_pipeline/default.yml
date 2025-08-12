@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing gmail logs.
 processors:
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -9,9 +12,6 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
-  - drop:
-      if: ctx.message == 'retry'
-      tag: drop_retry_events
   - remove:
       field:
         - organization
@@ -74,7 +74,7 @@ processors:
                 if (fieldValue instanceof List && fieldValue.size() > 0) {
                   for (def item : fieldValue) {
                     // Recursively call transformDataRecord to transform each nested record.
-                    if (item instanceof Map && item?.v?.f != null && field.fields != null) {
+                    if (item instanceof Map && item.v?.f != null && field.fields != null) {
                       value_list.add(transformDataRecord(item.v.f, field.fields));
                     } else {
                       // Handle scalar values for 'REPEATED' mode.
@@ -85,13 +85,13 @@ processors:
                 transformedRecord[field.name] = value_list;
               } else {
                 // Handle non-repeated 'RECORD' fields.
-                if (fieldValue != null && fieldValue instanceof Map) {
+                if (fieldValue instanceof Map) {
                   transformedRecord[field.name] = transformDataRecord(fieldValue.f, field.fields);
                 }
               }
             } else {
               // For scalar field type, map the value to the field name.
-              if (field.mode != null && field.mode == 'REPEATED'){
+              if (field.mode == 'REPEATED'){
                 def value_list = new ArrayList();
                 for (def item : fieldValue) {
                   value_list.add(item.v);
@@ -108,7 +108,6 @@ processors:
         // Entry point: Check whether row and schema exists.
         if (ctx.json?.row?.f != null && ctx.json.schema?.fields != null) {
           ctx.google_workspace = ctx.google_workspace ?: [:];
-          ctx.google_workspace.gmail = ctx.google_workspace.gmail ?: [:];
           ctx.google_workspace.gmail = transformDataRecord(ctx.json.row.f, ctx.json.schema.fields);
         }
       on_failure:
@@ -464,7 +463,7 @@ processors:
       description: Convert microseconds to milliseconds.
       tag: convert_timestamp_usec_to_milliseconds
       lang: painless
-      if: ctx?.google_workspace?.gmail?.event_info?.timestamp_usec != null
+      if: ctx.google_workspace?.gmail?.event_info?.timestamp_usec != null
       source: >
         ctx._temp_ = [:];
         ctx._temp_.timestamp_usec = ctx.google_workspace.gmail.event_info.timestamp_usec / 1000;
@@ -503,7 +502,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Convert seconds to milliseconds.
-      if: ctx?.google_workspace?.gmail?.message_info?.structured_policy_log_info?.exchange_journal_info?.timestamp != null
+      if: ctx.google_workspace?.gmail?.message_info?.structured_policy_log_info?.exchange_journal_info?.timestamp != null
       tag: convert_message_info_structured_policy_log_info_exchange_journal_info_timestamp_to_milliseconds
       lang: painless
       source: >
