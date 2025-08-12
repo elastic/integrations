@@ -1,0 +1,212 @@
+- name: netbox
+  type: group
+  fields:
+    - name: ip
+      type: group
+      fields:
+        - name: id
+          type: long
+          description: The unique identifier of the IP address.
+        - name: url
+          type: keyword
+          description: The API URL for the IP address.
+        - name: display_url
+          type: keyword
+          description: The display URL for the IP address.
+        - name: display
+          type: keyword
+          description: The display representation of the IP address with CIDR notation.
+        - name: family
+          type: group
+          fields:
+            - name: value
+              type: long
+              description: The IP family value (4 for IPv4, 6 for IPv6).
+            - name: label
+              type: keyword
+              description: The IP family label (IPv4 or IPv6).
+        - name: address
+          type: ip
+        - name: vrf
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the VRF.
+            - name: url
+              type: keyword
+              description: The API URL for the VRF.
+            - name: display
+              type: keyword
+              description: The display name of the VRF.
+            - name: name
+              type: keyword
+              description: The name of the VRF.
+            - name: rd
+              type: keyword
+              description: The route distinguisher of the VRF.
+            - name: description
+              type: text
+              description: The description of the VRF.
+        - name: tenant
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the tenant.
+            - name: url
+              type: keyword
+              description: The API URL for the tenant.
+            - name: display
+              type: keyword
+              description: The display name of the tenant.
+            - name: name
+              type: keyword
+              description: The name of the tenant.
+            - name: slug
+              type: keyword
+              description: The slug of the tenant.
+            - name: description
+              type: text
+              description: The description of the tenant.
+        - name: status
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The status value of the IP address.
+            - name: label
+              type: keyword
+              description: The status label of the IP address.
+        - name: role
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The role value of the IP address.
+            - name: label
+              type: keyword
+              description: The role label of the IP address.
+        - name: assigned_object_type
+          type: keyword
+          description: The type of object this IP address is assigned to.
+        - name: assigned_object_id
+          type: long
+          description: The unique identifier of the assigned object.
+        - name: assigned_object
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the assigned object.
+            - name: url
+              type: keyword
+              description: The API URL for the assigned object.
+            - name: display
+              type: keyword
+              description: The display name of the assigned object.
+            - name: device
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: The unique identifier of the device.
+                - name: url
+                  type: keyword
+                  description: The API URL for the device.
+                - name: display
+                  type: keyword
+                  description: The display name of the device.
+                - name: name
+                  type: keyword
+                  description: The name of the device.
+                - name: description
+                  type: text
+                  description: The description of the device.
+            - name: name
+              type: keyword
+              description: The name of the assigned object (interface).
+            - name: description
+              type: text
+              description: The description of the assigned object.
+            - name: cable
+              type: keyword
+              description: The cable connection information.
+            - name: _occupied
+              type: boolean
+              description: Whether the interface is occupied.
+        - name: nat_inside
+          type: group
+          fields:
+            - name: id
+              type: long
+            - name: url
+              type: keyword
+            - name: address
+              type: ip
+            - name: display
+              type: keyword
+            - name: display_url
+              type: keyword
+            - name: family
+              type: long
+          description: The NAT inside IP address reference.
+        - name: nat_outside
+          type: nested
+          fields:
+            - name: id
+              type: long
+            - name: url
+              type: keyword
+            - name: address
+              type: ip
+            - name: display
+              type: keyword
+            - name: display_url
+              type: keyword
+            - name: family
+              type: long
+        - name: dns_name
+          type: keyword
+          description: The DNS name associated with the IP address.
+        - name: description
+          type: text
+          description: The description of the IP address.
+        - name: comments
+          type: text
+          description: Comments about the IP address.
+        - name: tags
+          type: nested
+          fields:
+            - name: id
+              type: long
+              description: The unique identifier of the tag.
+            - name: url
+              type: keyword
+              description: The API URL for the tag.
+            - name: display_url
+              type: keyword
+              description: The display URL for the tag.
+            - name: display
+              type: keyword
+              description: The display name of the tag.
+            - name: name
+              type: keyword
+              description: The name of the tag.
+            - name: slug
+              type: keyword
+              description: The slug of the tag.
+            - name: color
+              type: keyword
+              description: The color code of the tag.
+        - name: custom_fields
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+          description: Custom fields associated with the IP address.
+        - name: created
+          type: date
+          description: The creation timestamp of the IP address record.
+        - name: last_updated
+          type: date
+          description: The last update timestamp of the IP address record.
