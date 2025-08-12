@@ -1,0 +1,52 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_abusech
+      name: test-default-ti_abusech
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_abusech.threatfox
+            type: logs
+          fields:
+            _conf:
+                ioc_expiration_duration: 90d
+          fields_under_root: true
+          interval: 24h
+          program: "state.with(\n  request(\"POST\", state.url, '{ \"query\": \"get_iocs\", \"days\": ' + state.?cursor.days.orValue(state.initial_interval) + ' }' \n  ).with({\n      \"Header\":{\n        \"Content-Type\": [\"application/json\"],\n        ?\"Auth-Key\": has(state.auth_key) ? \n          optional.of([state.auth_key]) \n        :\n          optional.none(),\n        }\n  }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?\n    resp.Body.decode_json().as(body, {\n      \"events\": (has(body.data) ?\n        body.data.map(ind, {\n          \"message\": ind.encode_json()\n        })\n      :\n        []\n      ),\n      \"cursor\": {\n        \"days\": \"1\"\n      },\n      \"initial_interval\": state.initial_interval,\n      \"url\": state.url\n    })\n  :\n    {\n      \"events\": {\n        \"error\": {\n          \"code\": string(resp.StatusCode),\n          \"id\": string(resp.Status),\n          \"message\": \"POST \"+ state.url.trim_right(\"/\") + \":\" + (\n            size(resp.Body) != 0 ?\n              string(resp.Body)\n            :\n              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'\n          ),\n        },\n      },\n      \"want_more\": false,\n    }\n  ))\n)\n"
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - auth_key
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://threatfox-api.abuse.ch/api/v1/
+          state:
+            auth_key: ${SECRET_0}
+            initial_interval: "7"
+          tags:
+            - forwarded
+            - abusech-threatfox
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_abusech.threatfox-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

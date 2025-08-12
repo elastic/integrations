@@ -8,11 +8,11 @@ inputs:
       streams:
         - config_version: 2
           data_stream:
-            dataset: ti_abusech.malware
+            dataset: ti_abusech.sslblacklist
             type: logs
           fields:
             _conf:
-                ioc_expiration_duration: 60d
+                interval: 30m
           fields_under_root: true
           interval: 30m
           processors:
@@ -26,11 +26,49 @@ inputs:
                     - web
                     - production
                 target: environment
-          program: "state.with(\n  request(\"GET\", state.url).with({\n    \"Header\":{\n      \"Content-Type\": [\"application/json\"],\n      ?\"Auth-Key\": has(state.auth_key) ? \n        optional.of([state.auth_key]) \n      :\n        optional.none(),\n    }\n  }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?\n    resp.Body.decode_json().as(body, {\n      \"events\": (has(body.payloads) ?\n        body.payloads.map(payload, {\n          \"message\": payload.encode_json()\n        })\n      :\n        []\n      ),\n      \"url\": state.url\n    })\n  :\n    {\n      \"events\": {\n        \"error\": {\n          \"code\": string(resp.StatusCode),\n          \"id\": string(resp.Status),\n          \"message\": \"GET \"+ state.url.trim_right(\"/\") + \":\" + (\n            size(resp.Body) != 0 ?\n              string(resp.Body)\n            :\n              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'\n          ),\n        },\n      },\n      \"want_more\": false,\n    }\n  ))\n)\n"
+          program: |-
+            state.with(
+              get(state.url).as(resp,
+                (resp.StatusCode == 200) ?
+                  dyn(
+                    {
+                      "events": string(resp.Body).split("\n").map(l,
+                        !l.has_prefix("#"),
+                        {
+                          "message": l.trim_space().split(",").transformMapEntry(i, e,
+                            {
+                              state.column[i]: state.column[i].has_suffix("ts") ?
+                                string(e.parse_time(time_layout.DateTime))
+                              :
+                                e,
+                            }
+                          ).encode_json(),
+                        }
+                      ),
+                    }
+                  )
+                :
+                  dyn(
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + state.url + ":" + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                    }
+                  )
+              )
+            )
           publisher_pipeline.disable_host: true
           redact:
-            fields:
-                - auth_key
+            fields: null
           resource.proxy_url: http://proxy.tld
           resource.ssl:
             certificate: |
@@ -118,11 +156,14 @@ inputs:
             maxbackups: 5
           resource.url: http://host.tld
           state:
-            auth_key: ${SECRET_0}
+            column:
+                - ts
+                - sha1
+                - reason
           tags:
             - preserve_original_event
             - forwarded
-            - abusech-malware
+            - abusech-sslblacklist
             - test-policy
       type: cel
       use_output: default
@@ -136,7 +177,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-ti_abusech.malware-ep
+                    - logs-ti_abusech.sslblacklist-ep
                   privileges:
                     - auto_configure
                     - create_doc

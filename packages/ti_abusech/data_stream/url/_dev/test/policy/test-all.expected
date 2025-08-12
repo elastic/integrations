@@ -8,11 +8,11 @@ inputs:
       streams:
         - config_version: 2
           data_stream:
-            dataset: ti_abusech.malware
+            dataset: ti_abusech.url
             type: logs
           fields:
             _conf:
-                ioc_expiration_duration: 60d
+                interval: 30m
           fields_under_root: true
           interval: 30m
           processors:
@@ -26,7 +26,7 @@ inputs:
                     - web
                     - production
                 target: environment
-          program: "state.with(\n  request(\"GET\", state.url).with({\n    \"Header\":{\n      \"Content-Type\": [\"application/json\"],\n      ?\"Auth-Key\": has(state.auth_key) ? \n        optional.of([state.auth_key]) \n      :\n        optional.none(),\n    }\n  }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?\n    resp.Body.decode_json().as(body, {\n      \"events\": (has(body.payloads) ?\n        body.payloads.map(payload, {\n          \"message\": payload.encode_json()\n        })\n      :\n        []\n      ),\n      \"url\": state.url\n    })\n  :\n    {\n      \"events\": {\n        \"error\": {\n          \"code\": string(resp.StatusCode),\n          \"id\": string(resp.Status),\n          \"message\": \"GET \"+ state.url.trim_right(\"/\") + \":\" + (\n            size(resp.Body) != 0 ?\n              string(resp.Body)\n            :\n              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'\n          ),\n        },\n      },\n      \"want_more\": false,\n    }\n  ))\n)\n"
+          program: "state.with(\n  request(\"GET\", state.url).with({\n    \"Header\":{\n      \"Content-Type\": [\"application/zip\"],\n      ?\"Auth-Key\": has(state.auth_key) ? \n        optional.of([state.auth_key]) \n      :\n        optional.none(),\n    }\n  })\n  .do_request()\n  .as(resp, resp.StatusCode == 200 ?\n    resp.Body.mime(\"application/zip\").File.as(file, file.size() > 0 ? \n      file[0].Data.as(data, bytes(data).decode_json().as(body, {\n        \"events\": body.map(id, body[id].size() > 0 ? \n          {\"message\": body[id][0].with({\"id\": id}).encode_json()}\n        :\n          {\"message\": \"\"}\n        ),\n        \"url\": state.url\n      }))\n    :\n      {\n        \"events\": [],\n        \"url\": state.url\n      }\n    )\n  :\n    {\n      \"events\": {\n        \"error\": {\n          \"code\": string(resp.StatusCode),\n          \"id\": string(resp.Status),\n          \"message\": \"GET \"+ state.url.trim_right(\"/\") + \":\" + (\n            size(resp.Body) != 0 ?\n              string(resp.Body)\n            :\n              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'\n          ),\n        },\n      },\n      \"want_more\": false,\n    }\n  )\n)\n"
           publisher_pipeline.disable_host: true
           redact:
             fields:
@@ -122,7 +122,7 @@ inputs:
           tags:
             - preserve_original_event
             - forwarded
-            - abusech-malware
+            - abusech-url
             - test-policy
       type: cel
       use_output: default
@@ -136,7 +136,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-ti_abusech.malware-ep
+                    - logs-ti_abusech.url-ep
                   privileges:
                     - auto_configure
                     - create_doc

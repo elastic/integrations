@@ -1,0 +1,51 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_abusech
+      name: test-default-ti_abusech
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_abusech.url
+            type: logs
+          fields:
+            _conf:
+                interval: 1h
+          fields_under_root: true
+          interval: 1h
+          program: "state.with(\n  request(\"GET\", state.url).with({\n    \"Header\":{\n      \"Content-Type\": [\"application/zip\"],\n      ?\"Auth-Key\": has(state.auth_key) ? \n        optional.of([state.auth_key]) \n      :\n        optional.none(),\n    }\n  })\n  .do_request()\n  .as(resp, resp.StatusCode == 200 ?\n    resp.Body.mime(\"application/zip\").File.as(file, file.size() > 0 ? \n      file[0].Data.as(data, bytes(data).decode_json().as(body, {\n        \"events\": body.map(id, body[id].size() > 0 ? \n          {\"message\": body[id][0].with({\"id\": id}).encode_json()}\n        :\n          {\"message\": \"\"}\n        ),\n        \"url\": state.url\n      }))\n    :\n      {\n        \"events\": [],\n        \"url\": state.url\n      }\n    )\n  :\n    {\n      \"events\": {\n        \"error\": {\n          \"code\": string(resp.StatusCode),\n          \"id\": string(resp.Status),\n          \"message\": \"GET \"+ state.url.trim_right(\"/\") + \":\" + (\n            size(resp.Body) != 0 ?\n              string(resp.Body)\n            :\n              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'\n          ),\n        },\n      },\n      \"want_more\": false,\n    }\n  )\n)\n"
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - auth_key
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://urlhaus.abuse.ch/downloads/json
+          state:
+            auth_key: ${SECRET_0}
+          tags:
+            - forwarded
+            - abusech-url
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_abusech.url-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
