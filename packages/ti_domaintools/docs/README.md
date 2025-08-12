@@ -52,25 +52,46 @@ An example event for `nod_feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-17T05:55:49.465Z",
+    "input": {
+        "type": "cel"
+    },
     "agent": {
-        "ephemeral_id": "342683ed-b707-4537-bf91-16233fc78a31",
-        "id": "df6cda61-c87d-40c3-92d1-6eb4f18f3a79",
-        "name": "elastic-agent-42619",
+        "name": "docker-fleet-agent",
+        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
+        "ephemeral_id": "d1cbe648-0a1d-48e8-a161-cd82403e623e",
         "type": "filebeat",
         "version": "8.15.3"
     },
-    "data_stream": {
-        "dataset": "ti_domaintools.nod_feed",
-        "namespace": "30698",
-        "type": "logs"
-    },
-    "domaintools": {
-        "domain": "test1.com",
-        "timestamp": "2025-01-11T08:42:46Z"
-    },
+    "@timestamp": "2025-01-30T20:15:25.396Z",
     "ecs": {
-        "version": "8.17.0"
+        "version": "8.11.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "ti_domaintools.nad_feed"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.10.11-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.6 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.19.0.10"
+        ],
+        "name": "docker-fleet-agent",
+        "id": "cfae1e7244ae479b9b0968259c91b13a",
+        "mac": [
+            "02-42-AC-13-00-0A"
+        ],
+        "architecture": "aarch64"
     },
     "elastic_agent": {
         "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
@@ -93,57 +114,18 @@ An example event for `nod_feed` looks as following:
             "description": "Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network."
         }
     },
-    "message": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
     "event": {
         "agent_id_status": "verified",
+        "ingested": "2025-01-30T20:15:26Z",
+        "kind": "enrichment",
+        "message": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
         "category": [
             "threat"
         ],
-        "dataset": "ti_domaintools.nod_feed",
-        "ingested": "2025-06-17T05:55:52Z",
-        "kind": "enrichment",
         "type": [
             "indicator"
-        ]
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-42619",
-        "id": "328e5cd3dfd442488a3dd49bf596f391",
-        "ip": [
-            "192.168.241.2",
-            "192.168.254.4"
         ],
-        "mac": [
-            "02-42-C0-A8-F1-02",
-            "02-42-C0-A8-FE-04"
-        ],
-        "name": "elastic-agent-42619",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.119.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
-    "input": {
-        "type": "cel"
-    },
-    "message": "{\"timestamp\":\"2025-01-11T08:42:46Z\",\"domain\":\"test1.com\"}",
-    "threat": {
-        "feed": {
-            "description": "Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network.",
-            "name": "DomainTools NOD",
-            "reference": "https://docs.techdocs.ci.domaintools.cloud/feeds/realtime/userguide/"
-        },
-        "indicator": {
-            "name": "test1.com",
-            "type": "domain-name"
-        }
+        "dataset": "ti_domaintools.nod_feed"
     }
 }
 ```
@@ -249,11 +231,11 @@ An example event for `nad_feed` looks as following:
             "description": "Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network."
         }
     },
-    "message": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
     "event": {
         "agent_id_status": "verified",
         "ingested": "2025-01-30T20:15:26Z",
         "kind": "enrichment",
+        "message": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
         "category": [
             "threat"
         ],
@@ -366,11 +348,11 @@ An example event for `domaindiscovery_feed` looks as following:
             "description": "New domains as they are either discovered in domain registration information, observed by our global sensor network, or reported by trusted third parties."
         }
     },
-    "message": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
     "event": {
         "agent_id_status": "verified",
         "ingested": "2025-01-30T20:15:26Z",
         "kind": "enrichment",
+        "original": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
         "category": [
             "threat"
         ],
@@ -516,7 +498,6 @@ An example event for `domainrdap_feed` looks as following:
             "description": "Changes to global domain registration information, populated by the Registration Data Access Protocol (RDAP). Compliments the 5-Minute WHOIS Feed as registries and registrars switch from Whois to RDAP."
         }
     },
-    "message": "{\"timestamp\":\"2025-06-12T20:34:31Z\",\"domain\":\"unlockyourlifehere.com\",\"raw_record\":{\"first_request_timestamp\":\"2025-06-12T20:34:24Z\",\"requests\":[{\"data\":\"{\\\"objectClassName\\\":\\\"domain\\\",\\\"handle\\\":\\\"2894681047_DOMAIN_COM-VRSN\\\",\\\"ldhName\\\":\\\"UNLOCKYOURLIFEHERE.COM\\\",\\\"links\\\":[{\\\"value\\\":\\\"https:\\\\/\\\\/rdap.verisign.com\\\\/com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"rel\\\":\\\"self\\\",\\\"href\\\":\\\"https:\\\\/\\\\/rdap.verisign.com\\\\/com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"type\\\":\\\"application\\\\/rdap+json\\\"},{\\\"value\\\":\\\"https:\\\\/\\\\/rdap.godaddy.com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"rel\\\":\\\"related\\\",\\\"href\\\":\\\"https:\\\\/\\\\/rdap.godaddy.com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"type\\\":\\\"application\\\\/rdap+json\\\"}],\\\"status\\\":[\\\"redemption period\\\"],\\\"entities\\\":[{\\\"objectClassName\\\":\\\"entity\\\",\\\"handle\\\":\\\"146\\\",\\\"roles\\\":[\\\"registrar\\\"],\\\"publicIds\\\":[{\\\"type\\\":\\\"IANA Registrar ID\\\",\\\"identifier\\\":\\\"146\\\"}],\\\"vcardArray\\\":[\\\"vcard\\\",[[\\\"version\\\",{},\\\"text\\\",\\\"4.0\\\"],[\\\"fn\\\",{},\\\"text\\\",\\\"GoDaddy.com, LLC\\\"]]],\\\"entities\\\":[{\\\"objectClassName\\\":\\\"entity\\\",\\\"roles\\\":[\\\"abuse\\\"],\\\"vcardArray\\\":[\\\"vcard\\\",[[\\\"version\\\",{},\\\"text\\\",\\\"4.0\\\"],[\\\"fn\\\",{},\\\"text\\\",\\\"\\\"],[\\\"tel\\\",{\\\"type\\\":\\\"voice\\\"},\\\"uri\\\",\\\"tel:480-624-2505\\\"],[\\\"email\\\",{},\\\"text\\\",\\\"abuse@godaddy.com\\\"]]]}]}],\\\"events\\\":[{\\\"eventAction\\\":\\\"registration\\\",\\\"eventDate\\\":\\\"2024-06-28T11:49:19Z\\\"},{\\\"eventAction\\\":\\\"expiration\\\",\\\"eventDate\\\":\\\"2025-06-28T11:49:19Z\\\"},{\\\"eventAction\\\":\\\"last changed\\\",\\\"eventDate\\\":\\\"2025-05-20T02:44:33Z\\\"},{\\\"eventAction\\\":\\\"last update of RDAP database\\\",\\\"eventDate\\\":\\\"2025-06-12T20:34:16Z\\\"}],\\\"secureDNS\\\":{\\\"delegationSigned\\\":false},\\\"rdapConformance\\\":[\\\"rdap_level_0\\\",\\\"icann_rdap_technical_implementation_guide_0\\\",\\\"icann_rdap_response_profile_0\\\"],\\\"notices\\\":[{\\\"title\\\":\\\"Terms of Use\\\",\\\"description\\\":[\\\"Service subject to Terms of Use.\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/www.verisign.com\\\\/domain-names\\\\/registration-data-access-protocol\\\\/terms-service\\\\/index.xhtml\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]},{\\\"title\\\":\\\"Status Codes\\\",\\\"description\\\":[\\\"For more information on domain status codes, please visit https:\\\\/\\\\/icann.org\\\\/epp\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/icann.org\\\\/epp\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]},{\\\"title\\\":\\\"RDDS Inaccuracy Complaint Form\\\",\\\"description\\\":[\\\"URL of the ICANN RDDS Inaccuracy Complaint Form: https:\\\\/\\\\/icann.org\\\\/wicf\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/icann.org\\\\/wicf\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]}]}\",\"source_type\":\"registry\",\"timestamp\":\"2025-06-12T20:34:24Z\",\"url\":\"https://rdap.verisign.com/com/v1/domain/unlockyourlifehere.com\"}]},\"parsed_record\":{\"parsed_fields\":{\"conformance\":[\"rdap_level_0\",\"icann_rdap_technical_implementation_guide_0\",\"icann_rdap_response_profile_0\"],\"contacts\":[],\"creation_date\":\"2024-06-28T11: 49: 19+00: 00\",\"dnssec\":{\"signed\":false},\"domain\":\"UNLOCKYOURLIFEHERE.COM\",\"domain_statuses\":[\"redemption period\"],\"email_domains\":[\"godaddy.com\"],\"emails\":[\"abuse@godaddy.com\"],\"expiration_date\":\"2025-06-28T11: 49: 19+00: 00\",\"handle\":\"2894681047_DOMAIN_COM-VRSN\",\"last_changed_date\":\"2025-05-20T02: 44: 33+00: 00\",\"links\":[{\"href\":\"https://rdap.verisign.com/com/v1/domain/UNLOCKYOURLIFEHERE.COM\",\"rel\":\"self\"},{\"href\":\"https://rdap.godaddy.com/v1/domain/UNLOCKYOURLIFEHERE.COM\",\"rel\":\"related\"}],\"registrar\":{\"contacts\":[{\"email\":\"abuse@godaddy.com\",\"name\":\"\",\"phone\":\"tel:480-624-2505\",\"roles\":[\"abuse\"]}],\"iana_id\":\"146\",\"name\":\"GoDaddy.com, LLC\"},\"unclassified_emails\":[]},\"registrar_request_url\":null,\"registry_request_url\":\"https://rdap.verisign.com/com/v1/domain/unlockyourlifehere.com\"}}",
     "event": {
         "agent_id_status": "verified",
         "ingested": "2025-06-12T20:34:31Z",
@@ -524,6 +505,7 @@ An example event for `domainrdap_feed` looks as following:
         "category": [
             "threat"
         ],
+        "original": "{\"timestamp\":\"2025-06-12T20:34:31Z\",\"domain\":\"unlockyourlifehere.com\",\"raw_record\":{\"first_request_timestamp\":\"2025-06-12T20:34:24Z\",\"requests\":[{\"data\":\"{\\\"objectClassName\\\":\\\"domain\\\",\\\"handle\\\":\\\"2894681047_DOMAIN_COM-VRSN\\\",\\\"ldhName\\\":\\\"UNLOCKYOURLIFEHERE.COM\\\",\\\"links\\\":[{\\\"value\\\":\\\"https:\\\\/\\\\/rdap.verisign.com\\\\/com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"rel\\\":\\\"self\\\",\\\"href\\\":\\\"https:\\\\/\\\\/rdap.verisign.com\\\\/com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"type\\\":\\\"application\\\\/rdap+json\\\"},{\\\"value\\\":\\\"https:\\\\/\\\\/rdap.godaddy.com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"rel\\\":\\\"related\\\",\\\"href\\\":\\\"https:\\\\/\\\\/rdap.godaddy.com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"type\\\":\\\"application\\\\/rdap+json\\\"}],\\\"status\\\":[\\\"redemption period\\\"],\\\"entities\\\":[{\\\"objectClassName\\\":\\\"entity\\\",\\\"handle\\\":\\\"146\\\",\\\"roles\\\":[\\\"registrar\\\"],\\\"publicIds\\\":[{\\\"type\\\":\\\"IANA Registrar ID\\\",\\\"identifier\\\":\\\"146\\\"}],\\\"vcardArray\\\":[\\\"vcard\\\",[[\\\"version\\\",{},\\\"text\\\",\\\"4.0\\\"],[\\\"fn\\\",{},\\\"text\\\",\\\"GoDaddy.com, LLC\\\"]]],\\\"entities\\\":[{\\\"objectClassName\\\":\\\"entity\\\",\\\"roles\\\":[\\\"abuse\\\"],\\\"vcardArray\\\":[\\\"vcard\\\",[[\\\"version\\\",{},\\\"text\\\",\\\"4.0\\\"],[\\\"fn\\\",{},\\\"text\\\",\\\"\\\"],[\\\"tel\\\",{\\\"type\\\":\\\"voice\\\"},\\\"uri\\\",\\\"tel:480-624-2505\\\"],[\\\"email\\\",{},\\\"text\\\",\\\"abuse@godaddy.com\\\"]]]}]}],\\\"events\\\":[{\\\"eventAction\\\":\\\"registration\\\",\\\"eventDate\\\":\\\"2024-06-28T11:49:19Z\\\"},{\\\"eventAction\\\":\\\"expiration\\\",\\\"eventDate\\\":\\\"2025-06-28T11:49:19Z\\\"},{\\\"eventAction\\\":\\\"last changed\\\",\\\"eventDate\\\":\\\"2025-05-20T02:44:33Z\\\"},{\\\"eventAction\\\":\\\"last update of RDAP database\\\",\\\"eventDate\\\":\\\"2025-06-12T20:34:16Z\\\"}],\\\"secureDNS\\\":{\\\"delegationSigned\\\":false},\\\"rdapConformance\\\":[\\\"rdap_level_0\\\",\\\"icann_rdap_technical_implementation_guide_0\\\",\\\"icann_rdap_response_profile_0\\\"],\\\"notices\\\":[{\\\"title\\\":\\\"Terms of Use\\\",\\\"description\\\":[\\\"Service subject to Terms of Use.\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/www.verisign.com\\\\/domain-names\\\\/registration-data-access-protocol\\\\/terms-service\\\\/index.xhtml\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]},{\\\"title\\\":\\\"Status Codes\\\",\\\"description\\\":[\\\"For more information on domain status codes, please visit https:\\\\/\\\\/icann.org\\\\/epp\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/icann.org\\\\/epp\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]},{\\\"title\\\":\\\"RDDS Inaccuracy Complaint Form\\\",\\\"description\\\":[\\\"URL of the ICANN RDDS Inaccuracy Complaint Form: https:\\\\/\\\\/icann.org\\\\/wicf\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/icann.org\\\\/wicf\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]}]}\",\"source_type\":\"registry\",\"timestamp\":\"2025-06-12T20:34:24Z\",\"url\":\"https://rdap.verisign.com/com/v1/domain/unlockyourlifehere.com\"}]},\"parsed_record\":{\"parsed_fields\":{\"conformance\":[\"rdap_level_0\",\"icann_rdap_technical_implementation_guide_0\",\"icann_rdap_response_profile_0\"],\"contacts\":[],\"creation_date\":\"2024-06-28T11: 49: 19+00: 00\",\"dnssec\":{\"signed\":false},\"domain\":\"UNLOCKYOURLIFEHERE.COM\",\"domain_statuses\":[\"redemption period\"],\"email_domains\":[\"godaddy.com\"],\"emails\":[\"abuse@godaddy.com\"],\"expiration_date\":\"2025-06-28T11: 49: 19+00: 00\",\"handle\":\"2894681047_DOMAIN_COM-VRSN\",\"last_changed_date\":\"2025-05-20T02: 44: 33+00: 00\",\"links\":[{\"href\":\"https://rdap.verisign.com/com/v1/domain/UNLOCKYOURLIFEHERE.COM\",\"rel\":\"self\"},{\"href\":\"https://rdap.godaddy.com/v1/domain/UNLOCKYOURLIFEHERE.COM\",\"rel\":\"related\"}],\"registrar\":{\"contacts\":[{\"email\":\"abuse@godaddy.com\",\"name\":\"\",\"phone\":\"tel:480-624-2505\",\"roles\":[\"abuse\"]}],\"iana_id\":\"146\",\"name\":\"GoDaddy.com, LLC\"},\"unclassified_emails\":[]},\"registrar_request_url\":null,\"registry_request_url\":\"https://rdap.verisign.com/com/v1/domain/unlockyourlifehere.com\"}}",
         "type": [
             "indicator"
         ],
