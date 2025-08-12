@@ -120,6 +120,10 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_failure: true
+  - remove:
+      field: slack.context.ip_address
+      ignore_missing: true
+      if: ctx.slack?.context?.ip_address == ""
   - rename:
       field: slack.context.ip_address
       target_field: source.address
@@ -197,10 +201,6 @@ processors:
   - uri_parts:
       field: slack.audit.details.url_private
       ignore_missing: true
-  - remove:
-      field: source.address
-      ignore_missing: true
-      if: ctx?.source?.address == ""
   - convert:
       field: source.address
       target_field: source.ip
