@@ -1,27 +1,6 @@
 ---
-description: Pipeline for processing User logs.
+description: Pipeline for common processing of all entity type logs.
 processors:
-  - set:
-      field: event.kind
-      tag: set_event_kind
-      value: asset
-  - set:
-      field: event.category
-      tag: set_event_category
-      value: ['iam']
-  - set:
-      field: event.type
-      tag: set_event_type
-      value: ['user','info']
-  - set:
-      field: asset.category
-      tag: set_asset_category
-      value: entity
-  - set:
-      field: asset.type
-      tag: set_asset_type
-      value: activedirectory_user
-
   - script:
       lang: painless
       description: This script processor rename the fields under the activedirectory objects.
@@ -394,33 +373,6 @@ processors:
       field: activedirectory.user.account_never_expires
       value: true
       if: ctx.activedirectory?.user?.account_expires == "0" || ctx.activedirectory?.user?.account_expires == "9223372036854775807"
-
-  - append:
-      field: related.user
-      value: "{{{activedirectory.user.sam_account_name}}}"
-      tag: append_name_into_related_user
-      allow_duplicates: false
-      if: ctx.activedirectory?.user?.sam_account_name != null
-  - append:
-      field: related.user
-      value: "{{{activedirectory.id}}}"
-      tag: append_id_into_related_user
-      allow_duplicates: false
-      if: ctx.activedirectory?.id != null
-  - append:
-      field: related.user
-      value: "{{{activedirectory.user.object_guid}}}"
-      tag: append_object_guid_into_related_user
-      allow_duplicates: false
-      if: ctx.activedirectory?.user?.object_guid != null
-
-  - rename:
-      field: activedirectory.id
-      target_field: activedirectory.user.object_dn
-
-  - rename:
-      field: activedirectory
-      target_field: entityanalytics_ad
 
 on_failure:
   - append:
