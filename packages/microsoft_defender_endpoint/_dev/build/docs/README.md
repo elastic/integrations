@@ -58,7 +58,7 @@ These values are:
 
 ### Data Retention and ILM Configuration
 
-For `vulnerability` data stream, a full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we've set up an Index Lifecycle Management (ILM) policy that automatically deletes `vulnerability` data older than 7 days. This helps keep storage usage under control.
+For `vulnerability` data stream, a full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes `vulnerability` data older than 7 days. This helps keep storage usage under control.
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index: `delete`, `delete_index`
 
