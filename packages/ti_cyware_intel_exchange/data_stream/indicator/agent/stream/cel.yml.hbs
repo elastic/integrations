@@ -25,20 +25,16 @@ redact:
     - access_id
     - secret_key
 program: |-
-  (
+  state.with(
     state.?want_more.orValue(false) ?
-      state.with(
-        {
-          "expires": int(now() + duration("28s")),
-        }
-      )
+      {
+        "expires": int(now() + duration("28s")),
+      }
     :
-      state.with(
-        {
-          "expires": int(now() + duration("28s")),
-          "from_time": state.?cursor.modified_timestamp.orValue(int(now - duration(state.initial_interval))),
-        }
-      )
+      {
+        "expires": int(now() + duration("28s")),
+        "from_time": state.?cursor.modified_timestamp.orValue(int(now - duration(state.initial_interval))),
+      }
   ).as(state,
     request(
       "GET",
@@ -75,6 +71,7 @@ program: |-
         "secret_key": state.secret_key,
         ?"label_name": state.?label_name,
         "from_time": string(state.from_time),
+        "initial_interval" : state.initial_interval,
         "cursor": {
           ?"modified_timestamp": body.results.size() > 0 ?
             optional.of(body.results.map(e, e.ctix_modified).max().as(last,
@@ -108,6 +105,9 @@ program: |-
         "secret_key": state.secret_key,
         ?"label_name": state.?label_name,
         "initial_interval": state.initial_interval,
+        "cursor": {
+          ?"modified_timestamp": state.?cursor.modified_timestamp,
+        },
       }
     )
   )
