@@ -229,21 +229,9 @@ processors:
       tag: script_to_drop_zero_values
       lang: painless
       description: This script processor iterates over the sensor object to remove fields with zero values.
+      if: ctx.qualys_gav?.asset?.sensor instanceof Map
       source: |
-        if (ctx?.qualys_gav?.asset?.sensor != null) {
-          def sensor = ctx.qualys_gav.asset.sensor;
-          List keysToRemove = new ArrayList();
-    
-          for (entry in sensor.entrySet()) {
-            if (entry.getValue() == 0) {
-              keysToRemove.add(entry.getKey());
-            }
-          }
-    
-          for (k in keysToRemove) {
-            sensor.remove(k);
-          }
-        }
+        ctx.qualys_gav.asset.sensor.values().removeIf(v -> { return v == 0 });
   - date:
       field: qualys_gav.asset.sensor.last_vmscan
       target_field: qualys_gav.asset.sensor.last_vmscan
@@ -958,8 +946,8 @@ processors:
         if (os_type.contains('centos') || os_type.contains('ubuntu')) {
           ctx.host.os.put('type', 'linux');
         } else {
-            ctx.host.os.put('type', params.get(os_type));
-         }
+          ctx.host.os.put('type', params.get(os_type));
+        }
   - convert:
       field: qualys_gav.asset.operating_system.cpe_id
       tag: convert_qualys_gav_asset_operating_system_cpe_id_to_string
