@@ -6,8 +6,14 @@ processors:
       if: ctx.error?.message != null
       description: error message set and no data to process.
 
-  - json:
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+
+  - json:
+      field: event.original
       target_field: domaintools
 
   - set:
