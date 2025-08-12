@@ -88,3 +88,11 @@ This is the `threat` dataset.
 {{event "threat"}}
 
 {{fields "threat"}}
+
+### application risk
+
+This is the `application risk` dataset.
+
+{{event "application_risk"}}
+
+{{fields "application_risk"}}
