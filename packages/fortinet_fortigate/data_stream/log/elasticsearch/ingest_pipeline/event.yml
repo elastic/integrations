@@ -244,8 +244,13 @@ processors:
       field: fortinet.firewall.latency
       type: float
       ignore_missing: true
+  - set:
+      field: source.user.name
+      copy_from: fortinet.firewall.xauthuser
+      if: ctx.fortinet?.firewall?.subtype == 'vpn' && ctx.fortinet.firewall.xauthuser != null
   - remove:
       field:
+        - fortinet.firewall.advpnsc
         - fortinet.firewall.dstport
         - fortinet.firewall.remport
         - fortinet.firewall.rcvdbyte
