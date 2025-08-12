@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing ip addresses
 processors:
   - set:
       field: ecs.version
@@ -17,47 +17,43 @@ processors:
       if: ctx.event?.original != null
   - json:
       field: event.original
-      target_field: netbox.device
+      target_field: netbox.ip
   - gsub:
-      field: netbox.device.primary_ip.address
+      field: netbox.ip.address
+      pattern: "/\\d+$"
+      replacement: ""
+  - append:
+      field: related.ip
+      value: "{{{netbox.ip.address}}}"
+      allow_duplicates: false
+  - gsub:
+      field: netbox.ip.nat_inside.address
       pattern: "/\\d+$"
       replacement: ""
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{netbox.device.primary_ip.address}}}"
-      if: ctx.netbox?.device?.primary_ip?.address != null
+      value: "{{{netbox.ip.nat_inside.address}}}"
+      if: ctx.netbox?.ip?.nat_inside?.address != null
       allow_duplicates: false
-  - gsub:
-      field: netbox.device.primary_ip4.address
-      pattern: "/\\d+$"
-      replacement: ""
+  - foreach:
+      field: netbox.ip.nat_outside
       ignore_missing: true
-  - append:
-      field: related.ip
-      value: "{{{netbox.device.primary_ip4.address}}}"
-      if: ctx.netbox?.device?.primary_ip4?.address != null
-      allow_duplicates: false
-  - gsub:
-      field: netbox.device.primary_ip6.address
-      pattern: "/\\d+$"
-      replacement: ""
+      processor:
+        gsub:
+          field: _ingest._value.address
+          pattern: "/\\d+$"
+          replacement: ""
+          ignore_missing: true
+  - foreach:
+      field: netbox.ip.nat_outside
       ignore_missing: true
-  - append:
-      field: related.ip
-      value: "{{{netbox.device.primary_ip6.address}}}"
-      if: ctx.netbox?.device?.primary_ip6?.address != null
-      allow_duplicates: false
-  - gsub:
-      field: netbox.device.oob_ip.address
-      pattern: "/\\d+$"
-      replacement: ""
-      ignore_missing: true
-  - append:
-      field: related.ip
-      value: "{{{netbox.device.oob_ip.address}}}"
-      if: ctx.netbox?.device?.oob_ip?.address != null
-      allow_duplicates: false
+      processor:
+        append:
+          field: related.ip
+          value: "{{{_ingest._value.address}}}"
+          if: ctx._ingest?._value != null
+          allow_duplicates: false
   - set:
       field: event.kind
       value: event
@@ -65,13 +61,13 @@ processors:
       field: event.category
       value: [configuration]
   - date:
-      field: netbox.device.created
-      target_field: netbox.device.created
+      field: netbox.ip.created
+      target_field: netbox.ip.created
       formats:
         - ISO8601
   - date:
-      field: netbox.device.last_updated
-      target_field: netbox.device.last_updated
+      field: netbox.ip.last_updated
+      target_field: netbox.ip.last_updated
       formats:
         - ISO8601
   - script:

@@ -1,6 +1,6 @@
 # NetBox Integration
 
-This integration is for [NetBox](). It currently supports retrieving devices from the NetBox API.
+This integration is for [NetBox](). It currently supports retrieving devices and ip addresses from the NetBox API.
 
 ## Setup
 
@@ -19,3 +19,11 @@ Collects devices from the [Devices API](https://demo.netbox.dev/api/schema/swagg
 {{event "devices"}}
 
 {{fields "devices"}}
+
+### IPs
+
+Collects IP addresses from the [IP Addresses API](https://demo.netbox.dev/api/schema/swagger-ui/#/ipam/ipam_ip_addresses_list).
+
+{{event "ips"}}
+
+{{fields "ips"}}
