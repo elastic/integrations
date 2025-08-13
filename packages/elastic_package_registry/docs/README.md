@@ -28,7 +28,7 @@ address parameter. Or, as an alternative, set the environment variable
 ```bash
 package-registry -metrics-address 0.0.0.0:9000
 
-EPR_METRICS_ADDRESS="0.0.0.0:9000" package-regsitry
+EPR_METRICS_ADDRESS="0.0.0.0:9000" package-registry
 ```
 
 Remember to expose the port used in the above setting (e.g. 9000) in your deployments:
