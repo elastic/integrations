@@ -1,17 +1,17 @@
 ---
 mapped_pages:
-  - https://www.elastic.co/guide/en/integrations-developer/current/testing-new-indexing-features.html
+  - https://www.elastic.co/guide/en/integrations-developer/current/testing-indexing-features.html
 ---
 
-# How to test new indexing features [testing-new-indexing-features]
+# How to test indexing features [testing-indexing-features]
 
-Elasticsearch has been adding new indexing modes and features that allow optimization of storage size and query performance.
+Elasticsearch has added indexing modes and features that allow optimization of storage size and query performance.
 
 We’d like to enable integration developers to start testing the ingest and query performance of enabling these features before we start making any changes in the integrations themselves or allowing end users to enable these from the Fleet UI.
 
 Today, each of these can already be enabled by leveraging the `*@custom` component templates that Fleet installs for each integration data stream, to varying degrees of ease of use (details below). We could improve the UX around this for integration developers by adding an explicit API in Fleet to enable this, however it may not be necessary. See [elastic/kibana#132818](https://github.com/elastic/kibana/issues/132818) for discussion around how a feature flag API could be added to ease this a bit more.
 
-See the following instructions for testing new indexing features:
+See the following instructions for testing indexing features:
 
 * [Testing synthetic source](#integrations-dev-synthetic-source)
 * [Testing `doc-value-only` fields](#integrations-dev-doc-value-only-fields)
