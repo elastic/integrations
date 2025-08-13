@@ -13,8 +13,8 @@ The goal of each integration’s documentation is to:
 * Each integration document should contain the following sections
 
     * [Overview](#idg-docs-guidelines-overview)
-    * [Datastreams](#idg-docs-guidelines-datastreams)
-    * [Requirements](#idg-docs-guidelines-requirements)
+    * [What data does this integration collect?](#idg-data-collected)
+    * [What do I need to use this integration?](#idg-requirements)
     * [Setup](#idg-docs-guidelines-setup)
     * [Troubleshooting (optional)](#idg-docs-guidelines-troubleshooting)
     * [Reference](#idg-docs-guidelines-reference)
@@ -50,41 +50,12 @@ This section should include:
 * The types of data collected by the integration
 * Supported use cases
 
+### What do I need to use this integration? [idg-requirements]
 
-### Requirements [idg-docs-guidelines-requirements]
-
-The requirements section helps readers to confirm that the integration will work with their systems.
+This section indicates what is required to use this integration:
 
 * Elastic prerequisites (for example, a self-managed or Cloud deployment)
-* System compatibility
-* Supported versions of third-party products
-* Permissions needed
-* Anything else that could block a user from successfully using the integration
-
-
-#### Template [_template_3]
-
-Use this template language as a starting point, including any other requirements for the integration:
-
-```text
-## Requirements
-
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-
-<!-- Other requirements -->
-```
-
-
-#### Example [_example_3]
-
-```text
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-
-Each data stream collects different kinds of metric data, which may require dedicated permissions to be fetched and may vary across operating systems. Details on the permissions needed for each data stream are available in the Metrics reference.
-```
-
-For a much more detailed example, refer to the [AWS integration requirements](https://github.com/elastic/integrations/blob/main/packages/aws/_dev/build/docs/README.md#requirements).
+* Credentials or an admin account for the third-party software
 
 
 ### Setup [idg-docs-guidelines-setup]
