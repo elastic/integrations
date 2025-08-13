@@ -31,48 +31,19 @@ Some considerations when these documentation files are written at `_dev/build/do
 
         * In the documentation files (`_dev/build/docs/*.md`), `{{ url "getting-started-observability" "Elastic guide" }}` generates a link to the Observability Getting Started guide.
 
-
-
 ### Overview [idg-docs-guidelines-overview]
 
-The overview section explains what the integration is, defines the third-party product that is providing data, establishes its relationship to the larger ecosystem of Elastic products, and helps the reader understand how it can be used to solve a tangible problem.
+The **Overview** section explains what the integration does, what the main uses cases are, and contains the following subsections:
 
-The overview should answer the following questions:
+* **Compatibility**
 
-* What is the integration?
-* What is the third-party product that is providing data?
-* What can you do with it?
+   Indicates which versions, deployment methods, or architectures of the third party software this integration compatible with.
 
-    * General description
-    * Basic example
+* **How it works**
 
+   Provides a high-level overview on how the integration collects data.
 
-
-#### Template [_template]
-
-Use this template language as a starting point, replacing `<placeholder text>` with details about the integration:
-
-```text
-The <name> integration allows you to monitor <service>. <service> is <definition>.
-
-Use the <name> integration to <function>. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference <data stream type> when troubleshooting an issue.
-
-For example, if you wanted to <use case> you could <action>. Then you can <visualize|alert|troubleshoot> by <action>.
-```
-
-
-#### Example [_example]
-
-```text
-The AWS CloudFront integration allows you to monitor your AWS CloudFront usage. AWS CloudFront is a content delivery network (CDN) service.
-
-Use the AWS CloudFront integration to collect and parse logs related to content delivery. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
-
-For example, you could use the data from this integration to know when there are more than some number of failed requests for a single piece of content in a given time period. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs like the number of unique users (by IP address) who experienced the issue, the source of the request, and more.
-```
-
-
-### Datastreams [idg-docs-guidelines-datastreams]
+### What data does this integration collect? [idg-data-collected]
 
 The data streams section provides a high-level overview of the kind of data that is collected by the integration. This is helpful since it can be difficult to quickly derive an understanding from just the reference sections (since they’re so long).
 
