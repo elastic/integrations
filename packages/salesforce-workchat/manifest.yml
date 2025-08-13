@@ -1,0 +1,70 @@
+format_version: 3.3.1
+name: salesforce-data
+title: "Salesforce Integration for WorkChat"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "This is a Salesforce integration for WorkChat"
+type: integration
+categories:
+  - crm
+  - custom
+  - ticketing
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "platinum"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/connectors-logo.svg
+    title: Connectors logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates_behavior: individual_policies
+policy_templates:
+  - name: salesforce-data
+    title: Salesforce Data
+    icons:
+      - src: <TODO>
+        title: Salesforce Logo
+        size: 32x32
+        type: image/svg+xml
+    description: Ingest your Salesforce data
+    deployment_modes: &connector_deployment_modes
+      default:
+        enabled: false
+      agentless:
+        enabled: true
+        organization: elastic
+        division: engineering
+        team: search-extract-and-transform
+    multiple: false
+    inputs:
+      - type: connectors-py
+        title: Salesforce Data for WorkChat
+        description: &input_description >-
+          Chat with your Salesforce Data
+        vars: &connector_input_vars
+          - name: connector_name
+            type: text
+            title: Connector Name
+            required: false
+            show_user: true
+            description: Connector name to identify the connector in the UI
+          - name: connector_id
+            type: text
+            title: Connector ID
+            required: false
+            show_user: false
+            description: >-
+              The ID of the connector managed by this integration, generated
+              randomly if not specified.
+        template_path: salesforce_data.yml.hbs
+owner:
+  github: elastic/integrations
+  type: elastic
