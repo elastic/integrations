@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "This dashboard shows accounting logs collected by the Cisco ISE integration.",
+        "description": "Overview of Fortinet FortiMail History Events.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -15,13 +15,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "cisco_ise.log"
+                                "query": "fortinet_fortimail.log"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "cisco_ise.log"
+                                "data_stream.dataset": "fortinet_fortimail.log"
                             }
                         }
                     },
@@ -33,29 +33,16 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "cisco_ise.log.category.name",
+                            "key": "fortinet_fortimail.log.type",
                             "negate": false,
-                            "params": [
-                                "CISE_RADIUS_Accounting",
-                                "CISE_TACACS_Accounting"
-                            ],
-                            "type": "phrases"
+                            "params": {
+                                "query": "statistics"
+                            },
+                            "type": "phrase"
                         },
                         "query": {
-                            "bool": {
-                                "minimum_should_match": 1,
-                                "should": [
-                                    {
-                                        "match_phrase": {
-                                            "cisco_ise.log.category.name": "CISE_RADIUS_Accounting"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "cisco_ise.log.category.name": "CISE_TACACS_Accounting"
-                                        }
-                                    }
-                                ]
+                            "match_phrase": {
+                                "fortinet_fortimail.log.type": "statistics"
                             }
                         }
                     }
@@ -68,7 +55,7 @@
         },
         "optionsJSON": {
             "hidePanelTitles": false,
-            "syncColors": true,
+            "syncColors": false,
             "syncCursor": true,
             "syncTooltips": false,
             "useMargins": true
@@ -76,941 +63,934 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-a67cd1f5-a62a-4daa-9bf3-8e3b960fdc14",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "a67cd1f5-a62a-4daa-9bf3-8e3b960fdc14": {
-                                            "columnOrder": [
-                                                "4bc1da10-2ee7-4357-bf56-08ccc19532df",
-                                                "1cc4632b-c273-4767-b0bf-3d9ae5eceb4a"
-                                            ],
-                                            "columns": {
-                                                "1cc4632b-c273-4767-b0bf-3d9ae5eceb4a": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "4bc1da10-2ee7-4357-bf56-08ccc19532df": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Accounting Terminate Cause",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "1cc4632b-c273-4767-b0bf-3d9ae5eceb4a",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "cisco_ise.log.acct.terminate_cause"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "a67cd1f5-a62a-4daa-9bf3-8e3b960fdc14",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "legendSize": "auto",
-                                        "metrics": [
-                                            "1cc4632b-c273-4767-b0bf-3d9ae5eceb4a"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "4bc1da10-2ee7-4357-bf56-08ccc19532df"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "50fe0c8b-d5fe-4d19-b498-888c02bb97e6",
-                    "w": 24,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "50fe0c8b-d5fe-4d19-b498-888c02bb97e6",
-                "title": "Distribution of Radius Accounting by Accounting Terminate Cause [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-c339f287-0c47-4c24-9178-ff74c8bce2f9",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "c339f287-0c47-4c24-9178-ff74c8bce2f9": {
-                                            "columnOrder": [
-                                                "e60f8e91-1903-44da-9331-9bb8df3c379c",
-                                                "cab3fbb2-3f72-4cf4-8eff-9b9d8ead8f47"
-                                            ],
-                                            "columns": {
-                                                "cab3fbb2-3f72-4cf4-8eff-9b9d8ead8f47": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "e60f8e91-1903-44da-9331-9bb8df3c379c": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "NAS Port Type",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "cab3fbb2-3f72-4cf4-8eff-9b9d8ead8f47",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "cisco_ise.log.nas.port.type"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "c339f287-0c47-4c24-9178-ff74c8bce2f9",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "legendSize": "auto",
-                                        "metrics": [
-                                            "cab3fbb2-3f72-4cf4-8eff-9b9d8ead8f47"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "e60f8e91-1903-44da-9331-9bb8df3c379c"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "90f9a95f-9551-416e-a3b6-1cd887f18b7f",
-                    "w": 24,
-                    "x": 24,
-                    "y": 0
-                },
-                "panelIndex": "90f9a95f-9551-416e-a3b6-1cd887f18b7f",
-                "title": "Distribution of Radius Accounting by NAS Port Type [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-563487a2-4e88-4722-8792-a2f85b5ad898",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "563487a2-4e88-4722-8792-a2f85b5ad898": {
-                                            "columnOrder": [
-                                                "9a70ad9a-aabb-45ea-b427-0894c5548bec",
-                                                "f75a63e3-c81d-4569-9389-5fdeae501f69"
-                                            ],
-                                            "columns": {
-                                                "9a70ad9a-aabb-45ea-b427-0894c5548bec": {
-                                                    "customLabel": true,
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "NAS IP Address",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "f75a63e3-c81d-4569-9389-5fdeae501f69",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "cisco_ise.log.nas.ip"
-                                                },
-                                                "f75a63e3-c81d-4569-9389-5fdeae501f69": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "9a70ad9a-aabb-45ea-b427-0894c5548bec"
-                                    },
-                                    {
-                                        "columnId": "f75a63e3-c81d-4569-9389-5fdeae501f69"
-                                    }
-                                ],
-                                "layerId": "563487a2-4e88-4722-8792-a2f85b5ad898",
-                                "layerType": "data",
-                                "rowHeight": "single",
-                                "rowHeightLines": 1
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "c1d5ee32-f14a-467c-96de-ef0c3f16e9bc",
-                    "w": 24,
-                    "x": 0,
-                    "y": 15
-                },
-                "panelIndex": "c1d5ee32-f14a-467c-96de-ef0c3f16e9bc",
-                "title": "Top 10 NAS IP Address for Radius Accounting [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-366e955f-e14c-4b83-a2a6-508a16c66580",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "366e955f-e14c-4b83-a2a6-508a16c66580": {
-                                            "columnOrder": [
-                                                "a2317452-03df-46c7-b2b0-403182601b46",
-                                                "4c2721f7-552c-4e2f-aed8-e0740daeb3ae"
-                                            ],
-                                            "columns": {
-                                                "4c2721f7-552c-4e2f-aed8-e0740daeb3ae": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "a2317452-03df-46c7-b2b0-403182601b46": {
-                                                    "customLabel": true,
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "Device IP Address",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "4c2721f7-552c-4e2f-aed8-e0740daeb3ae",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "client.ip"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "a2317452-03df-46c7-b2b0-403182601b46"
-                                    },
-                                    {
-                                        "columnId": "4c2721f7-552c-4e2f-aed8-e0740daeb3ae"
-                                    }
-                                ],
-                                "layerId": "366e955f-e14c-4b83-a2a6-508a16c66580",
-                                "layerType": "data",
-                                "rowHeight": "single",
-                                "rowHeightLines": 1
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "65b5737b-cfa1-4bab-becf-871781ac7034",
-                    "w": 24,
-                    "x": 24,
-                    "y": 15
-                },
-                "panelIndex": "65b5737b-cfa1-4bab-becf-871781ac7034",
-                "title": "Top 10 Device IP Address for Accounting [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-0306775f-c021-46f6-b778-3aa7aab203b0",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "0306775f-c021-46f6-b778-3aa7aab203b0": {
-                                            "columnOrder": [
-                                                "64763d11-0e4c-4326-9495-1db4fa371c6a",
-                                                "e8806083-76b7-436a-bf69-b1622562426e"
-                                            ],
-                                            "columns": {
-                                                "64763d11-0e4c-4326-9495-1db4fa371c6a": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Network Device Name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "e8806083-76b7-436a-bf69-b1622562426e",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "cisco_ise.log.network.device.name"
-                                                },
-                                                "e8806083-76b7-436a-bf69-b1622562426e": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "64763d11-0e4c-4326-9495-1db4fa371c6a"
-                                    },
-                                    {
-                                        "columnId": "e8806083-76b7-436a-bf69-b1622562426e"
-                                    }
-                                ],
-                                "layerId": "0306775f-c021-46f6-b778-3aa7aab203b0",
-                                "layerType": "data",
-                                "rowHeight": "single",
-                                "rowHeightLines": 1
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "8f672ac4-133d-437d-8c0d-b2c2141ee692",
-                    "w": 15,
-                    "x": 0,
-                    "y": 30
-                },
-                "panelIndex": "8f672ac4-133d-437d-8c0d-b2c2141ee692",
-                "title": "Top 10 Network Device Name for Accounting [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-1e475601-343c-4d8c-abca-7db9f65b5a6c",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "1e475601-343c-4d8c-abca-7db9f65b5a6c": {
-                                            "columnOrder": [
-                                                "2b3d130e-c9c6-4e99-98c4-a97611eb4e09",
-                                                "3f5fc5ce-a22d-41b6-89e9-a4d36ffac515"
-                                            ],
-                                            "columns": {
-                                                "2b3d130e-c9c6-4e99-98c4-a97611eb4e09": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "User Name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "3f5fc5ce-a22d-41b6-89e9-a4d36ffac515",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "user.name"
-                                                },
-                                                "3f5fc5ce-a22d-41b6-89e9-a4d36ffac515": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "2b3d130e-c9c6-4e99-98c4-a97611eb4e09"
-                                    },
-                                    {
-                                        "columnId": "3f5fc5ce-a22d-41b6-89e9-a4d36ffac515"
-                                    }
-                                ],
-                                "layerId": "1e475601-343c-4d8c-abca-7db9f65b5a6c",
-                                "layerType": "data",
-                                "rowHeight": "single",
-                                "rowHeightLines": 1
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "5a56a74f-79be-46e1-881e-ff2f30f92833",
-                    "w": 16,
-                    "x": 15,
-                    "y": 30
-                },
-                "panelIndex": "5a56a74f-79be-46e1-881e-ff2f30f92833",
-                "title": "Top 10 User Name for Accounting [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-c57ed9f1-b9f2-47ef-9a8a-e6c6d657a819",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "c57ed9f1-b9f2-47ef-9a8a-e6c6d657a819": {
-                                            "columnOrder": [
-                                                "e2b46a07-0cd4-4484-a090-325de5b6815a",
-                                                "a45d79e1-dc4a-4999-9306-54ebcf582c60"
-                                            ],
-                                            "columns": {
-                                                "a45d79e1-dc4a-4999-9306-54ebcf582c60": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "e2b46a07-0cd4-4484-a090-325de5b6815a": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Network Device Profile",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "a45d79e1-dc4a-4999-9306-54ebcf582c60",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "cisco_ise.log.network.device.profile"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "e2b46a07-0cd4-4484-a090-325de5b6815a"
-                                    },
-                                    {
-                                        "columnId": "a45d79e1-dc4a-4999-9306-54ebcf582c60"
-                                    }
-                                ],
-                                "layerId": "c57ed9f1-b9f2-47ef-9a8a-e6c6d657a819",
-                                "layerType": "data",
-                                "rowHeight": "single",
-                                "rowHeightLines": 1
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "21639b0e-d284-47d6-b11e-c385c2766732",
-                    "w": 17,
-                    "x": 31,
-                    "y": 30
-                },
-                "panelIndex": "21639b0e-d284-47d6-b11e-c385c2766732",
-                "title": "Top 10 Network Device Profile for TACACS Accounting [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-3c458aaf-34b6-4278-b3c2-a724aaa8545f",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "3c458aaf-34b6-4278-b3c2-a724aaa8545f": {
-                                            "columnOrder": [
-                                                "f06d3a64-9fa8-4dd1-ac21-9a9cb0172654",
-                                                "6d6d77c7-37f3-49bc-befd-1202b48a5961"
-                                            ],
-                                            "columns": {
-                                                "6d6d77c7-37f3-49bc-befd-1202b48a5961": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f06d3a64-9fa8-4dd1-ac21-9a9cb0172654": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Selected Access Service",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "6d6d77c7-37f3-49bc-befd-1202b48a5961",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "cisco_ise.log.selected.access.service"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "3c458aaf-34b6-4278-b3c2-a724aaa8545f",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "legendSize": "auto",
-                                        "metrics": [
-                                            "6d6d77c7-37f3-49bc-befd-1202b48a5961"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "f06d3a64-9fa8-4dd1-ac21-9a9cb0172654"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "eb724ae2-4f92-4319-89ed-7009423508f9",
-                    "w": 24,
-                    "x": 0,
-                    "y": 45
-                },
-                "panelIndex": "eb724ae2-4f92-4319-89ed-7009423508f9",
-                "title": "Distribution of Events by Selected Access Service for Accounting [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-73794d3e-b66f-48f2-ad33-935d5cbf1340",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "73794d3e-b66f-48f2-ad33-935d5cbf1340": {
-                                            "columnOrder": [
-                                                "1c37abce-1566-44a2-9159-8992b4ab8f7d",
-                                                "e4fde83c-4e17-49e0-bd7f-5414dac3a669"
-                                            ],
-                                            "columns": {
-                                                "1c37abce-1566-44a2-9159-8992b4ab8f7d": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Service Name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "e4fde83c-4e17-49e0-bd7f-5414dac3a669",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "cisco_ise.log.service.name"
-                                                },
-                                                "e4fde83c-4e17-49e0-bd7f-5414dac3a669": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "1c37abce-1566-44a2-9159-8992b4ab8f7d"
-                                    },
-                                    {
-                                        "columnId": "e4fde83c-4e17-49e0-bd7f-5414dac3a669"
-                                    }
-                                ],
-                                "layerId": "73794d3e-b66f-48f2-ad33-935d5cbf1340",
-                                "layerType": "data",
-                                "rowHeight": "single",
-                                "rowHeightLines": 1
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "63c391d6-91af-41b4-89f5-425154ed3687",
-                    "w": 24,
-                    "x": 24,
-                    "y": 45
-                },
-                "panelIndex": "63c391d6-91af-41b4-89f5-425154ed3687",
-                "title": "Top 10 Service for TACACS Accounting [Logs Cisco ISE]",
-                "type": "lens",
-                "version": "8.9.0"
-            },
-            {
-                "embeddableConfig": {
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
+                    ],
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "66b5e5d7-8e6f-4064-8eca-695c6dc79f54",
+                    "h": 3,
+                    "i": "89707473-d009-442f-b707-bd098e1ecf9f",
                     "w": 48,
                     "x": 0,
-                    "y": 60
+                    "y": 0
                 },
-                "panelIndex": "66b5e5d7-8e6f-4064-8eca-695c6dc79f54",
-                "panelRefName": "panel_66b5e5d7-8e6f-4064-8eca-695c6dc79f54",
-                "type": "search",
-                "version": "8.7.1"
+                "panelIndex": "89707473-d009-442f-b707-bd098e1ecf9f",
+                "panelRefName": "panel_89707473-d009-442f-b707-bd098e1ecf9f",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e4009c79-05d5-4745-8017-d97f6546e54f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e4009c79-05d5-4745-8017-d97f6546e54f": {
+                                            "columnOrder": [
+                                                "af92c9d0-9e49-4516-ba49-9532d8d86c81"
+                                            ],
+                                            "columns": {
+                                                "af92c9d0-9e49-4516-ba49-9532d8d86c81": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique Count of Email Direction",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "email.direction"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "af92c9d0-9e49-4516-ba49-9532d8d86c81",
+                                "layerId": "e4009c79-05d5-4745-8017-d97f6546e54f",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "45ef6684-a091-429b-b178-be16f1dc6e20",
+                    "w": 24,
+                    "x": 0,
+                    "y": 3
+                },
+                "panelIndex": "45ef6684-a091-429b-b178-be16f1dc6e20",
+                "title": "Unique Count of History Events by Direction [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d7b0986e-bac9-4cc2-ba63-0730913c573e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d7b0986e-bac9-4cc2-ba63-0730913c573e": {
+                                            "columnOrder": [
+                                                "deced9e1-536a-4367-8f1f-c6b752761561",
+                                                "ae719a7c-0b1a-4979-8748-a5006dac3282"
+                                            ],
+                                            "columns": {
+                                                "ae719a7c-0b1a-4979-8748-a5006dac3282": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "deced9e1-536a-4367-8f1f-c6b752761561": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Sender Email",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ae719a7c-0b1a-4979-8748-a5006dac3282",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "email.from.address"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "deced9e1-536a-4367-8f1f-c6b752761561",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "colorMode": "none",
+                                        "columnId": "ae719a7c-0b1a-4979-8748-a5006dac3282",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "d7b0986e-bac9-4cc2-ba63-0730913c573e",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "634448c8-5087-40af-9bc8-c71e81de5386",
+                    "w": 24,
+                    "x": 24,
+                    "y": 3
+                },
+                "panelIndex": "634448c8-5087-40af-9bc8-c71e81de5386",
+                "title": "Top 10 Sender Email [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-621cf416-f772-42ee-9f2e-6be699c1fde6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "621cf416-f772-42ee-9f2e-6be699c1fde6": {
+                                            "columnOrder": [
+                                                "3a8356d6-3f68-4a05-912a-95c70373ff64",
+                                                "431cfc0e-8533-430b-8bf8-98cab14ffde0"
+                                            ],
+                                            "columns": {
+                                                "3a8356d6-3f68-4a05-912a-95c70373ff64": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Receiver Email",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "431cfc0e-8533-430b-8bf8-98cab14ffde0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "email.to.address"
+                                                },
+                                                "431cfc0e-8533-430b-8bf8-98cab14ffde0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "3a8356d6-3f68-4a05-912a-95c70373ff64",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "431cfc0e-8533-430b-8bf8-98cab14ffde0",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "621cf416-f772-42ee-9f2e-6be699c1fde6",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "de8a2de9-dfb2-4e2a-b62f-eed63bea9e26",
+                    "w": 24,
+                    "x": 0,
+                    "y": 18
+                },
+                "panelIndex": "de8a2de9-dfb2-4e2a-b62f-eed63bea9e26",
+                "title": "Top 10 Receiver Email [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8f4bed3a-6cdb-4ef9-8e6c-4f06c3ad14c5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8f4bed3a-6cdb-4ef9-8e6c-4f06c3ad14c5": {
+                                            "columnOrder": [
+                                                "f9ca52eb-4f6f-4c2a-993e-207f62f48b1b",
+                                                "07eb6a8b-8b13-4fc8-91b1-cbed2e3a0584"
+                                            ],
+                                            "columns": {
+                                                "07eb6a8b-8b13-4fc8-91b1-cbed2e3a0584": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f9ca52eb-4f6f-4c2a-993e-207f62f48b1b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Mailer",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "07eb6a8b-8b13-4fc8-91b1-cbed2e3a0584",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "email.x_mailer"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "07eb6a8b-8b13-4fc8-91b1-cbed2e3a0584"
+                                        ],
+                                        "layerId": "8f4bed3a-6cdb-4ef9-8e6c-4f06c3ad14c5",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "f9ca52eb-4f6f-4c2a-993e-207f62f48b1b"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "6da03b5f-d2de-468c-9f13-2170f58cc66e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 18
+                },
+                "panelIndex": "6da03b5f-d2de-468c-9f13-2170f58cc66e",
+                "title": "Distribution of History Events by Mailer [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4e88c4b8-7444-4366-9b47-88bb66ea50fd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4e88c4b8-7444-4366-9b47-88bb66ea50fd": {
+                                            "columnOrder": [
+                                                "c885c2d0-a5cf-4780-8bb6-b0333c190521",
+                                                "119c5065-0df3-459c-9aed-a429a69a70c5"
+                                            ],
+                                            "columns": {
+                                                "119c5065-0df3-459c-9aed-a429a69a70c5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "c885c2d0-a5cf-4780-8bb6-b0333c190521": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Priority",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "119c5065-0df3-459c-9aed-a429a69a70c5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "log.level"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "4e88c4b8-7444-4366-9b47-88bb66ea50fd",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "119c5065-0df3-459c-9aed-a429a69a70c5"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "c885c2d0-a5cf-4780-8bb6-b0333c190521"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "fd3ae236-6543-4c0c-9fb1-58a83c5fd466",
+                    "w": 24,
+                    "x": 0,
+                    "y": 33
+                },
+                "panelIndex": "fd3ae236-6543-4c0c-9fb1-58a83c5fd466",
+                "title": "Distribution of History Events by Priority [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-27a7fb0a-c3a0-429b-b4cd-f39fdf020b4c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "27a7fb0a-c3a0-429b-b4cd-f39fdf020b4c": {
+                                            "columnOrder": [
+                                                "a8dd8529-bbfa-4286-b66e-b28f83988566",
+                                                "402ec583-e683-4d0a-be1a-d9b0a079d2ce"
+                                            ],
+                                            "columns": {
+                                                "402ec583-e683-4d0a-be1a-d9b0a079d2ce": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "a8dd8529-bbfa-4286-b66e-b28f83988566": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Endpoint",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "402ec583-e683-4d0a-be1a-d9b0a079d2ce",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "fortinet_fortimail.log.endpoint"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "402ec583-e683-4d0a-be1a-d9b0a079d2ce"
+                                        ],
+                                        "layerId": "27a7fb0a-c3a0-429b-b4cd-f39fdf020b4c",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "a8dd8529-bbfa-4286-b66e-b28f83988566"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "696eef95-200d-4de9-90fc-acbbbadcfe3e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 33
+                },
+                "panelIndex": "696eef95-200d-4de9-90fc-acbbbadcfe3e",
+                "title": "Distribution of History Events by Endpoint [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-51e4ca67-0698-4fda-b192-02c680c0d5b3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "51e4ca67-0698-4fda-b192-02c680c0d5b3": {
+                                            "columnOrder": [
+                                                "3600576b-1dda-4882-a494-ed3a36cd1241",
+                                                "401a0153-95d9-4488-b4aa-331ea9695b71"
+                                            ],
+                                            "columns": {
+                                                "3600576b-1dda-4882-a494-ed3a36cd1241": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Domain",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "401a0153-95d9-4488-b4aa-331ea9695b71",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "server.domain"
+                                                },
+                                                "401a0153-95d9-4488-b4aa-331ea9695b71": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "401a0153-95d9-4488-b4aa-331ea9695b71"
+                                        ],
+                                        "layerId": "51e4ca67-0698-4fda-b192-02c680c0d5b3",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "3600576b-1dda-4882-a494-ed3a36cd1241"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "b8d414dc-d8a9-47df-a086-ccc1eebc4356",
+                    "w": 24,
+                    "x": 0,
+                    "y": 48
+                },
+                "panelIndex": "b8d414dc-d8a9-47df-a086-ccc1eebc4356",
+                "title": "Distribution of History Events by Domain [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-324793f8-44ec-4f22-9105-cd9af473cd7f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "324793f8-44ec-4f22-9105-cd9af473cd7f": {
+                                            "columnOrder": [
+                                                "5cbfb09c-51ac-4091-beed-63b955801a35",
+                                                "2a0e1ec9-99c0-4120-abb3-f4cee62ac529"
+                                            ],
+                                            "columns": {
+                                                "2a0e1ec9-99c0-4120-abb3-f4cee62ac529": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "5cbfb09c-51ac-4091-beed-63b955801a35": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resolution of DNS Lookup",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2a0e1ec9-99c0-4120-abb3-f4cee62ac529",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "fortinet_fortimail.log.resolved"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "324793f8-44ec-4f22-9105-cd9af473cd7f",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "2a0e1ec9-99c0-4120-abb3-f4cee62ac529"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "5cbfb09c-51ac-4091-beed-63b955801a35"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "081329b9-41c6-47a5-b835-4bc72ff4f40f",
+                    "w": 24,
+                    "x": 24,
+                    "y": 48
+                },
+                "panelIndex": "081329b9-41c6-47a5-b835-4bc72ff4f40f",
+                "title": "Distribution of History Events by Resolution of DNS Lookup [Logs Fortinet FortiMail]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-77794e8c-ec24-424d-9ba1-5c2c158288b7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "77794e8c-ec24-424d-9ba1-5c2c158288b7": {
+                                            "columnOrder": [
+                                                "0635b991-a84e-4d60-ae08-627a8df45a40",
+                                                "5308b921-7fcf-4db7-be4c-733a3060a3a4",
+                                                "a9e3a7e6-29c5-4b5a-a22a-ffffffc16ce1"
+                                            ],
+                                            "columns": {
+                                                "0635b991-a84e-4d60-ae08-627a8df45a40": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "5308b921-7fcf-4db7-be4c-733a3060a3a4": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Email Direction",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a9e3a7e6-29c5-4b5a-a22a-ffffffc16ce1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "email.direction"
+                                                },
+                                                "a9e3a7e6-29c5-4b5a-a22a-ffffffc16ce1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a9e3a7e6-29c5-4b5a-a22a-ffffffc16ce1"
+                                        ],
+                                        "layerId": "77794e8c-ec24-424d-9ba1-5c2c158288b7",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "5308b921-7fcf-4db7-be4c-733a3060a3a4",
+                                        "xAccessor": "0635b991-a84e-4d60-ae08-627a8df45a40"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "ba6894a8-b4d9-4980-be71-0a93823fccce",
+                    "w": 48,
+                    "x": 0,
+                    "y": 63
+                },
+                "panelIndex": "ba6894a8-b4d9-4980-be71-0a93823fccce",
+                "title": "Email Direction over Time [Logs Fortinet FortiMail]",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Cisco ISE] Accounting",
+        "title": "[Logs Fortinet FortiMail] History",
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-08-13T19:10:15.407Z",
-    "id": "cisco_ise-a42bdb60-39a8-11ed-a2b2-1d4b9d412e28",
-    "managed": true,
+    "created_at": "2025-08-13T23:19:58.857Z",
+    "id": "osquery-fortinet_fortimail-f352d950-a870-11ed-8ba6-130117898d4a",
+    "managed": false,
     "references": [
         {
-            "id": "logs-*",
+            "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
@@ -1020,102 +1000,62 @@
             "type": "index-pattern"
         },
         {
+            "id": "osquery-4e4fec10-789b-11f0-b47b-835052142353",
+            "name": "89707473-d009-442f-b707-bd098e1ecf9f:panel_89707473-d009-442f-b707-bd098e1ecf9f",
+            "type": "links"
+        },
+        {
             "id": "logs-*",
-            "name": "50fe0c8b-d5fe-4d19-b498-888c02bb97e6:indexpattern-datasource-current-indexpattern",
+            "name": "45ef6684-a091-429b-b178-be16f1dc6e20:indexpattern-datasource-layer-e4009c79-05d5-4745-8017-d97f6546e54f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "50fe0c8b-d5fe-4d19-b498-888c02bb97e6:indexpattern-datasource-layer-a67cd1f5-a62a-4daa-9bf3-8e3b960fdc14",
+            "name": "634448c8-5087-40af-9bc8-c71e81de5386:indexpattern-datasource-layer-d7b0986e-bac9-4cc2-ba63-0730913c573e",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "90f9a95f-9551-416e-a3b6-1cd887f18b7f:indexpattern-datasource-current-indexpattern",
+            "name": "de8a2de9-dfb2-4e2a-b62f-eed63bea9e26:indexpattern-datasource-layer-621cf416-f772-42ee-9f2e-6be699c1fde6",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "90f9a95f-9551-416e-a3b6-1cd887f18b7f:indexpattern-datasource-layer-c339f287-0c47-4c24-9178-ff74c8bce2f9",
+            "name": "6da03b5f-d2de-468c-9f13-2170f58cc66e:indexpattern-datasource-layer-8f4bed3a-6cdb-4ef9-8e6c-4f06c3ad14c5",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c1d5ee32-f14a-467c-96de-ef0c3f16e9bc:indexpattern-datasource-current-indexpattern",
+            "name": "fd3ae236-6543-4c0c-9fb1-58a83c5fd466:indexpattern-datasource-layer-4e88c4b8-7444-4366-9b47-88bb66ea50fd",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c1d5ee32-f14a-467c-96de-ef0c3f16e9bc:indexpattern-datasource-layer-563487a2-4e88-4722-8792-a2f85b5ad898",
+            "name": "696eef95-200d-4de9-90fc-acbbbadcfe3e:indexpattern-datasource-layer-27a7fb0a-c3a0-429b-b4cd-f39fdf020b4c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "65b5737b-cfa1-4bab-becf-871781ac7034:indexpattern-datasource-current-indexpattern",
+            "name": "b8d414dc-d8a9-47df-a086-ccc1eebc4356:indexpattern-datasource-layer-51e4ca67-0698-4fda-b192-02c680c0d5b3",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "65b5737b-cfa1-4bab-becf-871781ac7034:indexpattern-datasource-layer-366e955f-e14c-4b83-a2a6-508a16c66580",
+            "name": "081329b9-41c6-47a5-b835-4bc72ff4f40f:indexpattern-datasource-layer-324793f8-44ec-4f22-9105-cd9af473cd7f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "8f672ac4-133d-437d-8c0d-b2c2141ee692:indexpattern-datasource-current-indexpattern",
+            "name": "ba6894a8-b4d9-4980-be71-0a93823fccce:indexpattern-datasource-layer-77794e8c-ec24-424d-9ba1-5c2c158288b7",
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "8f672ac4-133d-437d-8c0d-b2c2141ee692:indexpattern-datasource-layer-0306775f-c021-46f6-b778-3aa7aab203b0",
-            "type": "index-pattern"
+            "id": "osquery-fleet-pkg-fortinet_fortimail-default",
+            "name": "tag-ref-fleet-pkg-fortinet_fortimail-default",
+            "type": "tag"
         },
         {
-            "id": "logs-*",
-            "name": "5a56a74f-79be-46e1-881e-ff2f30f92833:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "5a56a74f-79be-46e1-881e-ff2f30f92833:indexpattern-datasource-layer-1e475601-343c-4d8c-abca-7db9f65b5a6c",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "21639b0e-d284-47d6-b11e-c385c2766732:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "21639b0e-d284-47d6-b11e-c385c2766732:indexpattern-datasource-layer-c57ed9f1-b9f2-47ef-9a8a-e6c6d657a819",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "eb724ae2-4f92-4319-89ed-7009423508f9:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "eb724ae2-4f92-4319-89ed-7009423508f9:indexpattern-datasource-layer-3c458aaf-34b6-4278-b3c2-a724aaa8545f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "63c391d6-91af-41b4-89f5-425154ed3687:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "63c391d6-91af-41b4-89f5-425154ed3687:indexpattern-datasource-layer-73794d3e-b66f-48f2-ad33-935d5cbf1340",
-            "type": "index-pattern"
-        },
-        {
-            "id": "cisco_ise-f681d1f0-a09f-11ec-a0a2-1598702abf83",
-            "name": "66b5e5d7-8e6f-4064-8eca-695c6dc79f54:panel_66b5e5d7-8e6f-4064-8eca-695c6dc79f54",
-            "type": "search"
-        },
-        {
-            "id": "cisco_ise-security-solution-default",
+            "id": "osquery-security-solution-default",
             "name": "tag-ref-security-solution-default",
             "type": "tag"
         }
