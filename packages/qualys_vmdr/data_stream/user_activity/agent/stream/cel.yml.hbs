@@ -123,7 +123,10 @@ program: |
         // next may be missing. So use optional types.
         ?"rate": rate_headers.?rate == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
         ?"next": rate_headers.?next == optional.of(double("Infinity")) ? optional.of("inf") : optional.none(),
-      }))
+      })).as(limit, {
+         "header": resp.Header,
+         "rate_limit": limit,
+       })
     ))
   )
 tags:
