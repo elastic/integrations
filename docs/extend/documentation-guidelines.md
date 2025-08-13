@@ -78,26 +78,7 @@ When possible, use links to point to third-party documentation for configuring n
 
 ### Troubleshooting [idg-docs-troubleshooting]
 
-The troubleshooting section is optional. It should contain information about special cases and exceptions that aren’t necessary for getting started or won’t be applicable to all users.
-
-
-#### Template [_template_5]
-
-There is no standard format for the troubleshooting section.
-
-
-#### Example [_example_5]
-
-```text
->Note that certain data streams may access `/proc` to gather process information,
->and the resulting `ptrace_may_access()` call by the kernel to check for
->permissions can be blocked by
->[AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
->
->In addition, when running inside a container the proc filesystem directory of the host
->should be set using `system.hostfs` setting to `/hostfs`.
-```
-
+The troubleshooting section should include details specific to each input type, along with general guidance for resolving common issues encountered when deploying this integration. Whenever possible, link to the troubleshooting documentation provided by the third-party software.
 
 ### Reference [idg-docs-guidelines-reference]
 
