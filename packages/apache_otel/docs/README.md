@@ -46,21 +46,15 @@ exporters:
     verbosity: detailed
   elasticsearch/otel:
     endpoint: https://localhost:9200
+    user: <userid>
+    password: <password>
     mapping:
       mode: otel 
     metrics_dynamic_index:
       enabled: true
-    auth:
-      authenticator: basicauth
   
-extensions:
-  basicauth:
-    client_auth:
-      username: elastic
-      password: xxxxx
 
 service:
-  extensions: [basicauth]
   pipelines:
     metrics:
       receivers: [apache]
