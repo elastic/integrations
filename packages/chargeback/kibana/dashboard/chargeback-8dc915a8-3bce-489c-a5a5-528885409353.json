@@ -1,0 +1,889 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "eac5a7dd-78c6-43bb-b9d7-91899466473b": {
+                    "explicitInput": {
+                        "dataViewId": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "deployment_name.keyword",
+                        "id": "eac5a7dd-78c6-43bb-b9d7-91899466473b",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Deployment ID"
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "large"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "Provides visual insights into cluster-level cost and usage metrics, helping track Elastic consumption across tiers, deployments, and data streams. Built from transformed billing and usage data, this dashboard enables transparent chargeback calculations and trend analysis.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c2dbde04-0769-4485-b4fa-4cb05a1d975e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "@timestamp",
+                                                    "label": "Date",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total_ecu_value",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_ecu_value",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value | SORT @timestamp desc | LIMIT 5000"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value | SORT @timestamp desc | LIMIT 5000"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total_ecu_value"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "c2dbde04-0769-4485-b4fa-4cb05a1d975e",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "deployment",
+                                        "xAccessor": "@timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Normalised cost over time",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value | SORT @timestamp desc | LIMIT 5000"
+                    },
+                    "searchSessionId": "d9f86f1c-0e23-45bb-a7c4-ed29a802f5b3",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "timeRange": {
+                        "from": "now-6M",
+                        "to": "now"
+                    }
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "bd2f256b-5f9a-45db-bb55-44fcf903d5d7",
+                    "w": 34,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "bd2f256b-5f9a-45db-bb55-44fcf903d5d7",
+                "title": "Normalised cost over the last 6 months",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "In this dashboard, normalised cost is the ECU (Elastic Consumption Units) * conversion rate (`conf_ecu_rate`).",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "7f7eb869-7170-4646-9401-473a4742d9f7",
+                    "w": 8,
+                    "x": 34,
+                    "y": 2
+                },
+                "panelIndex": "7f7eb869-7170-4646-9401-473a4742d9f7",
+                "title": "Normalised cost",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                    "name": "chargeback_conf_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "chargeback_conf_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "title": "chargeback_conf_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "005d9023-92e0-4783-a349-4a2e05b0bce4": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "conf_indexing_weight",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_indexing_weight",
+                                                    "inMetricDimension": true,
+                                                    "label": "Weight",
+                                                    "meta": {
+                                                        "esType": "integer",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_query_weight",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_query_weight",
+                                                    "inMetricDimension": true,
+                                                    "label": "Weight",
+                                                    "meta": {
+                                                        "esType": "integer",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_storage_weight",
+                                                    "customLabel": false,
+                                                    "fieldName": "conf_storage_weight",
+                                                    "inMetricDimension": true,
+                                                    "label": "Weight",
+                                                    "meta": {
+                                                        "esType": "integer",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "query": {
+                                                "esql": "FROM chargeback_conf_lookup | KEEP *weight"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM chargeback_conf_lookup | KEEP *weight"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "conf_indexing_weight",
+                                            "conf_query_weight",
+                                            "conf_storage_weight"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "005d9023-92e0-4783-a349-4a2e05b0bce4",
+                                        "layerType": "data",
+                                        "seriesType": "bar_percentage_stacked"
+                                    }
+                                ],
+                                "legend": {
+                                    "horizontalAlignment": "right",
+                                    "isInside": true,
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "showSingleSeries": false,
+                                    "verticalAlignment": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "conf_indexing_weight \u0026 conf_query_weight \u0026 conf_storage_weight of (empty)",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM chargeback_conf_lookup | KEEP *weight"
+                    },
+                    "searchSessionId": "d9f86f1c-0e23-45bb-a7c4-ed29a802f5b3",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "db47a692-43c7-4e19-9f07-9c6828e6e105",
+                    "w": 6,
+                    "x": 42,
+                    "y": 2
+                },
+                "panelIndex": "db47a692-43c7-4e19-9f07-9c6828e6e105",
+                "title": "Blended rate weighting percentages",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                    "name": "chargeback_conf_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "chargeback_conf_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "title": "chargeback_conf_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "4dba9fd5-8ec5-498a-b710-1512bd5dc18f": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "conf_ecu_rate_unit",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_ecu_rate_unit",
+                                                    "label": "Unit",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_ecu_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_ecu_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Rate",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "query": {
+                                                "esql": "FROM chargeback_conf_lookup | keep conf_ecu_rate_unit, conf_ecu_rate"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM chargeback_conf_lookup | keep conf_ecu_rate_unit, conf_ecu_rate"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "conf_ecu_rate_unit"
+                                    },
+                                    {
+                                        "columnId": "conf_ecu_rate"
+                                    }
+                                ],
+                                "layerId": "4dba9fd5-8ec5-498a-b710-1512bd5dc18f",
+                                "layerType": "data"
+                            }
+                        },
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM chargeback_conf_lookup | keep conf_ecu_rate_unit, conf_ecu_rate"
+                    },
+                    "searchSessionId": "d9f86f1c-0e23-45bb-a7c4-ed29a802f5b3",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "a5f5d58b-9398-4975-abed-a6f7e07838f2",
+                    "w": 8,
+                    "x": 34,
+                    "y": 7
+                },
+                "panelIndex": "a5f5d58b-9398-4975-abed-a6f7e07838f2",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "# Deployment statistics",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "eb5e98cd-a5f2-4c01-b3d0-37f9ab79356c",
+                    "w": 48,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "eb5e98cd-a5f2-4c01-b3d0-37f9ab79356c",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "e0ed3231-505b-42a6-a1ce-f38b9d40db5a": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": false,
+                                                    "fieldName": "deployment",
+                                                    "label": "deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cost_type",
+                                                    "customLabel": true,
+                                                    "fieldName": "cost_type",
+                                                    "label": "Cost type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "agg_blended",
+                                                    "customLabel": true,
+                                                    "fieldName": "agg_blended",
+                                                    "inMetricDimension": true,
+                                                    "label": "ECU spend",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "deployment"
+                                    },
+                                    {
+                                        "columnId": "cost_type"
+                                    },
+                                    {
+                                        "columnId": "agg_blended"
+                                    }
+                                ],
+                                "layerId": "e0ed3231-505b-42a6-a1ce-f38b9d40db5a",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                    },
+                    "searchSessionId": "d9f86f1c-0e23-45bb-a7c4-ed29a802f5b3",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "ab97d81e-0b3f-4924-8b4d-7c034133d149",
+                    "w": 24,
+                    "x": 0,
+                    "y": 14
+                },
+                "panelIndex": "ab97d81e-0b3f-4924-8b4d-7c034133d149",
+                "title": "Normalised cost per deployment and tier",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "86bb05d1-959e-45ea-8094-0059aaad50bc": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": false,
+                                                    "fieldName": "deployment",
+                                                    "label": "deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cost_type",
+                                                    "customLabel": false,
+                                                    "fieldName": "cost_type",
+                                                    "label": "cost_type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "agg_blended",
+                                                    "customLabel": false,
+                                                    "fieldName": "agg_blended",
+                                                    "inMetricDimension": true,
+                                                    "label": "agg_blended",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "86bb05d1-959e-45ea-8094-0059aaad50bc",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "agg_blended"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "deployment",
+                                            "cost_type"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                    },
+                    "searchSessionId": "d9f86f1c-0e23-45bb-a7c4-ed29a802f5b3",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "683dd8e5-fdb4-45ec-a6f4-bdcb1d5ff0ca",
+                    "w": 24,
+                    "x": 24,
+                    "y": 14
+                },
+                "panelIndex": "683dd8e5-fdb4-45ec-a6f4-bdcb1d5ff0ca",
+                "title": "Normalised cost per deployment and tier",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_5a4e3230-db57-4e42-9db5-4aaffd6ca426_dashboard",
+                                "id": "5a4e3230-db57-4e42-9db5-4aaffd6ca426",
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_5d97c6c7-3087-4de9-8d65-fe95bed23ede_dashboard",
+                                "id": "5d97c6c7-3087-4de9-8d65-fe95bed23ede",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": true
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "0e980b6a-e51c-47dd-8d10-695601c3313a",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "0e980b6a-e51c-47dd-8d10-695601c3313a",
+                "type": "links"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Chargeback] Cost and Consumption overview",
+        "version": 3
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-08-13T10:11:00.891Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "chargeback-8dc915a8-3bce-489c-a5a5-528885409353",
+    "references": [
+        {
+            "id": "chargeback-8dc915a8-3bce-489c-a5a5-528885409353",
+            "name": "0e980b6a-e51c-47dd-8d10-695601c3313a:link_5a4e3230-db57-4e42-9db5-4aaffd6ca426_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "chargeback-e6778c66-2aa2-49e2-9360-e433cb4fd295",
+            "name": "0e980b6a-e51c-47dd-8d10-695601c3313a:link_5d97c6c7-3087-4de9-8d65-fe95bed23ede_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+            "name": "controlGroup_f63aa0c1-6043-4798-a3fb-92e764f6c87e:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
