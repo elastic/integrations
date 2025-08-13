@@ -12,11 +12,11 @@ The goal of each integration’s documentation is to:
 * Provide a list of collected fields, including data and metric types for each field. This information is useful while evaluating the integration, interpreting collected data, or troubleshooting issues.
 * Each integration document should contain the following sections
 
-    * [Overview](#idg-docs-guidelines-overview)
+    * [Overview](#idg-docs-overview)
     * [What data does this integration collect?](#idg-data-collected)
     * [What do I need to use this integration?](#idg-requirements)
-    * [Setup](#idg-docs-guidelines-setup)
-    * [Troubleshooting (optional)](#idg-docs-guidelines-troubleshooting)
+    * [How do I deploy this integration?](#idg-docs-setup)
+    * [Troubleshooting](#idg-docs-troubleshooting)
     * [Reference](#idg-docs-guidelines-reference)
 
 Some considerations when these documentation files are written at `_dev/build/docs/*.md`:
@@ -31,7 +31,7 @@ Some considerations when these documentation files are written at `_dev/build/do
 
         * In the documentation files (`_dev/build/docs/*.md`), `{{ url "getting-started-observability" "Elastic guide" }}` generates a link to the Observability Getting Started guide.
 
-### Overview [idg-docs-guidelines-overview]
+### Overview [idg-docs-overview]
 
 The **Overview** section explains what the integration does, what the main uses cases are, and contains the following subsections:
 
@@ -57,45 +57,26 @@ This section indicates what is required to use this integration:
 * Elastic prerequisites (for example, a self-managed or Cloud deployment)
 * Credentials or an admin account for the third-party software
 
+### How do I deploy this integration? [idg-docs-setup]
 
-### Setup [idg-docs-guidelines-setup]
+This section refers to the Observability [Getting started guide](docs-content://solutions/observability/get-started.md) for generic, step-by-step instructions, and should also include any of the following additional setup instructions:
 
-The setup section points the reader to the Observability [Getting started guide](docs-content://solutions/observability/get-started.md) for generic, step-by-step instructions.
+**Onboard and configure**
 
-This section should also include any additional setup instructions beyond what’s included in the guide, which may include instructions to update the configuration of a third-party service. For example, for the Cisco ASA integration, users need to configure their Cisco device following the [steps found in the Cisco documentation](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Syslog_Server_Overview_and_Configuration#Configuring_a_Syslog_Server).
+* How do I install the Agent and deploy this integration?
+* Which agent deployment methods are acceptable? Fleet? Standalone? 
+* Is agentless deployment supported for this integration?
+* What data, input, fields, or authentication tokens must be configured during integration deployment? What values should they have? 
+
+**Validation**
+
+* How can I test whether the integration is working? Include example commands or test files if applicable.
 
 ::::{note}
 When possible, use links to point to third-party documentation for configuring non-Elastic products since workflows may change without notice.
 ::::
 
-
-
-#### Template [_template_4]
-
-Use this template language as a starting point, including any other setup instructions for the integration:
-
-```text
-## Setup
-
-<!-- Any prerequisite instructions -->
-
-For step-by-step instructions on how to set up an integration, see the
-{{ url "getting-started-observability" "Getting started" }} guide.
-
-<!-- Additional set up instructions -->
-```
-
-
-#### Example [_example_4]
-
-```text
-Before sending logs to Elastic from your Cisco device, you must configure your device according to <<Cisco's documentation on configuring a syslog server>>.
-
-After you've configured your device, you can set up the Elastic integration. For step-by-step instructions on how to set up an integration, see the <<Getting started>> guide.
-```
-
-
-### Troubleshooting (optional) [idg-docs-guidelines-troubleshooting]
+### Troubleshooting [idg-docs-troubleshooting]
 
 The troubleshooting section is optional. It should contain information about special cases and exceptions that aren’t necessary for getting started or won’t be applicable to all users.
 
