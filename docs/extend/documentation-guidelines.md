@@ -7,10 +7,10 @@ mapped_pages:
 
 The goal of each integration’s documentation is to:
 
-* Help the reader understand the benefits the integration offers and how Elastic can help with their use case. Inform the reader of any requirements, including system compatibility, supported versions of third-party products, permissions needed, and more.
-* Provide a comprehensive list of collected fields and the data and metric types for each. The reader can reference this information while evaluating the integration, interpreting collected data, or troubleshooting issues.
-* Set the reader up for a successful installation and setup by connecting them with any other resources they’ll need.
-* Each integration document should contain several sections, and you should use consistent headings to make it easier for a single user to evaluate and use multiple integrations.
+* Describe the benefits the integration offers and how Elastic can help with different use cases. 
+* Specify requirements, including system compatibility, supported versions of third-party products, permissions needed, and more.
+* Provide a list of collected fields, including data and metric types for each field. This information is useful while evaluating the integration, interpreting collected data, or troubleshooting issues.
+* Each integration document should contain the following sections
 
     * [Overview](#idg-docs-guidelines-overview)
     * [Datastreams](#idg-docs-guidelines-datastreams)
@@ -18,7 +18,6 @@ The goal of each integration’s documentation is to:
     * [Setup](#idg-docs-guidelines-setup)
     * [Troubleshooting (optional)](#idg-docs-guidelines-troubleshooting)
     * [Reference](#idg-docs-guidelines-reference)
-
 
 Some considerations when these documentation files are written at `_dev/build/docs/*.md`:
 
