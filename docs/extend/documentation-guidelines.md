@@ -45,51 +45,10 @@ The **Overview** section explains what the integration does, what the main uses 
 
 ### What data does this integration collect? [idg-data-collected]
 
-The data streams section provides a high-level overview of the kind of data that is collected by the integration. This is helpful since it can be difficult to quickly derive an understanding from just the reference sections (since they’re so long).
+This section should include:
 
-The data streams section should include:
-
-* A list of the types of data streams collected by the integration
-* A summary of each type of data stream included and a link to the relevant reference section:
-
-    * Logs
-    * Metrics
-
-* Notes (optional)
-
-
-#### Template [_template_2]
-
-Use this template language as a starting point, replacing `<placeholder text>` with details about the integration:
-
-```text
-## Data streams
-
-The <name> integration collects two types of data streams: logs and metrics.
-
-**Logs** help you keep a record of events happening in <service>.
-Log data streams collected by the <name> integration include <select data streams>, and more. See more details in the <Logs reference>.
-
-**Metrics** give you insight into the state of <service>.
-Metric data streams collected by the <name> integration include <select data streams> and more. See more details in the [Metrics]<#metrics-reference>.
-
-<!-- etc. -->
-
-<!-- Optional notes -->
-```
-
-
-#### Example [_example_2]
-
-```text
-The System integration collects two types of data: logs and metrics.
-
-Logs help you keep a record of events that happen on your machine. Log data streams collected by the System integration include application, system, and security events on machines running Windows or auth and syslog events on machines running macOS or Linux. See more details in the Logs reference.
-
-Metrics give you insight into the state of the machine. Metric data streams collected by the System integration include CPU usage, load statistics, memory usage, information on network behavior, and more. See more details in the Metrics reference.
-
-You can enable and disable individual data streams. If all data streams are disabled and the System integration is still enabled, Fleet uses the default data streams.
-```
+* The types of data collected by the integration
+* Supported use cases
 
 
 ### Requirements [idg-docs-guidelines-requirements]
