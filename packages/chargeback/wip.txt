@@ -308,7 +308,7 @@ FROM billing_cluster_cost_lookup
 )
 | eval cost_type = CASE(
     cost_type == "data", "data-transfer",
-    cost_type == "datahot", "datahot/datacontent"
+    cost_type == "datahot", "datahot/datacontent",
     cost_type
 )
 | DROP es_node_type, non_es_node_type
@@ -336,3 +336,44 @@ FROM billing_cluster_cost_lookup
         cost_type,
         deployment_id
 | WHERE agg_blended > 0 
+
+
+FROM billing_cluster_cost_lookup
+| grok sku "%{WORD}.es.%{WORD:es_node_type}"
+| GROK sku "%{WORD}.%{WORD:non_es_node_type}"
+| eval cost_type = CASE(
+    es_node_type is not null, es_node_type,
+    non_es_node_type  
+)
+| eval cost_type = CASE(
+    cost_type == "data", "data-transfer",
+    cost_type == "datahot", "datahot/datacontent",
+    cost_type
+)
+| DROP es_node_type, non_es_node_type
+| where cost_type IN ("datahot/datacontent", "datawarm", "datacold", "datafrozen")
+| EVAL config_join_key = "chargeback_config"
+| LOOKUP JOIN chargeback_conf_lookup ON config_join_key
+| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key
+| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key
+| EVAL
+    indexing = CASE (deployment_sum_indexing_time > 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,
+    querying = CASE (deployment_sum_query_time > 0, tier_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,
+    data_set = CASE (deployment_sum_data_set_store_size > 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),
+    store = CASE (deployment_sum_store_size > 0, tier_sum_store_size / deployment_sum_store_size * total_ecu),
+    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,
+    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,
+    total_weight_cold = conf_storage_weight + conf_query_weight,
+    blended = CASE (
+        tier == "hot/content",
+        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,
+        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold
+    ) * conf_ecu_rate
+| STATS
+    agg_indexing = sum(indexing),
+    agg_querying = sum(querying),
+    agg_storage = sum(storage),
+    agg_blended = sum(blended)
+    BY
+        tier
+| WHERE agg_blended > 0
