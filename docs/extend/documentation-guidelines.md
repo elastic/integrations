@@ -17,7 +17,8 @@ The goal of each integration’s documentation is to:
     * [What do I need to use this integration?](#idg-requirements)
     * [How do I deploy this integration?](#idg-docs-setup)
     * [Troubleshooting](#idg-docs-troubleshooting)
-    * [Reference](#idg-docs-guidelines-reference)
+    * [Scaling](#idg-docs-scaling)
+    * [Reference](#idg-docs-reference)
 
 Some considerations when these documentation files are written at `_dev/build/docs/*.md`:
 
@@ -59,7 +60,7 @@ This section indicates what is required to use this integration:
 
 ### How do I deploy this integration? [idg-docs-setup]
 
-This section refers to the Observability [Getting started guide](docs-content://solutions/observability/get-started.md) for generic, step-by-step instructions, and should also include any of the following additional setup instructions:
+This section refers to the Observability [Getting started guide](docs-content://solutions/observability/get-started.md) for generic, step-by-step instructions, and should also include the following additional setup instructions:
 
 **Onboard and configure**
 
@@ -80,59 +81,24 @@ When possible, use links to point to third-party documentation for configuring n
 
 The troubleshooting section should include details specific to each input type, along with general guidance for resolving common issues encountered when deploying this integration. Whenever possible, link to the troubleshooting documentation provided by the third-party software.
 
-### Reference [idg-docs-guidelines-reference]
+### Scaling [idg-docs-scaling]
 
-Readers might use the reference section while evaluating the integration, interpreting collected data, or troubleshooting issues.
+Based on the input, this section should explain how to scale the integration and what are the best types of scaling architecture to use, including benchmarking recommendations.
 
-There can be any number of reference sections (for example, `## Metrics reference`, `## Logs reference`). Each reference section can contain one or more subsections, such as one for each individual data stream (for example, `### Access Logs` and `### Error logs`).
+### Reference [idg-docs-reference]
+
+There can be any number of reference sections, for example:
+
+* ECS Field Reference
+* Metrics reference
+* Logs reference
+* Inputs used in this integration
+* APIs used to collect data
+* Changelog 
 
 Each reference section should contain detailed information about:
 
-* A list of the log or metric types we support within the integration and a link to the relevant third-party documentation.
+* A list of the log or metric types supported within the integration and a link to the relevant third-party documentation.
 * (Optional) An example event in JSON format.
 * Exported fields for logs, metrics, and events with actual types (for example, `counters`, `gauges`, `histograms` vs. `longs` and `doubles`). Fields should be generated using the instructions in [Fine-tune the integration](https://github.com/elastic/integrations/blob/main/docs/fine_tune_integration.md).
 * ML Modules jobs.
-
-
-#### Template [_template_6]
-
-```text
-<!-- Repeat for both Logs and Metrics if applicable -->
-## <Logs|Metrics> reference
-
-<!-- Repeat for each data stream of the current type -->
-## <Data stream name>
-
-The `<data stream name>` data stream provides events from <source> of the following types: <list types>.
-
-<!-- Optional -->
-<!-- #### Example -->
-<!-- An example event for `<data stream name>` looks as following: -->
-<!-- <code block with example> -->
-
-### Exported fields
-
-<insert table>
-```
-
-
-#### Example [_example_6]
-
-```text
->## Logs reference
->
->### PAN-OS
->
->The `panos` data stream provides events from Palo Alto Networks device of the following types: [GlobalProtect](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/globalprotect-log-fields), [HIP Match](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/hip-match-log-fields), [Threat](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields), [Traffic](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/traffic-log-fields) and [User-ID](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/user-id-log-fields).
->
->#### Example
->
->An example event for `panos` looks as following:
->
->(code block)
->
->#### Exported fields
->
->(table of fields)
-```
-
