@@ -248,9 +248,15 @@ processors:
       field: source.user.name
       copy_from: fortinet.firewall.xauthuser
       if: ctx.fortinet?.firewall?.subtype == 'vpn' && ctx.fortinet.firewall.xauthuser != null
+  - script:
+      lang: painless
+      tag: script_convert_advpnsc
+      source: |
+        if (ctx.fortinet?.firewall?.advpnsc != null) {
+          ctx.fortinet.firewall.advpnsc = ctx.fortinet.firewall.advpnsc != '0';
+        }
   - remove:
       field:
-        - fortinet.firewall.advpnsc
         - fortinet.firewall.dstport
         - fortinet.firewall.remport
         - fortinet.firewall.rcvdbyte
