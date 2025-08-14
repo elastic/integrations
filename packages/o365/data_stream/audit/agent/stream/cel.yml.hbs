@@ -150,9 +150,9 @@ program: |-
           ).do_request().as(list_resp,
             list_resp.Body.decode_json().as(list_body,
               (
-                type(list_body) == list && list_body[?0].optMap(e,
-                  e.contentUri != "" && e.contentCreated != ""
-                ).orValue(false)
+                type(list_body) == list && list_body[?0].as(e,
+                  e.contentUri.orValue("") != "" && e.contentCreated.orValue("") != ""
+                )
               ) ?
                 // contents exist to consume
                 list_body.map(l1,
