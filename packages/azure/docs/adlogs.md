@@ -209,7 +209,6 @@ An example event for `signinlogs` looks as following:
         "name": "test@elastic.co"
     }
 }
-
 ```
 
 **ECS Field Reference**
@@ -410,7 +409,6 @@ An example event for `identity_protection` looks as following:
         "name": "joe.danger@mauriziobrancaoutlook.onmicrosoft.com"
     }
 }
-
 ```
 
 **ECS Field Reference**
