@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing Infostealer events.
 processors:
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -9,9 +12,6 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
-  - drop:
-      if: ctx.message == 'retry'
-      tag: drop_retry_events
   - remove:
       field:
         - organization
