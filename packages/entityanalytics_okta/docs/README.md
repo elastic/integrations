@@ -23,7 +23,7 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-The minimum **kibana.version** required is **8.9.0**.
+The minimum **kibana.version** required is **9.2.0**.
 
 ## Setup
 
@@ -39,6 +39,43 @@ The minimum **kibana.version** required is **8.9.0**.
 3. Select the **Okta Entity Analytics** integration and add it.
 4. While adding the integration, add the URL and API Token that you got earlier.
 5. Save the integration.
+
+## Types Of Authentication
+### API Token
+In the administration dashboard for your Okta account, navigate to Security>API and in the Tokens tab click the "Create token" button to create a new token.
+
+Copy the token value and retain this to configure the provider. Note that the token will not be presented again, so it must be copied now.
+
+You should paste this token into the `Okta API Token` configuration option to start collecting entity analytics logs.
+
+### Oauth2
+**In this type of authentication, the following information is required:**
+1. Your Okta domain URL. [ Example: https://dev-123456.okta.com ]
+2. Your Okta service app Client ID.
+3. Your Okta service app JWK Private Key.
+4. The Okta scopes that are required for OAuth2. By default they are set to `okta.users.read` and `okta.devices.read` which are the ones required to read user and device logs.
+
+**Steps to acquire Okta Oauth2 credentials:**
+1. Acquire an Okta dev or user account with privileges to mint tokens with the `okta.*` scopes.
+2. Log into your Okta account, navigate to `Applications` on the left-hand side, click on the `Create App Integration` button and create an API Services application.
+3. Click on the created app, note down the `Client ID` and select the option for `Public key/Private key`.
+4. Generate your own `Private/Public key` pair in the `JWK` format and save it in one of the available formats.
+
+### Okta Integration Network (OIN)
+The Okta Integration Network provides a simple integration authentication based on OAuth2, but using an API key.
+In this type of authentication, we only require an API Key for authenticating the client.
+1. Your Okta domain URL. [ Example: https://dev-123456.okta.com ]
+2. Your Okta service app Client ID.
+3. Your Okta service app Client Secret.
+
+**Steps to configure Okta OIN authenticaton:**
+1. Log into your Okta account, navigate to `Applications` on the left-hand side, click on the `Browse App Catalog` button and search for "Elastic".
+2. Click on the Elastic EntityAnalytics app card and then click `Add Integration`, and then `Install & Authorize`.
+3. Copy the Client Secret.
+4. Navigate to the Fleet integration configuration page for the integration.
+5. Set the "Domain" field from the Okta Domain URL of the Okta app.
+6. Set the "Client ID" field with the Client ID provided by the Okta app.
+7. Set the "Client Secret" field to the Client Secret provided by the Okta app.
 
 ## Usage
 
