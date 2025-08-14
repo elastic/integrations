@@ -26,7 +26,50 @@ inputs:
                     - web
                     - production
                 target: environment
-          program: "state.with(\n  request(\"POST\", state.url, '{ \"query\": \"get_iocs\", \"days\": ' + state.?cursor.days.orValue(state.initial_interval) + ' }' \n  ).with({\n      \"Header\":{\n        \"Content-Type\": [\"application/json\"],\n        ?\"Auth-Key\": has(state.auth_key) ? \n          optional.of([state.auth_key]) \n        :\n          optional.none(),\n        }\n  }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?\n    resp.Body.decode_json().as(body, {\n      \"events\": (has(body.data) ?\n        body.data.map(ind, {\n          \"message\": ind.encode_json()\n        })\n      :\n        []\n      ),\n      \"cursor\": {\n        \"days\": \"1\"\n      },\n      \"initial_interval\": state.initial_interval,\n      \"url\": state.url\n    })\n  :\n    {\n      \"events\": {\n        \"error\": {\n          \"code\": string(resp.StatusCode),\n          \"id\": string(resp.Status),\n          \"message\": \"POST \"+ state.url.trim_right(\"/\") + \":\" + (\n            size(resp.Body) != 0 ?\n              string(resp.Body)\n            :\n              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'\n          ),\n        },\n      },\n      \"want_more\": false,\n    }\n  ))\n)\n"
+          program: |
+            state.with(
+              request("POST", state.url, '{ "query": "get_iocs", "days": ' + state.?cursor.days.orValue(state.initial_interval) + ' }'
+              ).with({
+                  "Header":{
+                    "Content-Type": ["application/json"],
+                    ?"Auth-Key": has(state.auth_key) ?
+                      optional.of([state.auth_key])
+                    :
+                      optional.none(),
+                    }
+              }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?
+                resp.Body.decode_json().as(body, {
+                  "events": (has(body.data) ?
+                    body.data.map(ind, {
+                      "message": ind.encode_json()
+                    })
+                  :
+                    []
+                  ),
+                  "cursor": {
+                    "days": "1"
+                  },
+                  "initial_interval": state.initial_interval,
+                  "url": state.url
+                })
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "POST "+ state.url.trim_right("/") + ":" + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              ))
+            )
           publisher_pipeline.disable_host: true
           redact:
             fields:

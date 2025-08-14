@@ -15,7 +15,52 @@ inputs:
                 interval: 1h
           fields_under_root: true
           interval: 1h
-          program: "state.with(\n  request(\"GET\", state.url).with({\n    \"Header\":{\n      \"Content-Type\": [\"application/zip\"],\n      ?\"Auth-Key\": has(state.auth_key) ? \n        optional.of([state.auth_key]) \n      :\n        optional.none(),\n    }\n  })\n  .do_request()\n  .as(resp, resp.StatusCode == 200 ?\n    resp.Body.mime(\"application/zip\").File.as(file, file.size() > 0 ? \n      file[0].Data.as(data, bytes(data).decode_json().as(body, {\n        \"events\": body.map(id, body[id].size() > 0 ? \n          {\"message\": body[id][0].with({\"id\": id}).encode_json()}\n        :\n          {\"message\": \"\"}\n        ),\n        \"url\": state.url\n      }))\n    :\n      {\n        \"events\": [],\n        \"url\": state.url\n      }\n    )\n  :\n    {\n      \"events\": {\n        \"error\": {\n          \"code\": string(resp.StatusCode),\n          \"id\": string(resp.Status),\n          \"message\": \"GET \"+ state.url.trim_right(\"/\") + \":\" + (\n            size(resp.Body) != 0 ?\n              string(resp.Body)\n            :\n              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'\n          ),\n        },\n      },\n      \"want_more\": false,\n    }\n  )\n)\n"
+          program: |
+            state.with(
+              request("GET", state.url).with({
+                "Header":{
+                  "Content-Type": ["application/zip"],
+                  ?"Auth-Key": has(state.auth_key) ?
+                    optional.of([state.auth_key])
+                  :
+                    optional.none(),
+                }
+              })
+              .do_request()
+              .as(resp, resp.StatusCode == 200 ?
+                resp.Body.mime("application/zip").File.as(file, file.size() > 0 ?
+                  file[0].Data.as(data, bytes(data).decode_json().as(body, {
+                    "events": body.map(id, body[id].size() > 0 ?
+                      {"message": body[id][0].with({"id": id}).encode_json()}
+                    :
+                      {"message": ""}
+                    ),
+                    "url": state.url
+                  }))
+                :
+                  {
+                    "events": [],
+                    "url": state.url
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET "+ state.url.trim_right("/") + ":" + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
           publisher_pipeline.disable_host: true
           redact:
             fields:
