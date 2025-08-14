@@ -7,8 +7,9 @@ auth.oauth2:
 {{#each token_scopes as |token_scope|}}
       - {{token_scope}}
 {{/each}}
-    endpoint_params:
-        grant_type: client_credentials
+{{#if oauth_endpoint_params}}
+    endpoint_params: {{oauth_endpoint_params}}
+{{/if}}
 {{#if token_url}}
     token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
 {{else if azure_tenant_id}}
@@ -260,7 +261,17 @@ program: |-
   				// When start-subscription API produces error, such as Authentication error.
   				[
   					{
-  						"events_per_content_type": [],
+  						"events_per_content_type": [{
+  						  "error": {
+  						    "code": string(start_subs_resp.StatusCode),
+  						    "id": string(start_subs_resp.Status),
+  						    "message": content_type + ": " + start_subs_resp_body.?error.code.optFlatMap(code,
+  						      start_subs_resp_body.?error.message.optMap(message,
+  						        code + " " + message
+  						      )
+  						    ).orValue(start_subs_resp_body)
+  						  }
+  						}],
   						"content_type": content_type,
   						"content_created_at": (has(state.cursor) && has(state.cursor.content_types_state_as_list)) ?
   							state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
@@ -273,15 +284,35 @@ program: |-
   		)
   	)
   ).flatten().drop_empty().as(events_list,
-  	{
-  		"url": state.url,
-  		"base": state.base,
-  		"events": events_list.collate("events_per_content_type"),
-  		"want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
-  		"cursor": {
-  			"content_types_state_as_list": events_list.drop(["events_per_content_type"]),
-  		},
-  	}
+  	events_list.collate("events_per_content_type").as(events,
+  	  events.filter(e, has(e.?error.message)).as(error_events,
+  	    error_events.size() > 0 ?
+  	      // If there are errors, return a single merged error event and discard any other results
+  	      {
+  	        "url": state.url,
+  	        "base": state.base,
+  	        "events": {
+  	          "error": {
+  	            "code": error_events.collate("error.code").as(codes, codes.zip(codes)).keys().as(codes, codes.size() == 1 ? codes[0] : dyn(codes)),
+  	            "id": error_events.collate("error.id").as(ids, ids.zip(ids)).keys().as(ids, ids.size() == 1 ? ids[0] : dyn(ids)),
+  	            "message": error_events.collate("error.message").join("; "),
+  	          },
+  	        },
+  	        "want_more": false,
+  	        ?"cursor": state.?cursor,
+  	      }
+  	    :
+  	      {
+  	        "url": state.url,
+  	        "base": state.base,
+  	        "events": events,
+  	        "want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
+  	        "cursor": {
+  	          "content_types_state_as_list": events_list.drop(["events_per_content_type"]),
+  	        },
+  	      }
+  	  )
+  	)
   )
 {{#if tags}}
 tags:

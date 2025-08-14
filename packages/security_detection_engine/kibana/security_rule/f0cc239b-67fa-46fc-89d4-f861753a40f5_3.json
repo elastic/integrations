@@ -1,0 +1,57 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule correlate Azure or Office 356 mail successful sign-in events with network security alerts by source.ip. Adversaries may trigger some network security alerts such as reputation or other anomalies before accessing cloud resources.",
+        "false_positives": [
+            "Custom network security rules that triggers on a proxy or gateway used by users to access Azure or O365."
+        ],
+        "from": "now-60m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft 365 or Entra ID Sign-in from a Suspicious Source",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft 365 or Entra ID Sign-in from a Suspicious Source\n\n#### Possible investigation steps\n\n- Investiguate all the alerts associated with the source.ip.\n  - Verify the network security alert details associated with this source.ip.\n  - Verify all sign-in events associated with this source.ip.\n  - Consider the source IP address and geolocation for the involved user account.\n  - Consider the device used to sign in. Is it registered and compliant?\n- Investigate other alerts associated with the user account during the past 48 hours.\n- Contact the account owner and confirm whether they are aware of this activity.\n- Check if this operation was approved and performed according to the organization's change management policy.\n- If you suspect the account has been compromised, scope potentially compromised assets by tracking servers, services, and data accessed by the account in the last 24 hours.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Disable or limit the account during the investigation and response.\n- Identify the possible impact of the incident and prioritize accordingly; the following actions can help you gain context:\n    - Identify the account role in the cloud environment.\n    - Assess the criticality of affected services and servers.\n    - Work with your IT team to identify and minimize the impact on users.\n    - Identify if the attacker is moving laterally and compromising other accounts, servers, or services.\n    - Identify any regulatory or legal ramifications related to this activity.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords or delete API keys as needed to revoke the attacker's access to the environment. Work with your IT teams to minimize the impact on business operations during these actions.\n- Check if unauthorized new users were created, remove unauthorized new accounts, and request password resets for other IAM users.\n- Consider enabling multi-factor authentication for users.\n- Follow security best practices [outlined](https://docs.microsoft.com/en-us/azure/security/fundamentals/identity-management-best-practices) by Microsoft.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection via the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).",
+        "query": "from logs-o365.audit-*, logs-azure.signinlogs-*, .alerts-security.*\n// query runs every 1 hour looking for activities occurred during last 8 hours to match on disparate events\n| where @timestamp > now() - 8 hours\n// filter for azure or m365 sign-in and external alerts with source.ip not null\n| where to_ip(source.ip) is not null\n  and (event.dataset in (\"o365.audit\", \"azure.signinlogs\") or kibana.alert.rule.name == \"External Alerts\")\n  and not cidr_match(\n    to_ip(source.ip),\n    \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\", \"192.0.0.0/29\",\n    \"192.0.0.8/32\", \"192.0.0.9/32\", \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\", \"192.0.2.0/24\",\n    \"192.31.196.0/24\", \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\", \"224.0.0.0/4\",\n    \"100.64.0.0/10\", \"192.175.48.0/24\", \"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\",\n    \"240.0.0.0/4\", \"::1\", \"FE80::/10\", \"FF00::/8\"\n  )\n\n// capture relevant raw fields\n| keep source.ip, event.action, event.outcome, event.dataset, kibana.alert.rule.name, event.category\n\n// classify each source ip based on alert type\n| eval\n  Esql.source_ip_mail_access_case = case(event.dataset == \"o365.audit\" and event.action == \"MailItemsAccessed\" and event.outcome == \"success\", to_ip(source.ip), null),\n  Esql.source_ip_azure_signin_case = case(event.dataset == \"azure.signinlogs\" and event.outcome == \"success\", to_ip(source.ip), null),\n  Esql.source_ip_network_alert_case = case(kibana.alert.rule.name == \"external alerts\" and not event.dataset in (\"o365.audit\", \"azure.signinlogs\"), to_ip(source.ip), null)\n\n// aggregate by source ip\n| stats\n    Esql.event_count = count(*),\n    Esql.source_ip_mail_access_case_count_distinct = count_distinct(Esql.source_ip_mail_access_case),\n    Esql.source_ip_azure_signin_case_count_distinct = count_distinct(Esql.source_ip_azure_signin_case),\n    Esql.source_ip_network_alert_case_count_distinct = count_distinct(Esql.source_ip_network_alert_case),\n    Esql.event_dataset_count_distinct = count_distinct(event.dataset),\n    Esql.event_dataset_values = values(event.dataset),\n    Esql.kibana_alert_rule_name_values = values(kibana.alert.rule.name),\n    Esql.event_category_values = values(event.category)\n  by Esql.source_ip = to_ip(source.ip)\n\n// correlation condition\n| where\n  Esql.source_ip_network_alert_case_count_distinct > 0\n  and Esql.event_dataset_count_distinct >= 2\n  and (Esql.source_ip_mail_access_case_count_distinct > 0 or Esql.source_ip_azure_signin_case_count_distinct > 0)\n  and Esql.event_count <= 100\n",
+        "risk_score": 73,
+        "rule_id": "f0cc239b-67fa-46fc-89d4-f861753a40f5",
+        "setup": "The Azure Fleet integration, Office 365 Logs Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Data Source: Azure",
+            "Data Source: Entra ID",
+            "Data Source: Entra ID Sign-in Logs",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide",
+            "Rule Type: Higher-Order Rule"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 3
+    },
+    "id": "f0cc239b-67fa-46fc-89d4-f861753a40f5_3",
+    "type": "security-rule"
+}
