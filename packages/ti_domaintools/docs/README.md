@@ -52,80 +52,73 @@ An example event for `nod_feed` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "cel"
-    },
+    "@timestamp": "2025-08-15T16:27:14.060Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "ephemeral_id": "d1cbe648-0a1d-48e8-a161-cd82403e623e",
+        "ephemeral_id": "50b89972-86e9-4cbf-81b5-0eac08e609cf",
+        "id": "f0fecdee-7426-4dd6-98b1-38cc8fbcd512",
+        "name": "elastic-agent-61106",
         "type": "filebeat",
-        "version": "8.15.3"
-    },
-    "@timestamp": "2025-01-30T20:15:25.396Z",
-    "ecs": {
-        "version": "8.11.0"
+        "version": "8.18.2"
     },
     "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "ti_domaintools.nad_feed"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "6.10.11-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.19.0.10"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "cfae1e7244ae479b9b0968259c91b13a",
-        "mac": [
-            "02-42-AC-13-00-0A"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "version": "8.15.3",
-        "snapshot": false
+        "dataset": "ti_domaintools.nod_feed",
+        "namespace": "70905",
+        "type": "logs"
     },
     "domaintools": {
-        "domain": "tractorpoweredcoreaerator.com",
-        "feed": "nod",
-        "timestamp": "2025-01-30T20:14:48Z"
+        "domain": "test1.com",
+        "timestamp": "2025-01-11T08:42:46Z"
     },
-    "threat": {
-        "indicator": {
-            "name": "tractorpoweredcoreaerator.com",
-            "type": "domain-name"
-        },
-        "feed": {
-            "reference": "https://docs.techdocs.ci.domaintools.cloud/feeds/realtime/userguide/",
-            "name": "DomainTools NOD",
-            "description": "Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network."
-        }
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f0fecdee-7426-4dd6-98b1-38cc8fbcd512",
+        "snapshot": false,
+        "version": "8.18.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-01-30T20:15:26Z",
-        "kind": "enrichment",
-        "message": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
         "category": [
             "threat"
         ],
+        "dataset": "ti_domaintools.nod_feed",
+        "ingested": "2025-08-15T16:27:17Z",
+        "kind": "enrichment",
         "type": [
             "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-61106",
+        "ip": [
+            "172.21.0.2",
+            "172.18.0.4"
         ],
-        "dataset": "ti_domaintools.nod_feed"
+        "mac": [
+            "72-4F-CF-EC-6B-83",
+            "E2-58-72-96-34-BC"
+        ],
+        "name": "elastic-agent-61106",
+        "os": {
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "threat": {
+        "indicator": {
+            "name": "test1.com",
+            "type": "domain-name"
+        }
     }
 }
 ```
@@ -169,80 +162,73 @@ An example event for `nad_feed` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "cel"
-    },
+    "@timestamp": "2025-08-15T16:26:23.805Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "ephemeral_id": "d1cbe648-0a1d-48e8-a161-cd82403e623e",
+        "ephemeral_id": "6619c0ea-29aa-4a31-82aa-1c4a1bac4501",
+        "id": "08c98691-2c29-4c5c-8a9a-6376da62ee92",
+        "name": "elastic-agent-52467",
         "type": "filebeat",
-        "version": "8.15.3"
-    },
-    "@timestamp": "2025-01-30T20:15:25.396Z",
-    "ecs": {
-        "version": "8.11.0"
+        "version": "8.18.2"
     },
     "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "ti_domaintools.nad_feed"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "6.10.11-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.19.0.10"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "cfae1e7244ae479b9b0968259c91b13a",
-        "mac": [
-            "02-42-AC-13-00-0A"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "version": "8.15.3",
-        "snapshot": false
+        "dataset": "ti_domaintools.nad_feed",
+        "namespace": "79526",
+        "type": "logs"
     },
     "domaintools": {
-        "domain": "tractorpoweredcoreaerator.com",
-        "feed": "nad",
-        "timestamp": "2025-01-30T20:14:48Z"
+        "domain": "test3.com",
+        "timestamp": "2025-01-11T08:42:46Z"
     },
-    "threat": {
-        "indicator": {
-            "name": "tractorpoweredcoreaerator.com",
-            "type": "domain-name"
-        },
-        "feed": {
-            "reference": "https://docs.techdocs.ci.domaintools.cloud/feeds/realtime/userguide/",
-            "name": "DomainTools NAD",
-            "description": "Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network."
-        }
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "08c98691-2c29-4c5c-8a9a-6376da62ee92",
+        "snapshot": false,
+        "version": "8.18.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-01-30T20:15:26Z",
-        "kind": "enrichment",
-        "message": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
         "category": [
             "threat"
         ],
+        "dataset": "ti_domaintools.nad_feed",
+        "ingested": "2025-08-15T16:26:26Z",
+        "kind": "enrichment",
         "type": [
             "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-52467",
+        "ip": [
+            "172.21.0.2",
+            "172.18.0.4"
         ],
-        "dataset": "ti_domaintools.nad_feed"
+        "mac": [
+            "6A-50-73-EC-5E-18",
+            "E6-8B-75-95-D0-49"
+        ],
+        "name": "elastic-agent-52467",
+        "os": {
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "threat": {
+        "indicator": {
+            "name": "test3.com",
+            "type": "domain-name"
+        }
     }
 }
 ```
@@ -286,80 +272,73 @@ An example event for `domaindiscovery_feed` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "cel"
-    },
+    "@timestamp": "2025-08-15T16:24:45.166Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "ephemeral_id": "d1cbe648-0a1d-48e8-a161-cd82403e623e",
+        "ephemeral_id": "4b885993-6cba-481f-a0ff-d7be36c964c2",
+        "id": "ee73cc56-0bac-42cf-9842-72f8635702e0",
+        "name": "elastic-agent-15746",
         "type": "filebeat",
-        "version": "8.15.3"
-    },
-    "@timestamp": "2025-01-30T20:15:25.396Z",
-    "ecs": {
-        "version": "8.11.0"
+        "version": "8.18.2"
     },
     "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "ti_domaintools.domaindiscovery_feed"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "6.10.11-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.19.0.10"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "cfae1e7244ae479b9b0968259c91b13a",
-        "mac": [
-            "02-42-AC-13-00-0A"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "version": "8.15.3",
-        "snapshot": false
+        "dataset": "ti_domaintools.domaindiscovery_feed",
+        "namespace": "53410",
+        "type": "logs"
     },
     "domaintools": {
-        "domain": "tractorpoweredcoreaerator.com",
-        "timestamp": "2025-01-30T20:14:48Z",
-        "feed": "domaindiscovery"
+        "domain": "test5.com",
+        "timestamp": "2025-01-11T08:42:46Z"
     },
-    "threat": {
-        "indicator": {
-            "name": "tractorpoweredcoreaerator.com",
-            "type": "domain-name"
-        },
-        "feed": {
-            "reference": "https://docs.techdocs.ci.domaintools.cloud/feeds/realtime/userguide/",
-            "name": "DomainTools domaindiscovery",
-            "description": "New domains as they are either discovered in domain registration information, observed by our global sensor network, or reported by trusted third parties."
-        }
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "ee73cc56-0bac-42cf-9842-72f8635702e0",
+        "snapshot": false,
+        "version": "8.18.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-01-30T20:15:26Z",
-        "kind": "enrichment",
-        "original": "{\"timestamp\":\"2025-01-30T20:14:48Z\",\"domain\":\"tractorpoweredcoreaerator.com\"}",
         "category": [
             "threat"
         ],
+        "dataset": "ti_domaintools.domaindiscovery_feed",
+        "ingested": "2025-08-15T16:24:48Z",
+        "kind": "enrichment",
         "type": [
             "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-15746",
+        "ip": [
+            "172.21.0.2",
+            "172.18.0.4"
         ],
-        "dataset": "ti_domaintools.domaindiscovery"
+        "mac": [
+            "D6-9C-04-E2-49-F9",
+            "DE-3B-ED-FB-70-10"
+        ],
+        "name": "elastic-agent-15746",
+        "os": {
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "threat": {
+        "indicator": {
+            "name": "test5.com",
+            "type": "domain-name"
+        }
     }
 }
 ```
