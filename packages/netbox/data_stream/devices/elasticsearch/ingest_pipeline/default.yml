@@ -58,20 +58,73 @@ processors:
       value: "{{{netbox.device.oob_ip.address}}}"
       if: ctx.netbox?.device?.oob_ip?.address != null
       allow_duplicates: false
+  - script:
+      lang: painless
+      if: ctx.netbox?.device?.longitude != null && ctx.netbox?.device?.latitude != null
+      source: |
+        ctx.netbox.device.coordinates = [
+          ctx.netbox.device.longitude,
+          ctx.netbox.device.latitude
+        ]
+  - remove:
+      field: [netbox.device.latitude, netbox.device.longitude]
+      ignore_missing: true
+  - rename:
+      field: netbox.device.id
+      target_field: netbox.id
+      ignore_missing: true
+  - rename:
+      field: netbox.device.url
+      target_field: netbox.url
+      ignore_missing: true
+  - rename:
+      field: netbox.device.display_url
+      target_field: netbox.display_url
+      ignore_missing: true
+  - rename:
+      field: netbox.device.display
+      target_field: netbox.display
+      ignore_missing: true
+  - rename:
+      field: netbox.device.comments
+      target_field: netbox.comments
+      ignore_missing: true
+  - rename:
+      field: netbox.device.created
+      target_field: netbox.created
+      ignore_missing: true
+  - rename:
+      field: netbox.device.last_updated
+      target_field: netbox.last_updated
+      ignore_missing: true
+  - rename:
+      field: netbox.device.custom_fields
+      target_field: netbox.custom_fields
+      ignore_missing: true
+  - rename:
+      field: netbox.device.tags
+      target_field: netbox.tags
+      ignore_missing: true
+  - rename:
+      field: netbox.device.tenant
+      target_field: netbox.tenant
+      ignore_missing: true
   - set:
       field: event.kind
-      value: event
+      value: asset
   - append:
       field: event.category
       value: [configuration]
   - date:
-      field: netbox.device.created
-      target_field: netbox.device.created
+      field: netbox.created
+      target_field: netbox.created
+      if: ctx.netbox?.created != null
       formats:
         - ISO8601
   - date:
-      field: netbox.device.last_updated
-      target_field: netbox.device.last_updated
+      field: netbox.last_updated
+      target_field: netbox.last_updated
+      if: ctx.netbox?.last_updated != null
       formats:
         - ISO8601
   - script:
