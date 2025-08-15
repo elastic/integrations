@@ -13,6 +13,24 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - script:
+      description: Drops null/empty values in json recursively.
+      tag: remove_empty_values_from_json
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
   - append:
       field: event.category
       value: package
@@ -28,7 +46,7 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-      if: ctx.json?.LogTimestamp != null && ctx.json.LogTimestamp != ''
+      if: ctx.json?.LogTimestamp != null 
       on_failure:
         - remove:
             field: json.LogTimestamp
@@ -40,6 +58,7 @@ processors:
       target_field: client.nat.ip
       type: ip
       ignore_missing: true
+      if: ctx.json?.DefRouteGW != ''
       on_failure:
         - remove:
             field: json.DefRouteGW
@@ -61,6 +80,7 @@ processors:
       target_field: host.network.egress.bytes
       type: long
       ignore_missing: true
+      if: ctx.json?.TotalBytesTx != ''
       on_failure:
         - remove:
             field: json.TotalBytesTx
@@ -72,6 +92,7 @@ processors:
       target_field: host.network.ingress.bytes
       type: long
       ignore_missing: true
+      if: ctx.json?.TotalBytesRx != ''
       on_failure:
         - remove:
             field: json.TotalBytesRx
@@ -98,6 +119,7 @@ processors:
       field: json.PublicIP
       type: ip
       ignore_missing: true
+      if: ctx.json?.PublicIP != ''
       on_failure:
         - remove:
             field: json.PublicIP
@@ -164,6 +186,7 @@ processors:
       type: ip
       target_field: zscaler_zpa.app_connector_status.private_ip
       ignore_missing: true
+      if: ctx.json?.PrivateIP != ''
       on_failure:
         - remove:
             field: json.PrivateIP
@@ -181,7 +204,7 @@ processors:
       target_field: zscaler_zpa.app_connector_status.timestamp.authentication
       formats:
         - ISO8601
-      if: ctx.json?.TimestampAuthentication != null && ctx.json.TimestampAuthentication != ''
+      if: ctx.json?.TimestampAuthentication != null 
       on_failure:
         - remove:
             field: json.TimestampAuthentication
@@ -193,7 +216,7 @@ processors:
       target_field: zscaler_zpa.app_connector_status.timestamp.unauthentication
       formats:
         - ISO8601
-      if: ctx.json?.TimestampUnAuthentication != null && ctx.json.TimestampUnAuthentication != ''
+      if: ctx.json?.TimestampUnAuthentication != null 
       on_failure:
         - remove:
             field: json.TimestampUnAuthentication
@@ -213,6 +236,7 @@ processors:
       target_field: zscaler_zpa.app_connector_status.primary_dns_resolver
       type: ip
       ignore_missing: true
+      if: ctx.json?.PrimaryDNSResolver != ''
       on_failure:
         - remove:
             field: json.PrimaryDNSResolver
@@ -228,7 +252,7 @@ processors:
   - date:
       field: json.HostStartTime
       target_field: zscaler_zpa.app_connector_status.host_start_time
-      if: ctx.json?.HostStartTime != '0' && ctx.json.HostStartTime != null && ctx.json.HostStartTime != ''
+      if: ctx.json?.HostStartTime != '0' && ctx.json.HostStartTime != null 
       formats:
         - UNIX
       on_failure:
@@ -240,7 +264,7 @@ processors:
   - date:
       field: json.ConnectorStartTime
       target_field: zscaler_zpa.app_connector_status.connector_start_time
-      if: ctx.json?.ConnectorStartTime != '0' && ctx.json.ConnectorStartTime != null && ctx.json.ConnectorStartTime != ''
+      if: ctx.json?.ConnectorStartTime != '0' && ctx.json.ConnectorStartTime != null 
       formats:
         - UNIX
       on_failure:
@@ -287,6 +311,7 @@ processors:
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
+      tag: remove_empty_values_from_event
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
