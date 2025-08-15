@@ -1,84 +1,49 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
+# IIS metrics for OpenTelemetry Collector
 
-# IIS OpenTelemetry assets
+The IIS metrics from IIS OTEL receiver allows you to monitor [Internet Information Services (IIS) for Windows® Server](https://www.iis.net), a flexible, secure and manageable Web server for hosting anything on the Web. From media streaming to web applications, IIS's scalable and open architecture is ready to handle the most demanding tasks.
 
-<!-- The IIS OpenTelemetry assets integration allows you to monitor {name of service}. {name of service} is {describe service}.
+The IIS OpenTelemetry assets provide a visual representation of IIS metrics collected via OpenTelemetry ([IIS receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/iisreceiver)).
 
-Use the IIS OpenTelemetry assets integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
+## Compatibility
 
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
-
-## Data streams
-
-<!-- The IIS OpenTelemetry assets integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
-
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+The content pack has been tested with [OpenTelemetry IIS receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and Windows 10 Pro N.
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
-
 ## Setup
 
-<!-- Any prerequisite instructions -->
+1. Install and configure the EDOT Collector or upstream Collector to export metrics to ElasticSearch, as shown in the following example:
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+```yaml
+receivers:
+  iis:
+    collection_interval: 10s
+    initial_delay: 1s
+exporters:
+  debug:
+    verbosity: detailed
+  elasticsearch/otel:
+    endpoints: https://elasticsearch:9200
+    user: <userid>
+    password: <pwd>
+    mapping:
+      mode: otel
+    metrics_dynamic_index:
+      enabled: true
+service:
+  pipelines:
+    metrics:
+      exporters: [debug, elasticsearch/otel]
+      receivers: [iis]
+```
 
-<!-- Additional set up instructions -->
+Use this configuration to run the collector.
 
-<!-- If applicable -->
-<!-- ## Logs reference -->
+## Metrics reference
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
+### IIS metrics
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
-<!-- If applicable -->
-<!-- ## Metrics reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
+Please refer to [the documentation of the OpenTelemetry's IIS receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/iisreceiver/documentation.md).
