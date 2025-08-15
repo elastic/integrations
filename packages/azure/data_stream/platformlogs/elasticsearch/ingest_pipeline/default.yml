@@ -54,12 +54,35 @@ processors:
             field: tags
             value: ["preserve_original_event"]
             ignore_failure: true
-  - rename:
-      field: azure.platformlogs.properties
+  - set:
+      field: temp_properties
+      value: '{{azure.platformlogs.properties}}'
       if: "ctx.azure?.platformlogs?.properties instanceof String"
-      target_field: azure.platformlogs.properties.raw
+      ignore_failure: true
+      description: 'Temporarily store the properties string.'
+  - remove:
+      field: azure.platformlogs.properties
+      if: "ctx.temp_properties != null"
       ignore_missing: true
-      description: 'Rename the field to `properties.raw` to avoid parse errors with the `properties` containing a string.'
+      description: 'Remove the properties string field.'
+  - script:
+      lang: painless
+      source: >-
+        if (ctx?.temp_properties != null) {
+          ctx.temp_properties = ctx.temp_properties.replace("'", "\"");
+        }
+      ignore_failure: true
+      description: 'Convert single quotes to double quotes in the properties string to make it valid JSON.'
+  - json:
+      field: temp_properties
+      target_field: azure.platformlogs.properties
+      if: "ctx.temp_properties != null"
+      ignore_failure: true
+      description: 'Parse the stringified JSON properties field into a nested object.'
+  - remove:
+      field: temp_properties
+      ignore_missing: true
+      description: 'Remove the temporary field after successful parsing.'
   - rename:
       field: azure.platformlogs.Identity
       target_field: azure.platformlogs.identity
@@ -77,6 +100,7 @@ processors:
       ignore_failure: true
       formats:
         - ISO8601
+        - "M/d/yyyy H:mm:ss"
   - date:
       field: azure.platformlogs.EventTimeString
       target_field: '@timestamp'
@@ -101,6 +125,11 @@ processors:
       field: azure.platformlogs.Region
       target_field: cloud.region
       ignore_missing: true
+  - rename:
+      field: azure.platformlogs.Host
+      target_field: host.name
+      ignore_missing: true
+      description: 'Rename `Host` field to `host.name` for ECS compliance.'
   - json:
       field: azure.platformlogs.EventProperties
       target_field: azure.platformlogs.properties
@@ -123,6 +152,11 @@ processors:
       field: azure.platformlogs.EventName
       target_field: event.action
       ignore_missing: true
+  - rename:
+      field: azure.platformlogs.EventIpAddress
+      target_field: azure.platformlogs.callerIpAddress
+      ignore_missing: true
+      description: 'Rename `EventIpAddress` to `callerIpAddress` to be processed by subsequent processors.'
   - convert:
       field: azure.platformlogs.callerIpAddress
       target_field: source.ip
