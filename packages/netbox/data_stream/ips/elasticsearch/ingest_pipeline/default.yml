@@ -54,20 +54,62 @@ processors:
           value: "{{{_ingest._value.address}}}"
           if: ctx._ingest?._value != null
           allow_duplicates: false
+  - rename:
+      field: netbox.ip.id
+      target_field: netbox.id
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.url
+      target_field: netbox.url
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.display_url
+      target_field: netbox.display_url
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.display
+      target_field: netbox.display
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.comments
+      target_field: netbox.comments
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.created
+      target_field: netbox.created
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.last_updated
+      target_field: netbox.last_updated
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.custom_fields
+      target_field: netbox.custom_fields
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.tags
+      target_field: netbox.tags
+      ignore_missing: true
+  - rename:
+      field: netbox.ip.tenant
+      target_field: netbox.tenant
+      ignore_missing: true
   - set:
       field: event.kind
-      value: event
+      value: asset
   - append:
       field: event.category
       value: [configuration]
   - date:
-      field: netbox.ip.created
-      target_field: netbox.ip.created
+      field: netbox.created
+      target_field: netbox.created
+      if: ctx.netbox?.created != null
       formats:
         - ISO8601
   - date:
-      field: netbox.ip.last_updated
-      target_field: netbox.ip.last_updated
+      field: netbox.last_updated
+      target_field: netbox.last_updated
+      if: ctx.netbox?.last_updated != null
       formats:
         - ISO8601
   - script:

@@ -20,24 +20,24 @@ An example event for `devices` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-12T14:06:39.058Z",
+    "@timestamp": "2025-08-15T17:22:14.486Z",
     "agent": {
-        "ephemeral_id": "13f5e395-3fd9-4dd3-beea-df5ffdfa2f37",
-        "id": "15bfbadd-b33f-4a0a-b07c-f06f935fc69e",
-        "name": "elastic-agent-20709",
+        "ephemeral_id": "669c8ad7-30a1-44e7-b154-762bd525203c",
+        "id": "7c78c30e-e265-4ce0-a1cd-3bbf6c24e1c0",
+        "name": "elastic-agent-52375",
         "type": "filebeat",
         "version": "9.1.0"
     },
     "data_stream": {
         "dataset": "netbox.devices",
-        "namespace": "38366",
+        "namespace": "30295",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "15bfbadd-b33f-4a0a-b07c-f06f935fc69e",
+        "id": "7c78c30e-e265-4ce0-a1cd-3bbf6c24e1c0",
         "snapshot": false,
         "version": "9.1.0"
     },
@@ -46,16 +46,20 @@ An example event for `devices` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2025-08-12T14:06:39.058Z",
+        "created": "2025-08-15T17:22:14.486Z",
         "dataset": "netbox.devices",
-        "ingested": "2025-08-12T14:06:42Z",
-        "kind": "event",
+        "ingested": "2025-08-15T17:22:17Z",
+        "kind": "asset",
         "original": "{\"airflow\":{\"label\":\"Front to rear\",\"value\":\"front-to-rear\"},\"asset_tag\":\"WEB-001\",\"cluster\":{\"description\":\"Production web application cluster\",\"display\":\"web-cluster\",\"id\":1,\"name\":\"web-cluster\",\"url\":\"http://localhost:8000/api/virtualization/clusters/1/\"},\"comments\":\"\",\"config_context\":{\"backup_enabled\":true,\"environment\":\"production\"},\"config_template\":{\"description\":\"Standard Ubuntu web server configuration template\",\"display\":\"ubuntu-web-template\",\"id\":1,\"name\":\"ubuntu-web-template\",\"url\":\"http://localhost:8000/api/extras/config-templates/1/\"},\"console_port_count\":0,\"console_server_port_count\":0,\"created\":\"2025-08-11T14:37:28.180540Z\",\"custom_fields\":{\"maintenance_window\":\"Sunday 02:00-04:00 EST\"},\"description\":\"Primary web server for customer portal\",\"device_bay_count\":0,\"device_type\":{\"description\":\"Dell PowerEdge R740 2U Rack Server\",\"display\":\"dell poweredge r740\",\"id\":1,\"manufacturer\":{\"description\":\"\",\"display\":\"Dell\",\"id\":1,\"name\":\"Dell\",\"slug\":\"dell\",\"url\":\"http://localhost:8000/api/dcim/manufacturers/1/\"},\"model\":\"poweredge r740\",\"slug\":\"poweredge-r740\",\"url\":\"http://localhost:8000/api/dcim/device-types/1/\"},\"display\":\"web-srv-01 (WEB-001)\",\"display_url\":\"http://localhost:8000/dcim/devices/2/\",\"face\":{\"label\":\"Front\",\"value\":\"front\"},\"front_port_count\":0,\"id\":2,\"interface_count\":4,\"inventory_item_count\":0,\"last_updated\":\"2025-08-11T18:12:23.512163Z\",\"latitude\":39.0458,\"local_context_data\":{\"monitoring\":\"enabled\",\"ssl_cert\":\"wildcard.acme.com\"},\"location\":{\"_depth\":0,\"description\":\"Primary server room - Zone A\",\"display\":\"server-room-a\",\"id\":1,\"name\":\"server-room-a\",\"rack_count\":0,\"slug\":\"server-room-a\",\"url\":\"http://localhost:8000/api/dcim/locations/1/\"},\"longitude\":-76.6413,\"module_bay_count\":0,\"name\":\"web-srv-01\",\"oob_ip\":{\"address\":\"10.0.100.15/24\",\"description\":\"Out-of-band management interface\",\"display\":\"10.0.100.15/24\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":1,\"url\":\"http://localhost:8000/api/ipam/ip-addresses/1/\"},\"parent_device\":null,\"platform\":{\"description\":\"Ubuntu Server 22.04 LTS\",\"display\":\"ubuntu-server\",\"id\":1,\"name\":\"ubuntu-server\",\"slug\":\"ubuntu-server\",\"url\":\"http://localhost:8000/api/dcim/platforms/1/\"},\"position\":15,\"power_outlet_count\":0,\"power_port_count\":2,\"primary_ip\":{\"address\":\"10.0.1.15/24\",\"description\":\"Primary web server interface\",\"display\":\"10.0.1.15/24\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":1,\"url\":\"http://localhost:8000/api/ipam/ip-addresses/1/\"},\"primary_ip4\":{\"address\":\"10.0.1.15/24\",\"description\":\"Primary web server interface\",\"display\":\"10.0.1.15/24\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":1,\"url\":\"http://localhost:8000/api/ipam/ip-addresses/1/\"},\"primary_ip6\":null,\"rack\":{\"description\":\"42U server rack - Zone A, Row 1\",\"display\":\"rack-a01 (DC-EAST-A01)\",\"id\":1,\"name\":\"rack-a01\",\"url\":\"http://localhost:8000/api/dcim/racks/1/\"},\"rear_port_count\":0,\"role\":{\"_depth\":0,\"description\":\"\",\"display\":\"web-server\",\"id\":1,\"name\":\"web-server\",\"slug\":\"web-server\",\"url\":\"http://localhost:8000/api/dcim/device-roles/1/\"},\"serial\":\"CN7016A2B90001\",\"site\":{\"description\":\"\",\"display\":\"datacenter-east\",\"id\":1,\"name\":\"datacenter-east\",\"slug\":\"datacenter-east\",\"url\":\"http://localhost:8000/api/dcim/sites/1/\"},\"status\":{\"label\":\"Active\",\"value\":\"active\"},\"tags\":[{\"color\":\"4caf50\",\"display\":\"production\",\"display_url\":\"http://localhost:8000/extras/tags/2/\",\"id\":2,\"name\":\"production\",\"slug\":\"production\",\"url\":\"http://localhost:8000/api/extras/tags/2/\"},{\"color\":\"2196f3\",\"display\":\"web-tier\",\"display_url\":\"http://localhost:8000/extras/tags/4/\",\"id\":4,\"name\":\"web-tier\",\"slug\":\"web-tier\",\"url\":\"http://localhost:8000/api/extras/tags/4/\"},{\"color\":\"f44336\",\"display\":\"critical\",\"display_url\":\"http://localhost:8000/extras/tags/1/\",\"id\":1,\"name\":\"critical\",\"slug\":\"critical\",\"url\":\"http://localhost:8000/api/extras/tags/1/\"},{\"color\":\"ff9800\",\"display\":\"monitored\",\"display_url\":\"http://localhost:8000/extras/tags/3/\",\"id\":3,\"name\":\"monitored\",\"slug\":\"monitored\",\"url\":\"http://localhost:8000/api/extras/tags/3/\"}],\"tenant\":{\"description\":\"Acme Corporation primary tenant\",\"display\":\"acme-corp\",\"id\":1,\"name\":\"acme-corp\",\"slug\":\"acme-corp\",\"url\":\"http://localhost:8000/api/tenancy/tenants/1/\"},\"url\":\"http://localhost:8000/api/dcim/devices/2/\",\"vc_position\":1,\"vc_priority\":null,\"virtual_chassis\":{\"description\":\"\",\"display\":\"web-cluster-vc\",\"id\":1,\"master\":{\"display\":\"web-srv-01 (WEB-001)\",\"display_url\":\"http://localhost:8000/dcim/devices/2/\",\"id\":2,\"name\":\"web-srv-01\",\"url\":\"http://localhost:8000/api/dcim/devices/2/\"},\"member_count\":2,\"name\":\"web-cluster-vc\",\"url\":\"http://localhost:8000/api/dcim/virtual-chassis/1/\"}}"
     },
     "input": {
         "type": "httpjson"
     },
     "netbox": {
+        "created": "2025-08-11T14:37:28.180Z",
+        "custom_fields": {
+            "maintenance_window": "Sunday 02:00-04:00 EST"
+        },
         "device": {
             "airflow": {
                 "label": "Front to rear",
@@ -82,10 +86,10 @@ An example event for `devices` looks as following:
             },
             "console_port_count": 0,
             "console_server_port_count": 0,
-            "created": "2025-08-11T14:37:28.180Z",
-            "custom_fields": {
-                "maintenance_window": "Sunday 02:00-04:00 EST"
-            },
+            "coordinates": [
+                -76.6413,
+                39.0458
+            ],
             "description": "Primary web server for customer portal",
             "device_bay_count": 0,
             "device_type": {
@@ -103,18 +107,13 @@ An example event for `devices` looks as following:
                 "slug": "poweredge-r740",
                 "url": "http://localhost:8000/api/dcim/device-types/1/"
             },
-            "display": "web-srv-01 (WEB-001)",
-            "display_url": "http://localhost:8000/dcim/devices/2/",
             "face": {
                 "label": "Front",
                 "value": "front"
             },
             "front_port_count": 0,
-            "id": 2,
             "interface_count": 4,
             "inventory_item_count": 0,
-            "last_updated": "2025-08-11T18:12:23.512Z",
-            "latitude": 39.0458,
             "local_context_data": {
                 "monitoring": "enabled",
                 "ssl_cert": "wildcard.acme.com"
@@ -129,7 +128,6 @@ An example event for `devices` looks as following:
                 "slug": "server-room-a",
                 "url": "http://localhost:8000/api/dcim/locations/1/"
             },
-            "longitude": -76.6413,
             "module_bay_count": 0,
             "name": "web-srv-01",
             "oob_ip": {
@@ -204,109 +202,6 @@ An example event for `devices` looks as following:
                 "label": "Active",
                 "value": "active"
             },
-            "tags": [
-                {
-                    "color": [
-                        "4caf50"
-                    ],
-                    "display": [
-                        "production"
-                    ],
-                    "display_url": [
-                        "http://localhost:8000/extras/tags/2/"
-                    ],
-                    "id": [
-                        2
-                    ],
-                    "name": [
-                        "production"
-                    ],
-                    "slug": [
-                        "production"
-                    ],
-                    "url": [
-                        "http://localhost:8000/api/extras/tags/2/"
-                    ]
-                },
-                {
-                    "color": [
-                        "2196f3"
-                    ],
-                    "display": [
-                        "web-tier"
-                    ],
-                    "display_url": [
-                        "http://localhost:8000/extras/tags/4/"
-                    ],
-                    "id": [
-                        4
-                    ],
-                    "name": [
-                        "web-tier"
-                    ],
-                    "slug": [
-                        "web-tier"
-                    ],
-                    "url": [
-                        "http://localhost:8000/api/extras/tags/4/"
-                    ]
-                },
-                {
-                    "color": [
-                        "f44336"
-                    ],
-                    "display": [
-                        "critical"
-                    ],
-                    "display_url": [
-                        "http://localhost:8000/extras/tags/1/"
-                    ],
-                    "id": [
-                        1
-                    ],
-                    "name": [
-                        "critical"
-                    ],
-                    "slug": [
-                        "critical"
-                    ],
-                    "url": [
-                        "http://localhost:8000/api/extras/tags/1/"
-                    ]
-                },
-                {
-                    "color": [
-                        "ff9800"
-                    ],
-                    "display": [
-                        "monitored"
-                    ],
-                    "display_url": [
-                        "http://localhost:8000/extras/tags/3/"
-                    ],
-                    "id": [
-                        3
-                    ],
-                    "name": [
-                        "monitored"
-                    ],
-                    "slug": [
-                        "monitored"
-                    ],
-                    "url": [
-                        "http://localhost:8000/api/extras/tags/3/"
-                    ]
-                }
-            ],
-            "tenant": {
-                "description": "Acme Corporation primary tenant",
-                "display": "acme-corp",
-                "id": 1,
-                "name": "acme-corp",
-                "slug": "acme-corp",
-                "url": "http://localhost:8000/api/tenancy/tenants/1/"
-            },
-            "url": "http://localhost:8000/api/dcim/devices/2/",
             "vc_position": 1,
             "virtual_chassis": {
                 "display": "web-cluster-vc",
@@ -322,7 +217,114 @@ An example event for `devices` looks as following:
                 "name": "web-cluster-vc",
                 "url": "http://localhost:8000/api/dcim/virtual-chassis/1/"
             }
-        }
+        },
+        "display": "web-srv-01 (WEB-001)",
+        "display_url": "http://localhost:8000/dcim/devices/2/",
+        "id": 2,
+        "last_updated": "2025-08-11T18:12:23.512Z",
+        "tags": [
+            {
+                "color": [
+                    "4caf50"
+                ],
+                "display": [
+                    "production"
+                ],
+                "display_url": [
+                    "http://localhost:8000/extras/tags/2/"
+                ],
+                "id": [
+                    2
+                ],
+                "name": [
+                    "production"
+                ],
+                "slug": [
+                    "production"
+                ],
+                "url": [
+                    "http://localhost:8000/api/extras/tags/2/"
+                ]
+            },
+            {
+                "color": [
+                    "2196f3"
+                ],
+                "display": [
+                    "web-tier"
+                ],
+                "display_url": [
+                    "http://localhost:8000/extras/tags/4/"
+                ],
+                "id": [
+                    4
+                ],
+                "name": [
+                    "web-tier"
+                ],
+                "slug": [
+                    "web-tier"
+                ],
+                "url": [
+                    "http://localhost:8000/api/extras/tags/4/"
+                ]
+            },
+            {
+                "color": [
+                    "f44336"
+                ],
+                "display": [
+                    "critical"
+                ],
+                "display_url": [
+                    "http://localhost:8000/extras/tags/1/"
+                ],
+                "id": [
+                    1
+                ],
+                "name": [
+                    "critical"
+                ],
+                "slug": [
+                    "critical"
+                ],
+                "url": [
+                    "http://localhost:8000/api/extras/tags/1/"
+                ]
+            },
+            {
+                "color": [
+                    "ff9800"
+                ],
+                "display": [
+                    "monitored"
+                ],
+                "display_url": [
+                    "http://localhost:8000/extras/tags/3/"
+                ],
+                "id": [
+                    3
+                ],
+                "name": [
+                    "monitored"
+                ],
+                "slug": [
+                    "monitored"
+                ],
+                "url": [
+                    "http://localhost:8000/api/extras/tags/3/"
+                ]
+            }
+        ],
+        "tenant": {
+            "description": "Acme Corporation primary tenant",
+            "display": "acme-corp",
+            "id": 1,
+            "name": "acme-corp",
+            "slug": "acme-corp",
+            "url": "http://localhost:8000/api/tenancy/tenants/1/"
+        },
+        "url": "http://localhost:8000/api/dcim/devices/2/"
     },
     "related": {
         "ip": [
@@ -347,6 +349,9 @@ An example event for `devices` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
+| netbox.comments |  | text |
+| netbox.created |  | date |
+| netbox.custom_fields |  | object |
 | netbox.device.airflow.label | The airflow label of the device. | keyword |
 | netbox.device.airflow.value | The airflow value of the device. | keyword |
 | netbox.device.asset_tag | The asset tag of the device. | keyword |
@@ -355,7 +360,6 @@ An example event for `devices` looks as following:
 | netbox.device.cluster.id |  | long |
 | netbox.device.cluster.name |  | keyword |
 | netbox.device.cluster.url |  | keyword |
-| netbox.device.comments | Comments about the device. | text |
 | netbox.device.config_context | The configuration context of the device. | object |
 | netbox.device.config_template.description |  | text |
 | netbox.device.config_template.display |  | keyword |
@@ -364,8 +368,7 @@ An example event for `devices` looks as following:
 | netbox.device.config_template.url |  | keyword |
 | netbox.device.console_port_count | The number of console ports on the device. | long |
 | netbox.device.console_server_port_count | The number of console server ports on the device. | long |
-| netbox.device.created | The creation timestamp of the device record. | date |
-| netbox.device.custom_fields | Custom fields associated with the device. | object |
+| netbox.device.coordinates |  | float |
 | netbox.device.description | The description of the device. | text |
 | netbox.device.device_bay_count | The number of device bays on the device. | long |
 | netbox.device.device_type.description | The description of the device type. | text |
@@ -380,16 +383,11 @@ An example event for `devices` looks as following:
 | netbox.device.device_type.model | The model of the device type. | keyword |
 | netbox.device.device_type.slug | The slug of the device type. | keyword |
 | netbox.device.device_type.url | The API URL for the device type. | keyword |
-| netbox.device.display | The display name of the device. | keyword |
-| netbox.device.display_url | The display URL for the device. | keyword |
 | netbox.device.face.label | The label of the device face. | keyword |
 | netbox.device.face.value | The value of the device face. | keyword |
 | netbox.device.front_port_count | The number of front ports on the device. | long |
-| netbox.device.id | The unique identifier of the device. | long |
 | netbox.device.interface_count | The number of interfaces on the device. | long |
 | netbox.device.inventory_item_count | The number of inventory items associated with the device. | long |
-| netbox.device.last_updated | The last update timestamp of the device record. | date |
-| netbox.device.latitude | The latitude coordinate of the device. | double |
 | netbox.device.local_context_data | The local context data of the device. | object |
 | netbox.device.location._depth | The depth level of the location. | long |
 | netbox.device.location.description | The description of the location. | text |
@@ -399,7 +397,6 @@ An example event for `devices` looks as following:
 | netbox.device.location.rack_count | The number of racks in the location. | long |
 | netbox.device.location.slug | The slug of the location. | keyword |
 | netbox.device.location.url | The API URL for the location. | keyword |
-| netbox.device.longitude | The longitude coordinate of the device. | double |
 | netbox.device.module_bay_count | The number of module bays on the device. | long |
 | netbox.device.name | The name of the device. | keyword |
 | netbox.device.oob_ip.address |  | ip |
@@ -466,20 +463,6 @@ An example event for `devices` looks as following:
 | netbox.device.site.url | The API URL for the site. | keyword |
 | netbox.device.status.label | The status label of the device. | keyword |
 | netbox.device.status.value | The status value of the device. | keyword |
-| netbox.device.tags.color | The color code of the tag. | keyword |
-| netbox.device.tags.display | The display name of the tag. | keyword |
-| netbox.device.tags.display_url | The display URL for the tag. | keyword |
-| netbox.device.tags.id | The unique identifier of the tag. | long |
-| netbox.device.tags.name | The name of the tag. | keyword |
-| netbox.device.tags.slug | The slug of the tag. | keyword |
-| netbox.device.tags.url | The API URL for the tag. | keyword |
-| netbox.device.tenant.description | The description of the tenant. | text |
-| netbox.device.tenant.display | The display name of the tenant. | keyword |
-| netbox.device.tenant.id | The unique identifier of the tenant. | long |
-| netbox.device.tenant.name | The name of the tenant. | keyword |
-| netbox.device.tenant.slug | The slug of the tenant. | keyword |
-| netbox.device.tenant.url | The API URL for the tenant. | keyword |
-| netbox.device.url | The API URL for the device. | keyword |
 | netbox.device.vc_position | The virtual chassis position of the device. | long |
 | netbox.device.vc_priority | The virtual chassis priority of the device. | long |
 | netbox.device.virtual_chassis.description | The description of the virtual chassis. | text |
@@ -493,6 +476,24 @@ An example event for `devices` looks as following:
 | netbox.device.virtual_chassis.member_count |  | long |
 | netbox.device.virtual_chassis.name | The name of the virtual chassis. | keyword |
 | netbox.device.virtual_chassis.url | The API URL for the virtual chassis. | keyword |
+| netbox.display |  | keyword |
+| netbox.display_url |  | keyword |
+| netbox.id |  | long |
+| netbox.last_updated |  | date |
+| netbox.tags.color | The color code of the tag. | keyword |
+| netbox.tags.display | The display name of the tag. | keyword |
+| netbox.tags.display_url | The display URL for the tag. | keyword |
+| netbox.tags.id | The unique identifier of the tag. | long |
+| netbox.tags.name | The name of the tag. | keyword |
+| netbox.tags.slug | The slug of the tag. | keyword |
+| netbox.tags.url | The API URL for the tag. | keyword |
+| netbox.tenant.description | The description of the tenant. | text |
+| netbox.tenant.display | The display name of the tenant. | keyword |
+| netbox.tenant.id | The unique identifier of the tenant. | long |
+| netbox.tenant.name | The name of the tenant. | keyword |
+| netbox.tenant.slug | The slug of the tenant. | keyword |
+| netbox.tenant.url | The API URL for the tenant. | keyword |
+| netbox.url |  | keyword |
 
 
 ### IPs
@@ -503,24 +504,24 @@ An example event for `ips` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-12T14:07:35.041Z",
+    "@timestamp": "2025-08-15T17:23:03.546Z",
     "agent": {
-        "ephemeral_id": "ec908250-087e-45d1-936e-de1bf2ce87cd",
-        "id": "205517fd-f37e-46c2-99d6-0a407ffeb4af",
-        "name": "elastic-agent-28518",
+        "ephemeral_id": "9d1d07d0-a5cf-4188-9849-616053dda34f",
+        "id": "908031a4-0d04-4162-9276-b89c63cc3c90",
+        "name": "elastic-agent-86043",
         "type": "filebeat",
         "version": "9.1.0"
     },
     "data_stream": {
         "dataset": "netbox.ips",
-        "namespace": "22331",
+        "namespace": "61778",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "205517fd-f37e-46c2-99d6-0a407ffeb4af",
+        "id": "908031a4-0d04-4162-9276-b89c63cc3c90",
         "snapshot": false,
         "version": "9.1.0"
     },
@@ -529,16 +530,20 @@ An example event for `ips` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2025-08-12T14:07:35.041Z",
+        "created": "2025-08-15T17:23:03.546Z",
         "dataset": "netbox.ips",
-        "ingested": "2025-08-12T14:07:38Z",
-        "kind": "event",
+        "ingested": "2025-08-15T17:23:06Z",
+        "kind": "asset",
         "original": "{\"address\":\"192.168.1.101/32\",\"assigned_object\":{\"_occupied\":false,\"cable\":null,\"description\":\"test-description\",\"device\":{\"description\":\"test-description\",\"display\":\"user-1-macbook-pro (tag-1234)\",\"id\":1,\"name\":\"user-1-macbook-pro\",\"url\":\"http://localhost:8000/api/dcim/devices/1/\"},\"display\":\"hello\",\"id\":2,\"name\":\"user-hello\",\"url\":\"http://localhost:8000/api/dcim/interfaces/2/\"},\"assigned_object_id\":2,\"assigned_object_type\":\"dcim.interface\",\"comments\":\"\",\"created\":\"2025-08-11T18:07:04.795476Z\",\"custom_fields\":{},\"description\":\"desc\",\"display\":\"192.168.1.101/32\",\"display_url\":\"http://localhost:8000/ipam/ip-addresses/2/\",\"dns_name\":\"hello.world\",\"family\":{\"label\":\"IPv4\",\"value\":4},\"id\":2,\"last_updated\":\"2025-08-11T18:07:04.795486Z\",\"nat_inside\":null,\"nat_outside\":[],\"role\":{\"label\":\"Secondary\",\"value\":\"secondary\"},\"status\":{\"label\":\"Active\",\"value\":\"active\"},\"tags\":[{\"color\":\"ff9800\",\"display\":\"elastic\",\"display_url\":\"http://localhost:8000/extras/tags/4/\",\"id\":4,\"name\":\"elastic\",\"slug\":\"elastic\",\"url\":\"http://localhost:8000/api/extras/tags/4/\"}],\"tenant\":{\"description\":\"first tenant\",\"display\":\"tenant-1\",\"id\":1,\"name\":\"tenant-1\",\"slug\":\"tenant-1\",\"url\":\"http://localhost:8000/api/tenancy/tenants/1/\"},\"url\":\"http://localhost:8000/api/ipam/ip-addresses/2/\",\"vrf\":{\"description\":\"asdf\",\"display\":\"test\",\"id\":1,\"name\":\"test\",\"rd\":null,\"url\":\"http://localhost:8000/api/ipam/vrfs/1/\"}}"
     },
     "input": {
         "type": "httpjson"
     },
     "netbox": {
+        "created": "2025-08-11T18:07:04.795Z",
+        "display": "192.168.1.101/32",
+        "display_url": "http://localhost:8000/ipam/ip-addresses/2/",
+        "id": 2,
         "ip": {
             "address": "192.168.1.101",
             "assigned_object": {
@@ -558,17 +563,12 @@ An example event for `ips` looks as following:
             },
             "assigned_object_id": 2,
             "assigned_object_type": "dcim.interface",
-            "created": "2025-08-11T18:07:04.795Z",
             "description": "desc",
-            "display": "192.168.1.101/32",
-            "display_url": "http://localhost:8000/ipam/ip-addresses/2/",
             "dns_name": "hello.world",
             "family": {
                 "label": "IPv4",
                 "value": 4
             },
-            "id": 2,
-            "last_updated": "2025-08-11T18:07:04.795Z",
             "role": {
                 "label": "Secondary",
                 "value": "secondary"
@@ -577,38 +577,6 @@ An example event for `ips` looks as following:
                 "label": "Active",
                 "value": "active"
             },
-            "tags": {
-                "color": [
-                    "ff9800"
-                ],
-                "display": [
-                    "elastic"
-                ],
-                "display_url": [
-                    "http://localhost:8000/extras/tags/4/"
-                ],
-                "id": [
-                    4
-                ],
-                "name": [
-                    "elastic"
-                ],
-                "slug": [
-                    "elastic"
-                ],
-                "url": [
-                    "http://localhost:8000/api/extras/tags/4/"
-                ]
-            },
-            "tenant": {
-                "description": "first tenant",
-                "display": "tenant-1",
-                "id": 1,
-                "name": "tenant-1",
-                "slug": "tenant-1",
-                "url": "http://localhost:8000/api/tenancy/tenants/1/"
-            },
-            "url": "http://localhost:8000/api/ipam/ip-addresses/2/",
             "vrf": {
                 "description": "asdf",
                 "display": "test",
@@ -616,7 +584,40 @@ An example event for `ips` looks as following:
                 "name": "test",
                 "url": "http://localhost:8000/api/ipam/vrfs/1/"
             }
-        }
+        },
+        "last_updated": "2025-08-11T18:07:04.795Z",
+        "tags": {
+            "color": [
+                "ff9800"
+            ],
+            "display": [
+                "elastic"
+            ],
+            "display_url": [
+                "http://localhost:8000/extras/tags/4/"
+            ],
+            "id": [
+                4
+            ],
+            "name": [
+                "elastic"
+            ],
+            "slug": [
+                "elastic"
+            ],
+            "url": [
+                "http://localhost:8000/api/extras/tags/4/"
+            ]
+        },
+        "tenant": {
+            "description": "first tenant",
+            "display": "tenant-1",
+            "id": 1,
+            "name": "tenant-1",
+            "slug": "tenant-1",
+            "url": "http://localhost:8000/api/tenancy/tenants/1/"
+        },
+        "url": "http://localhost:8000/api/ipam/ip-addresses/2/"
     },
     "related": {
         "ip": [
@@ -626,7 +627,7 @@ An example event for `ips` looks as following:
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "netbox-devices"
+        "netbox-ips"
     ]
 }
 ```
@@ -640,6 +641,12 @@ An example event for `ips` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
+| netbox.comments |  | text |
+| netbox.created |  | date |
+| netbox.custom_fields |  | object |
+| netbox.display |  | keyword |
+| netbox.display_url |  | keyword |
+| netbox.id |  | long |
 | netbox.ip.address |  | ip |
 | netbox.ip.assigned_object._occupied | Whether the interface is occupied. | boolean |
 | netbox.ip.assigned_object.cable | The cable connection information. | keyword |
@@ -653,19 +660,17 @@ An example event for `ips` looks as following:
 | netbox.ip.assigned_object.id | The unique identifier of the assigned object. | long |
 | netbox.ip.assigned_object.name | The name of the assigned object (interface). | keyword |
 | netbox.ip.assigned_object.url | The API URL for the assigned object. | keyword |
+| netbox.ip.assigned_object.virtual_machine.description |  | text |
+| netbox.ip.assigned_object.virtual_machine.display |  | keyword |
+| netbox.ip.assigned_object.virtual_machine.id |  | long |
+| netbox.ip.assigned_object.virtual_machine.name |  | keyword |
+| netbox.ip.assigned_object.virtual_machine.url |  | keyword |
 | netbox.ip.assigned_object_id | The unique identifier of the assigned object. | long |
 | netbox.ip.assigned_object_type | The type of object this IP address is assigned to. | keyword |
-| netbox.ip.comments | Comments about the IP address. | text |
-| netbox.ip.created | The creation timestamp of the IP address record. | date |
-| netbox.ip.custom_fields | Custom fields associated with the IP address. | object |
 | netbox.ip.description | The description of the IP address. | text |
-| netbox.ip.display | The display representation of the IP address with CIDR notation. | keyword |
-| netbox.ip.display_url | The display URL for the IP address. | keyword |
 | netbox.ip.dns_name | The DNS name associated with the IP address. | keyword |
 | netbox.ip.family.label | The IP family label (IPv4 or IPv6). | keyword |
 | netbox.ip.family.value | The IP family value (4 for IPv4, 6 for IPv6). | long |
-| netbox.ip.id | The unique identifier of the IP address. | long |
-| netbox.ip.last_updated | The last update timestamp of the IP address record. | date |
 | netbox.ip.nat_inside.address |  | ip |
 | netbox.ip.nat_inside.display |  | keyword |
 | netbox.ip.nat_inside.display_url |  | keyword |
@@ -682,24 +687,25 @@ An example event for `ips` looks as following:
 | netbox.ip.role.value | The role value of the IP address. | keyword |
 | netbox.ip.status.label | The status label of the IP address. | keyword |
 | netbox.ip.status.value | The status value of the IP address. | keyword |
-| netbox.ip.tags.color | The color code of the tag. | keyword |
-| netbox.ip.tags.display | The display name of the tag. | keyword |
-| netbox.ip.tags.display_url | The display URL for the tag. | keyword |
-| netbox.ip.tags.id | The unique identifier of the tag. | long |
-| netbox.ip.tags.name | The name of the tag. | keyword |
-| netbox.ip.tags.slug | The slug of the tag. | keyword |
-| netbox.ip.tags.url | The API URL for the tag. | keyword |
-| netbox.ip.tenant.description | The description of the tenant. | text |
-| netbox.ip.tenant.display | The display name of the tenant. | keyword |
-| netbox.ip.tenant.id | The unique identifier of the tenant. | long |
-| netbox.ip.tenant.name | The name of the tenant. | keyword |
-| netbox.ip.tenant.slug | The slug of the tenant. | keyword |
-| netbox.ip.tenant.url | The API URL for the tenant. | keyword |
-| netbox.ip.url | The API URL for the IP address. | keyword |
 | netbox.ip.vrf.description | The description of the VRF. | text |
 | netbox.ip.vrf.display | The display name of the VRF. | keyword |
 | netbox.ip.vrf.id | The unique identifier of the VRF. | long |
 | netbox.ip.vrf.name | The name of the VRF. | keyword |
 | netbox.ip.vrf.rd | The route distinguisher of the VRF. | keyword |
 | netbox.ip.vrf.url | The API URL for the VRF. | keyword |
+| netbox.last_updated |  | date |
+| netbox.tags.color | The color code of the tag. | keyword |
+| netbox.tags.display | The display name of the tag. | keyword |
+| netbox.tags.display_url | The display URL for the tag. | keyword |
+| netbox.tags.id | The unique identifier of the tag. | long |
+| netbox.tags.name | The name of the tag. | keyword |
+| netbox.tags.slug | The slug of the tag. | keyword |
+| netbox.tags.url | The API URL for the tag. | keyword |
+| netbox.tenant.description | The description of the tenant. | text |
+| netbox.tenant.display | The display name of the tenant. | keyword |
+| netbox.tenant.id | The unique identifier of the tenant. | long |
+| netbox.tenant.name | The name of the tenant. | keyword |
+| netbox.tenant.slug | The slug of the tenant. | keyword |
+| netbox.tenant.url | The API URL for the tenant. | keyword |
+| netbox.url |  | keyword |
 
