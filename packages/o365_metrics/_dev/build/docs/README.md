@@ -1,10 +1,24 @@
 # Microsoft Office 365 Metrics Integration
 
+## Overview
+
 This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) and [Microsoft Management API](https://learn.microsoft.com/en-us/office/office-365-management-api/) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and service health.
 
-## Data streams
+### Compatibility
 
-Following Microsoft 365 data can be collected by Microsoft Office 365 Metrics integration.
+<!--
+Specify any versions, deployment methods, architectures etc. of the third-party software this integration is compatible with.
+-->
+
+### How it works
+
+<!--
+Provide a high-level overview on how the integration collects data
+-->
+
+## What data does this integration collect?[#what-data-this-integration-collects]
+
+The following data can be collected with the Microsoft Office 365 Metrics integration:
 
 | Report          | API | Data-stream Name | Aggregation Level | Required permissions
 |-----------------|-----|------------------|-------------------|--------------------|
@@ -35,25 +49,35 @@ Following Microsoft 365 data can be collected by Microsoft Office 365 Metrics in
 | Entra Agent | [agent](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/whatis-aadc-admin-agent) | Microsoft 365 Entra Agent metrics | No aggregation | RBAC role
 | Entra Alerts |  [alerts](https://learn.microsoft.com/en-us/entra/permissions-management/ui-triggers) | Microsoft 365 Entra Alerts metrics | No aggregation | RBAC role
 
+## What do I need to use this integration?
 
-## Setup
+<!--
+Provide information on what is required to use this integration:
+
+- Elastic prerequisites (for example, a self-managed or Cloud deployment)
+- Credentials or an admin account for the third-party software
+-->
 
 To use this package you need to enable datastreams you want to collect metrics for and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
 
-Once the application is registered, configure and/or note the following to setup O365 metrics Elastic integration:
-1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's `Overview` page.
+## How do I deploy this integration?
+
+Once the application is registered, configure or note the following to setup O365 metrics Elastic integration:
+
+1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's **Overview** page.
 2. Create a new secret to configure the authentication of your application. 
-    - Navigate to `Certificates & Secrets` section.
-    - Click `New client secret` and provide some description to create new secret.
-    - Note the `Value` which is required for the integration setup.
+    - Navigate to the **Certificates & Secrets** section.
+    - Click **New client secret** and provide some description to create new secret.
+    - Note the value which is required for the integration setup.
 3. Add permissions to your registered application.
     - Select and add the appropriate permissions from the available tiles.
     - For this package, we primarily use Graph APIs, so you can choose `Microsoft Graph`, which will display the Delegated and Application permission sections.
-    - Refer to the `Required Permissions` column in the table under [Data streams](#data-streams) section to identify the permissions required for each data stream and select accordingly. You can also refer to the Permissions section in the API documentation for each data stream to determine the necessary permissions.
-    - Ensure Reports.Read.All from Microsoft Graph is added, as most APIs are report-based.
+    - Refer to the Required Permissions column in the table under [What data does this integration collect?](#what-data-this-integration-collects) section to identify the permissions required for each data stream and select accordingly. You can also refer to the Permissions section in the API documentation for each data stream to determine the necessary permissions.
+    - Make sure **Reports.Read.All** from Microsoft Graph is added, as most APIs are report-based.
     - After the permissions are added, the admin will need to grant consent for a few permissions.
 
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
+
 - Click `Add Microsoft Office 365`.
 - Enable `Collect Office 365 metrics via Graph API using CEL Input`.
 - Add `Directory (tenant) ID` noted in Step 1 into `Directory (tenant) ID` parameter. This is required field.
@@ -62,24 +86,24 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Oauth2 Token URL can be added to generate the tokens during the oauth2 flow. If not provided, above `Directory (tenant) ID` will be used for oauth2 token generation.
 - Modify any other parameters as necessary.
 
-### Period-based vs Day-based data-streams
+### Period-based vs day-based data streams
 
-Some data-streams listed earlier ingest data aggregated by a `period`, while other data-streams ingest data aggregated by `day` i.e., aggregated daily.
+Some data streams ingest data aggregated by a `period`, while other data streams ingest data aggregated by `day`, that is, daily.
 
-- When configuring `Period-based` data-streams, the configuration option `Period` must be used during setup. The supported values are: D7, D30, D90, and D180.
-- As `Day-based` data-streams ingest aggregated data per day, the configuration option `Initial Interval` must be set which indicates how far back (in number of days) to fetch the data. Values between 1-28 are allowed.
+For `Period-based` data streams, you have to configure the option `Period` during the setup. The supported values are: D7, D30, D90, and D180.
+As `Day-based` data streams ingest aggregated data per day, you have to configure the option `Initial Interval` to indicate how many days back you want to fetch the data. The supported values are from 1 to 28.
 
-### Additional Information on Day-based data-streams
+### Day-based data streams
 
-Microsoft 365 reports are typically available within [48 hours](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports?view=o365-worldwide), but may sometimes take several days. As per their [documentation](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#interpret-the-microsoft-teams-user-activity-report), data quality is ensured by performing daily validation checks to fill any gaps in data. During this process, users may notice differences in historical data in Microsoft 365 Reports in admin center.
+Microsoft 365 reports are typically available within [48 hours](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports?view=o365-worldwide), but sometimes might take several days. As stated in the MS [documentation](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#interpret-the-microsoft-teams-user-activity-report), data quality is ensured by performing daily validation checks. During this process, you might notice differences in historical data in Microsoft 365 Reports in admin center.
 
-To ensure these filled gaps and historical data-accuracy is also ingested into Elastic, the Microsoft Office 365 Metrics integration enables you to adjust `Sync Days in the past` parameter for `Day-based` data-streams. You can use this parameter to re-fetch the Microsoft 365 reports starting from *N* days in the past. Default value for this paramater is `3`. You can gradually increase this value if you see any discrepancies between Microsoft Reports and Elastic data (maximum value allowed is `28`).
+To make sure there are no gaps and historical data is ingested into Elastic, the Microsoft Office 365 Metrics integration allows you to set the `Sync Days in the past` parameter for `Day-based` data streams. You can use this parameter to re-fetch the Microsoft 365 reports starting from *N* days in the past. By default, this paramater is `3`. You can gradually increase this value if you see any discrepancies between Microsoft Reports and Elastic data (maximum value allowed is `28`).
 
-Due to this re-fetching of data on same dates and the way Elastic data-streams work in [append-only](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html) design, the ingested data may have duplicates. For example, you may see duplicate documents in Elastic on the source data-stream backed indices per resource (user/group/site) per report date. To maintain only the latest copy of document, the Microsoft Office 365 Metrics integration installs [Latest Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview), one per report. These latest transform periodically pulls the data from source data-stream backed indices into a destination non-data-stream backed index. Hence the destination indices only contains single (latest) document per resource (user/group/site) per report date. Inside the reports dataset, you can distinguish between source and destination indices using the field `labels.is_transform_source`. This is set to `true` for source data-stream backed indices and `false` for destination (latest) indices.
+When data is re-fetched on same dates, the ingested data may be duplicated because Elastic data streams work in [append-only](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html) design. For example, you may see duplicated documents in Elastic on the source data stream backed indices per resource (user/group/site) per report date. To maintain only the latest copy of the document, the Microsoft Office 365 Metrics integration installs [Latest Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview), one per report. These latest transform periodically pulls the data from the source data-stream-backed indices into a destination non-data-stream backed index. Therefore, the destination index only contains a single (latest) document per resource (user/group/site) per report date. Inside the reports dataset, you can distinguish between source and destination indices using the field `labels.is_transform_source`. This is set to `true` for source data-stream-backed indices and `false` for destination (latest) indices.
 
-Thus when searching for data, you should use a filter `labels.is_transform_source: false` to avoid seeing any duplicates. The Microsoft Office 365 Metrics integration dashboards also has this filter to only show the latest datapoints.
+When searching for data, use a filter `labels.is_transform_source: false` to avoid getting duplicates. The Microsoft Office 365 Metrics integration dashboards has also this filter to show only the latest datapoints.
 
-As the latest data is available in destination indices, the source data-stream backed indices are purged based on ILM policy `metrics-o365_metrics.<data_stream>-default_policy`.
+As the latest data is available in the destination indices, the source data-stream-backed indices are purged based on the ILM policy `metrics-o365_metrics.<data_stream>-default_policy`.
 
 | o365.metrics.report.name          | Source filter | Source indices | Destination filter | Destination indices | Destination alias |
 |------------------|:-------:|:-------:|:-------:|:-------:|:-------:|
@@ -88,15 +112,16 @@ As the latest data is available in destination indices, the source data-stream b
 | Teams User Activity User Detail  |  `labels.is_transform_source: true`  | `metrics-o365_metrics.teams_user_activity_user_detail-*` |  `labels.is_transform_source: false`  | `metrics-o365_metrics.teams_user_activity_user_detail_latest-*` | `metrics-o365_metrics.teams_user_activity_user_detail_latest` |
 | Viva Engage Groups Activity Group Detail  |  `labels.is_transform_source: true`  | `metrics-o365_metrics.viva_engage_groups_activity_group_detail-*` |  `labels.is_transform_source: false`  | `metrics-o365_metrics.viva_engage_groups_activity_group_detail_latest-*` | `metrics-o365_metrics.viva_engage_groups_activity_group_detail_latest` |
 
-**Note:** `Sync Days in the past` and `Latest Transforms` are only used in `Day`-based data-streams, i.e., for data-streams aggregated per day.
+**Note:** `Sync Days in the past` and `Latest Transforms` are only used in `Day`-based data streams, that is, for data streams aggregated per day.
 
-### Data Anonymization
+### Data anonymization
 
-By default for all Microsoft 365 usage reports, the user names, emails, group, or site information are anonymized by Microsoft using MD5 hashes. You can revert this change for a tenant and show identifiable user, group, and site information if your organization's privacy practices allow it. To do this, follow below steps:
+By default, for all Microsoft 365 usage reports, the user names, emails, group, or site information are anonymized by Microsoft using MD5 hashes. You can revert this change for a tenant and show identifiable user, group, and site information if your organization allows it. To do this, follow these steps:
+
 1. Login to [Microsoft 365 admin center](https://admin.microsoft.com/)
-2. Navigate to `Settings` --> `Org Settings` --> `Services` page.
-3. Select `Reports`
-4. Uncheck the statement `Display concealed user, group, and site names in all reports`, and then save your changes.
+2. Navigate to **Settings** -> **Org Settings** -> **Services**.
+3. Select **Reports**.
+4. Deselect the option `Display concealed user, group, and site names in all reports`, and save your changes.
 
 ## Metrics
 
@@ -110,7 +135,7 @@ Get details about Active Users Services User Count from [Microsoft Graph API](ht
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "active_users_services_user_counts"}}
 
@@ -130,7 +155,7 @@ Get details about Mailbox Usage Quota Status from [Microsoft Graph API](https://
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "mailbox_usage_quota_status"}}
 
@@ -142,7 +167,7 @@ Get details about Mailbox Usage Detail from [Microsoft Graph API](https://learn.
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "mailbox_usage_detail"}}
 
@@ -154,7 +179,7 @@ Get details about Microsoft 365 groups activity by group from [Microsoft Graph A
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "groups_activity_group_detail"}}
 
@@ -166,7 +191,7 @@ Get details about OneDrive usage by account from [Microsoft Graph API](https://l
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "onedrive_usage_account_detail"}}
 
@@ -178,7 +203,7 @@ Get details about OneDrive usage by account counts from [Microsoft Graph API](ht
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "onedrive_usage_account_counts"}}
 
@@ -190,7 +215,7 @@ Get details about OneDrive usage by file counts from [Microsoft Graph API](https
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "onedrive_usage_file_counts"}}
 
@@ -202,7 +227,7 @@ Get details about OneDrive usage by storage from [Microsoft Graph API](https://l
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "onedrive_usage_storage"}}
 
@@ -214,7 +239,7 @@ Get details about Outlook Activity from [Microsoft Graph API](https://learn.micr
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "outlook_activity"}}
 
@@ -226,7 +251,7 @@ Get details about Microsoft Outlook App Usage Version Counts from [Microsoft Gra
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "outlook_app_usage_version_counts"}}
 
@@ -238,7 +263,7 @@ Get details about SharePoint Site Usage Detail from [Microsoft Graph API](https:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "sharepoint_site_usage_detail"}}
 
@@ -250,7 +275,7 @@ Get details about SharePoint Site Usage Storage from [Microsoft Graph API](https
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "sharepoint_site_usage_storage"}}
 
@@ -262,7 +287,7 @@ Get details about Teams User Activity User Counts from [Microsoft Graph API](htt
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "teams_user_activity_user_counts"}}
 
@@ -274,7 +299,7 @@ Get details about Teams User Activity User Detail from [Microsoft Graph API](htt
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "teams_user_activity_user_detail"}}
 
@@ -286,7 +311,7 @@ Get details about Yammer Groups Activity Group Detail by group from [Microsoft G
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "viva_engage_groups_activity_group_detail"}}
 
@@ -298,7 +323,7 @@ Get details about Yammer Device Usage User Counts from [Microsoft Graph API](htt
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "viva_engage_device_usage_user_counts"}}
 
@@ -311,7 +336,7 @@ Get details about Teams Device Usage User Counts from [Microsoft Graph API](http
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "teams_device_usage_user_counts"}}
 
@@ -323,7 +348,7 @@ Get details about Service Health from [Microsoft Graph API](https://learn.micros
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "service_health"}}
 
@@ -336,7 +361,7 @@ Get details about Subscriptions from [Microsoft Graph API](https://learn.microso
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "subscriptions"}}
 
@@ -349,7 +374,7 @@ Get details about Teams Call Quality from [Microsoft Graph API](https://learn.mi
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "teams_call_quality"}}
 
@@ -361,7 +386,7 @@ Get details about tenant settings in Microsoft Entra ID.
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "tenant_settings"}}
 
@@ -373,7 +398,7 @@ Get details about apps registered in Microsoft Entra ID. [Microsoft API](https:/
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "app_registrations"}}
 
@@ -383,7 +408,7 @@ Get details about Entra Features. [Microsoft API](https://learn.microsoft.com/en
 
 {{event "entra_features"}}
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "entra_features"}}
 
@@ -393,7 +418,7 @@ Get details about Entra Agent. [Microsoft Docs](https://learn.microsoft.com/en-u
 
 {{event "entra_agent"}}
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "entra_agent"}}
 
@@ -403,6 +428,6 @@ Get details about Entra Alerts. [Microsoft Docs](https://learn.microsoft.com/en-
 
 {{event "entra_alerts"}}
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "entra_alerts"}}
