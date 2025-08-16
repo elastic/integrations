@@ -1,0 +1,47 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{ period }}
+username: {{username}}
+password: {{password}}
+namespace: activemq_artemis
+http_method: "GET"
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+jmx.mappings:
+    - mbean: 'org.apache.activemq.artemis:broker=*,component=addresses,address=*'
+      attributes:
+        - attr: RoutingTypes
+          field: routing_types
+        - attr: QueueNames
+          field: queue_names
+        - attr: NumberOfQueues
+          field: queues.count
+        - attr: AddressSize
+          field: size
+        - attr: NumberOfMessages
+          field: messages.count
+        - attr: AddressLimitPercent
+          field: limit.used_pct
+        - attr: BytesPerPage
+          field: page.bytes
+        - attr: NumberOfBytesPerPage
+          field: page.bytes_count
+        - attr: UsedPages
+          field: page.used
+        - attr: UnroutableCount
+          field: messages.unroutable.count
+        - name: RolesAsJSON
+          field: roles
