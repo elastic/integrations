@@ -1,0 +1,290 @@
+rules:
+  # Auth error test case (unused because elastic-package cannot handle testing events with error values.)
+  - path: /api/v2/billing/organizations/3333/costs/instances
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "xxxx"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - 'text/plain; charset=utf-8'
+        body: |-
+          403: User does not have 'billing-costs:get:3333' permissions
+
+  # No instances test case (currently used because elastic-package does not support zero hit_count assertions).
+  - path: /api/v2/billing/organizations/2222/costs/instances
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "xxxx"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "total_ecu": 14.0214,
+              "instances": []
+            }
+          `}}
+
+  # Normal test case.
+  - path: /api/v2/billing/organizations/1111/costs/instances
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "xxxx"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            {
+              "total_ecu": 14.0214,
+              "instances": [
+                {
+                  "total_ecu": 14.0214,
+                  "id": "4679751e171d403d8603cb1639b67e57",
+                  "name": "example-deployment",
+                  "type": "deployment",
+                  "product_line_items": [
+                    {
+                      "name": "Cloud Standard, AWS us-east-1 (N. Virginia), aws.es.datafrozen.i3en.2, 4GB, 1AZ",
+                      "total_ecu": 2.8992,
+                      "type": "capacity",
+                      "sku": "aws.es.datafrozen.i3en.2_us-east-1_4096_1",
+                      "unit": "hour",
+                      "quantity": {
+                        "value": 24,
+                        "formatted_value": "24 hours"
+                      },
+                      "display_quantity": {
+                        "value": 24,
+                        "formatted_value": "24 hours",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.1208,
+                        "formatted_value": "0.1208 per hour"
+                      },
+                      "kind": "elasticsearch",
+                      "quantities": []
+                    },
+                    {
+                      "name": "Cloud Standard, AWS us-east-1 (N. Virginia), aws.es.datahot.c6gd, 4GB, 2AZ",
+                      "total_ecu": 7.3728,
+                      "type": "capacity",
+                      "sku": "aws.es.datahot.c6gd_us-east-1_4096_2",
+                      "unit": "hour",
+                      "quantity": {
+                        "value": 24,
+                        "formatted_value": "24 hours"
+                      },
+                      "display_quantity": {
+                        "value": 24,
+                        "formatted_value": "24 hours",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.3072,
+                        "formatted_value": "0.3072 per hour"
+                      },
+                      "kind": "elasticsearch",
+                      "quantities": []
+                    },
+                    {
+                      "name": "Cloud Standard, AWS us-east-1 (N. Virginia), aws.kibana.c6gd, 1GB, 1AZ",
+                      "total_ecu": 0.0,
+                      "type": "capacity",
+                      "sku": "aws.kibana.c6gd_us-east-1_1024_1",
+                      "unit": "hour",
+                      "quantity": {
+                        "value": 24,
+                        "formatted_value": "24 hours"
+                      },
+                      "display_quantity": {
+                        "value": 24,
+                        "formatted_value": "24 hours",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.0,
+                        "formatted_value": "0.0000 per hour"
+                      },
+                      "kind": "kibana",
+                      "quantities": []
+                    },
+                    {
+                      "name": "AWS Data Transfer In",
+                      "total_ecu": 0.0,
+                      "type": "data_in",
+                      "sku": "aws.data-transfer-in",
+                      "unit": "GB",
+                      "quantity": {
+                        "value": 8.326714027673006,
+                        "formatted_value": "8.3267 GBs"
+                      },
+                      "display_quantity": {
+                        "value": 8.326714027673006,
+                        "formatted_value": "8.3267 GBs",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.0,
+                        "formatted_value": "0.0000 per GB"
+                      },
+                      "kind": null,
+                      "quantities": []
+                    },
+                    {
+                      "name": "AWS Data Transfer Out",
+                      "total_ecu": 0.0236,
+                      "type": "data_out",
+                      "sku": "aws.data-transfer-out",
+                      "unit": "GB",
+                      "quantity": {
+                        "value": 0.47151940781623125,
+                        "formatted_value": "0.4715 GBs"
+                      },
+                      "display_quantity": {
+                        "value": 0.47151940781623125,
+                        "formatted_value": "0.4715 GBs",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.05,
+                        "formatted_value": "0.0500 per GB"
+                      },
+                      "kind": null,
+                      "quantities": []
+                    },
+                    {
+                      "name": "AWS Data Transfer Inter-Node",
+                      "total_ecu": 2.4238,
+                      "type": "data_internode",
+                      "sku": "aws.data-transfer-inter-node",
+                      "unit": "GB",
+                      "quantity": {
+                        "value": 151.48789499513805,
+                        "formatted_value": "151.4879 GBs"
+                      },
+                      "display_quantity": {
+                        "value": 151.48789499513805,
+                        "formatted_value": "151.4879 GBs",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.016,
+                        "formatted_value": "0.0160 per GB"
+                      },
+                      "kind": null,
+                      "quantities": []
+                    },
+                    {
+                      "name": "AWS Snapshot Storage",
+                      "total_ecu": 0.2724,
+                      "type": "storage_bytes",
+                      "sku": "aws.snapshot-storage",
+                      "unit": "GB",
+                      "quantity": {
+                        "value": 8.25573491696794,
+                        "formatted_value": "8.2557 GBs"
+                      },
+                      "display_quantity": {
+                        "value": 8.25573491696794,
+                        "formatted_value": "8.2557 GBs",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.033,
+                        "formatted_value": "0.0330 per GB"
+                      },
+                      "kind": null,
+                      "quantities": []
+                    },
+                    {
+                      "name": "AWS Snapshot Storage API",
+                      "total_ecu": 1.0296,
+                      "type": "storage_api",
+                      "sku": "aws.snapshot-api-1k",
+                      "unit": "1000 API Calls",
+                      "quantity": {
+                        "value": 572,
+                        "formatted_value": "572k requests"
+                      },
+                      "display_quantity": {
+                        "value": 572,
+                        "formatted_value": "572k requests",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.0018,
+                        "formatted_value": "0.0018 per 1000 API Calls"
+                      },
+                      "kind": null,
+                      "quantities": []
+                    },
+                    {
+                      "name": "Synthetics Browser",
+                      "total_ecu": 0.0,
+                      "type": "synthetics_browser",
+                      "sku": "global.synthetics-browser",
+                      "unit": "test",
+                      "quantity": {
+                        "value": 0.0,
+                        "formatted_value": "0 tests"
+                      },
+                      "display_quantity": {
+                        "value": 0.0,
+                        "formatted_value": "0 tests",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 0.0123,
+                        "formatted_value": "0.0123 per test"
+                      },
+                      "kind": null,
+                      "quantities": []
+                    },
+                    {
+                      "name": "Synthetics Lightweight",
+                      "total_ecu": 0.0,
+                      "type": "synthetics_lightweight",
+                      "sku": "global.synthetics-lightweight",
+                      "unit": "region",
+                      "quantity": {
+                        "value": 0.0,
+                        "formatted_value": "0 regions"
+                      },
+                      "display_quantity": {
+                        "value": 0.0,
+                        "formatted_value": "0 regions",
+                        "type": "default"
+                      },
+                      "rate": {
+                        "value": 28.0,
+                        "formatted_value": "28.0000 per region"
+                      },
+                      "kind": null,
+                      "quantities": []
+                    }
+                  ]
+                }
+              ]
+            }
+          `}}

@@ -1,6 +1,10 @@
 ---
 description: "Ingest pipeline for ESS billing data"
 processors:
+  # NOTE(2025-08-15): This 'drop' processor is no longer necessary because
+  # there is a Beat processor to drop events with 'fake: true'. It is kept here
+  # to allow users a chance to upgrade their Agent configurations first, given
+  # that package upgrades are not atomic (pipelines upgrade before agents).
   - drop:
       if: "ctx.ess?.billing == null && ctx.error?.message == null"
   - remove:
