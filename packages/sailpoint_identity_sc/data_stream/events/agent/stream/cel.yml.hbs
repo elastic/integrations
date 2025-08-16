@@ -31,11 +31,12 @@ state:
   want_more: false
   limit: {{limit}}
   initial_interval: {{initial_interval}}
+  api_version: {{api_version}}
 program: |-
   {"startTime": state.?cursor.searchAfter.orValue(timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339))}.as(timeframe,
   	request(
   		"POST",
-  		state.url.trim_right("/") + "/v2024/search/events?" + {
+  		state.url.trim_right("/") + "/" + state.api_version + "/search?" + {
   			"limit": [string(state.limit)],
   		}.format_query()
   	).with(
@@ -44,6 +45,7 @@ program: |-
   				"Content-Type": ["application/json"],
   			},
   			"Body": {
+  				"indices": ["events"],
   				"searchAfter": [string(timeframe.startTime)],
   				"queryType": "SAILPOINT",
   				"sort": ["created"],
