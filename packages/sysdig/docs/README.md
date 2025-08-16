@@ -2,11 +2,13 @@
 This integration allows for the shipping of [Sysdig](https://sysdig.com/) logs to Elastic for security, observability and organizational awareness. Logs can then be analyzed by using either the dashboard included with the integration or via the creation of custom dashboards within Kibana.
 
 ## Data Streams
-The Sysdig integration collects two type of logs:
+The Sysdig integration collects three types of logs:
 
 **Alerts** The Alerts data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
 **Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/).
+
+**CSPM** The CSPM data stream collected through the Sysdig integration consists of Sysdig compliance results. See more details about compliance results in [Sysdig's Compliance documentation](https://docs.sysdig.com/en/sysdig-secure/compliance/).
 
 ## Requirements
 
@@ -28,7 +30,7 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 **Required:** To configure Sysdig to output JSON, you must set up as webhook notification channel as outlined in the [Sysdig Documentation](https://docs.sysdig.com/en/docs/administration/administration-settings/outbound-integrations/notifications-management/set-up-notification-channels/configure-a-webhook-channel/).
 
-### To collect data from the Sysdig Next Gen API:
+### To collect data from the Sysdig API:
 
 - Retrieve the API Token by following [Sysdig's API Token Guide](https://docs.sysdig.com/en/retrieve-the-sysdig-api-token).
 
@@ -750,4 +752,159 @@ An example event for `event` looks as following:
 | sysdig.event.source_details.sub_type | A deeper particularization for the type of component that generated the raw event. Possible values are auditlogs, auditWebhooks, caas, dynamicAdmissionControl, host, container, workforce. | keyword |
 | sysdig.event.source_details.type | The type of component that generated the raw event. Possible values are cloud, git, iam, kubernetes, workload. | keyword |
 | sysdig.event.timestamp | The event timestamp in nanoseconds. | date |
+
+
+### CSPM
+
+This is the `CSPM` dataset.
+
+#### Example
+
+An example event for `cspm` looks as following:
+
+```json
+{
+    "@timestamp": "2025-08-12T09:58:09.947Z",
+    "agent": {
+        "ephemeral_id": "f18befa1-0f74-40b4-bd7f-c93d017adbf8",
+        "id": "c8b0424f-06be-4430-8217-b26e28f1be36",
+        "name": "elastic-agent-85044",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "sysdig.cspm",
+        "namespace": "30853",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "c8b0424f-06be-4430-8217-b26e28f1be36",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "sysdig.cspm",
+        "ingested": "2025-08-12T09:58:12Z",
+        "kind": "event",
+        "original": "{\"acceptedCount\":0,\"control\":{\"acceptedCount\":0,\"authors\":\"Sysdig\",\"description\":\"Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.\",\"id\":\"21344\",\"isManual\":false,\"lastUpdate\":\"1752149383\",\"name\":\"Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys\",\"objectsCount\":2879,\"pass\":false,\"passingCount\":0,\"platform\":\"\",\"remediationId\":\"21344\",\"resourceApiEndpoint\":\"/api/cspm/v1/cloud/resources?controlId=21344\\u0026providerType=AWS\\u0026resourceKind=AWS_LAMBDA_FUNCTION\\u0026filter=policyId=52 and zones.id=119\",\"resourceKind\":\"AWS_LAMBDA_FUNCTION\",\"severity\":\"High\",\"supportedDistributions\":[{\"maxVersion\":0,\"minVersion\":0,\"name\":\"AWS\"}],\"target\":\"AWS\",\"type\":8},\"description\":\"All Amazon Web Services Controls.\",\"failedControls\":136,\"highSeverityCount\":3147,\"lowSeverityCount\":2926,\"mediumSeverityCount\":20805,\"name\":\"AWS Controls\",\"pass\":false,\"passingCount\":23735,\"policyId\":\"52\",\"policyName\":\"All Posture Findings\",\"requirementId\":\"637489\",\"severity\":\"High\",\"zone\":{\"id\":\"119\",\"name\":\"Entire Infrastructure\"}}",
+        "outcome": "failure",
+        "severity": 73,
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "message": "AWS Controls",
+    "observer": {
+        "product": "Sysdig Secure",
+        "vendor": "Sysdig"
+    },
+    "rule": {
+        "id": "52",
+        "name": "All Posture Findings"
+    },
+    "sysdig": {
+        "cspm": {
+            "accepted_count": 0,
+            "control": {
+                "accepted_count": 0,
+                "authors": "Sysdig",
+                "description": "Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.",
+                "id": "21344",
+                "is_manual": false,
+                "last_update": "2025-07-10T12:09:43.000Z",
+                "name": "Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys",
+                "objects_count": 2879,
+                "pass": false,
+                "passing_count": 0,
+                "remediation_id": "21344",
+                "resource_api_endpoint": "/api/cspm/v1/cloud/resources?controlId=21344&providerType=AWS&resourceKind=AWS_LAMBDA_FUNCTION&filter=policyId=52 and zones.id=119",
+                "resource_kind": "AWS_LAMBDA_FUNCTION",
+                "severity": "High",
+                "supported_distributions": [
+                    {
+                        "max_version": "0",
+                        "min_version": "0",
+                        "name": "AWS"
+                    }
+                ],
+                "target": "AWS",
+                "type": 8
+            },
+            "description": "All Amazon Web Services Controls.",
+            "failed_controls": 136,
+            "high_severity_count": 3147,
+            "low_severity_count": 2926,
+            "medium_severity_count": 20805,
+            "pass": false,
+            "passing_count": 23735,
+            "requirement_id": "637489",
+            "severity": "High",
+            "zone": {
+                "id": "119",
+                "name": "Entire Infrastructure"
+            }
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "sysdig-cspm"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| sysdig.cspm.accepted_count | Number of accepted resources. | long |
+| sysdig.cspm.control.accepted_count | Number of accepted resources. | long |
+| sysdig.cspm.control.authors |  | keyword |
+| sysdig.cspm.control.description | Control description. | keyword |
+| sysdig.cspm.control.id | Control ID. | keyword |
+| sysdig.cspm.control.is_manual | Does control need to be checked manually. | boolean |
+| sysdig.cspm.control.last_update |  | date |
+| sysdig.cspm.control.name | Control name. | keyword |
+| sysdig.cspm.control.objects_count | Number of failing resources. | long |
+| sysdig.cspm.control.pass | Is control passing. | boolean |
+| sysdig.cspm.control.passing_count |  | long |
+| sysdig.cspm.control.platform |  | keyword |
+| sysdig.cspm.control.remediation_id |  | keyword |
+| sysdig.cspm.control.resource_api_endpoint | API endpoint for listing the evaluated resources for this control. | keyword |
+| sysdig.cspm.control.resource_kind | Kind of resource evaluated by the control. | keyword |
+| sysdig.cspm.control.severity | Control severity. | keyword |
+| sysdig.cspm.control.supported_distributions.max_version | Distribution max version. | keyword |
+| sysdig.cspm.control.supported_distributions.min_version | Distribution min version. | keyword |
+| sysdig.cspm.control.supported_distributions.name | Distribution name. | keyword |
+| sysdig.cspm.control.target |  | keyword |
+| sysdig.cspm.control.type |  | long |
+| sysdig.cspm.description | Requirement description. | keyword |
+| sysdig.cspm.failed_controls | Number of failing controls. | long |
+| sysdig.cspm.high_severity_count | Number of failing resources for high-severity controls. | long |
+| sysdig.cspm.low_severity_count | Number of failing resources for low-severity controls. | long |
+| sysdig.cspm.medium_severity_count | Number of failing resources for medium-severity controls. | long |
+| sysdig.cspm.name | Requirement name. | match_only_text |
+| sysdig.cspm.pass | Is requirement passing. | boolean |
+| sysdig.cspm.passing_count |  | long |
+| sysdig.cspm.policy_id | Policy ID. | keyword |
+| sysdig.cspm.policy_name | Policy name. | keyword |
+| sysdig.cspm.requirement_id | Requirement ID. | keyword |
+| sysdig.cspm.severity | Highest control severity. | keyword |
+| sysdig.cspm.zone.id | Zone ID. | keyword |
+| sysdig.cspm.zone.name | Zone name. | keyword |
 
