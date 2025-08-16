@@ -1,5 +1,5 @@
 config_version: 2
-interval: {{interval}}
+interval: '{{interval}}'
 resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -15,30 +15,39 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
 auth.oauth2:
-  client.id: {{client_id}}
-  client.secret: {{client_secret}}
+  client.id: '{{client_id}}'
+  client.secret: '{{client_secret}}'
   token_url: {{url}}/oauth2/token
 state:
-  initial_interval: {{initial_interval}}
+  initial_interval: '{{initial_interval}}'
 redact:
   fields: ~
-program: |
+{{!
+API references:
+  https://docs.beyondtrust.com/pra/reference/api-guide#authenticate-to-the-api
+  https://docs.beyondtrust.com/pra/reference/reporting-api
+}}
+program: |-
   state.with(
     {
-      "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
-      "request_initiated_time": now.format(time_layout.RFC3339),
+      // Use the last processed timestamp from cursor if available, otherwise
+      // fall back to (current time - initial_interval) for the first run.
+      "start_time": (state.?cursor.last_timestamp.optMap(t, timestamp(t))).orValue(
+        timestamp(now - duration(state.initial_interval))
+      ),
+      "request_initiated_time": now,
     }.as(filter,
-      // to perform request to get sessions list
       request(
         "GET",
         state.url.trim_right("/") + "/api/reporting?" + {
           "generate_report": ["AccessSession"],
-          "start_time": [string(filter.start_time)],
-          "duration": ["0"],
+          "start_time": [string(int(filter.start_time))], // Unix timestamp for report start time.
+          "duration": ["0"], // Duration of 0 means from start_time to now.
         }.format_query()
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_xml("access_session_schema").as(body,
-          has(body.doc.session_list.error) ?
+          // Check if the API returned an error in the XML response.
+          body.?doc.session_list.error.hasValue() ?
             {
               "events": {
                 "error": {
@@ -47,30 +56,45 @@ program: |
               },
               "want_more": false,
             }
-          : has(body.doc.session_list.session) ?
+          : body.?doc.session_list.session.hasValue() ?
             {
+              // Process sessions data when available.
+              // Transform each session and its events into individual log events.
               "events": body.doc.session_list.session.map(j,
+                // For each session, process all events within that session.
                 j.session_details.event.map(e,
                   {
                     "message": e.with(
                       {
+                        // Include session metadata (excluding lists that will be used for enrichment).
                         "session": j.drop(["rep_list", "customer_list", "session_details"]),
+
+                        // Enrich the "performed_by" field with detailed user information
+                        // Look up the user details from either rep_list or customer_list
                         ?"performed_by": optional.of(
                           e.performed_by.with(
                             (e.performed_by.type == "representative") ?
+                              // Find representative details by matching gsnumber.
                               j.rep_list.representative.filter(reps, reps.gsnumber == e.performed_by.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
                             :
+                              // Find customer details by matching gsnumber.
                               j.customer_list.customer.filter(reps, reps.gsnumber == e.performed_by.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
                           )
                         ),
+
+                        // Enrich the "destination" field with detailed information
+                        // If destination exists, look up details; otherwise use first customer.
                         "destination": has(e.destination) ?
                           e.destination.with(
                             (e.destination.type == "representative") ?
+                              // Find representative destination details
                               j.rep_list.representative.filter(reps, reps.gsnumber == e.destination.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
                             :
+                              // Find customer destination details
                               j.customer_list.customer.filter(reps, reps.gsnumber == e.destination.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
                           )
                         :
+                          // Default to first customer if no specific destination
                           j.customer_list.customer[0],
                       }
                     ).encode_json(),
@@ -78,27 +102,31 @@ program: |
                 )
               ).flatten(),
               "cursor": {
-                ?"last_timestamp": (has(body.doc.session_list.session) && body.doc.session_list.session.size() > 0) ?
+                ?"last_timestamp": (body.?doc.session_list.session.hasValue() &&
+                body.doc.session_list.session.size() > 0) ?
+                  // Use the request initiation time as the cursor if sessions were found.
                   optional.of(filter.request_initiated_time)
                 :
+                  // Keep the existing cursor if no new sessions.
                   state.?cursor.last_timestamp,
               },
               "want_more": false,
             }
           :
             {
+              // Handle case where no sessions are found in the response
               "events": [],
               "want_more": false,
             }
         )
       :
         {
+          // Handle HTTP error responses (non-200 status codes)
           "events": {
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET " + state.url.trim_right("/") + "/api/reporting: " + 
-              (
+              "message": "GET " + state.url.trim_right("/") + "/api/reporting: " + (
                 (size(resp.Body) != 0) ?
                   string(resp.Body)
                 :
