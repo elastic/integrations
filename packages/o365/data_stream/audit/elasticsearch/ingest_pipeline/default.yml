@@ -157,11 +157,11 @@ processors:
       if: ctx._tmp?.action_strings != null
       tag: script_select_string_actions
       source: |-
-        ctx.o365audit = ctx.o365audit ?: [:];
-        ctx.o365audit.Actions = ctx.o365audit.Actions ?: [];
-        for (def e: ctx._tmp.action_strings) {
-          ctx.o365audit.Actions.add(e);
-        }
+        // To reach here, ctx._tmp.action_strings must be non-null
+        // and for this to be true, script_select_string_actions
+        // must have run, requring that ctx.o365audit.Actions is
+        // non-null, so we do not need to check again.
+        ctx.o365audit.Actions.addAll(ctx._tmp.action_strings);
 
   # General Schema
   - date:
