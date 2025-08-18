@@ -240,6 +240,7 @@ An example event for `audit` looks as following:
 | o365.audit.AttachmentData.SHA256 |  | keyword |
 | o365.audit.AuthDetails.Name |  | keyword |
 | o365.audit.AuthDetails.Value |  | keyword |
+| o365.audit.AuthenticationType |  | keyword |
 | o365.audit.AzureActiveDirectoryEventType |  | keyword |
 | o365.audit.BCLValue |  | keyword |
 | o365.audit.BulkApprovalId |  | keyword |

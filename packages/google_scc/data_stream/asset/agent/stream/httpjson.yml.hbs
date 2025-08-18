@@ -33,12 +33,14 @@ request.transforms:
 response.pagination:
   - set:
       target: url.params.readTime
-      value: '[[formatDate (parseDate .last_response.body.readTime) "RFC3339"]]'
+      value: '[[if index .last_response.body "readTime"]][[formatDate (parseDate .last_response.body.readTime) "RFC3339"]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.pageToken
       value: '[[if index .last_response.body "nextPageToken"]][[.last_response.body.nextPageToken]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 response.split:
   target: body.assets
   ignore_empty_value: true
