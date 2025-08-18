@@ -71,31 +71,31 @@ program: |-
 
                         // Enrich the "performed_by" field with detailed user information
                         // Look up the user details from either rep_list or customer_list
-                        ?"performed_by": optional.of(
-                          e.performed_by.with(
-                            (e.performed_by.type == "representative") ?
+                        ?"performed_by": e.?performed_by.optMap(performed_by,
+                          performed_by.with(
+                            (performed_by.type == "representative") ?
                               // Find representative details by matching gsnumber.
-                              j.rep_list.representative.filter(reps, reps.gsnumber == e.performed_by.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
+                              j.?rep_list.representative.optMap(reps, reps.filter(rep, rep.gsnumber == performed_by.gsnumber))[?0].orValue({})
                             :
                               // Find customer details by matching gsnumber.
-                              j.customer_list.customer.filter(reps, reps.gsnumber == e.performed_by.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
+                              j.?customer_list.customer.optMap(reps, reps.filter(rep, rep.gsnumber == performed_by.gsnumber))[?0].orValue({})
                           )
                         ),
 
                         // Enrich the "destination" field with detailed information
                         // If destination exists, look up details; otherwise use first customer.
-                        "destination": has(e.destination) ?
-                          e.destination.with(
-                            (e.destination.type == "representative") ?
-                              // Find representative destination details
-                              j.rep_list.representative.filter(reps, reps.gsnumber == e.destination.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
-                            :
-                              // Find customer destination details
-                              j.customer_list.customer.filter(reps, reps.gsnumber == e.destination.gsnumber).as(rep_arr, rep_arr[?0].orValue({}))
+                        ?"destination": e.?destination.optMap(destination,
+                          destination.with(
+                            (
+                              (destination.type == "representative") ?
+                                (// Find representative destination details
+                                j.?rep_list.representative.optMap(reps, reps.filter(reps, reps.gsnumber == e.destination.gsnumber))[?0])
+                              :
+                                // Find customer destination details
+                                j.?customer_list.customer.optMap(customers, customers.filter(customers, customers.gsnumber == e.destination.gsnumber))[?0]
+                            ).or(j.?customer_list.customer[?0]).orValue({})
                           )
-                        :
-                          // Default to first customer if no specific destination
-                          j.customer_list.customer[0],
+                        ),
                       }
                     ).encode_json(),
                   }
