@@ -1,0 +1,39 @@
+source:
+  index:
+    - "logs-google_scc.finding-*"
+  query:
+    bool:
+      must:
+        - match:
+            google_scc.finding.class: VULNERABILITY
+        - match:
+            google_scc.finding.state: ACTIVE
+dest:
+  index: "security_solution-google_scc.vulnerability_latest-v1"
+  aliases:
+    - alias: "security_solution-google_scc.vulnerability_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.id
+    - resource.id
+    - package.name
+    - package.version
+    - data_stream.namespace
+  sort: "@timestamp"
+description: Latest Vulnerabilities Findings from Google Security Command Center.
+settings:
+  unattended: true
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 90d
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.1.0
