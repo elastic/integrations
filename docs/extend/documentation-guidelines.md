@@ -17,7 +17,7 @@ The goal of each integration’s documentation is to:
     * [What do I need to use this integration?](#idg-requirements)
     * [How do I deploy this integration?](#idg-docs-setup)
     * [Troubleshooting](#idg-docs-troubleshooting)
-    * [Scaling](#idg-docs-scaling)
+    * [Performance and scaling](#idg-docs-performance-scaling)
     * [Reference](#idg-docs-reference)
 
 Some considerations when these documentation files are written at `_dev/build/docs/*.md`:
@@ -81,7 +81,7 @@ When possible, use links to point to third-party documentation for configuring n
 
 The troubleshooting section should include details specific to each input type, along with general guidance for resolving common issues encountered when deploying this integration. Whenever possible, link to the troubleshooting documentation provided by the third-party software.
 
-### Scaling [idg-docs-scaling]
+### Performance and scaling [idg-docs-performance-scaling]
 
 Based on the input, this section should explain how to scale the integration and what are the best types of scaling architecture to use, including benchmarking recommendations.
 
