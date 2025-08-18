@@ -1,0 +1,53 @@
+type: logs
+title: "ECE Adminconsole log"
+streams:
+  - input: filestream
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /mnt/data/elastic/*/services/admin-console/logs/adminconsole.ndjson
+        description: Collect the adminconsole log file, this is the default path, in case your data path is different, please alter the `/mnt/data` part.
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+      - name: harvester_limit
+        type: integer
+        title: Harvester Limit
+        description: Limits the number of files that are ingested in parallel. More details [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#filebeat-input-filestream-harvester-limit).
+        required: false
+        show_user: false
+        default: 0
+      - name: close.on_state_change.inactive
+        type: text
+        title: File Handle Closure Duration
+        description: The duration after which the file handle is closed if the file has not been updated. More details [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#filebeat-input-filestream-close-inactive).
+        multi: false
+        required: false
+        show_user: false
+        default: 5m
+    template_path: filestream.yml.hbs
+    title: ECE Adminconsole logs
+    description: Collect ECE Adminconsole logs.

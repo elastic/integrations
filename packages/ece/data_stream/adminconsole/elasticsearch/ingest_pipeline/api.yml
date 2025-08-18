@@ -1,0 +1,205 @@
+---
+description: Pipeline for processing the API logs
+processors:
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.process.thread.name"
+      target_field: "process.thread.name"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.request_payload"
+      target_field: "http.request.body.content"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.message"
+      target_field: "message"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.log.logger"
+      target_field: "log.logger"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.log.level"
+      target_field: "log.level"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.trace.id"
+      target_field: "trace.id"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.proxy_ip"
+      target_field: "network.forwarded_ip"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.query_parameters"
+      target_field: "url.query"
+   - set:
+      description: For the URI parts processor we need proper http://... therefore we add it. http if it's not default port.
+      field: url.origin
+      value: http://{{_tmp.ece.log.request_url}}
+      if: "!ctx._tmp?.ece?.log?.request_url?.contains('12443')"
+   - set:
+      description: For the URI parts processor we need proper https://... therefore we add it.
+      field: url.origin
+      value: https://{{_tmp.ece.log.request_url}}
+      if: ctx._tmp?.ece?.log?.request_url?.contains('12443')
+   - uri_parts:
+      field: url.origin
+      ignore_missing: true
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.request_method"
+      target_field: "http.request.method"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.request_length"
+      target_field: "http.request.body.bytes"
+   - convert:
+      field: http.request.body.bytes
+      type: long
+      ignore_missing: true
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.status_code"
+      target_field: "http.response.status_code"
+   - convert:
+      field: "http.response.status_code"
+      type: long
+      ignore_missing: true
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.auth_user"
+      target_field: "user.name"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.response_length"
+      target_field: "http.response.body.bytes"
+   - convert:
+      field: http.response.body.bytes
+      type: long
+      ignore_missing: true
+   - script:
+      description: "Calculate nanoseconds for duration"
+      if: "ctx._tmp?.ece?.log?.response_time != null"
+      ignore_failure: true
+      tag: "calculating event duration"
+      source: |
+            ctx.event.duration = Long.parseLong(ctx._tmp.ece.log.response_time) * 1000000
+   - user_agent:
+      ignore_missing: true
+      field: "_tmp.ece.log.user_agent"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.request_id"
+      target_field: "http.request.id"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.organization_id"
+      target_field: "organization.id"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.transaction.id"
+      target_field: "transaction.id"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.client_ip"
+      target_field: "client.address"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.region"
+      target_field: "cloud.region"
+   - rename:
+      ignore_missing: true
+      field: "_tmp.ece.log.control_plane_use_case"
+      target_field: "event.module"
+   - append:
+      if: "ctx.http?.request?.method != null && ctx.url?.original != null"
+      field: "event.category"
+      value:
+         - "api"
+      allow_duplicates: false
+   - append:
+      if: "ctx.http?.response?.status_code != null"
+      field: "event.type"
+      value:
+         - "info"
+      allow_duplicates: false
+   - append:
+      if: "ctx.network?.forwarded_ip != null"
+      field: "related.ip"
+      value: "{{{network.forwarded_ip}}}"
+      allow_duplicates: false
+   - append:
+      if: "ctx.client?.address != null"
+      field: "related.ip"
+      value: "{{{client.address}}}"
+      allow_duplicates: false
+   - append:
+      if: "ctx.user?.name != null"
+      field: "related.user"
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+   - append:
+      if: "ctx.url?.domain != null"
+      field: "related.hosts"
+      value: "{{{url.domain}}}"
+      allow_duplicates: false
+   - rename:
+      ignore_missing: true
+      tag: "rename_destination_as_organization_name"
+      field: "destination.as.organization_name"
+      target_field: "destination.as.organization.name"
+   - grok:
+      description: Extract the deployment id from the url
+      field: "url.path"
+      if: "ctx.url?.path instanceof String && ctx.url.path.contains('/deployments/') && !['_search','traffic-filter/rulesets', 'templates'].contains(ctx.url.path.splitOnToken('/deployments/')[-1])"
+      patterns:
+         - "\\/deployments\\/(?<ece_adminconsole.log.deployment.id>[^\\/]+).*"
+      tag: "extract-deployment.id-from-url.path"
+   - dissect:
+      description: Extracts the API call against Elasticsearch through the API console
+      field: "url.original"
+      if: ctx.url?.original?.contains('/elasticsearch/main-elasticsearch/proxy/')
+      pattern: "%{}/elasticsearch/main-elasticsearch/proxy/%{ece_adminconsole.log.deployment.es_api}"
+   - script:
+      description: Set event.action based on API documentation
+      if: "ctx.url?.original != null && ctx.http?.request?.method != null"
+      source: |
+            def temp = params.get(ctx.http.request.method.toLowerCase());
+            // elastic.co/api/v1/deployments
+            // and we only want the part after the /api/v1/
+            String url_parts = ctx.url.original.splitOnToken("/api/v1/")[1];
+            if (temp != null){
+                if (temp.get(url_parts) != null){
+            ctx.putIfAbsent("event", [:]);
+            ctx.event.action = temp.get(url_parts);
+                }
+                else {
+            ctx.putIfAbsent("event", [:]);
+            ctx.event.action = ctx.http.request.method.toLowerCase() + "_" + url_parts.splitOnToken("/")[0];
+                }
+            }
+      params:
+            get:
+                  deployments: "list_deployments"
+            post:
+                  deployments: "create_deployment"
+   - json:
+      field: "http.request.body.content"
+      target_field: "_tmp.request"
+      on_failure:
+         - set:
+            field: _tmp.json_payload_error
+            value: true
+   - rename:
+      field: "_tmp.request.name"
+      target_field: "ece_adminconsole.log.deployment.name"
+      ignore_missing: true
+      if: "ctx._tmp?.json_payload_error == null"
+on_failure:
+   - append:
+      field: "error.message"
+      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+   - set:
+      field: "event.kind"
+      value: "pipeline_error"

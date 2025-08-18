@@ -1,0 +1,73 @@
+---
+description: Pipeline for processing the adminconsole logs
+processors:
+  - rename:
+      field: "message"
+      target_field: "event.original"
+      if: "ctx.event?.original == null"
+  - remove:
+      field: message
+      ignore_missing: true
+      if: "ctx.event?.original != null"
+  - set:
+      tag: "set_ecs_version"
+      field: "ecs.version"
+      value: "8.17.0"
+  - json:
+      tag: "json_original"
+      field: "event.original"
+      target_field: "_tmp.ece.log"
+  - rename:
+      ignore_missing: true
+      field: _tmp.ece.log.message
+      target_field: message
+  - date:
+      if: ctx._tmp?.ece?.log['@timestamp'] != null
+      field: "_tmp.ece.log.@timestamp"
+      formats:
+        - ISO8601
+      tag: set-the-time-from-the-log
+  - pipeline:
+      name: '{{ IngestPipeline "api" }}'
+      if: ctx.message =~ /^\d{3} /
+      tag: api-logs
+      ignore_missing_pipeline: true
+  - set:
+      field: "event.kind"
+      value: event
+      if: ctx.message =~ /^\D{3}/
+  - set:
+      field: event.action
+      value: non-api
+      if: ctx.message =~ /^\D{3}/
+  - script:
+      description: Drops null/empty values recursively
+      tag: drop_empty_fields
+      lang: painless
+      source: |
+          boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+              return true;
+          } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+          }
+          return false;
+          }
+          dropEmptyFields(ctx);
+
+  - remove:
+      ignore_failure: true
+      ignore_missing: true
+      field:
+        - _tmp
+on_failure:
+  - append:
+      field: "error.message"
+      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: "event.kind"
+      value: "pipeline_error"
