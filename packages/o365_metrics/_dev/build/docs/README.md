@@ -4,18 +4,6 @@
 
 This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) and [Microsoft Management API](https://learn.microsoft.com/en-us/office/office-365-management-api/) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and service health.
 
-### Compatibility
-
-<!--
-Specify any versions, deployment methods, architectures etc. of the third-party software this integration is compatible with.
--->
-
-### How it works
-
-<!--
-Provide a high-level overview on how the integration collects data
--->
-
 ## What data does this integration collect?[#what-data-this-integration-collects]
 
 The following data can be collected with the Microsoft Office 365 Metrics integration:
@@ -50,13 +38,6 @@ The following data can be collected with the Microsoft Office 365 Metrics integr
 | Entra Alerts |  [alerts](https://learn.microsoft.com/en-us/entra/permissions-management/ui-triggers) | Microsoft 365 Entra Alerts metrics | No aggregation | RBAC role
 
 ## What do I need to use this integration?
-
-<!--
-Provide information on what is required to use this integration:
-
-- Elastic prerequisites (for example, a self-managed or Cloud deployment)
-- Credentials or an admin account for the third-party software
--->
 
 To use this package you need to enable datastreams you want to collect metrics for and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
 
