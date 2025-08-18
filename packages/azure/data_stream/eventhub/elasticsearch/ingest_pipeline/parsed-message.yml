@@ -15,6 +15,12 @@ processors:
   - json:
       field: event.original
       target_field: azure.eventhub
+  - rename:
+      field: azure.eventhub.properties
+      if: "ctx.azure?.eventhub?.properties instanceof String"
+      target_field: azure.eventhub.properties.raw
+      ignore_missing: true
+      description: 'Rename the field to `properties.raw` to avoid parse errors when `properties` is a string.'        
   - date:
       field: azure.eventhub.time
       target_field: '@timestamp'
