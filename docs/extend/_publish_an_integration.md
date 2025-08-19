@@ -34,20 +34,8 @@ A well-written PR with clear documentation, versioning, and testing instructions
 
 When CI is happy, merge your PR into the integrations repository.
 
-CI will kick off a build job for the main branch, which can release your integration to the package-storage. It means that it will open a PR to the Package Storage/snapshot with the built integration if only the package version doesn’t already exist in the storage (hasn’t been released yet).
+Once the PR with the new version of the package is merged, the required CI pipelines are triggered to release that new version into Package Storage V2 and make them available in https://epr.elastic.co.
 
-
-## Promote [_promote]
-
-Now that you’ve tested your integration with {{kib}}, it’s time to promote it to staging or production. Run:
-
-```bash
-elastic-package promote
-```
-
-The command will open 2 pull requests (promote and delete) to the package-storage: target and source branches.
-
-Please review both pull requests on your own, check if CI is happy and merge - first target, then source. Once any PR is merged, the CI will kick off a job to bake a new Docker image of package-storage (tracking). Ideally the "delete" PR should be merged once the CI job for "promote" is done, as the Docker image of previous stage depends on the later one.
 
 ::::{tip}
 When you are ready for your changes in the integration to be released, remember to bump up the package version. It is up to you, as the package developer, to decide how many changes you want to release in a single version. For example, you could implement a change in a PR and bump up the package version in the same PR. Or you could implement several changes across multiple pull requests and then bump up the package version in the last of these pull requests or in a separate follow up PR.

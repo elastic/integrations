@@ -78,9 +78,10 @@ This can be done in two ways:
 
   * The `elastic-package` CLI will look up the field’s definition in an external ECS reference file, rather than requiring you to copy the full field definition into your package.
 
-  * By default it looks at the [ECS reference](https://raw.githubusercontent.com/elastic/ecs/v8.6.0/generated/ecs/ecs_nested.yml) file hosted on Github. 
+  * Important: The ECS reference file location (and version) is controlled by the reference setting in the package’s `_dev/build/build.yml` file.
+  If the `_dev/build/build.yml` file does not exist, or if it does not specify an ECS reference, defining fields with `external: ecs` will fail the build process.
 
-  * The exact version (or location) of the ECS reference file is controlled by the reference setting in your package’s `_dev/build/build.yml file`. For example:
+  * By default, if configured, the ECS reference point to the [ECS reference file](https://raw.githubusercontent.com/elastic/ecs/v8.6.0/generated/ecs/ecs_nested.yml) hosted on GitHub, but its value must be explicitly set in `_dev/build/build.yml`. For example:
 
     ```yaml
     dependencies:
