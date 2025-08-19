@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential brute-force attacks targeting Microsoft 365 user accounts by analyzing failed sign-in patterns in Microsoft Entra ID Sign-In Logs. This detection focuses on a high volume of failed interactive or non-interactive authentication attempts within a short time window, often indicative of password spraying, credential stuffing, or password guessing. Adversaries may use these techniques to gain unauthorized access to Microsoft 365 services such as Exchange Online, SharePoint, or Teams.",
+        "false_positives": [
+            "Automated processes that attempt to authenticate using expired credentials or have misconfigured authentication settings may lead to false positives."
+        ],
+        "from": "now-60m",
+        "interval": "15m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft 365 Brute Force via Entra ID Sign-Ins",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft 365 Brute Force via Entra ID Sign-Ins\n\nIdentifies brute-force authentication activity against Microsoft 365 services using Entra ID sign-in logs. This detection groups and classifies failed sign-in attempts based on behavior indicative of password spraying, credential stuffing, or password guessing. The classification (`bf_type`) is included for immediate triage.\n\n### Possible investigation steps\n\n- Review `bf_type`: Classifies the brute-force behavior (`password_spraying`, `credential_stuffing`, `password_guessing`).\n- Examine `user_id_list`: Review the identities targeted. Are they admins, service accounts, or external identities?\n- Review `login_errors`: Multiple identical errors (e.g., `\"Invalid grant...\"`) suggest automated abuse or tooling.\n- Check `ip_list` and `source_orgs`: Determine if requests came from known VPNs, hosting providers, or anonymized infrastructure.\n- Validate `unique_ips` and `countries`: Multiple countries or IPs in a short window may indicate credential stuffing or distributed spray attempts.\n- Compare `total_attempts` vs `duration_seconds`: High volume over a short duration supports non-human interaction.\n- Inspect `user_agent.original` via `device_detail_browser`: Clients like `Python Requests` or `curl` are highly suspicious.\n- Investigate `client_app_display_name` and `incoming_token_type`: Identify non-browser-based logins, token abuse or commonly mimicked clients like VSCode.\n- Review `target_resource_display_name`: Confirm the service being targeted (e.g., SharePoint, Exchange). This may be what authorization is being attempted against.\n- Pivot using `session_id` and `device_detail_device_id`: Determine if a single device is spraying multiple accounts.\n- Check `conditional_access_status`: If \"notApplied\", determine whether conditional access is properly scoped.\n- Correlate `user_principal_name` with successful sign-ins: Investigate surrounding logs for lateral movement or privilege abuse.\n\n### False positive analysis\n\n- Developer automation (e.g., CI/CD logins) or mobile sync errors may create noisy but benign login failures.\n- Red team exercises or pentesting can resemble brute-force patterns.\n- Legacy protocols or misconfigured service principals may trigger repeated login failures from the same IP or session.\n\n### Response and remediation\n\n- Notify identity or security operations teams to investigate further.\n- Lock or reset affected user accounts if compromise is suspected.\n- Block the source IP(s) or ASN temporarily using conditional access or firewall rules.\n- Review tenant-wide MFA and conditional access enforcement.\n- Audit targeted accounts for password reuse across systems or tenants.\n- Enable lockout or throttling policies for repeated failed login attempts.\n",
+        "query": "from logs-azure.signinlogs*\n\n| eval\n    Esql.time_window_date_trunc = date_trunc(15 minutes, @timestamp),\n    Esql_priv.azure_signinlogs_properties_user_principal_name_lower = to_lower(azure.signinlogs.properties.user_principal_name),\n    Esql.azure_signinlogs_properties_incoming_token_type_lower = to_lower(azure.signinlogs.properties.incoming_token_type),\n    Esql.azure_signinlogs_properties_app_display_name_lower = to_lower(azure.signinlogs.properties.app_display_name),\n    Esql.user_agent_original = user_agent.original\n\n| where event.dataset == \"azure.signinlogs\"\n    and event.category == \"authentication\"\n    and azure.signinlogs.category in (\"NonInteractiveUserSignInLogs\", \"SignInLogs\")\n    and azure.signinlogs.properties.resource_display_name rlike \"(.*)365|SharePoint|Exchange|Teams|Office(.*)\"\n    and event.outcome == \"failure\"\n    and azure.signinlogs.properties.status.error_code != 50053\n    and azure.signinlogs.properties.status.error_code in (\n        50034,  // UserAccountNotFound\n        50126,  // InvalidUsernameOrPassword\n        50055,  // PasswordExpired\n        50056,  // InvalidPassword\n        50057,  // UserDisabled\n        50064,  // CredentialValidationFailure\n        50076,  // MFARequiredButNotPassed\n        50079,  // MFARegistrationRequired\n        50105,  // EntitlementGrantsNotFound\n        70000,  // InvalidGrant\n        70008,  // ExpiredOrRevokedRefreshToken\n        70043,  // BadTokenDueToSignInFrequency\n        80002,  // OnPremisePasswordValidatorRequestTimedOut\n        80005,  // OnPremisePasswordValidatorUnpredictableWebException\n        50144,  // InvalidPasswordExpiredOnPremPassword\n        50135,  // PasswordChangeCompromisedPassword\n        50142,  // PasswordChangeRequiredConditionalAccess\n        120000, // PasswordChangeIncorrectCurrentPassword\n        120002, // PasswordChangeInvalidNewPasswordWeak\n        120020  // PasswordChangeFailure\n    )\n    and azure.signinlogs.properties.user_principal_name is not null\n    and azure.signinlogs.properties.user_principal_name != \"\"\n    and user_agent.original != \"Mozilla/5.0 (compatible; MSAL 1.0) PKeyAuth/1.0\"\n\n| stats\n    Esql.azure_signinlogs_properties_authentication_requirement_values = values(azure.signinlogs.properties.authentication_requirement),\n    Esql.azure_signinlogs_properties_app_id_values = values(azure.signinlogs.properties.app_id),\n    Esql.azure_signinlogs_properties_app_display_name_values = values(azure.signinlogs.properties.app_display_name),\n    Esql.azure_signinlogs_properties_resource_id_values = values(azure.signinlogs.properties.resource_id),\n    Esql.azure_signinlogs_properties_resource_display_name_values = values(azure.signinlogs.properties.resource_display_name),\n    Esql.azure_signinlogs_properties_conditional_access_status_values = values(azure.signinlogs.properties.conditional_access_status),\n    Esql.azure_signinlogs_properties_device_detail_browser_values = values(azure.signinlogs.properties.device_detail.browser),\n    Esql.azure_signinlogs_properties_device_detail_device_id_values = values(azure.signinlogs.properties.device_detail.device_id),\n    Esql.azure_signinlogs_properties_device_detail_operating_system_values = values(azure.signinlogs.properties.device_detail.operating_system),\n    Esql.azure_signinlogs_properties_incoming_token_type_values = values(azure.signinlogs.properties.incoming_token_type),\n    Esql.azure_signinlogs_properties_risk_state_values = values(azure.signinlogs.properties.risk_state),\n    Esql.azure_signinlogs_properties_session_id_values = values(azure.signinlogs.properties.session_id),\n    Esql.azure_signinlogs_properties_user_id_values = values(azure.signinlogs.properties.user_id),\n    Esql_priv.azure_signinlogs_properties_user_principal_name_values = values(azure.signinlogs.properties.user_principal_name),\n    Esql.azure_signinlogs_result_description_values = values(azure.signinlogs.result_description),\n    Esql.azure_signinlogs_result_signature_values = values(azure.signinlogs.result_signature),\n    Esql.azure_signinlogs_result_type_values = values(azure.signinlogs.result_type),\n\n    Esql.azure_signinlogs_properties_user_principal_name_lower_count_distinct = count_distinct(Esql_priv.azure_signinlogs_properties_user_principal_name_lower),\n    Esql_priv.azure_signinlogs_properties_user_principal_name_lower_values = values(Esql_priv.azure_signinlogs_properties_user_principal_name_lower),\n    Esql.azure_signinlogs_result_description_count_distinct = count_distinct(azure.signinlogs.result_description),\n    Esql.azure_signinlogs_result_description_values = values(azure.signinlogs.result_description),\n    Esql.azure_signinlogs_properties_status_error_code_count_distinct = count_distinct(azure.signinlogs.properties.status.error_code),\n    Esql.azure_signinlogs_properties_status_error_code_values = values(azure.signinlogs.properties.status.error_code),\n    Esql.azure_signinlogs_properties_incoming_token_type_lower_values = values(Esql.azure_signinlogs_properties_incoming_token_type_lower),\n    Esql.azure_signinlogs_properties_app_display_name_lower_values = values(Esql.azure_signinlogs_properties_app_display_name_lower),\n    Esql.source_ip_values = values(source.ip),\n    Esql.source_ip_count_distinct = count_distinct(source.ip),\n    Esql.source_as_organization_name_values = values(source.`as`.organization.name),\n    Esql.source_as_organization_name_count_distinct = count_distinct(source.`as`.organization.name),\n    Esql.source_geo_country_name_values = values(source.geo.country_name),\n    Esql.source_geo_country_name_count_distinct = count_distinct(source.geo.country_name),\n    Esql.@timestamp.min = min(@timestamp),\n    Esql.@timestamp.max = max(@timestamp),\n    Esql.event_count = count()\nby Esql.time_window_date_trunc\n\n| eval\n    Esql.event_duration_seconds = date_diff(\"seconds\", Esql.@timestamp.min, Esql.@timestamp.max),\n    Esql.event_bf_type = case(\n        Esql.azure_signinlogs_properties_user_principal_name_lower_count_distinct >= 10\n            and Esql.event_count >= 30\n            and Esql.azure_signinlogs_result_description_count_distinct <= 3\n            and Esql.source_ip_count_distinct >= 5\n            and Esql.event_duration_seconds <= 600\n            and Esql.azure_signinlogs_properties_user_principal_name_lower_count_distinct > Esql.source_ip_count_distinct,\n        \"credential_stuffing\",\n\n        Esql.azure_signinlogs_properties_user_principal_name_lower_count_distinct >= 15\n            and Esql.azure_signinlogs_result_description_count_distinct == 1\n            and Esql.event_count >= 15\n            and Esql.event_duration_seconds <= 1800,\n        \"password_spraying\",\n\n        (Esql.azure_signinlogs_properties_user_principal_name_lower_count_distinct == 1\n            and Esql.azure_signinlogs_result_description_count_distinct == 1\n            and Esql.event_count >= 30\n            and Esql.event_duration_seconds <= 300)\n            or (Esql.azure_signinlogs_properties_user_principal_name_lower_count_distinct <= 3\n            and Esql.source_ip_count_distinct > 30\n            and Esql.event_count >= 100),\n        \"password_guessing\",\n\n        \"other\"\n    )\n\n| where Esql.event_bf_type != \"other\"\n\n| keep\n    Esql.time_window_date_trunc,\n    Esql.event_bf_type,\n    Esql.event_duration_seconds,\n    Esql.event_count,\n    Esql.@timestamp.min,\n    Esql.@timestamp.max,\n    Esql.azure_signinlogs_properties_user_principal_name_lower_count_distinct,\n    Esql_priv.azure_signinlogs_properties_user_principal_name_lower_values,\n    Esql.azure_signinlogs_result_description_count_distinct,\n    Esql.azure_signinlogs_result_description_values,\n    Esql.azure_signinlogs_properties_status_error_code_count_distinct,\n    Esql.azure_signinlogs_properties_status_error_code_values,\n    Esql.azure_signinlogs_properties_incoming_token_type_lower_values,\n    Esql.azure_signinlogs_properties_app_display_name_lower_values,\n    Esql.source_ip_values,\n    Esql.source_ip_count_distinct,\n    Esql.source_as_organization_name_values,\n    Esql.source_as_organization_name_count_distinct,\n    Esql.source_geo_country_name_values,\n    Esql.source_geo_country_name_count_distinct,\n    Esql.azure_signinlogs_properties_authentication_requirement_values,\n    Esql.azure_signinlogs_properties_app_id_values,\n    Esql.azure_signinlogs_properties_app_display_name_values,\n    Esql.azure_signinlogs_properties_resource_id_values,\n    Esql.azure_signinlogs_properties_resource_display_name_values,\n    Esql.azure_signinlogs_properties_conditional_access_status_values,\n    Esql.azure_signinlogs_properties_device_detail_browser_values,\n    Esql.azure_signinlogs_properties_device_detail_device_id_values,\n    Esql.azure_signinlogs_properties_device_detail_operating_system_values,\n    Esql.azure_signinlogs_properties_incoming_token_type_values,\n    Esql.azure_signinlogs_properties_risk_state_values,\n    Esql.azure_signinlogs_properties_session_id_values,\n    Esql.azure_signinlogs_properties_user_id_values\n",
+        "references": [
+            "https://cloud.hacktricks.xyz/pentesting-cloud/azure-security/az-unauthenticated-enum-and-initial-entry/az-password-spraying",
+            "https://learn.microsoft.com/en-us/security/operations/incident-response-playbook-password-spray",
+            "https://learn.microsoft.com/en-us/purview/audit-log-detailed-properties",
+            "https://securityscorecard.com/research/massive-botnet-targets-m365-with-stealthy-password-spraying-attacks/",
+            "https://learn.microsoft.com/en-us/entra/identity-platform/reference-error-codes",
+            "https://github.com/0xZDH/Omnispray",
+            "https://github.com/0xZDH/o365spray"
+        ],
+        "risk_score": 47,
+        "rule_id": "35ab3cfa-6c67-11ef-ab4d-f661ea17fbcc",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Entra ID",
+            "Data Source: Entra ID Sign-in Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            },
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            },
+                            {
+                                "id": "T1110.004",
+                                "name": "Credential Stuffing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 106
+    },
+    "id": "35ab3cfa-6c67-11ef-ab4d-f661ea17fbcc_106",
+    "type": "security-rule"
+}

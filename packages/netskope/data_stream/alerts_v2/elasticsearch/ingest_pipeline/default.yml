@@ -41,7 +41,7 @@ processors:
             } else if (v instanceof List) {
               handleList(v);
             }
-            return v == null || v == '' || v == '-' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            return v == '-' || v == 'N/A' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL'
           });
         }
         void handleList(List list) {
@@ -51,7 +51,7 @@ processors:
             } else if (v instanceof List) {
               handleList(v);
             }
-            return v == null || v == '' || v == '-' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            return v == '-' || v == 'N/A' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL'
           });
         }
         handleMap(ctx);
@@ -1110,6 +1110,33 @@ processors:
       field: json
       tag: remove_json
       ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - set:
       field: event.kind
       tag: set_event_kind_to_alert
