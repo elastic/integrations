@@ -139,7 +139,7 @@ If your dashboard is made to identify specific behaviors, it might be interestin
 
 ## Titles in Visualisations matter [_titles_in_visualisations_matter]
 
-Titles can have a strong visual impact on dashboards, especially when there are a lot of small charts. Next principles can generally be followed:
+Titles can have a strong visual impact on dashboards, especially when there are a lot of small charts. The following principles can generally be adhered to:
 
 * Remove unnecessary or repetitive titles when the information is already explained or written within the chart.
 * When a title is needed, make it self explanatory and exhaustive. This way, you will be able to remove axis titles and other specifications leaving more space for the chart itself.
