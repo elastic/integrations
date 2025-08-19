@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell scripts with a disproportionately high number of numeric characters, often indicating the presence of obfuscated or encoded payloads. This behavior is typical of obfuscation methods involving byte arrays, character code manipulation, or embedded encoded strings used to deliver and execute malicious content.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell Obfuscation via High Numeric Character Proportion",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential PowerShell Obfuscation via High Numeric Character Proportion\n\nPowerShell is a powerful scripting language used for system administration, but adversaries exploit its capabilities to obfuscate malicious scripts. Obfuscation often involves encoding payloads using numeric characters, making detection challenging. The detection rule identifies scripts with a high proportion of numeric characters, signaling potential obfuscation. By analyzing script length and numeric density, it flags suspicious activity, aiding in defense evasion detection.\n\n### Possible investigation steps\n\n- Review the script block text from the alert to understand the context and identify any obvious signs of obfuscation or malicious intent.\n- Examine the file path and host name fields to determine the origin and location of the script execution, which can help assess the potential impact and scope.\n- Check the user ID and agent ID fields to identify the user and system involved, which may provide insights into whether the activity is expected or suspicious.\n- Analyze the powershell.sequence and powershell.total fields to understand the sequence of script execution and the total number of scripts executed, which can indicate whether this is part of a larger pattern of behavior.\n- Investigate any related logs or alerts from the same host or user to identify patterns or correlations that might suggest broader malicious activity.\n\n### False positive analysis\n\n- Scripts with legitimate numeric-heavy content such as data processing or mathematical calculations may trigger the rule. To handle this, identify and whitelist specific scripts or script patterns that are known to be safe.\n- Automated scripts that generate or manipulate large datasets often contain high numeric content. Consider creating exceptions for scripts executed by trusted users or from known safe directories.\n- PowerShell scripts used for legitimate software installations or updates might include encoded data blocks. Review and exclude these scripts by verifying their source and purpose.\n- Scripts containing large hexadecimal strings for legitimate purposes, such as cryptographic operations, may be flagged. Use the exclusion pattern to filter out these known safe operations.\n- Regularly review and update the exclusion list to ensure it reflects the current environment and any new legitimate scripts that may be introduced.\n\n### Response and remediation\n\n- Immediately isolate the affected host to prevent further execution of potentially malicious scripts and limit lateral movement within the network.\n- Review the PowerShell script block text and script block ID to identify any malicious payloads or encoded strings. If confirmed malicious, remove or quarantine the script.\n- Conduct a thorough scan of the isolated host using updated antivirus and anti-malware tools to detect and remove any additional threats or remnants of the obfuscated script.\n- Analyze the file path and user ID associated with the script execution to determine if unauthorized access or privilege escalation occurred. Revoke any suspicious user access and reset credentials if necessary.\n- Escalate the incident to the security operations center (SOC) for further investigation and correlation with other alerts to assess the scope and impact of the threat across the network.\n- Implement enhanced monitoring and logging for PowerShell activities on all endpoints to detect similar obfuscation attempts in the future, focusing on scripts with high numeric character proportions.\n- Review and update endpoint protection policies to restrict the execution of scripts with high numeric density, ensuring compliance with security best practices and reducing the risk of obfuscation-based attacks.\n",
+        "query": "from logs-windows.powershell_operational* metadata _id, _version, _index\n| where event.code == \"4104\"\n\n// Filter out smaller scripts that are unlikely to implement obfuscation using the patterns we are looking for\n| eval Esql.script_block_length = length(powershell.file.script_block_text)\n| where Esql.script_block_length > 1000\n\n// replace the patterns we are looking for with the \ud83d\udd25 emoji to enable counting them\n// The emoji is used because it's unlikely to appear in scripts and has a consistent character length of 1\n| eval Esql.script_block_tmp = replace(powershell.file.script_block_text, \"\"\"[0-9]\"\"\", \"\ud83d\udd25\")\n\n// count how many patterns were detected by calculating the number of \ud83d\udd25 characters inserted\n| eval Esql.script_block_pattern_count = Esql.script_block_length - length(replace(Esql.script_block_tmp, \"\ud83d\udd25\", \"\"))\n\n// Calculate the ratio of special characters to total length\n| eval Esql.script_block_ratio = Esql.script_block_pattern_count::double / Esql.script_block_length::double\n\n// keep the fields relevant to the query, although this is not needed as the alert is populated using _id\n| keep\n    Esql.script_block_pattern_count,\n    Esql.script_block_ratio,\n    Esql.script_block_length,\n    Esql.script_block_tmp,\n    powershell.file.script_block_text,\n    powershell.file.script_block_id,\n    file.directory,\n    file.path,\n    powershell.sequence,\n    powershell.total,\n    _id,\n    _index,\n    host.name,\n    agent.id,\n    user.id\n\n// Filter for scripts with high numeric character ratio\n| where Esql.script_block_ratio > 0.30\n\n// Exclude Windows Defender Noisy Patterns\n| where not (\n    file.directory == \"C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender Advanced Threat Protection\\\\Downloads\" or\n    file.directory like \"C:\\\\\\\\ProgramData\\\\\\\\Microsoft\\\\\\\\Windows Defender Advanced Threat Protection\\\\\\\\DataCollection*\"\n  )\n  // ESQL requires this condition, otherwise it only returns matches where file.directory exists.\n  or file.directory is null\n| where not powershell.file.script_block_text like \"*[System.IO.File]::Open('C:\\\\\\\\ProgramData\\\\\\\\Microsoft\\\\\\\\Windows Defender Advanced Threat Protection\\\\\\\\DataCollection*\"\n| where not powershell.file.script_block_text : \"26a24ae4-039d-4ca4-87b4-2f64180311f0\"\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "f9abcddc-a05d-4345-a81d-000b79aa5525",
+        "setup": "## Setup\n\nThe 'PowerShell Script Block Logging' logging policy must be enabled.\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration >\nAdministrative Templates >\nWindows PowerShell >\nTurn on PowerShell Script Block Logging (Enable)\n```\n\nSteps to implement the logging policy via registry:\n\n```\nreg add \"hklm\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\" /v EnableScriptBlockLogging /t REG_DWORD /d 1\n```\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 5
+    },
+    "id": "f9abcddc-a05d-4345-a81d-000b79aa5525_5",
+    "type": "security-rule"
+}
