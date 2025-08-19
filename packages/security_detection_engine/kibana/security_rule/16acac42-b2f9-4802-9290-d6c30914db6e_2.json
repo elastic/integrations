@@ -1,0 +1,64 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects when a JavaScript file is uploaded or accessed in an S3 static site directory (`static/js/`) by an IAM user or assumed role. This can indicate suspicious modification of web content hosted on S3, such as injecting malicious scripts into a static website frontend.",
+        "false_positives": [
+            "Development or deployment pipelines that update static frontends frequently (e.g., React/Vue apps) may trigger this. Verify the user agent, source IP, and whether the modification was expected."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Static Site JavaScript File Uploaded",
+        "note": "## Triage and Analysis\n\n### Investigating AWS S3 Static Site JavaScript File Uploaded\n\nAn S3 `PutObject` action that targets a path like `static/js/` and uploads a `.js` file is a potential signal for web content modification. If done by an unexpected IAM user or outside of CI/CD workflows, it may indicate a compromise.\n\n#### Possible Investigation Steps\n\n- **Identify the Source User**: Check `aws.cloudtrail.user_identity.arn`, access key ID, and session type (`IAMUser`, `AssumedRole`, etc).\n- **Review File Content**: Use the S3 `GetObject` or CloudTrail `requestParameters` to inspect the uploaded file for signs of obfuscation or injection.\n- **Correlate to Other Events**: Review events from the same IAM user before and after the upload (e.g., `ListBuckets`, `GetCallerIdentity`, IAM activity).\n- **Look for Multiple Uploads**: Attackers may attempt to upload several files or modify multiple directories.\n\n### False Positive Analysis\n\n- This behavior may be expected during app deployments. Look at:\n  - The `user_agent.original` to detect legitimate CI tools (like Terraform or GitHub Actions).\n  - Timing patterns\u2014does this match a regular release window?\n  - The origin IP and device identity.\n\n### Response and Remediation\n\n- **Revert Malicious Code**: Replace the uploaded JS file with a clean version and invalidate CloudFront cache if applicable.\n- **Revoke Access**: If compromise is confirmed, revoke the IAM credentials and disable the user.\n- **Audit IAM Policies**: Ensure that only deployment users can modify static site buckets.\n- **Enable Bucket Versioning**: This can allow for quick rollback and historical review.\n",
+        "query": "from logs-aws.cloudtrail* metadata _id, _version, _index\n\n| where\n    // S3 object read/write activity\n    event.dataset == \"aws.cloudtrail\"\n    and event.provider == \"s3.amazonaws.com\"\n    and event.action in (\"GetObject\", \"PutObject\")\n\n    // IAM users or assumed roles only\n    and aws.cloudtrail.user_identity.type in (\"IAMUser\", \"AssumedRole\")\n\n    // Requests for static site bundles\n    and aws.cloudtrail.request_parameters like \"*static/js/*.js*\"\n\n    // Exclude IaC and automation tools\n    and not (\n        user_agent.original like \"*Terraform*\"\n        or user_agent.original like \"*Ansible*\"\n        or user_agent.original like \"*Pulumni*\"\n    )\n\n// Extract fields from request parameters\n| dissect aws.cloudtrail.request_parameters\n    \"%{{?bucket.name.key}=%{Esql.aws_cloudtrail_request_parameters_bucket_name}, %{?host.key}=%{Esql_priv.aws_cloudtrail_request_parameters_host}, %{?bucket.object.location.key}=%{Esql.aws_cloudtrail_request_parameters_bucket_object_location}}\"\n\n// Extract file name portion from full object path\n| dissect Esql.aws_cloudtrail_request_parameters_object_location \"%{}static/js/%{Esql.aws_cloudtrail_request_parameters_object_key}\"\n\n// Match on JavaScript files\n| where ends_with(Esql.aws_cloudtrail_request_parameters_object_key, \".js\")\n\n// Retain relevant ECS and dissected fields\n| keep\n    aws.cloudtrail.user_identity.arn,\n    aws.cloudtrail.user_identity.access_key_id,\n    aws.cloudtrail.user_identity.type,\n    aws.cloudtrail.request_parameters,\n    Esql.aws_cloudtrail_request_parameters_bucket_name,\n    Esql.aws_cloudtrail_request_parameters_object_key,\n    user_agent.original,\n    source.ip,\n    event.action,\n    @timestamp\n",
+        "references": [
+            "https://www.sygnia.co/blog/sygnia-investigation-bybit-hack/",
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html",
+            "https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html"
+        ],
+        "risk_score": 47,
+        "rule_id": "16acac42-b2f9-4802-9290-d6c30914db6e",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS S3",
+            "Tactic: Impact",
+            "Use Case: Web Application Compromise",
+            "Use Case: Cloud Threat Detection",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1565",
+                        "name": "Data Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1565/",
+                        "subtechnique": [
+                            {
+                                "id": "T1565.001",
+                                "name": "Stored Data Manipulation",
+                                "reference": "https://attack.mitre.org/techniques/T1565/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "16acac42-b2f9-4802-9290-d6c30914db6e_2",
+    "type": "security-rule"
+}

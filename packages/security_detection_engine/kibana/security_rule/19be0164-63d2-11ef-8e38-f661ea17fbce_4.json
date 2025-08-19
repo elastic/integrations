@@ -1,0 +1,52 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a single AWS resource is making `GetServiceQuota` API calls for the EC2 service quota L-1216C47A in more than 10 regions within a 30-second window. Quota code L-1216C47A represents on-demand instances which are used by adversaries to deploy malware and mine cryptocurrency. This could indicate a potential threat actor attempting to discover the AWS infrastructure across multiple regions using compromised credentials or a compromised instance.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS Service Quotas Multi-Region `GetServiceQuota` Requests",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS Service Quotas Multi-Region `GetServiceQuota` Requests\n\nAWS Service Quotas manage resource limits across AWS services, crucial for maintaining operational boundaries. Adversaries may exploit `GetServiceQuota` API calls to probe AWS infrastructure, seeking vulnerabilities for deploying threats like cryptocurrency miners. The detection rule identifies unusual multi-region queries for EC2 quotas, signaling potential credential compromise or unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the AWS CloudTrail logs to identify the specific user or role associated with the `aws.cloudtrail.user_identity.arn` field that triggered the alert. Determine if this user or role should have access to multiple regions.\n- Examine the `cloud.region` field to identify which regions were accessed and verify if these regions are typically used by your organization. Investigate any unfamiliar regions for unauthorized activity.\n- Check the AWS IAM policies and permissions associated with the identified user or role to ensure they align with the principle of least privilege. Look for any recent changes or anomalies in permissions.\n- Investigate the source IP addresses and locations from which the `GetServiceQuota` API calls were made to determine if they match expected patterns for your organization. Look for any unusual or suspicious IP addresses.\n- Review recent activity logs for the identified user or role to detect any other unusual or unauthorized actions, such as attempts to launch EC2 instances or access other AWS services.\n- If a compromise is suspected, consider rotating the credentials for the affected user or role and implementing additional security measures, such as multi-factor authentication (MFA) and enhanced monitoring.\n\n### False positive analysis\n\n- Legitimate multi-region operations: Organizations with a global presence may have legitimate reasons for querying EC2 service quotas across multiple regions. To handle this, users can create exceptions for known accounts or roles that regularly perform such operations.\n- Automated infrastructure management tools: Some tools or scripts designed for infrastructure management might perform multi-region `GetServiceQuota` requests as part of their normal operation. Users should identify these tools and exclude their activity from triggering alerts by whitelisting their associated user identities or ARNs.\n- Testing and development activities: Developers or testers might intentionally perform multi-region queries during testing phases. Users can mitigate false positives by setting up temporary exceptions for specific time frames or user identities involved in testing.\n- Cloud service providers or partners: Third-party services or partners managing AWS resources on behalf of an organization might generate similar patterns. Users should establish trust relationships and exclude these entities from detection by verifying their activities and adding them to an exception list.\n\n### Response and remediation\n\n- Immediately isolate the AWS account or IAM user identified in the alert to prevent further unauthorized access. This can be done by disabling the access keys or suspending the account temporarily.\n- Conduct a thorough review of the AWS CloudTrail logs for the identified user or resource to determine the extent of the unauthorized activity and identify any other potentially compromised resources.\n- Rotate all access keys and passwords associated with the compromised account or IAM user to prevent further unauthorized access.\n- Implement additional security measures such as enabling multi-factor authentication (MFA) for all IAM users and roles to enhance account security.\n- Notify the security operations team and relevant stakeholders about the potential compromise and the steps being taken to remediate the issue.\n- If evidence of compromise is confirmed, consider engaging AWS Support or a third-party incident response team for further investigation and assistance.\n- Review and update IAM policies and permissions to ensure the principle of least privilege is enforced, reducing the risk of future unauthorized access attempts.",
+        "query": "from logs-aws.cloudtrail-*\n\n// filter for GetServiceQuota API calls\n| where\n  event.dataset == \"aws.cloudtrail\"\n  and event.provider == \"servicequotas.amazonaws.com\"\n  and event.action == \"GetServiceQuota\"\n\n// truncate the timestamp to a 30-second window\n| eval Esql.time_window_date_trunc = date_trunc(30 seconds, @timestamp)\n\n// dissect request parameters to extract service and quota code\n| dissect aws.cloudtrail.request_parameters \"{%{?Esql.aws_cloudtrail_request_parameters_service_code_key}=%{Esql.aws_cloudtrail_request_parameters_service_code}, %{?quota_code_key}=%{Esql.aws_cloudtrail_request_parameters_quota_code}}\"\n\n// filter for EC2 service quota L-1216C47A (vCPU on-demand instances)\n| where Esql.aws_cloudtrail_request_parameters_service_code == \"ec2\" and Esql.aws_cloudtrail_request_parameters_quota_code == \"L-1216C47A\"\n\n// keep only the relevant fields\n| keep\n    Esql.time_window_date_trunc,\n    aws.cloudtrail.user_identity.arn,\n    cloud.region,\n    Esql.aws_cloudtrail_request_parameters_service_code,\n    Esql.aws_cloudtrail_request_parameters_quota_code\n\n// count the number of unique regions and total API calls within the time window\n| stats\n    Esql.cloud_region_count_distinct = count_distinct(cloud.region),\n    Esql.event_count = count(*)\n  by Esql.time_window_date_trunc, aws.cloudtrail.user_identity.arn\n\n// filter for API calls in more than 10 regions within the 30-second window\n| where\n  Esql.cloud_region_count_distinct >= 10\n  and Esql.event_count >= 10\n\n// sort by time window descending\n| sort Esql.time_window_date_trunc desc\n",
+        "references": [
+            "https://www.sentinelone.com/labs/exploring-fbot-python-based-malware-targeting-cloud-and-payment-services/",
+            "https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_GetServiceQuota.html"
+        ],
+        "risk_score": 21,
+        "rule_id": "19be0164-63d2-11ef-8e38-f661ea17fbce",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Service Quotas",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1580",
+                        "name": "Cloud Infrastructure Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1580/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 4
+    },
+    "id": "19be0164-63d2-11ef-8e38-f661ea17fbce_4",
+    "type": "security-rule"
+}

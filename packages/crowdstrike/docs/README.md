@@ -4,7 +4,17 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily
 
 1. **Falcon SIEM Connector**: This is a pre-built integration designed to connect CrowdStrike Falcon with Security Information and Event Management (SIEM) systems. It streamlines the flow of security data from CrowdStrike Falcon to the SIEM, providing a standardized and structured way of feeding information into the SIEM platform. It includes the following datasets for receiving logs:
 
-- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
+- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from Falcon SIEM Connector.
+
+    **Log File Format and Location**
+
+    The CrowdStrike integration only supports JSON output format from the SIEM Connector.
+
+    - Log files are written to multiple rotated output files based on the `output_path` setting in the `cs.falconhoseclient.cfg` file.
+    - The default output location for the Falcon SIEM Connector is `/var/log/crowdstrike/falconhoseclient/output`.
+    - By default, files named `output*` in `/var/log/crowdstrike/falconhoseclient` directory contain valid JSON event data and should be used as the source for ingestion.
+
+    >Note: Files with names like `cs.falconhoseclient-*.log` in the same directory are primarily used for logging internal operations of the Falcon SIEM Connector and are not intended to be consumed by this integration.
 
 2. **CrowdStrike REST API**: This provides a programmatic interface to interact with the CrowdStrike Falcon platform. It allows users to perform various operations such as querying information about unified alerts and hosts/devices. It includes the following datasets for receiving logs:
 
@@ -2887,6 +2897,7 @@ An example event for `host` looks as following:
 | crowdstrike.host.modified_timestamp | Timestamp indicating when the incident was created. | date |
 | crowdstrike.host.os.build |  | keyword |
 | crowdstrike.host.os.version | The version of the operating system on the host. | keyword |
+| crowdstrike.host.ou | The organizational unit of the host as seen by the sensor. | keyword |
 | crowdstrike.host.platform.id |  | keyword |
 | crowdstrike.host.platform.name | The identifier associated with the customer. | keyword |
 | crowdstrike.host.policies.applied |  | boolean |

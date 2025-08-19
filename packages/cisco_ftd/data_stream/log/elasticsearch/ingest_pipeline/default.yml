@@ -409,7 +409,7 @@ processors:
       description: "113014"
       field: "message"
       patterns:
-          - "AAA authentication server not accessible(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
+          - "AAA authentication server not accessible(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
@@ -921,15 +921,11 @@ processors:
       field: "message"
       description: "734001"
       pattern: "DAP: User %{user.email}, Addr %{source.address}, Connection %{_temp_.cisco.connection_type}: The following DAP records were selected for this connection: %{_temp_.cisco.dap_records->}"
-  - grok:
+  - dissect:
       if: "['746012', '746013'].contains(ctx._temp_.cisco.message_id)"
       field: "message"
       description: "746012, 746013"
-      patterns:
-        - "Add IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} Succeeded - VPN user"
-        - "Delete IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} Succeeded - VPN user logout"
-      pattern_definitions:
-        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+      pattern: "user-identity: %{} IP-User mapping %{source.address} - %{source.user.name} %{_temp_.operation.status} - %{event.reason}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
       field: "message"
@@ -1024,9 +1020,17 @@ processors:
       field: "event.outcome"
       value: "failure"
   - set:
-      if: '["713120", "746012", "746013"].contains(ctx._temp_.cisco.message_id)'
+      if: '["713120"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
       value: "success"
+  - set:
+      if: '["746012", "746013"].contains(ctx._temp_.cisco.message_id) && ctx._temp_.operation.status == "Succeeded"'
+      field: "event.outcome"
+      value: "success"
+  - set:
+      if: '["746012", "746013"].contains(ctx._temp_.cisco.message_id) && ctx._temp_.operation.status != "Succeeded"'
+      field: "event.outcome"
+      value: "failure"
   - set:
       if: '["113004", "113008", "113009", "113012"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
@@ -1262,6 +1266,7 @@ processors:
         EgressZone:
           target: egress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.egress.zone]
         EncryptPeerIP:
           target: encrypt_peer_ip
           id: ["430001", "430002", "430003"]
@@ -1338,6 +1343,7 @@ processors:
         IngressZone:
           target: ingress_zone
           id: ["430001", "430002", "430003"]
+          ecs: [observer.ingress.zone]
         InitiatorBytes:
           target: initiator_bytes
           id: ["430003"]
@@ -1361,6 +1367,22 @@ processors:
           target: message
           id: ["430001"]
           ecs: [message]
+        NAT_InitiatorIP:
+          target: nat_src_ip
+          id: ["430002", "430003"]
+          ecs: [ source.nat.ip ]
+        NAT_InitiatorPort:
+          target: nat_src_port
+          id: ["430002", "430003"]
+          ecs: [ source.nat.port ]
+        NAT_ResponderIP:
+          target: nat_dst_ip
+          id: ["430002", "430003"]
+          ecs: [ destination.nat.ip ]
+        NAT_ResponderPort:
+          target: nat_dst_port
+          id: ["430002", "430003"]
+          ecs: [ destination.nat.port ]
         NAPPolicy:
           target: nap_policy
           id: ["430001", "430002", "430003"]

@@ -53,7 +53,7 @@ For Rest API, this module has been tested against the **2024-03-01** version.
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
+1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **Microsoft Sentinel**.
 3. Select the **Microsoft Sentinel** integration and add it.
 4. Add all the required integration configuration parameters, including the URL, Login URL, Client ID, Client Secret, Tenant Id, Resource Group Name, Subscription ID, Workspace Name, Interval, and Initial Interval, to enable data collection for REST API input type and Azure Event Hub, Consumer Group, Connection String, Storage Account and Storage Account Key for Azure Event Hub input type.

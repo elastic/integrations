@@ -143,6 +143,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.platformlogs.Caller | Caller | keyword |
 | azure.platformlogs.Cloud | Cloud | keyword |
 | azure.platformlogs.Environment | Environment | keyword |
+| azure.platformlogs.EventPrimaryStampName | The primary stamp name for the event | keyword |
+| azure.platformlogs.EventStampName | The stamp name for the event | keyword |
+| azure.platformlogs.EventStampType | The stamp type for the event | keyword |
 | azure.platformlogs.EventTimeString | EventTimeString | keyword |
 | azure.platformlogs.ScaleUnit | ScaleUnit | keyword |
 | azure.platformlogs.category | Category | keyword |

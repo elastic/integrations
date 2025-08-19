@@ -40,23 +40,47 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
-### Advanced options
+### Advanced options for specific use cases
 
-#### CloudWatch
-
-The CloudWatch logs input has several advanced options to fit specific use cases.
-
-##### Latency
+##### Set CloudWatch Logs latency
 
 AWS CloudWatch Logs sometimes takes extra time to make the latest logs available to clients like the Agent.
 
 The CloudWatch integration offers the `latency` setting to address this scenario. Latency translates the query's time range to consider the CloudWatch Logs latency. For example, a `5m` latency means the integration will query CloudWatch for logs available 5 minutes ago.
 
-##### Number of workers
+##### Specify number of workers
 
 If you are collecting log events from multiple log groups using `log_group_name_prefix`, you should review the value of the `number_of_workers`.
 
 The `number_of_workers` setting defines the number of workers assigned to reading from log groups. Each log group matching the `log_group_name_prefix` requires a worker to keep log ingestion as close to real-time as possible. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
+
+##### Collect AWS specific metrics
+
+To collect AWS specific metrics, follow these steps:
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **AWS CloudWatch**.
+3. Select the **AWS CloudWatch** integration and add it.
+4. Toggle on **Collect metrics from CloudWatch** and expand the **Change defaults** drop-down.
+
+   You can add or remove metrics by specifying the name of the resource instance or tags, as shown in the following example:
+   ```yaml
+   - namespace: AWS/EC2
+  resource_type: ec2:instance
+  name:
+    - CPUUtilization
+    - DiskWriteOps
+  statistic:
+    - Average
+    - Maximum
+  # dimensions:
+   # - name: InstanceId
+      # value: i-123456
+  # tags:
+    # - key: created-by
+      # value: foo
+  ```
+5. Save the integration.
 
 ## Logs reference
 
@@ -65,7 +89,7 @@ CloudWatch logs to monitor, store, and access log files from different sources.
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+For detailed information on ECS fields, check the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
 
 **Exported fields**
 
@@ -111,7 +135,7 @@ An example event for `cloudwatch` looks as following:
 }
 ```
 
-## Metrics
+## Metrics reference
 
 An example event for `cloudwatch` looks as following:
 

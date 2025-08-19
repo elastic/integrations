@@ -88,31 +88,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.winlog?.event_data != null && ctx.winlog.event_data.size() == 0
-  - remove:
-      field:
-        - winlog.event_data.SubjectUserSid
-        - winlog.event_data.SubjectUserName
-        - winlog.event_data.SubjectDomainName
-        - winlog.event_data.ProviderName
-        - winlog.event_data.ProcessName
-        - winlog.event_data.RemoteAddress_ip
-        - winlog.event_data.RemoteAddress_name
-        - winlog.event_data.UserSid
-        - winlog.event_data.UserName
-        - winlog.event_data.RuleId
-        - winlog.event_data.RuleName
-        - winlog.event_data.ErrorCode
-        - winlog.event_data.DeviceId
-        - winlog.event_data.DeviceDescription
-        - winlog.event_data.ShareName
-        - winlog.event_data.ShareLocalPath
-        - winlog.event_data.TargetUserSid
-        - winlog.event_data.TargetUserName
-        - winlog.event_data.TargetDomainName
-        - winlog.event_data.Param1
-        - winlog.event_data.FileName
-      ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
       tag: script_to_drop_null_values
