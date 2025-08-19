@@ -1,0 +1,50 @@
+title: "Network Time Protocol metrics"
+type: metrics
+streams:
+  - input: system/metrics
+    title: NTP metrics
+    description: Collect Network Time Protocol metrics
+    vars:
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: ntp.servers
+        type: text
+        title: The remote NTP server addresses
+        description: Remote NTP server addresses of the form "host", "host:port", "host%zone:port", "[host]:port" or "[host%zone]:port". The server may contain an IPv4, IPv6, or domain name address. When specifying both a port and an IPv6 address, one of the bracket formats must be used. If no port is included, NTP default port 123 is used. If multiple servers are specified, metrics are reported separately for each.
+        multi: true
+        required: true
+        show_user: true
+        default: ["pool.ntp.org"]
+      - name: ntp.timeout
+        type: text
+        title: Timeout
+        description: Timeout determines how long the client waits for a response from the remote server before failing with a timeout error.
+        multi: false
+        default: 5s
+      - name: ntp.version
+        type: text
+        title: NTP version
+        description: Version of the NTP protocol to use. Must be one of "3" or "4".
+        multi: false
+        default: "4"
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+elasticsearch:
+  index_mode: time_series
