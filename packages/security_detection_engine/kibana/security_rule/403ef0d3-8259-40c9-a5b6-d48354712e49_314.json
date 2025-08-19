@@ -1,0 +1,137 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies processes modifying the services registry key directly, instead of through the expected Windows APIs. This could be an indication of an adversary attempting to stealthily persist through abnormal service creation or modification of an existing service.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Unusual Persistence via Services Registry",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Persistence via Services Registry\n\nWindows services are crucial for running background processes. Adversaries may exploit this by directly altering service registry keys to maintain persistence, bypassing standard APIs. The detection rule identifies such anomalies by monitoring changes to specific registry paths and filtering out legitimate processes, thus highlighting potential unauthorized service modifications indicative of malicious activity.\n\n### Possible investigation steps\n\n- Review the specific registry paths and values that triggered the alert, focusing on \"ServiceDLL\" and \"ImagePath\" within the specified registry paths to identify any unauthorized or suspicious modifications.\n- Examine the process responsible for the registry change, paying attention to the process name and executable path, to determine if it is a known legitimate process or potentially malicious.\n- Cross-reference the process executable path against the list of known legitimate paths excluded in the query to ensure it is not a false positive.\n- Investigate the historical behavior of the process and any associated files or network activity to identify patterns indicative of malicious intent or persistence mechanisms.\n- Check for any recent changes or anomalies in the system's service configurations that could correlate with the registry modifications, indicating potential unauthorized service creation or alteration.\n- Consult threat intelligence sources or databases to determine if the process or registry changes are associated with known malware or adversary techniques.\n\n### False positive analysis\n\n- Legitimate software installations or updates may modify service registry keys directly. Users can create exceptions for known software update processes by excluding their executables from the detection rule.\n- System maintenance tools like Process Explorer may trigger false positives when they interact with service registry keys. Exclude these tools by adding their process names and paths to the exception list.\n- Drivers installed by trusted hardware peripherals might alter service registry keys. Users should identify and exclude these driver paths if they are known to be safe and frequently updated.\n- Custom enterprise applications that require direct registry modifications for service management can be excluded by specifying their executable paths in the rule exceptions.\n- Regular system processes such as svchost.exe or services.exe are already excluded, but ensure any custom scripts or automation tools that mimic these processes are also accounted for in the exceptions.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any suspicious processes identified in the alert that are not part of legitimate applications or services.\n- Restore the modified registry keys to their original state using a known good backup or by manually correcting the entries to ensure the integrity of the service configurations.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any additional malicious software or artifacts.\n- Review and update endpoint protection policies to ensure that similar unauthorized registry modifications are detected and blocked in the future.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are affected.\n- Document the incident details, including the steps taken for containment and remediation, to enhance future response efforts and update threat intelligence databases.",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n  registry.value : (\"ServiceDLL\", \"ImagePath\") and\n  registry.path : (\n      \"HKLM\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ServiceDLL\",\n      \"HKLM\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ServiceDLL\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\",\n      \"MACHINE\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ServiceDLL\",\n      \"MACHINE\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\"\n  ) and not registry.data.strings : (\n      \"?:\\\\windows\\\\system32\\\\Drivers\\\\*.sys\",\n      \"\\\\SystemRoot\\\\System32\\\\drivers\\\\*.sys\",\n      \"\\\\??\\\\?:\\\\Windows\\\\system32\\\\Drivers\\\\*.SYS\",\n      \"\\\\??\\\\?:\\\\Windows\\\\syswow64\\\\*.sys\",\n      \"system32\\\\DRIVERS\\\\USBSTOR\", \n      \"system32\\\\drivers\\\\*.sys\", \n      \"C:\\\\WindowsAzure\\\\GuestAgent*.exe\", \n      \"\\\"C:\\\\Program Files\\\\Common Files\\\\McAfee\\\\*\", \n      \"C:\\\\Program Files (x86)\\\\VERITAS\\\\VxPBX\\\\bin\\\\pbx_exchange.exe\", \n      \"\\\"C:\\\\Program Files (x86)\\\\VERITAS\\\\VxPBX\\\\bin\\\\pbx_exchange.exe\\\"\",\n      \"\\\"C:\\\\ProgramData\\\\McAfee\\\\Agent\\\\Current\\\\*\") and\n  not (process.name : \"procexp??.exe\" and registry.data.strings : \"?:\\\\*\\\\procexp*.sys\") and\n  not process.executable : (\n      \"?:\\\\Program Files\\\\*.exe\",\n      \"?:\\\\Program Files (x86)\\\\*.exe\",\n      \"?:\\\\Windows\\\\System32\\\\svchost.exe\",\n      \"?:\\\\Windows\\\\winsxs\\\\*\\\\TiWorker.exe\",\n      \"?:\\\\Windows\\\\System32\\\\drvinst.exe\",\n      \"?:\\\\Windows\\\\System32\\\\services.exe\",\n      \"?:\\\\Windows\\\\System32\\\\msiexec.exe\",\n      \"?:\\\\Windows\\\\System32\\\\regsvr32.exe\",\n      \"?:\\\\Windows\\\\System32\\\\WaaSMedicAgent.exe\", \n      \"?:\\\\Windows\\\\UUS\\\\amd64\\\\WaaSMedicAgent.exe\"\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "403ef0d3-8259-40c9-a5b6-d48354712e49",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.003",
+                                "name": "Windows Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 314
+    },
+    "id": "403ef0d3-8259-40c9-a5b6-d48354712e49_314",
+    "type": "security-rule"
+}
