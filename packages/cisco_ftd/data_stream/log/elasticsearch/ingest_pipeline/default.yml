@@ -1868,7 +1868,7 @@ processors:
   #
   - script:
       lang: painless
-      if: "ctx?._temp_.cisco?.message_id == '430003' && ctx._temp_?.duration_hms != null"
+      if: "ctx._temp_?.duration_hms != null"
       source: >
         long parse_hms(String s) {
             long cur = 0, total = 0;
@@ -1887,41 +1887,24 @@ processors:
         if (ctx.event == null) {
             ctx['event'] = new HashMap();
         }
-        String start = ctx['@timestamp'];
-        ctx.event['start'] = start;
-        long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
-        ctx.event['duration'] = nanos;
-        ctx.event['end'] = ZonedDateTime.ofInstant(
-            Instant.parse(start).plusNanos(nanos),
-            ZoneOffset.UTC);
-  - script:
-      lang: painless
-      if: "ctx?._temp_.cisco?.message_id != '430003' && ctx._temp_?.duration_hms != null"
-      source: >
-        long parse_hms(String s) {
-            long cur = 0, total = 0;
-            for (char c: s.toCharArray()) {
-                if (c >= (char)'0' && c <= (char)'9') {
-                    cur = (cur*10) + (long)c - (char)'0';
-                } else if (c == (char)':') {
-                    total = (total + cur) * 60;
-                    cur = 0;
-                } else if (c != (char)'h' && c == (char)'m' && c == (char)'s') {
-                    return 0;
-                }
-            }
-            return total + cur;
+        if (ctx?._temp_.cisco?.message_id == '430003') {
+          String start = ctx['@timestamp'];
+          ctx.event['start'] = start;
+          long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
+          ctx.event['duration'] = nanos;
+          ctx.event['end'] = ZonedDateTime.ofInstant(
+              Instant.parse(start).plusNanos(nanos),
+              ZoneOffset.UTC);
+        } else {
+          String end = ctx['@timestamp'];
+          ctx.event['end'] = end;
+          long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
+          ctx.event['duration'] = nanos;
+          ctx.event['start'] = ZonedDateTime.ofInstant(
+              Instant.parse(end).minusNanos(nanos),
+              ZoneOffset.UTC);
         }
-        if (ctx.event == null) {
-            ctx['event'] = new HashMap();
-        }
-        String end = ctx['@timestamp'];
-        ctx.event['end'] = end;
-        long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
-        ctx.event['duration'] = nanos;
-        ctx.event['start'] = ZonedDateTime.ofInstant(
-            Instant.parse(end).minusNanos(nanos),
-            ZoneOffset.UTC);
+
   #
   # Parse Source/Dest Username/Domain
   #
