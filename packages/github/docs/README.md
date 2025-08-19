@@ -23,13 +23,14 @@ For Organizations:
   - You must be using GitHub Enterprise Cloud.
   - The organization must be part of an enterprise plan that includes audit log functionality.
 
-Github integration can collect audit logs from 2 sources: [Github API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise) and [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs).
+Github integration can collect audit logs from three sources: [Github API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise), [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs), and [AWS S3 or AWS SQS](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3).
 
 When using Github API to collect audit log events, below requirements must be met for Personal Access Token (PAT):
  - You must use a Personal Access Token with `read:audit_log` scope. This applies to both organization and enterprise admins.
  - If you're an enterprise admin, ensure your token also includes `admin:enterprise` scope to access enterprise-wide logs.
 
-To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming. For more details, see [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
+To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming.
+To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3) to setup audit log streaming. For more details, see [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
 
 *This integration is not compatible with GitHub Enterprise server.*
 
@@ -38,6 +39,9 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -117,6 +121,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
 
 
 An example event for `audit` looks as following:
@@ -125,24 +130,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "e422bd43-ded6-4afa-8af1-07165e8555e7",
-        "id": "078a54a8-5f77-45fb-a22a-f7414d1895a0",
-        "name": "elastic-agent-15787",
+        "ephemeral_id": "dfb11704-8962-47d6-b6db-273d5f5ceebc",
+        "id": "0f34c9a0-5d22-445a-a67c-213c32486e64",
+        "name": "elastic-agent-94967",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "98676",
+        "namespace": "33218",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "078a54a8-5f77-45fb-a22a-f7414d1895a0",
+        "id": "0f34c9a0-5d22-445a-a67c-213c32486e64",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "repo.destroy",
@@ -151,10 +156,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2025-07-09T06:53:42.986Z",
+        "created": "2025-07-29T06:21:44.111Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-07-09T06:53:44Z",
+        "ingested": "2025-07-29T06:21:45Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [

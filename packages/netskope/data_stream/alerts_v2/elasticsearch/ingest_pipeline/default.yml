@@ -1,0 +1,1163 @@
+---
+description: Pipeline for processing alert v2 logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: netskope.alert_v2
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      tag: drop_event_logs
+      if: ctx.netskope?.alert_v2?.alert == "no" || ctx.netskope?.alert_v2?.alert == "-"
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == '-' || v == 'N/A' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL'
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == '-' || v == 'N/A' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL'
+          });
+        }
+        handleMap(ctx);
+  - json:
+      field: netskope.alert_v2.custom_attr
+      target_field: netskope.alert_v2.custom_attr
+      ignore_failure: true
+      if: ctx.netskope?.alert_v2?.custom_attr instanceof String || ctx.netskope?.alert_v2?.custom_attr instanceof Map
+  - set:
+      field: event.id
+      tag: set_event_id_from_alert_v2__id
+      copy_from: netskope.alert_v2._id
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.acked
+      tag: convert_acked_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.acked
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.dlp_is_unique_count
+      tag: convert_dlp_is_unique_count_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dlp_is_unique_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.action
+      tag: set_event_action_from_alert_v2_action
+      copy_from: netskope.alert_v2.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_alert_v2_alert_name
+      copy_from: netskope.alert_v2.alert_name
+      ignore_empty_value: true
+  - set:
+      field: network.application
+      tag: set_network_application_from_alert_v2_app
+      copy_from: netskope.alert_v2.app
+      ignore_empty_value: true
+  - lowercase:
+      field: network.application
+      tag: lowercase_network_application
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.total_packets
+      tag: convert_total_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.total_packets
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.packets
+      tag: set_network_packets_from_alert_v2_total_packets
+      copy_from: netskope.alert_v2.total_packets
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.app_session_id
+      tag: convert_app_session_id_to_string
+      type: string
+      ignore_missing: true
+  - date:
+      field: netskope.alert_v2.breach_date
+      tag: date_breach_date
+      target_field: netskope.alert_v2.breach_date
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.alert_v2?.breach_date != null && ctx.netskope.alert_v2.breach_date != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.breach_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.breach_score
+      tag: convert_breach_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.breach_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.browser_session_id
+      tag: convert_browser_session_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.cci
+      tag: convert_cci_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.cci
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.client_bytes
+      tag: convert_client_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.client_bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.bytes
+      tag: set_client_bytes_from_alert_v2_client_bytes
+      copy_from: netskope.alert_v2.client_bytes
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.client_packets
+      tag: convert_client_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.client_packets
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.packets
+      tag: set_client_packets_from_alert_v2_client_packets
+      copy_from: netskope.alert_v2.client_packets
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.conn_duration
+      tag: convert_conn_duration_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.conn_duration
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: netskope.alert_v2.conn_endtime
+      tag: date_conn_endtime
+      target_field: netskope.alert_v2.conn_endtime
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.alert_v2?.conn_endtime != null && ctx.netskope.alert_v2.conn_endtime != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.conn_endtime
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: netskope.alert_v2.conn_starttime
+      tag: date_conn_starttime
+      target_field: netskope.alert_v2.conn_starttime
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.alert_v2?.conn_starttime != null && ctx.netskope.alert_v2.conn_starttime != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.conn_starttime
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.connection_id
+      tag: convert_connection_id_to_long
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.dlp_incident_id
+      tag: convert_dlp_incident_id_to_long
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.dlp_parent_id
+      tag: convert_dlp_parent_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.dlp_rule_count
+      tag: convert_dlp_rule_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dlp_rule_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.dlp_unique_count
+      tag: convert_dlp_unique_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dlp_unique_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.domain
+      tag: set_host_domain_from_alert_v2_domain
+      copy_from: netskope.alert_v2.domain
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_alert_v2_domain_into_related_hosts
+      value: '{{{netskope.alert_v2.domain}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.domain != null
+  - convert:
+      field: netskope.alert_v2.domain_ip
+      tag: convert_domain_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.domain_ip != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.domain_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_alert_v2_domain_ip_into_related_ip
+      value: '{{{netskope.alert_v2.domain_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.domain_ip != null
+  - set:
+      field: destination.geo.country_iso_code
+      tag: set_destination_geo_country_iso_code_from_alert_v2_dst_country
+      copy_from: netskope.alert_v2.dst_country
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.dst_geoip_src
+      tag: convert_dst_geoip_src_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dst_geoip_src
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.dst_latitude
+      tag: convert_dst_latitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: netskope.alert_v2.dst_latitude
+            tag: rename_dst_latitude_to_dst_latitude_keyword
+            target_field: netskope.alert_v2.dst_latitude_keyword
+  - set:
+      field: destination.geo.location.lat
+      tag: set_destination_geo_location_from_dst_latitude
+      copy_from: netskope.alert_v2.dst_latitude
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.dst_longitude
+      tag: convert_dst_longitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: netskope.alert_v2.dst_longitude
+            tag: rename_dst_longitude_to_dst_longitude_keyword
+            target_field: netskope.alert_v2.dst_longitude_keyword
+  - set:
+      field: destination.geo.location.lon
+      tag: set_destination_geo_location_from_dst_longitude
+      copy_from: netskope.alert_v2.dst_longitude
+      ignore_empty_value: true
+  - remove:
+      field: destination.geo.location
+      if: >-
+        !(ctx.destination?.geo?.location?.lat instanceof double)
+        || !(ctx.destination.geo.location.lon instanceof double)
+        || ctx.destination.geo.location.lat < -90.0
+        || ctx.destination.geo.location.lat > 90.0
+        || ctx.destination.geo.location.lon < -180.0
+        || ctx.destination.geo.location.lon > 180.0
+      ignore_failure: true
+  - set:
+      field: destination.geo.city_name
+      tag: set_destination_geo_city_name_from_alert_v2_dst_location
+      copy_from: netskope.alert_v2.dst_location
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.region_name
+      tag: set_destination_geo_region_name_from_alert_v2_dst_region
+      copy_from: netskope.alert_v2.dst_region
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.timezone
+      tag: set_destination_geo_timezone_from_alert_v2_dst_timezone
+      copy_from: netskope.alert_v2.dst_timezone
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.postal_code
+      tag: set_destination_geo_postal_code_from_alert_v2_dst_zipcode
+      copy_from: netskope.alert_v2.dst_zipcode
+      ignore_empty_value: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_alert_v2_dsthost
+      copy_from: netskope.alert_v2.dsthost
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_alert_v2_dsthost_into_related_hosts
+      value: '{{{netskope.alert_v2.dsthost}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.dsthost != null
+  - convert:
+      field: netskope.alert_v2.dstip
+      tag: convert_dstip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.dstip != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dstip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_alert_v2_dstip
+      copy_from: netskope.alert_v2.dstip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_alert_v2_dstip_into_related_ip
+      value: '{{{netskope.alert_v2.dstip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.dstip != null
+  - convert:
+      field: netskope.alert_v2.dstport
+      tag: convert_dstport_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dstport
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_alert_v2_dstport
+      copy_from: netskope.alert_v2.dstport
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_alert_v2_email_title
+      copy_from: netskope.alert_v2.email_title
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.file_cls_encrypted
+      tag: convert_file_cls_encrypted_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.file_cls_encrypted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.executable_signed
+      tag: convert_executable_signed_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.executable_signed
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: append_alert_v2_file_exposure_into_related_hosts
+      value: '{{{netskope.alert_v2.file_exposure}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.file_exposure != null
+  - set:
+      field: file.path
+      tag: set_file_path_from_alert_v2_file_path
+      copy_from: netskope.alert_v2.file_path
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.file_size
+      tag: convert_file_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.file_size
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_alert_v2_file_size
+      copy_from: netskope.alert_v2.file_size
+      ignore_empty_value: true
+  - set:
+      field: file.type
+      tag: set_file_type_from_alert_v2_file_type
+      copy_from: netskope.alert_v2.file_type
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_alert_v2_hostname
+      copy_from: netskope.alert_v2.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_alert_v2_hostname_into_related_hosts
+      value: '{{{netskope.alert_v2.hostname}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.hostname != null
+  - convert:
+      field: netskope.alert_v2.iaas_remediated
+      tag: convert_iaas_remediated_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.iaas_remediated
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.iaas_remediated_on
+      tag: convert_iaas_remediated_on_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.iaas_remediated_on
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.hash.md5
+      tag: set_process_hash_md5_from_alert_v2_local_md5
+      copy_from: netskope.alert_v2.local_md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_alert_v2_local_md5_into_related_hash
+      value: '{{{netskope.alert_v2.local_md5}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.local_md5 != null
+  - set:
+      field: process.hash.sha1
+      tag: set_process_hash_sha1_from_alert_v2_local_sha1
+      copy_from: netskope.alert_v2.local_sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_alert_v2_local_sha1_into_related_hash
+      value: '{{{netskope.alert_v2.local_sha1}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.local_sha1 != null
+  - set:
+      field: process.hash.sha256
+      tag: set_process_hash_sha256_from_alert_v2_local_sha256
+      copy_from: netskope.alert_v2.local_sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_alert_v2_local_sha1_into_related_hash
+      value: '{{{netskope.alert_v2.local_sha256}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.local_sha256 != null
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_alert_v2_md5
+      copy_from: netskope.alert_v2.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_alert_v2_md5_into_related_hash
+      value: '{{{netskope.alert_v2.md5}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.md5 != null
+  - set:
+      field: file.mime_type
+      tag: set_file_mime_type_from_alert_v2_mime_type
+      copy_from: netskope.alert_v2.mime_type
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.numbytes
+      tag: convert_numbytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.numbytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.dlp_fingerprint_score
+      tag: convert_dlp_fingerprint_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dlp_fingerprint_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.dlp_rule_score
+      tag: convert_dlp_rule_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.dlp_rule_score
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_alert_v2_org
+      copy_from: netskope.alert_v2.org
+      ignore_empty_value: true
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_alert_v2_os
+      copy_from: netskope.alert_v2.os
+      ignore_empty_value: true
+  - set:
+      field: host.os.family
+      tag: set_host_os_family_from_alert_v2_os_family
+      copy_from: netskope.alert_v2.os_family
+      ignore_empty_value: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_alert_v2_os_version
+      copy_from: netskope.alert_v2.os_version
+      ignore_empty_value: true
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referrer_from_alert_v2_referer
+      copy_from: netskope.alert_v2.referer
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.req_cnt
+      tag: convert_req_cnt_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.req_cnt
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.request_id
+      tag: convert_request_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.resp_cnt
+      tag: convert_resp_cnt_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.resp_cnt
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.server_bytes
+      tag: convert_server_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.server_bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes_from_alert_v2_server_bytes
+      copy_from: netskope.alert_v2.server_bytes
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.server_packets
+      tag: convert_server_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.server_packets
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.packets
+      tag: set_server_packets_from_alert_v2_server_packets
+      copy_from: netskope.alert_v2.server_packets
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.session_duration
+      tag: convert_session_duration_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.session_duration
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.srcport
+      tag: convert_alert_v2_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.event_v2.alert_v2
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.netskope?.alert_v2?.severity != null && ctx.netskope.alert_v2.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.netskope.alert_v2.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: netskope.alert_v2.end_time
+      tag: date_end_time
+      target_field: netskope.alert_v2.end_time
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.netskope?.alert_v2?.end_time != null && ctx.netskope.alert_v2.end_time != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.end_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_alert_v2_end_time
+      copy_from: netskope.alert_v2.end_time
+      ignore_empty_value: true
+  - date:
+      field: netskope.alert_v2.start_time
+      tag: date_start_time
+      target_field: netskope.alert_v2.start_time
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.netskope?.alert_v2?.start_time != null && ctx.netskope.alert_v2.start_time != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.start_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_alert_v2_start_time
+      copy_from: netskope.alert_v2.start_time
+      ignore_empty_value: true
+  - set:
+      field: source.geo.country_iso_code
+      tag: set_source_geo_country_iso_code_from_alert_v2_src_country
+      copy_from: netskope.alert_v2.src_country
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.src_geoip_src
+      tag: convert_src_geoip_src_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.src_geoip_src
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alert_v2.src_latitude
+      tag: convert_src_latitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: netskope.alert_v2.src_latitude
+            tag: rename_src_latitude_to_dst_latitude_keyword
+            target_field: netskope.alert_v2.src_latitude_keyword
+  - set:
+      field: source.geo.location.lat
+      tag: set_source_geo_location_from_src_latitude
+      copy_from: netskope.alert_v2.src_latitude
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.src_longitude
+      tag: convert_src_longitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: netskope.alert_v2.src_longitude
+            tag: rename_src_longitude_to_src_longitude_keyword
+            target_field: netskope.alert_v2.src_longitude_keyword
+  - set:
+      field: source.geo.location.lon
+      tag: set_source_geo_location_from_src_longitude
+      copy_from: netskope.alert_v2.src_longitude
+      ignore_empty_value: true
+  - remove:
+      field: source.geo.location
+      if: ctx.source?.geo?.location?.lat == null || ctx.source.geo.location?.lon == null || ctx.source.geo.location.lat < -90.0 || ctx.source.geo.location.lat > 90.0 || ctx.source.geo.location.lon < -180.0 || ctx.source.geo.location.lon > 180.0
+      ignore_failure: true
+  - set:
+      field: source.geo.city_name
+      tag: set_source_geo_city_name_from_alert_v2_src_location
+      copy_from: netskope.alert_v2.src_location
+      ignore_empty_value: true
+  - set:
+      field: source.geo.region_name
+      tag: set_source_geo_region_name_from_alert_v2_src_region
+      copy_from: netskope.alert_v2.src_region
+      ignore_empty_value: true
+  - set:
+      field: source.geo.timezone
+      tag: set_source_geo_timezone_from_alert_v2_src_timezone
+      copy_from: netskope.alert_v2.src_timezone
+      ignore_empty_value: true
+  - set:
+      field: source.geo.postal_code
+      tag: set_source_geo_postal_code_from_alert_v2_src_zipcode
+      copy_from: netskope.alert_v2.src_zipcode
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.srcip
+      tag: convert_srcip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.srcip != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.srcip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_alert_v2_srcip
+      copy_from: netskope.alert_v2.srcip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_alert_v2_srcip_into_related_ip
+      value: '{{{netskope.alert_v2.srcip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.srcip != null
+  - date:
+      field: netskope.alert_v2.timestamp
+      tag: date_timestamp
+      target_field: netskope.alert_v2.timestamp
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.alert_v2?.timestamp != null && ctx.netskope.alert_v2.timestamp != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: netskope.alert_v2.modified_date
+      tag: date_modified_date
+      target_field: netskope.alert_v2.modified_date
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.alert_v2?.modified_date != null && ctx.netskope.alert_v2.modified_date != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.modified_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_alert_v2_timestamp
+      copy_from: netskope.alert_v2.timestamp
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.transaction_id
+      tag: convert_transaction_id_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_alert_v2_url
+      copy_from: netskope.alert_v2.url
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_alert_v2_user
+      copy_from: netskope.alert_v2.user
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_alert_v2_user_into_related_user
+      value: '{{{netskope.alert_v2.user}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.user != null
+  - append:
+      field: related.user
+      tag: append_alert_v2_act_user_into_related_user
+      value: '{{{netskope.alert_v2.act_user}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.act_user != null
+  - append:
+      field: related.user
+      tag: append_alert_v2_to_user_into_related_user
+      value: '{{{netskope.alert_v2.to_user}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.to_user != null
+  - convert:
+      field: netskope.alert_v2.user_confidence_index
+      tag: convert_user_confidence_index_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.user_confidence_index
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.id
+      tag: set_user_id_from_alert_v2_user_id
+      copy_from: netskope.alert_v2.user_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_alert_v2_user_id_into_related_user
+      value: '{{{netskope.alert_v2.user_id}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.user_id != null
+  - user_agent:
+      field: netskope.alert_v2.useragent
+      if: ctx.netskope?.alert_v2?.useragent != null && ctx.netskope.alert_v2.useragent != ''
+      tag: 'user_agent_processor'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.group.name
+      tag: set_user_group_name_from_alert_v2_usergroup
+      copy_from: netskope.alert_v2.usergroup
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_alert_v2_usergroup_into_related_user
+      value: '{{{netskope.alert_v2.usergroup}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.usergroup != null
+  - convert:
+      field: netskope.alert_v2.userip
+      tag: convert_userip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.userip != ''
+      on_failure:
+        - remove:
+            field: netskope.alert_v2.userip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_alert_v2_userip_into_related_ip
+      value: '{{{netskope.alert_v2.userip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.userip != null
+  - append:
+      field: related.user
+      tag: append_alert_v2_userkey_into_related_user
+      value: '{{{netskope.alert_v2.userkey}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.userkey != null
+  - set:
+      field: event.url
+      tag: set_event_url_from_alert_v2_web_url
+      copy_from: netskope.alert_v2.web_url
+      ignore_empty_value: true
+  - convert:
+      field: netskope.alert_v2.incident_id
+      tag: convert_incident_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.risk_level_id
+      tag: convert_risk_level_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.severity_id
+      tag: convert_severity_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.tunnel_id
+      tag: convert_tunnel_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.network_session_id
+      tag: convert_network_session_id_to_string
+      type: string
+      ignore_missing: true
+  - remove:
+      field:
+        - netskope.alert_v2._id
+        - netskope.alert_v2.action
+        - netskope.alert_v2.alert_name
+        - netskope.alert_v2.app
+        - netskope.alert_v2.client_bytes
+        - netskope.alert_v2.client_packets
+        - netskope.alert_v2.domain
+        - netskope.alert_v2.dst_country
+        - netskope.alert_v2.dst_location
+        - netskope.alert_v2.dst_region
+        - netskope.alert_v2.dst_timezone
+        - netskope.alert_v2.dst_zipcode
+        - netskope.alert_v2.dsthost
+        - netskope.alert_v2.dstip
+        - netskope.alert_v2.dstport
+        - netskope.alert_v2.email_title
+        - netskope.alert_v2.end_time
+        - netskope.alert_v2.file_path
+        - netskope.alert_v2.file_size
+        - netskope.alert_v2.file_type
+        - netskope.alert_v2.hostname
+        - netskope.alert_v2.local_md5
+        - netskope.alert_v2.local_sha1
+        - netskope.alert_v2.local_sha256
+        - netskope.alert_v2.md5
+        - netskope.alert_v2.mime_type
+        - netskope.alert_v2.org
+        - netskope.alert_v2.os
+        - netskope.alert_v2.os_family
+        - netskope.alert_v2.os_version
+        - netskope.alert_v2.referer
+        - netskope.alert_v2.server_bytes
+        - netskope.alert_v2.server_packets
+        - netskope.alert_v2.severity
+        - netskope.alert_v2.start_time
+        - netskope.alert_v2.src_country
+        - netskope.alert_v2.src_location
+        - netskope.alert_v2.src_region
+        - netskope.alert_v2.src_timezone
+        - netskope.alert_v2.src_zipcode
+        - netskope.alert_v2.srcip
+        - netskope.alert_v2.timestamp
+        - netskope.alert_v2.total_packets
+        - netskope.alert_v2.url
+        - netskope.alert_v2.user
+        - netskope.alert_v2.user_id
+        - netskope.alert_v2.useragent
+        - netskope.alert_v2.usergroup
+        - netskope.alert_v2.web_url
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert
+      value: alert
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

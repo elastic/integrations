@@ -7,8 +7,9 @@ auth.oauth2:
 {{#each token_scopes as |token_scope|}}
       - {{token_scope}}
 {{/each}}
-    endpoint_params:
-        grant_type: client_credentials
+{{#if oauth_endpoint_params}}
+    endpoint_params: {{oauth_endpoint_params}}
+{{/if}}
 {{#if token_url}}
     token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
 {{else if azure_tenant_id}}
@@ -66,6 +67,7 @@ state:
     tenant_id: "{{azure_tenant_id}}"
     list_contents_start_time: "{{initial_interval}}"
     batch_interval: "{{batch_interval}}"
+    maximum_age: "{{maximum_age}}"
     content_types: "{{content_types}}"
 
 redact:
@@ -73,211 +75,227 @@ redact:
     - base.tenant_id
 
 program: |-
-  state.base.content_types.split(",").map(content_type_raw,
-  	content_type_raw.trim_space()
-  ).map(content_type,
-  	request(
-  		"POST",
-  		state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/start?" +
-  		{
-  			"contentType": [content_type],
-  			"PublisherIdentifier": [state.base.tenant_id],
-  		}.format_query()
-  	).do_request().as(start_subs_resp,
-  		start_subs_resp.Body.decode_json().as(start_subs_resp_body,
-  			(
-  				has(start_subs_resp_body.status) && start_subs_resp_body.status == "enabled" ||
-  				has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) &&
-  				start_subs_resp_body.error.code == "AF20024"
-  			) ?
-  				// When start-subscription API returns success or if already started subscription,
-  				duration(state.base.batch_interval).as(batch_interval,
-  					min(duration("24h"), batch_interval).as(batch_interval,
-  						request(
-  							"GET",
-  							(
-  								state.want_more && has(state.?cursor.content_types_state_as_list) &&
-  								size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0 &&
-  								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page != ""
-  							) ?
-  								// if NextPageUri exists
-  								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page
-  							:
-  							(
-  								has(state.?cursor.content_types_state_as_list) &&
-  								size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0
-  							) ?
-  								// if NextPageUri does not exist, but content_type_state_created_at exists in state
-  								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type).as(content_type_state,
-  									content_type_state[0].content_created_at.as(content_type_state_created_at,
-  										// if saved time inside state is more than 7 days old, then change it to 7 days.
-  										max(
-  											// The 168h (7d) API age limit is expressed as 167h55m to prevent API call
-  											// delay from causing a call to fail.
-  											now - duration("167h55m"),
-  											content_type_state_created_at.parse_time(time_layout.RFC3339)
-  										).as(state_created_at_calc,
-  											state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?" +
-  											{
-  												"contentType": [content_type],
-  												"PublisherIdentifier": [state.base.tenant_id],
-  												"startTime": [string(min(now - duration("1s"), state_created_at_calc + duration("1s")))],
-  												"endTime": [string(min(now, state_created_at_calc + batch_interval))],
-  											}.format_query()
-  										)
-  									)
-  								)
-  							:
-  								// initial run when no cursor state exists i.e., polling from initial_interval
-  								state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?" +
-  								{
-  									"contentType": [content_type],
-  									"PublisherIdentifier": [state.base.tenant_id],
-  									"startTime": [string(min(now - duration("1s"), now - duration(state.base.list_contents_start_time)))],
-  									"endTime": [string(min(now, now - duration(state.base.list_contents_start_time) + batch_interval))],
-  								}.format_query()
-  						)
-  					)
-  				).do_request().as(list_contents_resp,
-  					list_contents_resp.Body.decode_json().as(list_contents_resp_body,
-  						(
-  							type(list_contents_resp_body) != map && size(list_contents_resp_body) > 0 &&
-  							has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" &&
-  							has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != ""
-  						) ?
-  							// contents exist to consume
-  							list_contents_resp_body.map(l1,
-  								(has(l1.contentExpiration) && l1.contentExpiration.parse_time(time_layout.RFC3339) >= now) ?
-  									request("GET", l1.contentUri).do_request().as(content_resp,
-  										(has(content_resp.StatusCode) && content_resp.StatusCode == 200 && size(content_resp.Body) > 0) ?
-  											content_resp.Body.decode_json().map(content_resp_body,
-  												content_resp_body.with({"copy": {"o365audit": content_resp_body}})
-  											).map(content_resp_body_with_copy,
-  												content_resp_body_with_copy.copy
-  											).flatten().drop_empty().as(contents,
-  												{
-  													"events_per_content_type": contents,
-  													"content_type": content_type,
-  													// if 'contentCreated' is older than 167h55m, change it to 167h55m.
-  													"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
-  														(temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ?
-  															temp_max
-  														:
-  															(now - duration("167h55m")).format(time_layout.RFC3339)
-  													),
-  													"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
-  														(list_contents_resp.Header.NextPageUri[0])
-  													: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
-  														(list_contents_resp.Header.Nextpageuri[0])
-  													:
-  														"",
-  													// keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
-  													"want_more_content": has(list_contents_resp.Header) &&
-  													(
-  														has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ||
-  														has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0
-  													) || {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split("T").as(t, t.size() > 1 &&
-  													t[0] != now.format("2006-01-02")),
-  												}
-  											)
-  										:
-  											{
-  												"events_per_content_type": [],
-  												"content_type": content_type,
-  												"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
-  													(temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ?
-  														temp_max
-  													:
-  														(now - duration("167h55m")).format(time_layout.RFC3339)
-  												),
-  												"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
-  													(list_contents_resp.Header.NextPageUri[0])
-  												: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
-  													(list_contents_resp.Header.Nextpageuri[0])
-  												:
-  													"",
-  											}
-  									)
-  								:
-  									{
-  										"events_per_content_type": [],
-  										"content_type": content_type,
-  										"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
-  											(temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ?
-  												temp_max
-  											:
-  												(now - duration("167h55m")).format(time_layout.RFC3339)
-  										),
-  										"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
-  											(list_contents_resp.Header.NextPageUri[0])
-  										: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
-  											(list_contents_resp.Header.Nextpageuri[0])
-  										:
-  											"",
-  									}
-  							)
-  						:
-  							// contents does not exist, or is empty array
-  							list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().as(reqQuery,
-  								[
-  									{
-  										"events_per_content_type": (size(list_contents_resp_body) == 0) ? [] : [list_contents_resp_body],
-  										"content_type": content_type,
-  										"content_created_at": (
-  											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
-  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0
-  										) ?
-  											(reqQuery.endTime[0])
-  										: (has(reqQuery.startTime) && reqQuery.startTime.size() > 0) ?
-  											(reqQuery.startTime[0])
-  										: has(
-  											state.cursor.content_types_state_as_list.filter(e,
-  												e.content_type == content_type
-  											)[0].content_created_at
-  										) ?
-  											state.cursor.content_types_state_as_list.filter(e,
-  												e.content_type == content_type
-  											)[0].content_created_at
-  										:
-  											string(now - duration(state.base.list_contents_start_time)),
-  										"next_page": "",
-  										"want_more_content": (
-  											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
-  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 &&
-  											reqQuery.endTime[0].split("T").as(t, t.size() > 0 &&
-  											t[0] != now.format("2006-01-02"))
-  										),
-  									},
-  								]
-  							)
-  					)
-  				)
-  			:
-  				// When start-subscription API produces error, such as Authentication error.
-  				[
-  					{
-  						"events_per_content_type": [],
-  						"content_type": content_type,
-  						"content_created_at": (has(state.cursor) && has(state.cursor.content_types_state_as_list)) ?
-  							state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
-  						:
-  							string(now - duration(state.base.list_contents_start_time)),
-  						"next_page": "",
-  						"want_more_content": false,
-  					},
-  				]
-  		)
-  	)
+  state.base.content_types.split(",").map(t, t.trim_space()).map(content_type,
+    request(
+      "POST",
+      sprintf(
+        "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
+        [
+          state.url.trim_right("/"),
+          state.base.tenant_id,
+          {
+            "contentType": [content_type],
+            "PublisherIdentifier": [state.base.tenant_id],
+          }.format_query(),
+        ]
+      )
+    ).do_request().as(sub_resp,
+      sub_resp.Body.decode_json().as(sub_body,
+        (sub_body.?status == optional.of("enabled") || sub_body.?error.code == optional.of("AF20024")) ?
+          // When start-subscription API returns success or if already started subscription,
+          min(duration("24h"), duration(state.base.batch_interval)).as(batch_interval,
+            request(
+              "GET",
+              (
+                state.want_more && state.?cursor.content_types_state_as_list.optMap(l,
+                  l.exists(e, e.content_type == content_type && e.next_page != "")
+                ).orValue(false)
+              ) ?
+                // if NextPageUri exists
+                state.cursor.content_types_state_as_list.filter(e,
+                  e.content_type == content_type && e.next_page != ""
+                )[0].next_page
+              : state.?cursor.content_types_state_as_list.optMap(l, l.exists(e, e.content_type == content_type)).orValue(false) ?
+                // if NextPageUri does not exist, but content_type_state_created_at exists in state
+                state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type).as(content_type_state,
+                  content_type_state[0].content_created_at.as(content_type_state_created_at,
+                    // if saved time inside state is more than 7 days old, then change it to 7 days.
+                    max(
+                      // Enforce the maximum age limit.
+                      now() - duration(state.base.maximum_age),
+                      content_type_state_created_at.parse_time(time_layout.RFC3339)
+                    ).as(created_at,
+                      sprintf(
+                        "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
+                        [
+                          state.url.trim_right("/"),
+                          state.base.tenant_id,
+                          {
+                            "contentType": [content_type],
+                            "PublisherIdentifier": [state.base.tenant_id],
+                            "startTime": [string(min(now() - duration("1s"), created_at + duration("1s")))],
+                            "endTime": [string(min(now(), created_at + batch_interval))],
+                          }.format_query(),
+                        ]
+                      )
+                    )
+                  )
+                )
+              :
+                // initial run when no cursor state exists i.e., polling from initial_interval
+                sprintf(
+                  "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
+                  [
+                    state.url.trim_right("/"),
+                    state.base.tenant_id,
+                    {
+                      "contentType": [content_type],
+                      "PublisherIdentifier": [state.base.tenant_id],
+                      "startTime": [string(min(now() - duration("1s"), now() - duration(state.base.list_contents_start_time)))],
+                      "endTime": [string(min(now(), now() - duration(state.base.list_contents_start_time) + batch_interval))],
+                    }.format_query(),
+                  ]
+                )
+            )
+          ).do_request().as(list_resp,
+            list_resp.Body.decode_json().as(list_body,
+              (
+                type(list_body) == list && list_body[?0].as(e,
+                  e.contentUri.orValue("") != "" && e.contentCreated.orValue("") != ""
+                )
+              ) ?
+                // contents exist to consume
+                list_body.map(l1,
+                  (has(l1.contentExpiration) && l1.contentExpiration.parse_time(time_layout.RFC3339) >= now()) ?
+                    request("GET", l1.contentUri).do_request().as(content_resp,
+                      (content_resp.StatusCode == 200 && size(content_resp.Body) > 0) ?
+                        content_resp.Body.decode_json().map(content_body, {"o365audit": content_body}).as(contents,
+                          {
+                            "events_per_content_type": contents,
+                            "content_type": content_type,
+                            // if 'contentCreated' is older than the maximum age, change it to the maximum age.
+                            "content_created_at": list_body.collate("contentCreated").max().as(last,
+                              (last.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
+                                last
+                              :
+                                (now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
+                            ),
+                            "next_page": list_resp.?Header.NextPageUri[0].orValue(list_resp.?Header.Nextpageuri[0].orValue("")),
+                            // keep fetching more if (nextpageuri exists) or
+                            // (the end of the request range is one batch interval or longer before the current time)
+                            "want_more_content": (list_resp.?Header.NextPageUri.optMap(u, u.size() > 0)).orValue(false) ||
+                            (list_resp.?Header.Nextpageuri.optMap(u, u.size() > 0)).orValue(false) ||
+                            (
+                              list_resp.Request.URL.parse_url().RawQuery.parse_query().?endTime[0].optMap(et,
+                                now() - et.parse_time(time_layout.RFC3339) >= duration(state.base.batch_interval)
+                              )
+                            ).orValue(false),
+                          }
+                        )
+                      :
+                        {
+                          "events_per_content_type": [],
+                          "content_type": content_type,
+                          "content_created_at": list_body.collate("contentCreated").max().as(last,
+                            (last.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
+                              last
+                            :
+                              (now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
+                          ),
+                          "next_page": list_resp.?Header.NextPageUri[0].orValue(list_resp.?Header.Nextpageuri[0].orValue("")),
+                        }
+                    )
+                  :
+                    {
+                      "events_per_content_type": [],
+                      "content_type": content_type,
+                      "content_created_at": list_body.collate("contentCreated").max().as(last,
+                        (last.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
+                          last
+                        :
+                          (now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
+                      ),
+                      "next_page": list_resp.?Header.NextPageUri[0].orValue(list_resp.?Header.Nextpageuri[0].orValue("")),
+                    }
+                )
+              :
+                // contents does not exist, or is empty array
+                list_resp.Request.URL.parse_url().RawQuery.parse_query().as(r_query,
+                  [
+                    {
+                      "events_per_content_type": (size(list_body) == 0) ? [] : [list_body],
+                      "content_type": content_type,
+                      "content_created_at": (list_resp.StatusCode == 200 && (r_query.?endTime.optMap(t, t.size() > 0)).orValue(false)) ?
+                        (r_query.endTime[0])
+                      :
+                        r_query.?startTime[0].orValue(
+                          state.cursor.content_types_state_as_list.filter(e,
+                            e.content_type == content_type
+                          )[?0].content_created_at.orValue(
+                            string(now() - duration(state.base.list_contents_start_time))
+                          )
+                        ),
+                      "next_page": "",
+                      "want_more_content": list_resp.StatusCode == 200 && (
+                        r_query.?endTime[0].optMap(t,
+                          now() - t.parse_time(time_layout.RFC3339) >= duration(state.base.batch_interval)
+                        )
+                      ).orValue(false),
+                    },
+                  ]
+                )
+            )
+          )
+        :
+          // When start-subscription API produces error, such as Authentication error.
+          [
+            {
+              "events_per_content_type": [
+                {
+                  "error": {
+                    "code": string(sub_resp.StatusCode),
+                    "id": string(sub_resp.Status),
+                    "message": content_type + ": " + (
+                      sub_body.?error.code.optFlatMap(code,
+                        sub_body.?error.message.optMap(message,
+                          code + " " + message
+                        )
+                      )
+                    ).orValue(sub_body),
+                  },
+                },
+              ],
+              "content_type": content_type,
+              "content_created_at": (has(state.cursor) && has(state.cursor.content_types_state_as_list)) ?
+                state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
+              :
+                string(now() - duration(state.base.list_contents_start_time)),
+              "next_page": "",
+              "want_more_content": false,
+            },
+          ]
+      )
+    )
   ).flatten().drop_empty().as(events_list,
-  	{
-  		"url": state.url,
-  		"base": state.base,
-  		"events": events_list.collate("events_per_content_type"),
-  		"want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
-  		"cursor": {
-  			"content_types_state_as_list": events_list.drop(["events_per_content_type"]),
-  		},
-  	}
+    events_list.collate("events_per_content_type").as(events,
+      events.filter(e, has(e.?error.message)).as(errors,
+        (errors.size() > 0) ?
+          // If there are errors, return a single merged error event and discard any other results
+          {
+            "url": state.url,
+            "base": state.base,
+            "events": {
+              "error": {
+                "code": errors.collate("error.code").as(codes, codes.zip(codes)).keys().as(codes, (codes.size() == 1) ? (codes[0]) : dyn(codes)),
+                "id": errors.collate("error.id").as(ids, ids.zip(ids)).keys().as(ids, (ids.size() == 1) ? (ids[0]) : dyn(ids)),
+                "message": errors.collate("error.message").join("; "),
+              },
+            },
+            "want_more": false,
+            ?"cursor": state.?cursor,
+          }
+        :
+          {
+            "url": state.url,
+            "base": state.base,
+            "events": events,
+            "want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
+            "cursor": {
+              "content_types_state_as_list": events_list.drop(["events_per_content_type"]),
+            },
+          }
+      )
+    )
   )
 {{#if tags}}
 tags:
