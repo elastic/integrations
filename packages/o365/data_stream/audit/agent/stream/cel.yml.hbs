@@ -301,108 +301,107 @@ program: |-
         :
           state.with(
             min(duration("24h"), duration(state.base.batch_interval)).as(batch_interval,
-              request(
-                "GET",
-                sprintf(
-                  "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
-                  [
-                    state.url.trim_right("/"),
-                    state.base.tenant_id,
-                    (
-                      // Calculate start and end time stamps.
-                      (has(state.?cursor.last_for) && state.work.curr_type.to_lower() in state.cursor.last_for) ?
-                        // Clamp to 7 days, the maximum age limit.
-                        max(
-                          now() - duration(state.base.maximum_age),
-                          state.cursor.last_for[state.work.curr_type.to_lower()].parse_time(time_layout.RFC3339)
-                        ).as(created_at,
-                          {
-                            "start": created_at + duration("1s"),
-                            "end": created_at + batch_interval,
-                          }
-                        )
-                      :
-                        {
-                          "start": now() - duration(state.base.list_contents_start_time),
-                          "end": now() - duration(state.base.list_contents_start_time) + batch_interval,
-                        }
-                    ).as(time_range,
+              (
+                // Calculate start and end time stamps.
+                (has(state.?cursor.last_for) && state.work.curr_type.to_lower() in state.cursor.last_for) ?
+                  // Clamp to 7 days, the maximum age limit.
+                  max(
+                    now() - duration(state.base.maximum_age),
+                    state.cursor.last_for[state.work.curr_type.to_lower()].parse_time(time_layout.RFC3339)
+                  ).as(created_at,
+                    {
+                      "start": created_at + duration("1s"),
+                      "end": created_at + batch_interval,
+                    }
+                  )
+                :
+                  {
+                    "start": now() - duration(state.base.list_contents_start_time),
+                    "end": now() - duration(state.base.list_contents_start_time) + batch_interval,
+                  }
+              ).as(time_range,
+                request(
+                  "GET",
+                  sprintf(
+                    "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
+                    [
+                      state.url.trim_right("/"),
+                      state.base.tenant_id,
                       {
                         "contentType": [state.work.curr_type],
                         "PublisherIdentifier": [state.base.tenant_id],
                         "startTime": [string(min(now() - duration("1s"), time_range.start))],
                         "endTime": [string(min(now(), time_range.end))],
-                      }.format_query()
-                    ),
-                  ]
-                )
-              ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
-                list_resp.Body.decode_json().filter(e,
-                  e.?contentExpiration.optMap(t, t.parse_time(time_layout.RFC3339) >= now()).orValue(true)
-                ).as(list,
-                  {
-                    "cursor": state.?cursor.orValue({}).with(
-                      {
-                        "last_for": state.?cursor.last_for.orValue({}).with(
-                          // Use now to ensure we bracket the collection.
-                          {state.work.curr_type.to_lower(): now}
-                        ),
-                      }
-                    ),
-                    "work": state.work.drop(["link", "next_list"]).with(
-                      {
-                        ?"link": list[?0], // debugging value only
-                        ?"next_list": [
-                          // Work around non-conformance with HTTP header MIME standards.
-                          ?list_resp.Header.?Nextpageuri[0],
-                          ?list_resp.Header.?NextPageUri[0],
-                        ][?0],
-                        "todo_content": tail(list),
-                      }
-                    ),
-                    "events": list[?0].optMap(l,
-                      request(
-                        "GET",
-                        l.contentUri
-                      ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
-                        dyn(
-                          content_resp.Body.decode_json().map(e,
-                            {
-                              "o365audit": e,
-                              "event": {"original": e.encode_json()},
-                            }
-                          )
-                        ).orValue(dyn([]))
-                      :
+                      }.format_query(),
+                    ]
+                  )
+                ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
+                  list_resp.Body.decode_json().filter(e,
+                    e.?contentExpiration.optMap(t, t.parse_time(time_layout.RFC3339) >= now()).orValue(true)
+                  ).as(list,
+                    {
+                      "cursor": state.?cursor.orValue({}).with(
                         {
-                          "error": {
-                            "code": string(content_resp.StatusCode),
-                            "id": string(content_resp.Status),
-                            "message": "GET " + l.contentUri + ": " + (
-                              (size(content_resp.Body) != 0) ?
-                                string(content_resp.Body)
-                              :
-                                string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
-                            ),
-                          },
+                          "last_for": state.?cursor.last_for.orValue({}).with(
+                            {state.work.curr_type.to_lower(): time_range.end}
+                          ),
                         }
-                      )
-                    ),
+                      ),
+                      "work": state.work.drop(["link", "next_list"]).with(
+                        {
+                          ?"link": list[?0], // debugging value only
+                          ?"next_list": [
+                            // Work around non-conformance with HTTP header MIME standards.
+                            ?list_resp.Header.?Nextpageuri[0],
+                            ?list_resp.Header.?NextPageUri[0],
+                          ][?0],
+                          "todo_content": tail(list),
+                        }
+                      ),
+                      "events": list[?0].optMap(l,
+                        request(
+                          "GET",
+                          l.contentUri
+                        ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+                          dyn(
+                            content_resp.Body.decode_json().map(e,
+                              {
+                                "o365audit": e,
+                                "event": {"original": e.encode_json()},
+                              }
+                            )
+                          ).orValue(dyn([]))
+                        :
+                          {
+                            "error": {
+                              "code": string(content_resp.StatusCode),
+                              "id": string(content_resp.Status),
+                              "message": "GET " + l.contentUri + ": " + (
+                                (size(content_resp.Body) != 0) ?
+                                  string(content_resp.Body)
+                                :
+                                  string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                              ),
+                            },
+                          }
+                        )
+                      ),
+                    }
+                  )
+                :
+                  {
+                    "error": {
+                      "code": string(list_resp.StatusCode),
+                      "id": string(list_resp.Status),
+                      "message": "GET /activity/feed/subscriptions/content?contentType=" + state.work.curr_type + ": " + (
+                        (size(list_resp.Body) != 0) ?
+                          string(list_resp.Body)
+                        :
+                          string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
+                      ),
+                    },
                   }
                 )
-              :
-                {
-                  "error": {
-                    "code": string(list_resp.StatusCode),
-                    "id": string(list_resp.Status),
-                    "message": "GET /activity/feed/subscriptions/content?contentType=" + state.work.curr_type + ": " + (
-                      (size(list_resp.Body) != 0) ?
-                        string(list_resp.Body)
-                      :
-                        string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
-                    ),
-                  },
-                }
               )
             )
           )
