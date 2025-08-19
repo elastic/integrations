@@ -373,6 +373,10 @@ The name of the Storage Account that stores the checkpoint information.
 _string_
 The Storage Account key. Key to authorize access to data in your Storage Account.
 
+`endpoint_suffix` :
+_string_
+Override the default endpoint suffix used in the connection string. Default is set to `core.windows.net`. For example, US Government Cloud users should set this to `core.usgovcloudapi.net`.
+
 `storage_account_container` :
 _string_
 The Storage Account container is where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated Storage Account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. Check [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
