@@ -18,8 +18,7 @@ processors:
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       tag: remove_agentless_tags
       description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -37,10 +36,6 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: extrahop.investigation
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.type
       tag: set_event_type
@@ -123,24 +118,22 @@ processors:
   - set:
       field: temp.ingest_time
       tag: set_temp_timestamp
-      value: '{{_ingest.timestamp}}'
+      value: '{{{_ingest.timestamp}}}'
       ignore_empty_value: true
   - script:
-      description: Set event.id using extrahop.investigation.id and _ingest.timestamp
+      description: Set event.id using extrahop.investigation.id and _ingest.timestamp.
       lang: painless
       tag: set_event_id_from_ID_and_ingest_timestamp
       if: ctx.extrahop?.investigation.id != null && ctx.temp?.ingest_time != null
       source: |
         def isoString = ctx.temp.ingest_time;
-        def instant = java.time.Instant.parse(isoString);
-
-        // Get epoch seconds (truncate millis)
-        def epochSeconds = instant.getEpochSecond();
-        def epochMillisSimulated = epochSeconds + "000";
+        def formatter = java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+        def instant = java.time.Instant.from(formatter.parse(isoString));
+        def epochMillis = instant.toEpochMilli();
 
         def jsonId = ctx.extrahop.investigation.id;
         ctx.event = ctx.event ?: [:];
-        ctx.event.id = jsonId + '-' + epochMillisSimulated;
+        ctx.event.id = jsonId + '-' + epochMillis;
       on_failure:
         - append:
             field: error.message
@@ -209,8 +202,8 @@ processors:
       tag: calculate_event_duration
       if: ctx.event?.start != null && ctx.event?.end != null
       source: >-
-        Instant eventstart = ZonedDateTime.parse(ctx.event?.start).toInstant();
-        Instant eventend = ZonedDateTime.parse(ctx.event?.end).toInstant();
+        Instant eventstart = Instant.parse(ctx.event?.start);
+        Instant eventend = Instant.parse(ctx.event?.end);
         ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
   - date:
       field: extrahop.investigation.update_time

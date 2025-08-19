@@ -4,7 +4,7 @@
 
 [ExtraHop](https://www.extrahop.com/) delivers complete network visibility through its agentless RevealX NDR platform, empowering security teams to close detection gaps left by EDR, SIEM, and logs. ExtraHop provides the deep intelligence needed to detect threats faster, investigate with greater context, and respond at the speed of modern risk.
 
-This integration enables to collect, Investigation data via [ExtraHop RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/), then visualise the data in Kibana.
+This integration enables you to collect investigation data via [ExtraHop RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/), then visualise the data in Kibana.
 
 ## Data streams
 
@@ -74,24 +74,24 @@ An example event for `investigation` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-07-16T08:33:00.513Z",
+    "@timestamp": "2025-08-19T06:29:55.274Z",
     "agent": {
-        "ephemeral_id": "6fac02ce-6312-4d07-a956-a0887211b59b",
-        "id": "c9469bb1-0eba-4b7c-bd4d-d3d89903e640",
-        "name": "elastic-agent-40886",
+        "ephemeral_id": "4b0de889-c5ed-40ed-acc1-324704aabc98",
+        "id": "4e3a91b3-f2a6-4168-958d-20dc25789f3b",
+        "name": "elastic-agent-38848",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "extrahop.investigation",
-        "namespace": "39742",
+        "namespace": "87926",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "c9469bb1-0eba-4b7c-bd4d-d3d89903e640",
+        "id": "4e3a91b3-f2a6-4168-958d-20dc25789f3b",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -101,8 +101,8 @@ An example event for `investigation` looks as following:
         "dataset": "extrahop.investigation",
         "duration": 788188113000000,
         "end": "2025-05-30T14:04:41.434Z",
-        "id": "3-1752654783000",
-        "ingested": "2025-07-16T08:33:03Z",
+        "id": "3-1755584998257",
+        "ingested": "2025-08-19T06:29:58Z",
         "kind": "event",
         "original": "{\"assessment\":\"benign_true_positive\",\"assignee\":\"user1\",\"created_by\":\"integration@example.com\",\"creation_time\":1747825693321,\"description\":\"This investigation focuses on potential enumeration behavior observed through BloodHound. Review AD logs and user group mappings to verify intent and exposure.\",\"detections\":[25769803958],\"end_time\":1748613881434,\"id\":3,\"investigation_types\":[\"Active Directory\",\"Threat Hunting\"],\"is_user_created\":true,\"last_interaction_by\":\"user1\",\"last_interaction_time\":1748613881434,\"name\":\"BloodHound Enumeration Investigation\",\"notes\":\"Investigate Internally with AD logs\",\"start_time\":1747825693321,\"status\":\"closed\",\"update_time\":1747825693321,\"url\":\"https://example.com/#/detections/investigations/3\"}",
         "start": "2025-05-21T11:08:13.321Z",
@@ -190,8 +190,9 @@ An example event for `investigation` looks as following:
 | extrahop.investigation.update_time |  | date |
 | extrahop.investigation.url |  | keyword |
 | input.type | Type of filebeat input. | keyword |
-| labels.is_transform_source | Indicates whether a investigation is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| labels.is_transform_source | Indicates whether an investigation is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.product |  | constant_keyword |
 | observer.type |  | constant_keyword |
 | observer.vendor |  | constant_keyword |
+
