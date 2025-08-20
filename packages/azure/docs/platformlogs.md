@@ -166,6 +166,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.provider | Resource type/namespace | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
+| azure_log_forwarder.category | Azure log category | keyword |
+| azure_log_forwarder.resource_type | Azure resource type | keyword |
+| azure_log_forwarder.service_provider | Azure service provider | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

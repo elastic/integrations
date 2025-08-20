@@ -190,6 +190,8 @@ Package installation can be customized to be installed in other Kibana instances
 * `ELASTIC_PACKAGE_KIBANA_HOST`
 * `ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME`
 * `ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD`
+* `ELASTIC_PACKAGE_ELASTICSEARCH_HOST`
+* `ELASTIC_PACKAGE_ELASTICSEARCH_API_KEY`
 * `ELASTIC_PACKAGE_CA_CERT`
 
 For example:
@@ -203,6 +205,8 @@ export ELASTIC_PACKAGE_CA_CERT=""
 
 elastic-package install --zip elastic_package_registry-0.0.6.zip -v
 ```
+
+When you use the `ELASTIC_PACKAGE_ELASTICSEARCH_API_KEY` the variable `ELASTIC_PACKAGE_ELASTICSEARCH_HOST` must also be populated.
 
 
 #### Older versions [_older_versions]

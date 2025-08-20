@@ -1888,13 +1888,24 @@ processors:
         if (ctx.event == null) {
             ctx['event'] = new HashMap();
         }
-        String end = ctx['@timestamp'];
-        ctx.event['end'] = end;
-        long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
-        ctx.event['duration'] = nanos;
-        ctx.event['start'] = ZonedDateTime.ofInstant(
-            Instant.parse(end).minusNanos(nanos),
-            ZoneOffset.UTC);
+        if (ctx?._temp_.cisco?.message_id == '430003') {
+          String start = ctx['@timestamp'];
+          ctx.event['start'] = start;
+          long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
+          ctx.event['duration'] = nanos;
+          ctx.event['end'] = ZonedDateTime.ofInstant(
+              Instant.parse(start).plusNanos(nanos),
+              ZoneOffset.UTC);
+        } else {
+          String end = ctx['@timestamp'];
+          ctx.event['end'] = end;
+          long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
+          ctx.event['duration'] = nanos;
+          ctx.event['start'] = ZonedDateTime.ofInstant(
+              Instant.parse(end).minusNanos(nanos),
+              ZoneOffset.UTC);
+        }
+
   #
   # Parse Source/Dest Username/Domain
   #
