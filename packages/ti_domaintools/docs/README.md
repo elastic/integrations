@@ -382,113 +382,112 @@ An example event for `domainrdap_feed` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "cel"
-    },
+    "@timestamp": "2025-08-20T20:23:51.173Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "ephemeral_id": "d1cbe648-0a1d-48e8-a161-cd82403e623e",
+        "ephemeral_id": "e6092a20-482a-425e-b204-e5714bc968e1",
+        "id": "52fa3002-e052-4d6b-8b49-1e0b0538a0cb",
+        "name": "elastic-agent-78027",
         "type": "filebeat",
-        "version": "8.15.3"
-    },
-    "@timestamp": "2025-01-30T20:15:25.396Z",
-    "ecs": {
-        "version": "8.11.0"
+        "version": "8.18.2"
     },
     "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "ti_domaintools.domainrdap_feed"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "6.10.11-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.19.0.10"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "cfae1e7244ae479b9b0968259c91b13a",
-        "mac": [
-            "02-42-AC-13-00-0A"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "da8d0a37-2d46-4788-96bd-e9ee19e332ec",
-        "version": "8.15.3",
-        "snapshot": false
+        "dataset": "ti_domaintools.domainrdap_feed",
+        "namespace": "22752",
+        "type": "logs"
     },
     "domaintools": {
-        "domain": "unlockyourlifehere.com",
-        "timestamp": "2025-06-12T20:34:31Z",
-        "feed": "domainrdap",
-        "first_request_timestamp": "2025-06-12T20:34:24Z",
-        "requests_url": [
-            "https://rdap.verisign.com/com/v1/domain/unlockyourlifehere.com"
-        ],
+        "domain": "1xbet-ieon.lol",
+        "first_request_timestamp": "2025-08-20T16:43:57Z",
         "parsed_record": {
             "parsed_fields": {
-                "emails": [
-                    "abuse@godaddy.com"
+                "contacts": [],
+                "creation_date": "2025-08-19T14:50:37+00:00",
+                "email_domains": [
+                    "namecheap.com"
                 ],
-                "last_changed_date": "2025-05-20T02: 44: 33+00: 00",
+                "emails": [
+                    "abuse@namecheap.com"
+                ],
+                "expiration_date": "2026-08-19T23:59:59+00:00",
+                "handle": "D583238142-CNIC",
+                "last_changed_date": "2025-08-19T14:50:42+00:00",
+                "nameservers": [
+                    "dns1.registrar-servers.com",
+                    "dns2.registrar-servers.com"
+                ],
                 "registrar": {
-                    "name": "GoDaddy.com, LLC",
                     "contacts": [
                         {
-                            "name": "",
-                            "phone": "tel:480-624-2505",
-                            "email": "abuse@godaddy.com",
+                            "email": "abuse@namecheap.com",
+                            "handle": "not applicable",
+                            "name": "Abuse Contact",
+                            "org": "Namecheap",
+                            "phone": "tel:+1.9854014545",
                             "roles": [
                                 "abuse"
                             ]
                         }
                     ],
-                    "iana_id": "146"
-                },
-                "handle": "2894681047_DOMAIN_COM-VRSN",
-                "creation_date": "2024-06-28T11: 49: 19+00: 00",
-                "expiration_date": "2025-06-28T11: 49: 19+00: 00",
-                "email_domains": [
-                    "godaddy.com"
-                ],
-                "contacts": []
+                    "iana_id": "1068",
+                    "name": "Namecheap"
+                }
             }
-        }
-    },
-    "threat": {
-        "indicator": {
-            "name": "unlockyourlifehere.com",
-            "type": "domain-name"
         },
-        "feed": {
-            "reference": "https://docs.techdocs.ci.domaintools.cloud/feeds/realtime/userguide/",
-            "name": "DomainTools domain RDAP",
-            "description": "Changes to global domain registration information, populated by the Registration Data Access Protocol (RDAP). Compliments the 5-Minute WHOIS Feed as registries and registrars switch from Whois to RDAP."
-        }
+        "requests_url": [
+            "https://rdap.centralnic.com/lol/domain/1xbet-ieon.lol"
+        ],
+        "timestamp": "2025-08-20T16:44:02Z"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "52fa3002-e052-4d6b-8b49-1e0b0538a0cb",
+        "snapshot": false,
+        "version": "8.18.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-06-12T20:34:31Z",
-        "kind": "enrichment",
         "category": [
             "threat"
         ],
-        "original": "{\"timestamp\":\"2025-06-12T20:34:31Z\",\"domain\":\"unlockyourlifehere.com\",\"raw_record\":{\"first_request_timestamp\":\"2025-06-12T20:34:24Z\",\"requests\":[{\"data\":\"{\\\"objectClassName\\\":\\\"domain\\\",\\\"handle\\\":\\\"2894681047_DOMAIN_COM-VRSN\\\",\\\"ldhName\\\":\\\"UNLOCKYOURLIFEHERE.COM\\\",\\\"links\\\":[{\\\"value\\\":\\\"https:\\\\/\\\\/rdap.verisign.com\\\\/com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"rel\\\":\\\"self\\\",\\\"href\\\":\\\"https:\\\\/\\\\/rdap.verisign.com\\\\/com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"type\\\":\\\"application\\\\/rdap+json\\\"},{\\\"value\\\":\\\"https:\\\\/\\\\/rdap.godaddy.com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"rel\\\":\\\"related\\\",\\\"href\\\":\\\"https:\\\\/\\\\/rdap.godaddy.com\\\\/v1\\\\/domain\\\\/UNLOCKYOURLIFEHERE.COM\\\",\\\"type\\\":\\\"application\\\\/rdap+json\\\"}],\\\"status\\\":[\\\"redemption period\\\"],\\\"entities\\\":[{\\\"objectClassName\\\":\\\"entity\\\",\\\"handle\\\":\\\"146\\\",\\\"roles\\\":[\\\"registrar\\\"],\\\"publicIds\\\":[{\\\"type\\\":\\\"IANA Registrar ID\\\",\\\"identifier\\\":\\\"146\\\"}],\\\"vcardArray\\\":[\\\"vcard\\\",[[\\\"version\\\",{},\\\"text\\\",\\\"4.0\\\"],[\\\"fn\\\",{},\\\"text\\\",\\\"GoDaddy.com, LLC\\\"]]],\\\"entities\\\":[{\\\"objectClassName\\\":\\\"entity\\\",\\\"roles\\\":[\\\"abuse\\\"],\\\"vcardArray\\\":[\\\"vcard\\\",[[\\\"version\\\",{},\\\"text\\\",\\\"4.0\\\"],[\\\"fn\\\",{},\\\"text\\\",\\\"\\\"],[\\\"tel\\\",{\\\"type\\\":\\\"voice\\\"},\\\"uri\\\",\\\"tel:480-624-2505\\\"],[\\\"email\\\",{},\\\"text\\\",\\\"abuse@godaddy.com\\\"]]]}]}],\\\"events\\\":[{\\\"eventAction\\\":\\\"registration\\\",\\\"eventDate\\\":\\\"2024-06-28T11:49:19Z\\\"},{\\\"eventAction\\\":\\\"expiration\\\",\\\"eventDate\\\":\\\"2025-06-28T11:49:19Z\\\"},{\\\"eventAction\\\":\\\"last changed\\\",\\\"eventDate\\\":\\\"2025-05-20T02:44:33Z\\\"},{\\\"eventAction\\\":\\\"last update of RDAP database\\\",\\\"eventDate\\\":\\\"2025-06-12T20:34:16Z\\\"}],\\\"secureDNS\\\":{\\\"delegationSigned\\\":false},\\\"rdapConformance\\\":[\\\"rdap_level_0\\\",\\\"icann_rdap_technical_implementation_guide_0\\\",\\\"icann_rdap_response_profile_0\\\"],\\\"notices\\\":[{\\\"title\\\":\\\"Terms of Use\\\",\\\"description\\\":[\\\"Service subject to Terms of Use.\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/www.verisign.com\\\\/domain-names\\\\/registration-data-access-protocol\\\\/terms-service\\\\/index.xhtml\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]},{\\\"title\\\":\\\"Status Codes\\\",\\\"description\\\":[\\\"For more information on domain status codes, please visit https:\\\\/\\\\/icann.org\\\\/epp\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/icann.org\\\\/epp\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]},{\\\"title\\\":\\\"RDDS Inaccuracy Complaint Form\\\",\\\"description\\\":[\\\"URL of the ICANN RDDS Inaccuracy Complaint Form: https:\\\\/\\\\/icann.org\\\\/wicf\\\"],\\\"links\\\":[{\\\"href\\\":\\\"https:\\\\/\\\\/icann.org\\\\/wicf\\\",\\\"type\\\":\\\"text\\\\/html\\\"}]}]}\",\"source_type\":\"registry\",\"timestamp\":\"2025-06-12T20:34:24Z\",\"url\":\"https://rdap.verisign.com/com/v1/domain/unlockyourlifehere.com\"}]},\"parsed_record\":{\"parsed_fields\":{\"conformance\":[\"rdap_level_0\",\"icann_rdap_technical_implementation_guide_0\",\"icann_rdap_response_profile_0\"],\"contacts\":[],\"creation_date\":\"2024-06-28T11: 49: 19+00: 00\",\"dnssec\":{\"signed\":false},\"domain\":\"UNLOCKYOURLIFEHERE.COM\",\"domain_statuses\":[\"redemption period\"],\"email_domains\":[\"godaddy.com\"],\"emails\":[\"abuse@godaddy.com\"],\"expiration_date\":\"2025-06-28T11: 49: 19+00: 00\",\"handle\":\"2894681047_DOMAIN_COM-VRSN\",\"last_changed_date\":\"2025-05-20T02: 44: 33+00: 00\",\"links\":[{\"href\":\"https://rdap.verisign.com/com/v1/domain/UNLOCKYOURLIFEHERE.COM\",\"rel\":\"self\"},{\"href\":\"https://rdap.godaddy.com/v1/domain/UNLOCKYOURLIFEHERE.COM\",\"rel\":\"related\"}],\"registrar\":{\"contacts\":[{\"email\":\"abuse@godaddy.com\",\"name\":\"\",\"phone\":\"tel:480-624-2505\",\"roles\":[\"abuse\"]}],\"iana_id\":\"146\",\"name\":\"GoDaddy.com, LLC\"},\"unclassified_emails\":[]},\"registrar_request_url\":null,\"registry_request_url\":\"https://rdap.verisign.com/com/v1/domain/unlockyourlifehere.com\"}}",
+        "dataset": "ti_domaintools.domainrdap_feed",
+        "ingested": "2025-08-20T20:23:54Z",
+        "kind": "enrichment",
         "type": [
             "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-78027",
+        "ip": [
+            "172.24.0.2",
+            "172.18.0.7"
         ],
-        "dataset": "ti_domaintools.domainrdap_feed"
+        "mac": [
+            "5A-25-7F-E6-3F-33",
+            "76-A2-33-AB-77-D8"
+        ],
+        "name": "elastic-agent-78027",
+        "os": {
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "threat": {
+        "indicator": {
+            "name": "1xbet-ieon.lol",
+            "type": "domain-name"
+        }
     }
 }
 ```
@@ -515,7 +514,9 @@ An example event for `domainrdap_feed` looks as following:
 | domaintools.parsed_record.parsed_fields.last_changed_date | The domain last changed date. | keyword |
 | domaintools.parsed_record.parsed_fields.nameservers | The domain nameservers. | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.contacts.email |  | keyword |
+| domaintools.parsed_record.parsed_fields.registrar.contacts.handle |  | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.contacts.name |  | keyword |
+| domaintools.parsed_record.parsed_fields.registrar.contacts.org |  | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.contacts.phone |  | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.contacts.roles |  | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.iana_id |  | keyword |
