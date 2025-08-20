@@ -15,108 +15,115 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: "{{url}}/api/v2/billing/organizations/{{organization_id}}/costs/instances"
 state:
-  api_key: {{api_key}}
-  organization_id: "{{organization_id}}"
-  lookbehind: {{lookbehind}}
+  api_key: !!str {{api_key}}
+  organization_id: !!str {{organization_id}}
+  lookbehind: !!int {{lookbehind}}
 redact:
   fields:
     - api_key
-program: |
-  state.with({
-    "from": (has(state.?cursor.last_to) ?
-        timestamp(state.cursor.last_to)
-      :
-        (now() - duration(string(int(state.lookbehind)*24) + "h"))
-    ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
-    "to": (has(state.?cursor.last_to) ?
-        (timestamp(state.cursor.last_to) + duration("24h"))
-      :
-        (now() - duration(string(int(state.lookbehind)*24) + "h") + duration("24h"))
-    ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
-  }.as(req, (req.to > now()) ?
-    // We would fetch data in the future, back off
-    {
-      "events": [],
-      "cursor": {
-        // We don't change the last_to, we're just waiting
-        "last_to": req.to
-      },
-      "want_more": false,
-    }
-  :
-    get_request(state.url + "?" +
+program: |-
+  state.with(
+    // Determine the 'from' value using the cursor or fallback to
+    // calculating it based on the lookback days.
+    state.?cursor.last_to.optMap(ts, timestamp(ts)).orValue(
+      now - duration(string(int(state.lookbehind) * 24) + "h")
+    ).format(
+      // Truncate the 'from' time to the UTC day.
+      time_layout.DateOnly
+    ).parse_time(time_layout.DateOnly).as(from,
+      // Limit the 'from' value to 2021-01-01 (this is API enforced).
+      max(from, timestamp("2021-01-01T00:00:00Z"))
+    ).as(from,
       {
-        "from": [req.from.format(time_layout.RFC3339)],
-        "to": [req.to.format(time_layout.RFC3339)],
-      }.format_query()
-    ).with({
-      "Header": {
-        "Authorization": ["ApiKey " + state.api_key]
+        "from": from,
+        "to": from + duration("24h"),
       }
-    }).do_request().as(resp, resp.StatusCode == 200 ?
-    (
-      // Response is successful, but did we get any data?
-      bytes(resp.Body).decode_json().as(body, has(body.instances) && size(body.instances) > 0 ?
+    ).as(req, (req.to > now) ?
+      // We would fetch data in the future, back off
+      {
+        "events": [],
+        "cursor": {
+          // We don't change the last_to, we're just waiting
+          "last_to": req.to,
+        },
+        "want_more": false,
+      }
+    :
+      get_request(
+        state.url + "?" + {
+          "from": [req.from.format(time_layout.RFC3339)],
+          "to": [req.to.format(time_layout.RFC3339)],
+        }.format_query()
+      ).with(
         {
-          "events": body.instances.map(instance, instance.product_line_items.map(line_item,
-            {
-              "ess": {
-                "billing": line_item
-                .with({
-                  "deployment_name": instance.name,  // Include deployment name
-                  "deployment_id": instance.id,      // Include deployment ID
-                  "deployment_type": instance.type,  // Include deployment type
-                  "organization_id": state.organization_id,  // Include organization ID
-                  "from": req.from.format(time_layout.RFC3339),
-                  "to": req.to.format(time_layout.RFC3339),
-                  "quantities": null   // overwrite useless quantities to avoid flatten failure
-                })
-              }
-            }
-          )).flatten(), // Pass line_items as events, with added info
-          "cursor": {
-            "last_to": req.to
+          "Header": {
+            "Authorization": ["ApiKey " + state.api_key],
           },
-          // Are we more than 1 day behind?
-          "want_more": req.to < now() - duration("24h"),
         }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        // Response is successful, but did we get any data?
+        bytes(resp.Body).decode_json().as(body, (has(body.instances) && size(body.instances) > 0) ?
+          {
+            "events": body.instances.map(instance,
+              instance.product_line_items.map(line_item,
+                {
+                  "ess": {
+                    "billing": line_item.with(
+                      {
+                        "deployment_name": instance.name,  // Include deployment name
+                        "deployment_id": instance.id,      // Include deployment ID
+                        "deployment_type": instance.type,  // Include deployment type
+                        "organization_id": state.organization_id,  // Include organization ID
+                        "from": req.from.format(time_layout.RFC3339),
+                        "to": req.to.format(time_layout.RFC3339),
+                        "quantities": null   // overwrite useless quantities to avoid flatten failure
+                      }
+                    ),
+                  },
+                }
+              )
+            ).flatten(), // Pass line_items as events, with added info
+            "cursor": {
+              "last_to": req.to,
+            },
+            // Are we more than 1 day behind?
+            "want_more": req.to < now - duration("24h"),
+          }
+        :
+          // We don't have any data, but we still need to return an event
+          // Otherwise the "want_more" logic will not work
+          {
+            "events": [
+              {
+                "fake": true, // This will be discarded by the drop_event processor.
+              },
+            ],
+            "cursor": {
+              "last_to": req.to,
+            },
+            // Are we more than 1 day behind?
+            "want_more": req.to < now - duration("24h"),
+          }
+        )
       :
-        // We don't have any data, but we still need to return an event
-        // Otherwise the "want_more" logic will not work
+        // Response was not successful, return an error event
         {
-          "events": [{
-            "fake": true,  // This will either way be dropped by the ingest pipeline
-          }],
-          "cursor": {
-            "last_to": req.to
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + resp.Request.URL + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
           },
-          // Are we more than 1 day behind?
-          "want_more": req.to < now() - duration("24h"),
+          "want_more": false,
         }
       )
     )
-    :
-      // Response was not successful, return an error event
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET " + resp.Request.URL + ": " +
-            (
-              (size(resp.Body) != 0) ?
-                string(resp.Body)
-              :
-                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-            ),
-          },
-        },
-        "cursor": {
-          "last_to": req.to
-        },
-        "want_more": req.to < now() - duration("24h"),
-      }
-    ))
   )
 {{#if tags.length}}
 tags:
@@ -133,7 +140,8 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 
-{{#if processors}}
 processors:
+- drop_event.when.equals.fake: true
+{{#if processors}}
 {{processors}}
 {{/if}}

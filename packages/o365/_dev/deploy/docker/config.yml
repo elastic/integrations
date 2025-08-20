@@ -18,6 +18,34 @@ rules:
             - "application/json"
         body: |-
           {"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","token_type": "Bearer","not_before": 1549647431,"expires_in": 3600,"resource": "f2a76e08-93f2-4350-833c-965c02483b11"}
+  # Refresh token to get access token: https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#refresh-the-access-token
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [ POST ]
+    query_params:
+      scope: 'https://manage.office.com/.default'
+      refresh_token: refresh_token_123
+      grant_type: refresh_token
+    request_headers:
+      Authorization:
+        - "Basic dGVzdC1jZWwtY2xpZW50LWlkOnRlc3QtY2VsLWNsaWVudC1zZWNyZXQ="
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "access_token": "CELtoken",
+            "token_type": "Bearer",
+            "expires_in": 2,
+            "scope": "https%3A%2F%2Fgraph.microsoft.com%2Fmail.read",
+            "refresh_token": "AwABAAAAvPM1KaPlrEqdFSBzjqfTGAMxZGUTdM0t4B4...",
+            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJhdWQiOiIyZDRkMTFhMi1mODE0LTQ2YTctOD..."
+          }
+          ` }}
   # CEL Input Rules
   - path: /test-cel-tenant-id/oauth2/v2.0/token
     methods: [POST]
@@ -66,6 +94,21 @@ rules:
             - "application/json"
         body: |-
           {"contentType": "Audit.General","status": "enabled","webhook": null}
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.TypeRequiringAdditionalPermissions"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":{"code":"AF10001","message":"The permission set (...) sent in the request does not include the expected permission."}}
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
