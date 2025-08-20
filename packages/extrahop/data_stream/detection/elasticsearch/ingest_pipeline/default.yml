@@ -37,10 +37,6 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: json
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.id
@@ -127,7 +123,7 @@ processors:
   - set:
       field: event.id
       tag: set_event_id_from_detection_id_and_mod_time
-      value: '{{extrahop.detection.id}}-{{json.mod_time}}'
+      value: '{{{extrahop.detection.id}}}-{{{json.mod_time}}}'
       if: ctx.extrahop?.detection?.id != null && ctx.json?.mod_time != null
   - convert:
       field: json.is_user_created
@@ -234,7 +230,7 @@ processors:
       field: json.participants
       tag: foreach_participants_external
       if: ctx.json?.participants instanceof List
-      processor:    
+      processor:
         convert:
           field: _ingest._value.external
           tag: convert_participants_external_to_boolean
@@ -261,7 +257,7 @@ processors:
       field: json.participants
       tag: foreach_participants_id
       if: ctx.json?.participants instanceof List
-      processor:    
+      processor:
         convert:
           field: _ingest._value.id
           tag: convert_participants_id_to_keyword
@@ -278,7 +274,7 @@ processors:
       field: json.participants
       tag: foreach_participants_object_id
       if: ctx.json?.participants instanceof List
-      processor:    
+      processor:
         convert:
           field: _ingest._value.object_id
           tag: convert_participants_object_id_to_keyword

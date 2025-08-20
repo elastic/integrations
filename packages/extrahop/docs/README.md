@@ -4,7 +4,7 @@
 
 [ExtraHop](https://www.extrahop.com/) delivers complete network visibility through its agentless RevealX NDR platform, empowering security teams to close detection gaps left by EDR, SIEM, and logs. ExtraHop provides the deep intelligence needed to detect threats faster, investigate with greater context, and respond at the speed of modern risk.
 
-This integration enables to collect, Detection data via [ExtraHop RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/), then visualise the data in Kibana.
+This integration enables you to collect Detection data via [ExtraHop RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/), then visualise the data in Kibana.
 
 ## Data streams
 
@@ -299,8 +299,9 @@ An example event for `detection` looks as following:
 | extrahop.detection.update_time |  | date |
 | extrahop.detection.url |  | keyword |
 | input.type | Type of filebeat input. | keyword |
-| labels.is_transform_source | Indicates whether a detection is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| labels.is_transform_source | Indicates whether a detection is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
-| observer.product |  | constant_keyword |
-| observer.type |  | constant_keyword |
-| observer.vendor |  | constant_keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+
