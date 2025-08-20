@@ -310,7 +310,7 @@ program: |-
                     state.cursor.last_for[state.work.curr_type.to_lower()].parse_time(time_layout.RFC3339)
                   ).as(created_at,
                     {
-                      "start": created_at + duration("1s"),
+                      "start": created_at + duration("1ms"),
                       "end": created_at + batch_interval,
                     }
                   )
@@ -330,7 +330,7 @@ program: |-
                       {
                         "contentType": [state.work.curr_type],
                         "PublisherIdentifier": [state.base.tenant_id],
-                        "startTime": [string(min(now() - duration("1s"), time_range.start))],
+                        "startTime": [string(min(now() - duration("1ms"), time_range.start))],
                         "endTime": [string(min(now(), time_range.end))],
                       }.format_query(),
                     ]
@@ -413,6 +413,16 @@ program: |-
         "want_more": size(state.work.todo_type) != 0 || size(state.work.todo_content) != 0,
       }
     )
+  ).as(state, (state.want_more && type(state.events) == list && size(state.events) == 0) ?
+    // Make sure we complete the remaining work if we got
+    // no events but the work lists are not empty.
+    state.with(
+      {
+        "events": [{"retry": true}],
+      }
+    )
+  :
+    state
   )
 {{#if tags}}
 tags:
