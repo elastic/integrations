@@ -47,6 +47,10 @@ processors:
       copy_from: ess.billing.deployment_id
       ignore_empty_value: true
       tag: cloud_instance_id
+  #Temp Workaround: Put deployment_id in deployment_name in case name parameter is empty in the API(to keep Dashboard name filtering )
+  - set:
+      field: cloud.instance.name
+      copy_from: ess.billing.deployment_id
   - set:
       field: cloud.instance.name
       copy_from: ess.billing.deployment_name
@@ -58,15 +62,26 @@ processors:
         - "(?:Cloud-Enterprise_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:cloud.region}_%{NUMBER:ess.billing.ram_per_zone:int}_%{NUMBER:ess.billing.zone_count:int}"
       pattern_definitions:
         CLOUD_PROVIDER: "aws|gcp|azure|global"
-      if: "ctx.ess.billing.type == 'capacity'"
+      if: "ctx.ess.billing.type == 'capacity' && ctx.ess.billing.deployment_type == 'deployment'"
       ignore_failure: true
       tag: grok_sku
   - dissect:
       field: "ess.billing.sku"
       pattern: "%{cloud.provider}.%{}"
-      if: "ctx.ess.billing.type != 'capacity'"
+      if: "ctx.ess.billing.type != 'capacity' && ctx.ess.billing.deployment_type == 'deployment'"
       ignore_failure: true
       tag: dissect_sku
+  - grok:
+      field: "ess.billing.sku"
+      patterns:
+        - "%{DATA}\\.(?<cloud.service.type>[^_]+)(?:_(?<cloud.region>.+))?"
+      if: "ctx.ess.billing.deployment_type != 'deployment'"
+      ignore_failure: true
+      tag: grok_sku
+  - set:
+      field: "cloud.provider"
+      if: "ctx.ess.billing.deployment_type != 'deployment'"
+      value: "serverless"
   - convert:
       field: ess.billing.ram_per_zone
       type: "integer"
@@ -107,6 +122,7 @@ processors:
           'gcp-europe-west9': ['location': ['lon': 4.9041, 'lat': 52.3676], 'name': 'gcp-europe-west9'],
           'gcp-me-west1': ['location': ['lon': 34.8516, 'lat': 31.0461], 'name': 'gcp-me-west1'],
           'aws-us-east-2': ['location': ['lon': -82.9988, 'lat': 39.9612], 'name': 'aws-us-east-2'],
+          'aws-us-east-1': ['location': ['lon': -77.0369, 'lat': 39.9612], 'name': 'aws-us-east-2'],
           'us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'us-east-1'],
           'eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'eu-west-1'],
           'us-west-1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'us-west-1'],
@@ -158,11 +174,3 @@ processors:
         location:
           lon: 135.0
           lat: 90.0
-
-on_failure:
-  - set:
-      field: event.kind
-      value: "pipeline_error"
-  - append:
-      field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
