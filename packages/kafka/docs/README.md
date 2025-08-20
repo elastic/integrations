@@ -359,7 +359,6 @@ This dataset includes metrics such as:
 - Append and fetch records rates
 - Commit latency (average and maximum)
 - Current epoch, leader, and vote information
-- Current epoch, leader, and vote information 
 - High watermark and log offset metrics
 - Node state and voter information
 - Poll idle ratio
