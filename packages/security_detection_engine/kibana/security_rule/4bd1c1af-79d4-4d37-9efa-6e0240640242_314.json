@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies processes running from an Alternate Data Stream. This is uncommon for legitimate processes and sometimes done by adversaries to hide malware.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Unusual Process Execution Path - Alternate Data Stream",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Process Execution Path - Alternate Data Stream\n\nAlternate Data Streams (ADS) in Windows allow files to contain multiple data streams, which can be exploited by adversaries to conceal malicious code. This technique is often used for defense evasion, as it hides malware within legitimate files. The detection rule identifies processes initiated from ADS by monitoring specific execution patterns, such as unique argument structures, to flag potential threats.\n\n### Possible investigation steps\n\n- Review the process details, including the process name and path, to determine if it is a known legitimate application or potentially malicious.\n- Examine the process arguments, specifically looking for the pattern \"?:\\\\*:*\", to understand the context of the execution and identify any suspicious or unusual characteristics.\n- Check the parent process of the flagged process to assess if it was initiated by a legitimate or expected source.\n- Investigate the user account associated with the process execution to determine if the activity aligns with the user's typical behavior or if it appears anomalous.\n- Correlate the event with other security logs or alerts from data sources like Sysmon, Microsoft Defender for Endpoint, or Crowdstrike to gather additional context and identify any related suspicious activities.\n- Search for any known indicators of compromise (IOCs) related to the process or file path in threat intelligence databases to assess if the activity is associated with known threats.\n\n### False positive analysis\n\n- Legitimate software installations or updates may use alternate data streams to execute processes. Users can create exceptions for known software update paths to prevent unnecessary alerts.\n- Some backup or file synchronization tools might utilize alternate data streams for metadata storage. Identify these tools and exclude their execution paths from the detection rule.\n- Certain system administration scripts or tools may leverage alternate data streams for legitimate purposes. Review and whitelist these scripts if they are verified as non-threatening.\n- Developers might use alternate data streams during software development for testing purposes. Ensure development environments are accounted for in the exception list to avoid false positives.\n- Security tools themselves may use alternate data streams for scanning or monitoring activities. Verify and exclude these tools from the detection rule to reduce noise.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of potential malware.\n- Terminate any suspicious processes identified as running from an Alternate Data Stream to halt malicious activity.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any hidden malware.\n- Examine the file system for any additional Alternate Data Streams and remove or quarantine any suspicious files.\n- Restore any affected files or systems from known good backups to ensure system integrity.\n- Monitor the network for any unusual outbound traffic from the affected system that may indicate data exfiltration attempts.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are compromised.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.args : \"?:\\\\*:*\" and\n  (\n    process.args_count == 1 and\n\n    /* Excludes bug where a missing closing quote sets args_count to 1 despite extra args */\n    not process.command_line regex~ \"\"\"\\\".*\\.exe[^\\\"].*\"\"\"\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "4bd1c1af-79d4-4d37-9efa-6e0240640242",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.004",
+                                "name": "NTFS File Attributes",
+                                "reference": "https://attack.mitre.org/techniques/T1564/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 314
+    },
+    "id": "4bd1c1af-79d4-4d37-9efa-6e0240640242_314",
+    "type": "security-rule"
+}
