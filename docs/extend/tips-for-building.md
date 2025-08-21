@@ -1,25 +1,22 @@
 ---
-m# Tips for Building Integrations [tips-for-building]
-
-This section provides tips, guidelines, and best practices for developing Elastic integrations. It combines practical advice, recommendations, and techniques to help developers create high-quality integrations. This document evolves based on business and technical requirements for the Elastic platform (Package Registry, Elastic Agent, and Kibana).ed_pages:
+mapped_pages:
   - https://www.elastic.co/guide/en/integrations-developer/current/tips-for-building.html
 ---
 
 # Tips for building integrations [tips-for-building]
 
-The section offers a set of tips for developers to improve integrations that they’re working on. It combines hints, guidelines, recommendations and tricks. Please consider this section as a live document that may evolve in the future, depending on the business or technical requirements for the entire platform (Elastic Package Registry, Elastic Agent and Kibana).
+This section offers a set of tips for developers to improve integrations they're working on. It combines hints, guidelines, recommendations, and tricks. This document may evolve in the future, depending on business or technical requirements for the entire platform (Elastic Package Registry, Elastic Agent, and Kibana).
 
 ## elastic-package [_elastic_package]
 
-[elastic-package](https://github.com/elastic/elastic-package) is a command line tool, written in Go, used for developing Elastic packages. It can help you lint, format, test and build your packages. This is the official builder tool to develop Integrations. See the [Getting started](https://github.com/elastic/elastic-package#getting-started) section to ramp up quickly and review its features.
+[elastic-package](https://github.com/elastic/elastic-package) is a command line tool, written in Go, used for developing Elastic packages. It helps with linting, formatting, testing, and building packages. This is the official builder tool to develop Integrations. See the [Getting started](https://github.com/elastic/elastic-package#getting-started) section to ramp up quickly and review its features.
 
-If you need the revision of elastic-package in the correct version (the same one as the CI uses), which is defined in `go.mod`, use the following command (in the Integrations repository):
+To use the revision of elastic-package in the correct version (the same one the CI uses), which is defined in `go.mod`, use the following command (in the Integrations repository):
 
 ```bash
 $ go build github.com/elastic/elastic-package
 $ ./elastic-package help
 ```
-
 
 ## New integrations [_new_integrations]
 
@@ -27,66 +24,65 @@ $ ./elastic-package help
 
 1. Set the initial version to `0.1.0`.
 
-    Tagging the integration with a lower version, like `0.0.1`, means that it’s at very early stage and most likely it doesn’t work at all. It might be partially developed.
+   Tagging the integration with a lower version, like `0.0.1`, means that it's at a very early stage and most likely doesn't work at all. It might be partially developed.
 
 2. Select one or two categories for the integration.
 
-    The list of available categories is present in the Package Registry source: [https://github.com/elastic/package-registry/blob/1dd3e7c4956f7e34809bb87acae50b2a63cd7ad0/packages/package.go#L29-L55](https://github.com/elastic/package-registry/blob/1dd3e7c4956f7e34809bb87acae50b2a63cd7ad0/packages/package.go#L29-L55)
+   The list of available categories is present in the Package Registry source: [https://github.com/elastic/package-registry/blob/1dd3e7c4956f7e34809bb87acae50b2a63cd7ad0/packages/package.go#L29-L55](https://github.com/elastic/package-registry/blob/1dd3e7c4956f7e34809bb87acae50b2a63cd7ad0/packages/package.go#L29-L55)
 
-3. Make sure that the version condition for Kibana is set to `+^7.10.0+` and not `>=7.10.0`. Otherwise the package is also in 8.0.0 but we do not know today if it will actually be compatible with >= 8.0.0.
+3. Make sure that the version condition for Kibana is set to `+^7.10.0+` and not `>=7.10.0`. Otherwise, the package is also in 8.0.0 but there is no certainty it will be compatible with >= 8.0.0.
 
-    ```yaml
-    conditions:
-      kibana.version: '^7.10.0'
-    ```
+   ```yaml
+   conditions:
+     kibana.version: '^7.10.0'
+   ```
 
 4. Set the proper package owner (either Github team or personal account)
 
-    Good candidates for a team: `elastic/integrations`, `elastic/security-service-integrations`
+   Good candidates for a team: `elastic/integrations`, `elastic/security-service-integrations`
 
-    Update the `.github/CODEOWNERS` file accordingly.
+   Update the `.github/CODEOWNERS` file accordingly.
 
 ### Overall Steps
 
-The most important advice I can give and insist you consider is this: gather data first! Don't start with the integration, even though that's going to be the most fun thing. Either get sample data, or generate some data from the appliance (virtual or otherwise). Then, once you have that, put it in a file and don't ever delete it. You can load this data into your Kibana instance to look at the data and start creating dashboards from that. And you can use it for pipeline tests.
+The most important advice to consider is this: gather data first! Start with collecting sample data, or generating data from the appliance (virtual or otherwise). Then, store this data in a file for later reference. This data can be loaded into a Kibana instance to examine and start creating dashboards, and can also be used for pipeline tests.
 
-The process for modifying the repo is to fork it and then create a PR into the repo from your own forked copy. Once you have forked it, clone it to your dev computer.
+The process for modifying the repo is to fork it and then create a PR into the repo from a forked copy. After forking, clone it to a development environment.
 
+The `elastic-package create package` command drops the creation into the current directory, so run it from the `packages/` directory, or move the new directory afterward.
 
-The `elastic-package create package` command drops the creation into the current directory, so you should run it from the `packages/` directory, or you'll have to move the new directory.
+```bash no-copy
+$ cd packages
+$ elastic-package create package
+Create a new package
+? Package type: [Use arrows to move, type to filter]
+  input
+> integration
+? Package name: (new_package)
+? Version: (0.0.1)
+? License: [Use arrows to move, type to filter]
+> Elastic-2.0
+  Apache-2.9
+  None - I will add a license later.
+? Package title: (New Package)
+? Description: (This is a new package.)
+? Categories: [Use arrows to move, space to select, <right> to all, <left> to none, type to filter]
+> [x] custom
+? Kibana version constraint: (^8.11.4)
+? Required Elastic subscription: [Use arrows to move, type to filter]
+> basic
+  gold
+  platinum
+  enterprise
+? Github owner: (elastic/integrations)
+? Owner type: [Use arrows to move, type to filter]
+> elastic - Owned and supported by Elastic
+  partner - Vendor-owned with support from Elastic
+  community - Supported by the community
 
-	```bash no-copy
-	$ cd packages
-	$ elastic-package create package
-	Create a new package
-	? Package type: [Use arrows to move, type to filter]
-	  input
-	> integration
-	? Package name: (new_package)
-	? Version: (0.0.1)
-	? License: [Use arrows to move, type to filter]
-	> Elastic-2.0
-	  Apache-2.9
-	  None - I will add a license later.
-	? Package title: (New Package)
-	? Description: (This is a new package.)
-	? Categories: [Use arrows to move, space to select, <right> to all, <left> to none, type to filter]
-	> [x] custom
-	? Kibana version constraint: (^8.11.4)
-	? Required Elastic subscription: [Use arrows to move, type to filter]
-	> basic
-	  gold
-	  platinum
-	  enterprise
-	? Github owner: (elastic/integrations)
-	? Owner type: [Use arrows to move, type to filter]
-	> elastic - Owned and supported by Elastic
-	  partner - Vendor-owned with support from Elastic
-	  community - Supported by the community
-
-	New package has been created: new_package
-	Done
-	```
+New package has been created: new_package
+Done
+```
 
 This creates a directory structure and default files that will actually work.
 
@@ -104,7 +100,7 @@ $ find .
 ./changelog.yml
 ```
 
-You can only create a new data-stream from within a package directory, so make sure you're in the new directory!
+A new data-stream can only be created from within a package directory, so make sure to be in the new directory when creating one.
 
 ```bash
 $ cd new_package
@@ -134,12 +130,12 @@ data_stream/new_data_stream/fields
 data_stream/new_data_stream/fields/base-fields.yml
 ```
 
-If the data stream is processing logs, naming it to `log` is a good idea, because it is short and descriptive.
-
+If the data stream is processing logs, naming it `log` is a good idea, as it is short and descriptive.
 
 ### Painless example
 
-Sometimes the logs are in a format that needs special parsing, like a `key=value msg="something with spaces"` log. We need to use painless scripting to handle this. Here is an example processor:
+Sometimes logs are in a format that needs special parsing, like a `key=value msg="something with spaces"` log. Painless scripting can be used to handle this. Here is an example processor:
+
 ```yaml
   - script:
       tag: script_kv_parse
@@ -178,11 +174,9 @@ Sometimes the logs are in a format that needs special parsing, like a `key=value
         }
 ```
 
-
-If you need to use functions in painless, the functions need to be defined first. Here's an example of how to use painless to rename a field, instead of using the `rename` processor.
+When using functions in painless, the functions need to be defined first. Here's an example of using painless to rename a field, instead of using the `rename` processor:
 
 ```yaml
-
   - script:
       tag: expand_dynamic_fields
       description: Expands some dynamic fields.
@@ -200,16 +194,15 @@ If you need to use functions in painless, the functions need to be defined first
         }
 
         handleMove(ctx, ctx._temp_.logtype);
-
 ```
 
-But you probably won't need to use functions if you just slightly refactor your code to use `forEach` loops.
+Functions might not be necessary if the code can be refactored to use `forEach` loops.
 
 ### Making useful changes (`_dev` etc)
 
-When building the package (`elastic-package build`), the `_dev` directory is used to generate `docs/README.md`, as well as the built package zip. It is also used to create a docker container
+When building the package (`elastic-package build`), the `_dev` directory is used to generate `docs/README.md`, as well as the built package zip. It is also used to create a docker container.
 
-The `docs/README.md` file is generally auto-generated from `_dev/build/docs/README.md`, which also processes some Go format directives for dumping field information into the document. Make the directory structure, as well as the files that dictate how docker runs system tests.
+The `docs/README.md` file is generally auto-generated from `_dev/build/docs/README.md`, which also processes some Go format directives for dumping field information into the document. Create the directory structure, as well as the files that dictate how docker runs system tests.
 
 ```shell line
 mkdir -pv _dev/deploy/docker/sample_logs
@@ -219,7 +212,7 @@ rmdir docs
 mkdir -pv data_stream/new_data_stream/_dev/test/{pipeline,system}
 ```
 
-An example `_dev/deploy/docker/docker-compose.yml`
+An example `_dev/deploy/docker/docker-compose.yml`:
 ```yaml
 version: "2.3"
 services:
@@ -230,7 +223,7 @@ services:
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:5144 -p=udp /sample_logs/integration.log
 ```
 
-Put some logs in `_dev/deploy/docker/sample_logs/integration.log`
+Sample logs can be placed in `_dev/deploy/docker/sample_logs/integration.log`:
 ```yaml
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line" logtype="server"
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line 2" logtype="server"
@@ -238,7 +231,7 @@ Put some logs in `_dev/deploy/docker/sample_logs/integration.log`
 
 ### Kibana support
 
-To configure the integration through Kibana/Agent/Fleet policy, you need to update the `data_stream/log/manifest.yml` file with input information. As an example for how to define parameters and accept variables, feast your eyes on this:
+To configure the integration through Kibana/Agent/Fleet policy, update the `data_stream/log/manifest.yml` file with input information. Here's an example of how to define parameters and accept variables:
 
 ```yaml
 title: "Integration logs"
@@ -308,9 +301,9 @@ streams:
         show_user: false
 ```
 
-This configures the Kibana _Add Integration_ form with the labels, input boxes, descriptions, and also what the `template_path` should be. The `template_path` is a handlebars template file that is used to configure the Agent policy, which is ingested by `filebeat` and will open the configured port and pass informatino through the syslog processor. 
+This configures the Kibana _Add Integration_ form with the labels, input boxes, descriptions, and also what the `template_path` should be. The `template_path` is a handlebars template file that is used to configure the Agent policy, which is ingested by `filebeat` and will open the configured port and pass information through the syslog processor.
 
-An example file that takes advantage of the above can be put at `data_stream/log/agent/stream/udp.yml.hbs`.
+An example file that uses the above configuration can be placed at `data_stream/log/agent/stream/udp.yml.hbs`:
 
 ```hbs
 host: "{{udp_host}}:{{udp_port}}"
@@ -345,9 +338,9 @@ processors:
 
 ### More Detail
 
-The pipeline tests are the best way to get the processors working and the painless bugs ironed out.
+Pipeline tests are the best way to get the processors working and resolve painless bugs.
 
-If you are creating a bunch of fields with mappings to send data into the stack, you'll need to create a `data_stream/log/fields/fields.yml` file with the nested fields you are building. Sometimes you can scrape this information from a documentation website. Here's an example:
+When creating fields with mappings to send data into the stack, create a `data_stream/log/fields/fields.yml` file with the nested fields. This information can sometimes be scraped from documentation websites. Here's an example:
 
 ```yaml title=fields.yml
 - name: integration
@@ -372,31 +365,25 @@ If you are creating a bunch of fields with mappings to send data into the stack,
 
 ### Kibana dashboard
 
-The first dashboard should probably look like other dashboards we have done. I based my first one off the Fortinet FortiGate dashboard. Install that integration (you don't have to send any data through it) and then open the dashboard. The installed dashboards are `Managed`, so we can't modify them. Just clone one you want to copy, and then you can edit it and look at how it was configured. You can also just modify everything you see in the dashboard to look like what you want and be done.
+For the first dashboard, look at existing dashboards for reference. Clone an existing dashboard to use as a starting point. The installed dashboards are `Managed` and cannot be modified directly, but they can be cloned and then edited.
 
-To get something to check into git, use `elastic-package` again! Make sure you set the name of the dashboard to `[Integration Name] Overview` or something like that. I get into the habit of adding `-- export this one` to the name, because `elastic-package export dashboards` has a fuzzy filter that makes it very simple to choose what to export.
+To export a dashboard for inclusion in the integration, use `elastic-package export dashboards`. Name the dashboard with a consistent pattern like `[Integration Name] Overview`. Adding `-- export this one` to the name can make it easier to find when exporting.
 
-`elastic-package export dashboards`
+When running `elastic-package export dashboards`, it will list all dashboards and allow filtering. Use arrow keys to navigate, spacebar to select, and enter to confirm. The exported dashboard will be saved as a file like `kibana/dashboards/integration-88888888-4444-4444-4444-cccccccccccc.json`, with an actual UUID. Edit the file to remove any `-- export this one` from the title.
 
-It'll list all of the dashboards, and then filter on whatever you type. You can choose up and down with the arror keys. When you highlighted what you want, hit the spacebar to select it and hit enter/return. It will be dropped as a file to `kibana/dashboards/integration-88888888-4444-4444-4444-cccccccccccc.json`, but with an actual uuid. You can edit the file to remove the `-- export this one` from the title.
+If edits to the dashboard are needed later, the file may need to be completely replaced with a new export, as all the UUIDs will change if cloning is required.
 
-Check it in. 
-
-If you ever have to make edits to the dashboard, you'll probably have to completely replace this file with the next export, because all the uuids will change if you have to `Clone` again.
-
-When you are in the dashboard view, make sure to create a data filter, or `elastic-package check` will fail your dashboard. Next to the `KQL` search box is a `+` button that you can use. The integration defaults to sending data back in a dataset named after the integration. This is a good filter idea for a first filter. `data_stream.dataset : integration-name.log`
+When in the dashboard view, create a data filter, otherwise `elastic-package check` will fail the dashboard. Next to the `KQL` search box is a `+` button for this purpose. A good initial filter is `data_stream.dataset : integration-name.log`.
 
 ### Demo time!
 
-The pre-installed docker agent doesn't update the ports it is listening on, so you might need to start a new agent and apply the policy with the installed integration to that. This was fixed recently, but I'm not sure if the update was propagated back to 8.11.4, which is the default Kibana version that `elastic-package` puts as our support floor.
-
+The pre-installed docker agent may not update the ports it is listening on, so starting a new agent and applying the policy with the installed integration might be necessary. This issue was fixed recently, but the update may not have been propagated back to 8.11.4, which is the default Kibana version that `elastic-package` uses as the support floor.
 
 # Pipeline Best Practices
 
 ## Error Message Handling
 
-Pipelines should include these set of processors in the top-level `on_failure`
-section in the default ingest pipeline:
+Pipelines should include these processors in the top-level `on_failure` section in the default ingest pipeline:
 
 ```yaml
 on_failure:
@@ -408,8 +395,7 @@ on_failure:
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 ```
 
-Any processor that can fail must include a `tag`. Without a tag, the processor
-that fails cannot be identified in the error message.
+Any processor that can fail must include a `tag`. Without a tag, the processor that fails cannot be identified in the error message.
 
 ```
 # With a tag:
@@ -421,13 +407,10 @@ Processor conditional with tag grok_test in pipeline default-1711726648444819000
 Processor conditional with tag  in pipeline default-1711726648444819000 failed with message: cannot access method/field [foo] from a null def reference
 ```
 
-When a processor fails, the `on_failure` handler will be invoked, and two things
-will occur:
+When a processor fails, the `on_failure` handler will be invoked, and two things will occur:
 
 1. The `event.kind` field for the event will be set to `pipeline_error`.
-2. A descriptive message will be appended to `error.message`. This message will
-include the processor type, processor tag, the pipeline in which the error
-occurred, and a failure message.
+2. A descriptive message will be appended to `error.message`. This message will include the processor type, processor tag, the pipeline in which the error occurred, and a failure message.
 
 Example error messages:
 
@@ -436,25 +419,15 @@ Processor grok with tag grok_test in pipeline default-1711726615736144000 failed
 Processor conditional with tag grok_test in pipeline default-1711726648444819000 failed with message: cannot access method/field [foo] from a null def reference
 ```
 
-While `on_failure` handlers can be added to processors directly, they should not
-be used for handling error messages. An example of where this is a problem is if
-the conditional (if statement) of a processor fails. In this case, the
-`on_failure` for that processor will never run, and instead will fall out to the
-top-level `on_failure` handler. Rather, they should be used for handling any
-cleanup if the processor fails, such as removing fields.
+While `on_failure` handlers can be added to processors directly, they should not be used for handling error messages. An example of where this is a problem is if the conditional (if statement) of a processor fails. In this case, the `on_failure` for that processor will never run, and instead will fall out to the top-level `on_failure` handler. Instead, they should be used for handling any cleanup if the processor fails, such as removing fields.
 
 ## Grok Best Practices
 
-The [grok](https://www.elastic.co/guide/en/elasticsearch/reference/current/grok-processor.html)
-processor is very powerful, but it is rather easy to configure in such a way
-that performs poorly and/or is hard to understand.
+The [grok](https://www.elastic.co/guide/en/elasticsearch/reference/current/grok-processor.html) processor is very powerful, but it can be configured in ways that perform poorly or are difficult to understand.
 
 ### Use Dissect When Possible
 
-For simple patterns or patterns where tokens are separated by spaces, consider
-using the [dissect](https://www.elastic.co/guide/en/elasticsearch/reference/current/dissect-processor.html)
-processor instead. The dissect processor is usually 2-4 times faster than a grok
-processor, but can be even faster depending on the complexity of the patterns used.
+For simple patterns or patterns where tokens are separated by spaces, consider using the [dissect](https://www.elastic.co/guide/en/elasticsearch/reference/current/dissect-processor.html) processor instead. The dissect processor is usually 2-4 times faster than a grok processor, and can be even faster depending on the complexity of the patterns used.
 
 Consider the grok pattern:
 
@@ -468,22 +441,19 @@ An equivalent dissect pattern would be:
 Connection allowed from %{source.ip} to %{destination.ip} at %{event.start}
 ```
 
-There are cases where dissect can't apply, such as:
+There are cases where dissect cannot be applied, such as:
 
 - Multiple patterns are required
-- Some tokens in a pattern optional
+- Some tokens in a pattern are optional
 - A token needs to be split into fields
 
 Other notes:
 
-- If you are replacing grok with dissect, be careful with patterns that extract
-fields to a certain type. Dissect only extracts to a string, so a [convert](https://www.elastic.co/guide/en/elasticsearch/reference/current/convert-processor.html)
-processor will be needed.
+- If replacing grok with dissect, be careful with patterns that extract fields to a certain type. Dissect only extracts to a string, so a [convert](https://www.elastic.co/guide/en/elasticsearch/reference/current/convert-processor.html) processor will be needed.
 
 ### Use Simpler Patterns When Possible
 
-In cases where dissect can't work and grok is still needed, consider using simpler
-patterns, if possible.
+In cases where dissect cannot work and grok is still needed, consider using simpler patterns if possible.
 
 Consider this example from the Cisco ASA pipeline. These are the original patterns:
 
@@ -507,19 +477,11 @@ pattern_definitions:
   NOTBRACKET: "[^<>]+"
 ```
 
-The first pattern uses angle brackets to contain the values (which can include
-spaces), so a pattern definition was created that contains all characters except
-angle brackets. The second pattern uses spaces to delimit fields, so the `NOTSPACE`
-pattern was used to capture field values. The result of this simplification is
-that the complicated `HOSTNAME`, `IPORHOST`, and `CISCO_USER` patterns from before
-can now be removed.
+The first pattern uses angle brackets to contain the values (which can include spaces), so a pattern definition was created that contains all characters except angle brackets. The second pattern uses spaces to delimit fields, so the `NOTSPACE` pattern was used to capture field values. The result of this simplification is that the complicated `HOSTNAME`, `IPORHOST`, and `CISCO_USER` patterns from before can now be removed.
 
 ### Grok Patterns Should Be Anchored
 
-Most groks match the entire field. In these cases, the start and end anchors
-(`^` and `$`) should be used to anchor the pattern against the entire string.
-This is especially important for performance, since if the pattern can't match
-against the string, it will try to find a match within substrings of the field.
+Most groks match the entire field. In these cases, the start and end anchors (`^` and `$`) should be used to anchor the pattern against the entire string. This is especially important for performance, since if the pattern cannot match against the string, it will try to find a match within substrings of the field.
 
 # Tips and Tricks
 
@@ -532,7 +494,7 @@ elastic-package build
 elastic-package check
 	Runs the formatter and linter against the package. Also checks if the README has been updated.
 
-Note: I recommend chaining build and check together and running them in that order. Check will sometimes require a package being built first, so it's good to make sure that always happens. 
+Note: Chain build and check together and run them in that order. Check sometimes requires a package being built first.
 
 elastic-package stack up -vd [--version VERSION]
 	Bring the stack up. "-vd" is short for verbose output and detach from containers when done. Specify version if desired, such as '--version 8.12.1'.
@@ -550,13 +512,11 @@ elastic-package test [pipeline|test|static|asset] -v -g
     Regenerate the expected files (pipeline test) or sample_event.json (system system) after the tests run. Ensure that the output is expected before committing changes, as regressions could accidentally become the new expected behavior.
 ```
 
-
-
 ## All integrations [_all_integrations]
 
 ### Development [_development]
 
-1. When you’re developing integrations and you’d like to propagate your changes to the package registry, first rebuild the package:
+1. When developing integrations and propagating changes to the package registry, first rebuild the package:
 
     ```bash
     $ cd packages/apache
@@ -565,15 +525,13 @@ elastic-package test [pipeline|test|static|asset] -v -g
 
     Then, rebuild and redeploy the Package Registry:
 
-    *It’s important to execute the following command in the Integrations repository.*
+    *It's important to execute the following command in the Integrations repository.*
 
     ```bash
     $ elastic-package stack up -v -d --services package-registry
     ```
 
-    Explanation: it’s much faster to rebuild and restart the container with the Package Registry, than work with mounted volumes.
-
-
+    Explanation: It's much faster to rebuild and restart the container with the Package Registry than to work with mounted volumes.
 
 ### Code reviewers [_code_reviewers]
 
@@ -581,12 +539,11 @@ elastic-package test [pipeline|test|static|asset] -v -g
 
     Use the team label to notify relevant team members about the incoming pull request.
 
-
 #### Manifest files [_manifest_files_2]
 
 1. Descriptions of configuration options should be as short as possible.
 
-    Remember to keep only the meaningful information about the configuration option.
+    Include only the meaningful information about the configuration option.
 
     Good candidates: references to the product configuration, accepted string values, explanation.
 
@@ -594,11 +551,11 @@ elastic-package test [pipeline|test|static|asset] -v -g
 
 2. Descriptions should be human readable.
 
-    Try to rephrase sentences like: *Collect foo_Bar3 metrics*, into *Collect Foo Bar metrics*.
+    Rephrase sentences like: *Collect foo_Bar3 metrics* to *Collect Foo Bar metrics*.
 
 3. Description should be easy to understand.
 
-    Simplify sentences, don’t provide information about the input if not required.
+    Simplify sentences and don't provide information about the input if not required.
 
     Bad candidate: *Collect application logs (log input)*
 
@@ -606,13 +563,13 @@ elastic-package test [pipeline|test|static|asset] -v -g
 
 4. Letter casing is important for screenshot descriptions.
 
-    These descriptions are visualized in the Kibana UI. It would be better experience to have them clean and consistent.
+    These descriptions are visualized in the Kibana UI. Having them clean and consistent creates a better user experience.
 
     Bad candidate: *filebeat running on ec2 machine*
 
     Good candidates: *Filebeat running on AWS EC2 machine*
 
-5. If package relies on some feature or a field, available only in a specific stack or beats version, `kibana.version` condition should be adjusted accordingly in the package’s `manifest.yml`:
+5. If a package relies on a feature or field available only in a specific stack or beats version, `kibana.version` condition should be adjusted accordingly in the package's `manifest.yml`:
 
     ```yaml
     conditions:
@@ -625,16 +582,14 @@ elastic-package test [pipeline|test|static|asset] -v -g
 
 
     ::::{note}
-    Changing dashboards and visualizations using an unreleased version of Kibana might be unsafe since the Kibana Team might make changes to the Kibana code and potentially the data models. There is no guarantee that your changes won’t be broken by the time new Kibana version is released.
+    Changing dashboards and visualizations using an unreleased version of Kibana might be unsafe since the Kibana Team might make changes to the Kibana code and potentially the data models. There is no guarantee that your changes won't be broken by the time new Kibana version is released.
     ::::
-
-
 
 #### CI [_ci]
 
 1. Run `elastic-package check` and `elastic-package test` locally.
 
-    If you want to verify if your integration works as intended, you can execute the same steps as CI:
+    To verify if an integration works as intended, execute the same steps as CI:
 
     ```bash
     $ cd packages/apache
@@ -644,13 +599,11 @@ elastic-package test [pipeline|test|static|asset] -v -g
 
     Keep in mind that the `elastic-package test` command requires a live cluster running and exported environment variables. The environment variables can be set with `eval "$(elastic-package stack shellinit)"`.
 
-
-
 #### Fields [_fields]
 
 1. Remove empty fields files.
 
-    If you notice that fields file (e.g. `package-fields.yml`) doesn’t contain any field definitions or it defines root only, feel free to remove it.
+    If a fields file (e.g. `package-fields.yml`) doesn't contain any field definitions or it defines root only, it can be removed.
 
     Bad candidate:
 
