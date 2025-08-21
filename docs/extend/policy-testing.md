@@ -7,7 +7,7 @@ mapped_pages:
 
 Policy tests allow you to verify that an integration policy will be accepted by Fleet, and will create an expect Elastic Agent policy.
 
-An Elastic Agent policy is used by Fleet to define the data that will be collected by the Elastic Agent. Within the Elastic Agent policies is a set of integration policies, which define how the integrations input will be configured.
+An Elastic Agent policy is used by Fleet to define the data that will be collected by the Elastic Agent. Within the Elastic Agent policies is a set of integration policies, which define how each integration's input will be configured.
 
 Policy tests allow you to define the expected integration policy, and test that the generated policy is correct.
 

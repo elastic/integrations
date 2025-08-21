@@ -348,7 +348,7 @@ cat data_stream/*/fields/fields.yml
 
 ### Test Coverage [test-coverage]
 
-Ensure comprehensive coverage:
+Ensure comprehensive coverage by writing tests that can cover as many different scenarios and types of data as possible:
 ```bash
 # Test different log levels
 test-debug.log

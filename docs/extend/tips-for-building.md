@@ -157,7 +157,7 @@ Sometimes logs are in a format that needs special parsing, like a `key=value msg
           if (inQuote) {
             continue;
           }
-          
+
           if (c == (char)'=') {
             kvSplit = i;
           }
@@ -198,19 +198,17 @@ When using functions in painless, the functions need to be defined first. Here's
 
 Functions might not be necessary if the code can be refactored to use `forEach` loops.
 
-### Making useful changes (`_dev` etc)
+### `_dev` contents.
 
-When building the package (`elastic-package build`), the `_dev` directory is used to generate `docs/README.md`, as well as the built package zip. It is also used to create a docker container.
+The `_dev` directory in the package root and data_stream directories contain files which control some aspects of how the package is built and tested.
 
-The `docs/README.md` file is generally auto-generated from `_dev/build/docs/README.md`, which also processes some Go format directives for dumping field information into the document. Create the directory structure, as well as the files that dictate how docker runs system tests.
+#### README
 
-```shell line
-mkdir -pv _dev/deploy/docker/sample_logs
-mkdir -pv _dev/build/docs
-mv docs/README _dev/build/docs
-rmdir docs
-mkdir -pv data_stream/new_data_stream/_dev/test/{pipeline,system}
-```
+The `docs/README.md` file is generally auto-generated from `_dev/build/docs/README.md`, which also processes some Go format directives for adding field information, sample events and input documentation into the document.
+
+#### Service deployment
+
+For use with system tests, the `_dev/deploy` directory controls how service deployments are run.
 
 An example `_dev/deploy/docker/docker-compose.yml`:
 ```yaml
@@ -228,6 +226,7 @@ Sample logs can be placed in `_dev/deploy/docker/sample_logs/integration.log`:
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line" logtype="server"
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line 2" logtype="server"
 ```
+Together, these two files will start a service which write the sample logs to a UDP socket on port 5144. The Elastic Agent will listen to the data on this port, and process it in a system test.
 
 ### Kibana support
 
@@ -374,10 +373,6 @@ When running `elastic-package export dashboards`, it will list all dashboards an
 If edits to the dashboard are needed later, the file may need to be completely replaced with a new export, as all the UUIDs will change if cloning is required.
 
 When in the dashboard view, create a data filter, otherwise `elastic-package check` will fail the dashboard. Next to the `KQL` search box is a `+` button for this purpose. A good initial filter is `data_stream.dataset : integration-name.log`.
-
-### Demo time!
-
-The pre-installed docker agent may not update the ports it is listening on, so starting a new agent and applying the policy with the installed integration might be necessary. This issue was fixed recently, but the update may not have been propagated back to 8.11.4, which is the default Kibana version that `elastic-package` uses as the support floor.
 
 # Pipeline Best Practices
 
@@ -605,9 +600,3 @@ elastic-package test [pipeline|test|static|asset] -v -g
 
     If a fields file (e.g. `package-fields.yml`) doesn't contain any field definitions or it defines root only, it can be removed.
 
-    Bad candidate:
-
-    ```yaml
-    - name: mypackage.mydataset
-      type: group
-    ```
