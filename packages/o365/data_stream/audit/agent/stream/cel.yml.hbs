@@ -81,7 +81,8 @@ program: |-
       state.work.todo_content[0].as(l,
         // This depends on state.work.todo_content being ordered ascending by contentCreated.
         // If this is not the case, this needs to be replaced with a linear scan for the
-        // oldest, putting the oldest in the link and the rest in the remaining todo list.
+        // oldest, putting the oldest in the current content and the rest in the remaining
+        // todo list.
         {
           "cursor": state.?cursor.orValue({}).with(
             {
@@ -92,7 +93,7 @@ program: |-
           ),
           "work": state.work.with(
             {
-              "link": l, // debugging value only
+              "curr_content": l, // debugging value only
               "todo_content": tail(state.work.todo_content),
             }
           ),
@@ -147,9 +148,9 @@ program: |-
                 ),
               }
             ),
-            "work": state.work.drop(["link", "next_list"]).with(
+            "work": state.work.drop(["curr_content", "next_list"]).with(
               {
-                ?"link": list[?0], // debugging value only
+                ?"curr_content": list[?0], // debugging value only
                 ?"next_list": [
                   // Work around non-conformance with HTTP header MIME standards.
                   ?list_resp.Header.?Nextpageuri[0],
@@ -347,9 +348,9 @@ program: |-
                           ),
                         }
                       ),
-                      "work": state.work.drop(["link", "next_list"]).with(
+                      "work": state.work.drop(["curr_content", "next_list"]).with(
                         {
-                          ?"link": list[?0], // debugging value only
+                          ?"curr_content": list[?0], // debugging value only
                           ?"next_list": [
                             // Work around non-conformance with HTTP header MIME standards.
                             ?list_resp.Header.?Nextpageuri[0],
