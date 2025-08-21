@@ -1,0 +1,137 @@
+- name: kafka.log_manager
+  type: group
+  description: Kafka log manager metrics
+  fields:
+    - name: metric_fingerprint
+      type: keyword
+      dimension: true
+      description: A fingerprint of the metric path.
+    - name: cleaner
+      type: group
+      description: Log cleaner metrics
+      fields:
+        - name: recopy_percent
+          type: double
+          description: The percentage of bytes recopyied during log cleaning
+        
+        - name: dead_thread_count
+          type: double
+          description: The number of dead log cleaner threads
+        
+        - name: max_buffer_utilization_percent
+          type: double
+          description: The maximum percentage of the log cleaner's buffer that has been utilized
+        
+        - name: max_clean_time_secs
+          type: double
+          description: The maximum time taken to clean a log in seconds
+        
+        - name: max_compaction_delay_secs
+          type: double
+          description: The maximum delay in seconds for compactions
+    
+    - name: directory_offline_count
+      type: group
+      fields:
+        - name: value
+          type: long
+          description: The number of offline log directories
+        - name: log_directory
+          type: keyword
+          dimension: true
+          description: The log directory path
+    
+    - name: cleaner_manager
+      type: group
+      description: Log cleaner manager metrics
+      fields:
+        - name: max_dirty_percent
+          type: double
+          description: The maximum percentage of dirty logs that can be accumulated before log cleaning is triggered
+        
+        - name: time_since_last_run_ms
+          type: double
+          format: duration
+          description: The time in milliseconds since the last log cleaner run
+        
+        - name: uncleanable_bytes
+          type: group
+          fields:
+            - name: value
+              type: double
+              format: bytes
+              description: The number of bytes that cannot be cleaned
+            - name: log_directory
+              type: keyword
+              dimension: true
+              description: The log directory path
+        
+        - name: uncleanable_partitions_count
+          type: group 
+          fields:
+            - name: value
+              type: double
+              description: The number of partitions that cannot be cleaned
+            - name: log_directory
+              type: keyword
+              dimension: true
+              description: The log directory path
+    
+    - name: flush_stats
+      type: group
+      description: Log flush statistics
+      fields:
+        - name: rate_and_time_ms
+          type: group
+          description: Log flush rate and time metrics
+          fields:
+            - name: count
+              type: double
+              description: Total number of log flushes
+            
+            - name: one_minute_rate
+              type: double
+              description: One-minute rate of log flushes
+            
+            - name: five_minute_rate
+              type: double
+              description: Five-minute rate of log flushes
+            
+            - name: fifteen_minute_rate
+              type: double
+              description: Fifteen-minute rate of log flushes
+            
+            - name: mean_rate
+              type: double
+              description: Mean rate of log flushes
+            
+            - name: mean
+              type: double
+              format: duration
+              description: Mean log flush time in milliseconds
+            
+            - name: min
+              type: double
+              format: duration
+              description: Minimum log flush time in milliseconds
+            
+            - name: max
+              type: double
+              format: duration
+              description: Maximum log flush time in milliseconds
+    
+    - name: directory_offline
+      type: integer
+      description: Indicates if the log directory is offline
+    
+    - name: offline_directory_count
+      type: double
+      description: The number of offline log directories
+    
+    - name: remaining_logs_to_recover
+      type: double
+      description: The number of logs that still need to be recovered
+    
+    - name: remaining_segments_to_recover
+      type: double
+      description: The number of segments that still need to be recovered
