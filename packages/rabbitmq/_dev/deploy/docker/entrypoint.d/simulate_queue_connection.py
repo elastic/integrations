@@ -54,10 +54,10 @@ print("Declared queue: {}".format(QUEUE_NAME))
 
 # Publish 100 test messages to the queue, one per second
 for i in range(1, 101):
-    message = "Test message {}".format(i)
+    message = "Test message {}".format(i)  # Create the message string
     # Publish the message to the default exchange with the queue as the routing key
     channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
-    print("Published: {}".format(message))
+    print("Published: {}".format(message))  # Print confirmation of published message
     time.sleep(1)  # Wait 1 second between messages
 
 # Print that the script is about to start consuming messages
@@ -65,7 +65,7 @@ print("Consuming messages from the queue...")
 
 def callback(ch, method, properties, body):
     # Callback function to process each received message
-    print("Received: {}".format(body.decode()))
+    print("Received: {}".format(body.decode()))  # Print the received message
     # Simulate message processing time
     time.sleep(1)
     # Acknowledge the message so it is removed from the queue
