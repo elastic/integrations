@@ -47,22 +47,3 @@ Use this configuration to run the collector.
 ### IIS metrics
 
 Refer to [the documentation of the OpenTelemetry's IIS receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/iisreceiver/documentation.md).
-
-The following IIS receiver metrics are used in the dashboard:
-
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| iis.connection.active | Number of active connections. | long | gauge |
-| iis.connection.anonymous | Total number of connections established anonymously. | long | counter |
-| iis.connection.attempt.count | Total number of attempts to connect to the server. | long | counter |
-| iis.network.blocked | Number of bytes blocked due to bandwidth throttling. | long | counter |
-| iis.network.file.count | Number of transmitted files. | long | counter |
-| iis.network.io | Total amount of bytes sent and received. | long | counter |
-| iis.request.count | Total number of requests of a given type. | long | counter |
-| iis.request.queue.age.max | Age of oldest request in the queue. | long | gauge |
-| iis.request.queue.count | Current number of requests in the queue. | long | gauge |
-| iis.request.rejected | Total number of requests rejected. | long | counter |
-| iis.thread.active | Current number of active threads. | long | gauge |
-| iis.uptime | The amount of time the server has been up. | long | gauge |
-
-Resource attribute `iis.site` can be used to filter data by site.
