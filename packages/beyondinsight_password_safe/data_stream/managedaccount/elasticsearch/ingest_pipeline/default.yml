@@ -1,17 +1,18 @@
 ---
-description: Pipeline for processing BeyondInsight and Password Safe Managed Accounts logs
+description: Pipeline for processing BeyondInsight and Password Safe Managed Accounts logs.
 processors:
-  - rename:
-      field: message
-      target_field: beyondinsight_password_safe.managedaccount
-
-  - drop:
-      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
-
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - fingerprint:
       fields:
-        - beyondinsight_password_safe.managedaccount
-      target_field: "_id"
+        - event.original
+      target_field: _id
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondinsight_password_safe.managedaccount
 
 ####################
 # Scripts for processing input #
@@ -87,14 +88,6 @@ processors:
   - append:
       field: event.type
       value: info
-
-  - set:
-      field: event.dataset
-      value: beyondinsight_password_safe.managedaccount
-
-  - set:
-      field: event.module
-      value: beyondinsight_password_safe
 
   - convert:
       field: beyondinsight_password_safe.managedaccount.system_id
@@ -188,9 +181,13 @@ processors:
         - ISO8601
 
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+        
