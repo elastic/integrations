@@ -367,6 +367,28 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "network"}}
 
+### NTP
+
+The System `ntp` data stream provides Network Time Protocol metrics (offsets) collected from the
+NTP servers. One event is created for NTP server.
+
+#### Supported operating systems
+
+- FreeBSD
+- Linux
+- macOS
+- Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "ntp"}}
+
 ### Process
 
 The System `process` data stream provides process statistics. One document is
