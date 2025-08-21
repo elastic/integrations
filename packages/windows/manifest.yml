@@ -1,6 +1,6 @@
 name: windows
 title: Windows
-version: 3.1.0
+version: 3.2.0
 description: Collect logs and metrics from Windows OS and services with Elastic Agent.
 type: integration
 categories:
@@ -26,9 +26,10 @@ screenshots:
     title: applocker audited and blocked events
     size: 3040x2960
     type: image/png
+policy_templates_behavior: individual_policies
 policy_templates:
   - name: windows
-    title: Windows logs and metrics
+    title: Windows
     description: Collect logs and metrics from Windows instances
     inputs:
       - type: winlog
@@ -37,6 +38,102 @@ policy_templates:
       - type: windows/metrics
         title: Collect Windows perfmon and service metrics
         description: Collecting perfmon and service metrics from Windows instances
+  - name: applocker
+    title: Windows AppLocker
+    description: Collect Windows AppLocker events
+    data_streams:
+      - applocker_exe_and_dll
+      - applocker_msi_and_script
+      - applocker_packaged_app_deployment
+      - applocker_packaged_app_execution
+    categories:
+      - security
+    inputs:
+      - type: winlog
+        title: Collect Windows AppLocker events
+        description: Collect Windows AppLocker events from the Windows Event Log.
+    screenshots:
+      - src: /img/applocker-windows-audit-and-blocked.png
+        title: applocker audited and blocked events
+        size: 3040x2960
+        type: image/png
+  - name: forwarded
+    title: Windows Forwarded Events
+    description: Collect Windows Forwarded events
+    data_streams:
+      - forwarded
+    categories:
+      - security
+    inputs:
+      - type: winlog
+        title: Collect Windows Forwarded events
+        description: Collect Windows Forwarded events from the Windows Event Log.
+  - name: perfmon
+    title: Windows perfmon metrics
+    description: Collect Windows perfmon metrics
+    data_streams:
+      - perfmon
+    categories:
+      - os_system
+    inputs:
+      - type: windows/metrics
+        title: Collect Windows perfmon metrics
+        description: Collect Windows metrics from Windows Performance Monitor.
+  - name: powershell
+    title: Windows  PowerShell
+    description: Collect Windows PowerShell events
+    data_streams:
+      - powershell
+      - powershell_operational
+    categories:
+      - security
+    inputs:
+      - type: winlog
+        title: Collect Windows PowerShell events
+        description: Collect Windows PowerShell events from the Windows Event Log.
+    icons:
+      - src: /img/powershell.svg
+        title: logo powershell
+        size: 32x32
+        type: image/svg+xml
+  - name: service
+    title: Windows service metrics
+    description: Collect Windows service metrics
+    data_streams:
+      - service
+    categories:
+      - os_system
+    inputs:
+      - type: windows/metrics
+        title: Collect Windows service metrics
+        description: Collect Windows service metrics from Windows hosts.
+    screenshots:
+      - src: /img/metricbeat-windows-service.png
+        title: metricbeat windows service
+        size: 3142x1834
+        type: image/png
+  - name: sysmon
+    title: Windows Sysmon
+    description: Collect Windows Sysmon events
+    data_streams:
+      - sysmon_operational
+    categories:
+      - security
+    inputs:
+      - type: winlog
+        title: Collect Windows Sysmon events
+        description: Collect Windows Sysmon events from the Windows Event Log.
+  - name: windows_defender
+    title: Windows Defender
+    description: Collect Windows Defender events
+    data_streams:
+      - windows_defender
+    categories:
+      - security
+    inputs:
+      - type: winlog
+        title: Collect Windows Defender events
+        description: Collect Windows Defender events from the Windows Event Log.
 owner:
   github: elastic/elastic-agent-data-plane
   type: elastic
