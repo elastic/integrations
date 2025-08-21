@@ -7,7 +7,19 @@ It has the following data streams:
 - **`intelligence`** Indicators retrieved from the Anomali ThreatStream API's intelligence endpoint.
 - **`threatstream`** Indicators received from the Anomali ThreatStream Elastic Extension, which is additional software. This is deprecated.
 
-If you run in the cloud (Cloud Hosted of Serverless), this integration is available [agentless](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) from cluster version 8.17 onward - if this criteria is met, you don't need to install an Elastic Agent to gather these metrics.
+## Requirements
+
+### Agentless enabled integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+You can install only one Elastic Agent per host.
+Elastic Agent is required to stream data from the REST API or webhook and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Logs
 

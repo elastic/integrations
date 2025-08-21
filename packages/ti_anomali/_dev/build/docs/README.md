@@ -20,6 +20,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 You can install only one Elastic Agent per host.
 Elastic Agent is required to stream data from the REST API or webhook and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
 ## Logs
 
 ### Expiration of Indicators of Compromise (IOCs)
