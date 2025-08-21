@@ -377,6 +377,7 @@ NTP servers. One event is created for NTP server.
 - FreeBSD
 - Linux
 - macOS
+- OpenBSD
 - Windows
 
 #### Permissions
