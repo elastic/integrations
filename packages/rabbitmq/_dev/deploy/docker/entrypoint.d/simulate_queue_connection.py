@@ -8,7 +8,8 @@ import socket
 QUEUE_NAME = "test-queue"
 # Hostname where RabbitMQ is running
 RABBITMQ_HOST = "localhost"
-RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")  # default if not set
+# Environment variables for RabbitMQ credentials
+RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")
 RABBITMQ_PASS = os.getenv("RABBITMQ_PASS", "guest")
 
 # Wait for RabbitMQ to be ready before connecting
@@ -21,20 +22,25 @@ def wait_for_rabbitmq(host, port, timeout=60):
     start = time.time()
     while True:
         try:
+            # Attempt to create a socket connection to RabbitMQ
             s = socket.create_connection((host, port), 2)
+            # If successful, close the socket and return
             s.close()
             return
         except Exception:
+            # If connection fails, check if timeout has been exceeded
             if time.time() - start > timeout:
                 raise RuntimeError("Timed out waiting for RabbitMQ")
             print("Waiting for RabbitMQ to be ready...")
+            # If not ready, wait a bit before trying again
             time.sleep(2)
 
 # Wait for RabbitMQ server to be ready before proceeding
 wait_for_rabbitmq(RABBITMQ_HOST, 5672)
 
-# Establish connection with connection_attempts and retry_delay
+# Create credentials for RabbitMQ connection using the provided user and password
 credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
+# Set up connection parameters with retries and timeout
 parameters = pika.ConnectionParameters(
     RABBITMQ_HOST,
     5672,
@@ -44,7 +50,9 @@ parameters = pika.ConnectionParameters(
     retry_delay=3,
     socket_timeout=5
 )
+# Create a connection to RabbitMQ using the specified parameters
 connection = pika.BlockingConnection(parameters)
+# create a channel to communicate with RabbitMQ
 channel = connection.channel()
 
 # Declare queue
