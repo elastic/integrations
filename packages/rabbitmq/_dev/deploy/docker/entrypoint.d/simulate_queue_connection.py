@@ -49,27 +49,36 @@ channel = connection.channel()
 
 # Declare queue
 channel.queue_declare(queue=QUEUE_NAME, durable=True)
+# Print confirmation that the queue was declared
 print("Declared queue: {}".format(QUEUE_NAME))
 
-# Publish messages
+# Publish 100 test messages to the queue, one per second
 for i in range(1, 101):
     message = "Test message {}".format(i)
+    # Publish the message to the default exchange with the queue as the routing key
     channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
     print("Published: {}".format(message))
-    time.sleep(1)
+    time.sleep(1)  # Wait 1 second between messages
 
-# Consume messages
+# Print that the script is about to start consuming messages
 print("Consuming messages from the queue...")
+
 def callback(ch, method, properties, body):
+    # Callback function to process each received message
     print("Received: {}".format(body.decode()))
-    # Simulate processing time
+    # Simulate message processing time
     time.sleep(1)
+    # Acknowledge the message so it is removed from the queue
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
-channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback)
+# Start consuming messages from the queue using the callback function
+debug_consume = channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback)
 try:
+    # Enter a loop that waits for and processes messages
     channel.start_consuming()
 except KeyboardInterrupt:
+    # Handle Ctrl+C gracefully
     print("Stopped consuming.")
 finally:
+    # Always close the connection when done
     connection.close()
