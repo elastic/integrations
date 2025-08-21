@@ -51,7 +51,7 @@ The process for modifying the repo is to fork it and then create a PR into the r
 
 The `elastic-package create package` command drops the creation into the current directory, so run it from the `packages/` directory, or move the new directory afterward.
 
-```bash no-copy
+```bash
 $ cd packages
 $ elastic-package create package
 Create a new package
@@ -341,7 +341,7 @@ Pipeline tests are the best way to get the processors working and resolve painle
 
 When creating fields with mappings to send data into the stack, create a `data_stream/log/fields/fields.yml` file with the nested fields. This information can sometimes be scraped from documentation websites. Here's an example:
 
-```yaml title=fields.yml
+```yaml
 - name: integration
   type: group
   fields:

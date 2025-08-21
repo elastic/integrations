@@ -175,7 +175,7 @@ _dev/deploy/tf/
 ```
 
 **Example `main.tf`:**
-```hcl
+```
 variable "TEST_RUN_ID" {
   default = "detached"
 }
