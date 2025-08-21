@@ -168,3 +168,5 @@ The order of action items on the checklist is advised to prevent the contributor
 12. Kibana: use `stream.data stream` field instead of `event.data stream`.
 
     Using `stream.data stream` instead of `event.data stream` also makes queries a lot more efficient as this is a `constant_keyword`. Make sure that dashboards in your package don’t use the `event.data stream` field. If so, simply replace them with the more efficient one.
+
+

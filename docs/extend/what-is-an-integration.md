@@ -48,3 +48,6 @@ Integrations have a strict, well-defined structure, and offer a number of benefi
 5. Visualize the results
 
     Integrations can and should ship with custom dashboards and visualizations that are installed with the integration. Use these for a tailored view of your {{observability}} data.
+
+
+

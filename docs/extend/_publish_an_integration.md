@@ -33,3 +33,5 @@ Please review both pull requests on your own, check if CI is happy and merge - f
 ::::{tip}
 When you are ready for your changes in the integration to be released, remember to bump up the package version. It is up to you, as the package developer, to decide how many changes you want to release in a single version. For example, you could implement a change in a PR and bump up the package version in the same PR. Or you could implement several changes across multiple pull requests and then bump up the package version in the last of these pull requests or in a separate follow up PR.
 ::::
+
+

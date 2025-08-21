@@ -61,3 +61,4 @@ Finally, when all the asset loading tests have completed, bring down the {{stack
 ```bash
 elastic-package stack down
 ```
+
