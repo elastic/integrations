@@ -35,6 +35,10 @@ processors:
         }
         dropEmptyFields(ctx);
 
+  - rename:
+      field: beyondinsight_password_safe.managedaccount.IsISAAccess
+      target_field: beyondinsight_password_safe.managedaccount.is_isa_access
+      ignore_missing: true
   - script:
       description: Convert Additional Info keys to snake case.
       tag: additional-info-keys-to-snake-case
@@ -127,6 +131,12 @@ processors:
       if: ctx.beyondinsight_password_safe.managedaccount.domain_name != null
 
   - convert:
+      field: beyondinsight_password_safe.managedaccount.application_id
+      type: string
+  - convert:
+      field: beyondinsight_password_safe.managedaccount.platform_id
+      type: string
+  - convert:
       field: beyondinsight_password_safe.managedaccount.account_id
       type: string
 
@@ -179,6 +189,19 @@ processors:
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SS
         - ISO8601
+  - script:
+      description: Convert ChangeState numeric values to human-readable format.
+      tag: script_change_state_strings
+      lang: painless
+      source: |
+        def changeStateMap = [0: 'idle', 1: 'changing', 2: 'queued'];
+        if (ctx.beyondinsight_password_safe?.managedaccount?.change_state != null) {
+          def numericState = ctx.beyondinsight_password_safe.managedaccount.change_state;
+          def readableState = changeStateMap.get(numericState);
+          if (readableState != null) {
+            ctx.beyondinsight_password_safe.managedaccount.change_state = readableState;
+          }
+        }
 
 on_failure:
   - set:
@@ -190,4 +213,3 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
-        
