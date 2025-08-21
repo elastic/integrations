@@ -22,17 +22,3 @@ Ready to monitor, ingest, and visualize something? Let’s get started.
 ::::{tip}
 Familiar with the {{stack}} and just want a quick way to get started? See [*Quick start: Sample integration*](/extend/quick-start.md).
 ::::
-
-
-
-
-
-
-
-
-
-
-
-
-
-

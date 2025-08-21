@@ -86,4 +86,3 @@ For more information on variable property definitions, refer to [Define variable
 ## Agentless capabilities [agentless-capabilities]
 
 The capabilities feature protects agentless deployments from allowing undesired inputs to run. A static `capabilities.yml` file defines these allowed and disallowed inputs and is passed to deployed agents. To determine which capabilities are currently allowed on Agentless, refer to [`capabilities.yml`](https://github.com/elastic/agentless-controller/blob/main/controllers/config/capabilities.yml).
-

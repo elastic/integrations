@@ -19,5 +19,3 @@ The wizard walks you through the creation of the package, including setting a pa
 It may not do anything yet, but your integration can be built and loaded into your locally running package registry from this step forward. Jump to [Build](/extend/build-it.md) at any point in this documentation to take your integration for a test run.
 
 ::::
-
-

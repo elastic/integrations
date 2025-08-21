@@ -211,4 +211,3 @@ Consider:
 
 2. Updating the `timestamp` of the document being rejected.
 3. Finding a fix to receive the document without a delay.
-

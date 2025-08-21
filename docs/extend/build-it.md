@@ -22,4 +22,3 @@ With the package built, run the following command from inside of the integration
 ```bash
 elastic-package stack up --services package-registry
 ```
-

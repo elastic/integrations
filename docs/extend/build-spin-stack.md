@@ -27,5 +27,3 @@ elastic-package stack down
 ```
 
 ::::
-
-

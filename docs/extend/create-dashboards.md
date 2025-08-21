@@ -120,4 +120,3 @@ These descriptions are visualized in the {{kib}} UI. It would be better experien
 ```bash
 elastic-package export
 ```
-

@@ -11,4 +11,3 @@ Before building an integration, you should have an understanding of the followin
 * The [*Package specification*](/extend/package-spec.md)
 
 In addition, you must have [`elastic-package`](/extend/elastic-package.md) installed on your machine. Using `elastic-package` is recommended for integration maintainers as it provides crucial utilities and scripts for building out integrations.
-

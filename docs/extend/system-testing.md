@@ -3,117 +3,201 @@ mapped_pages:
   - https://www.elastic.co/guide/en/integrations-developer/current/system-testing.html
 ---
 
-# System testing [system-testing]
+# System Testing Guide [system-testing]
 
-Elastic Packages comprise of data streams. A system test exercises the end-to-end flow of data for a package’s data stream — from ingesting data from the package’s integration service all the way to indexing it into an {{es}} data stream.
+System tests validate the complete data flow from your integration service to Elasticsearch, ensuring that data is properly ingested, processed, and indexed. This guide covers setting up and running system tests using `elastic-package`.
 
+For more information on system tests, please refer to [HOWTO: Writing system tests for a package](https://github.com/elastic/elastic-package/blob/main/docs/howto/system_testing.md)
 
-## Conceptual process [system-concepts]
-
-Conceptually, running a system test involves the following steps:
-
-1. Deploy the {{stack}}, including {{es}}, {{kib}}, and the {{agent}}. This step takes time. so you should typically do it once as a prerequisite to running system tests on multiple data streams.
-2. Enroll the {{agent}} with {{fleet}} (running in the {{kib}} instance). This step also can be done once, as a prerequisite.
-3. Depending on the Elastic Package whose data stream is being tested, deploy an instance of the package’s integration service.
-4. Create a test policy that configures a single data stream for a single package.
-5. Assign the test policy to the enrolled Agent.
-6. Wait a reasonable amount of time for the Agent to collect data from the integration service and index it into the correct {{es}} data stream.
-7. Query the first 500 documents based on `@timestamp` for validation.
-8. Validate mappings are defined for the fields contained in the indexed documents.
-9. Validate that the JSON data types contained `_source` are compatible with mappings declared for the field.
-10. Delete test artifacts and tear down the instance of the package’s integration service.
-11. Once all desired data streams have been system tested, tear down the {{stack}}.
-
-
-## Limitations [system-test-limitations]
-
-At the moment, system tests have limitations. The salient ones are: * There isn’t a way to assert that the indexed data matches data from a file (e.g. golden file testing).
-
-
-## Defining a system test [system-test-definition]
-
-Packages have a specific folder structure (only relevant parts shown).
+## Quick Start [system-quickstart]
 
 ```bash
-<package root>/
-  data_stream/
-    <data stream>/
-      manifest.yml
-  manifest.yml
+# Start the Elastic stack
+elastic-package stack up -d
+$(elastic-package stack shellinit)
+
+# Run system tests
+cd packages/your-package
+elastic-package test system
+
+# Clean up
+elastic-package stack down
 ```
 
-To define a system test we must define configuration on at least one level: a package or a data stream’s one.
+## What System Tests Validate [system-validation]
 
-First, we must define the configuration for deploying a package’s integration service. We can define it on either the package level:
+System tests verify:
+- Data ingestion from your service to the Elastic Agent
+- Pipeline processing and field mappings
+- Document indexing into Elasticsearch data streams
+- Field type compatibility and mapping validation
+- Integration configuration and policy deployment
 
-```bash
-<package root>/
+The test framework automatically:
+1. Deploys your integration service (Docker/Kubernetes/Terraform)
+2. Configures the Elastic Agent with test policies
+3. Collects and indexes sample data
+4. Validates the first 500 documents by timestamp
+5. Checks field mappings and data type compatibility
+6. Cleans up test artifacts
+
+## Setting Up System Tests [system-setup]
+
+System tests require two main components:
+
+### 1. Service Deployment Configuration
+
+Define how to deploy your integration service for testing. Choose one of three deployment methods:
+
+**Package-level deployment** (applies to all data streams):
+```
+<package-root>/
   _dev/
     deploy/
-      <service deployer>/
-        <service deployer files>
+      docker/          # Docker Compose
+      k8s/            # Kubernetes  
+      tf/             # Terraform
 ```
 
-or the data stream’s level:
-
-```bash
-<package root>/
+**Data stream-level deployment** (specific to one data stream):
+```
+<package-root>/
   data_stream/
-    <data stream>/
+    <data-stream>/
       _dev/
         deploy/
-          <service deployer>/
-            <service deployer files>
+          docker/
 ```
 
-`<service deployer>` - a name of the supported service deployer:
+With the service deployer, you configure the service which will send data to your integration during the test. A live service can be configured to run and send data to the integration, to provide a realistic complete system test.
 
-* `docker` - Docker Compose
-* `k8s` - Kubernetes
-* `tf` - Terraform
+As running a live service is often not possible, mock data, using a real transport, is often used for system tests. For example, if a service provides data with syslog over UDP, instead of running a live service, the data can be sent by setting up a deployment which writes mock syslog data to a socket listening to UDP.
+[elastic/stream](https://github.com/elastic/stream) is a utility which can be used with system tests to stream mock data to many types of protocols.
 
+### 2. Test Case Configuration
 
-### Docker Compose service deployer [system-docker-compose]
+Define test scenarios for each data stream:
 
-The `<service deployer files>` must include a `docker-compose.yml` file when using the Docker Compose service deployer. The `docker-compose.yml` file defines the integration service for the package. For example, if your package has a logs data stream, the log files from your package’s integration service must be written to a volume. For example, the `apache` package has the following definition in it’s integration service’s `docker-compose.yml` file.
+```
+<package-root>/
+  data_stream/
+    <data-stream>/
+      _dev/
+        test/
+          system/
+            test-<scenario>-config.yml
+```
 
-```bash
+The test case configuration defines the agent and integration configuration used in the tests, as well as the service deployer configuration used.
+## Deployment Methods [deployment-methods]
+
+### Docker Compose [docker-deployment]
+
+Most common for testing services that can run in containers.
+
+**File structure:**
+```
+_dev/deploy/docker/
+  docker-compose.yml
+  Dockerfile (optional)
+  config/ (optional)
+```
+
+**Example `docker-compose.yml`:**
+```yaml
 version: '2.3'
 services:
   apache:
-    # Other properties such as build, ports, etc.
+    image: httpd:2.4
+    ports:
+      - "80"
     volumes:
       - ${SERVICE_LOGS_DIR}:/usr/local/apache2/logs
+    environment:
+      - APACHE_LOG_LEVEL=info
 ```
 
-Here, `SERVICE_LOGS_DIR` is a special keyword. It is something that we will need later.
+**Key placeholders:**
+- `${SERVICE_LOGS_DIR}` - Maps to log directory accessible by Agent
+- `${HOSTNAME}` - Service hostname for Agent configuration
 
+### Kubernetes [k8s-deployment]
 
-### Terraform service deployer [system-terraform]
+Useful for testing Kubernetes-native integrations or when you need orchestration.
 
-When using the Terraform service deployer, the `<service deployer files>` must include at least one `*.tf` file. The `*.tf` files define the infrastructure using the Terraform syntax. The Terraform-based service can be handy to boot up resources using a selected cloud provider and use them for testing (e.g. observe and collect metrics).
-
-Sample `main.tf` definition:
-
+**Prerequisites:**
 ```bash
+# Install kind and create cluster
+wget -qO- https://raw.githubusercontent.com/elastic/elastic-package/main/scripts/kind-config.yaml | kind create cluster --config -
+```
+
+**File structure:**
+```
+_dev/deploy/k8s/
+  deployment.yaml
+  service.yaml
+  .empty (if no YAML files needed)
+```
+
+**Example deployment:**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+```
+
+### Terraform [terraform-deployment]
+
+Best for cloud resources or complex infrastructure testing.
+
+**File structure:**
+```
+_dev/deploy/tf/
+  main.tf
+  variables.tf (optional)
+  outputs.tf (optional)
+```
+
+**Example `main.tf`:**
+```hcl
 variable "TEST_RUN_ID" {
   default = "detached"
 }
 
-provider "aws" {}
+provider "aws" {
+  region = "us-west-2"
+}
 
-resource "aws_instance" "i" {
-  ami           = data.aws_ami.latest-amzn.id
-  monitoring = true
-  instance_type = "t1.micro"
+resource "aws_instance" "test_instance" {
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t3.micro"
+  monitoring    = true
+  
   tags = {
     Name = "elastic-package-test-${var.TEST_RUN_ID}"
   }
 }
 
-data "aws_ami" "latest-amzn" {
+data "aws_ami" "amazon_linux" {
   most_recent = true
-  owners = [ "amazon" ] # AWS
+  owners      = ["amazon"]
+  
   filter {
     name   = "name"
     values = ["amzn2-ami-hvm-*"]
@@ -121,124 +205,193 @@ data "aws_ami" "latest-amzn" {
 }
 ```
 
-Notice the use of the `TEST_RUN_ID` variable. It contains a unique ID, which can help differentiate resources created in potential concurrent test runs.
+**Built-in variables:**
+- `TEST_RUN_ID` - Unique identifier for concurrent test isolation
 
+## Test Configuration [test-config]
 
-### Kubernetes service deployer [system-kubernetes]
+### Basic Configuration [basic-config]
 
-The Kubernetes service deployer requires the `_dev/deploy/k8s` directory to be present. It can include additional `*.yaml` files to deploy custom applications in the Kubernetes cluster (e.g. Nginx deployment). If no resource definitions (`*.yaml` files ) are needed, the `_dev/deploy/k8s` directory must contain an `.empty` file (to preserve the `k8s` directory under version control).
-
-The Kubernetes service deployer needs [kind](https://kind.sigs.k8s.io/) to be installed and the cluster to be up and running:
-
-```bash
-wget -qO-  https://raw.githubusercontent.com/elastic/elastic-package/main/scripts/kind-config.yaml | kind create cluster --config -
-```
-
-Before executing system tests, the service deployer applies once the deployment of the {{agent}} to the cluster and links the kind cluster with the Elastic stack network - applications running in the kind cluster can reach {{es}} and {{kib}} instances. The {{agent}}'s deployment is not deleted after tests to shorten the total test execution time, but it can be reused.
-
-See how to execute system tests for the Kubernetes integration (`pod` data stream):
-
-```bash
-elastic-package stack up -d -v # start the Elastic stack
-wget -qO-  https://raw.githubusercontent.com/elastic/elastic-package/main/scripts/kind-config.yaml | kind create cluster --config -
-elastic-package test system --data-streams pod -v # start system tests for the "pod" data stream
-```
-
-
-### Test case definition [system-test-case]
-
-Next, we must define at least one configuration for each data stream that we want to system test. You can define multiple test cases for the same data stream.
-
-*Hint: if you plan to define only one test case, you can consider the filename `test-default-config.yml`.*
-
-```bash
-<package root>/
-  data_stream/
-    <data stream>/
-      _dev/
-        test/
-          system/
-            test-<test_name>-config.yml
-```
-
-The `test-<test_name>-config.yml` file allows you to define values for package and data stream-level variables. For example, the `apache/access` data stream’s `test-access-log-config.yml` is shown below.
-
-```bash
-vars: ~
-input: logfile
+**Example `test-default-config.yml`:**
+```yaml
+vars: ~  # Use package-level defaults
+input: logfile  # Select input type if multiple exist
 data_stream:
   vars:
     paths:
       - "{{SERVICE_LOGS_DIR}}/access.log*"
+    exclude_files: [".gz$"]
 ```
 
-The top-level `vars` field corresponds to package-level variables defined in the `apache` package’s `manifest.yml` file. In the above example, we don’t override any of these package-level variables, so their default values, are used in the `apache` package’s `manifest.yml` file.
+### Advanced Configuration [advanced-config]
 
-The `data_stream.vars` field corresponds to data stream-level variables for the current data stream (`apache/access` in the above example). In the above example we override the `paths` variable. All other variables are populated with their default values, as specified in the `apache/access` data stream’s `manifest.yml` file.
+**Multiple test scenarios:**
+```yaml
+# test-custom-config.yml
+vars:
+  username: testuser
+  password: testpass
+data_stream:
+  vars:
+    hosts: ["{{Hostname}}:{{Port}}"]
+    ssl.enabled: true
+    period: 30s
+```
 
-Notice the use of the `{{SERVICE_LOGS_DIR}}` placeholder. This corresponds to the `${SERVICE_LOGS_DIR}` variable we saw in the `docker-compose.yml` file earlier. In the above example, the `/usr/local/apache2/logs/access.log*` files located inside the Apache integration service container become available at the same path from {{agent}}'s perspective.
+**Testing specific input types:**
+```yaml
+# test-tcp-config.yml  
+input: tcp
+data_stream:
+  vars:
+    listen_address: "0.0.0.0"
+    listen_port: 8080
+```
 
-When a data stream’s manifest declares multiple streams with different inputs you can use the `input` option to select the stream to test. The first stream whose input type matches the `input` value will be tested. By default, the first stream declared in the manifest will be tested.
+### Configuration Placeholders [placeholders]
 
+Use these placeholders in your test configuration:
 
-#### Placeholders [system-placeholders]
+| Placeholder | Type | Description |
+|-------------|------|-------------|
+| `{{Hostname}}` | string | Service hostname/IP |
+| `{{Port}}` | int | First exposed port |
+| `{{Ports}}` | []int | All exposed ports |
+| `{{SERVICE_LOGS_DIR}}` | string | Log directory path for Agent |
+| `{{Logs.Folder.Agent}}` | string | Same as SERVICE_LOGS_DIR |
 
-The `SERVICE_LOGS_DIR` placeholder is not the only one available for use in a data stream’s `test-<test_name>-config.yml` file. The complete list of available placeholders is shown below.
+**Example usage:**
+```yaml
+data_stream:
+  vars:
+    hosts: ["{{Hostname}}:{{Port}}"]
+    paths: ["{{SERVICE_LOGS_DIR}}/*.log"]
+    url: "http://{{Hostname}}:{{Ports.0}}/metrics"
+```
 
-| Placeholder name | Data type | Description |
-| --- | --- | --- |
-| `Hostname` | string | Addressable host name of the integration service. |
-| `Ports` | []int | Array of addressable ports the integration service is listening on. |
-| `Port` | int | Alias for `Ports[0]`. Provided as a convenience. |
-| `Logs.Folder.Agent` | string | Path to integration service’s logs folder, as addressable by the Agent. |
-| `SERVICE_LOGS_DIR` | string | Alias for `Logs.Folder.Agent`. Provided as a convenience. |
+## Running System Tests [running-tests]
 
-Placeholders used in the `test-<test_name>-config.yml` must be enclosed in `{{` and `}}` delimiters, per Handlebars syntax.
-
-
-## Running a system test [system-running-test]
-
-Once the two levels of configurations are defined as described in the previous section, you are ready to run system tests for a package’s data streams.
-
-First you must deploy the {{stack}}. This corresponds to steps 1 and 2 as described in the [Conceptual-process](/extend/pipeline-testing.md#pipeline-concepts) section.
+### Environment Setup [env-setup]
 
 ```bash
+# Start Elastic stack (one-time setup)
 elastic-package stack up -d
-```
 
-For a complete listing of options available for this command, run `elastic-package stack up -h` or `elastic-package help stack up`.
-
-Next, you must set environment variables needed for further `elastic-package` commands.
-
-```bash
+# Initialize environment variables
 $(elastic-package stack shellinit)
+
+# Verify stack is running
+elastic-package stack status
 ```
 
-Next, you must invoke the system tests runner. This corresponds to steps 3 to 7 as described in the [Conceptual-process](/extend/pipeline-testing.md#pipeline-concepts) section.
+### Test Execution [test-execution]
 
-If you want to run system tests for **all data streams** in a package, navigate to the package’s root folder (or any sub-folder under it) and run the following command.
-
+**Run all data streams:**
 ```bash
+cd packages/your-package
 elastic-package test system
 ```
 
-If you want to run system tests for **specific data streams** in a package, navigate to the package’s root folder (or any sub-folder under it) and run the following command.
-
+**Run specific data streams:**
 ```bash
-elastic-package test system --data-streams <data stream 1>[,<data stream 2>,...]
+elastic-package test system --data-streams access,error
 ```
 
-Finally, when you are done running all system tests, bring down the {{stack}}. This corresponds to step 8 in the [Conceptual-process](/extend/pipeline-testing.md#pipeline-concepts) section.
-
+**Run with verbose output:**
 ```bash
-elastic-package stack down
+elastic-package test system -v
 ```
 
-
-### Generating sample events [system-sample-events]
-
-As the system tests exercise an integration end-to-end from running the integration’s service all the way to indexing generated data from the integration’s data streams into {{es}}, it is possible to generate `sample_event.json` files for each of the integration’s data streams while running these tests.
-
+**Generate sample events during testing:**
 ```bash
 elastic-package test system --generate
 ```
+
+**Run tests for specific test scenarios:**
+```bash
+elastic-package test system --data-streams access --test-config test-custom-config.yml
+```
+
+### Troubleshooting [troubleshooting]
+
+It's generally easiest to develop system tests after other types of tests are written and passing, so you can isolate failure that might be caused by the system test infrastructure or configuration from problems that are caused by other parts of the integration.
+
+**View detailed logs:**
+```bash
+elastic-package test system -v --report-format human
+```
+
+**Debug service deployment:**
+```bash
+# Check service logs
+docker logs <service-container>
+
+# For Kubernetes
+kubectl logs deployment/nginx-test
+
+# Check Agent status
+elastic-package stack dump
+```
+
+**Keep the service running**
+Using the `--defer-cleanup` flag, test case execution can be paused before cleanup, so you can inspect the state of the stack, for example what data exists in indices, after the tests have run and before the data is removed from elasticsearch.
+```bash
+elastic-package test system --defer-cleanup 10m
+```
+
+**Common issues:**
+- **Service not reachable:** Check port mappings and network configuration
+- **No data indexed:** Verify log paths and file permissions
+- **Field mapping errors:** Check field types in pipeline configuration
+- **Test timeout:** Increase wait time or check service startup
+
+### Cleanup [cleanup]
+
+```bash
+# Clean up test artifacts
+elastic-package clean
+
+# Stop Elastic stack
+elastic-package stack down
+```
+
+## Best Practices [best-practices]
+
+### Test Design [test-design]
+
+1. **Keep tests focused:** One service per data stream test
+2. **Use realistic data:** Generate representative log/metric samples
+3. **Test edge cases:** Include error conditions and malformed data
+4. **Minimize resource usage:** Use lightweight service images
+5. **Document dependencies:** Clearly specify external requirements
+
+### Configuration Management [config-management]
+
+1. **Use descriptive test names:** `test-error-logs-config.yml` vs `test-config.yml`
+2. **Parameterize environments:** Use placeholders for hostnames/ports
+3. **Version control everything:** Include all deployment and test files
+4. **Test multiple scenarios:** Different input types, authentication methods
+5. **Keep configurations minimal:** Override only necessary variables
+
+### Performance [performance]
+
+1. **Reuse stack deployment:** Don't restart for each test
+2. **Parallel test execution:** Use `--data-streams` to test subsets
+
+## Sample Event Generation [sample-events]
+
+System tests can automatically generate `sample_event.json` files for documentation and validation:
+
+```bash
+# Generate samples during testing
+elastic-package test system --generate
+
+# Output location
+packages/your-package/data_stream/your-stream/_dev/test/system/sample_event.json
+```
+
+These files are useful for:
+- Documentation and examples
+- Field reference validation
+- Debugging data transformation issues
+- Pipeline testing input data

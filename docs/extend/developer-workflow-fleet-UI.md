@@ -101,5 +101,3 @@ It can be useful to run Fleet Server in a container on your local machine in ord
     For the latest version, use `8.0.0-SNAPSHOT`. Otherwise, you can explore the available versions at [https://www.docker.elastic.co/r/beats/elastic-agent](https://www.docker.elastic.co/r/beats/elastic-agent).
 
     Once the Fleet Server container is running, you should be able to treat it as if it were a local process running on `+http://localhost:8220+` when configuring Fleet via the UI. You can then run `elastic-agent` on your local machine directly for testing purposes.
-
-
