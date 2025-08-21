@@ -46,7 +46,7 @@ Use this configuration to run the collector.
 
 ### IIS metrics
 
-Please refer to [the documentation of the OpenTelemetry's IIS receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/iisreceiver/documentation.md).
+Refer to [the documentation of the OpenTelemetry's IIS receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/iisreceiver/documentation.md).
 
 The following IIS receiver metrics are used in the dashboard:
 
