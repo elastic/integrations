@@ -16,7 +16,6 @@
                         "exclude": false,
                         "existsSelected": false,
                         "fieldName": "deployment_id",
-                        "id": "7a89389e-fbce-4995-91fe-5008f45ed779",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -82,12 +81,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "d0c7df2d-b5c4-446f-b853-52911328ef4a",
+                    "i": "4ef16514-210f-4d21-a07c-ec5bd72e9181",
                     "w": 48,
                     "x": 0,
                     "y": 2
                 },
-                "panelIndex": "d0c7df2d-b5c4-446f-b853-52911328ef4a",
+                "panelIndex": "4ef16514-210f-4d21-a07c-ec5bd72e9181",
                 "title": "",
                 "type": "visualization"
             },
@@ -122,12 +121,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "c79338a7-07eb-4578-abdc-84b987954304",
+                    "i": "e1ad64c9-cb51-4108-8bf6-6ac575f3b291",
                     "w": 12,
                     "x": 0,
                     "y": 15
                 },
-                "panelIndex": "c79338a7-07eb-4578-abdc-84b987954304",
+                "panelIndex": "e1ad64c9-cb51-4108-8bf6-6ac575f3b291",
                 "title": "",
                 "type": "visualization"
             },
@@ -162,12 +161,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "fa73cd1c-ff58-49fd-ace3-7e518efcefd0",
+                    "i": "e33085b2-69de-4ab7-b7ec-29eaabc9c9e9",
                     "w": 12,
                     "x": 12,
                     "y": 15
                 },
-                "panelIndex": "fa73cd1c-ff58-49fd-ace3-7e518efcefd0",
+                "panelIndex": "e33085b2-69de-4ab7-b7ec-29eaabc9c9e9",
                 "title": "",
                 "type": "visualization"
             },
@@ -202,12 +201,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "ded1f3bf-1730-4e96-802f-992626effce2",
+                    "i": "47260515-6d55-4658-859b-580a83f567b3",
                     "w": 12,
                     "x": 24,
                     "y": 15
                 },
-                "panelIndex": "ded1f3bf-1730-4e96-802f-992626effce2",
+                "panelIndex": "47260515-6d55-4658-859b-580a83f567b3",
                 "title": "",
                 "type": "visualization"
             },
@@ -242,12 +241,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "c111a476-11a7-48da-b14a-2ad1b0e6258d",
+                    "i": "11d6918c-678c-408b-a709-966dda0bd4b3",
                     "w": 12,
                     "x": 36,
                     "y": 15
                 },
-                "panelIndex": "c111a476-11a7-48da-b14a-2ad1b0e6258d",
+                "panelIndex": "11d6918c-678c-408b-a709-966dda0bd4b3",
                 "title": "",
                 "type": "visualization"
             },
@@ -282,12 +281,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "55ec07d9-7cb6-4003-be50-132fea579d90",
+                    "i": "ea0cde1e-e30f-4245-9d3e-ab36c71b874b",
                     "w": 48,
                     "x": 0,
                     "y": 48
                 },
-                "panelIndex": "55ec07d9-7cb6-4003-be50-132fea579d90",
+                "panelIndex": "ea0cde1e-e30f-4245-9d3e-ab36c71b874b",
                 "title": "",
                 "type": "visualization"
             },
@@ -304,10 +303,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_querying",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_querying",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_querying",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -420,19 +419,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        datastream_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "2e84b449-c670-4be9-a4ce-09cd76a28bcb",
+                    "i": "3b250135-89a4-4b3b-9062-0404ddae4998",
                     "w": 16,
                     "x": 0,
                     "y": 71
                 },
-                "panelIndex": "2e84b449-c670-4be9-a4ce-09cd76a28bcb",
+                "panelIndex": "3b250135-89a4-4b3b-9062-0404ddae4998",
                 "title": "Querying: Normalised cost per data stream per day",
                 "type": "lens"
             },
@@ -449,10 +447,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_indexing",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_indexing",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_indexing",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -565,19 +563,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_indexing \u003e 0"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "fc62e9ee-51b2-47dc-8491-2b6bb3787c26",
+                    "i": "33cb2b13-1ed8-4eb3-9d95-016dae837c97",
                     "w": 16,
                     "x": 16,
                     "y": 54
                 },
-                "panelIndex": "fc62e9ee-51b2-47dc-8491-2b6bb3787c26",
+                "panelIndex": "33cb2b13-1ed8-4eb3-9d95-016dae837c97",
                 "title": "Indexing: Normalised cost per tier per day",
                 "type": "lens"
             },
@@ -594,10 +591,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_indexing",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_indexing",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_indexing",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -710,19 +707,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "587f51d9-60f7-473d-8ba1-2602dda58729",
+                    "i": "8113fa3f-c38e-4b70-9caf-506e4563e0d5",
                     "w": 16,
                     "x": 32,
                     "y": 54
                 },
-                "panelIndex": "587f51d9-60f7-473d-8ba1-2602dda58729",
+                "panelIndex": "8113fa3f-c38e-4b70-9caf-506e4563e0d5",
                 "title": "Indexing: % Normalised cost per data stream per day",
                 "type": "lens"
             },
@@ -739,10 +735,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_querying",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_querying",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_querying",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -855,19 +851,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        tier_sum_query_time / deployment_sum_query_time * total_ecu\n    ) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_querying \u003e 0"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "dbbd4530-dafc-4692-a6bc-489db63ce7ec",
+                    "i": "5472303e-a606-45a0-87eb-a494b1f595a0",
                     "w": 16,
                     "x": 16,
                     "y": 71
                 },
-                "panelIndex": "dbbd4530-dafc-4692-a6bc-489db63ce7ec",
+                "panelIndex": "5472303e-a606-45a0-87eb-a494b1f595a0",
                 "title": "Querying: Noralised cost per tier per day",
                 "type": "lens"
             },
@@ -884,10 +879,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_blended",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_blended",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_blended",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -968,19 +963,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time \u003e 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot,\n        ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream,\n        tier\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "4aa1a421-6cfe-4c89-9c38-3479d1b98721",
+                    "i": "2e2c3a82-75c7-4dfc-9fb6-09e5f1e0594c",
                     "w": 12,
                     "x": 36,
                     "y": 18
                 },
-                "panelIndex": "4aa1a421-6cfe-4c89-9c38-3479d1b98721",
+                "panelIndex": "2e2c3a82-75c7-4dfc-9fb6-09e5f1e0594c",
                 "title": "Blended: Normalised cost totals by data stream",
                 "type": "lens"
             },
@@ -997,10 +991,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_indexing",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_indexing",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_indexing",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -1080,19 +1074,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "32b6ab8e-a68e-4eed-9e93-90054a873e12",
+                    "i": "d7ffa351-7eb5-45e5-861e-1ed5a44ac39e",
                     "w": 12,
                     "x": 0,
                     "y": 18
                 },
-                "panelIndex": "32b6ab8e-a68e-4eed-9e93-90054a873e12",
+                "panelIndex": "d7ffa351-7eb5-45e5-861e-1ed5a44ac39e",
                 "title": "Indexing: Normalised cost totals by data stream",
                 "type": "lens"
             },
@@ -1109,10 +1102,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_querying",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_querying",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_querying",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -1192,19 +1185,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "bbfd8ff0-39f8-431e-b736-aa106d1dfb7d",
+                    "i": "8d446af6-059b-4eb3-a31a-017b25506c62",
                     "w": 12,
                     "x": 12,
                     "y": 18
                 },
-                "panelIndex": "bbfd8ff0-39f8-431e-b736-aa106d1dfb7d",
+                "panelIndex": "8d446af6-059b-4eb3-a31a-017b25506c62",
                 "title": "Querying: Normalised cost totals by data stream",
                 "type": "lens"
             },
@@ -1221,10 +1213,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_storage",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_storage",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_storage",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -1305,19 +1297,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "785f514f-2385-406f-8654-f73706027293",
+                    "i": "53993ab2-a932-4147-9d2b-a45e4a9af889",
                     "w": 12,
                     "x": 24,
                     "y": 18
                 },
-                "panelIndex": "785f514f-2385-406f-8654-f73706027293",
+                "panelIndex": "53993ab2-a932-4147-9d2b-a45e4a9af889",
                 "title": "Storage: Normalised cost totals by data stream",
                 "type": "lens"
             },
@@ -1453,19 +1444,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE(deployment_sum_indexing_time \u003e 0, tier_and_datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE(deployment_sum_query_time \u003e 0, tier_and_datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE(deployment_sum_data_set_store_size \u003e 0, tier_and_datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE(deployment_sum_store_size \u003e 0, tier_and_datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE(store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE(\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    ecu_indexing = sum(indexing),\n    ecu_querying = sum(querying),\n    ecu_storage = sum(storage),\n    ecu_blended = sum(blended)\n    BY datastream, tier\n| SORT ecu_blended DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "c801e469-5ff8-4049-baa4-038a770feeea",
+                    "i": "113bbf0b-522c-49e0-bfda-a5a0c58eba89",
                     "w": 48,
                     "x": 0,
                     "y": 33
                 },
-                "panelIndex": "c801e469-5ff8-4049-baa4-038a770feeea",
+                "panelIndex": "113bbf0b-522c-49e0-bfda-a5a0c58eba89",
                 "title": "Normalised cost per data stream per tier",
                 "type": "lens"
             },
@@ -1482,10 +1472,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_blended",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_blended",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_blended",
+                                                    "label": "Normalised blended cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -1598,19 +1588,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu),\n    querying = CASE (deployment_sum_query_time \u003e 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "a9471800-1616-45bd-a175-6b52dc47f8a1",
+                    "i": "d4781531-b2d9-4748-a2f8-aa73ba419b79",
                     "w": 16,
                     "x": 0,
                     "y": 106
                 },
-                "panelIndex": "a9471800-1616-45bd-a175-6b52dc47f8a1",
+                "panelIndex": "d4781531-b2d9-4748-a2f8-aa73ba419b79",
                 "title": "Blended value: Normalised cost per data stream per day",
                 "type": "lens"
             },
@@ -1627,10 +1616,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_storage",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_storage",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_storage",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -1743,19 +1732,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "91796418-27d4-4173-9d6b-757e0e8511d9",
+                    "i": "5f36343a-f4e9-4595-a16f-cf791fc73b6a",
                     "w": 16,
                     "x": 0,
                     "y": 88
                 },
-                "panelIndex": "91796418-27d4-4173-9d6b-757e0e8511d9",
+                "panelIndex": "5f36343a-f4e9-4595-a16f-cf791fc73b6a",
                 "title": "Storage: Nomalised cost per data stream per day",
                 "type": "lens"
             },
@@ -1772,10 +1760,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_querying",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_querying",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_querying",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -1888,19 +1876,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "5330252b-edf7-4874-ac9a-415405358d5c",
+                    "i": "8657457b-9a0c-4f0a-9d5c-8886841c5d27",
                     "w": 16,
                     "x": 32,
                     "y": 71
                 },
-                "panelIndex": "5330252b-edf7-4874-ac9a-415405358d5c",
+                "panelIndex": "8657457b-9a0c-4f0a-9d5c-8886841c5d27",
                 "title": "Querying: % Normalised cost per data stream per day",
                 "type": "lens"
             },
@@ -1917,10 +1904,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_storage",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_storage",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_storage",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -2033,19 +2020,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "be9b6c65-a8d2-47d4-add1-6251d03f8c05",
+                    "i": "0dbbda20-29b0-4b8f-89b5-bb19083f5260",
                     "w": 16,
                     "x": 32,
                     "y": 88
                 },
-                "panelIndex": "be9b6c65-a8d2-47d4-add1-6251d03f8c05",
+                "panelIndex": "0dbbda20-29b0-4b8f-89b5-bb19083f5260",
                 "title": "Storage: % Normalised cost per data stream per day",
                 "type": "lens"
             },
@@ -2062,10 +2048,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_blended",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_blended",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_blended",
+                                                    "label": "Normalised blended cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -2178,19 +2164,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time \u003e 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, datastream_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, datastream_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "714af7cb-6354-4765-886c-97fd1128c9dd",
+                    "i": "fca39c87-b3fd-4786-ab6c-99b00cfbcf30",
                     "w": 16,
                     "x": 32,
                     "y": 106
                 },
-                "panelIndex": "714af7cb-6354-4765-886c-97fd1128c9dd",
+                "panelIndex": "fca39c87-b3fd-4786-ab6c-99b00cfbcf30",
                 "title": "Blended value: % Normalised cost per data stream per day",
                 "type": "lens"
             },
@@ -2207,10 +2192,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_blended",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_blended",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_blended",
+                                                    "label": "Normalised blended cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -2323,19 +2308,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        tier\n| WHERE agg_blended \u003e 0"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "f45b27a2-0109-4718-b010-ecf5bdfee4b7",
+                    "i": "40f1766c-5494-4599-8f78-01da6cb81992",
                     "w": 16,
                     "x": 16,
                     "y": 106
                 },
-                "panelIndex": "f45b27a2-0109-4718-b010-ecf5bdfee4b7",
+                "panelIndex": "40f1766c-5494-4599-8f78-01da6cb81992",
                 "title": "Blended value: Normalised cost per tier per day",
                 "type": "lens"
             },
@@ -2352,10 +2336,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_indexing",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_indexing",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_indexing",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -2468,19 +2452,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, datastream_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "1e720edf-a0fb-42c3-af35-2bf9b8592d3f",
+                    "i": "d46916d2-99bf-49fa-a7d0-1284ade150b7",
                     "w": 16,
                     "x": 0,
                     "y": 54
                 },
-                "panelIndex": "1e720edf-a0fb-42c3-af35-2bf9b8592d3f",
+                "panelIndex": "d46916d2-99bf-49fa-a7d0-1284ade150b7",
                 "title": "Indexing: Normalised per data stream per day",
                 "type": "lens"
             },
@@ -2497,10 +2480,10 @@
                                             "columns": [
                                                 {
                                                     "columnId": "agg_storage",
-                                                    "customLabel": false,
+                                                    "customLabel": true,
                                                     "fieldName": "agg_storage",
                                                     "inMetricDimension": true,
-                                                    "label": "agg_storage",
+                                                    "label": "Normalised cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -2613,19 +2596,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_storage \u003e 0"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "27ff6aca-534d-4a53-b777-6f2d5abe3dfe",
+                    "i": "33bf2915-ddf8-4017-b835-1607002ccf1d",
                     "w": 16,
                     "x": 16,
                     "y": 88
                 },
-                "panelIndex": "27ff6aca-534d-4a53-b777-6f2d5abe3dfe",
+                "panelIndex": "33bf2915-ddf8-4017-b835-1607002ccf1d",
                 "title": "Storage: Normalised cost per tier per day",
                 "type": "lens"
             },
@@ -2660,12 +2642,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "53171eb7-4d6e-48ef-9d43-85eefde360b3",
+                    "i": "5007544b-2d1d-42df-a28f-e75515d93cfe",
                     "w": 48,
                     "x": 0,
                     "y": 51
                 },
-                "panelIndex": "53171eb7-4d6e-48ef-9d43-85eefde360b3",
+                "panelIndex": "5007544b-2d1d-42df-a28f-e75515d93cfe",
                 "title": "",
                 "type": "visualization"
             },
@@ -2700,12 +2682,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "652cb08b-7767-4ea7-9b48-1b07b80ac619",
+                    "i": "98a2cde6-bfbc-4dcb-a802-e1bafe94b634",
                     "w": 48,
                     "x": 0,
                     "y": 68
                 },
-                "panelIndex": "652cb08b-7767-4ea7-9b48-1b07b80ac619",
+                "panelIndex": "98a2cde6-bfbc-4dcb-a802-e1bafe94b634",
                 "title": "",
                 "type": "visualization"
             },
@@ -2740,12 +2722,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "25a83ed7-fba0-4400-8078-59c77d742334",
+                    "i": "0aa60583-0c33-4bbe-8881-4772c751be20",
                     "w": 48,
                     "x": 0,
                     "y": 85
                 },
-                "panelIndex": "25a83ed7-fba0-4400-8078-59c77d742334",
+                "panelIndex": "0aa60583-0c33-4bbe-8881-4772c751be20",
                 "title": "",
                 "type": "visualization"
             },
@@ -2780,12 +2762,12 @@
                 },
                 "gridData": {
                     "h": 3,
-                    "i": "98590126-6fbc-4bb0-be63-5d333f27d11d",
+                    "i": "1b7924fc-0c60-421b-a94f-5c32e96a77e9",
                     "w": 48,
                     "x": 0,
                     "y": 103
                 },
-                "panelIndex": "98590126-6fbc-4bb0-be63-5d333f27d11d",
+                "panelIndex": "1b7924fc-0c60-421b-a94f-5c32e96a77e9",
                 "title": "",
                 "type": "visualization"
             },
@@ -2936,19 +2918,18 @@
                     "query": {
                         "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| where cost_type IN (\"datahot/datacontent\", \"datawarm\", \"datacold\", \"datafrozen\")\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu) * conf_ecu_rate,\n    querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu) * conf_ecu_rate,\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu),\n    store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu),\n    storage = CASE (store == 0, data_set, store) * conf_ecu_rate,\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight) + (indexing / conf_ecu_rate * conf_indexing_weight)) / total_weight_hot,\n        ((storage / conf_ecu_rate * conf_storage_weight) + (querying / conf_ecu_rate * conf_query_weight)) / total_weight_cold\n    ) * conf_ecu_rate\n| STATS\n    agg_indexing = sum(indexing),\n    agg_querying = sum(querying),\n    agg_storage = sum(storage),\n    agg_blended = sum(blended)\n    BY\n        tier\n| WHERE agg_blended \u003e 0"
                     },
-                    "searchSessionId": "ccbb88e1-2d79-425a-af78-1ad12e12736e",
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false
                 },
                 "gridData": {
                     "h": 10,
-                    "i": "040b60f6-5cad-44ed-99a9-ae89c3e114e9",
+                    "i": "0cba2249-3ce4-4fdf-be19-e590029f15e5",
                     "w": 48,
                     "x": 0,
                     "y": 5
                 },
-                "panelIndex": "040b60f6-5cad-44ed-99a9-ae89c3e114e9",
+                "panelIndex": "0cba2249-3ce4-4fdf-be19-e590029f15e5",
                 "title": "Normalised cost per tier",
                 "type": "lens"
             },
@@ -2975,12 +2956,12 @@
                 },
                 "gridData": {
                     "h": 2,
-                    "i": "6abc7975-1cf9-47aa-9fda-ee9b3cf4cfdd",
+                    "i": "3d15a159-4fb1-4527-afc4-a26e4713ffd3",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "6abc7975-1cf9-47aa-9fda-ee9b3cf4cfdd",
+                "panelIndex": "3d15a159-4fb1-4527-afc4-a26e4713ffd3",
                 "type": "links"
             }
         ],
@@ -2989,23 +2970,23 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-08-13T10:11:00.891Z",
+    "created_at": "2025-08-22T07:56:30.077Z",
     "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
-    "id": "chargeback-e6778c66-2aa2-49e2-9360-e433cb4fd295",
+    "id": "chargeback-83310c33-f1b8-4025-994e-e69e3c228f08",
     "references": [
         {
-            "id": "chargeback-8dc915a8-3bce-489c-a5a5-528885409353",
-            "name": "6abc7975-1cf9-47aa-9fda-ee9b3cf4cfdd:link_c8c565f3-89f9-483a-b120-2c84ea6d0043_dashboard",
+            "id": "chargeback-50b05ec2-9115-4102-b98f-8ea4943a96ac",
+            "name": "3d15a159-4fb1-4527-afc4-a26e4713ffd3:link_c8c565f3-89f9-483a-b120-2c84ea6d0043_dashboard",
             "type": "dashboard"
         },
         {
-            "id": "chargeback-e6778c66-2aa2-49e2-9360-e433cb4fd295",
-            "name": "6abc7975-1cf9-47aa-9fda-ee9b3cf4cfdd:link_4e3d9521-0167-4508-ac8f-445a37260b9c_dashboard",
+            "id": "chargeback-83310c33-f1b8-4025-994e-e69e3c228f08",
+            "name": "3d15a159-4fb1-4527-afc4-a26e4713ffd3:link_4e3d9521-0167-4508-ac8f-445a37260b9c_dashboard",
             "type": "dashboard"
         },
         {
             "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
-            "name": "controlGroup_373f0e1a-c2b6-4fee-bfaf-178990fb1213:optionsListDataView",
+            "name": "controlGroup_7a89389e-fbce-4995-91fe-5008f45ed779:optionsListDataView",
             "type": "index-pattern"
         }
     ],
