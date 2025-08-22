@@ -293,17 +293,19 @@ An example event for `managedsystem` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-22T15:49:41.840Z",
+    "@timestamp": "2025-08-21T19:51:44.321Z",
     "agent": {
-        "ephemeral_id": "7e0dfb55-466e-46e3-9e71-7a4795e090c0",
-        "id": "e655de3d-fd7b-4d3d-a45c-345d2af423f9",
-        "name": "elastic-agent-92943",
+        "ephemeral_id": "65102e1f-0356-43fb-86b7-7194c420165b",
+        "id": "5515e62d-ab14-4d0b-a3a9-f0b226d4b586",
+        "name": "elastic-agent-42570",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "9.0.4"
     },
     "beyondinsight_password_safe": {
         "managedsystem": {
+            "access_url": "http://aardvarkagreement.com/manage",
             "account_name_format": 0,
+            "application_host_id": 2,
             "asset_id": 13,
             "auto_management_flag": true,
             "change_frequency_days": 30,
@@ -311,39 +313,53 @@ An example event for `managedsystem` looks as following:
             "change_password_after_any_release_flag": false,
             "change_time": "23:30",
             "check_password_flag": false,
+            "cloud_id": 1,
+            "contact_email": "admin@aardvarkagreement.com",
+            "database_id": 5,
+            "description": "Primary Managed System for AardvarkAgreement",
+            "directory_id": 3,
             "dns_name": "AardvarkAgreement.example.com",
             "dsskey_rule_id": 0,
+            "elevation_command": "sudo",
             "entity_type_id": 1,
+            "forest_name": "PrimaryForest",
             "functional_account_id": 14,
             "host_name": "AardvarkAgreement",
-            "ipaddress": "172.16.152.110",
+            "instance_name": "InstanceOne",
+            "ip_address": "198.51.100.10",
             "is_application_host": false,
-            "isarelease_duration": 120,
+            "is_default_instance": true,
+            "isa_release_duration": 120,
+            "login_account_id": 20,
             "managed_system_id": 13,
             "max_release_duration": 525600,
+            "net_bios_name": "AardvarkNet",
+            "oracle_internet_directory_service_name": "OiDService",
             "password_rule_id": 0,
             "platform_id": 4,
+            "port": 8080,
             "release_duration": 120,
             "remote_client_type": "None",
             "reset_password_on_mismatch_flag": false,
-            "ssh_key_enforcement_mode": "None",
             "system_name": "AardvarkAgreement",
+            "template": "ServerTemplate",
             "timeout": 30,
+            "use_ssl": true,
             "workgroup_id": 1
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "namespace": "58943",
+        "namespace": "41053",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e655de3d-fd7b-4d3d-a45c-345d2af423f9",
+        "id": "5515e62d-ab14-4d0b-a3a9-f0b226d4b586",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "9.0.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -351,7 +367,7 @@ An example event for `managedsystem` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "ingested": "2025-01-22T15:49:44Z",
+        "ingested": "2025-08-21T19:51:47Z",
         "kind": "asset",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -360,9 +376,23 @@ An example event for `managedsystem` looks as following:
     },
     "host": {
         "domain": "AardvarkAgreement.example.com",
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "location": {
+                "coordinates": [
+                    4.889689916744828,
+                    52.37403995823115
+                ],
+                "type": "Point"
+            },
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
         "ip": [
-            "172.16.152.110",
-            "172.16.152.110"
+            "198.51.100.10"
         ],
         "name": "AardvarkAgreement"
     },
@@ -373,13 +403,22 @@ An example event for `managedsystem` looks as following:
         "hosts": [
             "AardvarkAgreement",
             "AardvarkAgreement.example.com",
-            "172.16.152.110"
+            "198.51.100.10"
+        ],
+        "user": [
+            "admin@aardvarkagreement.com"
         ]
     },
     "tags": [
         "forwarded",
         "beyondinsight_password_safe.managedsystem"
-    ]
+    ],
+    "url": {
+        "full": "http://aardvarkagreement.com/manage"
+    },
+    "user": {
+        "email": "admin@aardvarkagreement.com"
+    }
 }
 ```
 
@@ -393,7 +432,7 @@ The following non-ECS fields are used in managedsystem documents:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | beyondinsight_password_safe.managedsystem.access_url | URL used for cloud access. | keyword |
 | beyondinsight_password_safe.managedsystem.account_name_format | Format of the account name. | integer |
 | beyondinsight_password_safe.managedsystem.application_host_id | Managed system ID of the target application host. | integer |
@@ -417,10 +456,10 @@ The following non-ECS fields are used in managedsystem documents:
 | beyondinsight_password_safe.managedsystem.functional_account_id | ID of the functional account used for local managed account password changes. | integer |
 | beyondinsight_password_safe.managedsystem.host_name | Host name of the managed system. | keyword |
 | beyondinsight_password_safe.managedsystem.instance_name | Instance name of the managed system. | keyword |
-| beyondinsight_password_safe.managedsystem.ipaddress | IP address of the managed system. | ip |
+| beyondinsight_password_safe.managedsystem.ip_address | IP address of the managed system. | ip |
 | beyondinsight_password_safe.managedsystem.is_application_host | True if the managed system can be used as an application host, otherwise false. | boolean |
 | beyondinsight_password_safe.managedsystem.is_default_instance | True if this is the default instance, otherwise false. | boolean |
-| beyondinsight_password_safe.managedsystem.isarelease_duration | Default Information Systems Administrator (ISA) release duration in minutes. | integer |
+| beyondinsight_password_safe.managedsystem.isa_release_duration | Default Information Systems Administrator (ISA) release duration in minutes. | integer |
 | beyondinsight_password_safe.managedsystem.login_account_id | ID of the functional account used for SSH session logins. | integer |
 | beyondinsight_password_safe.managedsystem.managed_system_id | ID of the managed system. | integer |
 | beyondinsight_password_safe.managedsystem.max_release_duration | Default maximum release duration in minutes. | integer |
@@ -439,11 +478,11 @@ The following non-ECS fields are used in managedsystem documents:
 | beyondinsight_password_safe.managedsystem.timeout | Connection timeout in seconds. | integer |
 | beyondinsight_password_safe.managedsystem.use_ssl | True if SSL is used, otherwise false. | boolean |
 | beyondinsight_password_safe.managedsystem.workgroup_id | ID of the workgroup. | integer |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset |  | constant_keyword |
-| event.module |  | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Input type | keyword |
 
 
