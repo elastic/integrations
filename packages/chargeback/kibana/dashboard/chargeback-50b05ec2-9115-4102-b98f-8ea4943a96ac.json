@@ -59,25 +59,17 @@
                                 "textBased": {
                                     "indexPatternRefs": [],
                                     "layers": {
-                                        "75f713fa-0807-4a8a-acae-549ca36b07b6": {
+                                        "42a55f9b-0137-4e6d-a159-9fe2724f4387": {
                                             "columns": [
                                                 {
                                                     "columnId": "deployment_cost",
-                                                    "customLabel": true,
+                                                    "customLabel": false,
                                                     "fieldName": "deployment_cost",
                                                     "inMetricDimension": true,
-                                                    "label": "deployment cost",
+                                                    "label": "deployment_cost",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
                                                     }
                                                 },
                                                 {
@@ -103,7 +95,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -113,7 +105,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
+                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -155,7 +147,7 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "75f713fa-0807-4a8a-acae-549ca36b07b6",
+                                        "layerId": "42a55f9b-0137-4e6d-a159-9fe2724f4387",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
                                         "splitAccessor": "deployment",
@@ -185,7 +177,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
+                        "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -573,7 +565,7 @@
                                 "textBased": {
                                     "indexPatternRefs": [],
                                     "layers": {
-                                        "e0ed3231-505b-42a6-a1ce-f38b9d40db5a": {
+                                        "f8869d5e-0329-4c24-8f47-ca83682cc07f": {
                                             "columns": [
                                                 {
                                                     "columnId": "deployment",
@@ -600,7 +592,7 @@
                                                     "customLabel": true,
                                                     "fieldName": "agg_blended",
                                                     "inMetricDimension": true,
-                                                    "label": "ECU spend",
+                                                    "label": "ECU SPend",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -617,7 +609,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -627,7 +619,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
                             },
                             "visualization": {
                                 "columns": [
@@ -641,7 +633,7 @@
                                         "columnId": "agg_blended"
                                     }
                                 ],
-                                "layerId": "e0ed3231-505b-42a6-a1ce-f38b9d40db5a",
+                                "layerId": "f8869d5e-0329-4c24-8f47-ca83682cc07f",
                                 "layerType": "data"
                             }
                         },
@@ -656,7 +648,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                        "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -682,7 +674,7 @@
                                 "textBased": {
                                     "indexPatternRefs": [],
                                     "layers": {
-                                        "86bb05d1-959e-45ea-8094-0059aaad50bc": {
+                                        "49bd0ead-ff99-48df-8383-51ba23a618d9": {
                                             "columns": [
                                                 {
                                                     "columnId": "deployment",
@@ -713,12 +705,20 @@
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -728,7 +728,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
                             },
                             "visualization": {
                                 "layers": [
@@ -739,7 +739,7 @@
                                             "colorMode": {
                                                 "type": "categorical"
                                             },
-                                            "paletteId": "default",
+                                            "paletteId": "eui_amsterdam_color_blind",
                                             "specialAssignments": [
                                                 {
                                                     "color": {
@@ -752,7 +752,7 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "86bb05d1-959e-45ea-8094-0059aaad50bc",
+                                        "layerId": "49bd0ead-ff99-48df-8383-51ba23a618d9",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "metrics": [
@@ -779,7 +779,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
+                        "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| grok sku \"%{WORD}.es.%{WORD:es_node_type}\"\n| GROK sku \"%{WORD}.%{WORD:non_es_node_type}\"\n| eval cost_type = CASE(\n    es_node_type is not null, es_node_type,\n    non_es_node_type  \n)\n| eval cost_type = CASE(\n    cost_type == \"data\", \"data-transfer\",\n    cost_type == \"datahot\", \"datahot/datacontent\",\n    cost_type\n)\n| DROP es_node_type, non_es_node_type\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, tier_sum_indexing_time / deployment_sum_indexing_time * total_ecu), querying = CASE (deployment_sum_query_time \u003e 0, tier_sum_query_time / deployment_sum_query_time * total_ecu), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, tier_sum_data_set_store_size / deployment_sum_data_set_store_size * total_ecu), store = CASE (deployment_sum_store_size \u003e 0, tier_sum_store_size / deployment_sum_store_size * total_ecu), storage = CASE (store == 0, data_set, store), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier == \"hot/content\", ((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight)) / total_weight_hot, ((storage * conf_storage_weight) + (querying * conf_query_weight)) / total_weight_cold) * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS agg_blended = sum(blended) BY deployment, cost_type\n| KEEP deployment, cost_type, agg_blended\n| WHERE agg_blended \u003e 0"
                     },
                     "syncColors": false,
                     "syncCursor": true,
