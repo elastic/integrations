@@ -351,6 +351,164 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
+### raft
+
+The `raft` dataset collects metrics related to Kafka's Raft consensus algorithm implementation (KRaft), which is used for metadata management in Kafka without requiring ZooKeeper. KRaft mode is available in Kafka 3.0.0 and later versions.
+
+This dataset includes metrics such as:
+- Append and fetch records rates
+- Commit latency (average and maximum)
+- Current epoch, leader, and vote information
+- High watermark and log offset metrics
+- Node state and voter information
+- Poll idle ratio
+
+An example event for `raft` looks as following:
+
+```json
+{
+    "@timestamp": "2025-07-21T08:52:02.169Z",
+    "agent": {
+        "ephemeral_id": "9b3488ec-43b2-4927-992d-66e7916db610",
+        "id": "98300b09-b816-4ff7-87aa-a3dd3410656c",
+        "name": "elastic-agent-92636",
+        "type": "metricbeat",
+        "version": "8.16.6"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "5798221542184199336",
+            "name": "service-integration-dev-idc-ubuntu25-4"
+        },
+        "machine": {
+            "type": "n1-standard-4"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "region": "asia-south1",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
+        "dataset": "kafka.raft",
+        "namespace": "60294",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "98300b09-b816-4ff7-87aa-a3dd3410656c",
+        "snapshot": false,
+        "version": "8.16.6"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "kafka.raft",
+        "duration": 29347144,
+        "ingested": "2025-07-21T08:52:04Z",
+        "module": "jolokia"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "elastic-agent-92636",
+        "ip": [
+            "172.21.0.2",
+            "172.19.0.6"
+        ],
+        "mac": [
+            "0A-4F-66-38-0A-41",
+            "A2-41-CC-86-C2-F0"
+        ],
+        "name": "elastic-agent-92636",
+        "os": {
+            "family": "",
+            "kernel": "6.14.0-1006-gcp",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "kafka": {
+        "raft": {
+            "append_records_rate": 0.672182006204757,
+            "commit_latency_avg": 0,
+            "commit_latency_max": 0,
+            "current_epoch": 1,
+            "current_leader": 1,
+            "current_state": "leader",
+            "current_vote": 1,
+            "fetch_records_rate": 0,
+            "high_watermark": 26,
+            "log_end_epoch": 1,
+            "log_end_offset": 26,
+            "number_of_voters": 1,
+            "number_unknown_voter_connections": 0,
+            "poll_idle_ratio_avg": 0.9814143775569842
+        }
+    },
+    "metricset": {
+        "name": "jmx",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://kafka:8779/jolokia",
+        "type": "jolokia"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| kafka.raft.append_records_rate | The average number of records appended per sec as the leader of the raft quorum. | double |  | gauge |
+| kafka.raft.commit_latency_avg | The average time in milliseconds to commit an entry in the raft log. | double | ms | gauge |
+| kafka.raft.commit_latency_max | The maximum time in milliseconds to commit an entry in the raft log. | double | ms | gauge |
+| kafka.raft.current_epoch | The current quorum epoch. | long |  | gauge |
+| kafka.raft.current_leader | The current quorum leader's id; -1 indicates unknown. | long |  | gauge |
+| kafka.raft.current_state | The current state of this member; possible values are leader, candidate, voted, follower, unattached, observer. | keyword |  |  |
+| kafka.raft.current_vote | The current voted id. | long |  | gauge |
+| kafka.raft.fetch_records_rate | The average number of records fetched from the leader of the raft quorum. | double |  | gauge |
+| kafka.raft.high_watermark | The high watermark maintained on this member; -1 if it is unknown. | long |  | gauge |
+| kafka.raft.log_end_epoch | The current raft log end epoch. | long |  | gauge |
+| kafka.raft.log_end_offset | The current raft log end offset. | long |  | gauge |
+| kafka.raft.number_of_voters | Number of voters for a KRaft topic partition. | double |  | gauge |
+| kafka.raft.number_unknown_voter_connections | Number of unknown voters whose connection information is not cached; would never be larger than quorum-size. | double |  | gauge |
+| kafka.raft.poll_idle_ratio_avg | The ratio of time the Raft IO thread is idle as opposed to doing work (e.g. handling requests or replicating from the leader). | double | percent | gauge |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+
+
 ### consumer
 
 The `consumer` dataset collects JMX metrics from Kafka consumers using Jolokia.

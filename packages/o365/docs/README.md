@@ -1,6 +1,6 @@
 # Microsoft Office 365 Integration
 
-This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/). It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
+This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/). It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the [Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference).
 
 ## Setup
 
@@ -8,7 +8,7 @@ To use this package you need to [enable `Audit Log`](https://learn.microsoft.com
 
 Once the application is registered, configure and/or note the following to setup O365 Elastic integration:
 1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's `Overview` page.
-2. Create a new secret to configure the authentication of your application. 
+2. Create a new secret to configure the authentication of your application.
     - Navigate to `Certificates & Secrets` section.
     - Click `New client secret` and provide some description to create new secret.
     - Note the `Value` which is required for the integration setup.
@@ -17,7 +17,7 @@ Once the application is registered, configure and/or note the following to setup
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
     - Under `ActivityFeed`, select `ActivityFeed.Read` permission. This is minimum required permissions to read audit logs of your organization as [provided in the documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference). Optionally, select `ActivityFeed.ReadDlp` to read DLP policy events.
-    - Click `Add permissions`. 
+    - Click `Add permissions`.
     - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
     - After the permissions are added, the admin has to grant consent for these permissions.
 
@@ -38,22 +38,32 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Oauth2 Token URL can be added to generate the tokens during the oauth2 flow. If not provided, above `Directory (tenant) ID` will be used for oauth2 token generation.
 - Modify any other parameters as necessary.
 
+### Migration From the Deprecated o365audit Input
 
-**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input has been deprecated in favor of the [CEL](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
+**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input has been deprecated in favor of the [CEL](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported.
 
-We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to follow these steps:
+We request that users upgrading from integration version `< 1.18.0` to `>= 1.18.0` follow these steps:
 
 1. Upgrade the Elastic Stack version to `>= 8.7.1`.
 2. Upgrade the integration navigating via `Integrations -> Microsoft Office 365 -> Settings -> Upgrade`
 3. Upgrade the integration policy navigating via `Integrations -> Microsoft Office 365 -> integration policies -> Version (Upgrade)`. If `Upgrade` option doesn't appear under the `Version`, that means the policy is already upgraded in the previous step. Please go to the next step.
 4. Modify the integration policy:
-    
     * Disable existing configuration (marked as `Deprecated`) and enable `Collect Office 365 audit logs via CEL` configuration.
     * Add the required parameters such as `Directory (tenant) ID`, `Application (client) ID`, `Client Secret` based on the previous configuration.
     * Verify/Update `Initial Interval` configuration parameter to start fetching events from. This defaults to 7 days. Even if there is overlap in times, the events are not duplicated.
     * Update the other configuration parameters as required and hit `Save Integration`.
 
 Please refer [Upgrade an integration](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html) in case of any issues while performing integration upgrade.
+
+## Data latency
+
+This integration works by creating a subscription for each enabled content type, checking each subscription for available data, and downloading any data that is available.
+
+As discussed in Microsoft's [Working with the Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#working-with-the-office-365-management-activity-api) documentation, when a subscription is first created it can take up to 12 hours for the first data to become available. Users of this integration should expect to see that initial delay.
+
+Data may become available out of order, so the earliest data will not necessarily be downloaded first. Data will be downloaded in the order in which it becomes available.
+
+If a new integration policy is created to fetch data from existing subscriptions, earlier data may be available and the integration will try to fetch it. This can help to fill short gaps in data. The Initial Interval setting controls how far back it will look. By default it will check for data that became available in the last week, which is the maximum time range allowed by the API.
 
 ## Compatibility
 
@@ -71,9 +81,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "da16f371-03dc-4c53-a8c6-06373b156468",
-        "id": "c04578cd-061a-4331-b57f-c0993ec4b38b",
-        "name": "elastic-agent-84703",
+        "ephemeral_id": "abb77bca-e0e6-46be-9afd-01b00e89f7b3",
+        "id": "bd4e87b5-0303-4dd3-8c00-1e85a76205ab",
+        "name": "elastic-agent-71493",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -83,14 +93,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "o365.audit",
-        "namespace": "85933",
+        "namespace": "55209",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c04578cd-061a-4331-b57f-c0993ec4b38b",
+        "id": "bd4e87b5-0303-4dd3-8c00-1e85a76205ab",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -103,9 +113,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2025-04-16T05:24:20Z",
+        "ingested": "2025-05-26T09:01:57Z",
         "kind": "event",
-        "original": "{\"Site\":\"d5180cfc-3479-44d6-b410-8c985ac894e3\",\"ObjectId\":\"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\",\"ItemType\":\"Page\",\"UserKey\":\"i:0h.f|membership|1003200096971f55@live.com\",\"OrganizationId\":\"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\",\"Operation\":\"PageViewed\",\"ClientIP\":\"213.97.47.133\",\"Workload\":\"OneDrive\",\"EventSource\":\"SharePoint\",\"RecordType\":4,\"Version\":1,\"UserId\":\"asr@testsiem.onmicrosoft.com\",\"WebId\":\"8c5c94bb-8396-470c-87d7-8999f440cd30\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\",\"CreationTime\":\"2020-02-07T16:43:53\",\"CustomUniqueId\":true,\"Id\":\"99d005e6-a4c6-46fd-117c-08d7abeceab5\",\"CorrelationId\":\"622b339f-4000-a000-f25f-92b3478c7a25\",\"ListItemUniqueId\":\"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\",\"UserType\":0}",
+        "original": "{\"Site\":\"d5180cfc-3479-44d6-b410-8c985ac894e3\",\"ObjectId\":\"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\",\"ItemType\":\"Page\",\"UserKey\":\"i:0h.f|membership|1003200096971f55@live.com\",\"Operation\":\"PageViewed\",\"OrganizationId\":\"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\",\"ClientIP\":\"213.97.47.133\",\"Workload\":\"OneDrive\",\"EventSource\":\"SharePoint\",\"RecordType\":4,\"Version\":1,\"WebId\":\"8c5c94bb-8396-470c-87d7-8999f440cd30\",\"UserId\":\"asr@testsiem.onmicrosoft.com\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\",\"CreationTime\":\"2020-02-07T16:43:53\",\"CustomUniqueId\":true,\"Id\":\"99d005e6-a4c6-46fd-117c-08d7abeceab5\",\"CorrelationId\":\"622b339f-4000-a000-f25f-92b3478c7a25\",\"ListItemUniqueId\":\"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\",\"UserType\":0}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -186,6 +196,7 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| application.name | Name of the application. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -218,6 +229,7 @@ An example event for `audit` looks as following:
 | o365.audit.AlertType |  | keyword |
 | o365.audit.AppAccessContext.\* |  | object |
 | o365.audit.AppId |  | keyword |
+| o365.audit.Application |  | keyword |
 | o365.audit.ApplicationDisplayName |  | keyword |
 | o365.audit.ApplicationId |  | keyword |
 | o365.audit.Approver |  | keyword |
@@ -228,6 +240,7 @@ An example event for `audit` looks as following:
 | o365.audit.AttachmentData.SHA256 |  | keyword |
 | o365.audit.AuthDetails.Name |  | keyword |
 | o365.audit.AuthDetails.Value |  | keyword |
+| o365.audit.AuthenticationType |  | keyword |
 | o365.audit.AzureActiveDirectoryEventType |  | keyword |
 | o365.audit.BCLValue |  | keyword |
 | o365.audit.BulkApprovalId |  | keyword |
@@ -311,6 +324,7 @@ An example event for `audit` looks as following:
 | o365.audit.Description |  | match_only_text |
 | o365.audit.DetectionMethod |  | keyword |
 | o365.audit.DetectionType |  | keyword |
+| o365.audit.DeviceName |  | keyword |
 | o365.audit.Directionality |  | keyword |
 | o365.audit.EffectiveOrganization |  | keyword |
 | o365.audit.EndTimeUtc |  | date |
@@ -324,12 +338,15 @@ An example event for `audit` looks as following:
 | o365.audit.ExchangeMetaData.CC |  | keyword |
 | o365.audit.ExchangeMetaData.MessageID |  | keyword |
 | o365.audit.ExchangeMetaData.Sent |  | date |
+| o365.audit.ExchangeMetaData.Subject |  | keyword |
 | o365.audit.ExchangeMetaData.To |  | keyword |
 | o365.audit.ExchangeMetaData.UniqueID |  | keyword |
 | o365.audit.Experience |  | keyword |
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExtendedProperties.RequestType |  | keyword |
 | o365.audit.ExternalAccess |  | boolean |
+| o365.audit.FileExtension |  | keyword |
+| o365.audit.FileSize |  | keyword |
 | o365.audit.FileSizeBytes |  | long |
 | o365.audit.FilteringDate |  | date |
 | o365.audit.GroupName |  | keyword |
@@ -383,6 +400,7 @@ An example event for `audit` looks as following:
 | o365.audit.OrganizationId |  | keyword |
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginalDeliveryLocation |  | keyword |
+| o365.audit.OriginatingDomain |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
 | o365.audit.P1Sender |  | keyword |
 | o365.audit.P1SenderDomain |  | keyword |
@@ -396,6 +414,7 @@ An example event for `audit` looks as following:
 | o365.audit.Parameters.Enabled |  | keyword |
 | o365.audit.Parameters.ForwardAsAttachmentTo |  | keyword |
 | o365.audit.Parameters.ForwardTo |  | keyword |
+| o365.audit.Parameters.From |  | keyword |
 | o365.audit.Parameters.RedirectTo |  | keyword |
 | o365.audit.PhishConfidenceLevel |  | keyword |
 | o365.audit.Platform |  | keyword |
@@ -419,6 +438,8 @@ An example event for `audit` looks as following:
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
 | o365.audit.Severity |  | keyword |
+| o365.audit.Sha1 |  | keyword |
+| o365.audit.Sha256 |  | keyword |
 | o365.audit.SharePointMetaData.\* |  | object |
 | o365.audit.Site |  | keyword |
 | o365.audit.SiteUrl |  | keyword |
@@ -447,6 +468,7 @@ An example event for `audit` looks as following:
 | o365.audit.Target.ID |  | keyword |
 | o365.audit.Target.Type |  | keyword |
 | o365.audit.TargetContextId |  | keyword |
+| o365.audit.TargetFilePath |  | keyword |
 | o365.audit.TargetUserOrGroupName |  | keyword |
 | o365.audit.TargetUserOrGroupType |  | keyword |
 | o365.audit.TeamGuid |  | keyword |
@@ -465,4 +487,6 @@ An example event for `audit` looks as following:
 | o365.audit.WorkspaceId |  | keyword |
 | o365.audit.WorkspaceName |  | keyword |
 | o365.audit.YammerNetworkId |  | keyword |
+| session.id | The unique identifier for the authentication session. | keyword |
+| token.id | The unique token identifier of the API call used to make the audited change. | keyword |
 

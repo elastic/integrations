@@ -4,39 +4,52 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-if [[ "$BUILDKITE_PIPELINE_SLUG" =~ ^(integrations|integrations-test-stack)$ ]]; then
-    # FIXME: update condition depending on the pipeline steps triggered
+should_run_stack_down() {
+    # as first check, ensure that the elastic-package binary exists
+    if [ ! -f "${ELASTIC_PACKAGE_BIN}" ]; then
+        return 1
+    fi
+
+    if is_serverless; then
+        return 0
+    fi
+
+    if is_stack_created; then
+        return 0
+    fi
+
+    return 1
+}
+
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" && "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
+  cd "${WORKSPACE}"
+  git config remote.origin.url "https://github.com/elastic/integrations.git"
+fi
+
+exit_code=0
+if [[ "$BUILDKITE_PIPELINE_SLUG" =~ ^(integrations|integrations-test-stack|integrations-serverless)$ ]]; then
+    # it should match "^test-integration-" steps created in the integrations and integrations-test-stack pipelines (e.g. test-integration-apache or test-integration-aws)
+    # as well as the step ID "test-integrations-serverless-project" from the "integrations-serverless" pipeline
     if [[ "$BUILDKITE_STEP_KEY" =~ ^test-integrations- ]]; then
 
         # Ensure that kind cluster is deleted
         delete_kind_cluster
 
         # Ensure elastic stack is stopped
-        if [ -f "${ELASTIC_PACKAGE_BIN}" ]; then
+        if should_run_stack_down; then
             echo "--- Take down the Elastic stack"
-            ${ELASTIC_PACKAGE_BIN} stack down -v
+            if ! ${ELASTIC_PACKAGE_BIN} stack down -v ; then
+                exit_code=1
+            fi
         fi
+
+        echo "+++ :bookmark: Documentation to access logs"
+        inline_link "https://docs.elastic.dev/ingest-dev-docs/elastic-packages/ecosystem-ci-pipelines#private-logs"
     fi
 fi
 
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-serverless" ]]; then
-    if [[ "$BUILDKITE_STEP_KEY" == "test-integrations-serverless-project" ]]; then
-
-        # Ensure that kind cluster is deleted
-        delete_kind_cluster
-
-        # Ensure elastic stack is stopped
-        if [ -f "${ELASTIC_PACKAGE_BIN}" ]; then
-            echo "--- Take down the Elastic stack"
-            EC_API_KEY=${EC_API_KEY_SECRET} EC_HOST=${EC_HOST_SECRET} ${ELASTIC_PACKAGE_BIN} stack down -v
-        fi
-    fi
-fi
-
+echo "--- Cleaning up"
 unset_secrets
 cleanup
 
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" && "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
-  cd "${WORKSPACE}"
-  git config remote.origin.url "https://github.com/elastic/integrations.git"
-fi
+exit "${exit_code}"

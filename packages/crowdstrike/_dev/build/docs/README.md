@@ -4,7 +4,17 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily
 
 1. **Falcon SIEM Connector**: This is a pre-built integration designed to connect CrowdStrike Falcon with Security Information and Event Management (SIEM) systems. It streamlines the flow of security data from CrowdStrike Falcon to the SIEM, providing a standardized and structured way of feeding information into the SIEM platform. It includes the following datasets for receiving logs:
 
-- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
+- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from Falcon SIEM Connector.
+
+    **Log File Format and Location**
+
+    The CrowdStrike integration only supports JSON output format from the SIEM Connector.
+
+    - Log files are written to multiple rotated output files based on the `output_path` setting in the `cs.falconhoseclient.cfg` file.
+    - The default output location for the Falcon SIEM Connector is `/var/log/crowdstrike/falconhoseclient/output`.
+    - By default, files named `output*` in `/var/log/crowdstrike/falconhoseclient` directory contain valid JSON event data and should be used as the source for ingestion.
+
+    >Note: Files with names like `cs.falconhoseclient-*.log` in the same directory are primarily used for logging internal operations of the Falcon SIEM Connector and are not intended to be consumed by this integration.
 
 2. **CrowdStrike REST API**: This provides a programmatic interface to interact with the CrowdStrike Falcon platform. It allows users to perform various operations such as querying information about unified alerts and hosts/devices. It includes the following datasets for receiving logs:
 
@@ -250,6 +260,27 @@ The option `Enable Data Deduplication` allows you to avoid consuming duplicate e
 
 If duplicate events are ingested, to help find them, the integration `event.id` field is populated by concatenating a few Crowdstrike fields that uniquely identifies the event. These fields are `id`, `aid`, and `cid` from the Crowdstrike event. The fields are separated with pipe `|`.
 For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
+
+#### Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name              | `event.severity` |
+|----------------------------|:----------------:|
+| Low, Info or Informational | 21               |
+| Medium                     | 47               |
+| High                       | 73               |
+| Critical                   | 99               |
+
+If the severity name is not available from the original document, it is determined from the numeric severity value according to the following table.
+
+| Crowdstrike `severity` | Severity Name |
+|------------------------|:-------------:|
+| 0 - 19                 | info          |
+| 20 - 39                | low           |
+| 40 - 59                | medium        |
+| 60 - 79                | high          |
+| 80 - 100               | critical      |
 
 #### Example
 

@@ -1,15 +1,33 @@
 ---
 description: "Ingest pipeline for ESS billing data"
 processors:
+  # NOTE(2025-08-15): This 'drop' processor is no longer necessary because
+  # there is a Beat processor to drop events with 'fake: true'. It is kept here
+  # to allow users a chance to upgrade their Agent configurations first, given
+  # that package upgrades are not atomic (pipelines upgrade before agents).
   - drop:
       if: "ctx.ess?.billing == null && ctx.error?.message == null"
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-      tag: ingest_timestamp
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field: ess.billing.quantities
+      ignore_missing: true
   - set:
       field: event.created
-      value: "{{@timestamp}}"
+      copy_from: '@timestamp'
       tag: created_timestamp
   - date:
       field: ess.billing.from
@@ -154,4 +172,7 @@ on_failure:
       value: "pipeline_error"
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

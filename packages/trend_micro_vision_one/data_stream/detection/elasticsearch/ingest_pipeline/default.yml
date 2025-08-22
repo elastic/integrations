@@ -295,6 +295,11 @@ processors:
       field: process.pid
       copy_from: trend_micro_vision_one.detection.process.pid
       ignore_failure: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id
+      value: '{{{process.pid}}}'
+      ignore_empty_value: true
   - convert:
       field: json.src
       target_field: trend_micro_vision_one.detection.source.ip
@@ -425,6 +430,7 @@ processors:
       if: ctx.json?.end != null && ctx.json.end != ''
       formats:
         - ISO8601
+        - UNIX_MS
       on_failure:
         - append:
             field: error.message
@@ -447,6 +453,7 @@ processors:
       if: ctx.json?.eventTimeDT != null && ctx.json.eventTimeDT != ''
       formats:
         - ISO8601
+        - UNIX_MS
       on_failure:
         - append:
             field: error.message
@@ -647,6 +654,7 @@ processors:
       if: ctx.json?.rt != null && ctx.json.rt != ''
       formats:
         - ISO8601
+        - UNIX_MS
       on_failure:
         - append:
             field: error.message
@@ -657,6 +665,7 @@ processors:
       if: ctx.json?.rt_utc != null && ctx.json.rt_utc != ''
       formats:
         - ISO8601
+        - UNIX_MS
       on_failure:
         - append:
             field: error.message
