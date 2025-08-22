@@ -95,7 +95,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| where sku is not null\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats `Normalised cost` = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, `Normalised cost` \n| LIMIT 10000"
                                             },
                                             "timeField": "@timestamp"
                                         }
