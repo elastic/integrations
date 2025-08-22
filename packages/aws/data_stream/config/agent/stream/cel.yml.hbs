@@ -28,14 +28,18 @@ redact:
     - session_token
 program: |
   (
+    // Stage 1: Check if we have existing config rules to process
+    // If we have worklist with ConfigRules, we already fetched rules and now need to get compliance details
     has(state.?worklist.ConfigRules) && size(state.worklist.ConfigRules) > 0 ?
       {
+        // State management: preserve existing state from previous iteration
         "worklist": state.worklist,
         "batch_size": state.batch_size,
         "has_next": state.has_next,
         "next": state.next,
         "next_page": state.next_page,
 
+        // AWS SigV4 Signing: Generate signing key for GetComplianceDetailsByConfigRule request
         // Perform a succession of keyed hash operations (HMAC) on the request date, Region, and service,
         // with the AWS secret access key as the key for the initial hashing operation.
         // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key
@@ -80,10 +84,10 @@ program: |
         "tld": state.tld,
       }
     :
+      // Stage 2: First time execution - need to fetch config rules first
       (
-      state.?want_more.orValue(false) ?
         state.with({
-
+          // AWS SigV4 Signing: Generate signing key for DescribeConfigRules request
           // Perform a succession of keyed hash operations (HMAC) on the request date, Region, and service, 
           // with the AWS secret access key as the key for the initial hashing operation.
           // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key
@@ -99,6 +103,7 @@ program: |
           ),
           // Create a string_to_sign that includes the algorithm, request timestamp, credential scope, and hashed canonical request
           // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#create-string-to-sign
+
           "string_to_sign": [
             'AWS4-HMAC-SHA256',
             now.format("20060102T150405Z"),
@@ -119,46 +124,8 @@ program: |
             ].join("\n").sha256().hex()
           ].join("\n"),
         })
-      :
-        state.with({
-
-          // Perform a succession of keyed hash operations (HMAC) on the request date, Region, and service, 
-          // with the AWS secret access key as the key for the initial hashing operation.
-          // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key
-
-          "signing_key": "aws4_request".hmac("sha256",
-            "config".hmac("sha256",
-              state.aws_region.hmac("sha256",
-                now.format("20060102").hmac("sha256",
-                  bytes("AWS4" + state.secret_key)
-                )
-              )
-            )
-          ),
-          // Create a string_to_sign that includes the algorithm, request timestamp, credential scope, and hashed canonical request
-          // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#create-string-to-sign
-
-          "string_to_sign": [
-            'AWS4-HMAC-SHA256',
-            now.format("20060102T150405Z"),
-            now.format("20060102") + '/' + state.aws_region + '/config/aws4_request',
-            [
-              'POST',
-              '/',
-              '',
-              "content-type:application/x-amz-json-1.1",
-              "host:config." + state.aws_region + "." + state.tld,
-              "x-amz-date:" + now.format("20060102T150405Z"),
-              "x-amz-target:StarlingDoveService.DescribeConfigRules",
-              '',
-              "content-type;host;x-amz-date;x-amz-target",
-              {
-                ?"NextToken": state.?next_page.rule_token
-              }.encode_json().sha256().hex()
-            ].join("\n").sha256().hex()
-          ].join("\n")
-        })
       ).as(state,
+        // API Call: Execute DescribeConfigRules request to get list of config rules
         post_request(
           state.url.trim_right("/"),
           "application/json",
@@ -189,8 +156,10 @@ program: |
             },
           }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
+          // Response Processing: Successfully got config rules list
           resp.Body.decode_json().as(body,
             {
+              // State Update: Store the fetched config rules as worklist
               "worklist": body,
               "next": 0,
               "has_next": has(body.NextToken),
@@ -199,6 +168,7 @@ program: |
                 ?"rule_token": body.?NextToken,
               },
 
+              // AWS SigV4 Signing: Prepare signing key for next GetComplianceDetailsByConfigRule request
               // Perform a succession of keyed hash operations (HMAC) on the request date, Region, and service, 
               // with the AWS secret access key as the key for the initial hashing operation.
               // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key
@@ -231,7 +201,7 @@ program: |
                   "content-type;host;x-amz-date;x-amz-target",
                   {
                     ?"NextToken": state.?next_page.result_token,
-                    "ConfigRuleName": body.ConfigRules[0].ConfigRuleName,
+                    ?"ConfigRuleName": body.?ConfigRules[0].optMap(r, r.ConfigRuleName),
                     "Limit": int(state.batch_size)
                   }.encode_json().sha256().hex()
                 ].join("\n").sha256().hex()
@@ -244,12 +214,13 @@ program: |
             }
           )
         :
+          // Error Handling: DescribeConfigRules request failed
           {
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "POST " + state.url.trim_right("/") + "DescribeConfigRules " +
+                "message": "DescribeConfigRules: POST " + state.url.trim_right("/") + " " +
                 (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
@@ -269,9 +240,11 @@ program: |
         )
       )
   ).as(config_rules,
+    // Stage 3: Process results - either exit early on failure or fetch compliance details
     !has(config_rules.worklist) ? // Exit early due to POST failure.
       config_rules
     : has(config_rules.worklist.ConfigRules) && size(config_rules.worklist.ConfigRules) > 0 ?
+      // API Call: Execute GetComplianceDetailsByConfigRule for specific config rule
       post_request(
         state.url.trim_right("/"),
         "application/json",
@@ -304,6 +277,7 @@ program: |
           },
         }
       ).do_request().as(resp, (resp.StatusCode == 200) ?
+        // Response Processing: Successfully got compliance details
         bytes(resp.Body).decode_json().as(body,
           {
             "events": (has(body.EvaluationResults) && size(body.EvaluationResults) > 0) ?
@@ -346,12 +320,13 @@ program: |
           }
         )
       :
+        // Error Handling: GetComplianceDetailsByConfigRule request failed
         {
           "events": {
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "POST " + state.url.trim_right("/") + "GetComplianceDetailsByConfigRule " + 
+              "message": "GetComplianceDetailsByConfigRule: POST " + state.url.trim_right("/") + " " +
               (
                 (size(resp.Body) != 0) ?
                   string(resp.Body)
@@ -370,6 +345,7 @@ program: |
         }
       )
     :
+      // Final State: No config rules found, return empty result
       {
         "events": [],
         "want_more": false,
