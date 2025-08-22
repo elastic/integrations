@@ -14,6 +14,15 @@ streams:
         show_user: true
         default:
           - /var/log/*.log
+      - name: gzip_experimental
+        type: bool
+        title: Decompress GZIP files
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: |
+          When enabled, filestream will decompress GZIP-compressed files (.gz) as they are read. This is an experimental feature. For full details, see the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream#reading-gzip-files). If enabled, you **must** also remove the '\.gz$' pattern from the "Exclude Files" setting to ensure `.gz` files are ingested.
       - name: data_stream.dataset
         type: text
         title: Dataset name
@@ -48,7 +57,7 @@ streams:
         type: text
         title: Exclude Files
         description: |
-          A list of regular expressions to match the files that you want Elastic Agent to ignore. By default no files are excluded.
+          A list of regular expressions used to ignore files. By default, this list includes '\.gz$' to exclude GZIP files. If you enable the "Decompress GZIP files" option, the default pattern, '\.gz$', **must** be removed.
         required: false
         show_user: true
         multi: true
