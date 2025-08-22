@@ -553,6 +553,10 @@ _boolean_
 
 Default is `false`, which means the processor will not perform the checkpoint migration.
 
+`endpoint_suffix` :
+_string_
+Override the default endpoint suffix used to construct the connection string. Default is set to `core.windows.net`. For example, US Government Cloud users should set this to `core.usgovcloudapi.net`.
+
 `partition_receive_timeout` :
 _string_
 (processor v2 only) Maximum time to wait before processing the messages received from the event hub.
