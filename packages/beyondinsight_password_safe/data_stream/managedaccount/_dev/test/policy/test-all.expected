@@ -17,7 +17,7 @@ inputs:
                     foo: bar
           program: |-
             state.with(
-              state.?cursor.cookies.hasValue() ?
+              has(state.?cursor.cookies) ?
                 // Fetch managed accounts using authenticated session.
                 request(
                   "GET",
@@ -36,7 +36,7 @@ inputs:
                   (resp.StatusCode == 200) ?
                     // Success: process JSON array of managed account objects.
                     // More data may exist if returned array size equals the limit.
-                    bytes(resp.Body).decode_json().as(body,
+                    resp.Body.decode_json().as(body,
                       {
                         "events": body.map(e,
                           {
@@ -45,8 +45,8 @@ inputs:
                             },
                           }
                         ),
-                        "want_more": size(body) == state.limit,
-                        "offset": (size(body) == state.limit) ?
+                        "want_more": size(body) == int(state.limit),
+                        "offset": (size(body) == int(state.limit)) ?
                           (int(state.?offset.orValue(0)) + size(body))
                         :
                           0,
@@ -60,7 +60,7 @@ inputs:
                         {
                           "events": [
                             // Must produce an event for want_more=true to be honored.
-                            {"cel": true}
+                            {"cel": true},
                           ],
                           "retries": 1,
                           "want_more": true,
@@ -107,10 +107,9 @@ inputs:
                   {
                     "Header": {
                       "Authorization": [
-                        sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-
+                        sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) + (
                         // pwd is required only if the user password is required on the application API registration.
-                        (state.password != "" ? sprintf(" pwd=[%s];", [state.password]) : ""),
+                        (state.password != "") ? (sprintf(" pwd=[%s];", [state.password])) : ""),
                       ],
                       "Content-Type": ["application/json"],
                     },
