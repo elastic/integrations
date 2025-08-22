@@ -428,10 +428,11 @@ program: |-
         "want_more": size(state.work.todo_type) != 0 || size(state.work.todo_content) != 0,
       }
     )
-  ).as(state, (state.want_more && type(state.events) == list && size(state.events) == 0) ?
+  ).as(state,
     // Make sure we complete the remaining work if we got
     // no events but the work lists are not empty.
-    state.with(
+    (state.want_more && type(state.events) == list && size(state.events) == 0) ?
+      state.with(
       {
         "events": [{"retry": true}],
       }
