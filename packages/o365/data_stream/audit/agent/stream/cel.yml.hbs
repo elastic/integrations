@@ -409,6 +409,20 @@ program: |-
         )
       )
   ).as(state,
+    (
+      // Ensure that we bring the current type up to the current time,
+      // even if we did not get any content for the query period.
+      timestamp(state.cursor.last_for[state.work.curr_type.to_lower()]) < now - duration("1h") &&
+      !state.work.todo_type.exists(t, t == state.work.curr_type)
+    ) ?
+      state.with(
+        {
+          "work": state.work.with({"todo_type": [state.work.curr_type] + state.work.todo_type}),
+        }
+      )
+    :
+      state
+  ).as(state,
     state.with(
       {
         "want_more": size(state.work.todo_type) != 0 || size(state.work.todo_content) != 0,
