@@ -20,55 +20,58 @@ redact:
   fields: ~
 
 program: |
-  {"events": [{{#each urls}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}].map(url,
-    try(
-      get(url + "/_health_report"),
-      "Unable to reach " + url + " - host may be unreachable or network error occurred"
-    ).as(resp,
-      has(resp.StatusCode) && resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body,
-          [
-            [{
-              "logstash.node": {
-                "name": body.name,
-                "address": body.http_address,
-                "uuid": body.id,
-                "version": body.version,
-                "status": body.status,
-                "symptom": body.symptom
-              }
-            }],
-            body.indicators.pipelines.indicators.as(pipelines,
-              pipelines.map(pipeline_name, pipelines[pipeline_name].as(pipeline,
-                {
-                  "logstash": {
-                    "node": {
-                      "name": body.name,
-                      "version": body.version,
-                      "address": body.http_address,
-                      "uuid": body.id
-                    },
-                    "pipeline": {
-                      "id": pipeline_name,
-                      "status": pipeline.status,
-                      "symptom": pipeline.symptom,
-                      "state": has(pipeline.details.status.state) ? pipeline.details.status.state : "",
-                      "flow": has(pipeline.details.flow) ? pipeline.details.flow : {},
-                      "diagnosis": has(pipeline.diagnosis) ? pipeline.diagnosis[0] : {},
-                      "impacts": has(pipeline.impacts) ? pipeline.impacts[0] : {}
-                    }
+  {
+    "events":
+      [{{#each urls}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}].map(url,
+        try(
+          get(url + "/_health_report"),
+          "error"
+        ).as(resp,
+          has(resp.StatusCode) && resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body,
+              [
+                [{
+                  "logstash.node": {
+                    "name": body.name,
+                    "address": body.http_address,
+                    "uuid": body.id,
+                    "version": body.version,
+                    "status": body.status,
+                    "symptom": body.symptom
                   }
-                }
-              ))
+                }],
+                body.indicators.pipelines.indicators.as(pipelines,
+                  pipelines.map(pipeline_name, pipelines[pipeline_name].as(pipeline,
+                    {
+                      "logstash": {
+                        "node": {
+                          "name": body.name,
+                          "version": body.version,
+                          "address": body.http_address,
+                          "uuid": body.id
+                        },
+                        "pipeline": {
+                          "id": pipeline_name,
+                          "status": pipeline.status,
+                          "symptom": pipeline.symptom,
+                          "state": has(pipeline.details.status.state) ? pipeline.details.status.state : "",
+                          "flow": has(pipeline.details.flow) ? pipeline.details.flow : {},
+                          "diagnosis": has(pipeline.diagnosis) ? pipeline.diagnosis[0] : {},
+                          "impacts": has(pipeline.impacts) ? pipeline.impacts[0] : {}
+                        }
+                      }
+                    }
+                  ))
+                )
+              ].flatten()
             )
-          ].flatten()
+            :
+            [{
+              "error": {
+                "url": url,
+                "response": resp
+              }
+            }]
         )
-        :
-        [{
-          "error": {
-            "url": url,
-            "message": resp
-          }
-        }]
-    )
-  ).flatten()}
+      ).flatten()
+  }

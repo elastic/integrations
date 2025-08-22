@@ -1,6 +1,6 @@
 config_version: "2"
 interval: {{period}}
-resource.url: "{{url}}/_node/stats?graph=true&vertices=true"
+resource.url: "/_node/stats?graph=true&vertices=true"
 {{#if resource_ssl}}
 resource.ssl:
   {{resource_ssl}}
@@ -20,50 +20,77 @@ redact:
   fields: ~
 
 program: |
-  get(state.url)
-  .as(resp, bytes(resp.Body)
-  .decode_json().as(body,
-    {
-      "logstash":{
-        "elasticsearch": has(body.pipelines) 
-        ? {
-            "cluster":{
-              "id":body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", has(body.pipelines[pipeline_name].vertices)
-                ? body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), vertex.cluster_uuid) 
-                : []).flatten(),
-             }
-          }
-        : {},
-        "node":{
-          "stats":{
-             "events":body.events,
-             "jvm":{
-                "uptime_in_millis":body.jvm.uptime_in_millis,
-                "mem":[body.jvm['mem']].drop("pools")[0],
-                "threads":body.jvm.threads
-              },
-             "queue":body.queue,
-             "reloads":body.reloads,
-             "process":body.process,
-             "os":{
-              "cpu":body.process.cpu,
-              "cgroup":has(body.os.group) ? body.os.cgroup : {},
-             },
-             "logstash":{
-               "ephemeral_id":body.ephemeral_id,
-               "host":body.host,
-               "http_address":body.http_address,
-               "name":body.name,
-               "pipeline":body.pipeline,
-               "pipelines":body.pipelines.map(pipeline, pipeline != '.monitoring-logstash', [pipeline]).flatten(),
-               "snapshot":body.snapshot,
-               "status":body.status,
-               "uuid":body.id,
-               "version":body.version,
+  {
+    "events":
+      [{{#each urls}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}].map(url,
+        try(
+          get(url + "/_node/stats?graph=true&vertices=true"),
+          "error"
+        ).as(resp,
+          has(resp.StatusCode) && resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body,
+              {
+                "logstash":{
+                  "elasticsearch": has(body.pipelines) 
+                    ? {
+                        "cluster":{
+                          "id": body.pipelines.map(
+                            pipeline_name,
+                            pipeline_name != ".monitoring-logstash",
+                            has(body.pipelines[pipeline_name].vertices)
+                              ? body.pipelines[pipeline_name].vertices.map(
+                                  vertex,
+                                  has(vertex.cluster_uuid),
+                                  vertex.cluster_uuid
+                                )
+                              : []
+                          ).flatten()
+                        }
+                      }
+                    : {},
+                  "node":{
+                    "stats":{
+                      "events": body.events,
+                      "jvm":{
+                        "uptime_in_millis": body.jvm.uptime_in_millis,
+                        "mem": [body.jvm['mem']].drop("pools")[0],
+                        "threads": body.jvm.threads
+                      },
+                      "queue": body.queue,
+                      "reloads": body.reloads,
+                      "process": body.process,
+                      "os":{
+                        "cpu": body.process.cpu,
+                        "cgroup": has(body.os.group) ? body.os.cgroup : {}
+                      },
+                      "logstash":{
+                        "ephemeral_id": body.ephemeral_id,
+                        "host": body.host,
+                        "http_address": body.http_address,
+                        "name": body.name,
+                        "pipeline": body.pipeline,
+                        "pipelines": body.pipelines.map(
+                          pipeline,
+                          pipeline != ".monitoring-logstash",
+                          [pipeline]
+                        ).flatten(),
+                        "snapshot": body.snapshot,
+                        "status": body.status,
+                        "uuid": body.id,
+                        "version": body.version
+                      }
+                    }
+                  }
+                }
               }
-          }}
-        }})
-  )
-  .as(eve, {
-    "events":[eve]
-  })
+            )
+            :
+            {
+              "error": {
+                "url": url,
+                "response": resp
+              }
+            }
+        )
+      ).flatten()
+  }
