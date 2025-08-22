@@ -63,7 +63,8 @@ PUT billing_cluster_cost_lookup
         "type": "text",
         "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
       },
-      "total_ecu": { "type": "float" }
+      "total_ecu": { "type": "float" },
+      "sku": { "type": "keyword" }
     }
   }
 }
