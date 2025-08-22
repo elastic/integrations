@@ -78,28 +78,31 @@ program: |-
   state.with(
     state.?work.todo_content[0].hasValue() ?
       // Do any outstanding content collection to do.
-      state.work.todo_content[0].as(l,
-        // This depends on state.work.todo_content being ordered ascending by contentCreated.
-        // If this is not the case, this needs to be replaced with a linear scan for the
-        // oldest, putting the oldest in the current content and the rest in the remaining
-        // todo list.
+      state.work.todo_content.filter(e,
+        // Filter out stale elements.
+        timestamp(e.contentExpiration) > now()
+      ).as(list,
+        list.map(e,
+          timestamp(e.endTime)
+        ).min().as(min,
+          list.filter(e, timestamp(e.endTime) == min)[0]
+        ).as(oldest,
+          {
+            "curr_content": oldest,
+            "todo_content": list.filter(e, e.contentUri != oldest.contentUri),
+          }
+        )
+      ).as(w,
         {
-          "cursor": state.?cursor.orValue({}).with(
-            {
-              "last_for": state.?cursor.last_for.orValue({}).with(
-                {l.contentType.to_lower(): l.contentCreated}
-              ),
-            }
-          ),
           "work": state.work.with(
             {
-              "curr_content": l, // debugging value only
-              "todo_content": tail(state.work.todo_content),
+              "curr_content": w.curr_content,
+              "todo_content": w.todo_content,
             }
           ),
           "events": request(
             "GET",
-            l.contentUri
+            w.curr_content.contentUri
           ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
             dyn(
               content_resp.Body.decode_json().map(e,
@@ -114,7 +117,7 @@ program: |-
               "error": {
                 "code": string(content_resp.StatusCode),
                 "id": string(content_resp.Status),
-                "message": "GET " + l.contentUri + ": " + (
+                "message": "GET " + w.curr_content.contentUri + ": " + (
                   (size(content_resp.Body) != 0) ?
                     string(content_resp.Body)
                   :
@@ -131,35 +134,57 @@ program: |-
         "GET",
         state.work.next_list
       ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
-        list_resp.Body.decode_json().filter(e,
-          e.?contentExpiration.optMap(t, t.parse_time(time_layout.RFC3339) >= now()).orValue(true)
-        ).as(list,
+        list_resp.Body.decode_json().as(list,
+          (list + state.work.todo_content).filter(e,
+            // Filter out stale elements.
+            e.?contentExpiration.optMap(t, t.parse_time(time_layout.RFC3339) >= now()).orValue(true)
+          ).map(e,
+            // Record the cursor update time for the content.
+            has(e.endTime) ?
+              e
+            :
+              e.with(
+                {
+                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().endTime[0],
+                }
+              )
+          ).as(list,
+            list.map(e,
+              timestamp(e.endTime)
+            ).min().as(min,
+              list.filter(e, timestamp(e.endTime) == min)[?0]
+            ).as(oldest,
+              {
+                "curr_content": oldest,
+                "todo_content": list.filter(e, e.contentUri != oldest.contentUri),
+              }
+            )
+          )
+        ).as(w,
           {
             "cursor": state.?cursor.orValue({}).with(
               {
                 "last_for": state.?cursor.last_for.orValue({}).with(
-                  dyn(
-                    (
-                      list[?0].optMap(l,
-                        {l.contentType.to_lower(): l.contentCreated}
-                      )
-                    ).orValue({})
-                  )
+                  (
+                    w.curr_content.optMap(l,
+                      {l.contentType.to_lower(): l.endTime}
+                    )
+                  ).orValue({})
                 ),
               }
             ),
             "work": state.work.drop(["curr_content", "next_list"]).with(
               {
-                ?"curr_content": list[?0], // debugging value only
+                ?"curr_content": w.curr_content,
+                "todo_content": w.todo_content,
                 ?"next_list": [
                   // Work around non-conformance with HTTP header MIME standards.
                   ?list_resp.Header.?Nextpageuri[0],
                   ?list_resp.Header.?NextPageUri[0],
                 ][?0],
-                "todo_content": state.work.todo_content + tail(list),
               }
             ),
-            "events": list[?0].optMap(l,
+            "events": w.curr_content.optMap(l,
               request(
                 "GET",
                 l.contentUri
@@ -339,6 +364,10 @@ program: |-
                 ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
                   list_resp.Body.decode_json().filter(e,
                     e.?contentExpiration.optMap(t, t.parse_time(time_layout.RFC3339) >= now()).orValue(true)
+                  ).map(e,
+                    e.with(
+                      {"endTime": string(time_range.end)}
+                    )
                   ).as(list,
                     {
                       "cursor": state.?cursor.orValue({}).with(
@@ -350,13 +379,13 @@ program: |-
                       ),
                       "work": state.work.drop(["curr_content", "next_list"]).with(
                         {
-                          ?"curr_content": list[?0], // debugging value only
+                          ?"curr_content": list[?0],
+                          "todo_content": tail(list),
                           ?"next_list": [
                             // Work around non-conformance with HTTP header MIME standards.
                             ?list_resp.Header.?Nextpageuri[0],
                             ?list_resp.Header.?NextPageUri[0],
                           ][?0],
-                          "todo_content": tail(list),
                         }
                       ),
                       "events": list[?0].optMap(l,
@@ -433,12 +462,12 @@ program: |-
     // no events but the work lists are not empty.
     (state.want_more && type(state.events) == list && size(state.events) == 0) ?
       state.with(
-      {
-        "events": [{"retry": true}],
-      }
-    )
-  :
-    state
+        {
+          "events": [{"retry": true}],
+        }
+      )
+    :
+      state
   )
 {{#if tags}}
 tags:
