@@ -59,13 +59,32 @@
                                 "textBased": {
                                     "indexPatternRefs": [],
                                     "layers": {
-                                        "11ca476c-cebd-4421-a9a4-c7ceac70ec34": {
+                                        "75f713fa-0807-4a8a-acae-549ca36b07b6": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
+                                                    "columnId": "deployment_cost",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployment_cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "deployment cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "BUCKET(@timestamp, 1 day)",
                                                     "customLabel": false,
-                                                    "fieldName": "@timestamp",
-                                                    "label": "@timestamp",
+                                                    "fieldName": "BUCKET(@timestamp, 1 day)",
+                                                    "label": "BUCKET(@timestamp, 1 day)",
                                                     "meta": {
                                                         "esType": "date",
                                                         "type": "date"
@@ -80,22 +99,11 @@
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "total_ecu_value",
-                                                    "customLabel": false,
-                                                    "fieldName": "total_ecu_value",
-                                                    "inMetricDimension": true,
-                                                    "label": "total_ecu_value",
-                                                    "meta": {
-                                                        "esType": "double",
-                                                        "type": "number"
-                                                    }
                                                 }
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value \n| LIMIT 10000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -105,7 +113,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value \n| LIMIT 10000"
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -127,7 +135,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "total_ecu_value"
+                                            "deployment_cost"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -147,11 +155,11 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "11ca476c-cebd-4421-a9a4-c7ceac70ec34",
+                                        "layerId": "75f713fa-0807-4a8a-acae-549ca36b07b6",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
                                         "splitAccessor": "deployment",
-                                        "xAccessor": "@timestamp"
+                                        "xAccessor": "BUCKET(@timestamp, 1 day)"
                                     }
                                 ],
                                 "legend": {
@@ -167,7 +175,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "total_ecu_value over @timestamp",
+                        "title": "deployment_cost over BUCKET(@timestamp, 1 day)",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {
@@ -177,7 +185,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| KEEP @timestamp, deployment, total_ecu_value \n| LIMIT 10000"
+                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL config_join_key = \"chargeback_config\"\n| LOOKUP JOIN chargeback_conf_lookup ON config_join_key\n| EVAL total_ecu_value = total_ecu * conf_ecu_rate, deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| stats deployment_cost = sum(total_ecu_value) by BUCKET(@timestamp, 1 day), deployment\n//| KEEP @timestamp, deployment, deployment_cost \n| LIMIT 10000"
                     },
                     "syncColors": false,
                     "syncCursor": true,
