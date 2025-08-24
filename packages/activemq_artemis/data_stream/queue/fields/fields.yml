@@ -1,0 +1,85 @@
+- name: activemq_artemis.queue
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      dimension: true
+      description: Name of the queue.
+    - name: address
+      type: keyword
+      dimension: true
+      description: Address that contains this queue.
+    - name: routing_type
+      type: keyword
+      dimension: true
+      description: Routing type of the queue (ANYCAST or MULTICAST).
+    - name: messages
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Number of messages currently in the queue.
+        - name: added
+          type: long
+          metric_type: counter
+          description: Total number of messages added to the queue since creation.
+        - name: acknowledged
+          type: long
+          metric_type: counter
+          description: Total number of messages acknowledged from the queue since creation.
+        - name: expired
+          type: long
+          metric_type: counter
+          description: Total number of messages expired from the queue since creation.
+        - name: killed
+          type: long
+          metric_type: counter
+          description: Total number of messages killed in the queue since creation.
+        - name: added_rate
+          type: float
+          metric_type: gauge
+          description: Rate of messages being added to the queue per second.
+        - name: acknowledged_rate
+          type: float
+          metric_type: gauge
+          description: Rate of messages being acknowledged from the queue per second.
+    - name: consumers
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Number of consumers currently consuming from the queue.
+        - name: max
+          type: long
+          metric_type: gauge
+          description: Maximum number of consumers allowed on the queue.
+    - name: delivering
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Number of messages currently being delivered to consumers.
+    - name: paused
+      type: boolean
+      description: Whether the queue is paused.
+    - name: temporary
+      type: boolean
+      description: Whether the queue is temporary.
+    - name: auto_created
+      type: boolean
+      description: Whether the queue was auto-created.
+    - name: retroactive
+      type: boolean
+      description: Whether the queue is retroactive.
+    - name: durable
+      type: boolean
+      description: Whether the queue is durable.
+    - name: purge_on_no_consumers
+      type: boolean
+      description: Whether the queue purges messages when there are no consumers.
+    - name: user
+      type: keyword
+      description: User that created the queue.
