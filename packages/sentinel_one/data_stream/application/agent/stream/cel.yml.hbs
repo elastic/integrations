@@ -1,0 +1,151 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - api_token
+program: |-
+  (
+    (has(state.?worklist.data) && size(state.worklist.data) > 0) ?
+      state
+    :
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory?" + {
+            "skipCount": ["true"],
+            "limit": [string(state.batch_size)],
+            ?"cursor": state.?next_page.token.optMap(v, [v]),
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["ApiToken " + state.api_token],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              "worklist": body,
+              "next_page": {
+                ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
+              },
+              "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+            "offset": 0,
+          }
+        )
+      )
+  ).as(state,
+    state.with(
+      !has(state.worklist) ? // Exit early due to GET failure.
+        state
+      : (has(state.worklist.data) && size(state.worklist.data) > 0) ?
+        request(
+          "GET",
+          state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints?" + {
+            "skipCount": ["true"],
+            "applicationName": [string(state.worklist.data[0].applicationName)],
+            "applicationVendor": [string(state.worklist.data[0].applicationVendor)],
+            "limit": [string(state.batch_size)],
+            ?"cursor": state.?next_chain.token.optMap(v, [v]),
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["ApiToken " + state.api_token],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              "events": (has(body.data) && body.data.size() > 0) ?
+                body.data.map(e,
+                  {
+                    "message": e.encode_json(),
+                  }
+                )
+              :
+                [{"message": "retry"}],
+              "next_chain": {
+                ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
+              },
+              "worklist": {
+                "data": (body.?pagination.nextCursor.orValue(null) != null) ? state.worklist.data : tail(state.worklist.data),
+              },
+              "want_more": state.?fetch_more.orValue(false) ? state.fetch_more : (body.?pagination.nextCursor.orValue(null) != null),
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      :
+        {
+          "events": [],
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
