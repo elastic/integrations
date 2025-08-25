@@ -94,15 +94,15 @@ When building dashboards, use the following naming convention.
 #### Visualizations [_visualizations]
 
 ```text
-<NAME> [<Metrics | Logs> <PACKAGE NAME>]
+<Name>
 ```
 
 Examples:
 
-* Memory Usage Gauge [Metrics System]
-* New groups [Logs System]
+* Memory Usage Gauge
+* New groups
 
-Rename all visualizations added to a dashboard only to show the <NAME> part.
+To avoid adding repetitive information such as the package name, rename all visualizations added to a dashboard only to show the <Name> part.
 
 
 #### Dashboards [_dashboards]
