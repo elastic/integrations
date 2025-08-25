@@ -141,6 +141,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rabbitmq.connection.port | Server port. | long |  |
 | rabbitmq.connection.state | Connection state. | keyword |  |
 | rabbitmq.connection.type | Type of the connection. | keyword |  |
+| rabbitmq.node.name.text | Full text of node name | text |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
@@ -218,6 +219,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rabbitmq.exchange.messages.publish_out.count | Count of messages published "out" of an exchange, i.e. taking account of routing. | long | gauge |
 | rabbitmq.exchange.messages.publish_out.details.rate | How much the exchange publish-out count has changed per second in the most recent sampling interval. | float | gauge |
 | rabbitmq.exchange.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |  |
+| rabbitmq.exchange.type | Exchange type | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
@@ -531,6 +533,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| rabbitmq.node.name.text | Full text of node name | text |  |
 | rabbitmq.queue.arguments.max_priority | Maximum number of priority levels for the queue to support. | long | gauge |
 | rabbitmq.queue.auto_delete | Whether the queue will be deleted automatically when no longer used. | boolean |  |
 | rabbitmq.queue.consumers.count | Number of consumers. | long | gauge |
