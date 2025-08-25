@@ -1,34 +1,39 @@
-# ExtraHop
+# ExtraHop Integration for Elastic
 
 ## Overview
 
 [ExtraHop](https://www.extrahop.com/) delivers complete network visibility through its agentless RevealX NDR platform, empowering security teams to close detection gaps left by EDR, SIEM, and logs. ExtraHop provides the deep intelligence needed to detect threats faster, investigate with greater context, and respond at the speed of modern risk.
 
-This integration enables you to collect Detection data via [ExtraHop RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/), then visualise the data in Kibana.
+The ExtraHop integration for Elastic allows you to collect logs from [ExtraHop RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/), then visualise the data in Kibana.
 
-## Data streams
+### Compatibility
 
-The ExtraHop integration collects logs for one type of event.
+The ExtraHop integration is compatible with `RevealX 360 version 25.2` and `v1` version of ExtraHop RevealX 360 APIs.
 
-**Detection:** This datastream enables you to retrieve detections that have been identified by the ExtraHop system.
+### How it works
 
-## Requirements
+This integration periodically queries the ExtraHop RevealX 360 API to retrieve detections.
 
-### Agentless enabled integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+## What data does this integration collect?
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+This integration collects log messages of the following types:
 
-### Agent based installation
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+- `Detection`: Collects detections that have been identified by the ExtraHop system.[Detection API endpoint](https://docs.extrahop.com/current/rx360-rest-api/#detections).
 
-## Compatibility
+### Supported use cases
+Integrating ExtraHop with Elastic SIEM converts high-fidelity wire-data detections into actionable insights, giving real-time visibility into risks mapped to tactics and techniques. This integration enhances threat hunting, speeds up incident response, and closes network visibility gaps. Kibana dashboards further support analysts with detailed breakdowns by detection type, category, status, resolution, and assignee, enabling efficient triage and streamlined investigations.
 
-For the REST API, this module has been tested against **ExtraHop RevealX 360 version 25.2 using the v1** API.
+## What do I need to use this integration?
 
-## Setup
+### From Elastic
 
-### Enable the REST API for RevealX 360:
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
+### From ExtraHop
+
+To collect data through the ExtraHop APIs, `API Access` must be enabled. Authentication is handled using a `Client ID` and `Client Secret`, which serve as the required credentials. Any requests made without credentials will be rejected by the ExtraHop APIs.
+
+#### Enable API Access:
 
 1. Log in to RevealX 360.
 2. Click the System Settings icon at the top right of the page and then click **All Administration**.
@@ -36,7 +41,7 @@ For the REST API, this module has been tested against **ExtraHop RevealX 360 ver
 4. In the Manage API Access section, click **Enable**.
 >**Note**: If you disable and then re-enable the REST API, the REST API might be unavailable for approximately 15 minutes due to DNS propagation, even if the Status section indicates that access is enabled. We recommend that you do not disable and re-enable the REST API often.
 
-### To collect data from the ExtraHop RevealX 360 API:
+#### Obtain `Credentials`:
 
 1. Log in to RevealX 360.
 2. Click the System Settings icon at the top right of the page and then click **All Administration**.
@@ -48,25 +53,127 @@ For the REST API, this module has been tested against **ExtraHop RevealX 360 ver
 8. Click **Save**.
 9. Copy REST API **Credentials**.
 
-For more details, see [Documentation](https://docs.extrahop.com/current/rx360-rest-api/).
+For more details, check [Documentation](https://docs.extrahop.com/current/rx360-rest-api/).
 
 >**Note**: You must have system and access administration privileges.
 
-### Enable the integration in Elastic
+## How do I deploy this integration?
 
-1. In Kibana navigate to **Management** > **Integrations**.
-2. In the search top bar, type **ExtraHop**.
-3. Select the **ExtraHop** integration and add it.
-4. Add all the required integration configuration parameters: URL, Client ID and Client Secret.
-5. Save the integration.
+This integration supports both Elastic Agentless-based and Agent-based installations.
 
-## Logs reference
+### Agentless-based installation
 
-### Detection
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-This is the `Detection` dataset.
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-#### Example
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+## Setup
+
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **ExtraHop**.
+3. Select the **ExtraHop** integration from the search results.
+4. Select **Add ExtraHop** to add the integration.
+5. Enable and configure only the collection methods which you will use.
+
+    * To **Collect ExtraHop logs via API**, you'll need to:
+
+        - Configure **URL**, **Client ID**, and **Client Secret**.
+        - Enable/Disable the required datasets.
+        - For each dataset, adjust the integration configuration parameters if required, including the Initial Interval, Interval, etc. to enable data collection.
+
+6. Select **Save and continue** to save the integration.
+
+### Validation
+
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **extrahop**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **extrahop**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### ECS field reference
+
+#### Detection
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| extrahop.detection.appliance_id |  | keyword |
+| extrahop.detection.assignee |  | keyword |
+| extrahop.detection.categories |  | keyword |
+| extrahop.detection.create_time |  | date |
+| extrahop.detection.description |  | keyword |
+| extrahop.detection.id |  | keyword |
+| extrahop.detection.is_user_created |  | boolean |
+| extrahop.detection.mitre_tactics.id |  | keyword |
+| extrahop.detection.mitre_tactics.name |  | keyword |
+| extrahop.detection.mitre_tactics.url |  | keyword |
+| extrahop.detection.mitre_techniques.id |  | keyword |
+| extrahop.detection.mitre_techniques.legacy_ids |  | keyword |
+| extrahop.detection.mitre_techniques.name |  | keyword |
+| extrahop.detection.mitre_techniques.url |  | keyword |
+| extrahop.detection.mod_time |  | date |
+| extrahop.detection.participants.endpoint |  | keyword |
+| extrahop.detection.participants.external |  | boolean |
+| extrahop.detection.participants.hostname |  | keyword |
+| extrahop.detection.participants.id |  | keyword |
+| extrahop.detection.participants.object_id |  | keyword |
+| extrahop.detection.participants.object_type |  | keyword |
+| extrahop.detection.participants.object_value |  | ip |
+| extrahop.detection.participants.role |  | keyword |
+| extrahop.detection.participants.scanner_service |  | keyword |
+| extrahop.detection.participants.username |  | keyword |
+| extrahop.detection.properties.certificate |  | keyword |
+| extrahop.detection.properties.client_port |  | long |
+| extrahop.detection.properties.hacking_tool_name |  | keyword |
+| extrahop.detection.properties.server_port |  | long |
+| extrahop.detection.recommended |  | boolean |
+| extrahop.detection.recommended_factors |  | keyword |
+| extrahop.detection.resolution |  | keyword |
+| extrahop.detection.risk_score |  | float |
+| extrahop.detection.start_time |  | date |
+| extrahop.detection.status |  | keyword |
+| extrahop.detection.ticket_id |  | keyword |
+| extrahop.detection.ticket_url |  | keyword |
+| extrahop.detection.title |  | match_only_text |
+| extrahop.detection.type |  | keyword |
+| extrahop.detection.update_time |  | date |
+| extrahop.detection.url |  | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Indicates whether a detection is in the raw source data stream, or in the latest destination index. | constant_keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+
+
+### Example event
+
+#### Detection
 
 An example event for `detection` looks as following:
 
@@ -247,61 +354,8 @@ An example event for `detection` looks as following:
 }
 ```
 
-**Exported fields**
+### Inputs used
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| extrahop.detection.appliance_id |  | keyword |
-| extrahop.detection.assignee |  | keyword |
-| extrahop.detection.categories |  | keyword |
-| extrahop.detection.create_time |  | date |
-| extrahop.detection.description |  | keyword |
-| extrahop.detection.id |  | keyword |
-| extrahop.detection.is_user_created |  | boolean |
-| extrahop.detection.mitre_tactics.id |  | keyword |
-| extrahop.detection.mitre_tactics.name |  | keyword |
-| extrahop.detection.mitre_tactics.url |  | keyword |
-| extrahop.detection.mitre_techniques.id |  | keyword |
-| extrahop.detection.mitre_techniques.legacy_ids |  | keyword |
-| extrahop.detection.mitre_techniques.name |  | keyword |
-| extrahop.detection.mitre_techniques.url |  | keyword |
-| extrahop.detection.mod_time |  | date |
-| extrahop.detection.participants.endpoint |  | keyword |
-| extrahop.detection.participants.external |  | boolean |
-| extrahop.detection.participants.hostname |  | keyword |
-| extrahop.detection.participants.id |  | keyword |
-| extrahop.detection.participants.object_id |  | keyword |
-| extrahop.detection.participants.object_type |  | keyword |
-| extrahop.detection.participants.object_value |  | ip |
-| extrahop.detection.participants.role |  | keyword |
-| extrahop.detection.participants.scanner_service |  | keyword |
-| extrahop.detection.participants.username |  | keyword |
-| extrahop.detection.properties.certificate |  | keyword |
-| extrahop.detection.properties.client_port |  | long |
-| extrahop.detection.properties.hacking_tool_name |  | keyword |
-| extrahop.detection.properties.server_port |  | long |
-| extrahop.detection.recommended |  | boolean |
-| extrahop.detection.recommended_factors |  | keyword |
-| extrahop.detection.resolution |  | keyword |
-| extrahop.detection.risk_score |  | float |
-| extrahop.detection.start_time |  | date |
-| extrahop.detection.status |  | keyword |
-| extrahop.detection.ticket_id |  | keyword |
-| extrahop.detection.ticket_url |  | keyword |
-| extrahop.detection.title |  | match_only_text |
-| extrahop.detection.type |  | keyword |
-| extrahop.detection.update_time |  | date |
-| extrahop.detection.url |  | keyword |
-| input.type | Type of filebeat input. | keyword |
-| labels.is_transform_source | Indicates whether a detection is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
-| observer.product | The product name of the observer. | constant_keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
+These inputs can be used in this integration:
 
+- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)

@@ -30,10 +30,12 @@ redact:
 program: |
   (
     state.?want_more.orValue(false) ?
-      state.start_time
+      state
     :
-      state.?cursor.last_timestamp.orValue(string(int(now - duration(state.initial_interval)) * 1000))
-  ).as(start_time,
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue(string(int(now - duration(state.initial_interval)) * 1000))
+      })
+  ).as(state,
     state.with(
       request(
         "POST",
@@ -43,7 +45,7 @@ program: |
           "Body": {
             "limit": state.batch_size,
             "offset": state.skip,
-            "mod_time": int(start_time),
+            "mod_time": int(state.start_time),
           }.encode_json(),
         }
       ).do_request().as(resp, (resp.StatusCode == 200) ?
@@ -54,7 +56,7 @@ program: |
                 "message": e.encode_json(),
               }
             ),
-            "start_time": start_time,
+            "start_time": state.start_time,
             "skip": (size(body) >= int(state.batch_size)) ? (int(state.skip) + int(state.batch_size)) : 0,
             "want_more": size(body) >= int(state.batch_size),
             "cursor": {
