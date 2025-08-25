@@ -16,6 +16,7 @@
           type: double
           description: Uptime of the JVM in milliseconds.
           unit: ms
+          metric_type: gauge
         - name: name
           type: keyword
           dimension: true
@@ -45,18 +46,22 @@
               type: double
               unit: byte
               description: Initial heap memory in bytes.
+              metric_type: gauge
             - name: committed
               type: double
               unit: byte
               description: Committed heap memory in bytes.
+              metric_type: gauge
             - name: max
               type: double
               unit: byte
               description: Max heap memory in bytes.
+              metric_type: gauge
             - name: used
               type: double
               unit: byte
               description: Used heap memory in bytes.
+              metric_type: gauge
         
         - name: non_heap_usage
           type: group
@@ -66,22 +71,27 @@
               type: double
               unit: byte
               description: Initial non-heap memory in bytes.
+              metric_type: gauge
             - name: committed
               type: double
               unit: byte
               description: Committed non-heap memory in bytes.
+              metric_type: gauge
             - name: max
               type: double
               unit: byte
               description: Max non-heap memory in bytes.
+              metric_type: gauge
             - name: used
               type: double
               unit: byte
               description: Used non-heap memory in bytes.
+              metric_type: gauge
         
         - name: objects_pending_finalization
-          type: double
+          type: long
           description: The approximate number of objects for which finalization is pending.
+          metric_type: gauge
 
     - name: memory_pool
       type: group
@@ -103,18 +113,22 @@
               type: double
               unit: byte
               description: Initial memory in the pool in bytes.
+              metric_type: gauge
             - name: committed
               type: double
               unit: byte
               description: Committed memory in the pool in bytes.
+              metric_type: gauge
             - name: max
               type: double
               unit: byte
               description: Max memory in the pool in bytes.
+              metric_type: gauge
             - name: used
               type: double
               unit: byte
               description: Used memory in the pool in bytes.
+              metric_type: gauge
         - name: peak_usage
           type: group
           description: Peak memory usage metrics.
@@ -123,18 +137,22 @@
               type: double
               unit: byte
               description: Initial memory for peak usage in bytes.
+              metric_type: gauge
             - name: committed
               type: double
               unit: byte
               description: Committed memory for peak usage in bytes.
+              metric_type: gauge
             - name: max
               type: double
               unit: byte
               description: Max memory for peak usage in bytes.
+              metric_type: gauge
             - name: used
               type: double
               unit: byte
               description: Used memory for peak usage in bytes.
+              metric_type: gauge
         - name: collection_usage
           type: group
           description: Memory usage after garbage collection.
@@ -143,18 +161,22 @@
               type: double
               unit: byte
               description: Initial memory after last GC in bytes.
+              metric_type: gauge
             - name: committed
               type: double
               unit: byte
               description: Committed memory after last GC in bytes.
+              metric_type: gauge
             - name: max
               type: double
               unit: byte
               description: Max memory after last GC in bytes.
+              metric_type: gauge
             - name: used
               type: double
               unit: byte
               description: Used memory after last GC in bytes.
+              metric_type: gauge
         - name: mbean
           type: keyword
           description: The JMX MBean name.
@@ -171,72 +193,90 @@
           type: double
           unit: byte
           description: Used memory in the buffer pool in bytes.
+          metric_type: gauge
         - name: total_capacity
           type: double
           unit: byte
           description: Total capacity of the buffer pool in bytes.
+          metric_type: gauge
         - name: count
-          type: double
+          type: long
           description: Number of buffers in the pool.
+          metric_type: gauge
     
     - name: classes
       type: group
       description: JVM class loading metrics.
       fields:
         - name: loaded_count
-          type: double
+          type: long
           description: The number of classes currently loaded.
+          metric_type: gauge
         - name: total_loaded_count
-          type: double
+          type: long
           description: The total number of classes that have been loaded since JVM start.
+          metric_type: counter
         - name: unloaded_count
-          type: double
+          type: long
           description: The total number of classes that have been unloaded since JVM start.
+          metric_type: counter
     
     - name: threads
       type: group
       description: JVM threading metrics.
       fields:
         - name: current_count
-          type: double
+          type: long
           description: The current number of live threads.
+          metric_type: gauge
         - name: daemon_count
-          type: double
+          type: long
           description: The current number of daemon threads.
+          metric_type: gauge
         - name: peak_count
-          type: double
+          type: long
           description: The peak live thread count.
+          metric_type: gauge
         - name: total_started_count
-          type: double
+          type: long
           description: The total number of threads started since JVM start.
+          metric_type: counter
         - name: deadlocked_count
-          type: double
+          type: long
           description: The number of deadlocked threads.
+          metric_type: gauge
         - name: deadlocked_monitor_count
-          type: double
+          type: long
           description: The number of deadlocked threads in monitor wait.
+          metric_type: gauge
         - name: state_count
           type: group
           description: Thread count by state.
           fields:
             - name: new
-              type: double
+              type: long
               description: Number of threads in NEW state.
+              metric_type: gauge
             - name: runnable
-              type: double
+              type: long
               description: Number of threads in RUNNABLE state.
+              metric_type: gauge
             - name: blocked
-              type: double
+              type: long
               description: Number of threads in BLOCKED state.
+              metric_type: gauge
             - name: waiting
-              type: double
+              type: long
               description: Number of threads in WAITING state.
+              metric_type: gauge
             - name: timed_waiting
-              type: double
+              type: long
               description: Number of threads in TIMED_WAITING state.
+              metric_type: gauge
             - name: terminated
-              type: double
+              type: long
               description: Number of threads in TERMINATED state.
+              metric_type: gauge
     
     - name: gc
       type: group
@@ -247,12 +287,14 @@
           dimension: true
           description: Garbage collector name.
         - name: collection_count
-          type: double
+          type: long
           description: The total number of collections that have occurred.
+          metric_type: counter
         - name: collection_time_ms
           type: double
           unit: ms
           description: The accumulated collection time in milliseconds.
+          metric_type: counter
     
     - name: compilation
       type: group
@@ -266,3 +308,4 @@
           type: double
           unit: ms
           description: The accumulated time spent in compilation in milliseconds.
+          metric_type: counter

@@ -955,80 +955,80 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host is running. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| event.module | Event module | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| kafka.jvm.buffer_pool.count | Number of buffers in the pool. | double |  |
-| kafka.jvm.buffer_pool.name | Name of the buffer pool. | keyword |  |
-| kafka.jvm.buffer_pool.total_capacity | Total capacity of the buffer pool in bytes. | double | byte |
-| kafka.jvm.buffer_pool.used | Used memory in the buffer pool in bytes. | double | byte |
-| kafka.jvm.classes.loaded_count | The number of classes currently loaded. | double |  |
-| kafka.jvm.classes.total_loaded_count | The total number of classes that have been loaded since JVM start. | double |  |
-| kafka.jvm.classes.unloaded_count | The total number of classes that have been unloaded since JVM start. | double |  |
-| kafka.jvm.compilation.name | Name of the JIT compiler. | keyword |  |
-| kafka.jvm.compilation.time_ms | The accumulated time spent in compilation in milliseconds. | double | ms |
-| kafka.jvm.gc.collection_count | The total number of collections that have occurred. | double |  |
-| kafka.jvm.gc.collection_time_ms | The accumulated collection time in milliseconds. | double | ms |
-| kafka.jvm.gc.name | Garbage collector name. | keyword |  |
-| kafka.jvm.memory.heap_usage.committed | Committed heap memory in bytes. | double | byte |
-| kafka.jvm.memory.heap_usage.init | Initial heap memory in bytes. | double | byte |
-| kafka.jvm.memory.heap_usage.max | Max heap memory in bytes. | double | byte |
-| kafka.jvm.memory.heap_usage.used | Used heap memory in bytes. | double | byte |
-| kafka.jvm.memory.non_heap_usage.committed | Committed non-heap memory in bytes. | double | byte |
-| kafka.jvm.memory.non_heap_usage.init | Initial non-heap memory in bytes. | double | byte |
-| kafka.jvm.memory.non_heap_usage.max | Max non-heap memory in bytes. | double | byte |
-| kafka.jvm.memory.non_heap_usage.used | Used non-heap memory in bytes. | double | byte |
-| kafka.jvm.memory.objects_pending_finalization | The approximate number of objects for which finalization is pending. | double |  |
-| kafka.jvm.memory_pool.collection_usage.committed | Committed memory after last GC in bytes. | double | byte |
-| kafka.jvm.memory_pool.collection_usage.init | Initial memory after last GC in bytes. | double | byte |
-| kafka.jvm.memory_pool.collection_usage.max | Max memory after last GC in bytes. | double | byte |
-| kafka.jvm.memory_pool.collection_usage.used | Used memory after last GC in bytes. | double | byte |
-| kafka.jvm.memory_pool.mbean | The JMX MBean name. | keyword |  |
-| kafka.jvm.memory_pool.name | Name of the memory pool. | keyword |  |
-| kafka.jvm.memory_pool.peak_usage.committed | Committed memory for peak usage in bytes. | double | byte |
-| kafka.jvm.memory_pool.peak_usage.init | Initial memory for peak usage in bytes. | double | byte |
-| kafka.jvm.memory_pool.peak_usage.max | Max memory for peak usage in bytes. | double | byte |
-| kafka.jvm.memory_pool.peak_usage.used | Used memory for peak usage in bytes. | double | byte |
-| kafka.jvm.memory_pool.type | Type of the memory pool. | keyword |  |
-| kafka.jvm.memory_pool.usage.committed | Committed memory in the pool in bytes. | double | byte |
-| kafka.jvm.memory_pool.usage.init | Initial memory in the pool in bytes. | double | byte |
-| kafka.jvm.memory_pool.usage.max | Max memory in the pool in bytes. | double | byte |
-| kafka.jvm.memory_pool.usage.used | Used memory in the pool in bytes. | double | byte |
-| kafka.jvm.metric_fingerprint | Fingerprint of the metrics. | keyword |  |
-| kafka.jvm.runtime.name | Name representing the running JVM. | keyword |  |
-| kafka.jvm.runtime.uptime | Uptime of the JVM in milliseconds. | double | ms |
-| kafka.jvm.runtime.vm_name | The JVM implementation name. | keyword |  |
-| kafka.jvm.runtime.vm_vendor | The JVM implementation vendor. | keyword |  |
-| kafka.jvm.runtime.vm_version | The JVM version. | keyword |  |
-| kafka.jvm.threads.current_count | The current number of live threads. | double |  |
-| kafka.jvm.threads.daemon_count | The current number of daemon threads. | double |  |
-| kafka.jvm.threads.deadlocked_count | The number of deadlocked threads. | double |  |
-| kafka.jvm.threads.deadlocked_monitor_count | The number of deadlocked threads in monitor wait. | double |  |
-| kafka.jvm.threads.peak_count | The peak live thread count. | double |  |
-| kafka.jvm.threads.state_count.blocked | Number of threads in BLOCKED state. | double |  |
-| kafka.jvm.threads.state_count.new | Number of threads in NEW state. | double |  |
-| kafka.jvm.threads.state_count.runnable | Number of threads in RUNNABLE state. | double |  |
-| kafka.jvm.threads.state_count.terminated | Number of threads in TERMINATED state. | double |  |
-| kafka.jvm.threads.state_count.timed_waiting | Number of threads in TIMED_WAITING state. | double |  |
-| kafka.jvm.threads.state_count.waiting | Number of threads in WAITING state. | double |  |
-| kafka.jvm.threads.total_started_count | The total number of threads started since JVM start. | double |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| kafka.jvm.buffer_pool.count | Number of buffers in the pool. | long |  | gauge |
+| kafka.jvm.buffer_pool.name | Name of the buffer pool. | keyword |  |  |
+| kafka.jvm.buffer_pool.total_capacity | Total capacity of the buffer pool in bytes. | double | byte | gauge |
+| kafka.jvm.buffer_pool.used | Used memory in the buffer pool in bytes. | double | byte | gauge |
+| kafka.jvm.classes.loaded_count | The number of classes currently loaded. | long |  | gauge |
+| kafka.jvm.classes.total_loaded_count | The total number of classes that have been loaded since JVM start. | long |  | counter |
+| kafka.jvm.classes.unloaded_count | The total number of classes that have been unloaded since JVM start. | long |  | counter |
+| kafka.jvm.compilation.name | Name of the JIT compiler. | keyword |  |  |
+| kafka.jvm.compilation.time_ms | The accumulated time spent in compilation in milliseconds. | double | ms | counter |
+| kafka.jvm.gc.collection_count | The total number of collections that have occurred. | long |  | counter |
+| kafka.jvm.gc.collection_time_ms | The accumulated collection time in milliseconds. | double | ms | counter |
+| kafka.jvm.gc.name | Garbage collector name. | keyword |  |  |
+| kafka.jvm.memory.heap_usage.committed | Committed heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.heap_usage.init | Initial heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.heap_usage.max | Max heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.heap_usage.used | Used heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.non_heap_usage.committed | Committed non-heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.non_heap_usage.init | Initial non-heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.non_heap_usage.max | Max non-heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.non_heap_usage.used | Used non-heap memory in bytes. | double | byte | gauge |
+| kafka.jvm.memory.objects_pending_finalization | The approximate number of objects for which finalization is pending. | long |  | gauge |
+| kafka.jvm.memory_pool.collection_usage.committed | Committed memory after last GC in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.collection_usage.init | Initial memory after last GC in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.collection_usage.max | Max memory after last GC in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.collection_usage.used | Used memory after last GC in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.mbean | The JMX MBean name. | keyword |  |  |
+| kafka.jvm.memory_pool.name | Name of the memory pool. | keyword |  |  |
+| kafka.jvm.memory_pool.peak_usage.committed | Committed memory for peak usage in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.peak_usage.init | Initial memory for peak usage in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.peak_usage.max | Max memory for peak usage in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.peak_usage.used | Used memory for peak usage in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.type | Type of the memory pool. | keyword |  |  |
+| kafka.jvm.memory_pool.usage.committed | Committed memory in the pool in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.usage.init | Initial memory in the pool in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.usage.max | Max memory in the pool in bytes. | double | byte | gauge |
+| kafka.jvm.memory_pool.usage.used | Used memory in the pool in bytes. | double | byte | gauge |
+| kafka.jvm.metric_fingerprint | Fingerprint of the metrics. | keyword |  |  |
+| kafka.jvm.runtime.name | Name representing the running JVM. | keyword |  |  |
+| kafka.jvm.runtime.uptime | Uptime of the JVM in milliseconds. | double | ms | gauge |
+| kafka.jvm.runtime.vm_name | The JVM implementation name. | keyword |  |  |
+| kafka.jvm.runtime.vm_vendor | The JVM implementation vendor. | keyword |  |  |
+| kafka.jvm.runtime.vm_version | The JVM version. | keyword |  |  |
+| kafka.jvm.threads.current_count | The current number of live threads. | long |  | gauge |
+| kafka.jvm.threads.daemon_count | The current number of daemon threads. | long |  | gauge |
+| kafka.jvm.threads.deadlocked_count | The number of deadlocked threads. | long |  | gauge |
+| kafka.jvm.threads.deadlocked_monitor_count | The number of deadlocked threads in monitor wait. | long |  | gauge |
+| kafka.jvm.threads.peak_count | The peak live thread count. | long |  | gauge |
+| kafka.jvm.threads.state_count.blocked | Number of threads in BLOCKED state. | long |  | gauge |
+| kafka.jvm.threads.state_count.new | Number of threads in NEW state. | long |  | gauge |
+| kafka.jvm.threads.state_count.runnable | Number of threads in RUNNABLE state. | long |  | gauge |
+| kafka.jvm.threads.state_count.terminated | Number of threads in TERMINATED state. | long |  | gauge |
+| kafka.jvm.threads.state_count.timed_waiting | Number of threads in TIMED_WAITING state. | long |  | gauge |
+| kafka.jvm.threads.state_count.waiting | Number of threads in WAITING state. | long |  | gauge |
+| kafka.jvm.threads.total_started_count | The total number of threads started since JVM start. | long |  | counter |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
 
 ### log_manager
@@ -1146,52 +1146,52 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id |  | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| kafka.log_manager.cleaner.dead_thread_count | The number of dead log cleaner threads | double |
-| kafka.log_manager.cleaner.max_buffer_utilization_percent | The maximum percentage of the log cleaner's buffer that has been utilized | double |
-| kafka.log_manager.cleaner.max_clean_time_secs | The maximum time taken to clean a log in seconds | double |
-| kafka.log_manager.cleaner.max_compaction_delay_secs | The maximum delay in seconds for compactions | double |
-| kafka.log_manager.cleaner.recopy_percent | The percentage of bytes recopyied during log cleaning | double |
-| kafka.log_manager.cleaner_manager.max_dirty_percent | The maximum percentage of dirty logs that can be accumulated before log cleaning is triggered | double |
-| kafka.log_manager.cleaner_manager.time_since_last_run_ms | The time in milliseconds since the last log cleaner run | double |
-| kafka.log_manager.cleaner_manager.uncleanable_bytes.log_directory | The log directory path | keyword |
-| kafka.log_manager.cleaner_manager.uncleanable_bytes.value | The number of bytes that cannot be cleaned | double |
-| kafka.log_manager.cleaner_manager.uncleanable_partitions_count.log_directory | The log directory path | keyword |
-| kafka.log_manager.cleaner_manager.uncleanable_partitions_count.value | The number of partitions that cannot be cleaned | double |
-| kafka.log_manager.directory_offline | Indicates if the log directory is offline | integer |
-| kafka.log_manager.directory_offline_count.log_directory | The log directory path | keyword |
-| kafka.log_manager.directory_offline_count.value | The number of offline log directories | long |
-| kafka.log_manager.flush_stats.rate_and_time_ms.count | Total number of log flushes | double |
-| kafka.log_manager.flush_stats.rate_and_time_ms.fifteen_minute_rate | Fifteen-minute rate of log flushes | double |
-| kafka.log_manager.flush_stats.rate_and_time_ms.five_minute_rate | Five-minute rate of log flushes | double |
-| kafka.log_manager.flush_stats.rate_and_time_ms.max | Maximum log flush time in milliseconds | double |
-| kafka.log_manager.flush_stats.rate_and_time_ms.mean | Mean log flush time in milliseconds | double |
-| kafka.log_manager.flush_stats.rate_and_time_ms.mean_rate | Mean rate of log flushes | double |
-| kafka.log_manager.flush_stats.rate_and_time_ms.min | Minimum log flush time in milliseconds | double |
-| kafka.log_manager.flush_stats.rate_and_time_ms.one_minute_rate | One-minute rate of log flushes | double |
-| kafka.log_manager.metric_fingerprint | A fingerprint of the metric path. | keyword |
-| kafka.log_manager.offline_directory_count | The number of offline log directories | double |
-| kafka.log_manager.remaining_logs_to_recover | The number of logs that still need to be recovered | double |
-| kafka.log_manager.remaining_segments_to_recover | The number of segments that still need to be recovered | double |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| kafka.log_manager.cleaner.dead_thread_count | The number of dead log cleaner threads. | double |  |
+| kafka.log_manager.cleaner.max_buffer_utilization_percent | The maximum percentage of the log cleaner's buffer that has been utilized. | double |  |
+| kafka.log_manager.cleaner.max_clean_time_secs | The maximum time taken to clean a log in seconds. | double |  |
+| kafka.log_manager.cleaner.max_compaction_delay_secs | The maximum delay in seconds for compactions. | double |  |
+| kafka.log_manager.cleaner.recopy_percent | The percentage of bytes recopyied during log cleaning. | double | percent |
+| kafka.log_manager.cleaner_manager.max_dirty_percent | The maximum percentage of dirty logs that can be accumulated before log cleaning is triggered. | double |  |
+| kafka.log_manager.cleaner_manager.time_since_last_run_ms | The time in milliseconds since the last log cleaner run. | double |  |
+| kafka.log_manager.cleaner_manager.uncleanable_bytes.log_directory | The log directory path. | keyword |  |
+| kafka.log_manager.cleaner_manager.uncleanable_bytes.value | The number of bytes that cannot be cleaned. | double |  |
+| kafka.log_manager.cleaner_manager.uncleanable_partitions_count.log_directory | The log directory path. | keyword |  |
+| kafka.log_manager.cleaner_manager.uncleanable_partitions_count.value | The number of partitions that cannot be cleaned. | double |  |
+| kafka.log_manager.directory_offline | Indicates if the log directory is offline. | integer |  |
+| kafka.log_manager.directory_offline_count.log_directory | The log directory path. | keyword |  |
+| kafka.log_manager.directory_offline_count.value | The number of offline log directories. | long |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.count | Total number of log flushes. | double |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.fifteen_minute_rate | Fifteen-minute rate of log flushes. | double |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.five_minute_rate | Five-minute rate of log flushes. | double |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.max | Maximum log flush time in milliseconds. | double |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.mean | Mean log flush time in milliseconds. | double |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.mean_rate | Mean rate of log flushes. | double |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.min | Minimum log flush time in milliseconds. | double |  |
+| kafka.log_manager.flush_stats.rate_and_time_ms.one_minute_rate | One-minute rate of log flushes. | double |  |
+| kafka.log_manager.metric_fingerprint | A fingerprint of the metric path. | keyword |  |
+| kafka.log_manager.offline_directory_count | The number of offline log directories. | double |  |
+| kafka.log_manager.remaining_logs_to_recover | The number of logs that still need to be recovered. | double |  |
+| kafka.log_manager.remaining_segments_to_recover | The number of segments that still need to be recovered. | double |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
 ### network
