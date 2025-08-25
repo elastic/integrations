@@ -1,0 +1,54 @@
+---
+description: Pipeline for processing STIX 2.1 incident objects
+
+processors:
+    # === Set ECS Fields for Incidents ===
+    - set:
+            field: event.kind
+            value: alert
+    - append:
+            field: event.category
+            value: threat
+    - set:
+            field: event.type
+            value: [ indicator ]
+
+    - set:
+            field: event.action
+            value: user-password-leak
+    - set:
+            field: event.id
+            copy_from: foo.id
+            if: ctx.foo?.id != null
+    - set:
+            field: event.reason
+            copy_from: foo.name
+            if: ctx.foo?.name != null
+    - set:
+            field: event.description
+            copy_from: foo.description
+            if: ctx.foo?.description != null
+    - set:
+            field: event.start
+            copy_from: foo.extensions.collection_date
+            if: ctx.foo?.extensions?.collection_date != null
+    - set:
+            field: event.end
+            copy_from: foo.modified
+            if: ctx.foo?.modified != null
+    - set:
+            field: event.risk_score
+            copy_from: foo.extensions.luminar_threat_score
+            if: ctx.foo?.extensions?.luminar_threat_score != null
+
+    # === Host/Asset Context from Extensions ===
+    - set:
+            field: host.name
+            copy_from: foo.extension.computer_name
+            if: ctx.foo?.extension?.computer_name != null
+
+    # === Append Tags ===
+    - append:
+            field: tags
+            value: luminar_stix_incident
+            allow_duplicates: false
