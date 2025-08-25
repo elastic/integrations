@@ -1,0 +1,37 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-sentinel_one.application_risk-*"
+dest:
+  index: "logs-sentinel_one_latest.dest_application_risk-1"
+  aliases:
+    - alias: "logs-sentinel_one_latest.application_risk"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - event.id
+  sort: "@timestamp"
+description: >-
+  Latest application risk from SentinelOne. As application risk get updated, this transform stores only the latest state of each application risk inside the destination index. Thus the transform's destination index contains only the latest state of the application risk.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: "event.ingested"
+    max_age: 30d
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

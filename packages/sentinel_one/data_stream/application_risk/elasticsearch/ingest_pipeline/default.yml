@@ -1,0 +1,443 @@
+---
+description: Pipeline for processing application_risk logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - append:
+      field: event.category
+      tag: append_vulnerability_into_event_category
+      value: vulnerability
+  - rename:
+      field: json.application
+      tag: rename_application
+      target_field: sentinel_one.application_risk.application
+      ignore_missing: true
+  - rename:
+      field: json.applicationName
+      tag: rename_applicationName
+      target_field: sentinel_one.application_risk.application_name
+      ignore_missing: true
+  - set:
+      field: package.name
+      tag: set_package_name_from_application_risk_application_name
+      copy_from: sentinel_one.application_risk.application_name
+      ignore_empty_value: true
+  - rename:
+      field: json.applicationVendor
+      tag: rename_applicationVendor
+      target_field: sentinel_one.application_risk.application_vendor
+      ignore_missing: true
+  - rename:
+      field: json.applicationVersion
+      tag: rename_applicationVersion
+      target_field: sentinel_one.application_risk.application_version
+      ignore_missing: true
+  - set:
+      field: package.version
+      tag: set_package_version_from_application_risk_application_version
+      copy_from: sentinel_one.application_risk.application_version
+      ignore_empty_value: true
+  - convert:
+      field: json.baseScore
+      tag: convert_baseScore_to_double
+      target_field: sentinel_one.application_risk.base_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_application_risk_base_score
+      copy_from: sentinel_one.application_risk.base_score
+      ignore_empty_value: true
+  - rename:
+      field: json.cveId
+      tag: rename_cveId
+      target_field: sentinel_one.application_risk.cve_id
+      ignore_missing: true
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id_from_application_risk_cve_id
+      copy_from: sentinel_one.application_risk.cve_id
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.cve
+      tag: set_vulnerability_cve_from_application_risk_cve_id
+      copy_from: sentinel_one.application_risk.cve_id
+      ignore_empty_value: true
+  - rename:
+      field: json.cvssVersion
+      tag: rename_cvssVersion
+      target_field: sentinel_one.application_risk.cvss_version
+      ignore_missing: true
+  - set:
+      field: vulnerability.score.version
+      tag: set_vulnerability_score_version_from_application_risk_cvss_version
+      copy_from: sentinel_one.application_risk.cvss_version
+      ignore_empty_value: true
+  - convert:
+      field: json.daysDetected
+      tag: convert_daysDetected_to_long
+      target_field: sentinel_one.application_risk.days_detected
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.detectionDate
+      tag: date_detectionDate
+      target_field: sentinel_one.application_risk.detection_date
+      formats:
+        - strict_date_optional_time_nanos
+      if: ctx.json?.detectionDate != null && ctx.json.detectionDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.endpointId
+      tag: convert_endpointId_to_string
+      target_field: sentinel_one.application_risk.endpoint_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_application_risk_endpoint_id
+      copy_from: sentinel_one.application_risk.endpoint_id
+      ignore_empty_value: true
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_application_risk_endpoint_id
+      copy_from: sentinel_one.application_risk.endpoint_id
+      ignore_empty_value: true
+  - rename:
+      field: json.endpointName
+      tag: rename_endpointName
+      target_field: sentinel_one.application_risk.endpoint_name
+      ignore_missing: true
+  - set:
+      field: resource.name
+      tag: set_resource_name_from_application_risk_endpoint_name
+      copy_from: sentinel_one.application_risk.endpoint_name
+      ignore_empty_value: true
+  - rename:
+      field: json.endpointType
+      tag: rename_endpointType
+      target_field: sentinel_one.application_risk.endpoint_type
+      ignore_missing: true
+  - set:
+      field: host.type
+      tag: set_host_type_from_application_risk_endpoint_type
+      copy_from: sentinel_one.application_risk.endpoint_type
+      ignore_empty_value: true
+  - rename:
+      field: json.exploitCodeMaturity
+      tag: rename_exploitCodeMaturity
+      target_field: sentinel_one.application_risk.exploit_code_maturity
+      ignore_missing: true
+  - convert:
+      field: json.id
+      tag: convert_id_to_string
+      target_field: sentinel_one.application_risk.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_application_risk_id
+      copy_from: sentinel_one.application_risk.id
+      ignore_empty_value: true
+  - date:
+      field: json.lastScanDate
+      tag: date_lastScanDate
+      target_field: sentinel_one.application_risk.last_scan_date
+      formats:
+        - date_optional_time
+      if: ctx.json?.lastScanDate != null && ctx.json.lastScanDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_last_scan_date
+      copy_from: sentinel_one.application_risk.last_scan_date
+      ignore_empty_value: true
+  - rename:
+      field: json.lastScanResult
+      tag: rename_lastScanResult
+      target_field: sentinel_one.application_risk.last_scan_result
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.sentinel_one?.application_risk?.last_scan_result?.equalsIgnoreCase('Succeeded') == true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.sentinel_one?.application_risk?.last_scan_result?.equalsIgnoreCase('Failed') == true
+  - set:
+      field: event.outcome
+      value: unknown
+      override: false
+  - rename:
+      field: json.markType
+      tag: rename_markType
+      target_field: sentinel_one.application_risk.mark_type
+      ignore_missing: true
+  - rename:
+      field: json.markedBy
+      tag: rename_markedBy
+      target_field: sentinel_one.application_risk.marked_by
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_application_risk_marked_by
+      copy_from: sentinel_one.application_risk.marked_by
+      ignore_empty_value: true
+  - date:
+      field: json.markedDate
+      tag: date_markedDate
+      target_field: sentinel_one.application_risk.marked_date
+      formats:
+        - date_optional_time
+      if: ctx.json?.markedDate != null && ctx.json.markedDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mitigationStatus
+      tag: rename_mitigationStatus
+      target_field: sentinel_one.application_risk.mitigation_status
+      ignore_missing: true
+  - date:
+      field: json.mitigationStatusChangeTime
+      tag: date_mitigationStatusChangeTime
+      target_field: sentinel_one.application_risk.mitigation_status_change_time
+      formats:
+        - ISO8601
+        - date_optional_time
+      if: ctx.json?.mitigationStatusChangeTime != null && ctx.json.mitigationStatusChangeTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mitigationStatusChangedBy
+      tag: rename_mitigationStatusChangedBy
+      target_field: sentinel_one.application_risk.mitigation_status_changed_by
+      ignore_missing: true
+  - rename:
+      field: json.mitigationStatusReason
+      tag: rename_mitigationStatusReason
+      target_field: sentinel_one.application_risk.mitigation_status_reason
+      ignore_missing: true
+  - convert:
+      field: json.nvdBaseScore
+      tag: convert_nvdBaseScore_to_float
+      target_field: sentinel_one.application_risk.nvd_base_score
+      type: float
+      ignore_missing: true
+      if: ctx.json?.nvdBaseScore != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.nvdCvssVersion
+      tag: rename_nvdCvssVersion
+      target_field: sentinel_one.application_risk.nvd_cvss_version
+      ignore_missing: true
+  - rename:
+      field: json.osType
+      tag: rename_osType
+      target_field: sentinel_one.application_risk.os_type
+      ignore_missing: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_from_application_risk_os_type
+      copy_from: sentinel_one.application_risk.os_type
+      if: >-
+        ctx.sentinel_one?.application_risk?.os_type == 'windows'
+        || ctx.sentinel_one?.application_risk?.os_type == 'linux'
+        || ctx.sentinel_one?.application_risk?.os_type == 'macos'
+      ignore_empty_value: true
+  - date:
+      field: json.publishedDate
+      tag: date_publishedDate
+      target_field: sentinel_one.application_risk.published_date
+      formats:
+        - date_optional_time
+      if: ctx.json?.publishedDate != null && ctx.json.publishedDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.package.published_date
+      tag: set_vulnerability_package_publisheddate_from_application_published_date
+      copy_from: sentinel_one.application_risk.published_date
+      ignore_empty_value: true
+  - rename:
+      field: json.reason
+      tag: rename_reason
+      target_field: sentinel_one.application_risk.reason
+      ignore_missing: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_application_risk_reason
+      copy_from: sentinel_one.application_risk.reason
+      ignore_empty_value: true
+  - rename:
+      field: json.remediationLevel
+      tag: rename_remediationLevel
+      target_field: sentinel_one.application_risk.remediation_level
+      ignore_missing: true
+  - rename:
+      field: json.reportConfidence
+      tag: rename_reportConfidence
+      target_field: sentinel_one.application_risk.report_confidence
+      ignore_missing: true
+  - convert:
+      field: json.riskScore
+      tag: convert_riskScore_to_double
+      target_field: sentinel_one.application_risk.risk_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: sentinel_one.application_risk.severity
+      ignore_missing: true
+  - script:
+      description: Set event severity based on severity.
+      if: ctx.sentinel_one?.application_risk?.severity != null
+      lang: painless
+      params:
+        low: 21
+        medium: 47
+        high: 73
+        critical: 99
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.severity = params.get(ctx.sentinel_one.application_risk.severity.toLowerCase());
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: sentinel_one.application_risk.status
+      ignore_missing: true
+  - remove:
+      field:
+        - sentinel_one.application_risk.application_name
+        - sentinel_one.application_risk.application_version
+        - sentinel_one.application_risk.base_score
+        - sentinel_one.application_risk.cve_id
+        - sentinel_one.application_risk.cvss_version
+        - sentinel_one.application_risk.endpoint_id
+        - sentinel_one.application_risk.endpoint_name
+        - sentinel_one.application_risk.endpoint_type
+        - sentinel_one.application_risk.id
+        - sentinel_one.application_risk.os_type
+        - sentinel_one.application_risk.published_date
+        - sentinel_one.application_risk.reason
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
