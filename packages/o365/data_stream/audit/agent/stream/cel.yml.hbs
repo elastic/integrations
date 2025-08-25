@@ -285,7 +285,7 @@ program: |-
                   ).do_request().as(sub_resp, (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
                     sub_resp.Body.decode_json().as(sub,
                       {
-                        "type": sub.contentType,
+                        "type": work.curr_type, // If we get an AF20024, sub.contentType will be absent.
                         "enabled": sub.?status == optional.of("enabled") || sub.?error.code == optional.of("AF20024"),
                       }
                     )
