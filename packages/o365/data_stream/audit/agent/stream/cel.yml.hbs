@@ -81,7 +81,7 @@ program: |-
       state.work.todo_content.filter(e,
         // Filter out stale elements.
         timestamp(e.contentExpiration) > now()
-      ).as(list,
+      ).as(list, (size(list) != 0) ?
         list.map(e,
           timestamp(e.endTime)
         ).min().as(min,
@@ -92,7 +92,14 @@ program: |-
             "todo_content": list.filter(e, e.contentUri != oldest.contentUri),
           }
         )
-      ).as(w,
+      :
+        {"todo_content": []}
+      ).as(w, !has(w.curr_content) ?
+        {
+          "work": state.work.drop("curr_content").with(w),
+          "events": [],
+        }
+      :
         {
           "work": state.work.with(
             {
@@ -148,7 +155,7 @@ program: |-
                   "endTime": state.work.next_list.parse_url().RawQuery.parse_query().endTime[0],
                 }
               )
-          ).as(list,
+          ).as(list, (size(list) != 0) ?
             list.map(e,
               timestamp(e.endTime)
             ).min().as(min,
@@ -159,8 +166,15 @@ program: |-
                 "todo_content": list.filter(e, e.contentUri != oldest.contentUri),
               }
             )
+          :
+            {"todo_content": []}
           )
-        ).as(w,
+        ).as(w, !has(w.curr_content) ?
+          {
+            "work": state.work.drop("curr_content").with(w),
+            "events": [],
+          }
+        :
           {
             "cursor": state.?cursor.orValue({}).with(
               {
