@@ -3,7 +3,7 @@ name: cel
 title: Custom API using Common Expression Language
 description: Collect custom events from an API with Elastic agent
 type: input
-version: "1.16.1"
+version: "1.17.0"
 categories:
   - custom
 conditions:
@@ -68,12 +68,11 @@ policy_templates:
         default: |
           # // Fetch the agent's public IP every minute and note when the last request was made.
           # // It does not use the Resource URL configuration value.
-          # bytes(get("https://api.ipify.org/?format=json").Body).as(body, {
+          # get("https://api.ipify.org/?format=json").Body.as(body, {
           #     "events": [body.decode_json().with({
-          #         "last_requested_at": has(state.cursor) && has(state.cursor.last_requested_at) ?
-          #             state.cursor.last_requested_at
-          #         :
-          #             now
+          #         // Note the last time the request was made. No note is added
+          #         // if there is no previous request time stored in the cursor.
+          #         ?"last_requested_at": state.?cursor.last_requested_at
           #     })],
           #     "cursor": {"last_requested_at": now}
           # })
