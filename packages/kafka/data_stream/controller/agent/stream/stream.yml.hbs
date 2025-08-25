@@ -1,0 +1,162 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: "metrics"
+period: {{period}}
+http_method: {{http_method}}
+
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+
+username: {{username}}
+password: {{password}}
+
+jmx.mappings:
+# Controller Event Manager metrics
+- mbean: 'kafka.controller:name=EventQueueProcessingTimeMs,type=ControllerEventManager'
+  attributes:
+    - attr: Min
+      field: controller_event_manager.event_queue_processing_time_ms.min
+    - attr: Max
+      field: controller_event_manager.event_queue_processing_time_ms.max
+    - attr: 95thPercentile
+      field: controller_event_manager.event_queue_processing_time_ms.p95
+    - attr: 99thPercentile
+      field: controller_event_manager.event_queue_processing_time_ms.p99
+
+- mbean: 'kafka.controller:name=EventQueueTimeMs,type=ControllerEventManager'
+  attributes:
+    - attr: Min
+      field: controller_event_manager.event_queue_time_ms.min
+    - attr: Max
+      field: controller_event_manager.event_queue_time_ms.max
+    - attr: 95thPercentile
+      field: controller_event_manager.event_queue_time_ms.p95
+    - attr: 99thPercentile
+      field: controller_event_manager.event_queue_time_ms.p99
+
+# Kafka Controller metrics
+- mbean: 'kafka.controller:name=ActiveBrokerCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.active_broker_count
+
+- mbean: 'kafka.controller:name=ActiveControllerCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.active_controller_count
+
+- mbean: 'kafka.controller:name=EventQueueOperationsStartedCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.event_queue_operations_started_count
+
+- mbean: 'kafka.controller:name=EventQueueOperationsTimedOutCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.event_queue_operations_timed_out_count
+
+- mbean: 'kafka.controller:name=FencedBrokerCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.fenced_broker_count
+
+- mbean: 'kafka.controller:name=GlobalPartitionCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.global_partition_count
+
+- mbean: 'kafka.controller:name=GlobalTopicCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.global_topic_count
+
+- mbean: 'kafka.controller:name=LastAppliedRecordLagMs,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.last_applied_record_lag_ms
+
+- mbean: 'kafka.controller:name=LastAppliedRecordOffset,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.last_applied_record_offset
+
+- mbean: 'kafka.controller:name=LastAppliedRecordTimestamp,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.last_applied_record_timestamp_epoch
+
+- mbean: 'kafka.controller:name=LastCommittedRecordOffset,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.last_committed_record_offset
+
+- mbean: 'kafka.controller:name=MetadataErrorCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.metadata_error_count
+
+- mbean: 'kafka.controller:name=NewActiveControllersCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.new_active_controllers_count
+
+- mbean: 'kafka.controller:name=OfflinePartitionsCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.offline_partitions_count
+
+- mbean: 'kafka.controller:name=PreferredReplicaImbalanceCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.preferred_replica_imbalance_count
+
+- mbean: 'kafka.controller:name=TimedOutBrokerHeartbeatCount,type=KafkaController'
+  attributes:
+    - attr: Value
+      field: kafka_controller.timed_out_broker_heartbeat_count
+
+{{#if headers}}
+{{headers}}
+{{/if}}
+
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
