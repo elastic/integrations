@@ -301,6 +301,25 @@ processors:
       field: json.alerts.determination
       target_field: m365_defender.incident.alert.determination
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops empty string values recursively.
+      tag: painless_remove_empty_from_evidence
+      if: ctx.json?.alerts?.evidence != null
+      source: |-
+        boolean drop(Object object) {
+          if (object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx.json.alerts.evidence);
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List

@@ -64,6 +64,25 @@ processors:
       target_field: _id
       ignore_missing: true
   - script:
+      lang: painless
+      description: Drops empty string values recursively.
+      tag: painless_remove_empty_from_evidence
+      if: ctx.json?.evidence != null
+      source: |-
+        boolean drop(Object object) {
+          if (object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx.json.evidence);
+  - script:
       description: Dynamically map event.category and event.type field from evidence.
       tag: script_to_set_event_category_and_type
       lang: painless

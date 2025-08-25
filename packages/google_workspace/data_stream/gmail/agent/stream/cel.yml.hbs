@@ -1,0 +1,322 @@
+config_version: 2
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  provider: google
+  google:
+    jwt_file: {{jwt_file}}
+    jwt_json: {{jwt_json}}
+  scopes:
+    - https://www.googleapis.com/auth/bigquery
+resource.url: {{bigquery_endpoint}}
+state:
+  initial_interval: {{initial_interval}}
+  lag_time: {{lag_time}}
+  batch_size: {{batch_size}}
+  project_id: !!str {{project_id}}
+  dataset_name: {{dataset_name}}
+  job_status_timeout: {{job_status_timeout}}
+  location: {{location}}
+redact:
+  fields: ~
+program: |
+  // This CEL program defines the flow of operations for handling BigQuery jobs:
+  // 1. Insert a BigQuery job.
+  // 2. Periodically check whether the job has completed within a specified time bound.
+  // 3. Cancel the job if the it has not completed within specified time bound.
+  // 4. Fetch the job results if it has completed.
+  state.with(
+    (
+      state.?next.job_status.orValue("") == "RUNNING" && state.?want_more.orValue(false) ?
+        state.range
+      :
+        {
+          "start_time": state.?cursor.last_timestamp.orValue(
+            timestamp(
+              (now - duration(state.initial_interval) - duration(state.lag_time))
+            ).as(ts,
+              int(ts)*1000000+int(ts-timestamp(int(ts)))
+            )
+          ),
+          "end_time": timestamp(
+            (now - duration(state.lag_time))
+          ).as(ts,
+            int(ts)*1000000+int(ts-timestamp(int(ts)))
+          ),
+        }
+    ).as(range,
+      state.?next.job_id.hasValue() ? state :
+        // Insert a query job to BigQuery.
+        // The response for this request includes a unique job ID.
+        // Job ID will be used to retrieve the query results.
+        post_request(
+          state.url.trim_right("/") + "/bigquery/v2/projects/" + state.project_id + "/jobs", "application/json", {
+            "configuration": { "query": {
+              "useLegacySql": false,
+              // The activity table is an ingestion-time partitioned table,
+              // which offers better query performance with pseudocolumns.
+              // See https://cloud.google.com/bigquery/docs/querying-partitioned-tables.
+              "query": sprintf(
+                """
+                SELECT
+                  domain_name, email, event_id, event_name, event_type, has_sensitive_content, ip_address, record_type, time_usec, unique_identifier, gmail.event_info, gmail.message_info, resource_details
+                FROM
+                  `%s.%s.activity`
+                WHERE
+                  _PARTITIONTIME >= TIMESTAMP('%s') AND time_usec > %s AND time_usec < %s AND record_type = 'gmail'
+                ORDER BY
+                  time_usec ASC
+                """,
+                [
+                  state.project_id,
+                  state.dataset_name,
+                  timestamp(int(range.start_time)/1000000).format(time_layout.DateOnly),
+                  string(range.start_time),
+                  string(range.end_time),
+                ]
+              ),
+            }},
+            "jobReference": {
+              ?"location": state.?location
+            }
+          }.encode_json()
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,
+            has(body.jobReference) ?
+              {
+                "next": {"job_id": string(body.jobReference.jobId)},
+                "expires": now + duration(state.job_status_timeout),
+                "range": range,
+                "url": state.url,
+                "project_id": state.project_id,
+                "batch_size": state.batch_size,
+                "job_status_timeout": state.job_status_timeout,
+              }
+            :
+              {}
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/bigquery/v2/projects/" + state.project_id + "/jobs: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+    ).as(state,
+      // Check job status before fetching results
+      has(state.?next.job_id) && state.next.?job_status.orValue("") != "DONE" ?
+        request(
+          "GET",
+          state.url.trim_right("/") + "/bigquery/v2/projects/" + state.project_id + "/jobs/" + state.next.job_id + "?" + {
+            ?"location": state.?location.optMap(v, [v]),
+          }.format_query()
+        ).do_request().as(status_resp, status_resp.StatusCode == 200 ?
+          status_resp.Body.decode_json().as(status_body,
+            has(status_body.status) && status_body.status.state == "DONE" ?
+              // If job is done, continue to next step
+              {
+                "next": {
+                  "job_status": status_body.status.state,
+                  "job_id": state.next.job_id,
+                },
+                "expires": state.expires,
+                "range": state.range,
+                "url": state.url,
+                "project_id": state.project_id,
+                "batch_size": state.batch_size,
+              }
+            :
+              // If job has errors
+              has(status_body.status) && has(status_body.status.errorResult) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(status_body.status.errorResult.reason),
+                      "id": string(status_body.Status),
+                      "message": "GET " + state.url.trim_right("/") + "/bigquery/v2/projects/" + state.project_id + "/jobs/" + state.next.job_id + ": " + string(status_body.status.errorResult.message),
+                    }
+                  },
+                  "want_more": false,
+                  "next": {},
+                }
+              :
+                // Job is still running
+                {
+                  "next": {
+                    "job_status": "RUNNING",
+                    "job_id": state.next.job_id,
+                  },
+                  "expires": state.expires,
+                  "want_more": string(now) <= string(state.expires),
+                  "events": [{"message":"retry"}],
+                  "range": state.range,
+                }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(status_resp.StatusCode),
+                "id": string(status_resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/bigquery/v2/projects/" + state.project_id + "/jobs/" + state.next.job_id + ": " + (
+                  size(status_resp.Body) != 0 ?
+                    string(status_resp.Body)
+                  :
+                    string(status_resp.Status) + ' (' + string(status_resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "next": {},
+          }
+        )
+      :
+        state
+    ).as(state,
+      // Cancel job if expired
+      has(state.?next.job_id) && state.next.?job_status.orValue("") != "DONE" && (string(now) > string(state.expires)) ?
+        request(
+          "POST",
+          state.url.trim_right("/") + "/bigquery/v2/projects/" + state.project_id + "/jobs/" + state.next.job_id + "/cancel" + "?" + {
+            ?"location": state.?location.optMap(v, [v]),
+          }.format_query()
+        ).do_request().as(status_resp, status_resp.StatusCode == 200 ?
+          status_resp.Body.decode_json().as(status_body, {
+            "next": {},
+            "want_more": false,
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(status_resp.StatusCode),
+                "id": string(status_resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/v2/projects/" + state.project_id + "/jobs/" + state.next.job_id + "/cancel" + ": " + (
+                  size(status_resp.Body) != 0 ?
+                    string(status_resp.Body)
+                  :
+                    string(status_resp.Status) + ' (' + string(status_resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "next": {},
+          }
+        )
+      :
+        state
+    ).as(state,
+      // Only proceed to fetch results if we have a job ID and the job is done
+      has(state.?next.job_id) && state.next.?job_status.orValue("") == "DONE" ?
+        request(
+          "GET",
+          state.url.trim_right("/") + "/bigquery/v2/projects/"+ state.project_id +"/queries/" + state.next.job_id + "?" + {
+            "maxResults": [string(state.batch_size)],
+            ?"pageToken": state.?next.page_token.optMap(v, [v]),
+            ?"location": state.?location.optMap(v, [v]),
+          }.format_query()
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "events": (
+              has(body.schema) && has(body.rows) ?
+                body.rows.map(row,{
+                  "message": ({"row": row, "schema": body.schema}).encode_json(),
+                })
+              :
+                []
+            ),
+            "cursor": {
+              ?"last_timestamp": has(body.schema) && has(body.rows) && body.rows.size() > 0 ?
+                // extracting timestamp of the last event from the event_info object.
+                body.collate("schema.fields.name").zip(body.rows[body.rows.size()-1].f).as(last_event,
+                  has(last_event.time_usec) ?
+                    (
+                      (
+                        has(state.?cursor.last_timestamp) &&
+                        last_event.time_usec.v < state.cursor.last_timestamp
+                      ) ?
+                        optional.of(state.cursor.last_timestamp)
+                      :
+                        optional.of(last_event.time_usec.v)
+                    )
+                  :
+                    state.?cursor.last_timestamp
+                )
+              :
+                state.?cursor.last_timestamp
+            },
+            "next": {
+              ?"page_token": body.?pageToken,
+              // reset job ID if its last page.
+              ?"job_id": has(body.pageToken) ? optional.of(state.next.job_id) : optional.none(),
+              ?"job_status": state.next.?job_status,
+            },
+            "want_more": has(body.pageToken),
+            "range": state.range,
+            "url": state.url,
+            "project_id": state.project_id,
+            "batch_size": state.batch_size,
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/bigquery/v2/projects/"+ state.project_id +"/queries/" + state.next.job_id + ": " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "next": {},
+          }
+        )
+      :
+        state
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

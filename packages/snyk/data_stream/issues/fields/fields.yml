@@ -114,9 +114,167 @@
           type: keyword
         - name: organization.links.related
           type: keyword
-        - name: scan_item.data.id
-          type: keyword
-        - name: scan_item.data.type
-          type: keyword
+        - name: scan_item.data
+          type: group
+          fields:
+            - name: attributes
+              type: group
+              fields:
+                - name: build_args
+                  type: group
+                  fields:
+                    - name: root_workspace
+                      type: keyword
+                - name: business_criticality
+                  type: keyword
+                - name: created
+                  type: keyword
+                - name: environment
+                  type: keyword
+                - name: lifecycle
+                  type: keyword
+                - name: name
+                  type: keyword
+                - name: origin
+                  type: keyword
+                - name: read_only
+                  type: boolean
+                - name: settings
+                  type: group
+                  fields:
+                    - name: auto_dependency_upgrade
+                      type: group
+                      fields:
+                        - name: ignored_dependencies
+                          type: keyword
+                        - name: is_enabled
+                          type: boolean
+                        - name: is_inherited
+                          type: boolean
+                        - name: is_major_upgrade_enabled
+                          type: boolean
+                        - name: limit
+                          type: long
+                        - name: minimum_age
+                          type: long
+                    - name: auto_remediation_prs
+                      type: group
+                      fields:
+                        - name: is_backlog_prs_enabled
+                          type: boolean
+                        - name: is_fresh_prs_enabled
+                          type: boolean
+                        - name: is_patch_remediation_enabled
+                          type: boolean
+                    - name: manual_remediation_prs
+                      type: group
+                      fields:
+                        - name: is_patch_remediation_enabled
+                          type: boolean
+                    - name: pull_request_assignment
+                      type: group
+                      fields:
+                        - name: assignees
+                          type: keyword
+                        - name: is_enabled
+                          type: boolean
+                        - name: type
+                          type: keyword
+                    - name: pull_requests
+                      type: group
+                      fields:
+                        - name: fail_only_for_issues_with_fix
+                          type: boolean
+                        - name: is_enabled
+                          type: boolean
+                        - name: policy
+                          type: keyword
+                        - name: severity_threshold
+                          type: keyword
+                    - name: recurring_tests
+                      type: group
+                      fields:
+                        - name: frequency
+                          type: keyword
+                - name: status
+                  type: keyword
+                - name: tags
+                  type: keyword
+                - name: target_file
+                  type: keyword
+                - name: target_reference
+                  type: keyword
+                - name: target_runtime
+                  type: keyword
+                - name: type
+                  type: keyword
+            - name: id
+              type: keyword
+            - name: meta
+              type: group
+              fields:
+                - name: cli_monitored_at
+                  type: date
+                - name: latest_dependency_total
+                  type: group
+                  fields:
+                    - name: total
+                      type: long
+                    - name: updated_at
+                      type: date
+                - name: latest_issue_counts
+                  type: group
+                  fields:
+                    - name: critical
+                      type: long
+                    - name: high
+                      type: long
+                    - name: low
+                      type: long
+                    - name: medium
+                      type: long
+                    - name: updated_at
+                      type: date
+            - name: relationships
+              type: group
+              fields:
+                - name: importer
+                  type: group
+                  fields:
+                    - name: data.id
+                      type: keyword
+                    - name: data.type
+                      type: keyword
+                    - name: links.related.href
+                      type: keyword
+                - name: organization
+                  type: group
+                  fields:
+                    - name: data.id
+                      type: keyword
+                    - name: data.type
+                      type: keyword
+                    - name: links.related.href
+                      type: keyword
+                - name: owner
+                  type: group
+                  fields:
+                    - name: data.id
+                      type: keyword
+                    - name: data.type
+                      type: keyword
+                    - name: links.related.href
+                      type: keyword
+                - name: target
+                  type: group
+                  fields:
+                    - name: data.id
+                      type: keyword
+                    - name: data.type
+                      type: keyword
+                    - name: links.related.href
+                      type: keyword
+            - name: type
+              type: keyword
         - name: scan_item.links.related
           type: keyword

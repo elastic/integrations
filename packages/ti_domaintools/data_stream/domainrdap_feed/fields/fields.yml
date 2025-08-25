@@ -1,0 +1,111 @@
+- name: domaintools
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      description: >
+        The Domain.
+
+    - name: feed
+      type: constant_keyword
+      value: "domainrdap"
+      description: >
+        The feed type.
+
+    - name: timestamp
+      type: date
+      description: >
+        Timestamp when the domain was added to the DomainTools feed, in ISO 8601 UTC form.
+
+    - name: first_request_timestamp
+      type: date
+      description: >
+        The first request timestamp.
+
+    - name: requests_url
+      type: keyword
+      description: >
+        List of extracted rdap request urls used.
+
+    - name: parsed_record
+      type: group
+      fields:
+        - name: parsed_fields
+          type: group
+          fields:
+            - name: contacts
+              type: group
+              description: >
+                List of contact objects extracted from RDAP response.
+              fields:
+                - name: name
+                  type: keyword
+                - name: email
+                  type: keyword
+                - name: country
+                  type: keyword
+            - name: email_domains
+              type: keyword
+              description: >
+                List of email domains.
+            - name: emails
+              type: keyword
+              description: >
+                List of emails.
+            - name: creation_date
+              type: keyword
+              description: >
+                The domain creation date.
+            - name: expiration_date
+              type: keyword
+              description: >
+                The domain expiraton date.
+            - name: last_changed_date
+              type: keyword
+              description: >
+                The domain last changed date.
+            - name: handle
+              type: keyword
+              description: >
+                The domain handle.
+            - name: nameservers
+              type: keyword
+              description: >
+                The domain nameservers.
+            - name: registrar
+              type: group
+              description: >
+                The registrar contact from RDAP response.
+              fields:
+                - name: contacts
+                  type: group
+                  description: >
+                    List of registrar contact objects extracted from RDAP response.
+                  fields:
+                    - name: name
+                      type: keyword
+                    - name: email
+                      type: keyword
+                    - name: phone
+                      type: keyword
+                    - name: roles
+                      type: keyword
+                    - name: handle
+                      type: keyword
+                    - name: org
+                      type: keyword
+                - name: iana_id
+                  type: keyword
+                - name: name
+                  type: keyword
+                  description: >
+                    The registrar name.
+
+- name: message
+  external: ecs
+  description: >
+    The feed from DomainTools Feed API.
+
+- name: input.type
+  type: keyword
+  description: Type of filebeat input.

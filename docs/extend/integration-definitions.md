@@ -25,6 +25,18 @@ The package is versioned.
 An integration is a specific type of a package defining data streams used to observe a product using logs, metrics, and traces.
 
 
+## Content Package [_content_package]
+
+A content package is a type of package that contains only Kibana assets without any data collection configuration. These packages are used to provide pre-built dashboards, visualizations, Canvas workpads, and saved searches that work with existing data.
+
+Unlike integrations, content packages do not include data streams or Agent policy templates, as they don't collect data themselves.
+
+
+## Input Package [_input_package]
+
+An input package is a type of package that exposes the raw configuration of an Elastic Agent input for custom use cases. Unlike integrations that provide pre-configured data collection for specific technologies, input packages allow users to configure inputs directly for their unique requirements.
+
+
 ## Data stream [_data_stream]
 
 A data stream is logical sub-division of an Integration package, dealing with a specific type of observable aspect of the service or product being observed. For example, the `mysql` package defines a data stream for collecting metrics and another data stream for collecting server logs.
@@ -38,9 +50,54 @@ Data streams are defined inside the `data_stream` folder located under the packa
 The data stream consists of:
 
 * Field definitions (`fields.yml` files)
-* Zero or more ingest pipelines
+* Zero or more [ingest pipelines](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/ingest-pipelines)
 * An Elastic Agent policy template
 
+
+## Package Manifest [_package_manifest]
+
+The package manifest (`manifest.yml`) is the main configuration file that defines a package's metadata and structure. Located at the root of every package, it contains:
+
+* Package name, version, type, and description
+* Format version (package-spec compatibility)
+* License information
+* Categories and tags for classification
+* Package constraints, such as the Kibana versions required.
+* Policy templates that define configurable inputs
+* Owner information for maintenance
+
+The manifest is essential for package discovery, installation, and configuration through Fleet.
+
+
+## Input [_input]
+
+An input is a component that defines how Elastic Agent collects data from a specific source. Each input type corresponds to a different data collection method. 
+
+Inputs are configured within policy templates in the package manifest and can include variables that users configure through the Fleet UI. Each data stream typically uses one or more inputs to collect its data.
+
+
+## Agent Policy [_agent_policy]
+
+An Agent Policy is a configuration that defines what data should be collected and how to collect it. There are two deployment modes:
+
+### Agent-based deployments
+In traditional deployments, agent policies are deployed to one or more Elastic Agents installed on hosts. The policy includes:
+* One or more integrations with their specific configurations
+* Output settings (where to send the data)
+* Agent monitoring settings
+* Download source for agent upgrades
+
+A single agent can only have one policy at a time, but a policy can be assigned to multiple agents.
+
+### Agentless deployments
+For agentless integrations, Elastic manages the infrastructure and runs Elastic
+Agent on behalf of the user. In this mode:
+* No agent installation is required on user infrastructure
+* Elastic automatically provisions and scales the necessary resources
+* Configuration is still done through Fleet UI, but deployment is handled by Elastic
+* Particularly useful for cloud service integrations (AWS, Azure, GCP) where API access is sufficient
+
+Agentless is available for select integrations and requires specific licensing.
 
 ## Development Extensions: `_dev` directories [_development_extensions_dev_directories]
 

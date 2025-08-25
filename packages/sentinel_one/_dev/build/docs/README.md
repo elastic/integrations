@@ -65,6 +65,14 @@ This is the `alert` dataset.
 
 {{fields "alert"}}
 
+### application
+
+This is the `application` dataset.
+
+{{event "application"}}
+
+{{fields "application"}}
+
 ### group
 
 This is the `group` dataset.

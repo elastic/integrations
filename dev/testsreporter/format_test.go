@@ -91,8 +91,7 @@ func TestSummary(t *testing.T) {
 				},
 				teams: []string{"team1", "team2"},
 			},
-			expected: `- Stack version: Same as in Pull Request builds
-- Serverless: observability
+			expected: `- Serverless: observability
 - Package: foo
 - Failing test: mytest
 - DataStream: data
@@ -114,8 +113,7 @@ func TestSummary(t *testing.T) {
 				},
 				teams: []string{"team1", "team2"},
 			},
-			expected: `- Stack version: Same as in Pull Request builds
-- Serverless: observability
+			expected: `- Serverless: observability
 - Package: foo
 - Failing test: mytest
 - Owners:
@@ -182,6 +180,30 @@ func TestSummary(t *testing.T) {
 				teams: []string{"team1"},
 			},
 			expected: `- Stack version: 8.16
+- Subscription: basic
+- Packages:
+    - foo
+    - bar
+- Owners:
+    - team1
+`,
+		},
+		{
+			title: "summary with basic license and logsdb",
+			resultError: &buildError{
+				dataError: dataError{
+					logsDB:       true,
+					serverless:   false,
+					subscription: "basic",
+				},
+				packages: []string{
+					"foo",
+					"bar",
+				},
+				teams: []string{"team1"},
+			},
+			expected: `- Stack version: maximum of either the version used in PR builds or 8.17.0 (GA version for LogsDB index mode)
+- LogsDB: enabled
 - Subscription: basic
 - Packages:
     - foo

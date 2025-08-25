@@ -21,6 +21,9 @@ request.method: GET
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
 request.transforms:
   - set:
       target: "header.User-Agent"
@@ -40,7 +43,8 @@ response.split:
     keep_parent: true
 cursor:
   lastUpdateTime:
-    value: "[[.last_response.body.lastUpdateTime]]"
+    value: '[[with (index .last_response.body "lastUpdateTime")]][[.]][[end]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

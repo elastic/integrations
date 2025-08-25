@@ -12,11 +12,11 @@ For more detailed information refer to the following blog:
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Data Exfiltration Detection**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Install assets**: Install the assets by clicking **Settings > Install Data Exfiltration Detection assets**.
 1. **Check the health of the transform**: The transform is scheduled to run every 30 minutes. This transform creates the index `ml_network_ded-<VERSION>`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`. Follow the instructions under the header `Customize Data Exfiltration Detection Transform` below to adjust filters based on your environment's needs.
-1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file events (`logs-endpoint.events.file-*`), and the other index (`ml_network_ded.all`) collects network logs from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
+1. **Create data views for anomaly detection jobs**: This package contains anomaly detection jobs that work on network events (e.g. `logs-endpoint.events.network-*`) and file events (`logs-endpoint.events.file-*`) respectively. See the _Anomaly Detection Jobs_ section below for more details. _Tip: If you only have one of the above data sources (network or file), you can only follow the steps pertaining to that index._ A separate designated index (`ml_network_ded.all`) collects network logs from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
     1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
-    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-endpoint.events.file-*, ml_network_ded.all`, and copy the same in the **Name** field.
+    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-endpoint.events.file-*`, `logs-endpoint.events.network-*` (depending which one(s) you have), `ml_network_ded.all`, and copy the same in the **Name** field.
     1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
-    1. Use the new data view (`logs-endpoint.events.file-*, ml_network_ded.all`) to create anomaly detection jobs for this package.
+    1. Use the new data view (`logs-endpoint.events.network-*`, `logs-endpoint.events.file-*`, `ml_network_ded.all`) to create anomaly detection jobs for this package.
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see **Data Exfiltration Detection**. If you do not see this card, events must be ingested from a source that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10), such as Elastic Defend. When you select the card, you will see pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. If you are using Elastic Defend to collect events, file events are in `logs-endpoint.events.file-*` and network events in `logs-endpoint.events.network-*`. If you are only collecting file or network events, select only the relevant jobs at this step.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana. 
     1. You have started the above anomaly detection jobs.
@@ -62,15 +62,15 @@ After the data view for the dashboard is configured, the **Data Exfiltration Det
 
 ### Anomaly Detection Jobs
 
-| Job                                                  | Description                                                                                                        | Supported Platform |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| ded_high_sent_bytes_destination_geo_country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     |
-| ded_high_sent_bytes_destination_ip                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     |
-| ded_high_sent_bytes_destination_port                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows     |
-| ded_high_sent_bytes_destination_region_name          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows     |
-| ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            |
-| ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            |
-| ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              |
+| Job                                                  | Description                                                                                                        | Supported Platform | Event Category |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------ | ----- |
+| ded_high_sent_bytes_destination_geo_country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     | network |
+| ded_high_sent_bytes_destination_ip                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     | network |
+| ded_high_sent_bytes_destination_port                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows     | network |
+| ded_high_sent_bytes_destination_region_name          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows     | network |
+| ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            | file |
+| ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            | file |
+| ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              | file |
 
 ## v2.0.0 and beyond
 

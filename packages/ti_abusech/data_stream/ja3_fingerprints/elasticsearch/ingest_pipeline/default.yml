@@ -1,0 +1,207 @@
+---
+description: Pipeline for parsing Abuse.ch URL Threat Intel
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  ####################
+  # Event ECS fields #
+  ####################
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: [threat]
+  - set:
+      field: event.type
+      value: [indicator]
+  - set:
+      field: labels.interval
+      copy_from: _conf.interval
+      if: ctx._conf?.interval != null && ctx._conf.interval != ''
+
+  ######################
+  # General ECS fields #
+  ######################
+  - drop:
+      description: Drop if message is empty string return by CEL program.
+      if: ctx?.message == null || ctx.message == ""
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: abusech.ja3_fingerprints
+  #####################
+  # Threat ECS Fields #
+  #####################
+  - set:
+      field: threat.indicator.type
+      value: software
+  - date:
+      field: abusech.ja3_fingerprints.first_ts
+      target_field: threat.indicator.first_seen
+      formats:
+        - ISO8601
+      if: ctx.abusech?.ja3_fingerprints?.first_ts != null
+  - remove: 
+      field: abusech.ja3_fingerprints.first_ts
+      if: ctx.threat?.indicator?.first_seen != null
+  - date:
+      field: abusech.ja3_fingerprints.last_ts
+      target_field: threat.indicator.last_seen
+      formats:
+        - ISO8601
+      if: ctx.abusech?.ja3_fingerprints?.last_ts != null
+  - remove: 
+      field: abusech.ja3_fingerprints.last_ts
+      if: ctx.threat?.indicator?.last_seen != null
+  - set:
+      field: threat.indicator.name
+      copy_from: abusech.ja3_fingerprints.ja3
+      tag: set-indicator-name
+  - set:
+      field: threat.indicator.description
+      copy_from: abusech.ja3_fingerprints.reason
+      tag: set-indicator-description
+  - append:
+      field: related.hash
+      value: "{{{ abusech.ja3_fingerprints.ja3 }}}"
+      allow_duplicates: false
+      if: ctx.abusech?.ja3_fingerprints?.ja3 != null
+  ######################
+  #   IOC expiration   #
+  ######################
+  # The `AbuseCH SSL Blacklist API` ingests all active indicators during every `Interval`. So, all indicators are expired every `Interval` so new indicators are ingested.
+  - set:
+      field: event.ingested
+      copy_from: _ingest.timestamp
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      description: Indicator are expired after every `labels.interval` since `event.ingested`. This script adds a default `abusech.ja3_fingerprints.deleted_at` field to allow indicator expiration at the transform.
+      source: >
+        def dur = ctx.labels.interval;
+        ZonedDateTime _tmp_deleted_at;
+        ZonedDateTime _tmp_created_at = ctx.event.ingested;
+        long max_ingest_time_in_sec = 30L;
+        long transform_max_age_in_min = 1L;
+        String time_unit = dur.substring(dur.length() -  1, dur.length());
+        String time_value = dur.substring(0, dur.length() - 1);
+        if (time_unit == 'd') {
+          _tmp_deleted_at = _tmp_created_at.plusDays(Long.parseLong(time_value));
+        } else if (time_unit == 'h') {
+          _tmp_deleted_at = _tmp_created_at.plusHours(Long.parseLong(time_value));
+        } else if (time_unit == 'm') {
+          _tmp_deleted_at = _tmp_created_at.plusMinutes(Long.parseLong(time_value));
+        } else {
+          _tmp_deleted_at = _tmp_created_at.plusDays(90L);
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
+          }
+          if (ctx.error.message == null) {
+            ctx.error.message = new ArrayList();
+          }
+          ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+        }
+        // Subtract transform's retention max_age and ingest time so that indicators are expire time slightly before next interval.
+        // This ensures the indicator is deleted when the next interval starts.
+        
+        _tmp_deleted_at = _tmp_deleted_at.minusMinutes(transform_max_age_in_min).minusSeconds(max_ingest_time_in_sec);
+        ctx.abusech.ja3_fingerprints.deleted_at = _tmp_deleted_at;
+  - date:
+      field: abusech.ja3_fingerprints.deleted_at
+      tag: date_deleted_at
+      target_field: abusech.ja3_fingerprints.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+  ######################
+  # Cleanup processors #
+  ######################
+  - set:
+      field: threat.indicator.type
+      value: unknown
+      if: ctx.threat?.indicator?.type == null
+  - script:
+      lang: painless
+      if: ctx.abusech != null
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+        map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field:
+        - abusech.ja3_fingerprints.ja3
+        - abusech.ja3_fingerprints.reason
+        - message
+        - _conf
+      ignore_missing: true
+  - script:
+      description: Remove null/empty values recursively.
+      lang: painless
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: 'Processor {{{ _ingest.on_failure_processor_type }}} {{{#_ingest.on_failure_processor_tag}}}with tag {{{ _ingest.on_failure_processor_tag }}} {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}} failed with message {{{ _ingest.on_failure_message }}}'

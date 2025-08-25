@@ -71,13 +71,10 @@ program: |-
   		}
   	).do_request().as(resp,
   		(resp.StatusCode == 401) ?
-  			state.with(
+  			state.drop("cursor.cookies").with(
   				{
   					"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
   					"want_more": true,
-  					"cursor": {
-  						"cookies": null,
-  					},
   				}
   			)
   		:

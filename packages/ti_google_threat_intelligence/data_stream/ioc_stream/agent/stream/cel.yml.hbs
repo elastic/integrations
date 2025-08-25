@@ -1,0 +1,95 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  access_token: {{access_token}}
+redact:
+  fields:
+    - access_token
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state.next.interval
+    :
+      {
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05")),
+        "end_time": now.format("2006-01-02T15:04:05"),
+      }
+  ).as(interval, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/v3/ioc_stream?" + {
+        "limit": ["40"],
+        "filter": ["date:" + interval.start_time + "+"],
+        ?"cursor": state.?next.page.optMap(v, [v]),
+      }.format_query()
+    ).with({
+      "Header": {
+        "x-apikey": [state.access_token],
+        "x-tool": ["Elastic"],
+        "User-Agent": ["v0.6.1"], // Keep this in sync with 'version' in package level manifest.yml.
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+      "events": ( has(body.data) && size(body.data) > 0 ?
+        body.data.map(e, {
+          "message": e.encode_json()
+        })
+        :
+          [{"message": "retry"}]
+      ),
+      "cursor": {
+        "last_timestamp": has(body.?meta.cursor) ? interval.start_time : interval.end_time,
+      },
+      "want_more": has(body.?meta.cursor),
+      "next": {
+        ?"page": body.?meta.cursor,
+        "interval": interval
+      }
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/api/v3/ioc_stream?: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
