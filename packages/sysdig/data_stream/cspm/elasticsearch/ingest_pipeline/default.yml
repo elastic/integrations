@@ -1,0 +1,426 @@
+---
+description: Pipeline for processing CSPM compliance results logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # rename to snake case
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case
+      source: |
+        // Helper function to convert camelCase to snake_case
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              // Skip fields that contain '@' in their name
+              if (!entry.getKey().contains("@")) {
+                String newKey = camelToSnake(entry.getKey());
+                newObj[newKey] = convertToSnakeCase(entry.getValue());
+              }
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        // Apply the conversion
+        ctx.sysdig = ctx.sysdig ?: [:];
+        if (ctx.json != null) {
+          ctx.sysdig.cspm = convertToSnakeCase(ctx.json);
+        }
+
+  # convert values
+  - convert:
+      field: sysdig.cspm.accepted_count
+      tag: convert_accepted_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.accepted_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.control.accepted_count
+      tag: convert_control_accepted_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.control.accepted_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.control.id
+      tag: convert_control_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: sysdig.cspm.control.is_manual
+      tag: convert_control_is_manual_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.control.is_manual
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: sysdig.cspm.control.last_update
+      tag: date_control_last_update
+      target_field: sysdig.cspm.control.last_update
+      formats:
+        - epoch_second
+      if: ctx.sysdig?.cspm?.control?.last_update != null && ctx.sysdig.cspm.control.last_update != ''
+      on_failure:
+        - remove:
+            field: sysdig.cspm.control.last_update
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.control.objects_count
+      tag: convert_control_objects_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.control.objects_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.control.pass
+      tag: convert_control_pass_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.control.pass
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.control.passing_count
+      tag: convert_control_passing_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.control.passing_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.control.remediation_id
+      tag: convert_control_remediation_id_to_string
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: sysdig.cspm.control.supported_distributions
+      tag: foreach_control_supported_distributions
+      if: ctx.sysdig?.cspm?.control?.supported_distributions instanceof List
+      processor:
+        convert:
+          field: _ingest._value.max_version
+          tag: covert_max_version_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: sysdig.cspm.control.supported_distributions
+      tag: foreach_control_supported_distributions
+      if: ctx.sysdig?.cspm?.control?.supported_distributions instanceof List
+      processor:
+        convert:
+          field: _ingest._value.min_version
+          tag: covert_min_version_to_string
+          type: string
+          ignore_missing: true
+  - convert:
+      field: sysdig.cspm.control.type
+      tag: convert_control_type_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.control.type
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.failed_controls
+      tag: convert_failed_controls_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.failed_controls
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.high_severity_count
+      tag: convert_high_severity_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.high_severity_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.low_severity_count
+      tag: convert_low_severity_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.low_severity_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.medium_severity_count
+      tag: convert_medium_severity_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.medium_severity_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.pass
+      tag: convert_pass_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.pass
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.passing_count
+      tag: convert_passing_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: sysdig.cspm.passing_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: sysdig.cspm.policy_id
+      tag: convert_policy_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: sysdig.cspm.requirement_id
+      tag: convert_requirement_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: sysdig.cspm.zone.id
+      tag: convert_zone_id_to_string
+      type: string
+      ignore_missing: true
+
+  # populate ECS fields
+  - set:
+      field: message
+      tag: set_message_from_cspm_name
+      copy_from: sysdig.cspm.name
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - script:
+      description: Set event severity based on severity.
+      if: ctx.sysdig?.cspm?.severity != null
+      lang: painless
+      params:
+        low: 21
+        medium: 47
+        high: 73
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.severity = params.get(ctx.sysdig.cspm.severity.toLowerCase());
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success
+      value: success
+      if: ctx.sysdig?.cspm?.pass == true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.sysdig?.cspm?.pass == false
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_unknown
+      value: unknown
+      if: ctx.event?.outcome == null
+
+  # observer.*
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Sysdig
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Sysdig Secure
+
+  # rule.*
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_cspm_policy_id
+      copy_from: sysdig.cspm.policy_id
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_cspm_policy_name
+      copy_from: sysdig.cspm.policy_name
+      ignore_empty_value: true
+
+  - remove:
+      field:
+        - sysdig.cspm.name
+        - sysdig.cspm.policy_id
+        - sysdig.cspm.policy_name
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
