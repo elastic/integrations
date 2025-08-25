@@ -18,13 +18,16 @@ processors:
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-      tag: ingest_timestamp
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field: ess.billing.quantities
+      ignore_missing: true
   - set:
       field: event.created
-      value: "{{@timestamp}}"
+      copy_from: '@timestamp'
       tag: created_timestamp
   - date:
       field: ess.billing.from
@@ -51,8 +54,9 @@ processors:
       copy_from: ess.billing.deployment_id
       ignore_empty_value: true
       tag: cloud_instance_id
-  #Temp Workaround: Put deployment_id in deployment_name in case name parameter is empty in the API(to keep Dashboard name filtering )
   - set:
+      # NOTE(2025-08-25): This 'set' processor is necessary to cope with serverless
+      # project names being empty in the billing API. to be removed when Names in billing api fixed
       field: cloud.instance.name
       copy_from: ess.billing.deployment_id
   - set:
@@ -178,3 +182,14 @@ processors:
         location:
           lon: 135.0
           lat: 90.0
+
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
