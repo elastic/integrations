@@ -55,3 +55,23 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "partition"}}
+
+### raft
+
+The `raft` dataset collects metrics related to Kafka's Raft consensus algorithm implementation (KRaft), which is used for metadata management in Kafka without requiring ZooKeeper. KRaft mode is available in Kafka 3.0.0 and later versions.
+
+This dataset includes metrics such as:
+- Append and fetch records rates
+- Commit latency (average and maximum)
+- Current epoch, leader, and vote information
+- High watermark and log offset metrics
+- Node state and voter information
+- Poll idle ratio
+
+{{event "raft"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "raft"}}

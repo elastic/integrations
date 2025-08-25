@@ -73,12 +73,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Setup
 
-### Follow the steps below to configure data collection from Microsoft sources:
+Follow the steps below to configure data collection from Microsoft sources.
 
 ### 1. Collecting Data from Microsoft Azure Event Hub
+
 - [Configure Microsoft Defender XDR to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/defender-xdr/streaming-api-event-hub?view=o365-worldwide).
 
 ### 2. Collecting Data from Microsoft Graph Security v1.0 REST API (for Incidents & Alerts)
+
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 - Assign the required permission: **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0).
 - Once the application is registered, note the following values for use during configuration:
@@ -87,6 +89,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
   - Tenant ID
 
 ### 3. Collecting Data from Microsoft Defender for Endpoint API (for Vulnerabilities)
+
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 - Assign the required permissions: 
   - **Vulnerability.Read.All** See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities#permissions).
@@ -96,10 +99,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
   - Client Secret
   - Tenant ID
 
-### Data Retention and ILM Configuration
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+#### Data Retention and ILM Configuration
 
-> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
+A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+
+> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`.
 
 ## Alert severity mapping
 
