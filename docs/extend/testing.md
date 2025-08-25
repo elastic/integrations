@@ -9,10 +9,6 @@ mapped_pages:
 
 * [Asset testing](/extend/asset-testing.md)
 * [Pipeline testing](/extend/pipeline-testing.md)
+* [Policy testing](/extend/policy-testing.md)
 * [Static testing](/extend/static-testing.md)
 * [System testing](/extend/system-testing.md)
-
-
-
-
-
