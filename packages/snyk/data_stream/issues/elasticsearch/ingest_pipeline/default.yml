@@ -124,6 +124,25 @@ processors:
       value: '{{{ snyk.issues.relationships.scan_item.data._enrich_error_message }}}'
       if: ctx.snyk.issues.relationships.scan_item.data._enrich_error_message instanceof String
       allow_duplicates: false
+
+  # Fixup mappings that do not match the published API spec.
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.importer?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.organization?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.owner?.links?.related?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.target?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.target.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.target.links.related.href
+
   - remove:
       field:
         - message
