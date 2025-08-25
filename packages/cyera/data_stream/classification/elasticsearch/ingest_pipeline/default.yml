@@ -1,0 +1,242 @@
+---
+description: Pipeline for processing classification logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Cyera
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Cyera
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - rename:
+      field: json.classificationName
+      tag: rename_classificationName
+      target_field: cyera.classification.classification_name
+      ignore_missing: true
+  - rename:
+      field: json.collections
+      tag: rename_collections
+      target_field: cyera.classification.collections
+      ignore_missing: true
+  - rename:
+      field: json.context.businessContext
+      tag: rename_context_businessContext
+      target_field: cyera.classification.context.business_context
+      ignore_missing: true
+  - rename:
+      field: json.context.dataSubjectAge
+      tag: rename_context_dataSubjectAge
+      target_field: cyera.classification.context.data_subject_age
+      ignore_missing: true
+  - rename:
+      field: json.context.geoLocations
+      tag: rename_context_geoLocations
+      target_field: cyera.classification.context.geo_locations
+      ignore_missing: true
+  - rename:
+      field: json.context.identifiability
+      tag: rename_context_identifiability
+      target_field: cyera.classification.context.identifiability
+      ignore_missing: true
+  - convert:
+      field: json.context.identified
+      tag: convert_context_identified_to_boolean
+      target_field: cyera.classification.context.identified
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.context.role
+      tag: rename_context_role
+      target_field: cyera.classification.context.role
+      ignore_missing: true
+  - append:
+      field: user.roles
+      tag: append_cyera_classification_context_role_into_user_roles
+      value: '{{{cyera.classification.context.role}}}'
+      allow_duplicates: false
+      if: ctx.cyera?.classification?.context?.role != null
+  - convert:
+      field: json.context.synthetic
+      tag: convert_context_synthetic_to_boolean
+      target_field: cyera.classification.context.synthetic
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.context.tokenization
+      tag: rename_context_tokenization
+      target_field: cyera.classification.context.tokenization
+      ignore_missing: true
+  - rename:
+      field: json.customCollections
+      tag: rename_customCollections
+      target_field: cyera.classification.custom_collections
+      ignore_missing: true
+  - rename:
+      field: json.dataCategory
+      tag: rename_dataCategory
+      target_field: cyera.classification.data.category
+      ignore_missing: true
+  - rename:
+      field: json.dataClassName
+      tag: rename_dataClassName
+      target_field: cyera.classification.data.class_name
+      ignore_missing: true
+  - rename:
+      field: json.defaultSensitivityDisplayName
+      tag: rename_defaultSensitivityDisplayName
+      target_field: cyera.classification.default_sensitivity.display_name
+      ignore_missing: true
+  - rename:
+      field: json.defaultSensitivity
+      tag: rename_defaultSensitivity
+      target_field: cyera.classification.default_sensitivity.value
+      ignore_missing: true
+  - rename:
+      field: json.frameworks
+      tag: rename_frameworks
+      target_field: cyera.classification.frameworks
+      ignore_missing: true
+  - rename:
+      field: json.classificationGroup
+      tag: rename_classificationGroup
+      target_field: cyera.classification.group
+      ignore_missing: true
+  - convert:
+      field: json.learned
+      tag: convert_learned_to_boolean
+      target_field: cyera.classification.learned
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.classificationLevel
+      tag: rename_classificationLevel
+      target_field: cyera.classification.level
+      ignore_missing: true
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: cyera.classification.name
+      ignore_missing: true
+  - rename:
+      field: json.sensitivityDisplayName
+      tag: rename_sensitivityDisplayName
+      target_field: cyera.classification.sensitivity.display_name
+      ignore_missing: true
+  - rename:
+      field: json.sensitivity
+      tag: rename_sensitivity
+      target_field: cyera.classification.sensitivity.value
+      ignore_missing: true
+  - rename:
+      field: json.uid
+      tag: rename_uid
+      target_field: cyera.classification.uid
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_classification_uid
+      copy_from: cyera.classification.uid
+      ignore_empty_value: true
+  - remove:
+      field:
+        - cyera.classification.context.role
+        - cyera.classification.uid
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

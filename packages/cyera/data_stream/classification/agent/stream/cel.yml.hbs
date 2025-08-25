@@ -1,0 +1,135 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  batch_size : {{batch_size}}
+  client_id: {{client_id}}
+  secret: {{client_secret}}
+redact:
+  fields:
+    - client_id
+    - secret
+program: |-
+  state.with(state.?want_more.orValue(false) ? {} :
+    post_request(
+      state.url.trim_right("/") + "/v1/login",
+      "",
+      {
+        "clientId" : state.client_id,
+        "secret" : state.secret
+      }.encode_json()
+    ).with({
+      "Header": {
+        "Accept": ["application/json"],
+        "Content-Type": ["application/json"]
+      },
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "access_token": body.jwt,
+        "offset": 0,
+        "counter": 0,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/v1/login " +
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+            :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        }
+      }
+  )).as(state ,
+    request(
+      "GET",
+      state.url.trim_right("/") + "/v1/classifications?" + {
+        "limit" : [string(state.batch_size)],
+        "offset": [string(state.offset)],
+      }.format_query()
+    ).with({
+      "Header": {
+        "Authorization": ["Bearer " + state.access_token],
+        "Accept" : ["application/json"]
+      },
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": has(body.results) && body.results != null ?
+          body.results.map(e, {
+            "message": e.encode_json(),
+          })
+        :
+          [],
+        "client_id" : state.client_id,
+        "secret" : state.secret,
+        "access_token": state.access_token,
+        "batch_size" : state.batch_size,
+        "offset" : string(int(
+          has(body.results) && (int(state.counter) + int(body.?limit.orValue(0))) < int(body.?total.orValue(-1)) ?
+            state.offset
+          :
+            "0"
+        ) + int(state.batch_size)),
+        "counter": (int(state.counter) + int(body.?limit.orValue(0))) < int(body.?total.orValue(-1)) ?
+          int(state.counter) + int(body.limit)
+        :
+          0,
+        "want_more" : has(body.limit) && has(body.total) && (int(state.counter) + int(body.?limit.orValue(0))) < int(body.?total.orValue(-1)),
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/v2/classifications " + 
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+        "batch_size": state.batch_size,
+        "secret": state.secret,
+        "client_id": state.client_id
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
