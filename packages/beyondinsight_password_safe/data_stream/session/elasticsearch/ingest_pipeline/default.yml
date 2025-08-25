@@ -1,15 +1,17 @@
 ---
-description: Pipeline for processing BeyondInsight and Password Safe Sessions logs
+description: Pipeline for processing BeyondTrust Password Safe Sessions.
 processors:
-  - rename:
-      field: message
-      target_field: beyondinsight_password_safe.session
-  - drop:
-      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - fingerprint:
       fields:
-        - beyondinsight_password_safe.session
-      target_field: "_id"
+        - event.original
+      target_field: _id
+  - json:
+      field: event.original
+      target_field: beyondinsight_password_safe.session
 
 ####################
 # Scripts for processing input #
@@ -33,7 +35,7 @@ processors:
         dropEmptyFields(ctx);
 
   - script:
-      description: Convert Additional Info keys to snake case.
+      description: Convert keys to snake case.
       tag: additional-info-keys-to-snake-case
       lang: painless
       source: |
@@ -87,22 +89,16 @@ processors:
       value: info
 
   - set:
-      field: event.dataset
-      value: beyondinsight_password_safe.session
-
-  - set:
-      field: event.module
-      value: beyondinsight_password_safe
-
-  - set:
-      field: event.id
-      value: "{{{beyondinsight_password_safe.session.session_id}}}"
-      ignore_empty_value: true
-
-  - set:
       field: event.duration
       copy_from: beyondinsight_password_safe.session.duration
       ignore_empty_value: true
+
+  - script:
+      description: Convert event.duration from seconds to nanoseconds to align with ECS.
+      lang: painless
+      if: ctx.event?.duration != null
+      source: |
+        ctx.event.duration = ctx.event.duration * 1000000000L;
 
   - date:
       if: ctx.beyondinsight_password_safe.session?.start_time != null
@@ -129,15 +125,47 @@ processors:
   - convert:
       field: beyondinsight_password_safe.session.status
       type: string
+      ignore_missing: true
   - convert:
       field: beyondinsight_password_safe.session.archive_status
       type: string
+      ignore_missing: true
   - convert:
       field: beyondinsight_password_safe.session.protocol
       type: string
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.session.session_type
+      type: string
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.session.application_id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.session.managed_account_id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.session.managed_system_id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.session.request_id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.session.session_id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.session.user_id
+      type: string
+      ignore_missing: true
 
   - script:
-      description: Convert status to their text meaning using params
+      description: Convert status to human-readable value.
+      tag: script_status_human_readable
       lang: painless
       params:
         descriptions:
@@ -150,13 +178,14 @@ processors:
           "9": "disconnected"
       if: ctx.beyondinsight_password_safe?.session?.status != null
       source: |
-        ctx.beyondinsight_password_safe.session.status = params.descriptions.getOrDefault(
-          ctx.beyondinsight_password_safe.session.status,
-          "unknown"
-        );
+        def description = params.descriptions.get(ctx.beyondinsight_password_safe.session.status);
+        if (description != null) {
+          ctx.beyondinsight_password_safe.session.status = description;
+        }
 
   - script:
-      description: Convert archive_status to text values
+      description: Convert archive_status to human-readable value.
+      tag: script_archive_status_human_readable
       lang: painless
       params:
         descriptions:
@@ -166,15 +195,17 @@ processors:
           "3": "archiving"
           "4": "session_not_found"
           "5": "repository_offline"
+          "6": "unknown"
       if: ctx.beyondinsight_password_safe?.session?.archive_status != null
       source: |
-        ctx.beyondinsight_password_safe.session.archive_status = params.descriptions.getOrDefault(
-          ctx.beyondinsight_password_safe.session.archive_status,
-          "unknown"
-        );
+        def description = params.descriptions.get(ctx.beyondinsight_password_safe.session.archive_status);
+        if (description != null) {
+          ctx.beyondinsight_password_safe.session.archive_status = description;
+        }
 
   - script:
-      description: Convert protocol to text values
+      description: Convert protocol to human-readable value.
+      tag: script_protocol_human_readable
       lang: painless
       params:
         descriptions:
@@ -182,24 +213,43 @@ processors:
           "1": "ssh"
       if: ctx.beyondinsight_password_safe?.session?.protocol != null
       source: |
-        ctx.beyondinsight_password_safe.session.protocol = params.descriptions.getOrDefault(
-          ctx.beyondinsight_password_safe.session.protocol,
-          "unknown"
-        );
+        def description = params.descriptions.get(ctx.beyondinsight_password_safe.session.protocol);
+        if (description != null) {
+          ctx.beyondinsight_password_safe.session.protocol = description;
+        }
 
-  - append:
+  - script:
+      description: Convert session_type to human-readable value.
+      tag: script_session_type_human_readable
+      lang: painless
+      params:
+        descriptions:
+          "1": "regular"
+          "2": "isa"
+          "3": "admin"
+      if: ctx.beyondinsight_password_safe?.session?.session_type != null
+      source: |
+        def description = params.descriptions.get(ctx.beyondinsight_password_safe.session.session_type);
+        if (description != null) {
+          ctx.beyondinsight_password_safe.session.session_type = description;
+        }
+
+  - set:
       field: network.protocol
-      value: "{{{beyondinsight_password_safe.session.protocol}}}"
-      allow_duplicates: false
-          
-  - remove:
-      field:
-        - beyondinsight_password_safe.session.token
+      copy_from: beyondinsight_password_safe.session.protocol
+      ignore_empty_value: true
 
+  - set:
+      field: event.id
+      copy_from: beyondinsight_password_safe.session.session_id
+      ignore_empty_value: true
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
