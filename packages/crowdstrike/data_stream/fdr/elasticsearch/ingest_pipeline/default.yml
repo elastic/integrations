@@ -355,6 +355,25 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      field: crowdstrike.FilesAccessed
+      tag: convert_crowdstrike_filesaccessed_timestamp_array
+      if: ctx.crowdstrike?.FilesAccessed instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_filesaccessed_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
       field: crowdstrike.FilesWritten
       tag: convert_crowdstrike_fileswritten_timestamp_array
       if: ctx.crowdstrike?.FilesWritten instanceof List
@@ -403,6 +422,18 @@ processors:
       type: integer
       if: (ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != "")
 
+  ## AWS S3 input does _id-Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, even the _id-Based Deduplication
+        needs to be removed.
+      if: ctx._conf?.enable_deduplication == false
+      ignore_missing: true
+      
   - fingerprint:
       fields:
         - '@timestamp'
@@ -3020,6 +3051,14 @@ processors:
       if: ctx.device?.id == null
 
   ## Crowdstrike fields.
+  - json:
+      field: crowdstrike.ResourceAttributes
+      tag: json_crowdstrike_ResourceAttributes
+      if: ctx.crowdstrike?.ResourceAttributes instanceof String
+      on_failure:
+        - remove:
+            field: crowdstrike.ResourceAttributes
+            ignore_missing: true
   - split:
       field: crowdstrike.FalconGroupingTags
       separator: ",\\s?"
@@ -3030,11 +3069,41 @@ processors:
       separator: ",\\s?"
       ignore_missing: true
       ignore_failure: true
-  - split:
-      field: crowdstrike.Tags
-      separator: ",\\s?"
-      ignore_missing: true
-      ignore_failure: true
+  - script:
+      tag: convert-Tags
+      description: Convert tags for indexing as keyword.
+      lang: painless
+      if : ctx.crowdstrike?.Tags != null
+      source: |
+          def result = [];
+
+          if (ctx.crowdstrike.Tags instanceof String) {
+            def parts = ctx.crowdstrike.Tags.splitOnToken(",");
+            for (def part : parts) {
+              def trimmed = part.trim();
+              if (trimmed != "") {
+                result.add(trimmed);
+              }
+            }
+
+          } else if (ctx.crowdstrike.Tags instanceof Map) {
+            for (def entry : ctx.crowdstrike.Tags.entrySet()) {
+              result.add(entry.getKey() + ":" + entry.getValue());
+            }
+
+          } else if (ctx.crowdstrike.Tags instanceof List) {
+            for (def tag : ctx.crowdstrike.Tags) {
+              if (tag instanceof Map) {
+                // this format is seen in the falcon data stream
+                result.add(tag["Key"] + ":" + tag["ValueString"]);
+              } else if (tag instanceof String) {
+                // this isn't expected but avoid throwing away indexable data
+                result.add(tag);
+              }
+            }
+          }
+
+          ctx.crowdstrike.Tags = result;
   - split:
       field: crowdstrike.CallStackModuleNames
       separator: "\\|"
