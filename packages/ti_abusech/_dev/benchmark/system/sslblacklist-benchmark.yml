@@ -1,15 +1,14 @@
 ---
-description: Benchmark 100000 Threatfox events ingested
+description: Benchmark 100000 sslblacklist events ingested
 input: cel
 vars:
   enable_request_tracer: true
   auth_key: test_auth_key
 data_stream:
-  name: threatfox
+  name: sslblacklist
   vars:
-    url: "http://svc-abusech:8080/api/v1/"
+    url: "http://svc-abusech:8080/blacklist/sslblacklist.csv"
     preserve_original_event: true
-    ioc_expiration_duration: 5d
 warmup_time_period: 2s
 corpora:
   input_service:
@@ -17,9 +16,9 @@ corpora:
   generator:
     total_events: 100000
     template:
-      path: ./threatfox-benchmark/template.ndjson
+      path: ./sslblacklist-benchmark/template.ndjson
       type: gotext
     config:
-      path: ./threatfox-benchmark/config.yml
+      path: ./sslblacklist-benchmark/config.yml
     fields:
-      path: ./threatfox-benchmark/fields.yml
+      path: ./sslblacklist-benchmark/fields.yml
