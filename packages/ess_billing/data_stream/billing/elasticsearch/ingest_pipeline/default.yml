@@ -64,6 +64,10 @@ processors:
       copy_from: ess.billing.deployment_name
       ignore_empty_value: true
       tag: cloud_instance_name
+  # =====GROK SECTION=====
+  # Retrieving billed cloud service details like flavors and regions
+  #
+  # These 2 processors are specific to ECH sku's
   - grok:
       field: "ess.billing.sku"
       patterns:
@@ -79,6 +83,8 @@ processors:
       if: "ctx.ess.billing.type != 'capacity' && ctx.ess.billing.deployment_type == 'deployment'"
       ignore_failure: true
       tag: dissect_sku
+      
+   # These 2 processors are specific to serverless sku's
   - grok:
       field: "ess.billing.sku"
       patterns:
@@ -90,6 +96,7 @@ processors:
       field: "cloud.provider"
       if: "ctx.ess.billing.deployment_type != 'deployment'"
       value: "serverless"
+  # =====GROK SECTION END=====
   - convert:
       field: ess.billing.ram_per_zone
       type: "integer"
