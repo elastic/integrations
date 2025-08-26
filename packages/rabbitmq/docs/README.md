@@ -50,52 +50,96 @@ An example event for `connection` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:16:10.138Z",
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "event": {
-        "dataset": "rabbitmq.connection",
-        "duration": 374411,
-        "module": "rabbitmq"
-    },
-    "metricset": {
-        "name": "connection",
-        "period": 10000
-    },
-    "rabbitmq": {
-        "connection": {
-            "channel_max": 65535,
-            "channels": 2,
-            "client_provided": {
-                "name": "Connection1"
-            },
-            "frame_max": 131072,
-            "host": "::1",
-            "name": "[::1]:31153 -> [::1]:5672",
-            "octet_count": {
-                "received": 5834,
-                "sent": 5834
-            },
-            "packet_count": {
-                "pending": 0,
-                "received": 442,
-                "sent": 422
-            },
-            "peer": {
-                "host": "::1",
-                "port": 31153
-            },
-            "port": 5672,
-            "state": "running",
-            "type": "network"
-        },
-        "vhost": "/"
-    },
-    "service": {
-        "address": "localhost:15672",
-        "type": "rabbitmq"
+  "@timestamp": "2025-08-26T18:09:07.931Z",
+  "agent": {
+    "ephemeral_id": "09ad22ab-b4f6-49fe-8ee0-2c19f96230d9",
+    "id": "ee7703ca-8eaf-4de7-b78f-4dc497599136",
+    "name": "elastic-agent-86958",
+    "type": "metricbeat",
+    "version": "8.19.0"
+  },
+  "data_stream": {
+    "dataset": "rabbitmq.connection",
+    "namespace": "22631",
+    "type": "metrics"
+  },
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "elastic_agent": {
+    "id": "ee7703ca-8eaf-4de7-b78f-4dc497599136",
+    "snapshot": true,
+    "version": "8.19.0"
+  },
+  "event": {
+    "agent_id_status": "verified",
+    "dataset": "rabbitmq.connection",
+    "duration": 33026646,
+    "ingested": "2025-08-26T18:09:10Z",
+    "module": "rabbitmq"
+  },
+  "host": {
+    "architecture": "aarch64",
+    "containerized": false,
+    "hostname": "elastic-agent-86958",
+    "ip": [
+      "172.18.0.4",
+      "172.19.0.2"
+    ],
+    "mac": [
+      "02-42-AC-12-00-04",
+      "02-42-AC-13-00-02"
+    ],
+    "name": "elastic-agent-86958",
+    "os": {
+      "family": "",
+      "kernel": "6.8.0-50-generic",
+      "name": "Wolfi",
+      "platform": "wolfi",
+      "type": "linux",
+      "version": "20230201"
     }
+  },
+  "metricset": {
+    "name": "connection",
+    "period": 10000
+  },
+  "rabbitmq": {
+    "connection": {
+      "channel_max": 2047,
+      "channels": 1,
+      "frame_max": 131072,
+      "host": "::1",
+      "name": "[::1]:48014 -> [::1]:5672",
+      "octet_count": {
+        "received": 1096,
+        "sent": 610
+      },
+      "packet_count": {
+        "pending": 0,
+        "received": 17,
+        "sent": 5
+      },
+      "peer": {
+        "host": "::1",
+        "port": 48014
+      },
+      "port": 5672,
+      "state": "running",
+      "type": "network"
+    },
+    "node": {
+      "name": "rabbit@30ce181d6f8c"
+    },
+    "vhost": "/"
+  },
+  "service": {
+    "address": "http://svc-rabbitmq:15672",
+    "type": "rabbitmq"
+  },
+  "user": {
+    "name": "guest"
+  }
 }
 ```
 
@@ -152,36 +196,77 @@ An example event for `exchange` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:04:20.944Z",
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "event": {
-        "dataset": "rabbitmq.exchange",
-        "duration": 4078507,
-        "module": "rabbitmq"
-    },
-    "metricset": {
-        "name": "exchange",
-        "period": 10000
-    },
-    "rabbitmq": {
-        "exchange": {
-            "arguments": {},
-            "auto_delete": false,
-            "durable": true,
-            "internal": false,
-            "name": ""
-        },
-        "vhost": "/"
-    },
-    "service": {
-        "address": "localhost:15672",
-        "type": "rabbitmq"
-    },
-    "user": {
-        "name": "rmq-internal"
+  "@timestamp": "2025-08-26T18:10:58.049Z",
+  "agent": {
+    "ephemeral_id": "b08e8909-719d-4db5-ba5f-bd1e6c86a791",
+    "id": "9771e1e3-16b7-4c46-9b28-534ec0e73eb8",
+    "name": "elastic-agent-77686",
+    "type": "metricbeat",
+    "version": "8.19.0"
+  },
+  "data_stream": {
+    "dataset": "rabbitmq.exchange",
+    "namespace": "70493",
+    "type": "metrics"
+  },
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "elastic_agent": {
+    "id": "9771e1e3-16b7-4c46-9b28-534ec0e73eb8",
+    "snapshot": true,
+    "version": "8.19.0"
+  },
+  "event": {
+    "agent_id_status": "verified",
+    "dataset": "rabbitmq.exchange",
+    "duration": 51754708,
+    "ingested": "2025-08-26T18:11:01Z",
+    "module": "rabbitmq"
+  },
+  "host": {
+    "architecture": "aarch64",
+    "containerized": false,
+    "hostname": "elastic-agent-77686",
+    "ip": [
+      "172.18.0.4",
+      "172.19.0.2"
+    ],
+    "mac": [
+      "02-42-AC-12-00-04",
+      "02-42-AC-13-00-02"
+    ],
+    "name": "elastic-agent-77686",
+    "os": {
+      "family": "",
+      "kernel": "6.8.0-50-generic",
+      "name": "Wolfi",
+      "platform": "wolfi",
+      "type": "linux",
+      "version": "20230201"
     }
+  },
+  "metricset": {
+    "name": "exchange",
+    "period": 10000
+  },
+  "rabbitmq": {
+    "exchange": {
+      "auto_delete": false,
+      "durable": true,
+      "internal": false,
+      "name": "amq.direct",
+      "type": "direct"
+    },
+    "vhost": "/"
+  },
+  "service": {
+    "address": "http://svc-rabbitmq:15672",
+    "type": "rabbitmq"
+  },
+  "user": {
+    "name": "rmq-internal"
+  }
 }
 ```
 
@@ -237,135 +322,172 @@ An example event for `node` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:04:20.944Z",
-    "event": {
-        "dataset": "rabbitmq.node",
-        "duration": 115000,
-        "module": "rabbitmq"
-    },
-    "rabbitmq": {
-        "node": {
-            "disk": {
-                "free": {
-                    "bytes": 485213712384,
-                    "limit": {
-                        "bytes": 50000000
-                    }
-                }
-            },
-            "fd": {
-                "total": 1048576,
-                "used": 54
-            },
-            "gc": {
-                "num": {
-                    "count": 5724
-                },
-                "reclaimed": {
-                    "bytes": 294021640
-                }
-            },
-            "io": {
-                "file_handle": {
-                    "open_attempt": {
-                        "avg": {
-                            "ms": 0
-                        },
-                        "count": 10
-                    }
-                },
-                "read": {
-                    "avg": {
-                        "ms": 0
-                    },
-                    "bytes": 1,
-                    "count": 1
-                },
-                "reopen": {
-                    "count": 1
-                },
-                "seek": {
-                    "avg": {
-                        "ms": 0
-                    },
-                    "count": 0
-                },
-                "sync": {
-                    "avg": {
-                        "ms": 0
-                    },
-                    "count": 0
-                },
-                "write": {
-                    "avg": {
-                        "ms": 0
-                    },
-                    "bytes": 0,
-                    "count": 0
-                }
-            },
-            "mem": {
-                "limit": {
-                    "bytes": 13340778496
-                },
-                "used": {
-                    "bytes": 71448312
-                }
-            },
-            "mnesia": {
-                "disk": {
-                    "tx": {
-                        "count": 0
-                    }
-                },
-                "ram": {
-                    "tx": {
-                        "count": 43
-                    }
-                }
-            },
-            "msg": {
-                "store_read": {
-                    "count": 0
-                },
-                "store_write": {
-                    "count": 0
-                }
-            },
-            "name": "rabbit@my-rabbit",
-            "proc": {
-                "total": 1048576,
-                "used": 234
-            },
-            "processors": 12,
-            "queue": {
-                "index": {
-                    "journal_write": {
-                        "count": 0
-                    },
-                    "read": {
-                        "count": 0
-                    },
-                    "write": {
-                        "count": 0
-                    }
-                }
-            },
-            "run": {
-                "queue": 0
-            },
-            "socket": {
-                "total": 943626,
-                "used": 0
-            },
-            "type": "disc",
-            "uptime": 155275
-        }
-    },
-    "service": {
-        "address": "localhost:15672",
-        "type": "rabbitmq"
+  "@timestamp": "2025-08-26T18:12:57.452Z",
+  "agent": {
+    "ephemeral_id": "46a61744-d3d2-422d-95a9-73933bb8f12f",
+    "id": "4a9c0c10-0aa9-436a-b9b8-6d3514ad9641",
+    "name": "elastic-agent-11360",
+    "type": "metricbeat",
+    "version": "8.19.0"
+  },
+  "data_stream": {
+    "dataset": "rabbitmq.node",
+    "namespace": "52382",
+    "type": "metrics"
+  },
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "elastic_agent": {
+    "id": "4a9c0c10-0aa9-436a-b9b8-6d3514ad9641",
+    "snapshot": true,
+    "version": "8.19.0"
+  },
+  "event": {
+    "agent_id_status": "verified",
+    "dataset": "rabbitmq.node",
+    "duration": 33323315,
+    "ingested": "2025-08-26T18:13:00Z",
+    "module": "rabbitmq"
+  },
+  "host": {
+    "architecture": "aarch64",
+    "containerized": false,
+    "hostname": "elastic-agent-11360",
+    "ip": [
+      "172.18.0.4",
+      "172.19.0.2"
+    ],
+    "mac": [
+      "02-42-AC-12-00-04",
+      "02-42-AC-13-00-02"
+    ],
+    "name": "elastic-agent-11360",
+    "os": {
+      "family": "",
+      "kernel": "6.8.0-50-generic",
+      "name": "Wolfi",
+      "platform": "wolfi",
+      "type": "linux",
+      "version": "20230201"
     }
+  },
+  "metricset": {
+    "name": "node",
+    "period": 10000
+  },
+  "rabbitmq": {
+    "node": {
+      "disk": {
+        "free": {
+          "bytes": 93638361088,
+          "limit": {
+            "bytes": 50000000
+          }
+        }
+      },
+      "fd": {
+        "total": 1048576,
+        "used": 39
+      },
+      "gc": {
+        "num": {
+          "count": 4940
+        },
+        "reclaimed": {
+          "bytes": 309189656
+        }
+      },
+      "io": {
+        "read": {
+          "avg": {
+            "ms": 0
+          },
+          "bytes": 0,
+          "count": 0
+        },
+        "reopen": {
+          "count": 0
+        },
+        "seek": {
+          "avg": {
+            "ms": 0
+          },
+          "count": 0
+        },
+        "sync": {
+          "avg": {
+            "ms": 0
+          },
+          "count": 0
+        },
+        "write": {
+          "avg": {
+            "ms": 0
+          },
+          "bytes": 0,
+          "count": 0
+        }
+      },
+      "mem": {
+        "limit": {
+          "bytes": 10038944563
+        },
+        "used": {
+          "bytes": 114167808
+        }
+      },
+      "mnesia": {
+        "disk": {
+          "tx": {
+            "count": 0
+          }
+        },
+        "ram": {
+          "tx": {
+            "count": 0
+          }
+        }
+      },
+      "msg": {
+        "store_read": {
+          "count": 0
+        },
+        "store_write": {
+          "count": 0
+        }
+      },
+      "name": "rabbit@a87cd3ee0de5",
+      "proc": {
+        "total": 1048576,
+        "used": 425
+      },
+      "processors": 2,
+      "queue": {
+        "index": {
+          "read": {
+            "count": 0
+          },
+          "write": {
+            "count": 0
+          }
+        }
+      },
+      "run": {
+        "queue": 1
+      },
+      "socket": {
+        "total": 0,
+        "used": 0
+      },
+      "type": "disc",
+      "uptime": 16604
+    }
+  },
+  "service": {
+    "address": "http://svc-rabbitmq:15672",
+    "type": "rabbitmq"
+  }
 }
 ```
 
@@ -442,68 +564,109 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T10:15:10.955Z",
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "event": {
-        "dataset": "rabbitmq.queue",
-        "duration": 5860529,
-        "module": "rabbitmq"
-    },
-    "metricset": {
-        "name": "queue",
-        "period": 10000
-    },
-    "rabbitmq": {
-        "queue": {
-            "arguments": {},
-            "auto_delete": false,
-            "consumers": {
-                "count": 0,
-                "utilisation": {}
-            },
-            "disk": {
-                "reads": {},
-                "writes": {}
-            },
-            "durable": true,
-            "exclusive": false,
-            "memory": {
-                "bytes": 14000
-            },
-            "messages": {
-                "persistent": {
-                    "count": 0
-                },
-                "ready": {
-                    "count": 0,
-                    "details": {
-                        "rate": 0
-                    }
-                },
-                "total": {
-                    "count": 0,
-                    "details": {
-                        "rate": 0
-                    }
-                },
-                "unacknowledged": {
-                    "count": 0,
-                    "details": {
-                        "rate": 0
-                    }
-                }
-            },
-            "name": "NameofQueue1",
-            "state": "running"
-        },
-        "vhost": "/"
-    },
-    "service": {
-        "address": "localhost:15672",
-        "type": "rabbitmq"
+  "@timestamp": "2025-08-26T18:14:49.823Z",
+  "agent": {
+    "ephemeral_id": "d0178958-586b-45be-94b5-ca8ca6deb52e",
+    "id": "ac6fe429-8182-4af1-ba7a-d67efbba9d64",
+    "name": "elastic-agent-17784",
+    "type": "metricbeat",
+    "version": "8.19.0"
+  },
+  "data_stream": {
+    "dataset": "rabbitmq.queue",
+    "namespace": "34902",
+    "type": "metrics"
+  },
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "elastic_agent": {
+    "id": "ac6fe429-8182-4af1-ba7a-d67efbba9d64",
+    "snapshot": true,
+    "version": "8.19.0"
+  },
+  "event": {
+    "agent_id_status": "verified",
+    "dataset": "rabbitmq.queue",
+    "duration": 48359382,
+    "ingested": "2025-08-26T18:14:52Z",
+    "module": "rabbitmq"
+  },
+  "host": {
+    "architecture": "aarch64",
+    "containerized": false,
+    "hostname": "elastic-agent-17784",
+    "ip": [
+      "172.18.0.4",
+      "172.19.0.2"
+    ],
+    "mac": [
+      "02-42-AC-12-00-04",
+      "02-42-AC-13-00-02"
+    ],
+    "name": "elastic-agent-17784",
+    "os": {
+      "family": "",
+      "kernel": "6.8.0-50-generic",
+      "name": "Wolfi",
+      "platform": "wolfi",
+      "type": "linux",
+      "version": "20230201"
     }
+  },
+  "metricset": {
+    "name": "queue",
+    "period": 10000
+  },
+  "rabbitmq": {
+    "node": {
+      "name": "rabbit@d3c2a8612fdf"
+    },
+    "queue": {
+      "auto_delete": false,
+      "consumers": {
+        "count": 0,
+        "utilisation": {
+          "pct": 0
+        }
+      },
+      "durable": true,
+      "exclusive": false,
+      "memory": {
+        "bytes": 68392
+      },
+      "messages": {
+        "persistent": {
+          "count": 0
+        },
+        "ready": {
+          "count": 16,
+          "details": {
+            "rate": 1
+          }
+        },
+        "total": {
+          "count": 16,
+          "details": {
+            "rate": 1
+          }
+        },
+        "unacknowledged": {
+          "count": 0,
+          "details": {
+            "rate": 0
+          }
+        }
+      },
+      "name": "test-queue",
+      "state": "running"
+    },
+    "vhost": "/"
+  },
+  "service": {
+    "address": "http://svc-rabbitmq:15672",
+    "type": "rabbitmq"
+  }
 }
 ```
 
