@@ -12,7 +12,7 @@ require (
 	github.com/elastic/package-registry v1.31.1
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	golang.org/x/mod v0.27.0
 	golang.org/x/tools v0.36.0
 	gopkg.in/yaml.v3 v3.0.1
