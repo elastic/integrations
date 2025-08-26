@@ -1,7 +1,7 @@
 # PostreSQL OpenTelemetry Assets
 
 The PostreSQL OpenTelemetry integration allows you to monitor [PostgreSQL](https://www.postgresql.org/) servers and to collect key metrics to track database health and performance. PostgresSQL gathers and aggregates these metrics internally using its built-in statistics collector, which exposes the data through predefined views. For example:
-- `pg_stat_database` view provides one row per database containsing aggregate statistics such as the number of transactions committed and rolled back, tuples read and written, block read/write counts, deadlocks, and time spent in I/O operations. 
+- `pg_stat_database` view provides one row per database containing aggregate statistics such as the number of transactions committed and rolled back, tuples read and written, block read/write counts, deadlocks, and time spent in I/O operations. 
 - `pg_stat_statements` provides one row per normalized SQL statement executed on the server. Each row includes metrics such as the number of times the query has been run, total execution time, number of rows returned/affected, shared/local block hits, and I/O statistics. This view is invaluable for identifying slow or expensive queries and understanding workload patterns.
 
 The OpenTelemetry ([PostgreSQL Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver)) queries these views under the hood to extract metrics and events, making them available in a structured form for analysis. The PostgreSQL OpenTelemetry assets then provide a visual representation of these collected metrics in Kibana, helping you monitor and explore database activity and performance.
