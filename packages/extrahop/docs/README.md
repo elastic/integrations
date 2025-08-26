@@ -359,3 +359,9 @@ An example event for `detection` looks as following:
 These inputs can be used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+### API usage
+
+This integration datasets use the following APIs:
+
+- `Detections`: [RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/#detections).
