@@ -1,0 +1,45 @@
+rules:
+  # malware data stream
+  - path: /v1/payloads/recent/
+    methods: ["GET"]
+    request_headers:
+      Content-Type: "application/json"
+      Auth-Key: "test_auth_key"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "query_status": "ok",
+            "payloads": [
+              {{- $g := glob "/var/log/corpus-*" -}}
+              {{- range $g -}}
+                {{- file . -}}
+              {{- end -}}
+              {"file_size":"68351956","file_type":"unknown","firstseen":"2025-08-25 00:00:00","imphash":"agatedagger","magika":"unknown","md5_hash":"daffodilcurtain","sha256_hash":"9f41ec69f076357ea6fa4f3de644b97b0a17cc165de4abb1394052304d426cdb","signature":"cyancoyote","ssdeep":"azurewasp","tlsh":"brindlebunny","urlhaus_download":"https://urlhaus-api.abuse.ch/v1/download/9f41ec69f076357ea6fa4f3de644b97b0a17cc165de4abb1394052304d426cdb/","virustotal":{"link":"https://www.virustotal.com/gui/file/9f41ec69f076357ea6fa4f3de644b97b0a17cc165de4abb1394052304d426cdb/detection/petalsword","percent":"92.50459264394924","result":"29 / 71"}}
+            ]
+          }
+  # threatfox data stream
+  - path: /api/v1/
+    methods: ["POST"]
+    request_headers:
+      Content-Type: "application/json"
+      Auth-Key: "test_auth_key"
+    body:
+      query: "get_iocs"
+      days: /[1-7]+/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "query_status": "ok",
+            "data": [
+              {{- $g := glob "/var/log/corpus-*" -}}
+              {{- range $g -}}
+                {{- file . -}}
+              {{- end -}}
+              {"id":"1","ioc":"949f512497334f4276ae9829a29deafd005529ab23bc921750d5968f898ebc8b","threat_type":"botnet_cc","threat_type_desc":"Indicator that identifies a botnet command&control server (C&C)","ioc_type":"sha256_hash","ioc_type_desc":"ip:port combination that delivery a malware payload","malware":"quiverreaper","malware_printable":"PyUzQbDc PyUzQbDc","malware_alias":"PyUzQbDc PyUzQbDc,PYUZQBDC,pyuzqbdc","malware_malpedia":"https://malpedia.caad.fkie.fraunhofer.de/details/quiverreaper","confidence_level":90,"first_seen":"2025-08-25 00:00:00","last_seen":"2025-08-25 01:00:00","reference":"https://intelinsights.substack.com/p/dourmask","reporter":"valleywing","tags":["PyUzQbDc","valleywing","quiverreaper"]}
+            ]
+          }
