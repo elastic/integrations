@@ -1,0 +1,202 @@
+---
+description: Pipeline for processing Alert logs.
+processors:
+  - drop:
+      description: Ignore retry placeholder document.
+      if: ctx.retry == true
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: splunk.search
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: splunk.search._time
+      tag: date_raw_timestamp
+      target_field: splunk.search._time
+      formats:
+        - ISO8601
+        - epoch_second
+        - MM/dd/yy HH:mm:ss
+        - HH:mm:ss
+      if: ctx.splunk?.search?._time instanceof String && ctx.splunk.search._time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: splunk.search._time
+  - set:
+      field: '@timestamp'
+      copy_from: splunk.search.result._time
+      ignore_empty_value: true
+  - dissect:
+      field: splunk.search.result._raw
+      pattern: "%{}, %{message}"
+      ignore_failure: true
+  - kv:
+      field: message
+      target_field: splunk.search.fields
+      field_split: ', '
+      value_split: '='
+      trim_value: '\\\"'
+      if: ctx.message != null
+      ignore_failure: true
+  - set:
+      field: message
+      copy_from: splunk.search.result._raw
+      ignore_empty_value: true
+      if: ctx.message == null
+
+  # Marked as required in the issue, but not present.
+  - set:
+      field: event.kind
+      copy_from: splunk.search.result.event_kind
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      copy_from: splunk.search.result.event_action
+      ignore_empty_value: true
+  - set:
+      field: event.severity
+      copy_from: splunk.search.result.event_severity
+      ignore_empty_value: true
+
+  # Marked as recommended in the issue, but not always(?) present.
+  - set:
+      field: host.name
+      copy_from: splunk.search.result.host
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      copy_from: splunk.search.result.source_ip
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      copy_from: splunk.search.result.destination_ip
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: splunk.search.result.user
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      copy_from: splunk.search.result.host
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      copy_from: splunk.search.result.rule_name
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      copy_from: splunk.search.result.signature
+      ignore_empty_value: true
+
+  - append:
+      field: related.user
+      value: '{{{splunk.search.author}}}'
+      if: ctx.splunk?.search?.author != null && ctx.splunk.search.author != ''
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null && ctx.host.name != ''
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{splunk.search.result.splunk_server}}}'
+      if: ctx.splunk?.search?.result?.splunk_server != null && ctx.splunk.search.result.splunk_server != ''
+      allow_duplicates: false
+  - remove:
+      field:
+        - splunk.alert
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: tmp
+      tag: remove_temp
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
