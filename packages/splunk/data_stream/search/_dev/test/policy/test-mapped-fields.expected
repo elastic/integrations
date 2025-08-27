@@ -95,8 +95,21 @@ inputs:
                       )
                     )
                 ).as(search_state,
-                  has(search_state.?events.error) ?
+                  (has(search_state.events) && type(search_state.events) == map && has(search_state.events.error)) ?
                     search_state
+                  : (search_state.?cursor.dispatchState == optional.of("FAILED")) ?
+                    {
+                      "events": {
+                        "error": {
+                          "message": "search failed: see previous logging for details",
+                        },
+                      },
+                      "want_more": false,
+                      "offset": 0,
+                      "cursor": {
+                        ?"last_timestamp": state.?cursor.last_timestamp,
+                      },
+                    }
                   : (search_state.?cursor.dispatchState == optional.of("DONE") || !has(search_state.?cursor.sid)) ? // If more pages are still needs to be fetched.
                     state.with(
                       {
@@ -121,6 +134,7 @@ inputs:
                             ?"time_range": search_state.?cursor.time_range,
                             ?"last_timestamp": search_state.?cursor.last_timestamp,
                           },
+                          "body": body,
                         }
                       )
                     :
@@ -145,8 +159,36 @@ inputs:
                       }
                     )
                 ).as(status_state,
-                  has(status_state.?events.error) ?
+                  (has(status_state.events) && type(status_state.events) == map && has(status_state.events.error)) ?
                     status_state
+                  : (status_state.?cursor.dispatchState == optional.of("FAILED")) ?
+                    {
+                      "events": {
+                        "error": {
+                          "message": sprintf(
+                            "search failed: %q%s",
+                            (
+                              status_state.body.entry[?0].optMap(e,
+                                e.content.as(c,
+                                  [
+                                    c.search,
+                                    [
+                                      ?c.messages.filter(m, m.type == "FATAL")[?0],
+                                      ?c.messages[?0],
+                                    ][?0].optMap(m, ": " + m.text).orValue(""),
+                                  ]
+                                )
+                              )
+                            ).orValue([status_state.body.encode_json(), ""])
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                      "offset": 0,
+                      "cursor": {
+                        ?"last_timestamp": state.?cursor.last_timestamp,
+                      },
+                    }
                   : (status_state.?cursor.dispatchState == optional.of("DONE")) ? // To fetch the events from the respective search id.
                     get(
                       state.url.trim_right("/") + "/services/search/v2/jobs/" + string(status_state.cursor.sid) + "/events?" + {
@@ -162,7 +204,7 @@ inputs:
                               "message": {
                                 ?"author": status_state.?cursor.author,
                                 "query": state.query,
-                                ?"mapping": state.?field_mapping.optMap(m, m.drop(["_time","-"])),
+                                ?"mapping": state.?field_mapping.optMap(m, m.drop(["_time", "-"])),
                                 "result": e.transformMapEntry(k, v,
                                   {
                                     ?k: k.has_prefix("@ecs.") ?
