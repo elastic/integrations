@@ -3056,6 +3056,14 @@ processors:
       if: ctx.device?.id == null
 
   ## Crowdstrike fields.
+  - json:
+      field: crowdstrike.ResourceAttributes
+      tag: json_crowdstrike_ResourceAttributes
+      if: ctx.crowdstrike?.ResourceAttributes instanceof String
+      on_failure:
+        - remove:
+            field: crowdstrike.ResourceAttributes
+            ignore_missing: true
   - split:
       field: crowdstrike.FalconGroupingTags
       separator: ",\\s?"
