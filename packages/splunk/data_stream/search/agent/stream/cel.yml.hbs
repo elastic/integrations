@@ -113,8 +113,21 @@ program: |-
             )
           )
       ).as(search_state,
-        has(search_state.?events.error) ?
+        (has(search_state.events) && type(search_state.events) == map && has(search_state.events.error)) ?
           search_state
+        : (search_state.?cursor.dispatchState == optional.of("FAILED")) ?
+          {
+            "events": {
+              "error": {
+                "message": "search failed: see previous logging for details",
+              },
+            },
+            "want_more": false,
+            "offset": 0,
+            "cursor": {
+              ?"last_timestamp": state.?cursor.last_timestamp,
+            },
+          }
         : (search_state.?cursor.dispatchState == optional.of("DONE") || !has(search_state.?cursor.sid)) ? // If more pages are still needs to be fetched.
           state.with(
             {
@@ -139,6 +152,7 @@ program: |-
                   ?"time_range": search_state.?cursor.time_range,
                   ?"last_timestamp": search_state.?cursor.last_timestamp,
                 },
+                "body": resp.Body,
               }
             )
           :
@@ -163,8 +177,21 @@ program: |-
             }
           )
       ).as(status_state,
-        has(status_state.?events.error) ?
+        (has(status_state.events) && type(status_state.events) == map && has(status_state.events.error)) ?
           status_state
+        : (status_state.?cursor.dispatchState == optional.of("FAILED")) ?
+          {
+            "events": {
+              "error": {
+                "message": "search failed: " + string(status_state.body),
+              },
+            },
+            "want_more": false,
+            "offset": 0,
+            "cursor": {
+              ?"last_timestamp": state.?cursor.last_timestamp,
+            },
+          }
         : (status_state.?cursor.dispatchState == optional.of("DONE")) ? // To fetch the events from the respective search id.
           get(
             state.url.trim_right("/") + "/services/search/v2/jobs/" + string(status_state.cursor.sid) + "/events?" + {
