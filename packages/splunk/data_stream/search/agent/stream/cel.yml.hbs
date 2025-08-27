@@ -152,7 +152,7 @@ program: |-
                   ?"time_range": search_state.?cursor.time_range,
                   ?"last_timestamp": search_state.?cursor.last_timestamp,
                 },
-                "body": resp.Body,
+                "body": body,
               }
             )
           :
@@ -183,7 +183,22 @@ program: |-
           {
             "events": {
               "error": {
-                "message": "search failed: " + string(status_state.body),
+                "message": sprintf(
+                  "search failed: %q%s",
+                  (
+                    status_state.body.entry[?0].optMap(e,
+                      e.content.as(c,
+                        [
+                          c.search,
+                          [
+                            ?c.messages.filter(m, m.type == "FATAL")[?0],
+                            ?c.messages[?0],
+                          ][?0].optMap(m, ": " + m.text).orValue(""),
+                        ]
+                      )
+                    )
+                  ).orValue([status_state.body.encode_json(), ""])
+                ),
               },
             },
             "want_more": false,
