@@ -23,6 +23,12 @@ state:
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
   max_executions: 1000
+{{#if field_mapping}}
+  field_mapping: {{field_mapping}}
+{{/if}}
+{{#if default_fields}}
+  defaults: {{default_fields}}
+{{/if}}
 redact:
   fields: ~
 program: |-
@@ -49,7 +55,28 @@ program: |-
               "application/x-www-form-urlencoded",
               {
                 "output_mode": ["json"],
-                "search": [state.query],
+                "search": [
+                  state.query + (
+                    (state.?field_mapping.optMap(m, size(m) != 0)).orValue(false) ?
+                      (
+                        // Copy fields to new names and delete originals.
+                        // Dynamic query construction issues obviously exist;
+                        // fields cannot contain "=" or ",". There may be
+                        // other constraints.
+                        // We do not include "-" which is invalid or "_time"
+                        // which we need.
+                        sprintf(
+                          "|eval %s|fields - %s",
+                          [
+                            state.field_mapping.map(f, f != "_time" && f != "-", "@ecs." + state.field_mapping[f] + "=" + f).join(","),
+                            state.field_mapping.map(f, f != "_time" && f != "-", f).join(","),
+                          ]
+                        )
+                      )
+                    :
+                      ""
+                  ),
+                ],
                 "earliest_time": [time_range.start_time],
                 "latest_time": [time_range.end_time],
               }.format_query()
@@ -153,7 +180,25 @@ program: |-
                     "message": {
                       ?"author": status_state.?cursor.author,
                       "query": state.query,
-                      "result": e,
+                      ?"mapping": state.?field_mapping.optMap(m, m.drop(["_time", "-"])),
+                      "result": e.transformMapEntry(k, v,
+                        {
+                          ?k: k.has_prefix("@ecs.") ?
+                            optional.none()
+                          :
+                            optional.of(v),
+                        }
+                      ),
+                      "ecs_result": state.?defaults.orValue({}).with(
+                        e.transformMapEntry(k, v,
+                          {
+                            ?k.trim_prefix("@ecs."): k.has_prefix("@ecs.") ?
+                              optional.of(v)
+                            :
+                              optional.none(),
+                          }
+                        )
+                      ),
                     }.encode_json(),
                   }
                 ),

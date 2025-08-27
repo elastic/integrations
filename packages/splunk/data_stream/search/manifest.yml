@@ -33,6 +33,31 @@ streams:
         description: Splunk Search Query
         required: true
         show_user: true
+      - name: field_mapping
+        type: yaml
+        title: Field mappings
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Field mappings is a YAML map for CIM field names to ECS field names for the query.
+          Splunk field names may appear only once and ECS fields should not appear more than
+          once. Field names may not include "=" or ",". The Splunk `_time` field is always
+          used to set `@timestamp` and remapping this field is ignored by the integration.
+        default: |
+          #splunk_field1: ecs_field1
+          #splunk_field2: ecs_field2
+      - name: default_fields
+        type: yaml
+        title: Default field values
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Default values for ECS fields. Field values will be set if not otherwise found in
+          the search results after applying field mappings.
+        default: |
+          #"event.module": splunk
       - name: initial_interval
         type: text
         title: Initial Interval

@@ -50,6 +50,38 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dot_expander:
+      field: "*"
+      path: splunk.search.ecs_result
+      if: ctx.splunk?.search?.ecs_result instanceof Map && ctx.splunk.search.ecs_result.size() != 0
+      ignore_failure: true
+  - script:
+      tag: distribute_expanded_fields
+      if: ctx.splunk?.search?.ecs_result instanceof Map && ctx.splunk.search.ecs_result.size() != 0
+      source: |-
+        def merge(Map dst, Map src) {
+          for (def k: src.keySet()) {
+            if (src.get(k) instanceof Map && dst.get(k) instanceof Map) {
+              dst.put(k, merge(dst.get(k), src.get(k)));
+            } else if (src.get(k) instanceof List && dst.get(k) instanceof List) {
+              def c = dst.get(k);
+              for (def e: src.get(k)) {
+                if (!c.contains(e)) {
+                  c.add(e);
+                }
+              }
+            } else {
+                dst.put(k, src.get(k));
+            }
+          }
+          return dst;
+        }
+        merge(ctx, ctx.splunk.search.ecs_result);
+        ctx.splunk.search.remove("ecs_result");
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: splunk.search._time
       tag: date_raw_timestamp
@@ -74,63 +106,11 @@ processors:
       field: splunk.search.result._raw
       pattern: "%{}, %{message}"
       ignore_failure: true
-  - kv:
-      field: message
-      target_field: splunk.search.fields
-      field_split: ', '
-      value_split: '='
-      trim_value: '\\\"'
-      if: ctx.message != null
-      ignore_failure: true
   - set:
       field: message
       copy_from: splunk.search.result._raw
       ignore_empty_value: true
       if: ctx.message == null
-
-  # Marked as required in the issue, but not present.
-  - set:
-      field: event.kind
-      copy_from: splunk.search.result.event_kind
-      ignore_empty_value: true
-  - set:
-      field: event.action
-      copy_from: splunk.search.result.event_action
-      ignore_empty_value: true
-  - set:
-      field: event.severity
-      copy_from: splunk.search.result.event_severity
-      ignore_empty_value: true
-
-  # Marked as recommended in the issue, but not always(?) present.
-  - set:
-      field: host.name
-      copy_from: splunk.search.result.host
-      ignore_empty_value: true
-  - set:
-      field: source.ip
-      copy_from: splunk.search.result.source_ip
-      ignore_empty_value: true
-  - set:
-      field: destination.ip
-      copy_from: splunk.search.result.destination_ip
-      ignore_empty_value: true
-  - set:
-      field: user.name
-      copy_from: splunk.search.result.user
-      ignore_empty_value: true
-  - set:
-      field: host.name
-      copy_from: splunk.search.result.host
-      ignore_empty_value: true
-  - set:
-      field: rule.name
-      copy_from: splunk.search.result.rule_name
-      ignore_empty_value: true
-  - set:
-      field: event.reason
-      copy_from: splunk.search.result.signature
-      ignore_empty_value: true
 
   - append:
       field: related.user

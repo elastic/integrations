@@ -1,0 +1,282 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: splunk
+      name: test-mapped-fields-splunk
+      streams:
+        - auth.basic:
+            password: ${SECRET_0}
+            user: search_user
+          config_version: 2
+          data_stream:
+            dataset: splunk.search
+          interval: 5m
+          program: |-
+            (int(state.?count.orValue(0)) >= int(state.max_executions)) ?
+              dyn(state.with({"events": [], "want_more": false}))
+            :
+              state.with(
+                (
+                  has(state.?cursor.sid) ?
+                    state
+                  :
+                    (
+                      state.?want_more.orValue(false) ?
+                        state.cursor.time_range
+                      :
+                        {
+                          "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                          "end_time": now.format(time_layout.RFC3339),
+                        }
+                    ).as(time_range,
+                      // To perform search and get search id.
+                      post(
+                        state.url.trim_right("/") + "/services/search/v2/jobs",
+                        "application/x-www-form-urlencoded",
+                        {
+                          "output_mode": ["json"],
+                          "search": [
+                            state.query + (
+                              (state.?field_mapping.optMap(m, size(m) != 0)).orValue(false) ?
+                                (
+                                  // Copy fields to new names and delete originals.
+                                  // Dynamic query construction issues obviously exist;
+                                  // fields cannot contain "=" or ",". There may be
+                                  // other constraints.
+                                  // We do not include "-" which is invalid or "_time"
+                                  // which we need.
+                                  sprintf(
+                                    "|eval %s|fields - %s",
+                                    [
+                                      state.field_mapping.map(f, f != "_time" && f != "-", "@ecs." + state.field_mapping[f] + "=" + f).join(","),
+                                      state.field_mapping.map(f, f != "_time" && f != "-", f).join(","),
+                                    ]
+                                  )
+                                )
+                              :
+                                ""
+                            ),
+                          ],
+                          "earliest_time": [time_range.start_time],
+                          "latest_time": [time_range.end_time],
+                        }.format_query()
+                      ).as(resp, (resp.StatusCode == 201) ?
+                        resp.Body.decode_json().as(body,
+                          {
+                            "cursor": {
+                              "sid": body.sid,
+                              "time_range": time_range,
+                              ?"last_timestamp": state.?cursor.last_timestamp,
+                            },
+                          }
+                        )
+                      :
+                        {
+                          "events": {
+                            "error": {
+                              "code": string(resp.StatusCode),
+                              "id": string(resp.Status),
+                              "message": "POST " + state.url.trim_right("/") + "/services/search/v2/jobs: " + (
+                                (size(resp.Body) != 0) ?
+                                  string(resp.Body)
+                                :
+                                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                              ),
+                            },
+                          },
+                          "want_more": false,
+                          "offset": 0,
+                          "cursor": {
+                            ?"last_timestamp": state.?cursor.last_timestamp,
+                          },
+                        }
+                      )
+                    )
+                ).as(search_state,
+                  has(search_state.?events.error) ?
+                    search_state
+                  : (search_state.?cursor.dispatchState == optional.of("DONE") || !has(search_state.?cursor.sid)) ? // If more pages are still needs to be fetched.
+                    state.with(
+                      {
+                        "cursor": {
+                          ?"author": search_state.?cursor.author,
+                          ?"dispatchState": search_state.?cursor.dispatchState,
+                          ?"sid": search_state.?cursor.sid,
+                          ?"last_timestamp": search_state.?cursor.last_timestamp,
+                        },
+                      }
+                    )
+                  :
+                    get(
+                      state.url.trim_right("/") + "/services/search/v2/jobs/" + string(search_state.cursor.sid) + "?output_mode=json"
+                    ).as(resp, (resp.StatusCode == 200) ?
+                      resp.Body.decode_json().as(body,
+                        {
+                          "cursor": {
+                            ?"sid": search_state.?cursor.sid,
+                            ?"author": body.entry[?0].author,
+                            ?"dispatchState": body.entry[?0].content.dispatchState,
+                            ?"time_range": search_state.?cursor.time_range,
+                            ?"last_timestamp": search_state.?cursor.last_timestamp,
+                          },
+                        }
+                      )
+                    :
+                      {
+                        "events": {
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "id": string(resp.Status),
+                            "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + string(search_state.cursor.sid) + ":" + (
+                              (size(resp.Body) != 0) ?
+                                string(resp.Body)
+                              :
+                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                            ),
+                          },
+                        },
+                        "want_more": false,
+                        "offset": 0,
+                        "cursor": {
+                          ?"last_timestamp": search_state.?cursor.last_timestamp,
+                        },
+                      }
+                    )
+                ).as(status_state,
+                  has(status_state.?events.error) ?
+                    status_state
+                  : (status_state.?cursor.dispatchState == optional.of("DONE")) ? // To fetch the events from the respective search id.
+                    get(
+                      state.url.trim_right("/") + "/services/search/v2/jobs/" + string(status_state.cursor.sid) + "/events?" + {
+                        "output_mode": ["json"],
+                        "count": [string(state.batch_size)],
+                        "offset": [string(state.offset)],
+                      }.format_query()
+                    ).as(resp, (resp.StatusCode == 200) ?
+                      resp.Body.decode_json().as(body,
+                        {
+                          "events": body.results.map(e,
+                            {
+                              "message": {
+                                ?"author": status_state.?cursor.author,
+                                "query": state.query,
+                                ?"mapping": state.?field_mapping.optMap(m, m.drop(["_time","-"])),
+                                "result": e.transformMapEntry(k, v,
+                                  {
+                                    ?k: k.has_prefix("@ecs.") ?
+                                      optional.none()
+                                    :
+                                      optional.of(v),
+                                  }
+                                ),
+                                "ecs_result": state.?defaults.orValue({}).with(
+                                  e.transformMapEntry(k, v,
+                                    {
+                                      ?k.trim_prefix("@ecs."): k.has_prefix("@ecs.") ?
+                                        optional.of(v)
+                                      :
+                                        optional.none(),
+                                    }
+                                  )
+                                ),
+                              }.encode_json(),
+                            }
+                          ),
+                          "cursor": {
+                            ?"sid": (body.results.size() == state.batch_size) ? optional.of(status_state.cursor.sid) : optional.none(),
+                            ?"author": status_state.?cursor.author,
+                            ?"dispatchState": (body.results.size() == state.batch_size) ? optional.of(status_state.cursor.dispatchState) : optional.none(),
+                            ?"time_range": status_state.?cursor.time_range,
+                            ?"last_timestamp": (has(body.results) && body.results.size() > 0) ?
+                              (
+                                (has(status_state.?cursor.last_timestamp) && body.results.map(e, e._time).max() < status_state.cursor.last_timestamp) ?
+                                  optional.of(status_state.cursor.last_timestamp)
+                                :
+                                  optional.of(body.results.map(e, e._time).max())
+                              )
+                            :
+                              status_state.?cursor.last_timestamp,
+                          },
+                          "offset": (body.results.size() == state.batch_size) ? (int(state.offset) + body.results.size()) : 0,
+                          "want_more": body.results.size() == state.batch_size,
+                        }
+                      )
+                    :
+                      {
+                        "events": {
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "id": string(resp.Status),
+                            "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + status_state.cursor.sid + "/events:" + (
+                              (size(resp.Body) != 0) ?
+                                string(resp.Body)
+                              :
+                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                            ),
+                          },
+                        },
+                        "want_more": false,
+                        "offset": 0,
+                        "cursor": {
+                          ?"last_timestamp": state.?cursor.last_timestamp,
+                        },
+                      }
+                    )
+                  :
+                    {
+                      "events": [{"retry": true}],
+                      "want_more": true,
+                      "cursor": status_state.cursor,
+                    }
+                )
+              ).with(
+                {
+                  "count": int(state.?count.orValue(0)) + 1,
+                }
+              )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields: null
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: http://host.tld:9001
+          state:
+            batch_size: 2
+            defaults:
+                event.module: splunk
+            field_mapping:
+                field1: splunk.search.result.important_user_field
+                host: host.name
+            initial_interval: 24h
+            max_executions: 1000
+            offset: 0
+            query: search *
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+            - splunk-search
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-splunk.search-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
