@@ -401,32 +401,34 @@ program: |-
                           ][?0],
                         }
                       ),
-                      "events": list[?0].optMap(l,
-                        request(
-                          "GET",
-                          l.contentUri
-                        ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
-                          dyn(
-                            content_resp.Body.decode_json().map(e,
-                              {
-                                "o365audit": e,
-                                "event": {"original": e.encode_json()},
-                              }
-                            )
-                          ).orValue(dyn([]))
-                        :
-                          {
-                            "error": {
-                              "code": string(content_resp.StatusCode),
-                              "id": string(content_resp.Status),
-                              "message": "GET " + l.contentUri + ": " + (
-                                (size(content_resp.Body) != 0) ?
-                                  string(content_resp.Body)
-                                :
-                                  string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
-                              ),
-                            },
-                          }
+                      "events": (
+                        list[?0].optMap(l,
+                          request(
+                            "GET",
+                            l.contentUri
+                          ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+                            dyn(
+                              content_resp.Body.decode_json().map(e,
+                                {
+                                  "o365audit": e,
+                                  "event": {"original": e.encode_json()},
+                                }
+                              )
+                            ).orValue(dyn([]))
+                          :
+                            {
+                              "error": {
+                                "code": string(content_resp.StatusCode),
+                                "id": string(content_resp.Status),
+                                "message": "GET " + l.contentUri + ": " + (
+                                  (size(content_resp.Body) != 0) ?
+                                    string(content_resp.Body)
+                                  :
+                                    string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                                ),
+                              },
+                            }
+                          )
                         )
                       ).orValue([]),
                     }
@@ -467,7 +469,9 @@ program: |-
   ).as(state,
     state.with(
       {
-        "want_more": state.work.as(w, size(w.todo_type) != 0 || size(w.todo_content) != 0 || w.?next_list.orValue("") != ""),
+        "want_more": state.work.as(w,
+          size(w.todo_type) != 0 || size(w.todo_content) != 0 || w.?next_list.orValue("") != ""
+        ),
       }
     )
   ).as(state,
