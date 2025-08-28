@@ -76,7 +76,7 @@ Note: This configuration defines two pipelines — one for metrics and one for l
 - Metrics are ingested into the metrics-* data view in Elasticsearch.
 - Events (logs) are ingested into the logs-* data view in Elasticsearch.
 
-## ## Data reference
+## Data reference
 
 ### PostgreSQL metrics and events
 
