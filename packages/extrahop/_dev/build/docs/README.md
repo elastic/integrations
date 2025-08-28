@@ -12,16 +12,18 @@ The ExtraHop integration is compatible with `RevealX 360 version 25.2` and `v1` 
 
 ### How it works
 
-This integration periodically queries the ExtraHop RevealX 360 API to retrieve detections.
+This integration periodically queries the ExtraHop RevealX 360 API to retrieve detections and investigation.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
-- `Detection`: Collects detections that have been identified by the ExtraHop system.[Detection API endpoint](https://docs.extrahop.com/current/rx360-rest-api/#detections).
+- `Detection`: Collects detections that have been identified by the ExtraHop system via [Detection API endpoint](https://docs.extrahop.com/current/rx360-rest-api/#detections).
+
+- `Investigation`: Collects investigations from ExtraHop via [Investigation API endpoint](https://docs.extrahop.com/current/rx360-rest-api/#investigations).
 
 ### Supported use cases
-Integrating ExtraHop with Elastic SIEM converts high-fidelity wire-data detections into actionable insights, giving real-time visibility into risks mapped to tactics and techniques. This integration enhances threat hunting, speeds up incident response, and closes network visibility gaps. Kibana dashboards further support analysts with detailed breakdowns by detection type, category, status, resolution, and assignee, enabling efficient triage and streamlined investigations.
+Integrating ExtraHop with Elastic SIEM provides comprehensive visibility by turning high-fidelity wire-data detections into actionable insights while also capturing investigation data for deeper analysis. This integration strengthens threat hunting, accelerates incident response, and closes visibility gaps across the network. Dedicated Kibana dashboards for detections present detailed breakdowns by type, category, status, resolution, and assignee, supporting efficient triage and response. In parallel, investigation dashboards deliver insights into total investigations, time-based trends, top assignees, and distributions by status and assessment, giving analysts clear context to prioritize and manage cases. Together, these capabilities streamline SOC workflows and improve accountability across detection and investigation processes.
 
 ## What do I need to use this integration?
 
@@ -114,11 +116,19 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "detection"}}
 
+#### Investigation
+
+{{fields "investigation"}}
+
 ### Example event
 
 #### Detection
 
 {{event "detection"}}
+
+#### Investigation
+
+{{event "investigation"}}
 
 ### Inputs used
 
@@ -131,3 +141,8 @@ These inputs can be used in this integration:
 This integration datasets use the following APIs:
 
 - `Detections`: [RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/#detections).
+- `Investigation`: [RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/#investigations).
+
+#### ILM Policy
+
+To facilitate investigation data, source data stream-backed indices `.ds-logs-extrahop.investigation-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-extrahop.investigation-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
