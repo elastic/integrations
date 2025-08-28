@@ -105,6 +105,54 @@ processors:
       copy_from: source.ip
       ignore_empty_value: true
 
+  # Orchestrator fields
+  - set:
+      field: orchestrator.type
+      value: kubernetes
+  # For EKS and AKS logs
+  - set:
+      if: ctx.kubernetes?.audit?.apiVersion != null
+      field: orchestrator.api_version
+      copy_from: kubernetes.audit.apiVersion
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.objectRef?.resource != null
+      field: orchestrator.cluster.name
+      copy_from: kubernetes.audit.objectRef.resource
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.objectRef?.namespace != null
+      field: orchestrator.namespace
+      copy_from: kubernetes.audit.objectRef.namespace
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.objectRef?.name != null
+      field: orchestrator.resource.name
+      copy_from: kubernetes.audit.objectRef.name
+      ignore_empty_value: true
+  # For GKE logs
+  - set:
+      if: ctx.kubernetes?.audit?.protoPayload?.resourceName != null
+      field: orchestrator.resource.name
+      copy_from: kubernetes.audit.protoPayload.resourceName
+      ignore_empty_value: true
+      override: false
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.type != null
+      field: orchestrator.resource.type
+      copy_from: kubernetes.audit.resource.type
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.labels?.cluster_name != null
+      field: orchestrator.cluster.name
+      copy_from: kubernetes.audit.resource.labels.cluster_name
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.labels?.project_id != null
+      field: orchestrator.cluster.id
+      copy_from: kubernetes.audit.resource.labels.project_id
+      ignore_empty_value: true
+
   - append:
       tag: append_related_user_uid
       field: related.user
