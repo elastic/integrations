@@ -600,7 +600,6 @@ An example event for `telemetry` looks as following:
 | process.parent.code_signature.flags |  | keyword |
 | process.parent.code_signature.signing_id |  | keyword |
 | process.platform_binary |  | boolean |
-| process.real_user |  | keyword |
 | process.responsible.code_signature.flags |  | keyword |
 | process.responsible.code_signature.signing_id |  | keyword |
 | process.responsible.entity_id |  | keyword |
