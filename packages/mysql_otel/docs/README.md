@@ -6,7 +6,7 @@ The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics 
 
 ## Compatibility
 
-The content pack has been tested with [OpenTelemetry MySQL receiver v0.129.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/README.md).
+The MySQL OTel Assets have been tested with [OpenTelemetry MySQL receiver v0.129.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/README.md).
 
 Databases tested against:
 - MySQL 8.0, 9.4
@@ -19,7 +19,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-1. Install and configure the EDOT Collector or upstream Collector to export metrics to ElasticSearch, as shown in the following example:
+1. Install and configure the upstream OTel Collector to export metrics to ElasticSearch, as shown in the following example:
 
 ```yaml
 receivers:
