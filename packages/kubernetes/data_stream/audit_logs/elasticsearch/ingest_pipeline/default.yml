@@ -153,6 +153,20 @@ processors:
       copy_from: kubernetes.audit.resource.labels.project_id
       ignore_empty_value: true
 
+  # Cloud fields
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.input?.type == "aws-cloudwatch"
+  - set:
+      field: cloud.provider
+      value: azure
+      if: ctx.input?.type == "azure-eventhub"
+  - set:
+      field: cloud.provider
+      value: gcp
+      if: ctx.input?.type == "gcp-pubsub"
+
   - append:
       tag: append_related_user_uid
       field: related.user
