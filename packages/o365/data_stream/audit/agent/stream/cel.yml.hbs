@@ -159,7 +159,8 @@ program: |-
             list.map(e,
               timestamp(e.endTime)
             ).min().as(min,
-              list.filter(e, timestamp(e.endTime) == min)[?0]
+              // This is known to exist since a non-empty list must have a minimum.
+              list.filter(e, timestamp(e.endTime) == min)[0]
             ).as(oldest,
               {
                 "curr_content": oldest,
@@ -179,17 +180,15 @@ program: |-
             "cursor": state.?cursor.orValue({}).with(
               {
                 "last_for": state.?cursor.last_for.orValue({}).with(
-                  (
-                    w.curr_content.optMap(l,
-                      {l.contentType.to_lower(): l.endTime}
-                    )
-                  ).orValue({})
+                  w.curr_content.as(l,
+                    {l.contentType.to_lower(): l.endTime}
+                  )
                 ),
               }
             ),
             "work": state.work.drop(["curr_content", "next_list"]).with(
               {
-                ?"curr_content": w.curr_content,
+                "curr_content": w.curr_content,
                 "todo_content": w.todo_content,
                 ?"next_list": [
                   // Work around non-conformance with HTTP header MIME standards.
@@ -198,7 +197,7 @@ program: |-
                 ][?0],
               }
             ),
-            "events": w.curr_content.optMap(l,
+            "events": w.curr_content.as(l,
               request(
                 "GET",
                 l.contentUri
@@ -225,7 +224,7 @@ program: |-
                   },
                 }
               )
-            ).orValue([]),
+            ),
           }
         )
       :
