@@ -1,0 +1,691 @@
+---
+description: Pipeline for processing server activity logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - append:
+      field: event.category
+      tag: append_host_into_event_category
+      value: host
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Airlock Digital
+  - rename:
+      field: json.agentid
+      tag: rename_agentid
+      target_field: airlock_digital.agent.agentid
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_agent_agentid
+      copy_from: airlock_digital.agent.agentid
+      ignore_empty_value: true
+  - rename:
+      field: json.clientversion
+      tag: rename_clientversion
+      target_field: airlock_digital.agent.clientversion
+      ignore_missing: true
+  - rename:
+      field: json.domain
+      tag: rename_domain
+      target_field: airlock_digital.agent.domain
+      ignore_missing: true
+  - set:
+      field: host.domain
+      tag: set_host_domain_from_agent_domain
+      copy_from: airlock_digital.agent.domain
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_agent_domain_into_related_hosts
+      value: '{{{airlock_digital.agent.domain}}}'
+      allow_duplicates: false
+      if: ctx.airlock_digital?.agent?.domain != null
+  - convert:
+      field: json.freespace
+      tag: convert_freespace_to_long
+      target_field: airlock_digital.agent.freespace
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.groupid
+      tag: rename_groupid
+      target_field: airlock_digital.agent.groupid
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_agent_groupid
+      copy_from: airlock_digital.agent.groupid
+      ignore_empty_value: true
+  - rename:
+      field: json.hostname
+      tag: rename_hostname
+      target_field: airlock_digital.agent.hostname
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_agent_hostname
+      copy_from: airlock_digital.agent.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_agent_hostname_into_related_hosts
+      value: '{{{airlock_digital.agent.hostname}}}'
+      allow_duplicates: false
+      if: ctx.airlock_digital?.agent?.hostname != null
+  - convert:
+      field: json.ip
+      tag: convert_ip_to_ip
+      target_field: airlock_digital.agent.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_airlock_digital_agent_ip_into_host_ip
+      value: '{{{airlock_digital.agent.ip}}}'
+      allow_duplicates: false
+      if: ctx.airlock_digital?.agent?.ip != null
+  - append:
+      field: related.ip
+      tag: append_agent_ip_into_related_ip
+      value: '{{{airlock_digital.agent.ip}}}'
+      allow_duplicates: false
+      if: ctx.airlock_digital?.agent?.ip != null
+  - date:
+      field: json.lastcheckin
+      tag: date_lastcheckin
+      target_field: airlock_digital.agent.lastcheckin
+      formats:
+        - ISO8601
+      if: ctx.json?.lastcheckin != null && ctx.json.lastcheckin != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.localip
+      tag: convert_localip_to_ip
+      target_field: airlock_digital.agent.localip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.localip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_agent_localip_into_related_ip
+      value: '{{{airlock_digital.agent.localip}}}'
+      allow_duplicates: false
+      if: ctx.airlock_digital?.agent?.localip != null
+  - rename:
+      field: json.os
+      tag: rename_os
+      target_field: airlock_digital.agent.os
+      ignore_missing: true
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_agent_os
+      copy_from: airlock_digital.agent.os
+      ignore_empty_value: true
+  - dissect:
+      field: host.os.full
+      tag: dissect_host_os_name
+      pattern: '%{host.os.name} %{}'
+      ignore_failure: false
+      if: ctx.host?.os?.full != null
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.host?.os?.full != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        String os_family = ctx.host.os.full.toLowerCase();
+        for (String os: params.os_type) {
+          if (os_family.contains(os)) {
+            ctx.host.os.put('type', os);
+            return;
+          }
+        }
+  - rename:
+      field: json.policy_details.agentstopcode
+      tag: rename_policy_details_agentstopcode
+      target_field: airlock_digital.agent.poilcy_details.agentstopcode
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.applications
+      tag: rename_policy_details_applications
+      target_field: airlock_digital.agent.poilcy_details.applications
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.auditmode
+      tag: convert_policy_details_auditmode_to_string
+      target_field: airlock_digital.agent.poilcy_details.auditmode
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.autoupdate
+      tag: convert_policy_details_autoupdate_to_string
+      target_field: airlock_digital.agent.poilcy_details.autoupdate
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.baselines
+      tag: rename_policy_details_baselines
+      target_field: airlock_digital.agent.poilcy_details.baselines
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.batch
+      tag: convert_policy_details_batch_to_string
+      target_field: airlock_digital.agent.poilcy_details.batch
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.blocklists
+      tag: rename_policy_details_blocklists
+      target_field: airlock_digital.agent.poilcy_details.blocklists
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.check_ea
+      tag: convert_policy_details_check_ea_to_string
+      target_field: airlock_digital.agent.poilcy_details.check_ea
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.command
+      tag: convert_policy_details_command_to_string
+      target_field: airlock_digital.agent.poilcy_details.command
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: json.policy_details.commlist
+      tag: foreach_policy_details_commlist_ip
+      if: ctx.json?.policy_details?.commlist instanceof List
+      processor:
+        convert:
+          field: _ingest._value.ip
+          tag: convert_policy_details_commlist_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.policy_details.commlist
+      tag: foreach_policy_details_commlist_ip
+      if: ctx.json?.policy_details?.commlist instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_policy_details_commlist_ip_into_related_ip
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.policy_details.commlist
+      tag: rename_policy_details_commlist
+      target_field: airlock_digital.agent.poilcy_details.commlist
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.commlistid
+      tag: rename_policy_details_commlistid
+      target_field: airlock_digital.agent.poilcy_details.commlistid
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.compiledhtml
+      tag: convert_policy_details_compiledhtml_to_string
+      target_field: airlock_digital.agent.poilcy_details.compiledhtml
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.dylib
+      tag: convert_policy_details_dylib_to_string
+      target_field: airlock_digital.agent.poilcy_details.dylib
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.enable_notifications
+      tag: convert_policy_details_enable_notifications_to_string
+      target_field: airlock_digital.agent.poilcy_details.enable_notifications
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.extensions_enabled
+      tag: convert_policy_details_extensions_enabled_to_string
+      target_field: airlock_digital.agent.poilcy_details.extensions_enabled
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.generalisation
+      tag: convert_policy_details_generalisation_to_string
+      target_field: airlock_digital.agent.poilcy_details.generalisation
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.gprocesses
+      tag: rename_policy_details_gprocesses
+      target_field: airlock_digital.agent.poilcy_details.gprocesses
+      ignore_missing: true
+  - remove:
+      field: json.policy_details.groupid
+      tag: rename_policy_details_groupid
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.hashdb_ver
+      tag: convert_policy_details_hashdb_ver_to_string
+      target_field: airlock_digital.agent.poilcy_details.hashdb_ver
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.htmlapplication
+      tag: convert_policy_details_htmlapplication_to_string
+      target_field: airlock_digital.agent.poilcy_details.htmlapplication
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.javaapplication
+      tag: convert_policy_details_javaapplication_to_string
+      target_field: airlock_digital.agent.poilcy_details.javaapplication
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.javascript
+      tag: convert_policy_details_javascript_to_string
+      target_field: airlock_digital.agent.poilcy_details.javascript
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.modreload
+      tag: convert_policy_details_modreload_to_string
+      target_field: airlock_digital.agent.poilcy_details.modreload
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.name
+      tag: rename_policy_details_name
+      target_field: airlock_digital.agent.poilcy_details.name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_agent_poilcy_details_name
+      copy_from: airlock_digital.agent.poilcy_details.name
+      ignore_empty_value: true
+  - rename:
+      field: json.policy_details.notification_message
+      tag: rename_policy_details_notification_message
+      target_field: airlock_digital.agent.poilcy_details.notification_message
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_agent_poilcy_details_notification_message
+      copy_from: airlock_digital.agent.poilcy_details.notification_message
+      ignore_empty_value: true
+  - rename:
+      field: json.policy_details.parent
+      tag: rename_policy_details_parent
+      target_field: airlock_digital.agent.poilcy_details.parent
+      ignore_missing: true
+  - foreach:
+      field: json.policy_details.paths
+      tag: foreach_policy_details_paths_name
+      if: ctx.json?.policy_details?.paths instanceof List
+      processor:
+        append:
+          field: file.path
+          tag: append_policy_details_paths_name_into_file_path
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.policy_details.paths
+      tag: rename_policy_details_paths
+      target_field: airlock_digital.agent.poilcy_details.paths
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.policyver
+      tag: rename_policy_details_policyver
+      target_field: airlock_digital.agent.poilcy_details.policyver
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.poll_time
+      tag: convert_policy_details_poll_time_to_string
+      target_field: airlock_digital.agent.poilcy_details.poll_time
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.powershell
+      tag: convert_policy_details_powershell_to_string
+      target_field: airlock_digital.agent.poilcy_details.powershell
+      type: string
+      ignore_missing: true
+  - foreach:
+      field: json.policy_details.pprocesses
+      tag: foreach_policy_details_pprocesses_name
+      if: ctx.json?.policy_details?.pprocesses instanceof List
+      processor:
+        append:
+          field: process.parent.name
+          tag: append_policy_details_pprocesses_name_into_process_parent_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.policy_details.pprocesses
+      tag: rename_policy_details_pprocesses
+      target_field: airlock_digital.agent.poilcy_details.pprocesses
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.proxyauth
+      tag: convert_policy_details_proxyauth_to_string
+      target_field: airlock_digital.agent.poilcy_details.proxyauth
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.proxyenabled
+      tag: convert_policy_details_proxyenabled_to_string
+      target_field: airlock_digital.agent.poilcy_details.proxyenabled
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.proxypass
+      tag: rename_policy_details_proxypass
+      target_field: airlock_digital.agent.poilcy_details.proxypass
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.proxyport
+      if: ctx.json?.policy_details?.proxyport != null && ctx.json.policy_details.proxyport != ''
+      tag: convert_policy_details_proxyport_to_long
+      target_field: airlock_digital.agent.poilcy_details.proxyport
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.policy_details.proxyserver
+      tag: rename_policy_details_proxyserver
+      target_field: airlock_digital.agent.poilcy_details.proxyserver
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.proxyuser
+      tag: rename_policy_details_proxyuser
+      target_field: airlock_digital.agent.poilcy_details.proxyuser
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.pslockdown
+      tag: convert_policy_details_pslockdown_to_string
+      target_field: airlock_digital.agent.poilcy_details.pslockdown
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.publishers
+      tag: rename_policy_details_publishers
+      target_field: airlock_digital.agent.poilcy_details.publishers
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.python
+      tag: convert_policy_details_python_to_string
+      target_field: airlock_digital.agent.poilcy_details.python
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.reflection
+      tag: convert_policy_details_reflection_to_string
+      target_field: airlock_digital.agent.poilcy_details.reflection
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.script_custom
+      tag: convert_policy_details_script_custom_to_string
+      target_field: airlock_digital.agent.poilcy_details.script_custom
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.script_enabled
+      tag: convert_policy_details_script_enabled_to_string
+      target_field: airlock_digital.agent.poilcy_details.script_enabled
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.selfservice
+      tag: convert_policy_details_selfservice_to_string
+      target_field: airlock_digital.agent.poilcy_details.selfservice
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.selfupgrade
+      tag: convert_policy_details_selfupgrade_to_string
+      target_field: airlock_digital.agent.poilcy_details.selfupgrade
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.shellscript
+      tag: convert_policy_details_shellscript_to_string
+      target_field: airlock_digital.agent.poilcy_details.shellscript
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policy_details.targetvers
+      tag: rename_policy_details_targetvers
+      target_field: airlock_digital.agent.poilcy_details.targetvers
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.trusted_config
+      tag: convert_policy_details_trusted_config_to_boolean
+      target_field: airlock_digital.agent.poilcy_details.trusted_config
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.policy_details.trusted_upload
+      tag: convert_policy_details_trusted_upload_to_string
+      target_field: airlock_digital.agent.poilcy_details.trusted_upload
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.vbscript
+      tag: convert_policy_details_vbscript_to_string
+      target_field: airlock_digital.agent.poilcy_details.vbscript
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.windowsinstaller
+      tag: convert_policy_details_windowsinstaller_to_string
+      target_field: airlock_digital.agent.poilcy_details.windowsinstaller
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.policy_details.windowsscriptcomponent
+      tag: convert_policy_details_windowsscriptcomponent_to_string
+      target_field: airlock_digital.agent.poilcy_details.windowsscriptcomponent
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.policyversion
+      tag: rename_policyversion
+      target_field: airlock_digital.agent.policyversion
+      ignore_missing: true
+  - set:
+      field: rule.version
+      tag: set_rule_version_from_agent_policyversion
+      copy_from: airlock_digital.agent.policyversion
+      ignore_empty_value: true
+  - convert:
+      field: json.status
+      tag: convert_status_to_keyword
+      target_field: airlock_digital.agent.status
+      type: string
+      ignore_missing: true
+  - script:
+      description: Map status to corresponding agent status.
+      lang: painless
+      params:
+        "0": "Offline"
+        "1": "Online"
+        "3": "Safemode"
+      source: |-
+        if (ctx.json?.status == null || ctx.json.status == '') {
+          return;
+        }
+        ctx.airlock_digital.agent.status_value = params[(ctx.json.status).toString()];
+  - rename:
+      field: json.username
+      tag: rename_username
+      target_field: airlock_digital.agent.username
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_agent_username
+      copy_from: airlock_digital.agent.username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_agent_username_into_related_user
+      value: '{{{airlock_digital.agent.username}}}'
+      allow_duplicates: false
+      if: ctx.airlock_digital?.agent?.username != null
+  - foreach:
+      field: airlock_digital.agent.poilcy_details.paths
+      tag: foreach_airlock_digital_agent_poilcy_details_paths
+      if: ctx.airlock_digital?.agent?.poilcy_details?.paths instanceof List
+      processor:
+        remove:
+          field: _ingest._value.name
+          tag: remove_custom_duplicate_fields_from_airlock_digital_agent_poilcy_details_paths
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - foreach:
+      field: airlock_digital.agent.poilcy_details.pprocesses
+      tag: foreach_airlock_digital_agent_poilcy_details_pprocesses
+      if: ctx.airlock_digital?.agent?.poilcy_details?.pprocesses instanceof List
+      processor:
+        remove:
+          field: _ingest._value.name
+          tag: remove_custom_duplicate_fields_from_airlock_digital_agent_poilcy_details_pprocesses
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - airlock_digital.agent.agentid
+        - airlock_digital.agent.domain
+        - airlock_digital.agent.groupid
+        - airlock_digital.agent.hostname
+        - airlock_digital.agent.ip
+        - airlock_digital.agent.os
+        - airlock_digital.agent.poilcy_details.name
+        - airlock_digital.agent.poilcy_details.notification_message
+        - airlock_digital.agent.policyversion
+        - airlock_digital.agent.username
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
