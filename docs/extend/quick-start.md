@@ -10,7 +10,7 @@ This quick start is designed for users familiar with the {{stack}}. If you’re 
 ::::
 
 
-This is a quick guide on how you can build your own integration package and upload it to Kibana.
+This is a quick guide on how you can build your own integration package and upload it to {{kib}}.
 
 Follow these steps to create an integration package named `sample` and then add a `logs` dataset. The same procedure can be used for a `metrics` dataset, however for your first integration package `logs` is a bit simpler because a custom input is not required.
 
@@ -31,6 +31,10 @@ You’ll need to have a few requirements in place to run this tutorial:
 * [elastic-package](https://github.com/elastic/elastic-package) installed on your machine. This is a command line tool, written in Go, used for developing Elastic packages. It can help you lint, format, test, build, and promote your packages. Setup instructions can be found in the elastic-package repository readme.
 * A [GitHub repository](https://github.com/) where you can upload your integration package.
 * [Docker](https://www.docker.com/) set up and running on your machine.
+
+::::{note}
+If you encounter errors with Docker, ensure it is running and you have enough resources allocated. For permission errors, try running commands with `sudo` or check file ownership.
+::::
 
 
 ## Step 1: Create the package [qs-create-package]
@@ -88,11 +92,22 @@ You’ll need to have a few requirements in place to run this tutorial:
         elastic-package check
         ```
 
+::::{note}
+After running these commands, your directory structure should look like:
 
+sample/
+├── manifest.yml
+├── changelog.yml
+└── ... (other files and folders)
+
+✄𐘗text code block:✄𐘗
+::::
+
+---
 
 ## Step 2: Upload the package to Kibana [qs-test-upload]
 
-1. To test that your package can be installed into Kibana, a cluster needs to spin up. For this step you to have a running Docker setup. Run the following command:
+1. To test that your package can be installed into Kibana, a cluster needs to spin up. For this step you need to have a running Docker setup. Run the following command:
 
     ```console
     elastic-package stack up --version=8.12.2 -v
@@ -157,7 +172,7 @@ You’ve now built an integration package, but it does not contain any assets. F
     elastic-package install
     ```
 
-    This reinstalls the package and create mapping templates for `logs-sample.log-*`. You can also add your own mappings under `data_stream/log/fields/fields.yml` if needed.
+    This reinstalls the package and creates mapping templates for `logs-sample.log-*`. You can also add your own mappings under `data_stream/log/fields/fields.yml` if needed.
 
 
 
@@ -230,9 +245,9 @@ You can now already ship log files to `logs-sample.log-default` but no processin
     }
     ```
 
-3. Now that you’ve confirmed that the ingest pipeline is working, add it to your dataset by modifying `data_stream/log/elasticsearch/ingest_pipline/default.yml` to:
+3. Now that you’ve confirmed that the ingest pipeline is working, add it to your dataset by modifying `data_stream/log/elasticsearch/ingest_pipeline/default.yml` to:
 
-    ```console
+    ```yaml
     description: Pipeline for processing sample logs
     processors:
     - dissect:
@@ -326,7 +341,7 @@ Now that you can see the dissected message documented, you’re ready to ingest 
 
 1. Since your initial `0.0.1` version of the package, many modifications have been made. To build a new package version, open the `sample/manifest.yml` file and change the package version to `0.2.0`:
 
-    ```console
+    ```yaml
     format_version: 3.1.3
     name: sample
     title: "My sample package"
@@ -335,7 +350,7 @@ Now that you can see the dissected message documented, you’re ready to ingest 
 
 2. You also need to add an entry to your `sample/changelog.yml` file. Make sure to add the new entry at the top of the file:
 
-    ```console
+    ```yaml
     - version: "0.2.0"
       changes:
         - description: Added sample log processing pipeline
@@ -351,12 +366,13 @@ Now that you can see the dissected message documented, you’re ready to ingest 
 
     The `0.1.0` version of the package is updated to version `0.2.0`. Only one version of a package can be installed at a time, but, following these steps, different versions of a package can be rolled out over time.
 
-
+::::{note}
 When developing integrations the following versioning guidelines should be used:
 
 * Patch release (x.y.**Z**): For backward-compatible bug fixes
 * Minor release (x.**Y**.z): For backward-compatible new features
 * Major release (**X**.y.z): For changes that break backward compatibility
+::::
 
 
 ## Step 6: Ingest data [qs-ingest-data]
@@ -376,7 +392,7 @@ To run these steps using {{fleet}}-managed {{agent}}, you just need to update th
 3. In the {{agent}} package directory, open the `elastic-agent.yml` configuration file for editing.
 4. Replace the contents of `elastic-agent.yml` with the following:
 
-    ```console
+    ```yaml
     inputs:
       - type: logfile
         streams:
@@ -399,7 +415,7 @@ To run these steps using {{fleet}}-managed {{agent}}, you just need to update th
     Where:
 
     * `dataset` is set to match the `test-sample.log` file that you created.
-    * <PATH-TO-LOG-FILE> is the full path the `test-sample.log` file that you created.
+    * `<PATH-TO-LOG-FILE>` is the full path to the `test-sample.log` file that you created.
 
 5. Run {{agent}}:
 
