@@ -54,8 +54,8 @@ exporters:
     verbosity: detailed
   elasticsearch/otel:
     endpoint: https://localhost:9200
-	user: <userid>
-	password: <pwd>
+    user: <userid>
+    password: <pwd>
     mapping:
       mode: otel 
     metrics_dynamic_index:
