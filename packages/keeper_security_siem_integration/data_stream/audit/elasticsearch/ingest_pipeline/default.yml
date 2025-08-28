@@ -1,0 +1,144 @@
+---
+# data_stream/audit/elasticsearch/ingest_pipeline/default.yml (FIXED)
+description: "Agentless pipeline for processing Keeper Security audit events"
+processors:
+  # Set data stream information
+  - set:
+      field: data_stream.type
+      value: logs
+  - set:
+      field: data_stream.dataset  
+      value: keeper.audit
+  - set:
+      field: data_stream.namespace
+      value: default
+
+  # Set basic event fields
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: ["authentication", "web"]
+  - set:
+      field: event.type
+      value: ["access", "info"]
+  - set:
+      field: event.dataset
+      value: "keeper.audit"
+  - set:
+      field: event.module
+      value: "keeper"
+
+  # Handle timestamp conversion - support multiple formats
+  - date:
+      field: keeper.timestamp
+      target_field: '@timestamp'
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSXX"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+        - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ssX"
+      if: ctx.keeper?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse timestamp: {{{keeper.timestamp}}}"
+
+  # If no keeper.timestamp, try to use existing @timestamp or set current time
+  - set:
+      field: '@timestamp'
+      value: "{{_ingest.timestamp}}"
+      if: ctx['@timestamp'] == null
+
+  # Set user information from username
+  - set:
+      field: user.name
+      value: "{{username}}"
+      if: ctx.username != null
+  
+  # If username looks like email, set user.email
+  - set:
+      field: user.email  
+      value: "{{username}}"
+      if: ctx.username != null && ctx.username.contains("@")
+
+  # Set source IP from remote_address
+  - set:
+      field: source.ip
+      value: "{{remote_address}}"
+      if: ctx.remote_address != null
+
+  # GeoIP enrichment -> ECS source.geo.*
+  - geoip:
+    #   if: >
+    #     ctx.source?.ip != null &&
+    #     !(ctx.source.ip =~ /^(10\.|192\.168\.|127\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/)
+      field: source.ip
+      target_field: source.geo
+      # You can limit properties, but it's fine to take defaults:
+      # properties: [ "continent_name","country_iso_code","country_name","region_iso_code","region_name","city_name","location","timezone" ]
+    #   ignore_missing: true
+      # geoip returns nothing for private RFC1918/ULA IPs; that's OK.
+      on_failure:
+        - append:
+            field: error.message
+            value: "GeoIP lookup failed for source.ip={{{source.ip}}}"
+
+  # Set event action from audit_event
+  - set:
+      field: event.action
+      value: "{{{audit_event}}}"
+      if: ctx.audit_event != null
+
+  # Convert enterprise_id to organization fields
+  - convert:
+      field: enterprise_id
+      type: string
+      target_field: organization.id
+      ignore_missing: true
+      ignore_failure: true
+
+  # Set user agent from client_version
+  - set:
+      field: user_agent.original
+      value: "Keeper/{{client_version}}"
+      if: ctx.client_version != null
+
+  # Build related fields for correlation
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"  
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  # Set event outcome based on category or audit_event
+  - set:
+      field: event.outcome
+      value: "success"
+      if: ctx.keeper?.category != null && !ctx.keeper.category.contains("fail")
+  
+  - set:
+      field: event.outcome
+      value: "failure"
+      if: ctx.keeper?.category != null && ctx.keeper.category.contains("fail")
+
+  # Clean up - remove original timestamp to avoid confusion
+  - remove:
+      field: timestamp
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: "Failed to process Keeper audit event: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
