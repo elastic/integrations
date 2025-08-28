@@ -1,0 +1,28 @@
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+receivers:
+    httpcheck/componentid:
+        collection_interval: 1m
+        targets:
+            - endpoints:
+                - https://epr.elastic.co
+              method: GET
+secret_references: []
+service:
+    pipelines:
+        metrics:
+            receivers:
+                - httpcheck/componentid
