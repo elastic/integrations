@@ -1,28 +1,26 @@
 # PostreSQL OpenTelemetry Assets
 
-The PostreSQL OpenTelemetry integration allows you to monitor [PostgreSQL](https://www.postgresql.org/) servers and to collect key metrics to track database health and performance. PostgresSQL gathers and aggregates these metrics internally using its built-in statistics collector, which exposes the data through predefined views. For example:
-- `pg_stat_database` view provides one row per database containing aggregate statistics such as the number of transactions committed and rolled back, tuples read and written, block read/write counts, deadlocks, and time spent in I/O operations. 
-- `pg_stat_statements` provides one row per normalized SQL statement executed on the server. Each row includes metrics such as the number of times the query has been run, total execution time, number of rows returned/affected, shared/local block hits, and I/O statistics. This view is invaluable for identifying slow or expensive queries and understanding workload patterns.
+The PostreSQL OpenTelemetry integration allows you to monitor [PostgreSQL](https://www.postgresql.org/) servers and to collect telemetry data to track database health and performance. PostgreSQL gathers and aggregates this data internally using its built-in statistics collector, which exposes the data through predefined views. For example `pg_stat_database` and `pg_stat_statements`. For a complete and up-to-date list of the statistics views and metrics collected, refer to the PostgreSQL Receiver [documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver). For detailed explanations of what each statistics view means, check the official documentation for the [statistics collector](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS) and [pg_stat_statements](https://www.postgresql.org/docs/current/pgstatstatements.html). 
 
-The OpenTelemetry ([PostgreSQL Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver)) queries these views under the hood to extract metrics and events, making them available in a structured form for analysis. The PostgreSQL OpenTelemetry assets then provide a visual representation of these collected metrics in Kibana, helping you monitor and explore database activity and performance.
+The PostgreSQL OpenTelemetry assets provide a visual representation of these collected metrics and events in Kibana, helping you monitor and explore database activity and performance.
 
 ## Compatibility
 
-The content pack has been tested with [PostgreSQL OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and PostgreSQL server version 16.4.
+The integration package has been tested with [PostgreSQL OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and PostgreSQL server version 16.4.
 
-## Requirements
+## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
 Some metrics require the `pg_stat_statements` [module](https://www.postgresql.org/docs/current/pgstatstatements.html#PGSTATSTATEMENTS). The module tracks the execution statistics for all the SQL statements. To enable it, add the module to the `shared_preload_libraries` parameter in the `postgres.conf` file and then **restart the server** for the settings to take effect.
 
-Additionally, certain metrics and events must be explicitly enabled in the configuration. See the sample collector configuration in the next section, and refer to the receiver documentation for a complete list of supported metrics and events.
+Additionally, certain metrics and events must be explicitly enabled in the configuration. Check the sample collector configuration in the next section, and refer to the receiver documentation for a complete list of supported metrics and events.
 
 
 ## Setup
 
-Install and configure the EDOT Collector or upstream OTel Collector to export metrics to ElasticSearch, as shown in the following example:
+Install and configure the upstream OTel Collector to export metrics to ElasticSearch, as shown in the following example:
 
 ```yaml
 postgresql:
@@ -78,8 +76,8 @@ Note: This configuration defines two pipelines — one for metrics and one for l
 - Metrics are ingested into the metrics-* data view in Elasticsearch.
 - Events (logs) are ingested into the logs-* data view in Elasticsearch.
 
-## Metrics reference
+## ## Data reference
 
-### PostgreSQL metrics
+### PostgreSQL metrics and events
 
-Refer to [the documentation of the OpenTelemetry's PostgreSQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/documentation.md).
+Refer to the OpenTelemetry PostgreSQL receiver's [documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/documentation.md) for the complete list of metrics and events collected.
