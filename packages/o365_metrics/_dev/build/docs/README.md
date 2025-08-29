@@ -41,7 +41,7 @@ The following data can be collected with the Microsoft Office 365 Metrics integr
 
 To use this package you need to enable datastreams you want to collect metrics for and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
 
-Please ensure that the services for the enabled data streams are configured before using the integration.
+Please ensure that the services for the enabled data streams are configured in Azure before using the integration.
 
 ## How do I deploy this integration?
 
