@@ -1,0 +1,82 @@
+metricsets: ["jmx"]
+hosts:
+{{#each jolokia_hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: "metrics"
+period: {{period}}
+http_method: {{http_method}}
+
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+
+username: {{username}}
+password: {{password}}
+
+jmx.mappings:
+- mbean: 'kafka.consumer:client-id=*,type=consumer-fetch-manager-metrics'
+  attributes:
+  - attr: fetch-rate
+    field: fetch_rate
+  - attr: bytes-consumed-total
+    field: bytes_consumed
+  - attr: records-consumed-total
+    field: records_consumed
+
+- mbean: 'kafka.consumer:client-id=*,type=consumer-metrics'
+  attributes:
+  - attr: incoming-byte-total
+  field: in.bytes_per_sec
+
+- mbean: 'kafka.consumer:client-id=*,type=consumer-fetch-manager-metrics'
+  attributes:
+  - attr: records-lag-max
+  field: max_lag
+
+{{#if headers}}
+{{headers}}
+{{/if}}
+
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+
+
+
+
