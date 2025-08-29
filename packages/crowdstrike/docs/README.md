@@ -4,7 +4,17 @@ The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to easily
 
 1. **Falcon SIEM Connector**: This is a pre-built integration designed to connect CrowdStrike Falcon with Security Information and Event Management (SIEM) systems. It streamlines the flow of security data from CrowdStrike Falcon to the SIEM, providing a standardized and structured way of feeding information into the SIEM platform. It includes the following datasets for receiving logs:
 
-- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
+- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from Falcon SIEM Connector.
+
+    **Log File Format and Location**
+
+    The CrowdStrike integration only supports JSON output format from the SIEM Connector.
+
+    - Log files are written to multiple rotated output files based on the `output_path` setting in the `cs.falconhoseclient.cfg` file.
+    - The default output location for the Falcon SIEM Connector is `/var/log/crowdstrike/falconhoseclient/output`.
+    - By default, files named `output*` in `/var/log/crowdstrike/falconhoseclient` directory contain valid JSON event data and should be used as the source for ingestion.
+
+    >Note: Files with names like `cs.falconhoseclient-*.log` in the same directory are primarily used for logging internal operations of the Falcon SIEM Connector and are not intended to be consumed by this integration.
 
 2. **CrowdStrike REST API**: This provides a programmatic interface to interact with the CrowdStrike Falcon platform. It allows users to perform various operations such as querying information about unified alerts and hosts/devices. It includes the following datasets for receiving logs:
 
@@ -2363,15 +2373,15 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "id": "3af2363e-97fa-4bd9-bbaa-75eb78bd70bf",
-        "name": "elastic-agent-28191",
+        "id": "71e71f16-ae08-46e3-a58e-a7d14e974950",
+        "name": "elastic-agent-30302",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "name": "elastic-package-crowdstrike-fdr-60122"
+                "name": "elastic-package-crowdstrike-fdr-30445"
             },
             "object": {
                 "key": "data"
@@ -2456,14 +2466,14 @@ An example event for `fdr` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "32030",
+        "namespace": "77613",
         "type": "logs"
     },
     "device": {
         "id": "ffffffff655344736aca58d17fb570f0"
     },
     "elastic_agent": {
-        "id": "3af2363e-97fa-4bd9-bbaa-75eb78bd70bf",
+        "id": "71e71f16-ae08-46e3-a58e-a7d14e974950",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -2476,7 +2486,7 @@ An example event for `fdr` looks as following:
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-8462-02ade3b2f949|ffffffff655344736aca58d17fb570f0|ffffffff30a3407dae27d0503611022d",
-        "ingested": "2025-05-21T04:21:27Z",
+        "ingested": "2025-08-27T05:55:29Z",
         "kind": "event",
         "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
@@ -2496,6 +2506,7 @@ An example event for `fdr` looks as following:
     "input": {
         "type": "aws-s3"
     },
+    "message": "ProcessRollup2",
     "observer": {
         "address": [
             "67.43.156.14"
@@ -2557,7 +2568,8 @@ An example event for `fdr` looks as following:
         ],
         "user": [
             "Alan-One",
-            "DOMAIN\\BRADLEYA"
+            "DOMAIN\\BRADLEYA",
+            "S-1-12-1-3697283754-1083485977-2164330645-2516515886"
         ]
     },
     "tags": [
@@ -2887,6 +2899,7 @@ An example event for `host` looks as following:
 | crowdstrike.host.modified_timestamp | Timestamp indicating when the incident was created. | date |
 | crowdstrike.host.os.build |  | keyword |
 | crowdstrike.host.os.version | The version of the operating system on the host. | keyword |
+| crowdstrike.host.ou | The organizational unit of the host as seen by the sensor. | keyword |
 | crowdstrike.host.platform.id |  | keyword |
 | crowdstrike.host.platform.name | The identifier associated with the customer. | keyword |
 | crowdstrike.host.policies.applied |  | boolean |
