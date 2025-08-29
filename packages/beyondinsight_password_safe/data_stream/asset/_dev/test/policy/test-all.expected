@@ -1,0 +1,289 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: beyondinsight_password_safe
+      name: test-all-beyondinsight_password_safe
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: beyondinsight_password_safe.asset
+          interval: 4h
+          processors:
+            - drop_event.when.equals.cel: true
+            - add_fields:
+                fields:
+                    foo: bar
+          program: |-
+            state.with(
+              has(state.?cursor.cookies) ?
+                (
+                  // Use existing authenticated session to fetch assets from workgroups.
+                  (size(state.?cursor.workgroup_ids.orValue([])) > 0) ?
+                    // We already have workgroup IDs, process assets from them.
+                    {
+                      "workgroup_id": state.cursor.workgroup_ids[0][0],
+                      "offset": state.cursor.workgroup_ids[0][1],
+                      "remaining_workgroups": tail(state.cursor.workgroup_ids),
+                    }.as(r,
+                      request(
+                        "GET",
+                        state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets?" + {
+                          "limit": [string(state.limit)],
+                          "offset": [string(r.offset)],
+                        }.format_query()
+                      ).with(
+                        {
+                          "Header": {
+                            "Content-Type": ["application/json"],
+                            "Cookie": state.cursor.cookies,
+                          },
+                        }
+                      ).do_request().as(resp,
+                        (resp.StatusCode == 200) ?
+                          // Success: process JSON response with Data array of asset objects.
+                          resp.Body.decode_json().as(body,
+                            (
+                              (size(body.Data) + int(r.offset) < int(body.TotalCount)) ?
+                                (// There are more assets in this workgroup, increase the offset.
+                                [[r.workgroup_id, int(r.offset) + size(body.Data)]] + r.remaining_workgroups)
+                              :
+                                r.remaining_workgroups
+                            ).as(next_workgroup_ids,
+                              {
+                                "events": body.Data.map(e,
+                                  {
+                                    "event": {
+                                      "original": e.encode_json(),
+                                    },
+                                  }
+                                ),
+                                "want_more": size(next_workgroup_ids) > 0,
+                                "cursor": {
+                                  "cookies": state.cursor.cookies,
+                                  "workgroup_ids": next_workgroup_ids,
+                                },
+                                "retries": 0,
+                              }
+                            )
+                          )
+                        : (resp.StatusCode == 401) ?
+                          (
+                            // Authentication failure: clear session and retry once.
+                            (int(state.?retries.orValue(0)) == 0) ?
+                              {
+                                "events": [
+                                  // Must produce an event for want_more=true to be honored.
+                                  {"cel": true},
+                                ],
+                                "retries": 1,
+                                "want_more": true,
+                                "cursor": state.?cursor.orValue({}).drop("cookies"),
+                              }
+                            :
+                              {
+                                "events": {
+                                  "error": {
+                                    "code": string(resp.StatusCode),
+                                    "id": string(resp.Status),
+                                    "message": "Authentication failed after retry: " + "GET " + state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets: " + (
+                                      (size(resp.Body) != 0) ?
+                                        string(resp.Body)
+                                      :
+                                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                    ),
+                                  },
+                                },
+                                "want_more": false,
+                              }
+                          )
+                        :
+                          // Handle all other HTTP error responses.
+                          {
+                            "events": {
+                              "error": {
+                                "code": string(resp.StatusCode),
+                                "id": string(resp.Status),
+                                "message": "GET " + state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets: " + (
+                                  (size(resp.Body) != 0) ?
+                                    string(resp.Body)
+                                  :
+                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                ),
+                              },
+                            },
+                            "want_more": false,
+                          }
+                      )
+                    )
+                  :
+                    // Fetch workgroup IDs first.
+                    request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
+                      {
+                        "Header": {
+                          "Content-Type": ["application/json"],
+                          "Cookie": state.cursor.cookies,
+                        },
+                      }
+                    ).do_request().as(resp,
+                      (resp.StatusCode == 200) ?
+                        // Success: extract workgroup IDs and set up for asset fetching.
+                        resp.Body.decode_json().as(workgroups,
+                          (size(workgroups) == 0) ?
+                            {
+                              "events": [],
+                              "want_more": false,
+                              "cursor": {
+                                "cookies": state.cursor.cookies,
+                              },
+                            }
+                          :
+                            {
+                              "events": [
+                                // Must produce an event for want_more=true to be honored.
+                                {"cel": true},
+                              ],
+                              "want_more": true,
+                              "cursor": {
+                                "cookies": state.cursor.cookies,
+                                "workgroup_ids": workgroups.map(wg, [string(wg.ID), 0]),
+                              },
+                            }
+                        )
+                      : (resp.StatusCode == 401) ?
+                        (
+                          // Authentication failure: clear session and retry once.
+                          (int(state.?retries.orValue(0)) == 0) ?
+                            {
+                              "events": [
+                                // Must produce an event for want_more=true to be honored.
+                                {"cel": true},
+                              ],
+                              "retries": 1,
+                              "want_more": true,
+                              "cursor": state.?cursor.orValue({}).drop("cookies"),
+                            }
+                          :
+                            {
+                              "events": {
+                                "error": {
+                                  "code": string(resp.StatusCode),
+                                  "id": string(resp.Status),
+                                  "message": "Authentication failed after retry: " + "GET " + state.url.trim_suffix("/") + "/Workgroups: " + (
+                                    (size(resp.Body) != 0) ?
+                                      string(resp.Body)
+                                    :
+                                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                  ),
+                                },
+                              },
+                              "want_more": false,
+                            }
+                        )
+                      :
+                        // Handle all other HTTP error responses.
+                        {
+                          "events": {
+                            "error": {
+                              "code": string(resp.StatusCode),
+                              "id": string(resp.Status),
+                              "message": "GET " + state.url.trim_suffix("/") + "/Workgroups: " + (
+                                (size(resp.Body) != 0) ?
+                                  string(resp.Body)
+                                :
+                                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                              ),
+                            },
+                          },
+                          "want_more": false,
+                        }
+                    )
+                )
+              :
+                // Establish new authenticated session.
+                request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+                  {
+                    "Header": {
+                      "Authorization": [
+                        sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                        ((state.password != "") ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                      ],
+                      "Content-Type": ["application/json"],
+                    },
+                  }
+                ).do_request().as(resp,
+                  (resp.StatusCode == 200) ?
+                    {
+                      "events": [
+                        // Must produce an event for want_more=true to be honored.
+                        {"cel": true},
+                      ],
+                      "cursor": state.?cursor.orValue({}).with(
+                        {
+                          "cookies": resp.Header["Set-Cookie"],
+                        }
+                      ),
+                      "want_more": true,
+                    }
+                  :
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "Failed to create session: " + "POST " + state.url.trim_suffix("/") + "/Auth/SignAppin: " + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                )
+            ).as(state, (state.want_more == false) ?
+              // Restart fresh on the next periodic execution.
+              state.drop("retries").drop("cursor.workgroup_ids")
+            :
+              state
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - apikey
+                - password
+          resource.ssl.renegotiation: freely
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://foo.ps.beyondtrustcloud.com/BeyondTrust/api/public/v3
+          state:
+            apikey: ${SECRET_0}
+            limit: 1000
+            password: ${SECRET_1}
+            username: domain\user
+          tags:
+            - forwarded
+            - beyondinsight_password_safe.asset
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-beyondinsight_password_safe.asset-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}

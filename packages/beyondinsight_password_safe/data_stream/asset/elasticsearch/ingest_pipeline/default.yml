@@ -1,74 +1,70 @@
 ---
-description: Pipeline for processing BeyondInsight and Password Safe asset logs
+description: Pipeline for processing BeyondInsight and Password Safe asset logs.
 processors:
-  - drop:
-      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
-
-  - rename:
-      field: message
-      target_field: beyondinsight_password_safe.asset
-
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - fingerprint:
       fields:
-       - beyondinsight_password_safe.asset.AssetID
-       - beyondinsight_password_safe.asset.LastUpdateDate
-      target_field: "_id"
-
-####################
-# Scripts for processing input #
-####################
-  - script:
-      description: Drops null/empty values recursively.
-      lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
-
-  - script:
-      description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
-      lang: painless
-      source: |
-        Map keysToSnakeCase(Map m) {
-          def regex = /_?([a-z])([A-Z]+)/;
-          def snakeCaseMap = [:];
-
-          for (entry in m.entrySet()) {
-            def k = entry.getKey();
-            def v = entry.getValue();
-
-            if (v instanceof Map) {
-              v = keysToSnakeCase(v);
-            } else if (v instanceof List) {
-              for (int i = 0; i < v.size(); i++) {
-                def item = v.get(i);
-                if (item instanceof Map) {
-                  v.set(i, keysToSnakeCase(item));
-                }
-              }
-            }
-
-            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
-            snakeCaseMap.put(k, v);
-          }
-          return snakeCaseMap;
-        }
-
-        if (ctx.beyondinsight_password_safe.asset != null) {
-          ctx.beyondinsight_password_safe.asset = keysToSnakeCase(ctx.beyondinsight_password_safe.asset);
-        }
-
+        - event.original
+      target_field: _id
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondinsight_password_safe.asset
+  - convert:
+      field: beyondinsight_password_safe.asset.AssetID
+      type: string
+      if: ctx.beyondinsight_password_safe?.asset?.AssetID != null
+  - rename:
+      field: beyondinsight_password_safe.asset.AssetID
+      target_field: beyondinsight_password_safe.asset.asset_id
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.AssetName
+      target_field: beyondinsight_password_safe.asset.asset_name
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.AssetType
+      target_field: beyondinsight_password_safe.asset.asset_type
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.CreateDate
+      target_field: beyondinsight_password_safe.asset.create_date
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.DnsName
+      target_field: beyondinsight_password_safe.asset.dns_name
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.DomainName
+      target_field: beyondinsight_password_safe.asset.domain_name
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.IPAddress
+      target_field: beyondinsight_password_safe.asset.ip_address
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.LastUpdateDate
+      target_field: beyondinsight_password_safe.asset.last_update_date
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.MacAddress
+      target_field: beyondinsight_password_safe.asset.mac_address
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.asset.OperatingSystem
+      target_field: beyondinsight_password_safe.asset.operating_system
+      ignore_missing: true
+  - convert:
+      field: beyondinsight_password_safe.asset.WorkgroupID
+      type: string
+      if: ctx.beyondinsight_password_safe?.asset?.WorkgroupID != null
+  - rename:
+      field: beyondinsight_password_safe.asset.WorkgroupID
+      target_field: beyondinsight_password_safe.asset.workgroup_id
+      ignore_missing: true
 
 ####################
 # ECS Fields #
@@ -90,13 +86,24 @@ processors:
       value: info
 
   - set:
-      field: event.dataset
-      value: beyondinsight_password_safe.asset
+      field: host.name
+      copy_from: beyondinsight_password_safe.asset.asset_name
 
-  - set:
-      field: event.module
-      value: beyondinsight_password_safe
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.asset.asset_name}}}'
+      allow_duplicates: false
+      if: ctx.beyondinsight_password_safe.asset.asset_name != null
 
+  - gsub:
+      field: beyondinsight_password_safe.asset.mac_address
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_mac_address
+  - uppercase:
+      field: beyondinsight_password_safe.asset.mac_address
+      ignore_missing: true
   - append:
       if: ctx.beyondinsight_password_safe.asset?.mac_address != null && ctx.beyondinsight_password_safe.asset.mac_address != ''
       field: host.mac
@@ -130,33 +137,29 @@ processors:
       if: ctx.beyondinsight_password_safe.asset.domain_name != null
 
  #################### Override host.ip ######################
-
   - gsub:
-      field: "beyondinsight_password_safe.asset.ipaddress"
+      description: Remove leading zeros from IP address octets.
+      field: beyondinsight_password_safe.asset.ip_address
       pattern: "\\b0+(\\d)"
       replacement: "$1"
-
+      if: ctx.beyondinsight_password_safe?.asset?.ip_address != null
   - convert:
-      field: beyondinsight_password_safe.asset.ipaddress
-      target_field: beyondinsight_password_safe.asset.ipaddress
+      field: beyondinsight_password_safe.asset.ip_address
       type: ip
-      if: ctx.beyondinsight_password_safe.asset?.ipaddress != null && ctx.beyondinsight_password_safe.asset.ipaddress != ''
-      ignore_missing: true
-    
+      if: ctx.beyondinsight_password_safe?.asset?.ip_address != null
+      on_failure:
+        - remove:
+            field: beyondinsight_password_safe.asset.ip_address
   - append:
+      if: ctx.beyondinsight_password_safe?.asset.ip_address != null
+      field: host.ip
+      value: "{{{beyondinsight_password_safe.asset.ip_address}}}"
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.asset.ip_address != null
       field: related.hosts
-      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
+      value: '{{{beyondinsight_password_safe.asset.ip_address}}}'
       allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.asset.ipaddress != null
-
-  - append:
-      field: host.ip
-      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
-      allow_duplicates: false
-
-  - append:
-      field: host.ip
-      value: "{{{beyondinsight_password_safe.asset.ipaddress}}}"
 
   - geoip:
       field: host.ip
@@ -165,9 +168,12 @@ processors:
       ignore_failure: true
 
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
