@@ -1,0 +1,191 @@
+# BeyondInsight API - UserAudits Test Mock Configuration
+#
+# This scenario will test session  expiration with reauthentication, offset-based
+# pagination, and validate that the startdate is updated only after offset-based
+# pagination completes.
+#
+# NOTE: According to the API docs, the "records are sorted by CreateDate in
+# descending order (latest entries are shown first)."
+#
+# First periodic execution behavior:
+# 1. Authentication: Establishes session via /Auth/SignAppin, receives cookie
+# 2. First Page (offset=0): Requests 3 records, updates newest_event_time to most recent record (2025-08-22T10:30:00Z)
+# 3. Pagination Setup: Sets current_offset=3, in_pagination=true, maintains same time window
+# 4. Session Expiration: Second request (offset=3) returns 401 - session expired during pagination
+# 5. Re-authentication: Automatically re-establishes session, preserves pagination state
+# 6. Pagination Resume: Continues from offset=3 with new session cookie, retrieves remaining 2 records
+# 7. Completion: TotalCount=5 equals retrieved count (3+2)
+#
+# Second periodic execution behavior:
+# 1. Single request with offset=0 and starttime is newest_event_time from previous execution
+
+rules:
+  # Auth.
+  - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key; runas=testuser; pwd=\[password\];']
+      Content-Type: ['application/json']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+        body: |
+          {{ minify_json `
+          {
+            "UserId": 1,
+            "SID": null,
+            "EmailAddress": "test.user@example.com",
+            "UserName": "testuser",
+            "Name": "Test User"
+          }
+          `}}
+
+  # Request 4 - Start of 2nd periodic execution.
+  - path: "/BeyondTrust/api/public/v3/UserAudits"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
+    query_params:
+      offset: 0
+      limit: 3
+      startdate: '2025-08-22T10:30:00Z' # Newest time from initial interval.
+      enddate: "{enddate:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "AuditID": 6,
+                      "ActionType": "Login",
+                      "Section": "Authentication",
+                      "UserID": 111,
+                      "UserName": "testuser3@example.com",
+                      "IPAddress": "192.0.2.59",
+                      "CreateDate": "2025-08-22T11:00:00Z"
+                  }
+              ],
+              "TotalCount": 1
+          }
+          `}}
+
+  # Request 3.
+  - path: "/BeyondTrust/api/public/v3/UserAudits"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
+    query_params:
+      offset: 3
+      limit: 3
+      startdate: "{startdate:.*}"
+      enddate: "{enddate:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "AuditID": 2,
+                      "ActionType": "Logout",
+                      "Section": "Authentication",
+                      "UserID": 104,
+                      "UserName": "testuser2@example.com",
+                      "IPAddress": "192.0.2.50",
+                      "CreateDate": "2025-08-22T10:15:00Z"
+                  },
+                  {
+                      "AuditID": 1,
+                      "ActionType": "AccessDenied",
+                      "Section": "Authorization",
+                      "UserID": 105,
+                      "UserName": "guest.user",
+                      "IPAddress": "203.0.113.100",
+                      "CreateDate": "2025-08-22T10:10:00Z"
+                  }
+              ],
+              "TotalCount": 5
+          }
+          `}}
+
+  # Request 2.
+  - path: "/BeyondTrust/api/public/v3/UserAudits"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    query_params:
+      offset: 3
+      limit: 3
+      startdate: "{startdate:.*}"
+      enddate: "{enddate:.*}"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type: ['application/json']
+        body: >-
+          "User not authenticated"
+
+  # Request 1.
+  - path: "/BeyondTrust/api/public/v3/UserAudits"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    query_params:
+      offset: 0
+      limit: 3
+      startdate: "{startdate:.*}" # now - initial_interval
+      enddate: "{enddate:.*}"     # now
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "AuditID": 5,
+                      "ActionType": "Login",
+                      "Section": "Authentication",
+                      "UserID": 101,
+                      "UserName": "admin@example.com",
+                      "IPAddress": "198.51.100.15",
+                      "CreateDate": "2025-08-22T10:30:00Z"
+                  },
+                  {
+                      "AuditID": 4,
+                      "ActionType": "PasswordAccess",
+                      "Section": "ManagedSystems",
+                      "UserID": 102,
+                      "UserName": "user.smith",
+                      "IPAddress": "198.51.100.25",
+                      "CreateDate": "2025-08-22T10:25:00Z"
+                  },
+                  {
+                      "AuditID": 3,
+                      "ActionType": "SystemConfiguration",
+                      "Section": "Settings",
+                      "UserID": 103,
+                      "UserName": "config.admin",
+                      "IPAddress": "203.0.113.10",
+                      "CreateDate": "2025-08-22T10:20:00Z"
+                  }
+              ],
+              "TotalCount": 5
+          }
+          `}}
+      - status_code: 418
+        headers:
+          Content-Type: ['text/plain']
+        body: Program should never request this. {{.request.vars}}

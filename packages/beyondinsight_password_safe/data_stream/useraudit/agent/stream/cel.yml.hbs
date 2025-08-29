@@ -18,98 +18,259 @@ resource.ssl: {{ssl}}
 state:
   initial_interval: {{initial_interval}}
   limit: {{limit}}
-  apikey: {{apikey}}
-  password: {{password}}
-  username: {{username}}
-  preserve_original_event: true
+  apikey: {{escape_string apikey}}
+  password: {{escape_string password}}
+  username: {{escape_string username}}
 redact:
   fields:
     - apikey
+    - password
+{{!--
+API References:
+  https://docs.beyondtrust.com/bips/docs/api#post-authsignappin
+  https://docs.beyondtrust.com/bips/docs/beyondinsight-apis#get-useraudits
+
+Cursor variable definitions:
+  newest_event_time: CreateDate of most recent record, only updated from offset=0
+  current_startdate: Start of current time window, preserved during pagination
+  current_enddate: End of current time window, preserved during pagination  
+  current_offset: API offset parameter, incremented during pagination, reset on new time window
+  in_pagination: Boolean indicating if currently paginating through a time window
+--}}
 program: |-
-  state.?cursor.cookies.orValue(
-  	// Authenticating using API to retrieve Cookie
-  	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
-  		{
-  			"Header": {
-  				"Authorization": [
-  					"PS-Auth key=" + state.apikey + ";runas=" + state.username + ((state.?password.orValue("") != "") ? (";pwd=[" + state.password + "];") : ""),
-  				],
-  				"Content-Type": ["application/json"],
-  			},
-  		}
-  	).do_request().as(resp, resp.StatusCode == 200 ?
-  		resp.Header["Set-Cookie"]
-  	:
-  		{
-  			"events": {
-  				"error": {
-  					"code": string(resp.StatusCode),
-  					"id": string(resp.Status),
-  					"message": "POST " + state.url.trim_right("/") + "/Auth/SignAppin: " + 
-  					(
-  						(size(resp.Body) != 0) ?
-  							string(resp.Body)
-  						:
-  							string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-  					),
-  				},
-  			},
-  			"want_more": false,
-  		}
-  	)
-  ).as(cookies, type(cookies) == map ?
-  	// Early return on POST request failure; on success, cookies is a list.
-  	state.with(cookies)
+  state.with(
+    has(state.?cursor.cookies) ?
+      // Fetch user audits using an authenticated session.
+      request(
+        "GET",
+        state.url.trim_suffix("/") + "/UserAudits?" + {
+          "limit": [string(state.limit)],
+          "startdate": [
+            has(state.?cursor.current_startdate) ?
+              state.cursor.current_startdate
+            :
+              (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"),
+          ],
+          "enddate": [
+            has(state.?cursor.current_enddate) ?
+              state.cursor.current_enddate
+            :
+              now.format("2006-01-02T15:04:05Z"),
+          ],
+          "offset": [
+            has(state.?cursor.current_offset) ?
+              string(state.cursor.current_offset)
+            :
+              "0",
+          ],
+        }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/json"],
+            "Cookie": state.cursor.cookies,
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          // Success: process JSON response with Data array of user audit objects.
+          // Records are sorted by CreateDate in descending order (latest entries first).
+          resp.Body.decode_json().as(body,
+            (
+              (!has(state.?cursor.current_offset) || int(state.cursor.current_offset) == 0) &&
+              size(body.Data) > 0
+            ) ?
+              // Update newest_event_time only from first page (offset=0) to maintain high water mark
+              {
+                "events": body.Data.map(e,
+                  {
+                    "event": {
+                      "original": e.encode_json(),
+                    },
+                  }
+                ),
+                "want_more": body.TotalCount > size(body.Data),
+                "cursor": {
+                  "cookies": state.cursor.cookies,
+                  "newest_event_time": body.Data[0].CreateDate,
+                  "current_startdate": (body.TotalCount > size(body.Data)) ?
+                    (
+                      // More pages in current time window - keep same startdate
+                      has(state.?cursor.current_startdate) ?
+                        state.cursor.current_startdate
+                      :
+                        (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")
+                    )
+                  :
+                    // Finished current time window - move to newest_event_time
+                    body.Data[0].CreateDate,
+                  "current_enddate": (body.TotalCount > size(body.Data)) ?
+                    (
+                      // More pages in current time window - keep same enddate
+                      has(state.?cursor.current_enddate) ?
+                        state.cursor.current_enddate
+                      :
+                        now.format("2006-01-02T15:04:05Z")
+                    )
+                  :
+                    // Finished current time window - move to current time
+                    now.format("2006-01-02T15:04:05Z"),
+                  "current_offset": (body.TotalCount > size(body.Data)) ?
+                    // More pages in current time window - increment offset
+                    int(state.limit)
+                  :
+                    // Finished current time window - reset offset
+                    0,
+                  "in_pagination": body.TotalCount > size(body.Data),
+                },
+                "retries": 0,
+              }
+            :
+              // Not first page or no data - don't update newest_event_time
+              {
+                "events": body.Data.map(e,
+                  {
+                    "event": {
+                      "original": e.encode_json(),
+                    },
+                  }
+                ),
+                "want_more": body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data),
+                "cursor": {
+                  "cookies": state.cursor.cookies,
+                  "newest_event_time": has(state.?cursor.newest_event_time) ?
+                    state.cursor.newest_event_time
+                  :
+                    (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"),
+                  "current_startdate": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
+                    (
+                      // More pages in current time window - keep same startdate
+                      has(state.?cursor.current_startdate) ?
+                        state.cursor.current_startdate
+                      :
+                        (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")
+                    )
+                  : has(state.?cursor.newest_event_time) ?
+                    state.cursor.newest_event_time
+                  :
+                    (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"),
+                  "current_enddate": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
+                    (
+                      // More pages in current time window - keep same enddate
+                      has(state.?cursor.current_enddate) ?
+                        state.cursor.current_enddate
+                      :
+                        now.format("2006-01-02T15:04:05Z")
+                    )
+                  :
+                    // Finished current time window - move to current time
+                    now.format("2006-01-02T15:04:05Z"),
+                  "current_offset": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
+                    (int(state.?cursor.current_offset.orValue(0)) + int(state.limit))
+                  :
+                    // Finished current time window - reset offset
+                    0,
+                  "in_pagination": body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data),
+                },
+                "retries": 0,
+              }
+          )
+        : (resp.StatusCode == 401) ?
+          (
+            // Authentication failure: clear session cookie and retry once.
+            (int(state.?retries.orValue(0)) == 0) ?
+              {
+                "events": [
+                  // Must produce an event for want_more=true to be honored.
+                  {"cel": true},
+                ],
+                "retries": 1,
+                "want_more": true,
+                "cursor": (state.?cursor.optMap(c, c.drop("cookies"))).orValue({}),
+              }
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "Authentication failed after retry: " + "GET " + state.url.trim_suffix("/") + "/UserAudits: " + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        :
+          // Handle all other HTTP error responses.
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_suffix("/") + "/UserAudits: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    :
+      // Establish new authenticated session.
+      request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+        {
+          "Header": {
+            "Authorization": [
+              sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+              ((state.password != "") ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+            ],
+            "Content-Type": ["application/json"],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          {
+            "events": [
+              // Must produce an event for want_more=true to be honored.
+              {"cel": true},
+            ],
+            "cursor": state.?cursor.orValue({}).with(
+              {
+                "cookies": resp.Header["Set-Cookie"],
+              }
+            ),
+            "want_more": true,
+          }
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "Failed to create session: " + "POST " + state.url.trim_suffix("/") + "/Auth/SignAppin: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+  ).as(state, (state.want_more == false) ?
+    // Reset retry counter when execution completes.
+    state.drop("retries")
   :
-  	{
-  		"limit": [string(state.limit)],
-  		"startdate": [string(state.?cursor.startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02 15:04:05")))],
-  		"enddate": [string(state.?cursor.enddate.orValue(""))],
-  	}.as(params,
-  		request(
-  			"GET",
-  			state.url.trim_suffix("/") + "/UserAudits?" + params.format_query()
-  		).with(
-  			{
-  				"Header": {
-  					"Content-Type": ["application/json"],
-  					"Cookie": cookies,
-  				},
-  			}
-  		).do_request().as(resp,
-  			(resp.StatusCode == 401) ?
-  				state.drop("cursor.cookies").with(
-  					{
-  						"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
-  						"want_more": true,
-  					}
-  				)
-  			:
-  				bytes(resp.Body).decode_json().as(body,
-  					(size(body.Data) > 0 && int(body.TotalCount) > int(state.limit)).as(wantMore,
-  						state.with(
-  							{
-  								"events": body.Data.map(e,
-  									{
-  										"message": e,
-  										?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
-  									}
-  								),
-  								"want_more": wantMore,
-  								"cursor": {
-  									"cookies": cookies,
-  									"enddate": string(wantMore ? body.Data[size(body.Data) - 1].CreateDate : ""),
-  									"nextStartdate": wantMore ? state.?cursor.nextStartdate.orValue(body.Data[0].CreateDate) : null,
-  									"startdate": wantMore ?
-  										(params.startdate[0])
-  									: (state.?cursor.?nextStartdate.orValue(null) != null) ? state.cursor.nextStartdate : body.Data[0].CreateDate,
-  								},
-  							}
-  						)
-  					)
-  				)
-  		)
-  	)
+    state
   )
 tags:
 {{#if preserve_original_event}}
@@ -121,7 +282,9 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
+
 processors:
+- drop_event.when.equals.cel: true
+{{#if processors}}
 {{processors}}
 {{/if}}
