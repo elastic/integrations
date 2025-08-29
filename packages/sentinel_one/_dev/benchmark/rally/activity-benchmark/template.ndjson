@@ -1,0 +1,165 @@
+{{/* Unescaped event template:
+{
+  "accountId": "{{ $accountId }}",
+  "accountName": "{{ $accountName }}",
+  "activityType": "{{ $activityType }}",
+  "activityUuid": "{{ $activityUuid }}",
+  "createdAt": "{{ $createdAt }}",
+  "data": {
+    "accountName": "{{ $accountName }}",
+    "ipAddress": "{{ $ipAddress }}",
+    "scopeLevel": "{{ $scopeLevel }}",
+    {{- if eq $scopeLevel "Account" }}
+    "fullScopeDetails": "Account {{ $accountName }}",
+    "fullScopeDetailsPath": "Global / {{ $accountName }}",
+    "scopeName": "{{ $accountName }}",
+    {{- else if eq $scopeLevel "Site" }}
+    "fullScopeDetails": "Site {{ $siteName }} of Account {{ $accountName }}",
+    "fullScopeDetailsPath": "Global / {{ $accountName }} / {{ $siteName }}",
+    "scopeName": "{{ $siteName }}",
+    "siteName": "{{ $siteName }}",
+    {{- else }}
+    "fullScopeDetails": "Group {{ $groupName }} in Site {{ $siteName }} of Account {{ $accountName }}",
+    "fullScopeDetailsPath": "Global / {{ $accountName }} / {{ $siteName }} / {{ $groupName }}",
+    "scopeName": "{{ $groupName }}",
+    "siteName": "{{ $siteName }}",
+    "groupName": "{{ $groupName }}",
+    {{- end }}
+    {{- if eq $activityType "19" }}
+    "computerName": "{{ $computerName }}",
+    "escapedMaliciousProcessArguments": "\"{{ $fileDisplayName }}\"",
+    "fileContentHash": "{{ $fileContentHash }}",
+    "fileDisplayName": "{{ $fileDisplayName }}",
+    "filePath": "/{{ $filePath }}/{{ $fileDisplayName }}",
+    "confidenceLevel": "{{ $confidenceLevel }}",
+    "newConfidenceLevel": "{{ $newConfidenceLevel }}",
+      {{- if eq $newConfidenceLevel "malicious" }}
+    "oldConfidenceLevel": "suspicious",
+      {{- else }}
+    "oldConfidenceLevel": "malicious",
+      {{- end }}
+    "sourceType": "{{ $sourceType }}",
+    "threatClassification": "{{ $threatClassification }}",
+    "threatClassificationSource": "{{ $threatClassificationSource }}"
+    {{- else if eq $activityType "27" }}
+    "realUser": "{{ $realUser }}",
+    "role": "{{ $role }}",
+    "source": "{{ $source }}",
+    "sourceType": "{{ $sourceType }}",
+    "userScope": "{{ $userScope }}",
+    "username": "{{ $username }}"
+    {{- else }}
+    "accountId": {{ $accountId }},
+    "byUser": "{{ $byUser }}",
+    "realUser": "{{ $realUser }}",
+    "role": "{{ $role }}",
+    "sourceType": "{{ $sourceType }}",
+    "userScope": "{{ $userScope }}",
+    "username": "{{ $username }}"
+    {{- end }}
+  },
+  {{- if eq $scopeLevel "Site" }}
+  "siteId": "{{ $siteId }}",
+  "siteName": "{{ $siteName }}",
+  {{- else if eq $scopeLevel "Group" }}
+  "siteId": "{{ $siteId }}",
+  "siteName": "{{ $siteName }}",
+  "groupId": "{{ $groupId }}",
+  "groupName": "{{ $groupName }}",
+  {{- end }}
+  {{- if eq $activityType "19" }}
+  "agentId": "{{ $agentId }}",
+  "threatId": "{{ $threatId }}",
+  "primaryDescription": "Threat with confidence level {{ $confidenceLevel }} detected: {{ $fileDisplayName }}",
+  "secondaryDescription": "{{ $fileContentHash }}\nIP address: {{ $ipAddress }}",
+  {{- else if eq $activityType "27" }}
+  "primaryDescription": "The management user {{ $username }} logged in to the management console with IP Address {{ $ipAddress }}.",
+  "secondaryDescription": "IP address: {{ $ipAddress }}",
+  "userId": "{{ $userId }}",
+  {{- else }}
+  "description": "{{ $description }}",
+  "primaryDescription": "The management user {{ $byUser }} added user {{ $username }} as {{ $role }}.",
+  "secondaryDescription": "IP address: {{ $ipAddress }}",
+  "userId": "{{ $userId }}",
+  {{- end }}
+  "hash": "{{ $hash }}",
+  "id": "{{ $id }}",
+  "osFamily": "{{ $osFamily }}",
+  "updatedAt": "{{ $updatedAt }}"
+}
+*/}}
+
+{{- /*  common data */ -}}
+{{- $timestamp := generate "timestamp" }}
+{{- $accountId := generate "accountId" }}
+{{- $accountName := generate "accountName" }}
+{{- $activityType := generate "activityType" }}
+{{- $activityUuid := generate "activityUuid" }}
+{{- $createdAt := generate "createdAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- $groupId := generate "groupId" }}
+{{- $groupName := generate "groupName" }}
+{{- $hash := generate "hash" }}
+{{- $id := generate "id" }}
+{{- $ipAddress := generate "ipAddress" }}
+{{- $osFamily := generate "osFamily" }}
+{{- $siteId := generate "siteId" }}
+{{- $siteName := generate "siteName" }}
+{{- $sourceType := generate "sourceType" }}
+{{- $updatedAt := generate "updatedAt" | date "2006-01-02T15:04:05.000000Z" }}
+{{- /*  threat data */ -}}
+{{- $agentId := generate "agentId" }}
+{{- $computerName := generate "computerName" }}
+{{- $confidenceLevel := generate "confidenceLevel" }}
+{{- $fileExtension := generate "fileExtension" }}
+{{- $fileName := generate "fileName" }}
+{{- $fileDisplayName := print $fileName "." $fileExtension }}
+{{- $filePath := generate "filePath" }}
+{{- $fileContentHash := generate "fileContentHash" }}
+{{- $newConfidenceLevel := generate "newConfidenceLevel" }}
+{{- $threatId := generate "threatId" }}
+{{- $threatClassification := generate "threatClassification" }}
+{{- $threatClassificationSource := generate "threatClassificationSource" }}
+{{- /*  authentication data */ -}}
+{{- $scopeLevel := generate "scopeLevel" }}
+{{- $realUser := generate "realUser" }}
+{{- $role := generate "role" }}
+{{- $source := generate "source" }}
+{{- $userScope := generate "userScope" }}
+{{- $username := generate "username" }}
+{{- $userId := generate "userId" }}
+{{- /*  configuration change data */ -}}
+{{- $byUser := generate "byUser" }}
+{{- $description := generate "description" }}
+
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "sentinel_one.activity",
+        "namespace": "93724",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "message": "{\"accountId\":\"{{ $accountId }}\",\"accountName\":\"{{ $accountName }}\",\"activityType\":\"{{ $activityType }}\",\"activityUuid\":\"{{ $activityUuid }}\",\"createdAt\":\"{{ $createdAt }}\",\"data\":{\"accountName\":\"{{ $accountName }}\",\"ipAddress\":\"{{ $ipAddress }}\",\"scopeLevel\":\"{{ $scopeLevel }}\",{{- if eq $scopeLevel "Account" }}\"fullScopeDetails\":\"Account {{ $accountName }}\",\"fullScopeDetailsPath\":\"Global / {{ $accountName }}\",\"scopeName\":\"{{ $accountName }}\",{{- else if eq $scopeLevel "Site" }}\"fullScopeDetails\":\"Site {{ $siteName }} of Account {{ $accountName }}\",\"fullScopeDetailsPath\":\"Global / {{ $accountName }} / {{ $siteName }}\",\"scopeName\":\"{{ $siteName }}\",\"siteName\":\"{{ $siteName }}\",{{- else }}\"fullScopeDetails\":\"Group {{ $groupName }} in Site {{ $siteName }} of Account {{ $accountName }}\",\"fullScopeDetailsPath\":\"Global / {{ $accountName }} / {{ $siteName }} / {{ $groupName }}\",\"scopeName\":\"{{ $groupName }}\",\"siteName\":\"{{ $siteName }}\",\"groupName\":\"{{ $groupName }}\",{{- end }}{{- if eq $activityType "19" }}\"computerName\":\"{{ $computerName }}\",\"escapedMaliciousProcessArguments\":\"\\\"{{ $fileDisplayName }}\\\"\",\"fileContentHash\":\"{{ $fileContentHash }}\",\"fileDisplayName\":\"{{ $fileDisplayName }}\",\"filePath\":\"/{{ $filePath }}/{{ $fileDisplayName }}\",\"confidenceLevel\":\"{{ $confidenceLevel }}\",\"newConfidenceLevel\":\"{{ $newConfidenceLevel }}\",{{- if eq $newConfidenceLevel "malicious" }}\"oldConfidenceLevel\":\"suspicious\",{{- else }}\"oldConfidenceLevel\":\"malicious\",{{- end }}\"sourceType\":\"{{ $sourceType }}\",\"threatClassification\":\"{{ $threatClassification }}\",\"threatClassificationSource\":\"{{ $threatClassificationSource }}\"{{- else if eq $activityType "27" }}\"realUser\":\"{{ $realUser }}\",\"role\":\"{{ $role }}\",\"source\":\"{{ $source }}\",\"sourceType\":\"{{ $sourceType }}\",\"userScope\":\"{{ $userScope }}\",\"username\":\"{{ $username }}\"{{- else }}\"accountId\":{{ $accountId }},\"byUser\":\"{{ $byUser }}\",\"realUser\":\"{{ $realUser }}\",\"role\":\"{{ $role }}\",\"sourceType\":\"{{ $sourceType }}\",\"userScope\":\"{{ $userScope }}\",\"username\":\"{{ $username }}\"{{- end }}},{{- if eq $scopeLevel "Site" }}\"siteId\":\"{{ $siteId }}\",\"siteName\":\"{{ $siteName }}\",{{- else if eq $scopeLevel "Group" }}\"siteId\":\"{{ $siteId }}\",\"siteName\":\"{{ $siteName }}\",\"groupId\":\"{{ $groupId }}\",\"groupName\":\"{{ $groupName }}\",{{- end }}{{- if eq $activityType "19" }}\"agentId\":\"{{ $agentId }}\",\"threatId\":\"{{ $threatId }}\",\"primaryDescription\":\"Threat with confidence level {{ $confidenceLevel }} detected:{{ $fileDisplayName }}\",\"secondaryDescription\":\"{{ $fileContentHash }}\\nIP address: {{ $ipAddress }}\",{{- else if eq $activityType "27" }}\"primaryDescription\":\"The management user {{ $username }} logged in to the management console with IP Address {{ $ipAddress }}.\",\"secondaryDescription\":\"IP address: {{ $ipAddress }}\",\"userId\":\"{{ $userId }}\",{{- else }}\"description\":\"{{ $description }}\",\"primaryDescription\":\"The management user {{ $byUser }} added user {{ $username }} as {{ $role }}.\",\"secondaryDescription\":\"IP address: {{ $ipAddress }}\",\"userId\":\"{{ $userId }}\",{{- end }}\"hash\":\"{{ $hash }}\",\"id\":\"{{ $id }}\",\"osFamily\":\"{{ $osFamily }}\",\"updatedAt\":\"{{ $updatedAt }}\"}",
+    "event": {
+        "dataset": "sentinel_one.activity"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "sentinel_one-activity"
+    ]
+}
