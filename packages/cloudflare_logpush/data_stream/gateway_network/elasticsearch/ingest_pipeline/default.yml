@@ -293,6 +293,11 @@ processors:
       if: ctx.cloudflare_logpush?.gateway_network?.override?.ip != null
       allow_duplicates: false
   - append:
+      field: related.ip
+      value: "{{{cloudflare_logpush.gateway_network.source.internal_ip}}}"
+      if: ctx.cloudflare_logpush?.gateway_network?.source?.internal_ip != null
+      allow_duplicates: false
+  - append:
       field: related.hosts
       value: "{{{destination.domain}}}"
       if: ctx.destination?.domain != null
