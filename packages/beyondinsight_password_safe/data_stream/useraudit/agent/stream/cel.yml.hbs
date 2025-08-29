@@ -67,9 +67,7 @@ program: |-
           // Success: process JSON response with Data array of user audit objects.
           // Records are sorted by CreateDate in descending order (latest entries first).
           resp.Body.decode_json().as(body,
-            (
-              int(state.?cursor.current_offset.orValue(0)) == 0 && size(body.Data) > 0
-            ) ?
+            (int(state.?cursor.current_offset.orValue(0)) == 0 && size(body.Data) > 0) ?
               // Update newest_event_time only from first page (offset=0) to maintain high water mark
               {
                 "events": body.Data.map(e,
@@ -84,18 +82,14 @@ program: |-
                   "cookies": state.cursor.cookies,
                   "newest_event_time": body.Data[0].CreateDate,
                   "current_startdate": (body.TotalCount > size(body.Data)) ?
-                    (
-                      // More pages in current time window - keep same startdate
-                      state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))
-                    )
+                    // More pages in current time window - keep same startdate
+                    state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))
                   :
                     // Finished current time window - move to newest_event_time
                     body.Data[0].CreateDate,
                   "current_enddate": (body.TotalCount > size(body.Data)) ?
-                    (
-                      // More pages in current time window - keep same enddate
-                      state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z"))
-                    )
+                    // More pages in current time window - keep same enddate
+                    state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z"))
                   :
                     // Finished current time window - move to current time
                     now.format("2006-01-02T15:04:05Z"),
@@ -124,19 +118,15 @@ program: |-
                   "cookies": state.cursor.cookies,
                   "newest_event_time": state.?cursor.newest_event_time.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")),
                   "current_startdate": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
-                    (
-                      // More pages in current time window - keep same startdate
-                      state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))
-                    )
+                    // More pages in current time window - keep same startdate
+                    state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))
                   : has(state.?cursor.newest_event_time) ?
                     state.cursor.newest_event_time
                   :
                     (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"),
                   "current_enddate": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
-                    (
-                      // More pages in current time window - keep same enddate
-                      state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z"))
-                    )
+                    // More pages in current time window - keep same enddate
+                    state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z"))
                   :
                     // Finished current time window - move to current time
                     now.format("2006-01-02T15:04:05Z"),
