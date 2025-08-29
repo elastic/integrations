@@ -52,10 +52,14 @@ For more information on implementation, see the Amazon documentation on:
 This integration supports various plain text VPC flow log formats:
 
 * The default pattern of 14 version 2 fields
-* A custom pattern including all 39 fields, version 2 though 7:
+* A custom pattern including all 40 fields, version 2 though 8:
 
 ```
-${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path} ${ecs-cluster-arn} ${ecs-cluster-name} ${ecs-container-instance-arn} ${ecs-container-instance-id} ${ecs-container-id} ${ecs-second-container-id} ${ecs-service-name} ${ecs-task-definition-arn} ${ecs-task-arn} ${ecs-task-id}
+${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path} ${ecs-cluster-arn} ${ecs-cluster-name} ${ecs-container-instance-arn} ${ecs-container-instance-id} ${ecs-container-id} ${ecs-second-container-id} ${ecs-service-name} ${ecs-task-definition-arn} ${ecs-task-arn} ${ecs-task-id} ${reject-reason}
+```
+* Version 6 transit gateway VPC flow format:
+```
+${version} ${resource-type} ${account-id} ${tgw-id} ${tgw-attachment-id} ${tgw-src-vpc-account-id} ${tgw-dst-vpc-account-id} ${tgw-src-vpc-id} ${tgw-dst-vpc-id} ${tgw-src-subnet-id} ${tgw-dst-subnet-id} ${tgw-src-eni} ${tgw-dst-eni} ${tgw-src-az-id} ${tgw-dst-az-id} ${tgw-pair-attachment-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${log-status} ${type} ${packets-lost-no-route} ${packets-lost-blackhole} ${packets-lost-mtu-exceeded} ${packets-lost-ttl-expired} ${tcp-flags} ${region} ${flow-direction} ${pkt-src-service} ${pkt-dst-service}
 ```
 
 ### Advanced options
@@ -157,17 +161,17 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2014-12-14T04:07:50.000Z",
     "agent": {
-        "ephemeral_id": "428be1f2-3a8e-4652-80bb-daf139b70de1",
-        "id": "ad4c03c3-fd1d-4b0c-96d9-12816a039fbf",
-        "name": "elastic-agent-39465",
+        "ephemeral_id": "e40a4ff2-5014-4e73-b739-ba3e97b54cb3",
+        "id": "60c7c230-415e-4699-b658-b052c2ca13d5",
+        "name": "elastic-agent-74905",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-52602",
-                "name": "elastic-package-aws-bucket-52602"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-10802",
+                "name": "elastic-package-aws-bucket-10802"
             },
             "object": {
                 "key": "extra-samples.log"
@@ -190,7 +194,7 @@ An example event for `vpcflow` looks as following:
     },
     "data_stream": {
         "dataset": "aws.vpcflow",
-        "namespace": "16923",
+        "namespace": "74125",
         "type": "logs"
     },
     "destination": {
@@ -220,7 +224,7 @@ An example event for `vpcflow` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ad4c03c3-fd1d-4b0c-96d9-12816a039fbf",
+        "id": "60c7c230-415e-4699-b658-b052c2ca13d5",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -232,7 +236,7 @@ An example event for `vpcflow` looks as following:
         ],
         "dataset": "aws.vpcflow",
         "end": "2014-12-14T04:07:50.000Z",
-        "ingested": "2025-08-22T08:40:58Z",
+        "ingested": "2025-08-29T10:18:26Z",
         "kind": "event",
         "original": "2 123456789010 eni-1235b8ca123456789 89.160.20.156 89.160.20.156 20641 22 6 20 4249 1418530010 1418530070 ACCEPT OK",
         "outcome": "success",
@@ -247,7 +251,7 @@ An example event for `vpcflow` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-52602.s3.us-east-1.amazonaws.com/extra-samples.log"
+            "path": "https://elastic-package-aws-bucket-10802.s3.us-east-1.amazonaws.com/extra-samples.log"
         },
         "offset": 338
     },
