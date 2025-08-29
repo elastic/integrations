@@ -39,7 +39,12 @@ response.pagination:
       do_not_log_failure: true
   - set:
       target: url.params.cursor
-      value: '[[if index .last_response.body.metadata "cursor"]][[.last_response.body.metadata.cursor]][[end]]'
+      value: >-
+        [[- if index .last_response.body.metadata "cursor" -]]
+          [[.last_response.body.metadata.cursor]]
+        [[- else -]]
+          [[- terminate "stop pagination" -]]
+        [[end]]
       fail_on_template_error: true
       do_not_log_failure: true
 response.split:
