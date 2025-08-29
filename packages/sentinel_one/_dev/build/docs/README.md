@@ -73,6 +73,14 @@ This is the `application` dataset.
 
 {{fields "application"}}
 
+### application risk
+
+This is the `application risk` dataset.
+
+{{event "application_risk"}}
+
+{{fields "application_risk"}}
+
 ### group
 
 This is the `group` dataset.
@@ -88,11 +96,3 @@ This is the `threat` dataset.
 {{event "threat"}}
 
 {{fields "threat"}}
-
-### application risk
-
-This is the `application risk` dataset.
-
-{{event "application_risk"}}
-
-{{fields "application_risk"}}

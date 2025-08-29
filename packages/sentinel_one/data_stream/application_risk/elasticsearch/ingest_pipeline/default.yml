@@ -29,7 +29,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      value: event
+      value: state
   - append:
       field: event.type
       tag: append_info_into_event_type
@@ -312,6 +312,11 @@ processors:
       field: vulnerability.package.published_date
       tag: set_vulnerability_package_publisheddate_from_application_published_date
       copy_from: sentinel_one.application_risk.published_date
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: sentinel_one.application_risk.detection_date
       ignore_empty_value: true
   - rename:
       field: json.reason
