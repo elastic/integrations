@@ -18,8 +18,10 @@ The application logs dataset parses single file format introduced in 3.7.0.
 
 ### Application Logs
 
-Application logs collects standard RabbitMQ logs.
-It will only support RabbitMQ default i.e RFC 3339 timestamp format.
+Application logs collect standard RabbitMQ logs. As of recent RabbitMQ versions, both text-based and JSON log formats are supported. The integration will automatically detect and parse either format.
+
+- **Text logs**: Supported for all versions with standard log output (RFC 3339 timestamp format).
+- **JSON logs**: Supported for RabbitMQ versions that enable JSON logging (see RabbitMQ documentation for enabling JSON logs).
 
 **ECS Field Reference**
 
