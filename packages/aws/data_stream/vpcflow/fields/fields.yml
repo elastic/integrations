@@ -28,6 +28,36 @@
       type: keyword
       description: |
         The AWS account ID for the flow log.
+    - name: ecs_cluster_arn
+      type: keyword
+      description: ARN of the ECS Cluster if the traffic comes from a running ECS Task.
+    - name: ecs_cluster_name
+      type: keyword
+      description: Name of the ECS Cluster if the traffic comes from a running ECS Task.
+    - name: ecs_container_instance_arn
+      type: keyword
+      description: ARN of the ECS Container Instance (for tasks using EC2 launch type).
+    - name: ecs_container_instance_id
+      type: keyword
+      description: ID of the ECS Container Instance (for EC2 launch type).
+    - name: ecs_container_id
+      type: keyword
+      description: Docker runtime ID of the container (first container in the task).
+    - name: ecs_second_container_id
+      type: keyword
+      description: Docker runtime ID of the second container in the task, if present.
+    - name: ecs_service_name
+      type: keyword
+      description: Name of the ECS Service if the task is started by a service.
+    - name: ecs_task_definition_arn
+      type: keyword
+      description: ARN of the ECS Task Definition for the running task.
+    - name: ecs_task_arn
+      type: keyword
+      description: ARN of the ECS Task generating the flow.
+    - name: ecs_task_id
+      type: keyword
+      description: ID of the ECS Task generating the flow.
     - name: interface_id
       type: keyword
       description: |
@@ -56,6 +86,9 @@
       type: keyword
       description: |
         The ID of the VPC that contains the network interface for which the traffic is recorded.
+    - name: resource_type
+      type: keyword
+      description: Indicates whether the record is for a Transit Gateway or a Transit Gateway Attachment.
     - name: subnet_id
       type: keyword
       description: |
@@ -69,10 +102,61 @@
       description: >
         List of TCP flags: 'fin, syn, rst, psh, ack, urg'
 
+    - name: tgw_id
+      type: keyword
+      description: The ID of the Transit Gateway that handled the flow.
+    - name: tgw_attachment_id
+      type: keyword
+      description: The ID of the Transit Gateway attachment (e.g., VPC, VPN, DX, or Peering).
+    - name: tgw_src_vpc_account_id
+      type: keyword
+      description: AWS account ID of the source VPC.
+    - name: tgw_dst_vpc_account_id
+      type: keyword
+      description: AWS account ID of the destination VPC.
+    - name: tgw_src_vpc_id
+      type: keyword
+      description: The ID of the source VPC.
+    - name: tgw_dst_vpc_id
+      type: keyword
+      description: The ID of the destination VPC.
+    - name: tgw_src_subnet_id
+      type: keyword
+      description: The subnet ID associated with the source of the traffic.
+    - name: tgw_dst_subnet_id
+      type: keyword
+      description: The subnet ID associated with the destination of the traffic.
+    - name: tgw_src_eni
+      type: keyword
+      description: The ENI (Elastic Network Interface) ID on the source side of the attachment.
+    - name: tgw_dst_eni
+      type: keyword
+      description: The ENI ID on the destination side of the attachment.
+    - name: tgw_src_az_id
+      type: keyword
+      description: Availability Zone ID for the source attachment.
+    - name: tgw_dst_az_id
+      type: keyword
+      description: Availability Zone ID for the destination attachment.
+    - name: tgw_pair_attachment_id
+      type: keyword
+      description: The paired ingress/egress attachment ID for the flow (depends on flow direction).
     - name: type
       type: keyword
       description: |
         The type of traffic: IPv4, IPv6, or EFA.
+    - name: packets_lost_no_route
+      type: long
+      description: Number of packets dropped because no route was found.
+    - name: packets_lost_blackhole
+      type: long
+      description: Number of packets dropped due to a black hole route.
+    - name: packets_lost_mtu_exceeded
+      type: long
+      description: Number of packets dropped because they exceeded the MTU.
+    - name: packets_lost_ttl_expired
+      type: long
+      description: Number of packets dropped because their TTL expired.
     - name: pkt_dst_service
       type: keyword
       description: |
