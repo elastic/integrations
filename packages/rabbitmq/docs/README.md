@@ -14,12 +14,6 @@ the management plugin (which needs to be installed and enabled). Exchange datase
 
 The application logs dataset parses single file format introduced in 3.7.0.
 
-### Note on RabbitMQ 4.1.3 and above
-
-When upgrading RabbitMQ from version 3.7.4 to 4.1.3, the `/api/nodes` endpoint no longer returns the `rabbitmq.node.queue.index.journal_write` metric in its JSON response. This metric is used in the Kibana dashboard "Queue Index Operations [Metrics RabbitMQ]". As a result, after upgrading to 4.1.3 or later, this metric and related visualizations in the dashboard will be missing or incomplete.
-
-Please consider this limitation when planning upgrades to RabbitMQ 4.1.3 or newer.
-
 ## Logs
 
 ### Application Logs
