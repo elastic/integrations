@@ -1,12 +1,12 @@
 # IIS metrics for OpenTelemetry Collector
 
-The IIS metrics from IIS OTel receiver allow you to monitor [Internet Information Services (IIS) for Windows® Server](https://www.iis.net), a flexible, secure and manageable Web server for hosting anything on the Web. From media streaming to web applications, IIS's scalable and open architecture is ready to handle the most demanding tasks.
+The IIS metrics from IIS OpenTelemetry receiver allow you to monitor [Internet Information Services (IIS) for Windows® Server](https://www.iis.net), a flexible, secure and manageable Web server for hosting anything on the Web. From media streaming to web applications, IIS's scalable and open architecture is ready to handle the most demanding tasks.
 
 The IIS OpenTelemetry assets provide a visual representation of IIS metrics collected via OpenTelemetry ([IIS receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/iisreceiver)).
 
 ## Compatibility
 
-The IIS OTel Assets have been tested with [OpenTelemetry IIS receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and Windows 10 Pro N.
+The IIS OpenTelemetry Assets have been tested with [OpenTelemetry IIS receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and Windows 10 Pro N.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-1. Install and configure the upstream OTel Collector to export metrics to ElasticSearch, as shown in the following example:
+1. Install and configure the upstream OpenTelemetry Collector to export metrics to ElasticSearch, as shown in the following example:
 
 ```yaml
 receivers:
