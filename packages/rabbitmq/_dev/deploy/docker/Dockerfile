@@ -19,13 +19,8 @@ COPY entrypoint.d/async_rabbitmq_consumer.sh /usr/local/bin/async_rabbitmq_consu
 # Copy the Debian stretch APT fix script to the container's /usr/local/bin directory
 COPY fix_debian_stretch_apt.sh /usr/local/bin/fix_debian_stretch_apt.sh
 
-# Make fix_debian_stretch_apt.sh executable and run it to fix apt issues
-# Make the Debian stretch APT fix script executable and run it to fix APT issues for Debian 9
-RUN chmod +x /usr/local/bin/fix_debian_stretch_apt.sh && \
-    /usr/local/bin/fix_debian_stretch_apt.sh
-# Make the entrypoint and async consumer scripts executable
-RUN chmod +x /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/async_rabbitmq_consumer.sh
+# run it to fix APT issues for Debian 9
+RUN /usr/local/bin/fix_debian_stretch_apt.sh
 
 # Install Python 3 and pika for consumer simulation
 # Install Python 3 and the pika library for simulating a RabbitMQ consumer
