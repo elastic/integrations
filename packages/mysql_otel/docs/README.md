@@ -6,7 +6,7 @@ The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics 
 
 ## Compatibility
 
-The MySQL OpenTelemetry Assets have been tested with [OpenTelemetry MySQL receiver v0.129.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/README.md).
+The MySQL OpenTelemetry assets have been tested with [OpenTelemetry MySQL receiver v0.129.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.129.0/receiver/mysqlreceiver/README.md).
 
 Databases tested against:
 - MySQL 8.0, 9.4
