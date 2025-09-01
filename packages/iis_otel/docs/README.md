@@ -6,7 +6,7 @@ The IIS OpenTelemetry assets provide a visual representation of IIS metrics coll
 
 ## Compatibility
 
-The IIS OpenTelemetry Assets have been tested with [OpenTelemetry IIS receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and Windows 10 Pro N.
+The IIS OpenTelemetry assets have been tested with [OpenTelemetry IIS receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and Windows 10 Pro N.
 
 ## Requirements
 
