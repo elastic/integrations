@@ -211,7 +211,7 @@ If you encounter data ingestion errors, you might get the following error messag
 
 > 400 Bad Request
 
-**Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. Check the [Prerequisites](#prerequisites) section for more information.
+**Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. For more information, check the section What do I need to use this integration?
 
 If the error persists, follow these steps:
 
