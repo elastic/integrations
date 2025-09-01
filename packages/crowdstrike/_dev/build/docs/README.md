@@ -256,7 +256,7 @@ and/or `session_token`.
 
 ##### Vulnerability API returns 404 Not found
 
-This error might occur for the following reasons:
+This error may occur for the following reasons:
 1. Too many records in the response.
 2. The pagination token has expired. Tokens expire 120 seconds after a call is made.
 
