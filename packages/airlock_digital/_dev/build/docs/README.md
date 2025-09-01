@@ -1,0 +1,112 @@
+# Airlock Digital Integration for Elastic
+
+## Overview
+
+[Airlock Digital](https://www.airlockdigital.com/) delivers an easy-to-manage and scalable application control solution to protect endpoints with confidence. Built by cybersecurity professionals and trusted by organizations worldwide, Airlock Digital enforces a Deny by Default security posture to block all untrusted code, including unknown applications, unwanted scripts, malware, and ransomware.
+
+The Airlock Digital integration for Elastic allows you to collect logs from, [Airlock Digital REST API](https://api.airlockdigital.com/), then visualise the data in Kibana.
+
+### Compatibility
+
+The Airlock Digital integration is compatible with `v6.1.x` and `v1` version of Airlock Digital REST API.
+
+### How it works
+
+This integration periodically queries the Airlock Digital REST API to retrieve Server Activities logs.
+
+## What data does this integration collect?
+
+This integration collects log messages of the following types:
+
+- `Server Activities`: Collects server activity logs via [Airlock Digital REST API](https://api.airlockdigital.com/#290b4657-17d4-4048-982e-43df95200624).
+
+
+### Supported use cases
+Integrating Airlock Digital server activity logs into Elastic SIEM gives deep visibility into critical system and user-level operations. By monitoring activities across tasks, users, and root-level actions, analysts can quickly identify unauthorized changes, detect policy misuse, and trace suspicious behavior. Purpose-built dashboards provide clear visibility into activity trends, user behaviors, and essential details to support faster investigations and stronger system oversight.
+
+## What do I need to use this integration?
+
+### From Airlock Digital
+
+#### To collect data from the REST API:
+
+1. In order to make the API calls, the User Group to which a user belongs should contain required permissions. You can follow the below steps for that:
+2. Go to the **Settings** and navigate to **Users** tab.
+3. Under **User Group Management** for the respective user group provide **logging/svractivities** roles in the REST API Roles section and click on save.
+
+#### Generate Client API key for Authentication:
+
+1. Log in to your Airlock console.
+2. On the right side of the navigation bar, click on the dropdown with the user’s name and navigate to **My profile** section.
+3. Click on the **Generate API Key** button.
+4. Copy the displayed API key — it will be required later for configuration.
+
+For more details, check [Documentation](https://api.airlockdigital.com/).
+
+## How do I deploy this integration?
+
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+### Agentless-based installation
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+## Setup
+
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **Airlock Digital**.
+3. Select the **Airlock Digital** integration from the search results.
+4. Select **Add Airlock Digital** to add the integration.
+5. Enable and configure only the collection methods which you will use.
+
+    * To **Collect Airlock Digital logs via API**, you'll need to:
+
+        - Configure **URL** and **API Key**.
+        - Enable/Disable the required datasets.
+        - For each dataset, adjust the integration configuration parameters if required, including the Interval, Preserve original event etc. to enable data collection.
+
+6. Select **Save and continue** to save the integration.
+
+### Validation
+
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **Airlock Digital**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### ECS field reference
+
+#### Server Activities
+
+{{fields "server_activities"}}
+
+### Example event
+
+#### Server Activities
+
+{{event "server_activities"}}
+
+### Inputs used
+
+These inputs can be used in this integration:
+
+- [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+### API usage
+
+This integration datasets use the following APIs:
+
+- `Server Activities`: [Airlock Digital REST API](https://api.airlockdigital.com/#290b4657-17d4-4048-982e-43df95200624).
