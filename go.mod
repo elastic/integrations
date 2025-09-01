@@ -12,7 +12,7 @@ require (
 	github.com/elastic/package-registry v1.30.1
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/mod v0.27.0
 	golang.org/x/tools v0.36.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -248,4 +248,4 @@ require (
 	sigs.k8s.io/yaml v1.5.0 // indirect
 )
 
-replace github.com/elastic/package-spec/v3 => github.com/jsoriano/package-spec/v3 v3.0.0-20250825161718-4521e802c14f
+replace github.com/elastic/package-spec/v3 => github.com/jsoriano/package-spec/v3 v3.0.0-20250901092951-42985e598149
