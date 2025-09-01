@@ -1018,8 +1018,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | kafka.jvm.runtime.vm_version | The JVM version. | keyword |  |  |
 | kafka.jvm.threads.current_count | The current number of live threads. | long |  | gauge |
 | kafka.jvm.threads.daemon_count | The current number of daemon threads. | long |  | gauge |
-| kafka.jvm.threads.deadlocked_count | The number of deadlocked threads. | long |  | gauge |
-| kafka.jvm.threads.deadlocked_monitor_count | The number of deadlocked threads in monitor wait. | long |  | gauge |
 | kafka.jvm.threads.peak_count | The peak live thread count. | long |  | gauge |
 | kafka.jvm.threads.total_started_count | The total number of threads started since JVM start. | long |  | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
