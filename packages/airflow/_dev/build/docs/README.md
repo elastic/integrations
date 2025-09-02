@@ -12,7 +12,7 @@ Use the Airflow integration to:
 
 ## Data streams
 
-The Airflow integration gathers metric data.
+The Airflow integration gathers metrics data.
 
 Metrics provide insight into the statistics of Airflow. The `Metric` data stream collected by the Airflow integration is `statsd`, enabling users to monitor and troubleshoot the performance of the Airflow instance.
 
