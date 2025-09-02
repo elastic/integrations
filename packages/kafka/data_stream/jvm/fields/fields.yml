@@ -1,0 +1,311 @@
+- name: kafka.jvm
+  type: group
+  description: >
+    Kafka JVM metrics.
+  fields:
+    - name: metric_fingerprint
+      type: keyword
+      dimension: true
+      description: >
+        Fingerprint of the metrics.
+    - name: runtime
+      type: group
+      description: JVM runtime metrics.
+      fields:
+        - name: uptime
+          type: double
+          description: Uptime of the JVM in milliseconds.
+          unit: ms
+          metric_type: gauge
+        - name: name
+          type: keyword
+          dimension: true
+          description: Name representing the running JVM.
+        - name: vm_name
+          type: keyword
+          dimension: true
+          description: The JVM implementation name.
+        - name: vm_vendor
+          type: keyword
+          dimension: true
+          description: The JVM implementation vendor.
+        - name: vm_version
+          type: keyword
+          dimension: true
+          description: The JVM version.
+
+    - name: memory
+      type: group
+      description: JVM memory metrics.
+      fields:
+        - name: heap_usage
+          type: group
+          description: Heap memory usage metrics.
+          fields:
+            - name: init
+              type: double
+              unit: byte
+              description: Initial heap memory in bytes.
+              metric_type: gauge
+            - name: committed
+              type: double
+              unit: byte
+              description: Committed heap memory in bytes.
+              metric_type: gauge
+            - name: max
+              type: double
+              unit: byte
+              description: Max heap memory in bytes.
+              metric_type: gauge
+            - name: used
+              type: double
+              unit: byte
+              description: Used heap memory in bytes.
+              metric_type: gauge
+        
+        - name: non_heap_usage
+          type: group
+          description: Non-heap memory usage metrics.
+          fields:
+            - name: init
+              type: double
+              unit: byte
+              description: Initial non-heap memory in bytes.
+              metric_type: gauge
+            - name: committed
+              type: double
+              unit: byte
+              description: Committed non-heap memory in bytes.
+              metric_type: gauge
+            - name: max
+              type: double
+              unit: byte
+              description: Max non-heap memory in bytes.
+              metric_type: gauge
+            - name: used
+              type: double
+              unit: byte
+              description: Used non-heap memory in bytes.
+              metric_type: gauge
+        
+        - name: objects_pending_finalization
+          type: long
+          description: The approximate number of objects for which finalization is pending.
+          metric_type: gauge
+
+    - name: memory_pool
+      type: group
+      description: JVM memory pool metrics.
+      fields:
+        - name: name
+          type: keyword
+          dimension: true
+          description: Name of the memory pool.
+        - name: type
+          type: keyword
+          dimension: true
+          description: Type of the memory pool.
+        - name: usage
+          type: group
+          description: Memory usage metrics.
+          fields:
+            - name: init
+              type: double
+              unit: byte
+              description: Initial memory in the pool in bytes.
+              metric_type: gauge
+            - name: committed
+              type: double
+              unit: byte
+              description: Committed memory in the pool in bytes.
+              metric_type: gauge
+            - name: max
+              type: double
+              unit: byte
+              description: Max memory in the pool in bytes.
+              metric_type: gauge
+            - name: used
+              type: double
+              unit: byte
+              description: Used memory in the pool in bytes.
+              metric_type: gauge
+        - name: peak_usage
+          type: group
+          description: Peak memory usage metrics.
+          fields:
+            - name: init
+              type: double
+              unit: byte
+              description: Initial memory for peak usage in bytes.
+              metric_type: gauge
+            - name: committed
+              type: double
+              unit: byte
+              description: Committed memory for peak usage in bytes.
+              metric_type: gauge
+            - name: max
+              type: double
+              unit: byte
+              description: Max memory for peak usage in bytes.
+              metric_type: gauge
+            - name: used
+              type: double
+              unit: byte
+              description: Used memory for peak usage in bytes.
+              metric_type: gauge
+        - name: collection_usage
+          type: group
+          description: Memory usage after garbage collection.
+          fields:
+            - name: init
+              type: double
+              unit: byte
+              description: Initial memory after last GC in bytes.
+              metric_type: gauge
+            - name: committed
+              type: double
+              unit: byte
+              description: Committed memory after last GC in bytes.
+              metric_type: gauge
+            - name: max
+              type: double
+              unit: byte
+              description: Max memory after last GC in bytes.
+              metric_type: gauge
+            - name: used
+              type: double
+              unit: byte
+              description: Used memory after last GC in bytes.
+              metric_type: gauge
+        - name: mbean
+          type: keyword
+          description: The JMX MBean name.
+          
+    - name: buffer_pool
+      type: group
+      description: JVM buffer pool metrics.
+      fields:
+        - name: name
+          type: keyword
+          dimension: true
+          description: Name of the buffer pool.
+        - name: used
+          type: double
+          unit: byte
+          description: Used memory in the buffer pool in bytes.
+          metric_type: gauge
+        - name: total_capacity
+          type: double
+          unit: byte
+          description: Total capacity of the buffer pool in bytes.
+          metric_type: gauge
+        - name: count
+          type: long
+          description: Number of buffers in the pool.
+          metric_type: gauge
+    
+    - name: classes
+      type: group
+      description: JVM class loading metrics.
+      fields:
+        - name: loaded_count
+          type: long
+          description: The number of classes currently loaded.
+          metric_type: gauge
+        - name: total_loaded_count
+          type: long
+          description: The total number of classes that have been loaded since JVM start.
+          metric_type: counter
+        - name: unloaded_count
+          type: long
+          description: The total number of classes that have been unloaded since JVM start.
+          metric_type: counter
+    
+    - name: threads
+      type: group
+      description: JVM threading metrics.
+      fields:
+        - name: current_count
+          type: long
+          description: The current number of live threads.
+          metric_type: gauge
+        - name: daemon_count
+          type: long
+          description: The current number of daemon threads.
+          metric_type: gauge
+        - name: peak_count
+          type: long
+          description: The peak live thread count.
+          metric_type: gauge
+        - name: total_started_count
+          type: long
+          description: The total number of threads started since JVM start.
+          metric_type: counter
+        - name: deadlocked_count
+          type: long
+          description: The number of deadlocked threads.
+          metric_type: gauge
+        - name: deadlocked_monitor_count
+          type: long
+          description: The number of deadlocked threads in monitor wait.
+          metric_type: gauge
+        - name: state_count
+          type: group
+          description: Thread count by state.
+          fields:
+            - name: new
+              type: long
+              description: Number of threads in NEW state.
+              metric_type: gauge
+            - name: runnable
+              type: long
+              description: Number of threads in RUNNABLE state.
+              metric_type: gauge
+            - name: blocked
+              type: long
+              description: Number of threads in BLOCKED state.
+              metric_type: gauge
+            - name: waiting
+              type: long
+              description: Number of threads in WAITING state.
+              metric_type: gauge
+            - name: timed_waiting
+              type: long
+              description: Number of threads in TIMED_WAITING state.
+              metric_type: gauge
+            - name: terminated
+              type: long
+              description: Number of threads in TERMINATED state.
+              metric_type: gauge
+    
+    - name: gc
+      type: group
+      description: JVM garbage collector metrics.
+      fields:
+        - name: name
+          type: keyword
+          dimension: true
+          description: Garbage collector name.
+        - name: collection_count
+          type: long
+          description: The total number of collections that have occurred.
+          metric_type: counter
+        - name: collection_time_ms
+          type: double
+          unit: ms
+          description: The accumulated collection time in milliseconds.
+          metric_type: counter
+    
+    - name: compilation
+      type: group
+      description: JVM compilation metrics.
+      fields:
+        - name: name
+          type: keyword
+          dimension: true
+          description: Name of the JIT compiler.
+        - name: time_ms
+          type: double
+          unit: ms
+          description: The accumulated time spent in compilation in milliseconds.
+          metric_type: counter
