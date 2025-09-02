@@ -436,6 +436,10 @@ An example event for `audit` looks as following:
 | o365.audit.SenderIP |  | keyword |
 | o365.audit.SenderIp |  | keyword |
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
+| o365.audit.SensitivityLabelEventData.ActionSourceDetail |  | long |
+| o365.audit.SensitivityLabelEventData.ContentType |  | keyword |
+| o365.audit.SensitivityLabelEventData.LabelEventType |  | long |
+| o365.audit.SensitivityLabelEventData.SensitivityLabelId |  | keyword |
 | o365.audit.SessionId |  | keyword |
 | o365.audit.Severity |  | keyword |
 | o365.audit.Sha1 |  | keyword |
