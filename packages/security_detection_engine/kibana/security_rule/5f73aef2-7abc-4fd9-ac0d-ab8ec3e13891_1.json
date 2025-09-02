@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution of the NetSupport remote access software from non-default paths. Adversaries may abuse NetSupport Manager to control a target victim machine.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "NetSupport Manager Execution from an Unusual Path",
+        "note": "## Triage and analysis\n\n### Investigating NetSupport Manager Execution from an Unusual Path\n\nNetSupport Manager, is a remote access tool, facilitates legitimate remote support but can be exploited by adversaries to execute unauthorized commands.\n\n### Possible investigation steps\n\n- Review the origin of the NetSupport file and if it's related to an authorized IT Support case.\n- Examine if the NetSupport process is set to persist in the affected system via scheduled task, Startup folder or Run key.\n- Check the network, files and child processes activity associated with the NetSupport client32.exe process.\n- Correlate the event with other security alerts or logs from data sources like Elastic Defend or Microsoft Defender for Endpoint to gather additional context and identify any related malicious activities.\n\n### False positive analysis\n\n- Legitimate IT support activities using NetSupport by IT support accounts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the attacker.\n- Terminate any suspicious processes identified in the alert, such as PowerShell, cmd.exe, or other flagged executables, to halt any ongoing malicious activity.\n- Review and revoke any unauthorized user accounts or privileges that may have been created or modified using tools like net.exe or schtasks.exe.\n- Conduct a thorough scan of the affected system using endpoint protection tools to identify and remove any malware or unauthorized software installed by the attacker.\n- Restore the system from a known good backup if any critical system files or configurations have been altered or compromised.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for ScreenConnect and other remote access tools to detect similar activities in the future, ensuring that alerts are promptly reviewed and acted upon.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n (process.name : \"client32.exe\" or ?process.pe.original_file_name == \"client32.exe\" or process.parent.name : \"client32.exe\") and\n (\n  process.executable :\n               (\"?:\\\\Users\\\\*.exe\",\n                \"?:\\\\ProgramData\\\\*.exe\",\n                \"\\\\Device\\\\HarddiskVolume?\\\\Users\\\\*.exe\",\n                \"\\\\Device\\\\HarddiskVolume?\\\\ProgramData\\\\*.exe\") or\n  ?process.parent.executable : (\"?:\\\\Users\\\\*\\\\client32.exe\", \"?:\\\\ProgramData\\\\*\\\\client32.exe\")\n  )\n",
+        "references": [
+            "https://www.netsupportsoftware.com/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "5f73aef2-7abc-4fd9-ac0d-ab8ec3e13891",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "5f73aef2-7abc-4fd9-ac0d-ab8ec3e13891_1",
+    "type": "security-rule"
+}

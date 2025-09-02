@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies msxsl.exe making a network connection. This may indicate adversarial activity as msxsl.exe is often leveraged by adversaries to execute malicious scripts and evade detection.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Network Connection via MsXsl",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Network Connection via MsXsl\n\nMsXsl.exe is a legitimate Windows utility used to transform XML data using XSLT stylesheets. Adversaries exploit it to execute malicious scripts, bypassing security measures. The detection rule identifies suspicious network activity by MsXsl.exe, focusing on connections to non-local IPs, which may indicate unauthorized data exfiltration or command-and-control communication.\n\n### Possible investigation steps\n\n- Review the process execution details for msxsl.exe, focusing on the process.entity_id and event.type fields to confirm the process start event and gather initial context.\n- Analyze the network connection details, particularly the destination.ip field, to identify the external IP address msxsl.exe attempted to connect to and assess its reputation or any known associations with malicious activity.\n- Check for any related alerts or logs involving the same process.entity_id to determine if msxsl.exe has been involved in other suspicious activities or if there are patterns of behavior indicating a broader attack.\n- Investigate the parent process of msxsl.exe to understand how it was launched and whether it was initiated by a legitimate application or a potentially malicious script.\n- Examine the system for any additional indicators of compromise, such as unusual file modifications or other processes making unexpected network connections, to assess the scope of potential adversarial activity.\n\n### False positive analysis\n\n- Legitimate use of msxsl.exe for XML transformations in enterprise applications may trigger alerts. Users should identify and whitelist known applications or processes that use msxsl.exe for legitimate purposes.\n- Automated scripts or scheduled tasks that utilize msxsl.exe for data processing can cause false positives. Review and document these tasks, then create exceptions for their network activity.\n- Development or testing environments where msxsl.exe is used for debugging or testing XML transformations might be flagged. Ensure these environments are recognized and excluded from monitoring if they are verified as non-threatening.\n- Internal network tools or monitoring solutions that leverage msxsl.exe for legitimate network communications should be identified. Add these tools to an exception list to prevent unnecessary alerts.\n- Regularly review and update the list of excluded IP addresses to ensure that only trusted and verified internal IPs are exempt from triggering the rule.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized data exfiltration or command-and-control communication.\n- Terminate the msxsl.exe process if it is still running to stop any ongoing malicious activity.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any malicious scripts or files associated with msxsl.exe.\n- Review and analyze the network logs to identify any other systems that may have been targeted or compromised by similar activity.\n- Restore the affected system from a known good backup if any critical system files or configurations have been altered.\n- Implement network segmentation to limit the ability of msxsl.exe or similar utilities to make unauthorized external connections in the future.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems or data have been impacted.",
+        "query": "sequence by process.entity_id\n  [process where host.os.type == \"windows\" and process.name : \"msxsl.exe\" and event.type == \"start\"]\n  [network where host.os.type == \"windows\" and process.name : \"msxsl.exe\" and\n     not cidrmatch(destination.ip, \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\",\n       \"192.0.0.0/29\", \"192.0.0.8/32\", \"192.0.0.9/32\", \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\",\n       \"192.0.2.0/24\", \"192.31.196.0/24\", \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\", \"224.0.0.0/4\",\n       \"100.64.0.0/10\", \"192.175.48.0/24\",\"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"240.0.0.0/4\", \"::1\",\n       \"FE80::/10\", \"FF00::/8\")]\n",
+        "references": [
+            "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "b86afe07-0d98-4738-b15d-8d7465f95ff5",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1220",
+                        "name": "XSL Script Processing",
+                        "reference": "https://attack.mitre.org/techniques/T1220/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 210
+    },
+    "id": "b86afe07-0d98-4738-b15d-8d7465f95ff5_210",
+    "type": "security-rule"
+}

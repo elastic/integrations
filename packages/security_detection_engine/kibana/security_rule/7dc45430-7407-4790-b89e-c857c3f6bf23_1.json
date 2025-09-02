@@ -1,0 +1,169 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of Windows commands or downloaded files via the browser's dialog box. Adversaries may use phishing to instruct the victim to copy and paste malicious commands for execution via crafted phsihing web pages.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Execution via FileFix Phishing Attack",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Execution via FileFix Phishing Attack\n\n### Possible investigation steps\n\n- Review the process command line and arguments to identify any malicious intent.\n- Review web activity preceeding the alert to identify the initial vector.\n- Investigate any files, network or child process events from the suspected process.\n- Correlate the event with other security alerts or logs from the same host or user to identify patterns or additional indicators of compromise.\n- Assess the risk and impact of the detected activity by considering the context of the environment, such as the presence of sensitive data or critical systems that might be affected.\n\n### False positive analysis\n\n- Legitimate administrative scripts containing the suspicious keywords such as CAPTCHA.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread or communication with potential command and control servers.\n- Terminate any suspicious processes identified by the detection rule to halt ongoing malicious activities.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious payloads or scripts.\n- Review and clean up any unauthorized changes to system configurations or scheduled tasks that may have been altered by the malicious PowerShell activity.\n- Restore any affected files or system components from known good backups to ensure system integrity and functionality.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are compromised.\n- Implement additional monitoring and logging for PowerShell activities across the network to enhance detection of similar threats in the future.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.parent.args == \"--message-loop-type-ui\" and process.parent.args == \"--service-sandbox-type=none\" and\n (\n  process.name : (\"pwsh.exe\", \"powershell.exe\", \"curl.exe\", \"msiexec.exe\", \"mshta.exe\", \"wscript.exe\", \"cscript.exe\", \"rundll32.exe\", \"certutil.exe\", \"certreq.exe\") or\n  process.executable : \"?:\\\\Users\\\\*\\\\Downloads\\\\*\"\n  ) and\nnot (process.name : \"rundll32.exe\" and process.args : (\"ndfapi.dll,NdfRunDllDiagnoseWithAnswerFile\", \"shwebsvc.dll,AddNetPlaceRunDll\"))\n",
+        "references": [
+            "https://mrd0x.com/filefix-clickfix-alternative/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7dc45430-7407-4790-b89e-c857c3f6bf23",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Initial Access",
+            "Tactic: Defense Evasion",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.005",
+                                "name": "Mshta",
+                                "reference": "https://attack.mitre.org/techniques/T1218/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.001",
+                                "name": "Spearphishing Attachment",
+                                "reference": "https://attack.mitre.org/techniques/T1566/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "7dc45430-7407-4790-b89e-c857c3f6bf23_1",
+    "type": "security-rule"
+}
