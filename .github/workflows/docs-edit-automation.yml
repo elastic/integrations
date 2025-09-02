@@ -1,4 +1,4 @@
-name: Documentation Automation
+name: Documentation edit automation
 
 on:
   push:
@@ -62,6 +62,7 @@ jobs:
           # Get PR body for changelog description
           PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""')
           
+          CHANGELOG_DESC=""
           if echo "$PR_BODY" | grep -qi "^changelog:"; then
             CHANGELOG_DESC=$(echo "$PR_BODY" | grep -i "^changelog:" | sed 's/^changelog://i' | xargs)
           fi
@@ -80,7 +81,7 @@ jobs:
         
           
           # Find changed documentation files
-          CHANGED_DOCS=$(git diff --name-only origin/main...HEAD | grep '^packages/.*/\_dev/build/docs/README\.md$' || true)
+          CHANGED_DOCS=$(git diff --name-only origin/main...HEAD | grep '^packages/.*/_dev/build/docs/README\.md$' || true)
           
           if [ -z "$CHANGED_DOCS" ]; then
             echo "::notice::No documentation changes found"
@@ -122,10 +123,12 @@ jobs:
       - name: Auto-commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: |
+          commit_message: >-
             Auto-update documentation for PR #${{ steps.process.outputs.pr_number }}
             
+            
             Packages: ${{ steps.process.outputs.processed }}
+            
             Type: ${{ steps.process.outputs.change_type }}
           commit_user_name: github-actions[bot]
           commit_user_email: github-actions[bot]@users.noreply.github.com
@@ -140,9 +143,9 @@ jobs:
           PR_NUMBER="${{ steps.process.outputs.pr_number }}"
           
           if [ -n "$PACKAGES" ]; then
-            COMMENT="## 📚 Documentation Automation Completed
+            COMMENT="## 📚 Automation completed
           
-          Processed packages:${PACKAGES}
+          Processed packages: ${PACKAGES}
           
           ### Automated actions:
           - ✅ Built documentation with \`elastic-package build\`
