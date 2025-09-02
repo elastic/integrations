@@ -1,0 +1,96 @@
+- name: kafka.topic
+  type: group
+  description: >
+    Kafka topic metrics.
+  fields:
+    - name: metric_fingerprint
+      type: keyword
+      dimension: true
+      description: A fingerprint of the metric path.
+    - name: topic
+      type: group
+      description: Kafka topic metrics.
+      fields:
+        - name: name
+          type: keyword
+          dimension: true
+          description: The name of the Kafka topic.
+        - name: bytes_rejected_per_sec
+          type: double
+          metric_type: gauge
+          unit: byte
+          description: The rate of rejected bytes per second.
+        - name: bytes_in_per_sec
+          type: double
+          metric_type: gauge
+          unit: byte
+          description: The rate of incoming bytes per second.
+        - name: bytes_out_per_sec
+          type: double
+          metric_type: gauge
+          unit: byte
+          description: The rate of outgoing bytes per second.
+        - name: messages_in_per_sec
+          type: double
+          metric_type: gauge
+          description: The rate of incoming messages per second.
+        - name: fetch_requests_per_sec
+          type: double
+          metric_type: gauge
+          description: The rate of fetch requests per second.
+
+    - name: partition
+      type: group
+      description: Kafka partition metrics.
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: The ID of the Kafka partition.
+        - name: at_min_isr
+          type: integer
+          metric_type: gauge
+          description: Whether the partition is at minimum in-sync replicas.
+        - name: insync_replicas_count
+          type: double
+          metric_type: gauge
+          description: The number of in-sync replicas.
+        - name: last_stable_offset_lag
+          type: double
+          metric_type: gauge
+          description: The lag of the last stable offset.
+        - name: replicas_count
+          type: double
+          metric_type: gauge
+          description: The total number of replicas.
+        - name: under_min_isr
+          type: integer
+          metric_type: gauge
+          description: Whether the partition is under minimum in-sync replicas.
+        - name: under_replicated
+          type: integer
+          metric_type: gauge
+          description: Whether the partition is under-replicated.
+
+    - name: log
+      type: group
+      description: Kafka log metrics.
+      fields:
+        - name: end_offset
+          type: double
+          metric_type: gauge
+          description: The end offset of the log.
+        - name: start_offset
+          type: double
+          metric_type: gauge
+          description: The start offset of the log.
+        - name: segments_count
+          type: double
+          metric_type: gauge
+          description: The number of log segments.
+        - name: size
+          type: double
+          format: bytes
+          unit: byte
+          metric_type: gauge
+          description: The size of the log in bytes.

@@ -1680,6 +1680,11 @@ processors:
       if: ctx.crowdstrike?.id != null || ctx.crowdstrike?.aid != null || ctx.crowdstrike?.cid != null
       value: >-
         {{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}
+  - set:
+      field: message
+      copy_from: crowdstrike.event_simpleName
+      tag: construct_message_from_event_simpleName
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.event_simpleName
       target_field: event.action
@@ -3051,6 +3056,14 @@ processors:
       if: ctx.device?.id == null
 
   ## Crowdstrike fields.
+  - json:
+      field: crowdstrike.ResourceAttributes
+      tag: json_crowdstrike_ResourceAttributes
+      if: ctx.crowdstrike?.ResourceAttributes instanceof String
+      on_failure:
+        - remove:
+            field: crowdstrike.ResourceAttributes
+            ignore_missing: true
   - split:
       field: crowdstrike.FalconGroupingTags
       separator: ",\\s?"
