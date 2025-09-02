@@ -1562,7 +1562,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### consumer
 
-The `consumer` dataset collects JMX metrics from Kafka consumers using Jolokia.
+The `consumer` dataset collects metrics specifically for monitoring the performance, throughput, and health of Kafka consumers. It provides key insights into how effectively consumers are processing data, their rate of interaction with brokers, and whether they are keeping up with message production.
+
+This dataset includes metrics such as:
+- Consumption Rates: Metrics like bytes_consumed, records_consumed, and in.bytes_per_sec track the throughput of the consumer in terms of both the number of messages and the volume of data processed per second.
+- Consumer Lag: The max_lag metric is a critical indicator of consumer health, showing the maximum delay between the producer writing a message and the consumer reading it.
+- Fetch Performance: The fetch_rate provides visibility into how frequently the consumer is requesting new messages from the broker.
+
+**Usage**
+
+The Consumer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
+
+Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application:
+
+```
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=8774,host=localhost
+./bin/kafka-console-consumer.sh --topic=test --bootstrap-server=localhost:9091
+```
+
+Then it will be possible to collect the JMX metrics from localhost:8774.
 
 An example event for `consumer` looks as following:
 
@@ -1662,70 +1680,27 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### producer
 
-The `producer` dataset collects JMX metrics from Kafka producers using Jolokia.
+The `producer` dataset gathers metrics focused on the performance, efficiency, and health of Kafka producers. This data is crucial for understanding message production rates, identifying potential bottlenecks, and ensuring reliable data ingestion into Kafka topics.
 
-An example event for `producer` looks as following:
+This dataset includes metrics such as:
+- Throughput and Rate Metrics: Fields like record_send_rate, out.bytes_per_sec, and request_rate measure the producer's output, providing a clear view of how much data is being sent per second.
+- Batching Performance: Metrics such as batch_size_avg, batch_size_max, and records_per_request offer insights into the effectiveness of batching, which is key for optimizing producer efficiency.
+- Health and Error Indicators: The record_error_rate and record_retry_rate are vital for monitoring the health of the producer, highlighting issues that could lead to data loss or delays.
+- Resource Utilization: Metrics like available_buffer_bytes and io_wait help track resource usage and identify performance constraints related to memory or I/O.
+- Data Characteristics: Fields such as record_size_avg and record_size_max provide information about the size of the records being sent.
 
-```json
-{
-    "@timestamp": "2025-09-01T07:48:38.936Z",
-    "agent": {
-        "ephemeral_id": "9c137f1e-bcc8-46ea-af40-14bfb4b58828",
-        "id": "4fc53335-1c20-4184-bf19-72f3ebe95de7",
-        "name": "EPUALVIW0487",
-        "type": "metricbeat",
-        "version": "8.19.2"
-    },
-    "data_stream": {
-        "dataset": "kafka.producer",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "4fc53335-1c20-4184-bf19-72f3ebe95de7",
-        "snapshot": false,
-        "version": "8.19.2"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "kafka.producer",
-        "duration": 188023000,
-        "ingested": "2025-09-01T07:48:40Z",
-        "kind": "metric",
-        "module": "jolokia",
-        "type": "info"
-    },
-    "kafka": {
-        "producer": {
-            "available_buffer_bytes": 33538048,
-            "batch_size_avg": 100,
-            "batch_size_max": 100,
-            "io_wait": 869192800,
-            "mbean": "kafka.producer:type=producer-metrics,client-id=console-producer",
-            "metric_fingerprint": "G3rmtf1873sRqM38eefLk4aAY/g=",
-            "record_error_rate": 0,
-            "record_retry_rate": 0,
-            "record_send_rate": 0.19989339,
-            "record_size_avg": 117,
-            "record_size_max": 117,
-            "records_per_request": 1,
-            "request_rate": 0.19967653,
-            "response_rate": 0.19981617
-        }
-    },
-    "metricset": {
-        "name": "jmx",
-        "period": 60000
-    },
-    "service": {
-        "address": "http://localhost:8775/jolokia",
-        "type": "kafka"
-    }
-}
+**Usage**
+
+The Producer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
+
+Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application:
+
 ```
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=8775,host=localhost
+./bin/kafka-console-producer.sh --topic test --broker-list localhost:9091
+```
+
+Then it will be possible to collect the JMX metrics from localhost:8775.
 
 **ECS Field Reference**
 
