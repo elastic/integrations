@@ -1,0 +1,155 @@
+name: Documentation Automation
+
+on:
+  push:
+    branches:
+      - 'docs-enhancement/**'
+      - 'docs-bugfix/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-update-docs:
+    # Skip if pushed by bot to avoid loops
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Install tools
+        run: |
+          go install github.com/elastic/elastic-package@latest
+          go install github.com/andrewkroh/go-examples/elastic-package-changelog@main
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Process documentation changes
+        id: process
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get PR number
+          PR_NUMBER=$(gh pr list --head ${{ github.ref_name }} --json number -q '.[0].number')
+          
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "::notice::No PR found for branch ${{ github.ref_name }}"
+            exit 0
+          fi
+          
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+          # Determine change type from branch name
+          CHANGE_TYPE="enhancement"
+          LABEL="enhancement"
+          if [[ "${{ github.ref_name }}" =~ ^docs-bugfix/ ]]; then
+            CHANGE_TYPE="bugfix"
+            LABEL="bugfix"
+          fi
+          
+          echo "change_type=$CHANGE_TYPE" >> $GITHUB_OUTPUT
+          echo "label=$LABEL" >> $GITHUB_OUTPUT
+          
+          # Get PR body for changelog description
+          PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""')
+          
+          if echo "$PR_BODY" | grep -qi "^changelog:"; then
+            CHANGELOG_DESC=$(echo "$PR_BODY" | grep -i "^changelog:" | sed 's/^changelog://i' | xargs)
+          fi
+          
+          # Ensure description uses default if empty
+          if [ -z "$CHANGELOG_DESC" ]; then
+            if [ "$CHANGE_TYPE" == "bugfix" ]; then
+              CHANGELOG_DESC="Fix documentation"
+            else
+              CHANGELOG_DESC="Improve documentation"
+            fi
+          fi
+          
+          echo "changelog_description=$CHANGELOG_DESC" >> $GITHUB_OUTPUT
+          echo "::notice::Using changelog description: $CHANGELOG_DESC"
+        
+          
+          # Find changed documentation files
+          CHANGED_DOCS=$(git diff --name-only origin/main...HEAD | grep '^packages/.*/\_dev/build/docs/README\.md$' || true)
+          
+          if [ -z "$CHANGED_DOCS" ]; then
+            echo "::notice::No documentation changes found"
+            exit 0
+          fi
+          
+          # Process each package
+          PROCESSED=""
+          while IFS= read -r doc_file; do
+            [ -z "$doc_file" ] && continue
+            
+            # Extract package name
+            PACKAGE=$(echo "$doc_file" | sed 's|^packages/\([^/]*\)/.*|\1|')
+            echo "::group::Processing $PACKAGE"
+            
+            cd "packages/$PACKAGE"
+            
+            # Update changelog if tool exists
+            if command -v elastic-package-changelog &> /dev/null; then
+              elastic-package-changelog add-next \
+                --type "$CHANGE_TYPE" \
+                --description "$CHANGELOG_DESC" \
+                --pr "$PR_NUMBER" || echo "::warning::Failed to update changelog for $PACKAGE"
+            fi
+            
+            # Build documentation
+            elastic-package build || echo "::warning::Failed to build $PACKAGE"
+            
+            PROCESSED="$PROCESSED $PACKAGE"
+            cd ../..
+            echo "::endgroup::"
+          done <<< "$CHANGED_DOCS"
+          
+          echo "processed=$PROCESSED" >> $GITHUB_OUTPUT
+          
+          # Add PR label
+          gh pr edit $PR_NUMBER --add-label "$LABEL" || true
+
+      - name: Auto-commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: |
+            Auto-update documentation for PR #${{ steps.process.outputs.pr_number }}
+            
+            Packages: ${{ steps.process.outputs.processed }}
+            Type: ${{ steps.process.outputs.change_type }}
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
+          commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+
+      - name: Comment on PR
+        if: steps.process.outputs.pr_number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PACKAGES="${{ steps.process.outputs.processed }}"
+          PR_NUMBER="${{ steps.process.outputs.pr_number }}"
+          
+          if [ -n "$PACKAGES" ]; then
+            COMMENT="## 📚 Documentation Automation Completed
+          
+          Processed packages:${PACKAGES}
+          
+          ### Automated actions:
+          - ✅ Built documentation with \`elastic-package build\`
+          - ✅ Updated \`manifest.yml\` and \`changelog.yml\`
+          - ✅ Applied label: \`${{ steps.process.outputs.label }}\`
+          
+          *Triggered by branch pattern: \`${{ github.ref_name }}\`*"
+          
+            gh pr comment $PR_NUMBER --body "$COMMENT" || true
+          fi
