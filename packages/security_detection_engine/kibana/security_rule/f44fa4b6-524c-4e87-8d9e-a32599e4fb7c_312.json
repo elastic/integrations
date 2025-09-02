@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects attempts to establish persistence on an endpoint by abusing Microsoft Office add-ins.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Persistence via Microsoft Office AddIns",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Persistence via Microsoft Office AddIns\n\nMicrosoft Office AddIns enhance productivity by allowing custom functionalities in Office applications. However, adversaries exploit this by placing malicious add-ins in specific startup directories, ensuring execution each time the application launches. The detection rule identifies suspicious files with extensions like .xll or .xlam in these directories, flagging potential persistence mechanisms on Windows systems.\n\n### Possible investigation steps\n\n- Review the file path and extension from the alert to confirm it matches the suspicious directories and extensions specified in the detection rule, such as .xll or .xlam in the Microsoft Office startup directories.\n- Check the file creation and modification timestamps to determine when the suspicious file was added or altered, which can help establish a timeline of potential malicious activity.\n- Investigate the file's origin by examining recent file downloads, email attachments, or network activity that might have introduced the file to the system.\n- Analyze the file's contents or hash against known malware databases to identify if it is a known threat or potentially malicious.\n- Review user activity and system logs around the time the file was created or modified to identify any unusual behavior or processes that could be related to the persistence mechanism.\n- Assess the impacted user's role and access level to determine the potential risk and impact of the persistence mechanism on the organization.\n\n### False positive analysis\n\n- Legitimate add-ins installed by trusted software vendors may trigger alerts. Verify the source and publisher of the add-in to determine its legitimacy.\n- Custom add-ins developed internally for business purposes can be flagged. Maintain a whitelist of known internal add-ins to prevent unnecessary alerts.\n- Frequent updates to legitimate add-ins might cause repeated alerts. Implement version control and update the whitelist accordingly to accommodate these changes.\n- User-specific add-ins for accessibility or productivity tools may be detected. Educate users on safe add-in practices and monitor for any unusual behavior.\n- Temporary add-ins used for specific projects or tasks can be mistaken for threats. Document and review these cases to ensure they are recognized as non-threatening.\n\n### Response and remediation\n\n- Isolate the affected endpoint from the network to prevent further spread of the potential threat.\n- Terminate any suspicious Microsoft Office processes that may be running add-ins from the identified directories.\n- Remove the malicious add-in files from the specified startup directories: \"C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Word\\Startup\\\", \"C:\\Users\\*\\AppData\\Roaming\\Microsoft\\AddIns\\\", and \"C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Excel\\XLSTART\\\".\n- Conduct a full antivirus and antimalware scan on the affected system using tools like Microsoft Defender for Endpoint to ensure no other malicious files are present.\n- Review and restore any altered system configurations or settings to their default state to ensure system integrity.\n- Monitor the affected system and network for any signs of re-infection or related suspicious activity, using enhanced logging and alerting mechanisms.\n- Escalate the incident to the security operations center (SOC) or relevant IT security team for further analysis and to determine if additional systems are affected.",
+        "query": "file where host.os.type == \"windows\" and event.type != \"deletion\" and\n file.extension : (\"wll\",\"xll\",\"ppa\",\"ppam\",\"xla\",\"xlam\") and\n file.path : (\n    \"C:\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\Word\\\\Startup\\\\*\",\n    \"C:\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\AddIns\\\\*\",\n    \"C:\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\Excel\\\\XLSTART\\\\*\",\n\n    /* Crowdstrike specific condition as it uses NT Object paths */\n    \"\\\\Device\\\\HarddiskVolume*\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\Word\\\\Startup\\\\*\",\n    \"\\\\Device\\\\HarddiskVolume*\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\AddIns\\\\*\",\n    \"\\\\Device\\\\HarddiskVolume*\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\Excel\\\\XLSTART\\\\*\"\n )\n",
+        "references": [
+            "https://labs.withsecure.com/publications/add-in-opportunities-for-office-persistence"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f44fa4b6-524c-4e87-8d9e-a32599e4fb7c",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1137",
+                        "name": "Office Application Startup",
+                        "reference": "https://attack.mitre.org/techniques/T1137/",
+                        "subtechnique": [
+                            {
+                                "id": "T1137.006",
+                                "name": "Add-ins",
+                                "reference": "https://attack.mitre.org/techniques/T1137/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 312
+    },
+    "id": "f44fa4b6-524c-4e87-8d9e-a32599e4fb7c_312",
+    "type": "security-rule"
+}
