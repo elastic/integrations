@@ -193,6 +193,6 @@ These inputs can be used in this integration:
 
 ### API usage
 
-This integration datasets use the following APIs:
+These integration datasets use the following API:
 
 - `Server Activities`: [Airlock Digital REST API](https://api.airlockdigital.com/#290b4657-17d4-4048-982e-43df95200624).
