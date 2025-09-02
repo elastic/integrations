@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects attempts to exploit a privilege escalation vulnerability (CVE-2020-1030) related to the print spooler service. Exploitation involves chaining multiple primitives to load an arbitrary DLL into the print spooler process running as SYSTEM.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-m365_defender.event-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Print Spooler Point and Print DLL",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Print Spooler Point and Print DLL\n\nThe Windows Print Spooler service manages print jobs and is integral to printing operations. Adversaries exploit vulnerabilities like CVE-2020-1030 to escalate privileges by loading malicious DLLs into the spooler process, which runs with SYSTEM-level permissions. The detection rule identifies suspicious registry modifications linked to the Print Spooler, indicating potential exploitation attempts by monitoring specific registry paths and data patterns.\n\n### Possible investigation steps\n\n- Review the registry paths specified in the alert to confirm any unauthorized modifications, focusing on the paths: HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Print\\Printers\\*\\SpoolDirectory and HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Print\\Printers\\*\\CopyFiles\\Payload\\Module.\n- Check the registry data strings for any unexpected or suspicious DLLs located in C:\\Windows\\System32\\spool\\drivers\\x64\\4, which may indicate a malicious payload.\n- Investigate the host identified by host.id to determine if there are any other signs of compromise or unusual activity, such as unexpected processes or network connections.\n- Correlate the alert with other security events or logs from the same host to identify any related activities or patterns that could suggest a broader attack.\n- Assess the system's patch level and update status to ensure that all known vulnerabilities, including CVE-2020-1030, have been addressed and mitigated.\n- If a malicious DLL is confirmed, isolate the affected system to prevent further exploitation and begin remediation efforts, such as removing the malicious files and restoring the system to a known good state.\n\n### False positive analysis\n\n- Legitimate printer driver updates or installations may trigger the rule due to registry modifications in the specified paths. Users can create exceptions for known and trusted driver update processes to prevent false alerts.\n- Custom print configurations by IT departments that modify the SpoolDirectory or CopyFiles registry paths might be flagged. Document and exclude these configurations if they are verified as safe and necessary for business operations.\n- Automated scripts or software that manage printer settings and inadvertently modify the monitored registry paths can cause false positives. Identify and whitelist these scripts or applications after confirming their legitimacy.\n- Third-party print management solutions that interact with the Print Spooler service may lead to false detections. Evaluate these solutions and exclude their known benign activities from the detection rule.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further exploitation or lateral movement by the adversary.\n- Terminate the Print Spooler service on the compromised system to stop any ongoing malicious activity and prevent further DLL loading.\n- Conduct a thorough scan of the system using updated antivirus and anti-malware tools to identify and remove any malicious DLLs or related files.\n- Review and restore the registry paths identified in the detection query to their default values to ensure no malicious configurations remain.\n- Apply the latest security patches and updates from Microsoft to address CVE-2020-1030 and other known vulnerabilities in the Print Spooler service.\n- Monitor the network for any signs of similar exploitation attempts, focusing on the registry paths and data patterns specified in the detection rule.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on other systems within the network.",
+        "query": "sequence by host.id with maxspan=30s\n[registry where host.os.type == \"windows\" and\n   registry.value : \"SpoolDirectory\" and\n   registry.path : \"*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Print\\\\Printers\\\\*\\\\SpoolDirectory\" and\n   registry.data.strings : \"C:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\x64\\\\4\"]\n[registry where host.os.type == \"windows\" and\n   registry.value : \"Module\" and\n   registry.path : \"*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Print\\\\Printers\\\\*\\\\CopyFiles\\\\Payload\\\\Module\" and\n   registry.data.strings : \"C:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\x64\\\\4\\\\*\"]\n",
+        "references": [
+            "https://www.accenture.com/us-en/blogs/cyber-defense/discovering-exploiting-shutting-down-dangerous-windows-print-spooler-vulnerability",
+            "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/blob/master/Privilege%20Escalation/privesc_sysmon_cve_20201030_spooler.evtx",
+            "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2020-1030"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "bd7eefee-f671-494e-98df-f01daf9e5f17",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 212
+    },
+    "id": "bd7eefee-f671-494e-98df-f01daf9e5f17_212",
+    "type": "security-rule"
+}
