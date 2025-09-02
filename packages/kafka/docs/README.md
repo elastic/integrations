@@ -1642,40 +1642,40 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id |  | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| kafka.broker.address | Broker advertised address | keyword |
-| kafka.broker.id | Broker id | long |
-| kafka.consumer.bytes_consumed | The average number of bytes consumed for a specific topic per second | float |
-| kafka.consumer.fetch_rate | The minimum rate at which the consumer sends fetch requests to a broker | float |
-| kafka.consumer.in.bytes_per_sec | The rate of bytes coming in to the consumer | float |
-| kafka.consumer.max_lag | The maximum consumer lag | float |
-| kafka.consumer.mbean | Mbean that this event is related to | keyword |
-| kafka.consumer.metric_fingerprint | A fingerprint of the metric path. | keyword |
-| kafka.consumer.records_consumed | The average number of records consumed per second for a specific topic | float |
-| kafka.partition.id | Partition id. | long |
-| kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |
-| kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
-| kafka.topic.error.code | Topic error code. | long |
-| kafka.topic.name | Topic name | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| kafka.broker.address | Broker advertised address | keyword |  |  |
+| kafka.broker.id | Broker id | long |  |  |
+| kafka.consumer.bytes_consumed | The average number of bytes consumed for a specific topic per second | float | byte | gauge |
+| kafka.consumer.fetch_rate | The minimum rate at which the consumer sends fetch requests to a broker | float |  | gauge |
+| kafka.consumer.in.bytes_per_sec | The rate of bytes coming in to the consumer | float | byte | gauge |
+| kafka.consumer.max_lag | The maximum consumer lag | float |  | gauge |
+| kafka.consumer.mbean | Mbean that this event is related to | keyword |  |  |
+| kafka.consumer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
+| kafka.consumer.records_consumed | The average number of records consumed per second for a specific topic | float |  | gauge |
+| kafka.partition.id | Partition id. | long |  |  |
+| kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |  |  |
+| kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |  |  |
+| kafka.topic.error.code | Topic error code. | long |  |  |
+| kafka.topic.name | Topic name | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
 
 ### producer
@@ -1708,46 +1708,46 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id |  | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| kafka.broker.address | Broker advertised address | keyword |
-| kafka.broker.id | Broker id | long |
-| kafka.partition.id | Partition id. | long |
-| kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |
-| kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
-| kafka.producer.available_buffer_bytes | The total amount of buffer memory | float |
-| kafka.producer.batch_size_avg | The average number of bytes sent | float |
-| kafka.producer.batch_size_max | The maximum number of bytes sent | long |
-| kafka.producer.io_wait | The producer I/O wait time | float |
-| kafka.producer.mbean | Mbean that this event is related to | keyword |
-| kafka.producer.metric_fingerprint | A fingerprint of the metric path. | keyword |
-| kafka.producer.out.bytes_per_sec | The rate of bytes going out for the producer | float |
-| kafka.producer.record_error_rate | The average number of retried record sends per second | float |
-| kafka.producer.record_retry_rate | The average number of retried record sends per second | float |
-| kafka.producer.record_send_rate | The average number of records sent per second | float |
-| kafka.producer.record_size_avg | The average record size | float |
-| kafka.producer.record_size_max | The maximum record size | long |
-| kafka.producer.records_per_request | The average number of records sent per second | float |
-| kafka.producer.request_rate | The number of producer requests per second | float |
-| kafka.producer.response_rate | The number of producer responses per second | float |
-| kafka.topic.error.code | Topic error code. | long |
-| kafka.topic.name | Topic name | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| kafka.broker.address | Broker advertised address | keyword |  |  |
+| kafka.broker.id | Broker id | long |  |  |
+| kafka.partition.id | Partition id. | long |  |  |
+| kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |  |  |
+| kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |  |  |
+| kafka.producer.available_buffer_bytes | The total amount of buffer memory | float | byte | gauge |
+| kafka.producer.batch_size_avg | The average number of bytes sent | float | byte | gauge |
+| kafka.producer.batch_size_max | The maximum number of bytes sent | long | byte | gauge |
+| kafka.producer.io_wait | The producer I/O wait time | float | nanos | gauge |
+| kafka.producer.mbean | Mbean that this event is related to | keyword |  |  |
+| kafka.producer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
+| kafka.producer.out.bytes_per_sec | The rate of bytes going out for the producer | float | byte | gauge |
+| kafka.producer.record_error_rate | The average number of retried record sends per second | float |  | gauge |
+| kafka.producer.record_retry_rate | The average number of retried record sends per second | float |  | gauge |
+| kafka.producer.record_send_rate | The average number of records sent per second | float |  | gauge |
+| kafka.producer.record_size_avg | The average record size | float | byte | gauge |
+| kafka.producer.record_size_max | The maximum record size | long | byte | gauge |
+| kafka.producer.records_per_request | The average number of records sent per second | float |  | gauge |
+| kafka.producer.request_rate | The number of producer requests per second | float |  | gauge |
+| kafka.producer.response_rate | The number of producer responses per second | float |  | gauge |
+| kafka.topic.error.code | Topic error code. | long |  |  |
+| kafka.topic.name | Topic name | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
