@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the registration of a Werfault Debugger. Attackers may abuse this mechanism to execute malicious payloads every time the utility is executed with the \"-pr\" parameter.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-windows.sysmon_operational-*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Werfault ReflectDebugger Persistence",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Werfault ReflectDebugger Persistence\n\nWerfault, the Windows Error Reporting service, can be manipulated by attackers to maintain persistence. By registering a ReflectDebugger, adversaries can execute malicious code whenever Werfault is triggered with specific parameters. The detection rule monitors registry changes in key paths associated with ReflectDebugger, alerting on unauthorized modifications indicative of potential abuse.\n\n### Possible investigation steps\n\n- Review the registry change event details to identify the specific path modified, focusing on the paths listed in the query: \"HKLM\\Software\\Microsoft\\Windows\\Windows Error Reporting\\Hangs\\ReflectDebugger\", \"\\REGISTRY\\MACHINE\\Software\\Microsoft\\Windows\\Windows Error Reporting\\Hangs\\ReflectDebugger\", or \"MACHINE\\Software\\Microsoft\\Windows\\Windows Error Reporting\\Hangs\\ReflectDebugger\".\n- Check the timestamp of the registry change event to determine when the modification occurred and correlate it with other suspicious activities or events on the system around the same time.\n- Investigate the user account or process responsible for the registry change to assess whether it is a legitimate action or potentially malicious. Look for unusual or unauthorized accounts making the change.\n- Examine the system for any recent executions of Werfault with the \"-pr\" parameter, as this could indicate attempts to trigger the malicious payload.\n- Search for any related alerts or logs from data sources such as Elastic Endgame, Elastic Defend, Microsoft Defender for Endpoint, SentinelOne, or Sysmon that might provide additional context or corroborate the suspicious activity.\n- Assess the system for any signs of compromise or persistence mechanisms, such as unexpected startup items, scheduled tasks, or other registry modifications that could indicate a broader attack.\n\n### False positive analysis\n\n- Legitimate software installations or updates may modify the ReflectDebugger registry key as part of their error reporting configuration. Users can create exceptions for known software vendors by verifying the digital signature of the executable associated with the change.\n- System administrators may intentionally configure the ReflectDebugger for debugging purposes. Document and whitelist these changes in the security monitoring system to prevent unnecessary alerts.\n- Automated system maintenance tools might interact with the ReflectDebugger registry key. Identify and exclude these tools by correlating the registry changes with scheduled maintenance activities.\n- Security software or endpoint protection solutions may alter the ReflectDebugger settings as part of their protective measures. Confirm these changes with the security vendor and add them to the exclusion list if deemed safe.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further execution of malicious code via the Werfault ReflectDebugger.\n- Terminate any suspicious processes associated with Werfault that are running with the \"-pr\" parameter to halt potential malicious activity.\n- Remove unauthorized entries from the registry path \"HKLM\\Software\\Microsoft\\Windows\\Windows Error Reporting\\Hangs\\ReflectDebugger\" to eliminate persistence mechanisms.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection tools to identify and remove any additional malware or malicious artifacts.\n- Review and restore any system or application configurations that may have been altered by the attacker to their original state.\n- Escalate the incident to the security operations team for further analysis and to determine if additional systems are affected.\n- Implement enhanced monitoring and alerting for registry changes in the specified paths to detect and respond to similar threats in the future.",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n  registry.value : \"ReflectDebugger\"\n\n  /*\n    Full registry key path omitted due to data source variations:\n    HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\Windows Error Reporting\\\\Hangs\\\\ReflectDebugger\n  */\n",
+        "references": [
+            "https://cocomelonc.github.io/malware/2022/11/02/malware-pers-18.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "205b52c4-9c28-4af4-8979-935f3278d61a",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 206
+    },
+    "id": "205b52c4-9c28-4af4-8979-935f3278d61a_206",
+    "type": "security-rule"
+}

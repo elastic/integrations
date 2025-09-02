@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies modifications to the registered Subject Interface Package (SIP) providers. SIP providers are used by the Windows cryptographic system to validate file signatures on the system. This may be an attempt to bypass signature validation checks or inject code into critical processes.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "SIP Provider Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating SIP Provider Modification\n\nSubject Interface Package (SIP) providers are integral to Windows' cryptographic system, ensuring file signature validation. Adversaries may modify SIP providers to bypass these checks, facilitating unauthorized code execution. The detection rule identifies suspicious registry changes linked to SIP providers, excluding benign processes, to flag potential defense evasion attempts.\n\n### Possible investigation steps\n\n- Review the registry path and value changes to confirm if they match the suspicious patterns specified in the query, such as modifications under the paths related to CryptSIPDllPutSignedDataMsg or Trust FinalPolicy.\n- Identify the process responsible for the registry change by examining the process name and compare it against the exclusions in the query, ensuring it is not a benign process like msiexec.exe or regsvr32.exe.\n- Investigate the DLL file specified in the registry change to determine its legitimacy, checking its digital signature and origin.\n- Correlate the event with other security logs or alerts from data sources like Sysmon or Microsoft Defender for Endpoint to identify any related suspicious activities or patterns.\n- Assess the risk context by considering the host's role and any recent changes or incidents that might explain the registry modification, ensuring it aligns with expected behavior or authorized changes.\n\n### False positive analysis\n\n- Installation or update processes like msiexec.exe may trigger registry changes as part of legitimate software installations. Exclude these by adding exceptions for msiexec.exe when registry data strings include mso.dll.\n- System maintenance tasks using regsvr32.exe might modify SIP provider-related registry entries. Exclude regsvr32.exe when registry data strings match WINTRUST.DLL to prevent false alerts.\n- Regular updates or patches from trusted software vendors may alter SIP provider registry entries. Monitor and document these changes to establish a baseline of expected behavior, allowing for informed exclusions.\n- Security software or endpoint protection solutions might interact with SIP provider settings as part of their normal operation. Identify and whitelist these processes to reduce unnecessary alerts.\n- Custom enterprise applications with legitimate needs to modify cryptographic settings should be reviewed and, if verified as safe, added to an exclusion list to prevent disruption.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or code execution.\n- Terminate any suspicious processes identified in the alert, such as those not typically associated with legitimate SIP provider modifications.\n- Restore the modified registry entries to their original state using a known good backup or by manually correcting the entries to ensure the integrity of the SIP providers.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any malicious software that may have been introduced.\n- Review and update endpoint protection policies to ensure that similar unauthorized modifications are detected and blocked in the future.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Document the incident details, including the steps taken for containment and remediation, to enhance future response efforts and update threat intelligence databases.",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and registry.value : (\"Dll\", \"$Dll\") and\n  registry.path: (\n    \"*\\\\SOFTWARE\\\\Microsoft\\\\Cryptography\\\\OID\\\\EncodingType 0\\\\CryptSIPDllPutSignedDataMsg\\\\{*}\\\\Dll\",\n    \"*\\\\SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\Cryptography\\\\OID\\\\EncodingType 0\\\\CryptSIPDllPutSignedDataMsg\\\\{*}\\\\Dll\",\n    \"*\\\\SOFTWARE\\\\Microsoft\\\\Cryptography\\\\Providers\\\\Trust\\\\FinalPolicy\\\\{*}\\\\$Dll\",\n    \"*\\\\SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\Cryptography\\\\Providers\\\\Trust\\\\FinalPolicy\\\\{*}\\\\$Dll\"\n    ) and\n  registry.data.strings:\"*.dll\" and\n  not (process.name : \"msiexec.exe\" and registry.data.strings : \"mso.dll\") and\n  not (process.name : \"regsvr32.exe\" and registry.data.strings == \"WINTRUST.DLL\")\n",
+        "references": [
+            "https://github.com/mattifestation/PoCSubjectInterfacePackage"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f2c7b914-eda3-40c2-96ac-d23ef91776ca",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1553",
+                        "name": "Subvert Trust Controls",
+                        "reference": "https://attack.mitre.org/techniques/T1553/",
+                        "subtechnique": [
+                            {
+                                "id": "T1553.003",
+                                "name": "SIP and Trust Provider Hijacking",
+                                "reference": "https://attack.mitre.org/techniques/T1553/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 314
+    },
+    "id": "f2c7b914-eda3-40c2-96ac-d23ef91776ca_314",
+    "type": "security-rule"
+}
