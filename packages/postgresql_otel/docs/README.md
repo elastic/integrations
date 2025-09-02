@@ -6,7 +6,7 @@ The PostgreSQL OpenTelemetry assets provide a visual representation of these col
 
 ## Compatibility
 
-The integration package has been tested with [PostgreSQL OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/iisreceiver/README.md) and PostgreSQL server version 16.4.
+The integration package has been tested with [PostgreSQL OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/README.md) and PostgreSQL server version 16.4.
 
 ## What do I need to use this integration?
 
