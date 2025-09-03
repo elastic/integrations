@@ -3,21 +3,161 @@
 The `statsd input package` spawns a UDP server and listens for metrics in StatsD compatible format.
 This input can be used to collect metrics from services that send data over the StatsD protocol. To tailor the data you can provide custom mappings and ingest pipelines through Kibana.
 
-## Metric types
+## Data streams
 
-The input supports the following types of metrics:
+The StatsD input integration collects one type of data streams: metrics.
 
-**Counter (c)**:: Measurement which accumulates over a period of time until flushed (value set to 0).
+## Requirements
 
-**Gauge (g)**:: Measurement which can increase, decrease or be set to a value.
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-**Timer (ms)**:: Time measurement (in milliseconds) of an event.
+## Setup
 
-**Histogram (h)**:: Time measurement, an alias for the *Timer*.
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-**Set (s)**:: Measurement which counts unique occurrences until flushed (value set to 0).
+### Configuration options
 
+The `statsd` input has these additional configuration options:
+
+**Listen Address and Listen Port**
+:   Bind address and port for the UDP server to listen on.
+
+**TTL**
+:   It defines how long a metric will be reported after it was last recorded. Irrespective of the given ttl, metrics will be reported at least once. A ttl of zero means metrics will never expire.
+
+**StatsD metric mappings (Optional)**
+:   It defines how metrics will mapped from the original metric label to the event json. Here’s an example configuration:
+
+```yaml
+- metric: 'ti_failures' <1>
+  value:
+    field: task_failures <2>
+- metric: '<job_name>_start' <1>
+  labels:
+    - attr: job_name <3>
+      field: job_name <4>
+  value:
+    field: started <2>
+```
+
+1. `metric`, required: the label key of the metric in statsd, either as a exact match string or as a template with named label placeholder in the format `<label_placeholder>`
+2. `value.field`, required: field name where to save the metric value in the event json
+3. `label[].attr`, required when using named label placeholder: reference to the named label placeholder defined in `metric`
+4. `label[].field`, required when using named label placeholder field name where to save the named label placeholder value from the template in the event json
 
 ## Compatibility
 
-Node.js version v18.12.1 is used to test the Statsd input package 
+### Metric types
+
+The input supports the following types of metrics:
+
+**Counter (c)**
+:   Measurement which accumulates over period of time until flushed (value set to 0).
+
+**Gauge (g)**
+:   Measurement which can increase, decrease or be set to a value.
+
+**Timer (ms)**
+:   Time measurement (in milliseconds) of an event.
+
+**Histogram (h)**
+:   Time measurement, alias for timer.
+
+**Set (s)**
+:   Measurement which counts unique occurrences until flushed (value set to 0).
+
+### Supported tag extensions
+
+Example of tag styles supported by the `statsd` input:
+
+[DogStatsD](https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/?tab=metrics#the-dogstatsd-protocol)
+
+`<metric name>:<value>|<type>|@samplerate|#<k>:<v>,<k>:<v>`
+
+[InfluxDB](https://github.com/influxdata/telegraf/blob/master/plugins/inputs/statsd/README.md#influx-statsd)
+
+`<metric name>,<k>=<v>,<k>=<v>:<value>|<type>|@samplerate`
+
+[Graphite_1.1.x](https://graphite.readthedocs.io/en/latest/tags.html#graphite-tag-support)
+
+`<metric name>;<k>=<v>;<k>=<v>:<value>|<type>|@samplerate`
+
+## Metrics reference
+
+### Example
+
+Provided that the elastic-agent with StatsD input integration is listening on `localhost:8125`, it is possible to send a UDP packet like this:
+
+```bash
+echo "python_gauge_foo:10|g"  | nc -u -w0 localhost 8125
+```
+
+The resulting event will look like this:
+
+```json
+{
+    "@timestamp": "2024-06-19T06:26:36.664Z",
+    "agent": {
+        "ephemeral_id": "f9a3bc3e-14ed-4245-a140-38032ec3e459",
+        "id": "b138c66d-6261-4eac-a652-7f30ea89bcfc",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "statsd_input.statsd",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "b138c66d-6261-4eac-a652-7f30ea89bcfc",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "statsd_input.statsd",
+        "ingested": "2024-06-19T06:26:46Z",
+        "module": "statsd"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "192.168.253.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-FD-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "labels": {},
+    "metricset": {
+        "name": "server"
+    },
+    "service": {
+        "type": "statsd"
+    },
+    "statsd": {
+        "python_gauge_foo": {
+            "value": 10
+        }
+    }
+}
+```
