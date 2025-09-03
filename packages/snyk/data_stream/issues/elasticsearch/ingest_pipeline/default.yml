@@ -105,11 +105,50 @@ processors:
           list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx);
+  - script:
+      lang: painless
+      description: Restructure scan item tags
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.attributes?.tags instanceof List
+      source: |
+        def result = [];
+        for (def tag : ctx.snyk.issues.relationships.scan_item.data.attributes.tags) {
+          if (tag instanceof Map) {
+            result.add([tag.key, tag.value].join(":"))
+          } else if (tag instanceof String) {
+            result.add(tag);
+          }
+        }
+        ctx.snyk.issues.relationships.scan_item.data.attributes.tags = result;
+  - append:
+      field: error.message
+      value: '{{{ snyk.issues.relationships.scan_item.data._enrich_error_message }}}'
+      if: ctx.snyk.issues.relationships.scan_item.data._enrich_error_message instanceof String
+      allow_duplicates: false
+
+  # Fixup mappings that do not match the published API spec.
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.importer?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.organization?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.owner?.links?.related?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.target?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.target.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.target.links.related.href
+
   - remove:
       field:
         - message
         - snyk.issues.cvssScore
         - snyk.issues.type
+        - snyk.issues.relationships.scan_item.data._enrich_error_message
       ignore_missing: true
 on_failure:
   - set:
