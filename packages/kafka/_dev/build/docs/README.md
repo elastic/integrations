@@ -206,11 +206,9 @@ The Consumer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/i
 Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application:
 
 ```
-export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=8774,host=localhost
-./bin/kafka-console-consumer.sh --topic=test --bootstrap-server=localhost:9091
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-consumer.sh --topic=test --bootstrap-server=<kafka_host>:<kafka_port>
 ```
-
-Then it will be possible to collect the JMX metrics from localhost:8774.
 
 {{event "consumer"}}
 
@@ -238,11 +236,9 @@ The Producer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/i
 Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application:
 
 ```
-export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=8775,host=localhost
-./bin/kafka-console-producer.sh --topic test --broker-list localhost:9091
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-producer.sh --topic test --broker-list <kafka_host>:<kafka_port>
 ```
-
-Then it will be possible to collect the JMX metrics from localhost:8775.
 
 **ECS Field Reference**
 
