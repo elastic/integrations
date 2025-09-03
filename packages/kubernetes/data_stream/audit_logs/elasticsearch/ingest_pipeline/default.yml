@@ -161,6 +161,16 @@ processors:
       field: cloud.provider
       value: gcp
       if: ctx.input?.type == "gcp-pubsub"
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.labels?.location != null
+      field: cloud.region
+      copy_from: kubernetes.audit.resource.labels.location
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.resource?.labels?.project_id != null
+      field: cloud.project.id
+      copy_from: kubernetes.audit.resource.labels.project_id
+      ignore_empty_value: true
 
   - append:
       tag: append_related_user_uid
