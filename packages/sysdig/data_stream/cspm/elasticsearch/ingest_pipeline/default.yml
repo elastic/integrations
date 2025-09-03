@@ -28,16 +28,13 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: json
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # rename to snake case
   - script:
       tag: script_convert_camelcase_to_snake_case
       lang: painless
       description: Convert camelCase to snake_case
+      if: ctx.json != null
       source: |
         // Helper function to convert camelCase to snake_case
         String camelToSnake(String str) {
@@ -84,9 +81,7 @@ processors:
         }
         // Apply the conversion
         ctx.sysdig = ctx.sysdig ?: [:];
-        if (ctx.json != null) {
-          ctx.sysdig.cspm = convertToSnakeCase(ctx.json);
-        }
+        ctx.sysdig.cspm = convertToSnakeCase(ctx.json);
 
   # convert values
   - convert:
