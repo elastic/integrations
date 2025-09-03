@@ -1,0 +1,433 @@
+rules:
+  - path: /v1/login
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ minify_json `
+          {
+            "jwt": "xxxx",
+            "refreshToken": "yyyy",
+            "expiresIn": 86400,
+            "expires": "Fri, 22 Aug 2025 09:23:07 GMT"
+          }
+          `}}
+  - path: /v1/events
+    methods: ['GET']
+    query_params:
+      limit: 2
+      offset: 0
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+            "limit": 2,
+            "offset": 0,
+            "total": 5,
+            "results": [
+              {
+                "uid": "e5f3f372-xxxx-4304-9c88-16efcd582125",
+                "type": "DisablePolicyEvent",
+                "date": "2025-07-31T22:50:28.888Z",
+                "user": "joey.example@google.io",
+                "policy": {
+                  "uid": "019862ad-xxxx-75f4-9ccd-de236d0d4d80",
+                  "name": "Files missing [*sensitivity_label*] sensitivity label",
+                  "useCases": [
+                    "MislabeledData"
+                  ]
+                }
+              },
+              {
+                "uid": "mock-uid-1001",
+                "type": "IssueStatusChangedToClosedEvent",
+                "date": "2025-07-29T18:17:18.035Z",
+                "account": {
+                  "name": "MockAccount",
+                  "uid": "mock-account-uid-001"
+                },
+                "affectedDataClassAppearances": [
+                  {
+                    "recordsCount": {
+                      "dataClass": {
+                        "classificationName": "Mock Classification A",
+                        "uid": "mock-dc-001"
+                      },
+                      "recordsCount": 164
+                    }
+                  },
+                  {
+                    "recordsCount": {
+                      "dataClass": {
+                        "classificationName": "Mock Classification B",
+                        "uid": "mock-dc-002"
+                      },
+                      "recordsCount": 170
+                    }
+                  },
+                  {
+                    "recordsCount": {
+                      "dataClass": {
+                        "classificationName": "Mock Classification C",
+                        "uid": "mock-dc-003"
+                      },
+                      "recordsCount": 81
+                    }
+                  }
+                ],
+                "policy": {
+                  "name": "Mock Policy - Missing Label"
+                },
+                "issue": {
+                  "uid": "mock-issue-uid-001",
+                  "riskStatus": "Mitigated",
+                  "resolution": "BySystem"
+                }
+              }
+            ]
+          }
+          `}}
+  - path: /v1/events
+    methods: ['GET']
+    query_params:
+      limit: 2
+      offset: 2
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+            "limit": 2,
+            "offset": 2,
+            "total": 5,
+            "results": [
+              {
+                "account": {
+                  "name": "stark-industries",
+                  "platform": "Azure",
+                  "uid": "acc-0197fa56"
+                },
+                "affectedDataClassAppearances": [
+                  {
+                    "recordsCount": {
+                      "recordsCount": 12500,
+                      "dataClass": {
+                        "classificationName": "Credit Card Number",
+                        "uid": "dc-001"
+                      }
+                    }
+                  },
+                  {
+                    "recordsCount": {
+                      "recordsCount": 4300,
+                      "dataClass": {
+                        "classificationName": "US Social Security Number",
+                        "uid": "dc-002"
+                      }
+                    }
+                  }
+                ],
+                "affectedObjectsCount": 6,
+                "affectedObjectsDiff": 2,
+                "affectedRecordsDiff": 310,
+                "automaticScanning": {},
+                "changedClassificationUid": "cls-xyz789",
+                "classificationName": "Sensitive PII",
+                "classifications": [
+                  {
+                    "classificationName": "Financial Data",
+                    "uid": "cls-fin-001"
+                  }
+                ],
+                "cloudProvider": "Azure",
+                "datastoreUserTags": [
+                  "finance",
+                  "customer-data"
+                ],
+                "datastore": {
+                  "dataOwner": "Finance Dept",
+                  "infrastructure": "Azure SQL",
+                  "name": "stark-db-prod",
+                  "recordsAtHighRisk": 5000,
+                  "uid": "ds-12345",
+                  "userTags": [
+                    "restricted",
+                    "prod"
+                  ],
+                  "vpcId": "vpc-0f12c34d"
+                },
+                "date": "2025-08-28T10:15:00Z",
+                "deploymentName": "stark-prod-deployment",
+                "domainName": "stark-industries.com",
+                "expectedM365SensitivityLabelAssignmentsCount": 12,
+                "failedM365SensitivityLabelAssignmentsCount": 2,
+                "frequency": "daily",
+                "inPlatformIdentifier": "sqlserver-01",
+                "isDomainTrusted": true,
+                "isReportDeleted": false,
+                "isReportExpired": false,
+                "issueName": "PII exposure in production datastore",
+                "issueUid": "issue-0197-xyzt",
+                "issue": {
+                  "policy": {
+                    "name": "PII Protection Policy",
+                    "uid": "pol-7890",
+                    "useCases": [
+                      "Data Privacy",
+                      "Compliance"
+                    ]
+                  },
+                  "resolution": "Mitigated",
+                  "resolutionNote": "Records encrypted, access restricted.",
+                  "riskStatus": "Mitigated",
+                  "uid": "issue-abc-123"
+                },
+                "issues": [
+                  {
+                    "policy": {
+                      "name": "Access Control Policy",
+                      "uid": "pol-8910",
+                      "useCases": [
+                        "Security",
+                        "Access Control"
+                      ]
+                    },
+                    "resolution": "In Progress",
+                    "resolutionNote": "Pending approval from admin.",
+                    "riskStatus": "Partially Mitigated",
+                    "uid": "issue-003"
+                  }
+                ],
+                "m365AssignedSensitivityLabelName": "Confidential - Finance",
+                "originalSensitivity": "Low",
+                "originalSensitivityDisplayName": "Low Sensitivity",
+                "policy": {
+                  "name": "Confidential Data Handling Policy",
+                  "uid": "pol-9988",
+                  "useCases": [
+                    "Confidentiality",
+                    "Access Restriction"
+                  ]
+                },
+                "projectName": "Finance Data Governance",
+                "projectUid": "proj-1122",
+                "recipients": [
+                  "compliance@stark-industries.com",
+                  "security@stark-industries.com"
+                ],
+                "reportFileName": "report-2025-08-28.pdf",
+                "reportInstanceUid": "rep-inst-0197",
+                "reportJobUid": "rep-job-0197",
+                "reportName": "Daily Sensitive Data Report",
+                "reportType": "FILES",
+                "sku": "premium-enterprise",
+                "sourceClassifications": [
+                  {
+                    "classificationName": "Internal Only",
+                    "uid": "cls-int-001"
+                  }
+                ],
+                "subscriptionUid": "sub-7890",
+                "successfulM365SensitivityLabelAssignmentsCount": 10,
+                "targetClassifications": [
+                  {
+                    "classificationName": "Highly Confidential",
+                    "uid": "cls-hc-001"
+                  }
+                ],
+                "targetSensitivity": "High",
+                "targetSensitivityDisplayName": "High Sensitivity",
+                "type": "scanEvent",
+                "uid": "log-0197-test-xyz",
+                "user": "jdoe@stark-industries.com",
+                "vendorLink": "https://portal.azure.com/stark-db-prod",
+                "vendorStatus": "Open",
+                "vendorTicketId": "AZ-INC-45321"
+              },
+              {
+                "uid": "mock-uid-2001",
+                "type": "M365SensitivityLabelRemediationFinishedEvent",
+                "date": "2025-07-29T17:41:51.058Z",
+                "account": {
+                  "name": "MockAccount",
+                  "uid": "mock-account-uid-002"
+                },
+                "m365AssignedSensitivityLabelName": "Mock Sensitivity Label",
+                "affectedDataClassAppearances": [
+                  {
+                    "recordsCount": {
+                      "dataClass": {
+                        "classificationName": "Mock Classification A",
+                        "uid": "mock-dc-010"
+                      },
+                      "recordsCount": 81
+                    }
+                  }
+                ],
+                "policy": {
+                  "name": "Mock Policy - Missing Label"
+                },
+                "issue": {
+                  "uid": "mock-issue-uid-002",
+                  "riskStatus": "RemediationInProgress"
+                },
+                "expectedM365SensitivityLabelAssignmentsCount": 1,
+                "successfulM365SensitivityLabelAssignmentsCount": 1,
+                "failedM365SensitivityLabelAssignmentsCount": 0
+              }
+            ]
+          }
+          `}}
+  - path: /v1/events
+    methods: ['GET']
+    query_params:
+      limit: 2
+      offset: 4
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+            "limit": 2,
+            "offset": 4,
+            "total": 5,
+            "results": [
+              {
+                "account": {
+                  "name": "wayne-enterprises",
+                  "platform": "AWS",
+                  "uid": "acc-0298af12"
+                },
+                "affectedDataClassAppearances": [
+                  {
+                    "recordsCount": {
+                      "recordsCount": 8900,
+                      "dataClass": {
+                        "classificationName": "Bank Account Number",
+                        "uid": "dc-101"
+                      }
+                    }
+                  },
+                  {
+                    "recordsCount": {
+                      "recordsCount": 2700,
+                      "dataClass": {
+                        "classificationName": "Passport Number",
+                        "uid": "dc-102"
+                      }
+                    }
+                  }
+                ],
+                "affectedObjectsCount": 4,
+                "affectedObjectsDiff": 1,
+                "affectedRecordsDiff": 200,
+                "automaticScanning": {},
+                "changedClassificationUid": "cls-aws789",
+                "classificationName": "Financial Identifiers",
+                "classifications": [
+                  {
+                    "classificationName": "PII",
+                    "uid": "cls-pii-002"
+                  }
+                ],
+                "cloudProvider": "Snowflake",
+                "datastoreUserTags": [
+                  "us-data"
+                ],
+                "datastore": {
+                  "dataOwner": "Risk Team",
+                  "infrastructure": "Okta",
+                  "name": "cane-db-finance",
+                  "recordsAtHighRisk": 90,
+                  "uid": "ds-33998",
+                  "userTags": [
+                    "prod"
+                  ],
+                  "vpcId": "vpc-0987"
+                },
+                "date": "2025-08-30T13:37:00Z",
+                "deploymentName": "finance-prod-deployment",
+                "domainName": "wayne-enterprises.com",
+                "expectedM365SensitivityLabelAssignmentsCount": 15,
+                "failedM365SensitivityLabelAssignmentsCount": 3,
+                "frequency": "daily",
+                "inPlatformIdentifier": "rds-finance-01",
+                "isDomainTrusted": true,
+                "isReportDeleted": false,
+                "isReportExpired": false,
+                "issueName": "Bank account numbers exposed in production",
+                "issueUid": "issue-0298-abc",
+                "issue": {
+                  "policy": {
+                    "name": "Financial Data Protection",
+                    "uid": "pol-1200",
+                    "useCases": [
+                      "Compliance"
+                    ]
+                  },
+                  "resolution": "Open",
+                  "resolutionNote": "",
+                  "riskStatus": "Mitigated",
+                  "uid": "issue-0200-fin"
+                },
+                "m365AssignedSensitivityLabelName": "Highly Confidential",
+                "originalSensitivity": "Medium",
+                "originalSensitivityDisplayName": "Medium Sensitivity",
+                "policy": {
+                  "name": "Confidential Data Handling Policy",
+                  "uid": "pol-9989",
+                  "useCases": [
+                    "Confidentiality"
+                  ]
+                },
+                "projectName": "Financial Risk Audit",
+                "projectUid": "proj-2233",
+                "recipients": [
+                  "compliance@wayne-enterprises.com",
+                  "security@wayne-enterprises.com"
+                ],
+                "reportFileName": "report-2025-08-30.pdf",
+                "reportInstanceUid": "rep-inst-0298",
+                "reportJobUid": "rep-job-0298",
+                "reportName": "Daily Finance Sensitive Data Report",
+                "reportType": "FILES",
+                "sku": "enterprise",
+                "sourceClassifications": [
+                  {
+                    "classificationName": "Internal Only",
+                    "uid": "cls-int-002"
+                  }
+                ],
+                "subscriptionUid": "sub-1200",
+                "successfulM365SensitivityLabelAssignmentsCount": 12,
+                "targetClassifications": [
+                  {
+                    "classificationName": "Restricted Financial",
+                    "uid": "cls-hc-002"
+                  }
+                ],
+                "targetSensitivity": "Medium",
+                "targetSensitivityDisplayName": "High Sensitivity",
+                "type": "scanEvent",
+                "uid": "log10255-test-wpo",
+                "user": "bruce.wayne@wayne-enterprises.com",
+                "vendorLink": "https://console.aws.amazon.com/rds/home",
+                "vendorStatus": "Open",
+                "vendorTicketId": "AWS-INC-88321"
+              }
+            ]
+          }
+          `}}
