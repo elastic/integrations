@@ -11,6 +11,7 @@ This module has been tested against the Splunk [API](https://docs.splunk.com/Doc
 This integration collects the following logs:
 
 - **Alerts** - Retrieve alerts from Splunk.
+- **Search** - Retrieve custom searches, including non-notable event from Splunk.
 
 ## Requirements
 
