@@ -90,6 +90,8 @@ jobs:
           
           # Process each package
           PROCESSED=""
+          FAILED_PACKAGES=""
+          
           while IFS= read -r doc_file; do
             [ -z "$doc_file" ] && continue
             
@@ -97,28 +99,50 @@ jobs:
             PACKAGE=$(echo "$doc_file" | sed 's|^packages/\([^/]*\)/.*|\1|')
             echo "::group::Processing $PACKAGE"
             
+            PACKAGE_FAILED=false
             cd "packages/$PACKAGE"
             
             # Update changelog if tool exists
             if command -v elastic-package-changelog &> /dev/null; then
-              elastic-package-changelog add-next \
+              echo "Updating changelog for $PACKAGE..."
+              if ! elastic-package-changelog add-next \
                 --type "$CHANGE_TYPE" \
                 --description "$CHANGELOG_DESC" \
-                --pr "$PR_NUMBER" || echo "::warning::Failed to update changelog for $PACKAGE"
+                --pr "$PR_NUMBER"; then
+                echo "::error::Failed to update changelog for $PACKAGE"
+                PACKAGE_FAILED=true
+              fi
+            else
+              echo "::warning::elastic-package-changelog tool not found"
             fi
             
             # Build documentation
-            elastic-package build || echo "::warning::Failed to build $PACKAGE"
+            echo "Building documentation for $PACKAGE..."
+            if ! elastic-package build; then
+              echo "::error::Failed to build documentation for $PACKAGE"
+              PACKAGE_FAILED=true
+            fi
             
-            PROCESSED="$PROCESSED $PACKAGE"
+            if [ "$PACKAGE_FAILED" = "true" ]; then
+              FAILED_PACKAGES="$FAILED_PACKAGES $PACKAGE"
+            else
+              PROCESSED="$PROCESSED $PACKAGE"
+            fi
+            
             cd ../..
             echo "::endgroup::"
           done <<< "$CHANGED_DOCS"
           
+          # Fail if any packages failed
+          if [ -n "$FAILED_PACKAGES" ]; then
+            echo "::error::The following packages failed processing:$FAILED_PACKAGES"
+            exit 1
+          fi
+          
           echo "processed=$PROCESSED" >> $GITHUB_OUTPUT
           
-          # Add PR label
-          gh pr edit $PR_NUMBER --add-label "$LABEL" || true
+          # Add PR labels
+          gh pr edit $PR_NUMBER --add-label "$LABEL,documentation"
 
       - name: Auto-commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -135,17 +159,16 @@ jobs:
           commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 
       - name: Comment on PR
-        if: steps.process.outputs.pr_number
+        if: steps.process.outputs.pr_number && steps.process.outputs.processed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PACKAGES="${{ steps.process.outputs.processed }}"
           PR_NUMBER="${{ steps.process.outputs.pr_number }}"
           
-          if [ -n "$PACKAGES" ]; then
-            COMMENT="## 📚 Automation completed
+          COMMENT="## 📚 Documentation automation completed
           
-          Processed packages: ${PACKAGES}
+          **Processed packages:**${PACKAGES}
           
           ### Automated actions:
           - ✅ Built documentation with \`elastic-package build\`
@@ -154,5 +177,4 @@ jobs:
           
           *Triggered by branch pattern: \`${{ github.ref_name }}\`*"
           
-            gh pr comment $PR_NUMBER --body "$COMMENT" || true
-          fi
+          gh pr comment $PR_NUMBER --body "$COMMENT"
