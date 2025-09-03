@@ -935,7 +935,7 @@ An example event for `vulnerability` looks as following:
 | sysdig.vulnerability.package.layers.base_images.base_images_ref | base images refs. | keyword |
 | sysdig.vulnerability.package.layers.base_images.pull_strings |  | keyword |
 | sysdig.vulnerability.package.layers.command | layer command. | keyword |
-| sysdig.vulnerability.package.layers.digest | sha256 digest of the layer | keyword |
+| sysdig.vulnerability.package.layers.digest | sha256 digest of the layer. | keyword |
 | sysdig.vulnerability.package.layers.digest_algorithm | algorithm of the layer digest hash. | keyword |
 | sysdig.vulnerability.package.layers.digest_hash | sha256 digest of the layer. | keyword |
 | sysdig.vulnerability.package.layers.index | layer's index. | long |
