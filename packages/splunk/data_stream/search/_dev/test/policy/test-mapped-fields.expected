@@ -49,10 +49,16 @@ inputs:
                                   // which we need.
                                   sprintf(
                                     "|eval %s|fields - %s",
-                                    [
-                                      state.field_mapping.map(f, f != "_time" && f != "-", "@ecs." + state.field_mapping[f] + "=" + f).join(","),
-                                      state.field_mapping.map(f, f != "_time" && f != "-", f).join(","),
-                                    ]
+                                    state.field_mapping.transformMapEntry(f, v,
+                                      {
+                                        "'" + f.replace_all("\\", "\\\\").replace_all("'", "\\'") + "'": "'@ecs." + v.replace_all("\\", "\\\\").replace_all("'", "\\'") + "'",
+                                      }
+                                    ).as(bt,
+                                      [
+                                        bt.map(f, f != "'_time'", bt[f] + "=" + f).join(","),
+                                        bt.map(f, f != "'_time'", f).join(","),
+                                      ]
+                                    )
                                   )
                                 )
                               :
@@ -207,7 +213,7 @@ inputs:
                                 ?"mapping": state.?field_mapping.optMap(m, m.drop(["_time", "-"])),
                                 "result": e.transformMapEntry(k, v,
                                   {
-                                    ?k: k.has_prefix("@ecs.") ?
+                                    ?k: k.has_prefix("'@ecs.") ?
                                       optional.none()
                                     :
                                       optional.of(v),
@@ -216,7 +222,7 @@ inputs:
                                 "ecs_result": state.?defaults.orValue({}).with(
                                   e.transformMapEntry(k, v,
                                     {
-                                      ?k.trim_prefix("@ecs."): k.has_prefix("@ecs.") ?
+                                      ?k.trim_prefix("'@ecs.").trim_suffix("'").replace_all("\\'", "'").replace_all("\\\\", "\\"): k.has_prefix("'@ecs.") ?
                                         optional.of(v)
                                       :
                                         optional.none(),
