@@ -295,6 +295,9 @@ An example event for `issues` looks as following:
 | snyk.issues.attributes.coordinates.resourcePath |  | keyword |
 | snyk.issues.attributes.created_at |  | date |
 | snyk.issues.attributes.effective_severity_level | The type from enumeration of the issue’s severity level: info, low, medium, high or critical. This is usually set from the issue’s producer, but can be overridden by policies. | keyword |
+| snyk.issues.attributes.exploit_details.maturity_levels.format |  | keyword |
+| snyk.issues.attributes.exploit_details.maturity_levels.level |  | keyword |
+| snyk.issues.attributes.exploit_details.sources |  | keyword |
 | snyk.issues.attributes.ignored |  | boolean |
 | snyk.issues.attributes.key |  | keyword |
 | snyk.issues.attributes.problems.disclosed_at | When this problem was disclosed to the public. | date |
@@ -307,6 +310,12 @@ An example event for `issues` looks as following:
 | snyk.issues.attributes.risk.score.model | Risk scoring model used to calculate the score value. | keyword |
 | snyk.issues.attributes.risk.score.updated_at |  | date |
 | snyk.issues.attributes.risk.score.value | Risk score value, which may be used for overall prioritization. | long |
+| snyk.issues.attributes.severities.level |  | keyword |
+| snyk.issues.attributes.severities.modification_time |  | keyword |
+| snyk.issues.attributes.severities.score |  | double |
+| snyk.issues.attributes.severities.source |  | keyword |
+| snyk.issues.attributes.severities.vector |  | keyword |
+| snyk.issues.attributes.severities.version |  | keyword |
 | snyk.issues.attributes.status | An issue's status: open or resolved. | keyword |
 | snyk.issues.attributes.title |  | keyword |
 | snyk.issues.attributes.type |  | keyword |
