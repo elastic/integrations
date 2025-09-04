@@ -13,7 +13,7 @@ The RabbitMQ integration is fully tested with RabbitMQ 3.7.4 and 4.1.3, and it s
 
 The application logs dataset parses single file format introduced in 3.7.0.
 
-When upgrading RabbitMQ to version 4.1.3 or above, the `/api/nodes` endpoint no longer returns the `rabbitmq.node.queue.index.journal_write` metric in its response. This metric is used in the Kibana dashboard "Queue Index Operations [Metrics RabbitMQ]". As a result, after upgrading to 4.1.3 or later, this metric and related visualizations in the dashboard will be missing or incomplete.
+When upgrading RabbitMQ to version 4.1.3 or above, the `/api/nodes` endpoint (from RabbitMQ's management API) no longer returns the `rabbitmq.node.queue.index.journal_write` metric in its response. This metric is used in the Kibana dashboard "Queue Index Operations [Metrics RabbitMQ]". As a result, after upgrading to 4.1.3 or later, this metric and related visualizations in the dashboard will be missing or incomplete.
 
 ## Logs
 
