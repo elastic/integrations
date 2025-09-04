@@ -75,227 +75,416 @@ redact:
     - base.tenant_id
 
 program: |-
-  state.base.content_types.split(",").map(t, t.trim_space()).map(content_type,
-    request(
-      "POST",
-      sprintf(
-        "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
-        [
-          state.url.trim_right("/"),
-          state.base.tenant_id,
+  state.with(
+    state.?work.todo_content[0].hasValue() ?
+      // Do any outstanding content collection to do.
+      state.work.todo_content.filter(e,
+        // Filter out stale elements.
+        timestamp(e.contentExpiration) > now()
+      ).as(list, (size(list) != 0) ?
+        list.map(e,
+          timestamp(e.endTime)
+        ).min().as(min,
+          list.filter(e, timestamp(e.endTime) == min)[0]
+        ).as(oldest,
           {
-            "contentType": [content_type],
-            "PublisherIdentifier": [state.base.tenant_id],
-          }.format_query(),
-        ]
+            "curr_content": oldest,
+            "todo_content": list.filter(e, e.contentUri != oldest.contentUri),
+          }
+        )
+      :
+        {"todo_content": []}
+      ).as(w, !has(w.curr_content) ?
+        {
+          "work": state.work.drop("curr_content").with(w),
+          "events": [],
+        }
+      :
+        {
+          "work": state.work.with(
+            {
+              "curr_content": w.curr_content,
+              "todo_content": w.todo_content,
+            }
+          ),
+          "events": request(
+            "GET",
+            w.curr_content.contentUri
+          ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+            dyn(
+              content_resp.Body.decode_json().map(e,
+                {
+                  "o365audit": e,
+                  "event": {"original": e.encode_json()},
+                }
+              )
+            ).orValue(dyn([]))
+          :
+            {
+              "error": {
+                "code": string(content_resp.StatusCode),
+                "id": string(content_resp.Status),
+                "message": "GET " + w.curr_content.contentUri + ": " + (
+                  (size(content_resp.Body) != 0) ?
+                    string(content_resp.Body)
+                  :
+                    string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                ),
+              },
+            }
+          ),
+        }
       )
-    ).do_request().as(sub_resp,
-      sub_resp.Body.decode_json().as(sub_body,
-        (sub_body.?status == optional.of("enabled") || sub_body.?error.code == optional.of("AF20024")) ?
-          // When start-subscription API returns success or if already started subscription,
-          min(duration("24h"), duration(state.base.batch_interval)).as(batch_interval,
-            request(
-              "GET",
-              (
-                state.want_more && state.?cursor.content_types_state_as_list.optMap(l,
-                  l.exists(e, e.content_type == content_type && e.next_page != "")
-                ).orValue(false)
-              ) ?
-                // if NextPageUri exists
-                state.cursor.content_types_state_as_list.filter(e,
-                  e.content_type == content_type && e.next_page != ""
-                )[0].next_page
-              : state.?cursor.content_types_state_as_list.optMap(l, l.exists(e, e.content_type == content_type)).orValue(false) ?
-                // if NextPageUri does not exist, but content_type_state_created_at exists in state
-                state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type).as(content_type_state,
-                  content_type_state[0].content_created_at.as(content_type_state_created_at,
-                    // if saved time inside state is more than 7 days old, then change it to 7 days.
-                    max(
-                      // Enforce the maximum age limit.
-                      now() - duration(state.base.maximum_age),
-                      content_type_state_created_at.parse_time(time_layout.RFC3339)
-                    ).as(created_at,
-                      sprintf(
-                        "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
-                        [
-                          state.url.trim_right("/"),
-                          state.base.tenant_id,
-                          {
-                            "contentType": [content_type],
-                            "PublisherIdentifier": [state.base.tenant_id],
-                            "startTime": [string(min(now() - duration("1s"), created_at + duration("1s")))],
-                            "endTime": [string(min(now(), created_at + batch_interval))],
-                          }.format_query(),
-                        ]
-                      )
-                    )
-                  )
-                )
-              :
-                // initial run when no cursor state exists i.e., polling from initial_interval
-                sprintf(
-                  "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
-                  [
-                    state.url.trim_right("/"),
-                    state.base.tenant_id,
-                    {
-                      "contentType": [content_type],
-                      "PublisherIdentifier": [state.base.tenant_id],
-                      "startTime": [string(min(now() - duration("1s"), now() - duration(state.base.list_contents_start_time)))],
-                      "endTime": [string(min(now(), now() - duration(state.base.list_contents_start_time) + batch_interval))],
-                    }.format_query(),
-                  ]
-                )
+    : has(state.?work.next_list) ?
+      // Follow the next list link.
+      request(
+        "GET",
+        state.work.next_list
+      ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
+        list_resp.Body.decode_json().as(list,
+          (list + state.work.todo_content).filter(e,
+            // Filter out stale elements.
+            e.?contentExpiration.optMap(t, t.parse_time(time_layout.RFC3339) >= now()).orValue(true)
+          ).map(e,
+            // Record the cursor update time for the content.
+            has(e.endTime) ?
+              e
+            :
+              e.with(
+                {
+                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().endTime[0],
+                }
+              )
+          ).as(list, (size(list) != 0) ?
+            list.map(e,
+              timestamp(e.endTime)
+            ).min().as(min,
+              // This is known to exist since a non-empty list must have a minimum.
+              list.filter(e, timestamp(e.endTime) == min)[0]
+            ).as(oldest,
+              {
+                "curr_content": oldest,
+                "todo_content": list.filter(e, e.contentUri != oldest.contentUri),
+              }
             )
-          ).do_request().as(list_resp,
-            list_resp.Body.decode_json().as(list_body,
-              (
-                type(list_body) == list && list_body[?0].as(e,
-                  e.contentUri.orValue("") != "" && e.contentCreated.orValue("") != ""
-                )
-              ) ?
-                // contents exist to consume
-                list_body.map(l1,
-                  (has(l1.contentExpiration) && l1.contentExpiration.parse_time(time_layout.RFC3339) >= now()) ?
-                    request("GET", l1.contentUri).do_request().as(content_resp,
-                      (content_resp.StatusCode == 200 && size(content_resp.Body) > 0) ?
-                        content_resp.Body.decode_json().map(content_body, {"o365audit": content_body}).as(contents,
-                          {
-                            "events_per_content_type": contents,
-                            "content_type": content_type,
-                            // if 'contentCreated' is older than the maximum age, change it to the maximum age.
-                            "content_created_at": list_body.collate("contentCreated").max().as(last,
-                              (last.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
-                                last
-                              :
-                                (now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
-                            ),
-                            "next_page": list_resp.?Header.NextPageUri[0].orValue(list_resp.?Header.Nextpageuri[0].orValue("")),
-                            // keep fetching more if (nextpageuri exists) or
-                            // (the end of the request range is one batch interval or longer before the current time)
-                            "want_more_content": (list_resp.?Header.NextPageUri.optMap(u, u.size() > 0)).orValue(false) ||
-                            (list_resp.?Header.Nextpageuri.optMap(u, u.size() > 0)).orValue(false) ||
-                            (
-                              list_resp.Request.URL.parse_url().RawQuery.parse_query().?endTime[0].optMap(et,
-                                now() - et.parse_time(time_layout.RFC3339) >= duration(state.base.batch_interval)
-                              )
-                            ).orValue(false),
-                          }
-                        )
+          :
+            {"todo_content": []}
+          )
+        ).as(w, !has(w.curr_content) ?
+          {
+            "work": state.work.drop("curr_content").with(w),
+            "events": [],
+          }
+        :
+          {
+            "cursor": state.?cursor.orValue({}).with(
+              {
+                "last_for": state.?cursor.last_for.orValue({}).with(
+                  w.curr_content.as(l,
+                    {l.contentType.to_lower(): l.endTime}
+                  )
+                ),
+              }
+            ),
+            "work": state.work.drop(["curr_content", "next_list"]).with(
+              {
+                "curr_content": w.curr_content,
+                "todo_content": w.todo_content,
+                ?"next_list": [
+                  // Work around non-conformance with HTTP header MIME standards.
+                  ?list_resp.Header.?Nextpageuri[0],
+                  ?list_resp.Header.?NextPageUri[0],
+                ][?0],
+              }
+            ),
+            "events": w.curr_content.as(l,
+              request(
+                "GET",
+                l.contentUri
+              ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+                dyn(
+                  content_resp.Body.decode_json().map(e,
+                    {
+                      "o365audit": e,
+                      "event": {"original": e.encode_json()},
+                    }
+                  )
+                ).orValue(dyn([]))
+              :
+                {
+                  "error": {
+                    "code": string(content_resp.StatusCode),
+                    "id": string(content_resp.Status),
+                    "message": "GET " + l.contentUri + ": " + (
+                      (size(content_resp.Body) != 0) ?
+                        string(content_resp.Body)
                       :
+                        string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                    ),
+                  },
+                }
+              )
+            ),
+          }
+        )
+      :
+        {
+          "error": {
+            "code": string(list_resp.StatusCode),
+            "id": string(list_resp.Status),
+            "message": "GET " + state.work.next_list + ": " + (
+              (size(list_resp.Body) != 0) ?
+                string(list_resp.Body)
+              :
+                string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
+            ),
+          },
+        }
+      )
+    :
+      (
+        state.?work.todo_type[0].hasValue() ?
+          // Consume one work unit and get ready to use it.
+          {
+            "curr_type": state.work.todo_type[0],
+            "todo_type": tail(state.work.todo_type),
+          }
+        :
+          // No work todo, so get items from the config.
+          state.base.content_types.split(",").map(t, t.trim_space()).as(todo_type,
+            {
+              ?"curr_type": todo_type[?0],
+              "todo_type": tail(todo_type),
+            }
+          )
+      ).as(work,
+        // Get subscription details.
+        state.with(
+          !has(work.curr_type) ?
+            // No current work item, so finish.
+            {}
+          :
+            {
+              "base": state.base,
+              "work": work.with(
+                {
+                  "sub": request(
+                    "POST",
+                    sprintf(
+                      "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
+                      [
+                        state.url.trim_right("/"),
+                        state.base.tenant_id,
                         {
-                          "events_per_content_type": [],
-                          "content_type": content_type,
-                          "content_created_at": list_body.collate("contentCreated").max().as(last,
-                            (last.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
-                              last
-                            :
-                              (now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
-                          ),
-                          "next_page": list_resp.?Header.NextPageUri[0].orValue(list_resp.?Header.Nextpageuri[0].orValue("")),
-                        }
+                          "contentType": [work.curr_type],
+                          "PublisherIdentifier": [state.base.tenant_id],
+                        }.format_query(),
+                      ]
+                    )
+                  ).do_request().as(sub_resp, (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
+                    sub_resp.Body.decode_json().as(sub,
+                      {
+                        "type": work.curr_type, // If we get an AF20024, sub.contentType will be absent.
+                        "enabled": sub.?status == optional.of("enabled") || sub.?error.code == optional.of("AF20024"),
+                      }
                     )
                   :
                     {
-                      "events_per_content_type": [],
-                      "content_type": content_type,
-                      "content_created_at": list_body.collate("contentCreated").max().as(last,
-                        (last.parse_time(time_layout.RFC3339) > now() - duration(state.base.maximum_age)) ?
-                          last
-                        :
-                          (now() - duration(state.base.maximum_age)).format(time_layout.RFC3339)
-                      ),
-                      "next_page": list_resp.?Header.NextPageUri[0].orValue(list_resp.?Header.Nextpageuri[0].orValue("")),
-                    }
-                )
-              :
-                // contents does not exist, or is empty array
-                list_resp.Request.URL.parse_url().RawQuery.parse_query().as(r_query,
-                  [
-                    {
-                      "events_per_content_type": (size(list_body) == 0) ? [] : [list_body],
-                      "content_type": content_type,
-                      "content_created_at": (list_resp.StatusCode == 200 && (r_query.?endTime.optMap(t, t.size() > 0)).orValue(false)) ?
-                        (r_query.endTime[0])
-                      :
-                        r_query.?startTime[0].orValue(
-                          state.cursor.content_types_state_as_list.filter(e,
-                            e.content_type == content_type
-                          )[?0].content_created_at.orValue(
-                            string(now() - duration(state.base.list_contents_start_time))
-                          )
+                      "error": {
+                        "code": string(sub_resp.StatusCode),
+                        "id": string(sub_resp.Status),
+                        "message": "POST /activity/feed/subscriptions/start?contentType=" + work.curr_type + ": " + (
+                          (size(sub_resp.Body) != 0) ?
+                            string(sub_resp.Body)
+                          :
+                            string(sub_resp.Status) + " (" + string(sub_resp.StatusCode) + ")"
                         ),
-                      "next_page": "",
-                      "want_more_content": list_resp.StatusCode == 200 && (
-                        r_query.?endTime[0].optMap(t,
-                          now() - t.parse_time(time_layout.RFC3339) >= duration(state.base.batch_interval)
+                      },
+                    }
+                  ),
+                }
+              ),
+            }
+        )
+      ).as(state, !has(state.base) ?
+        // No current work item above, so finish.
+        {}
+      : has(state.error) ?
+        // Getting subscription detail failed.
+        state
+      :
+        (
+          // This exists purely to rewrite the cursor from the original
+          // list format to a map. This will only happen once; we can
+          // remove it when we know there are no users on the previous
+          // version. This is never.
+          has(state.?cursor.content_types_state_as_list) ?
+            state.with(
+              {
+                "cursor": state.cursor.drop("content_types_state_as_list").with(
+                  {
+                    // Use zip to avoid requiring a higher agent version.
+                    "last_for": zip(
+                      // Lowercase key since test data has this mixed. w00t!1
+                      state.cursor.content_types_state_as_list.map(e, e.content_type.to_lower()),
+                      state.cursor.content_types_state_as_list.map(e, e.content_created_at)
+                    ),
+                  }
+                ),
+              }
+            )
+          :
+            state
+        ).as(state, !state.?work.sub.enabled.orValue(false) ?
+          state
+        :
+          state.with(
+            min(duration("24h"), duration(state.base.batch_interval)).as(batch_interval,
+              (
+                // Calculate start and end time stamps.
+                (has(state.?cursor.last_for) && state.work.curr_type.to_lower() in state.cursor.last_for) ?
+                  // Clamp to 7 days, the maximum age limit.
+                  max(
+                    now() - duration(state.base.maximum_age),
+                    state.cursor.last_for[state.work.curr_type.to_lower()].parse_time(time_layout.RFC3339)
+                  ).as(created_at,
+                    {
+                      "start": created_at,
+                      "end": min(now(), created_at + batch_interval),
+                    }
+                  )
+                :
+                  {
+                    "start": now() - duration(state.base.list_contents_start_time),
+                    "end": now() - duration(state.base.list_contents_start_time) + batch_interval,
+                  }
+              ).as(time_range,
+                request(
+                  "GET",
+                  sprintf(
+                    "%s/api/v1.0/%s/activity/feed/subscriptions/content?%s",
+                    [
+                      state.url.trim_right("/"),
+                      state.base.tenant_id,
+                      {
+                        "contentType": [state.work.curr_type],
+                        "PublisherIdentifier": [state.base.tenant_id],
+                        "startTime": [string(min(time_range.end - duration("1ms"), time_range.start))],
+                        "endTime": [string(time_range.end)],
+                      }.format_query(),
+                    ]
+                  )
+                ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
+                  list_resp.Body.decode_json().filter(e,
+                    e.?contentExpiration.optMap(t, t.parse_time(time_layout.RFC3339) >= now()).orValue(true)
+                  ).map(e,
+                    e.with(
+                      {"endTime": string(time_range.end)}
+                    )
+                  ).as(list,
+                    {
+                      "cursor": state.?cursor.orValue({}).with(
+                        {
+                          "last_for": state.?cursor.last_for.orValue({}).with(
+                            {state.work.curr_type.to_lower(): time_range.end}
+                          ),
+                        }
+                      ),
+                      "work": state.work.drop(["curr_content", "next_list"]).with(
+                        {
+                          ?"curr_content": list[?0],
+                          "todo_content": tail(list),
+                          ?"next_list": [
+                            // Work around non-conformance with HTTP header MIME standards.
+                            ?list_resp.Header.?Nextpageuri[0],
+                            ?list_resp.Header.?NextPageUri[0],
+                          ][?0],
+                        }
+                      ),
+                      "events": (
+                        list[?0].optMap(l,
+                          request(
+                            "GET",
+                            l.contentUri
+                          ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+                            dyn(
+                              content_resp.Body.decode_json().map(e,
+                                {
+                                  "o365audit": e,
+                                  "event": {"original": e.encode_json()},
+                                }
+                              )
+                            ).orValue(dyn([]))
+                          :
+                            {
+                              "error": {
+                                "code": string(content_resp.StatusCode),
+                                "id": string(content_resp.Status),
+                                "message": "GET " + l.contentUri + ": " + (
+                                  (size(content_resp.Body) != 0) ?
+                                    string(content_resp.Body)
+                                  :
+                                    string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                                ),
+                              },
+                            }
+                          )
                         )
-                      ).orValue(false),
+                      ).orValue([]),
+                    }
+                  )
+                :
+                  {
+                    "error": {
+                      "code": string(list_resp.StatusCode),
+                      "id": string(list_resp.Status),
+                      "message": "GET /activity/feed/subscriptions/content?contentType=" + state.work.curr_type + ": " + (
+                        (size(list_resp.Body) != 0) ?
+                          string(list_resp.Body)
+                        :
+                          string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
+                      ),
                     },
-                  ]
+                  }
                 )
+              )
             )
           )
-        :
-          // When start-subscription API produces error, such as Authentication error.
-          [
-            {
-              "events_per_content_type": [
-                {
-                  "error": {
-                    "code": string(sub_resp.StatusCode),
-                    "id": string(sub_resp.Status),
-                    "message": content_type + ": " + (
-                      sub_body.?error.code.optFlatMap(code,
-                        sub_body.?error.message.optMap(message,
-                          code + " " + message
-                        )
-                      )
-                    ).orValue(sub_body),
-                  },
-                },
-              ],
-              "content_type": content_type,
-              "content_created_at": (has(state.cursor) && has(state.cursor.content_types_state_as_list)) ?
-                state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].content_created_at
-              :
-                string(now() - duration(state.base.list_contents_start_time)),
-              "next_page": "",
-              "want_more_content": false,
-            },
-          ]
+        )
       )
-    )
-  ).flatten().drop_empty().as(events_list,
-    events_list.collate("events_per_content_type").as(events,
-      events.filter(e, has(e.?error.message)).as(errors,
-        (errors.size() > 0) ?
-          // If there are errors, return a single merged error event and discard any other results
-          {
-            "url": state.url,
-            "base": state.base,
-            "events": {
-              "error": {
-                "code": errors.collate("error.code").as(codes, codes.zip(codes)).keys().as(codes, (codes.size() == 1) ? (codes[0]) : dyn(codes)),
-                "id": errors.collate("error.id").as(ids, ids.zip(ids)).keys().as(ids, (ids.size() == 1) ? (ids[0]) : dyn(ids)),
-                "message": errors.collate("error.message").join("; "),
-              },
-            },
-            "want_more": false,
-            ?"cursor": state.?cursor,
-          }
-        :
-          {
-            "url": state.url,
-            "base": state.base,
-            "events": events,
-            "want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
-            "cursor": {
-              "content_types_state_as_list": events_list.drop(["events_per_content_type"]),
-            },
-          }
+  ).as(state,
+    (
+      // Ensure that we bring the current type up to the current time,
+      // even if we did not get any content for the query period.
+      timestamp(state.cursor.last_for[state.work.curr_type.to_lower()]) < now - duration("1h") &&
+      !state.work.todo_type.exists(t, t == state.work.curr_type)
+    ) ?
+      state.with(
+        {
+          "work": state.work.with({"todo_type": [state.work.curr_type] + state.work.todo_type}),
+        }
       )
+    :
+      state
+  ).as(state,
+    state.with(
+      {
+        "want_more": state.work.as(w,
+          size(w.todo_type) != 0 || size(w.todo_content) != 0 || w.?next_list.orValue("") != ""
+        ),
+      }
     )
+  ).as(state,
+    // Make sure we complete the remaining work if we got
+    // no events but the work lists are not empty.
+    (state.want_more && type(state.events) == list && size(state.events) == 0) ?
+      state.with(
+        {
+          "events": [{"retry": true}],
+        }
+      )
+    :
+      state
   )
 {{#if tags}}
 tags:
