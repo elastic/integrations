@@ -1,6 +1,9 @@
 ---
 description: Pipeline for Office 365 Audit logs
 processors:
+  - drop:
+      if: ctx.retry == true
+      tag: drop_retry_events
   - remove:
       field:
         - organization
@@ -116,6 +119,52 @@ processors:
       field: url.domain
       copy_from: o365audit.OriginatingDomain
       ignore_empty_value: true
+
+  # Ensure that o365.audit.Actions is an array of Map.
+  - script:
+      description: 'This is the first half of an implementation of `if: _ingest._value instanceof String` for the foreach below.'
+      if: ctx.o365audit?.Actions != null
+      tag: script_select_string_actions
+      source: |-
+        ctx._tmp = [:];
+        def actions = [];
+        ctx._tmp.action_strings = [];
+        if (!(ctx.o365audit.Actions instanceof List)) {
+          ctx.o365audit.Actions = [ctx.o365audit.Actions];
+        }
+        for (def e: ctx.o365audit.Actions) {
+          if (e instanceof Map) {
+            actions.add(e);
+          } else if (e instanceof String) {
+            ctx._tmp.action_strings.add(e);
+          }
+        }
+        if (actions.length == ctx.o365audit.Actions.length) {
+          ctx._tmp.remove("action_strings");
+          return
+        }
+        ctx.o365audit.Actions = actions;
+  - foreach:
+      tag: parse_string_actions_to_json
+      field: _tmp.action_strings
+      if: ctx._tmp?.action_strings != null
+      processor:
+        json:
+          field: _ingest._value
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: 'This is the second half of an implementation of `if: _ingest._value instanceof String` for the foreach above.'
+      if: ctx._tmp?.action_strings != null
+      tag: script_select_string_actions
+      source: |-
+        // To reach here, ctx._tmp.action_strings must be non-null
+        // and for this to be true, script_select_string_actions
+        // must have run, requring that ctx.o365audit.Actions is
+        // non-null, so we do not need to check again.
+        ctx.o365audit.Actions.addAll(ctx._tmp.action_strings);
 
   # General Schema
   - date:
@@ -1483,6 +1532,24 @@ processors:
         - remove:
             field: o365audit.Data.sip
             ignore_missing: true
+  - convert:
+      field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
+      type: long
+      ignore_missing: true
+      if: ctx.o365?.audit?.SensitivityLabelEventData?.ActionSourceDetail != ''
+      on_failure:
+        - remove:
+            field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
+            ignore_missing: true
+  - convert:
+      field: o365.audit.SensitivityLabelEventData.LabelEventType
+      type: long
+      ignore_missing: true
+      if: ctx.o365?.audit?.SensitivityLabelEventData?.LabelEventType != ''
+      on_failure:
+        - remove:
+            field: o365.audit.SensitivityLabelEventData.LabelEventType
+            ignore_missing: true
   - date:
       field: o365audit.Data.at
       target_field: o365audit.Data.at
@@ -1581,7 +1648,7 @@ processors:
           'ThreatDetectionMethods', 'Upn'
         ]
       source: >
-        ctx._tmp = [:];
+        ctx._tmp = ctx._tmp ?: [:];
         ctx._tmp.entities = [:];
         for (def entity: ctx.o365audit.Data.flattened.Entities) {
           if (entity instanceof Map) {

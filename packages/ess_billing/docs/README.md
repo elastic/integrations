@@ -140,8 +140,10 @@ An example event for `billing` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ess.billing.cloud.machine.type | The machine type of the instance (e.g., n2.68x16x45). | keyword |
+| ess.billing.cloud.service.type | The service type of the serverless project. | keyword |
 | ess.billing.deployment_id | ID of the Elasticsearch Service deployment. | keyword |
 | ess.billing.deployment_name | Name of the Elasticsearch Service deployment. | keyword |
+| ess.billing.deployment_type | Type of the Elasticsearch Service deployment. | keyword |
 | ess.billing.display_quantity.formatted_value | Human-readable representation of the quantity used (e.g., "24 hours"). | keyword |
 | ess.billing.display_quantity.type | Type of quantity displayed (default or custom). | keyword |
 | ess.billing.display_quantity.value | Actual quantity used (e.g., 24). | float |
