@@ -1,0 +1,64 @@
+---
+description: Pipeline for PFsense radiusd logs
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: "event.ingested"
+      value: "{{_ingest.timestamp}}"
+  - grok:
+      field: "message"
+      patterns:
+        - '^\(%{INT:event_id}\) %{GREEDYDATA:status}: \[%{DATA:user}\] \(from client %{DATA:client} port %{INT:port} cli %{IP:ip}:%{INT}\)'
+        - '^\(%{INT:event_id}\) %{DATA:status} \(%{GREEDYDATA:reason}\): \[%{DATA:user}\] \(from client %{DATA:client} port %{INT:port} cli %{IP:ip}:%{INT}\)'
+        - '%{GREEDYDATA:radiusd.message}'  # <--- catch-all fallback
+  - rename:
+      field: "event_id"
+      target_field: "event.code"
+  - rename:
+      field: "status"
+      target_field: "event.outcome"
+  - rename:
+      field: "user"
+      target_field: "user.name"
+  - rename:
+      field: "client"
+      target_field: "source.domain"
+  - rename:
+      field: "port"
+      target_field: "source.port"
+  - rename:
+      field: "ip"
+      target_field: "source.ip"
+  - rename:
+      field: "reason"
+      target_field: "error.message"
+      ignore_missing: true
+  - set:
+      field: "event.category"
+      value: "authentication"
+  - set:
+      field: "event.type"
+      value: "start"
+  - script:
+      source: |
+        if (ctx.message.contains("Login OK")) {
+          ctx.event.outcome = "success";
+        } else if (ctx.message.contains("Login incorrect")) {
+          ctx.event.outcome = "failure";
+        }
+  - script:
+      source: |
+        if (ctx.containsKey("radiusd") && ctx.radiusd.containsKey("message")) {
+          ctx.event.kind = "system";
+          ctx.event.action = "radiusd_log_message";
+        }
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

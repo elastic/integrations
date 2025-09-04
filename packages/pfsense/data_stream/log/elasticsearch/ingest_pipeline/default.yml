@@ -89,8 +89,30 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "snort" }}'
       if: ctx.event.provider == 'snort'
-  - drop:
-      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort"].contains(ctx.event?.provider)'
+
+# Custom settings
+  - pipeline:
+      name: '{{ IngestPipeline "googleauth" }}'
+      if: ctx.event.provider == 'googleauth'
+  - pipeline:
+      name: '{{ IngestPipeline "sshd" }}'
+      if: ctx.event.provider == 'sshd'
+  - pipeline:
+      name: '{{ IngestPipeline "sudo" }}'
+      if: ctx.event.provider == 'sudo'
+  - pipeline:
+      name: '{{ IngestPipeline "radiusd" }}'
+      if: ctx.event.provider == 'radiusd'
+  - set:
+      field: event.pipeline
+      value: "not_avialable"
+      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort", "googleauth", "sshd", "sudo", "radiusd"].contains(ctx.event?.provider)'
+
+# We do not drop events!  
+#  - drop:
+#      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort"].contains(ctx.event?.provider)'
+
+# End custom settings
   - append:
       field: event.category
       value: network

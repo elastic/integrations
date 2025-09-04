@@ -15,14 +15,20 @@ processors:
       field: event.category
       value: authentication
       allow_duplicates: false
+      if: 'ctx.log?.file?.name != "/firewall_rules_edit.php"'
+  - append:
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+      if: 'ctx.log?.file?.name == "/firewall_rules_edit.php"'
   - set:
       field: event.outcome
       value: success
-      if: 'ctx._tmp?.action.toLowerCase().contains("success")'
+      if: 'ctx.message.toLowerCase().contains("success")'
   - set:
       field: event.outcome
       value: failure
-      if: 'ctx._tmp?.action.toLowerCase().contains("authentication error")'
+      if: 'ctx.message.toLowerCase().contains("authentication error")'
   - convert:
       field: source.address
       target_field: source.ip
