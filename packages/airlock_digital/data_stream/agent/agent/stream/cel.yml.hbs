@@ -25,7 +25,7 @@ program: |
     state.?worklist.agents[0].hasValue() ?
       state
     :
-      state.with(
+      state.drop("worklist").with(
         request(
           "POST",
           state.url.trim_right("/") + "/v1/agent/find"
@@ -66,7 +66,7 @@ program: |
   ).as(state,
     !has(state.worklist) ? // Exit early due to POST failure.
       state
-    : state.?worklist.agents[0].hasValue() ?
+    : size(state.worklist) != 0 ?
       (
         has(state.worklist.agents[0].groupid) ?
           request(
@@ -102,8 +102,10 @@ program: |
                       "message": state.worklist.agents[0].encode_json(),
                     },
                   ],
-                ?"worklist": tail(state.worklist.agents)[?0].hasValue() ? optional.of(state.worklist.with({"agents": tail(state.worklist.agents)})) : optional.none(),
-                "want_more": tail(state.worklist.agents)[?0].hasValue(),
+                "worklist": {
+                  "agents": tail(state.worklist.agents),
+                },
+                "want_more": size(state.worklist.agents) > 1,
                 "api_key": state.api_key,
               }
             )
@@ -133,8 +135,10 @@ program: |
                 "message": state.worklist.agents[0].encode_json(),
               },
             ],
-            ?"worklist": tail(state.worklist.agents)[?0].hasValue() ? optional.of(state.worklist.with({"agents": tail(state.worklist.agents)})) : optional.none(),
-            "want_more": tail(state.worklist.agents)[?0].hasValue(),
+            "worklist": {
+              "agents": tail(state.worklist.agents),
+            },
+            "want_more": size(state.worklist.agents) > 1,
             "api_key": state.api_key,
           }
       )

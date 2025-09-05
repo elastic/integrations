@@ -106,6 +106,6 @@ These inputs can be used in this integration:
 
 ### API usage
 
-This integration datasets use the following APIs:
+These integration datasets use the following API:
 
 - `Agent`: [Airlock Digital REST API](https://api.airlockdigital.com/#35ef50c6-1df4-4330-a433-1915ccf380cf).
