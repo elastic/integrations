@@ -1,0 +1,21 @@
+version: "2.3"
+services:
+  azure-blob-storage-emulator:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000
+    ports:
+      - "10000/tcp"
+  uploader:
+    image: mcr.microsoft.com/azure-cli
+    depends_on:
+      - azure-blob-storage-emulator
+    volumes:
+      - ./sample_logs:/sample_logs
+    entrypoint: >
+      sh -c "
+        sleep 5 &&
+        gzip -c /sample_logs/events.csv > /sample_logs/events.csv.gz &&
+        export AZURE_STORAGE_CONNECTION_STRING='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azure-blob-storage-emulator:10000/devstoreaccount1;' &&
+        az storage container create --name test-container &&
+        az storage blob upload --container-name test-container --file /sample_logs/events.csv.gz --name events.csv.gz
+      "
