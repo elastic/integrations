@@ -203,7 +203,7 @@ This dataset includes metrics such as:
 
 The Consumer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
 
-Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application:
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
 
 ```
 export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
@@ -233,7 +233,7 @@ This dataset includes metrics such as:
 
 The Producer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
 
-Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application:
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
 
 ```
 export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>

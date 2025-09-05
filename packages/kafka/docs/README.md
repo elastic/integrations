@@ -1573,14 +1573,12 @@ This dataset includes metrics such as:
 
 The Consumer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
 
-Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application:
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
 
 ```
-export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=8774,host=localhost
-./bin/kafka-console-consumer.sh --topic=test --bootstrap-server=localhost:9091
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-consumer.sh --topic=test --bootstrap-server=<kafka_host>:<kafka_port>
 ```
-
-Then it will be possible to collect the JMX metrics from localhost:8774.
 
 An example event for `consumer` looks as following:
 
@@ -1663,13 +1661,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | kafka.broker.address | Broker advertised address | keyword |  |  |
 | kafka.broker.id | Broker id | long |  |  |
-| kafka.consumer.bytes_consumed | The average number of bytes consumed for a specific topic per second | float | byte | gauge |
-| kafka.consumer.fetch_rate | The minimum rate at which the consumer sends fetch requests to a broker | float |  | gauge |
-| kafka.consumer.in.bytes_per_sec | The rate of bytes coming in to the consumer | float | byte | gauge |
-| kafka.consumer.max_lag | The maximum consumer lag | float |  | gauge |
-| kafka.consumer.mbean | Mbean that this event is related to | keyword |  |  |
+| kafka.consumer.bytes_consumed | The average number of bytes consumed for a specific topic per second. | float | byte | gauge |
+| kafka.consumer.fetch_rate | The minimum rate at which the consumer sends fetch requests to a broker. | float |  | gauge |
+| kafka.consumer.in.bytes_per_sec | The rate of bytes coming in to the consumer. | float | byte | gauge |
+| kafka.consumer.max_lag | The maximum consumer lag. | float |  | gauge |
+| kafka.consumer.mbean | Mbean that this event is related to. | keyword |  |  |
 | kafka.consumer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
-| kafka.consumer.records_consumed | The average number of records consumed per second for a specific topic | float |  | gauge |
+| kafka.consumer.records_consumed | The average number of records consumed per second for a specific topic. | float |  | gauge |
 | kafka.partition.id | Partition id. | long |  |  |
 | kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |  |  |
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |  |  |
@@ -1693,14 +1691,12 @@ This dataset includes metrics such as:
 
 The Producer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
 
-Note that the Jolokia agent is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application:
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
 
 ```
-export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=8775,host=localhost
-./bin/kafka-console-producer.sh --topic test --broker-list localhost:9091
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-producer.sh --topic test --broker-list <kafka_host>:<kafka_port>
 ```
-
-Then it will be possible to collect the JMX metrics from localhost:8775.
 
 **ECS Field Reference**
 
@@ -1732,21 +1728,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | kafka.partition.id | Partition id. | long |  |  |
 | kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |  |  |
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |  |  |
-| kafka.producer.available_buffer_bytes | The total amount of buffer memory | float | byte | gauge |
-| kafka.producer.batch_size_avg | The average number of bytes sent | float | byte | gauge |
-| kafka.producer.batch_size_max | The maximum number of bytes sent | long | byte | gauge |
-| kafka.producer.io_wait | The producer I/O wait time | float | nanos | gauge |
-| kafka.producer.mbean | Mbean that this event is related to | keyword |  |  |
+| kafka.producer.available_buffer_bytes | The total amount of buffer memory. | float | byte | gauge |
+| kafka.producer.batch_size_avg | The average number of bytes sent. | float | byte | gauge |
+| kafka.producer.batch_size_max | The maximum number of bytes sent. | long | byte | gauge |
+| kafka.producer.io_wait | The producer I/O wait time. | float | nanos | gauge |
+| kafka.producer.mbean | Mbean that this event is related to. | keyword |  |  |
 | kafka.producer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
-| kafka.producer.out.bytes_per_sec | The rate of bytes going out for the producer | float | byte | gauge |
-| kafka.producer.record_error_rate | The average number of retried record sends per second | float |  | gauge |
-| kafka.producer.record_retry_rate | The average number of retried record sends per second | float |  | gauge |
-| kafka.producer.record_send_rate | The average number of records sent per second | float |  | gauge |
-| kafka.producer.record_size_avg | The average record size | float | byte | gauge |
-| kafka.producer.record_size_max | The maximum record size | long | byte | gauge |
-| kafka.producer.records_per_request | The average number of records sent per second | float |  | gauge |
-| kafka.producer.request_rate | The number of producer requests per second | float |  | gauge |
-| kafka.producer.response_rate | The number of producer responses per second | float |  | gauge |
+| kafka.producer.out.bytes_per_sec | The rate of bytes going out for the producer. | float | byte | gauge |
+| kafka.producer.record_error_rate | The average number of retried record sends per second. | float |  | gauge |
+| kafka.producer.record_retry_rate | The average number of retried record sends per second. | float |  | gauge |
+| kafka.producer.record_send_rate | The average number of records sent per second. | float |  | gauge |
+| kafka.producer.record_size_avg | The average record size. | float | byte | gauge |
+| kafka.producer.record_size_max | The maximum record size. | long | byte | gauge |
+| kafka.producer.records_per_request | The average number of records sent per second. | float |  | gauge |
+| kafka.producer.request_rate | The number of producer requests per second. | float |  | gauge |
+| kafka.producer.response_rate | The number of producer responses per second. | float |  | gauge |
 | kafka.topic.error.code | Topic error code. | long |  |  |
 | kafka.topic.name | Topic name | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
