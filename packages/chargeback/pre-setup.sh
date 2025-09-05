@@ -18,7 +18,10 @@ PUT chargeback_conf_lookup
       "conf_ecu_rate_unit": { "type": "keyword"},
       "conf_indexing_weight": { "type": "integer" },
       "conf_query_weight": { "type": "integer" },
-      "conf_storage_weight": { "type": "integer" }
+      "conf_storage_weight": { "type": "integer" },
+      "conf_recommended_memory_util": { "type": "integer" },
+      "conf_recommended_cpu_util": { "type": "integer" },
+      "conf_recommended_disk_util": { "type": "integer" }
     }
   }
 }
@@ -31,7 +34,10 @@ POST chargeback_conf_lookup/_doc/config
   "conf_ecu_rate_unit": "EUR",
   "conf_indexing_weight": 20,
   "conf_query_weight": 20,
-  "conf_storage_weight": 40
+  "conf_storage_weight": 40,
+  "conf_recommended_memory_util": 70,
+  "conf_recommended_cpu_util": 70,
+  "conf_recommended_disk_util": 60,
 }
 
 # Create the lookup indices for billing and cluster contributions.
