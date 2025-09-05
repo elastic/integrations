@@ -456,8 +456,9 @@ program: |-
     (
       // Ensure that we bring the current type up to the current time,
       // even if we did not get any content for the query period.
-      timestamp(state.cursor.last_for[state.work.curr_type.to_lower()]) < now - duration("1h") &&
-      !state.work.todo_type.exists(t, t == state.work.curr_type)
+      has(state.?work.curr_type) && state.?cursor.last_for.optMap(l,
+        timestamp(l[state.work.curr_type.to_lower()]) < now - duration("1h")
+      ).orValue(false) && !state.work.todo_type.exists(t, t == state.work.curr_type)
     ) ?
       state.with(
         {
