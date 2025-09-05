@@ -1,0 +1,289 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  batch_size : {{batch_size}}
+  client_id: {{client_id}}
+  secret: {{client_secret}}
+  created_data: true
+redact:
+  fields:
+    - client_id
+    - secret
+program: |-
+  state.with(
+    has(state.?next.expiry) && timestamp(state.next.expiry) > now ?
+      {
+        "access_token": state.next.access_token,
+        "expiry": state.next.expiry,
+      }
+    :
+      post_request(
+        state.url.trim_right("/") + "/v1/login",
+        "",
+        {
+          "clientId": state.client_id,
+          "secret": state.secret,
+        }.encode_json()
+      ).with(
+        {
+          "Header": {
+            "Accept": ["application/json"],
+            "Content-Type": ["application/json"],
+          },
+        }
+      ).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body,
+          {
+            "next": {
+              "access_token": body.jwt,
+              "expiry": (now() + duration("24h") - duration("30s")).format(time_layout.RFC3339),
+            },
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "/v1/login " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+  ).as(state,
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "start_time": state.?cursor.created_timestamp.orValue(now - duration(state.initial_interval)),
+          "modified_time": state.?cursor.updated_timestamp.orValue(now - duration(state.initial_interval)),
+          "created_call_counter": 0,
+          "created_call_offset": 0,
+          "modified_call_counter": 0,
+          "modified_call_offset": 0,
+        }
+      )
+  ).as(state,
+    has(state.?events.error) ?
+      state
+    : state.?created_data.orValue(false) ?
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "/v2/datastores?" + {
+              "limit": [string(state.batch_size)],
+              "offset": [string(state.created_call_offset)],
+              "createdDate": [string(state.start_time)],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["Bearer " + state.next.access_token],
+                "Accept": ["application/json"],
+              },
+            }
+          ).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body,
+              {
+                "events": has(body.results) && body.results.size() > 0 ?
+                  body.results.map(e,
+                    {
+                      "message": e.encode_json(),
+                    }
+                  )
+                :
+                  [{"message": "retry"}],
+                "created_call_offset": has(body.results) && int(state.created_call_counter) + int(size(body.results)) < int(body.?total.orValue(-1)) ?
+                  int(state.created_call_offset) + int(size(body.results))
+                :
+                  state.batch_size,
+                "created_call_counter": int(state.created_call_counter) + int(size(body.results)) < int(body.?total.orValue(-1)) ?
+                  int(state.created_call_counter) + int(size(body.results))
+                :
+                  0,
+                "want_more": true,
+                "created_data": has(body.results) && int(state.created_call_counter) + int(size(body.results)) < int(body.?total.orValue(-1)),
+                "cursor": {
+                  ?"max_created_time": has(body.total) && int(state.created_call_counter) + int(size(body.results)) <= int(body.?total.orValue(-1)) ?
+                    (
+                      size(body.results) != 0 ?
+                        (
+                          has(state.?cursor.max_created_time) ?
+                            optional.of(string(max(state.cursor.max_created_time, body.results.map(e, e.createdDate).max())))
+                          :
+                            optional.of(string(body.results.map(e, e.createdDate).max()))
+                        )
+                      :
+                        optional.none()
+                    )
+                  :
+                    optional.none(),
+                  ?"created_timestamp": has(body.total) && int(state.created_call_counter) + int(size(body.results)) == int(body.?total.orValue(-1)) ?
+                    (
+                      size(body.results) != 0 ?
+                        (
+                          has(state.?cursor.max_created_time) ?
+                            optional.of(string(max(state.cursor.max_created_time, body.results.map(e, e.createdDate).max())))
+                          :
+                            optional.of(string(body.results.map(e, e.createdDate).max()))
+                        )
+                      :
+                        state.?cursor.max_created_time
+                    )
+                  :
+                    state.?cursor.created_timestamp,
+                  ?"updated_timestamp": state.?cursor.updated_timestamp,
+                  ?"max_update_time": state.?cursor.max_update_time,
+                },
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/v2/datastores " + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "created_data": true,
+            }
+          )
+        )
+      :
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "/v2/datastores?" + {
+              "limit": [string(state.batch_size)],
+              "offset": [string(state.modified_call_offset)],
+              "lastModifiedTimeGte": [string(state.modified_time)],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["Bearer " + state.next.access_token],
+                "Accept": ["application/json"],
+              },
+            }
+          ).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body,
+              {
+                "events": has(body.results) && body.results.size() > 0 ?
+                  body.results.map(e,
+                    {
+                      "message": e.encode_json(),
+                    }
+                  )
+                :
+                  [],
+                "modified_call_offset": has(body.results) && int(state.modified_call_counter) + int(size(body.results)) < int(body.?total.orValue(-1)) ?
+                  int(state.modified_call_offset) + int(size(body.results))
+                :
+                  state.batch_size,
+                "modified_call_counter": int(state.modified_call_counter) + int(size(body.results)) < int(body.?total.orValue(-1)) ?
+                  int(state.modified_call_counter) + int(size(body.results))
+                :
+                  0,
+                "want_more": has(body.total) && int(state.modified_call_counter) + int(size(body.results)) < int(body.?total.orValue(-1)),
+                "created_data": !(has(body.total) && int(state.modified_call_counter) + int(size(body.results)) < int(body.?total.orValue(-1))),
+                "cursor": {
+                  ?"max_update_time": has(body.total) && int(state.modified_call_counter) + int(size(body.results)) <= int(body.?total.orValue(-1)) ?
+                    (
+                      size(body.results) != 0 ?
+                        (
+                          has(state.?cursor.max_update_time) ?
+                            optional.of(string(max(state.cursor.max_update_time, body.results.map(e, e.lastModifiedTime).max())))
+                          :
+                            optional.of(string(body.results.map(e, e.lastModifiedTime).max()))
+                        )
+                      :
+                        optional.none()
+                    )
+                  :
+                    optional.none(),
+                  ?"updated_timestamp": has(body.total) && int(state.modified_call_counter) + int(size(body.results)) == int(body.?total.orValue(-1)) ?
+                    (
+                      size(body.results) != 0 ?
+                        (
+                          has(state.?cursor.max_update_time) ?
+                            optional.of(string(max(state.cursor.max_update_time, body.results.map(e, e.lastModifiedTime).max())))
+                          :
+                            optional.of(string(body.results.map(e, e.lastModifiedTime).max()))
+                        )
+                      :
+                        state.?cursor.max_update_time
+                    )
+                  :
+                    state.?cursor.updated_timestamp,
+                  ?"created_timestamp": state.?cursor.created_timestamp,
+                  ?"max_created_time": state.?cursor.max_created_time,
+                },
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/v2/datastores " + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "created_data": true,
+            }
+          )
+        )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
