@@ -31,19 +31,21 @@ API References:
   https://docs.beyondtrust.com/bips/docs/beyondinsight-apis#get-workgroupsworkgroupidassets
 
 Cursor variable definitions:
-  workgroup_ids: Array of arrays containing [workgroup_id (string), offset (int)].
+  workgroup_ids: Array of objects containing {workgroup_id: string, offset: int}.
     After the assets for the workgroup have been fully collected, the item is removed.
   cookies: Session cookie.
 --}}
 program: |-
   (
-    // Migrate old cursor format: rename asset_reqs to workgroup_ids
     (has(state.?cursor.asset_reqs) && !has(state.?cursor.workgroup_ids)) ?
+      // Migrate cursor from old asset_reqs (array of arrays) to new workgroup_ids (array of objects).
       state.with(
         {
           "cursor": state.cursor.with(
             {
-              "workgroup_ids": state.cursor.asset_reqs,
+              "workgroup_ids": state.cursor.asset_reqs.map(item,
+                {"workgroup_id": string(item[0]), "offset": int(item[1])}
+              ),
             }
           ).drop("asset_reqs"),
         }
@@ -57,8 +59,8 @@ program: |-
         (size(state.?cursor.workgroup_ids.orValue([])) > 0) ?
           // We already have workgroup IDs, process assets from them.
           {
-            "workgroup_id": state.cursor.workgroup_ids[0][0],
-            "offset": state.cursor.workgroup_ids[0][1],
+            "workgroup_id": state.cursor.workgroup_ids[0].workgroup_id,
+            "offset": state.cursor.workgroup_ids[0].offset,
             "remaining_workgroups": tail(state.cursor.workgroup_ids),
           }.as(r,
             request(
@@ -80,8 +82,7 @@ program: |-
                 resp.Body.decode_json().as(body,
                   (
                     (size(body.Data) + int(r.offset) < int(body.TotalCount)) ?
-                      (// There are more assets in this workgroup, increase the offset.
-                      [[r.workgroup_id, int(r.offset) + size(body.Data)]] + r.remaining_workgroups)
+                      ([{"workgroup_id": r.workgroup_id, "offset": int(r.offset) + size(body.Data)}] + r.remaining_workgroups)
                     :
                       r.remaining_workgroups
                   ).as(next_workgroup_ids,
@@ -181,7 +182,7 @@ program: |-
                     "want_more": true,
                     "cursor": {
                       "cookies": state.cursor.cookies,
-                      "workgroup_ids": workgroups.map(wg, [string(wg.ID), 0]),
+                      "workgroup_ids": workgroups.map(wg, {"workgroup_id": string(wg.ID), "offset": 0}),
                     },
                   }
               )
