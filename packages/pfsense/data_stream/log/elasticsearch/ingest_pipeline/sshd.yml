@@ -1,0 +1,63 @@
+---
+description: Pipeline for PFsense SSHD logs.
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - grok:
+      field: message
+      ignore_missing: true
+      patterns:
+        - '%{WORD:sshd.event_status} (?:%{WORD:authentication.method}(?:/%{WORD:authentication.mechanism})?)? for (?:invalid user )?(?:illegal user )?%{USERNAME:user.name} from %{IP:source.ip} port %{NUMBER:source.port}(?: ssh2(?:: %{GREEDYDATA:ssh.key})?)?'
+        - 'Disconnected from user %{USERNAME:user.name} %{IP:source.ip} port %{NUMBER:source.port}'
+        - 'Connection closed by authenticating user %{USERNAME:user.name} %{IP:source.ip} port %{NUMBER:source.port} \[preauth\]'
+        - 'fatal: Timeout before authentication for %{IP:source.ip} port %{NUMBER:source.port}'
+        - 'Invalid user %{USERNAME:user.name} from %{IP:source.ip} port %{NUMBER:source.port}'
+        - 'Accepted keyboard-interactive/pam for %{USERNAME:user.name} from %{IP:source.ip} port %{NUMBER:source.port}'
+        - 'Received disconnect from %{IP:source.ip} port %{NUMBER:source.port}(?::%{NUMBER:sshd.disconnect_code})?: %{GREEDYDATA:sshd.disconnect_reason}'
+        - 'error: %{WORD:authentication.mechanism}: Authentication error for %{USERNAME:user.name} from %{IP:source.ip}'
+        - '%{WORD:authentication.mechanism}: error trying to bind as user "uid=%{USERNAME:user.name},%{GREEDYDATA:sshd.ldap_dn}" \(%{GREEDYDATA:event.reason}\)'
+  - set:
+      field: event.module
+      value: sshd
+  - set:
+      field: event.category
+      value: authentication
+  - set:
+      field: event.type
+      value: start
+  - script:
+      lang: painless
+      source: |
+        ctx.event = ctx.event != null ? ctx.event : new HashMap();
+        String msg = ctx.message.toLowerCase();
+        if (msg.contains("accepted")) {
+          ctx.event.action = "ssh_login_success";
+          ctx.event.outcome = "success";
+        } else if (msg.contains("failed") || msg.contains("authentication error")) {
+          ctx.event.action = "ssh_login_failed";
+          ctx.event.outcome = "failure";
+        } else if (msg.contains("disconnected")) {
+          ctx.event.action = "ssh_disconnect";
+        } else if (msg.contains("connection closed")) {
+          ctx.event.action = "ssh_connection_closed";
+        } else if (msg.contains("timeout")) {
+          ctx.event.action = "ssh_timeout";
+          ctx.event.outcome = "failure";
+        } else if (msg.contains("invalid user") || msg.contains("illegal user")) {
+          ctx.event.action = "ssh_invalid_user";
+          ctx.event.outcome = "failure";
+        } else if (msg.contains("error trying to bind as user")) {
+          ctx.event.action = "ssh_ldap_bind_failed";
+          ctx.event.outcome = "failure";
+        } else {
+          ctx.event.action = "ssh_unclassified";
+        }
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
