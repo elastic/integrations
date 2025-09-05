@@ -80,7 +80,7 @@ The integration v2 inspects the category field to see if there's an integration 
 
 #### Question: What is in the undocumented data-stream `logs-azure.events-default`?
 
-The `logs-azure.events-default` data stream is the entry point for the integration v2.and contains the core routing logic.
+The `logs-azure.events-default` data stream is the logs entry point for the integration v2. It contains the core logs routing logic.
 
 ## Data streams
 
