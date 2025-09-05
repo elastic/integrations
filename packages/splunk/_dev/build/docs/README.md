@@ -56,3 +56,13 @@ This is the `alert` dataset.
 {{event "alert"}}
 
 {{fields "alert"}}
+
+### Search
+
+This is the `search` dataset.
+
+#### Example
+
+{{event "search"}}
+
+{{fields "search"}}
