@@ -28,8 +28,8 @@ source:
                 field: elasticsearch.node.stats.fs.summary.total.bytes
           minimum_should_match: 1
 dest:
-  index: cluster_tier_utilization
-  #pipeline: metrics-chargeback.usage-0.2.0
+  index: cluster_tier_utilization_lookup
+  pipeline: metrics-chargeback.usage-0.2.0
 frequency: 60m
 sync:
   time:
@@ -50,6 +50,12 @@ pivot:
       terms:
         field: elasticsearch.node.roles
   aggregations:
+    addressable_memory:
+      sum: 
+        field: elasticsearch.node.stats.os.cgroup.memory.limit.bytes
+    total_storage:
+      sum:
+        field: elasticsearch.node.stats.fs.summary.total.bytes
     memory_usage_pct_avg:
       avg:
         field: memory_usage_pct

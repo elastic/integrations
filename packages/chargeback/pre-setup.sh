@@ -37,7 +37,7 @@ POST chargeback_conf_lookup/_doc/config
   "conf_storage_weight": 40,
   "conf_recommended_memory_util": 70,
   "conf_recommended_cpu_util": 70,
-  "conf_recommended_disk_util": 60,
+  "conf_recommended_disk_util": 60
 }
 
 # Create the lookup indices for billing and cluster contributions.
@@ -178,6 +178,43 @@ PUT cluster_tier_contribution_lookup
       "tier_sum_query_time": { "type": "double" },
       "tier_sum_store_size": { "type": "double" },
       "tier_sum_data_set_store_size": { "type": "double" }
+    }
+  }
+}
+
+PUT cluster_tier_utilization_lookup
+{
+  "settings": {
+    "index.mode": "lookup",
+    "index.hidden": true
+  },
+  "mappings": {
+    "_meta": {
+      "managed": true,
+      "package": { "name": "chargeback", "version": "0.2.0" }
+    },
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "cluster_name": {
+        "type": "text",
+        "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+      },
+      "composite_key": { "type": "keyword" },
+      "composite_tier_key": { "type": "keyword" },
+      "config_join_key": { "type": "keyword" },
+      "deployment_id": { "type": "keyword" },
+      "deployment_name": {
+        "type": "text",
+        "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+      },
+      "tier": { "type": "keyword" },
+      "cluster_id": {
+        "type": "text",
+        "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+      },
+      "memory_usage_pct_avg": { "type": "double" },
+      "disk_usage_pct_avg": { "type": "double" },
+      "cpu_usage_pct_avg": { "type": "double" }
     }
   }
 }
