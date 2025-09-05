@@ -36,7 +36,21 @@ Cursor variable definitions:
   cookies: Session cookie.
 --}}
 program: |-
-  state.with(
+  (
+    // Migrate old cursor format: rename asset_reqs to workgroup_ids
+    (has(state.?cursor.asset_reqs) && !has(state.?cursor.workgroup_ids)) ?
+      state.with(
+        {
+          "cursor": state.cursor.with(
+            {
+              "workgroup_ids": state.cursor.asset_reqs,
+            }
+          ).drop("asset_reqs"),
+        }
+      )
+    :
+      state
+  ).with(
     has(state.?cursor.cookies) ?
       (
         // Use existing authenticated session to fetch assets from workgroups.
