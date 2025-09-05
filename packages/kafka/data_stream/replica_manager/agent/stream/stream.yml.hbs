@@ -1,0 +1,132 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: metrics
+period: {{period}}
+http_method: {{http_method}}
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+jmx.mappings: 
+# ReplicaAlterLogDirsManager metrics
+- mbean: 'kafka.server:clientId=ReplicaAlterLogDirs,name=DeadThreadCount,type=ReplicaAlterLogDirsManager'
+  attributes:
+    - attr: Value
+      field: replica_alter_log_dirs_manager.dead_thread_count
+- mbean: 'kafka.server:clientId=ReplicaAlterLogDirs,name=FailedPartitionsCount,type=ReplicaAlterLogDirsManager'
+  attributes:
+    - attr: Value
+      field: replica_alter_log_dirs_manager.failed_partitions_count
+- mbean: 'kafka.server:clientId=ReplicaAlterLogDirs,name=MaxLag,type=ReplicaAlterLogDirsManager'
+  attributes:
+    - attr: Value
+      field: replica_alter_log_dirs_manager.max_lag
+- mbean: 'kafka.server:clientId=ReplicaAlterLogDirs,name=MinFetchRate,type=ReplicaAlterLogDirsManager'
+  attributes:
+    - attr: Value
+      field: replica_alter_log_dirs_manager.min_fetch_rate
+
+# ReplicaFetcherManager metrics
+- mbean: 'kafka.server:clientId=Replica,name=DeadThreadCount,type=ReplicaFetcherManager'
+  attributes:
+    - attr: Value
+      field: replica_fetcher_manager.dead_thread_count
+- mbean: 'kafka.server:clientId=Replica,name=FailedPartitionsCount,type=ReplicaFetcherManager'
+  attributes:
+    - attr: Value
+      field: replica_fetcher_manager.failed_partitions_count
+- mbean: 'kafka.server:clientId=Replica,name=MaxLag,type=ReplicaFetcherManager'
+  attributes:
+    - attr: Value
+      field: replica_fetcher_manager.max_lag
+- mbean: 'kafka.server:clientId=Replica,name=MinFetchRate,type=ReplicaFetcherManager'
+  attributes:
+    - attr: Value
+      field: replica_fetcher_manager.min_fetch_rate
+
+# ReplicaManager metrics
+- mbean: 'kafka.server:name=AtMinIsrPartitionCount,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: at_min_isr_partition_count
+- mbean: 'kafka.server:name=FailedIsrUpdatesPerSec,type=ReplicaManager'
+  attributes:
+    - attr: OneMinuteRate
+      field: failed_isr_updates_per_sec.one_minute_rate
+- mbean: 'kafka.server:name=IsrExpandsPerSec,type=ReplicaManager'
+  attributes:
+    - attr: OneMinuteRate
+      field: isr_expands_per_sec.one_minute_rate
+- mbean: 'kafka.server:name=IsrShrinksPerSec,type=ReplicaManager'
+  attributes:
+    - attr: OneMinuteRate
+      field: isr_shrinks_per_sec.one_minute_rate
+- mbean: 'kafka.server:name=LeaderCount,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: leader_count
+- mbean: 'kafka.server:name=OfflineReplicaCount,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: offline_replica_count
+- mbean: 'kafka.server:name=PartitionCount,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: partition_count
+- mbean: 'kafka.server:name=PartitionsWithLateTransactionsCount,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: partitions_with_late_transactions_count
+- mbean: 'kafka.server:name=ProducerIdCount,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: producer_id_count
+- mbean: 'kafka.server:name=ReassigningPartitions,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: reassigning_partitions
+- mbean: 'kafka.server:name=UnderMinIsrPartitionCount,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: under_min_isr_partition_count
+- mbean: 'kafka.server:name=UnderReplicatedPartitions,type=ReplicaManager'
+  attributes:
+    - attr: Value
+      field: under_replicated_partitions
+{{#if headers}}
+{{headers}}
+{{/if}}
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

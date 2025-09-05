@@ -10,6 +10,14 @@ The Sysdig integration collects three types of logs:
 
 **CSPM** The CSPM data stream collected through the Sysdig integration consists of Sysdig compliance results. See more details about compliance results in [Sysdig's Compliance documentation](https://docs.sysdig.com/en/sysdig-secure/compliance/).
 
+**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
+
+For vulnerability data, Each interval fetches all available scan results from the configured stage. Currently, only one stage can be configured at a time. Users wishing to collect scan results from different stages must configure additional integrations for each desired stage.
+
+Scan results are broken down into separate events for each package-vulnerability pair. If no vulnerability is found for a package, then only the package details will be included in the published event. If the scans contain no package information, then only the scan details will be included in the published event.
+
+In detail, a package is included in one layer, which can be built upon several base images. Furthermore, a package can have multiple vulnerabilities, each of which can have multiple risk accepts.
+
 ## Requirements
 
 ### Agent-based installation
@@ -46,6 +54,7 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 **Note**:
   - The URL may vary depending on your region. Please refer to the [Documentation](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints) to find the correct URL for your region.
   - If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the `Maximum Pages Per Interval` setting in the configuration.
+  - Users wishing to collect vulnerability scan results from multiple stages must configure individual integrations for each desired stage.
 
 ## Logs Reference
 
@@ -78,3 +87,13 @@ This is the `CSPM` dataset.
 {{event "cspm"}}
 
 {{fields "cspm"}}
+
+### Vulnerability
+
+This is the `vulnerability` dataset.
+
+#### Example
+
+{{event "vulnerability"}}
+
+{{fields "vulnerability"}}
