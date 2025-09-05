@@ -67,15 +67,15 @@ An example event for `ami` looks as following:
 {
     "@timestamp": "2023-05-16T15:25:25.000Z",
     "agent": {
-        "ephemeral_id": "e4420835-f6ac-4965-a02e-6652bddd447c",
-        "id": "fe8ff87c-86f3-48ae-b73e-b2d057322f88",
-        "name": "elastic-agent-27172",
+        "ephemeral_id": "7705ca4f-1116-4ad1-8760-4bcff23b567c",
+        "id": "0161e44e-cce1-4863-8ba8-7901a62c137c",
+        "name": "elastic-agent-88034",
         "type": "filebeat",
         "version": "8.18.2"
     },
     "data_stream": {
         "dataset": "gigamon.ami",
-        "namespace": "25103",
+        "namespace": "39816",
         "type": "logs"
     },
     "destination": {
@@ -92,6 +92,8 @@ An example event for `ami` looks as following:
         "question": {
             "name": "f.7.5.2.e.7.6.2.4.c.1.c.4.c.6.1.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. ip6.arpa",
             "registered_domain": "a.b.2.b.9.6.c.2.3.9.3.d.6.2.6.a.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. i:p6.arpa",
+            "subdomain": "f.7.5.2.e.7.6.2.4.c.1.c.4.c.6.1.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f",
+            "top_level_domain": "arpa",
             "type": "*"
         }
     },
@@ -99,7 +101,7 @@ An example event for `ami` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e0946e49-edee-4bff-b50f-68db064a11a8",
+        "id": "0161e44e-cce1-4863-8ba8-7901a62c137c",
         "snapshot": false,
         "version": "8.18.2"
     },
@@ -111,7 +113,7 @@ An example event for `ami` looks as following:
         "dataset": "gigamon.ami",
         "end": "2023-12-13T15:25:11.181Z",
         "id": "679408454713072647",
-        "ingested": "2025-07-29T06:24:16Z",
+        "ingested": "2025-09-05T14:55:11Z",
         "kind": "event",
         "original": "{\"app_id\":\"32\",\"app_name\":\"dns\",\"device_inbound_interface\":\"0\",\"dns_class\":\"1\",\"dns_flags\":\"0\",\"dns_host\":\"pnstrex-83816.local\",\"dns_host_addr\":\"10.114.82.101\",\"dns_host_class\":\"1\",\"dns_host_raw\":\"706e73747265782d38333831362e6c6f63616c\",\"dns_host_type\":\"PTR\",\"dns_name\":\"a.b.2.b.9.6.c.2.3.9.3.d.6.2.6.a.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. i:p6.arpa\",\"dns_opcode\":\"0\",\"dns_qdcount\":\"4\",\"dns_query\":\"f.7.5.2.e.7.6.2.4.c.1.c.4.c.6.1.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. ip6.arpa\",\"dns_query_type\":\"255\",\"dns_transaction_id\":\"0\",\"dns_ttl\":\"120\",\"dst_bytes\":\"0\",\"dst_ip\":\"224.0.0.251\",\"dst_mac\":\"01:00:5e:00:00:fb\",\"dst_packets\":\"0\",\"dst_port\":\"5353\",\"egress_intf_id\":\"0\",\"end_reason\":\"1\",\"end_time\":\"2023:12:13 15:25:11.181\",\"generator\":\"gs_apps_appInst16_423722da-33ec-1556-b24b-cda2e74a53f6\",\"id\":\"679408454713072647\",\"intf_name\":\"0\",\"ip_version\":\"4\",\"protocol\":\"17\",\"seq_num\":\"656\",\"src_bytes\":\"337\",\"src_ip\":\"10.114.82.101\",\"src_mac\":\"00:50:56:8d:89:41\",\"src_packets\":\"1\",\"src_port\":\"5353\",\"start_time\":\"2023:12:13 15:25:11.181\",\"sys_up_time_first\":\"3497355275\",\"sys_up_time_last\":\"3497355275\",\"ts\":\"Thu May 16 15:25:25 2023\",\"vendor\":\"Gigamon\",\"version\":\"6.5.00\"}",
         "start": "2023-12-13T15:25:11.181Z",
@@ -177,9 +179,11 @@ An example event for `ami` looks as following:
     "input": {
         "type": "http_endpoint"
     },
+    "network": {
+        "protocol": "dns"
+    },
     "service": {
-        "id": "32",
-        "type": "dns"
+        "id": "32"
     },
     "source": {
         "bytes": 337,
@@ -227,7 +231,7 @@ An example event for `ami` looks as following:
 | gigamon.ami.dns_query_type_value |  | keyword |
 | gigamon.ami.dns_reply_code |  | keyword |
 | gigamon.ami.dns_reply_code_value |  | keyword |
-| gigamon.ami.dns_response_time |  | float |
+| gigamon.ami.dns_response_time |  | double |
 | gigamon.ami.dns_reverse_addr |  | ip |
 | gigamon.ami.dns_transaction_id |  | long |
 | gigamon.ami.dns_ttl |  | long |
@@ -357,6 +361,10 @@ An example event for `ami` looks as following:
 | gigamon.ami.version |  | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| ml_is_dga.malicious_prediction |  | long |
+| ml_is_dga.malicious_probability |  | float |
+| ml_is_dga.record_score |  | keyword |
+| ml_is_dga.risk_score |  | integer |
 | tags | User defined tags. | keyword |
 
 

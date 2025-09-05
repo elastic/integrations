@@ -913,6 +913,31 @@ processors:
       tag: set_dns_question_name
       copy_from: gigamon.ami.dns_query
       if: ctx.gigamon?.ami?.dns_query != null
+  - script:
+      lang: painless
+      description: Populates the dns.question.top_level_domain value
+      source: >-
+        String[] parts = ctx.dns.question.name.splitOnToken(".");
+        if (parts.length > 0) {
+          ctx.dns.question.top_level_domain = parts[parts.length - 1];
+        }
+      if: ctx.containsKey('dns') && ctx.dns.containsKey('question') && ctx.dns.question.containsKey('name')
+  - script:
+      lang: painless
+      description: Populates the dns.question.subdomain value
+      source: >-
+        String[] parts = ctx.dns.question.name.splitOnToken(".");
+        if (parts.length > 2) {
+          String subdomain = "";
+          for (int i = 0; i < parts.length - 2; i++) {
+            if (i > 0) { subdomain += "."; }
+            subdomain += parts[i];
+          }
+          ctx.dns.question.subdomain = subdomain;
+        } else {
+          ctx.dns.question.subdomain = "";
+        }
+      if: ctx.containsKey('dns') && ctx.dns.containsKey('question') && ctx.dns.question.containsKey('name')
   - set:
       field: dns.question.registered_domain
       tag: set_dns_question_registered_domain
@@ -1113,8 +1138,8 @@ processors:
       copy_from: gigamon.ami.dst_port
       if: ctx.gigamon?.ami?.dst_port != null
   - set:
-      field: service.type
-      tag: set_service_type
+      field: network.protocol
+      tag: set_network_protocol
       copy_from: gigamon.ami.app_name
       if: ctx.gigamon?.ami?.app_name != null
   - set:
@@ -1199,6 +1224,11 @@ processors:
       if: ctx.gigamon?.ami?.dst_packets != null
   - set:
       field: service.version
+      tag: set_snmp_version
+      copy_from: gigamon.ami.snmp_version
+      if: ctx.gigamon?.ami?.snmp_version != null
+  - set:
+      field: service.version
       tag: set_smb_version
       copy_from: gigamon.ami.smb_version_value
       if: ctx.gigamon?.ami?.smb_version_value != null
@@ -1223,7 +1253,6 @@ processors:
      description: Replace ":" in destination mac with "-"
      source: >-
        ctx.destination.mac = ctx.gigamon.ami.dst_mac.replace(":", "-").toUpperCase();
-     if: ctx.gigamon?.ami?.dst_mac != null  
      if: ctx.gigamon?.ami?.dst_mac != null
   - remove:
       field:
