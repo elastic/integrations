@@ -168,41 +168,48 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-27T17:12:48.443Z",
+    "@timestamp": "2025-08-21T23:49:01.406Z",
     "agent": {
-        "ephemeral_id": "916661e9-ed15-4d6f-bfcf-5c5704a5c1ec",
-        "id": "650cd1fc-0c46-4ef4-b269-1112fb37690e",
-        "name": "elastic-agent-17681",
+        "ephemeral_id": "94d1d8e8-fd68-4c14-acf0-2296b81b458f",
+        "id": "706f75dc-be91-411c-a0d5-0e3fc9f4d1d0",
+        "name": "elastic-agent-51228",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "9.1.2"
     },
     "beyondinsight_password_safe": {
         "session": {
-            "archive_status": "not_archived",
-            "asset_name": "localhost",
-            "duration": 0,
-            "managed_account_name": "example.com\\sdfsfdf",
-            "managed_system_id": 13,
-            "node_id": "a5c29153-b351-41f1-a12b-0c4da9408d79",
+            "application_id": "101",
+            "archive_status": "archived",
+            "asset_name": "web-server-01",
+            "duration": 8100,
+            "end_time": "2025-01-15T10:45:00.000Z",
+            "managed_account_id": "789",
+            "managed_account_name": "admin_user",
+            "managed_system_id": "456",
+            "node_id": "node-001",
             "protocol": "rdp",
-            "record_key": "3958d725d16119a95e64af424a7f8dfsf13f1fgffbe4a6cd34earwr324454bcecce70ee37cbaed",
-            "session_id": 1,
-            "status": "not_started",
-            "user_id": 6
+            "record_key": "rec_key_abc123",
+            "request_id": "201",
+            "session_id": "1001",
+            "session_type": "regular",
+            "start_time": "2025-01-15T08:30:00.000Z",
+            "status": "in_progress",
+            "token": "token_xyz789",
+            "user_id": "123"
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.session",
-        "namespace": "97390",
+        "namespace": "49917",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "650cd1fc-0c46-4ef4-b269-1112fb37690e",
+        "id": "706f75dc-be91-411c-a0d5-0e3fc9f4d1d0",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "9.1.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -210,11 +217,14 @@ An example event for `session` looks as following:
             "session"
         ],
         "dataset": "beyondinsight_password_safe.session",
-        "duration": 0,
-        "id": "1",
-        "ingested": "2025-01-27T17:12:51Z",
+        "duration": 8100000000000,
+        "end": "2025-01-15T10:45:00.000Z",
+        "id": "1001",
+        "ingested": "2025-08-21T23:49:04Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
+        "original": "{\"ApplicationID\":101,\"ArchiveStatus\":1,\"AssetName\":\"web-server-01\",\"Duration\":8100,\"EndTime\":\"2025-01-15T10:45:00Z\",\"ManagedAccountID\":789,\"ManagedAccountName\":\"admin_user\",\"ManagedSystemID\":456,\"NodeID\":\"node-001\",\"Protocol\":0,\"RecordKey\":\"rec_key_abc123\",\"RequestID\":201,\"SessionID\":1001,\"SessionType\":1,\"StartTime\":\"2025-01-15T08:30:00Z\",\"Status\":1,\"Token\":\"token_xyz789\",\"UserID\":123}",
+        "start": "2025-01-15T08:30:00.000Z",
         "type": [
             "info"
         ]
@@ -223,16 +233,15 @@ An example event for `session` looks as following:
         "type": "cel"
     },
     "network": {
-        "protocol": [
-            "rdp"
-        ]
+        "protocol": "rdp"
     },
     "related": {
         "user": [
-            "6"
+            "123"
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "beyondinsight_password_safe.session"
     ]
@@ -249,26 +258,30 @@ The following non-ECS fields are used in session documents:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.session.archive_status | Session archive status (applicable only when Session Archiving is enabled and configured) | keyword |
-| beyondinsight_password_safe.session.asset_name | Name of the asset | keyword |
-| beyondinsight_password_safe.session.duration | Duration of the session in seconds | integer |
-| beyondinsight_password_safe.session.end_time | End date/time of the session | date |
-| beyondinsight_password_safe.session.managed_account_id | ID of the target managed account | integer |
-| beyondinsight_password_safe.session.managed_account_name | Name of the target managed account | keyword |
-| beyondinsight_password_safe.session.managed_system_id | ID of the target managed system | integer |
-| beyondinsight_password_safe.session.node_id | ID of the session node | keyword |
-| beyondinsight_password_safe.session.protocol | Protocol used for the session | keyword |
-| beyondinsight_password_safe.session.record_key | Record key use for the session replay | keyword |
-| beyondinsight_password_safe.session.session_id | ID of the session | keyword |
-| beyondinsight_password_safe.session.start_time | Start date/time of the session | date |
-| beyondinsight_password_safe.session.status | Status of the session | keyword |
-| beyondinsight_password_safe.session.user_id | ID of the user | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset |  | constant_keyword |
-| event.module |  | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| beyondinsight_password_safe.session.application_id | The related application ID (if applicable, can be null). | keyword |
+| beyondinsight_password_safe.session.archive_status | Session archive status: not_archived, archived, restoring, archiving, session_not_found, repository_offline, unknown | keyword |
+| beyondinsight_password_safe.session.asset_name | Name of the target managed system. | keyword |
+| beyondinsight_password_safe.session.duration | Session duration (seconds.) | long |
+| beyondinsight_password_safe.session.end_time | End date/time of the session. | date |
+| beyondinsight_password_safe.session.managed_account_id | ID of the target managed account. | keyword |
+| beyondinsight_password_safe.session.managed_account_name | Name of the target managed account. | keyword |
+| beyondinsight_password_safe.session.managed_system_id | ID of the target managed system (can be null). | keyword |
+| beyondinsight_password_safe.session.node_id | ID of the session node. | keyword |
+| beyondinsight_password_safe.session.protocol | Session protocol: rdp, ssh | keyword |
+| beyondinsight_password_safe.session.record_key | The record key used for session replay. | keyword |
+| beyondinsight_password_safe.session.request_id | The related request ID (if applicable, can be null). | keyword |
+| beyondinsight_password_safe.session.session_id | ID of the session. | keyword |
+| beyondinsight_password_safe.session.session_type | Session type: regular, isa, admin | keyword |
+| beyondinsight_password_safe.session.start_time | Start date/time of the session. | date |
+| beyondinsight_password_safe.session.status | Session status: not_started, in_progress, completed, locked, terminated, logged_off, disconnected | keyword |
+| beyondinsight_password_safe.session.token | The token used for session replay. | keyword |
+| beyondinsight_password_safe.session.user_id | ID of the user. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Input type | keyword |
 
 
