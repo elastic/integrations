@@ -1,0 +1,217 @@
+# BeyondInsight API - Workgroups Assets API Mock Configuration
+
+rules:
+  # Auth
+  - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key; runas=testuser; pwd=\[password\];']
+      Content-Type: ['application/json']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+        body: |
+          {{ minify_json `
+          {
+              "UserId": 1,
+              "SID": null,
+              "EmailAddress": "test.user@example.com",
+              "UserName": "testuser",
+              "Name": "Test User"
+          }
+          `}}
+
+  # Get Workgroups
+  - path: "/BeyondTrust/api/public/v3/Workgroups"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "ID": 1,
+                  "Name": "Default Workgroup",
+                  "Description": "Default workgroup for testing"
+              },
+              {
+                  "ID": 2,
+                  "Name": "Test Workgroup",
+                  "Description": "Secondary workgroup for testing"
+              }
+          ]
+          `}}
+
+  # Get Assets for Workgroup 1 - page 1
+  - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
+    methods: ["GET"]
+    query_params:
+      limit: '1'
+      offset: '0'
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value1']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "WorkgroupID": 1,
+                      "AssetID": 101,
+                      "AssetName": "TestServer01",
+                      "DnsName": "testserver01.example.com",
+                      "DomainName": "example.com",
+                      "IPAddress": "192.0.2.10",
+                      "MacAddress": "00:1B:44:11:3A:B7",
+                      "AssetType": "Server",
+                      "OperatingSystem": "Ubuntu 20.04",
+                      "CreateDate": "2023-01-15T10:30:00Z",
+                      "LastUpdateDate": "2023-06-20T14:45:00Z"
+                  }
+              ],
+              "TotalCount": 2
+          }
+          `}}
+
+  # Get Assets for Workgroup 1 - page 2 (auth failure)
+  - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
+    methods: [ "GET" ]
+    query_params:
+      limit: '1'
+      offset: '1'
+    request_headers:
+      Content-Type: [ 'application/json' ]
+      Cookie: [ 'ASP.NET_SessionId=cookie_value1' ]
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type: [ 'application/json' ]
+        body: >-
+          "User not authenticated"
+
+  # Get Assets for Workgroup 1 - page 2 (with cookie_value2)
+  - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
+    methods: [ "GET" ]
+    query_params:
+      limit: '1'
+      offset: '1'
+    request_headers:
+      Content-Type: [ 'application/json' ]
+      Cookie: [ 'ASP.NET_SessionId=cookie_value2' ]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "WorkgroupID": 1,
+                      "AssetID": 102,
+                      "AssetName": "TestServer02",
+                      "DnsName": "testserver02.example.com",
+                      "DomainName": "example.com",
+                      "IPAddress": "192.0.2.20",
+                      "MacAddress": "00:1B:44:11:3A:B8",
+                      "AssetType": "Server",
+                      "OperatingSystem": "Windows Server 2019",
+                      "CreateDate": "2023-02-10T09:15:00Z",
+                      "LastUpdateDate": "2023-06-25T16:20:00Z"
+                  }
+              ],
+              "TotalCount": 2
+          }
+          `}}
+      - status_code: 418
+        headers:
+          Content-Type: ['text/plain']
+        body: Program should never request this. {{.request.vars}}
+
+  # Get Assets for Workgroup 2 - no assets
+  - path: "/BeyondTrust/api/public/v3/Workgroups/2/Assets"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2']
+    query_params:
+      limit: '1'
+      offset: '0'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [],
+              "TotalCount": 0
+          }
+          `}}
+
+  # Get Workgroups (second periodic execution)
+  - path: "/BeyondTrust/api/public/v3/Workgroups"
+    methods: [ "GET" ]
+    request_headers:
+      Content-Type: [ 'application/json' ]
+      Cookie: [ 'ASP.NET_SessionId=cookie_value2' ]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: [ 'application/json' ]
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "ID": 3,
+                  "Name": "Eng Workgroup",
+                  "Description": "Default workgroup for engineering"
+              }
+          ]
+          `}}
+
+  # Get Assets for Workgroup 3 (second periodic execution)
+  - path: "/BeyondTrust/api/public/v3/Workgroups/3/Assets"
+    methods: [ "GET" ]
+    request_headers:
+      Content-Type: [ 'application/json' ]
+      Cookie: [ 'ASP.NET_SessionId=cookie_value2' ]
+    query_params:
+      limit: '1'
+      offset: '0'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: [ 'application/json' ]
+        body: |-
+          {{ minify_json `
+          {
+              "Data": [
+                  {
+                      "WorkgroupID": 3,
+                      "AssetID": 301,
+                      "AssetName": "TestServer301",
+                      "DnsName": "testserver301.example.com",
+                      "DomainName": "example.com",
+                      "IPAddress": "192.0.3.1",
+                      "MacAddress": "00:03:01:11:3A:B8",
+                      "AssetType": "Server",
+                      "OperatingSystem": "Windows Server 2019",
+                      "CreateDate": "2025-02-10T09:15:00Z",
+                      "LastUpdateDate": "2025-08-25T16:20:00Z"
+                  }
+              ],
+              "TotalCount": 1
+          }
+          `}}
