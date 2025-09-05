@@ -1,0 +1,71 @@
+description: Aggregates hourly average usage of compute (mem and cpu) and disk aggregated by tier and cluster for calculation of utilization.
+source:
+  index:
+    - .ds-.monitoring-es-*
+    - .monitoring-es*
+    - .ds-metrics-elasticsearch.stack_monitoring.*
+    #- monitoring-indices # Dependency: ES Integration added, but not neceserily installed. Need the output of the transform only.
+  runtime_mappings:
+    memory_usage_pct:
+      type: double
+      script: double pct = Double.parseDouble(doc['elasticsearch.node.stats.os.cgroup.memory.usage.bytes'].value) / Double.parseDouble(doc['elasticsearch.node.stats.os.cgroup.memory.limit.bytes'].value) * 100; emit(pct); 
+    disk_usage_pct:
+      type: double
+      script: double used = doc['elasticsearch.node.stats.fs.summary.total.bytes'].value - doc['elasticsearch.node.stats.fs.summary.free.bytes'].value; double pct = used / doc['elasticsearch.node.stats.fs.summary.total.bytes'].value * 100; emit(pct);
+  query:
+    bool:
+      filter:
+        bool:
+          filter:
+            - match:
+                event.dataset: "elasticsearch.node.stats"
+            - exists:
+                field: elasticsearch.node.roles
+          should:
+            - exists:
+                field: elasticsearch.node.stats.os.cgroup.memory.usage.bytes
+            - exists:
+                field: elasticsearch.node.stats.fs.summary.total.bytes
+          minimum_should_match: 1
+dest:
+  index: cluster_tier_utilization
+  #pipeline: metrics-chargeback.usage-0.2.0
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_name:
+      terms:
+        field: elasticsearch.cluster.name
+    cluster_id:
+      terms:
+        field: elasticsearch.cluster.id
+    tier:
+      terms:
+        field: elasticsearch.node.roles
+  aggregations:
+    memory_usage_pct_avg:
+      avg:
+        field: memory_usage_pct
+    disk_usage_pct_avg:
+      avg:
+        field: disk_usage_pct
+    cpu_usage_pct_avg:
+      avg:
+        field: elasticsearch.node.stats.process.cpu.pct
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.2.0
