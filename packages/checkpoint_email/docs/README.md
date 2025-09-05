@@ -54,9 +54,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-10-14T07:02:11.229Z",
     "agent": {
-        "ephemeral_id": "7c0061aa-c8b8-473e-8845-9c6f526b3702",
-        "id": "9f6bda01-6526-4044-bec4-51810b0b5487",
-        "name": "elastic-agent-96115",
+        "ephemeral_id": "4386f54c-53d1-4369-a64f-cfe030b532d3",
+        "id": "e94d986b-fa14-41d6-ae53-af79ecc32c47",
+        "name": "elastic-agent-98832",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -80,14 +80,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_email.event",
-        "namespace": "94532",
+        "namespace": "62114",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9f6bda01-6526-4044-bec4-51810b0b5487",
+        "id": "e94d986b-fa14-41d6-ae53-af79ecc32c47",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -105,9 +105,8 @@ An example event for `event` looks as following:
         "created": "2024-10-14T07:02:11.229Z",
         "dataset": "checkpoint_email.event",
         "id": "a6d8674a04c30123456789e4d3ebd98",
-        "ingested": "2025-07-08T10:51:05Z",
+        "ingested": "2025-09-03T06:23:38Z",
         "kind": "alert",
-        "module": "checkpoint_email",
         "original": "{\"actions\":[],\"additionalData\":null,\"availableEventActions\":null,\"confidenceIndicator\":\"detected\",\"customerId\":\"exampletest\",\"data\":\"#{\\\"entity_id\\\": \\\"a6d8674a04c30123456789e4d3ebd98\\\", \\\"entity_type\\\": \\\"google_mail_email\\\", \\\"label\\\": \\\"Shadow IT\\\"} - #{\\\"entity_id\\\": \\\"113012345678906535444\\\", \\\"entity_type\\\": \\\"google_user\\\", \\\"label\\\": \\\"john@example.com\\\"} is using #{\\\"entity_id\\\": \\\"google.com\\\", \\\"entity_type\\\": \\\"av_dns_info\\\", \\\"label\\\": \\\"google.com (Search Engine)\\\"}\",\"description\":\"Shadow IT - john@example.com is using google.com (Search Engine)\",\"entityId\":\"25e0c50123456789e351b0dafa6aafa6\",\"entityLink\":\"https://in.portal.checkpoint.com/dashboard/email\\u0026collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg==\",\"eventCreated\":\"2024-10-14T07:02:11.229935+00:00\",\"eventId\":\"a6d8674a04c30123456789e4d3ebd98\",\"saas\":\"google_mail\",\"senderAddress\":\"google-workspace-alerts-noreply@google.com\",\"severity\":\"3\",\"state\":\"pending\",\"type\":\"shadow_it\"}",
         "severity": 3,
         "type": [
@@ -134,7 +133,9 @@ An example event for `event` looks as following:
     },
     "source": {
         "user": {
-            "email": "google-workspace-alerts-noreply@google.com"
+            "domain": "google.com",
+            "email": "google-workspace-alerts-noreply@google.com",
+            "name": "google-workspace-alerts-noreply"
         }
     },
     "tags": [
@@ -162,10 +163,13 @@ An example event for `event` looks as following:
 | checkpoint_email.event.customer_id | Harmony Email & Collaboration customer ID. | keyword |
 | checkpoint_email.event.data | Description in not resolved form. | keyword |
 | checkpoint_email.event.description | Short explanation of the event. | keyword |
+| checkpoint_email.event.destination_address |  | keyword |
+| checkpoint_email.event.email_subject |  | keyword |
 | checkpoint_email.event.entity_id | Unique ID of the relevant SaaS entity. | keyword |
 | checkpoint_email.event.entity_link |  | keyword |
 | checkpoint_email.event.id | A unique ID used for scrolling. | keyword |
 | checkpoint_email.event.saas | Name of the relevant SaaS. | keyword |
+| checkpoint_email.event.scan_type |  | keyword |
 | checkpoint_email.event.sender_address |  | keyword |
 | checkpoint_email.event.severity |  | long |
 | checkpoint_email.event.severity_enum | Lowest, Low, Medium, High, Critical. | keyword |
