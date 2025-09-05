@@ -921,23 +921,28 @@ processors:
         if (parts.length > 0) {
           ctx.dns.question.top_level_domain = parts[parts.length - 1];
         }
-      if: ctx.containsKey('dns') && ctx.dns.containsKey('question') && ctx.dns.question.containsKey('name')
+      if: ctx.dns?.question?.name != null
   - script:
       lang: painless
       description: Populates the dns.question.subdomain value
       source: >-
-        String[] parts = ctx.dns.question.name.splitOnToken(".");
-        if (parts.length > 2) {
-          String subdomain = "";
-          for (int i = 0; i < parts.length - 2; i++) {
-            if (i > 0) { subdomain += "."; }
-            subdomain += parts[i];
+        def subdomain(String s) {
+          int n;
+          for (int i = s.length()-1; i >= 0; i--) {
+            if (s.charAt(i) == (char)'.') {
+              n++;
+              if (n == 2) {
+                return s.substring(0, i);
+              }
+            }
           }
-          ctx.dns.question.subdomain = subdomain;
-        } else {
-          ctx.dns.question.subdomain = "";
+          return null;
         }
-      if: ctx.containsKey('dns') && ctx.dns.containsKey('question') && ctx.dns.question.containsKey('name')
+        def sub = subdomain(ctx.dns.question.name);
+        if (sub != null) {
+          ctx.dns.question.subdomain = sub;
+        }
+      if: ctx.dns?.question?.name != null
   - set:
       field: dns.question.registered_domain
       tag: set_dns_question_registered_domain

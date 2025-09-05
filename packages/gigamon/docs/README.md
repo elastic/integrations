@@ -67,15 +67,15 @@ An example event for `ami` looks as following:
 {
     "@timestamp": "2023-05-16T15:25:25.000Z",
     "agent": {
-        "ephemeral_id": "7705ca4f-1116-4ad1-8760-4bcff23b567c",
-        "id": "0161e44e-cce1-4863-8ba8-7901a62c137c",
-        "name": "elastic-agent-88034",
+        "ephemeral_id": "f652caaf-eae3-44f5-94d1-da1a6699d38e",
+        "id": "a82d1648-bbb6-4c68-846a-e6c8c4145c0e",
+        "name": "elastic-agent-57829",
         "type": "filebeat",
         "version": "8.18.2"
     },
     "data_stream": {
         "dataset": "gigamon.ami",
-        "namespace": "39816",
+        "namespace": "92231",
         "type": "logs"
     },
     "destination": {
@@ -101,7 +101,7 @@ An example event for `ami` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0161e44e-cce1-4863-8ba8-7901a62c137c",
+        "id": "a82d1648-bbb6-4c68-846a-e6c8c4145c0e",
         "snapshot": false,
         "version": "8.18.2"
     },
@@ -113,7 +113,7 @@ An example event for `ami` looks as following:
         "dataset": "gigamon.ami",
         "end": "2023-12-13T15:25:11.181Z",
         "id": "679408454713072647",
-        "ingested": "2025-09-05T14:55:11Z",
+        "ingested": "2025-09-11T16:28:38Z",
         "kind": "event",
         "original": "{\"app_id\":\"32\",\"app_name\":\"dns\",\"device_inbound_interface\":\"0\",\"dns_class\":\"1\",\"dns_flags\":\"0\",\"dns_host\":\"pnstrex-83816.local\",\"dns_host_addr\":\"10.114.82.101\",\"dns_host_class\":\"1\",\"dns_host_raw\":\"706e73747265782d38333831362e6c6f63616c\",\"dns_host_type\":\"PTR\",\"dns_name\":\"a.b.2.b.9.6.c.2.3.9.3.d.6.2.6.a.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. i:p6.arpa\",\"dns_opcode\":\"0\",\"dns_qdcount\":\"4\",\"dns_query\":\"f.7.5.2.e.7.6.2.4.c.1.c.4.c.6.1.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. ip6.arpa\",\"dns_query_type\":\"255\",\"dns_transaction_id\":\"0\",\"dns_ttl\":\"120\",\"dst_bytes\":\"0\",\"dst_ip\":\"224.0.0.251\",\"dst_mac\":\"01:00:5e:00:00:fb\",\"dst_packets\":\"0\",\"dst_port\":\"5353\",\"egress_intf_id\":\"0\",\"end_reason\":\"1\",\"end_time\":\"2023:12:13 15:25:11.181\",\"generator\":\"gs_apps_appInst16_423722da-33ec-1556-b24b-cda2e74a53f6\",\"id\":\"679408454713072647\",\"intf_name\":\"0\",\"ip_version\":\"4\",\"protocol\":\"17\",\"seq_num\":\"656\",\"src_bytes\":\"337\",\"src_ip\":\"10.114.82.101\",\"src_mac\":\"00:50:56:8d:89:41\",\"src_packets\":\"1\",\"src_port\":\"5353\",\"start_time\":\"2023:12:13 15:25:11.181\",\"sys_up_time_first\":\"3497355275\",\"sys_up_time_last\":\"3497355275\",\"ts\":\"Thu May 16 15:25:25 2023\",\"vendor\":\"Gigamon\",\"version\":\"6.5.00\"}",
         "start": "2023-12-13T15:25:11.181Z",
