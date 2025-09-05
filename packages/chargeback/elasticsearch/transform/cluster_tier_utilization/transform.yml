@@ -12,6 +12,12 @@ source:
     disk_usage_pct:
       type: double
       script: double used = doc['elasticsearch.node.stats.fs.summary.total.bytes'].value - doc['elasticsearch.node.stats.fs.summary.free.bytes'].value; double pct = used / doc['elasticsearch.node.stats.fs.summary.total.bytes'].value * 100; emit(pct);
+    disk_size:
+      type: double
+      script: double size = doc['elasticsearch.node.stats.fs.summary.total.bytes'].value; emit(size);
+    memory_size:
+      type: double
+      script: double size = Double.parseDouble(doc['elasticsearch.node.stats.os.cgroup.memory.limit.bytes'].value); emit(size);
   query:
     bool:
       filter:
@@ -52,10 +58,10 @@ pivot:
   aggregations:
     addressable_memory:
       sum: 
-        field: elasticsearch.node.stats.os.cgroup.memory.limit.bytes
+        field: memory_size
     total_storage:
       sum:
-        field: elasticsearch.node.stats.fs.summary.total.bytes
+        field: disk_size
     memory_usage_pct_avg:
       avg:
         field: memory_usage_pct

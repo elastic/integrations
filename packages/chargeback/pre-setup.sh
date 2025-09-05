@@ -214,7 +214,9 @@ PUT cluster_tier_utilization_lookup
       },
       "memory_usage_pct_avg": { "type": "double" },
       "disk_usage_pct_avg": { "type": "double" },
-      "cpu_usage_pct_avg": { "type": "double" }
+      "cpu_usage_pct_avg": { "type": "double" },
+      "addressable_memory": { "type": "double" },
+      "total_storage": { "type": "double" }
     }
   }
 }
