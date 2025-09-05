@@ -1,12 +1,18 @@
-# PostreSQL OpenTelemetry Assets
+## Overview
 
-The PostreSQL OpenTelemetry integration allows you to monitor [PostgreSQL](https://www.postgresql.org/) servers and to collect telemetry data to track database health and performance. PostgreSQL gathers and aggregates this data internally using its built-in statistics collector, which exposes the data through predefined views. For example `pg_stat_database` and `pg_stat_statements`. For a complete and up-to-date list of the statistics views and metrics collected, refer to the PostgreSQL Receiver [documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver). For detailed explanations of what each statistics view means, check the official documentation for the [statistics collector](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS) and [pg_stat_statements](https://www.postgresql.org/docs/current/pgstatstatements.html). 
+The PostreSQL OpenTelemetry integration allows you to monitor [PostgreSQL](https://www.postgresql.org/) servers and to collect telemetry data to track database health and performance. 
 
-The PostgreSQL OpenTelemetry assets provide a visual representation of these collected metrics and events in Kibana, helping you monitor and explore database activity and performance.
-
-## Compatibility
+### Compatibility
 
 The integration package has been tested with [PostgreSQL OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/README.md) and PostgreSQL server version 16.4.
+
+### How it works
+
+PostgreSQL gathers and aggregates information about server activity using its built-in statistics collector which exposes the data through predefined views. For example `pg_stat_database` and `pg_stat_statements`. For a complete and up-to-date list of the statistics views and metrics collected, refer to the PostgreSQL Receiver [documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver). For detailed explanations of what each statistics view means, check the official documentation for the [statistics collector](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS) and [pg_stat_statements](https://www.postgresql.org/docs/current/pgstatstatements.html). 
+
+## What data does this integration collect?
+
+The integration provides assets in Kibana that visually represent the collected metrics and events, helping you monitor and explore database activity and performance.
 
 ## What do I need to use this integration?
 
@@ -18,9 +24,11 @@ Some metrics require the `pg_stat_statements` [module](https://www.postgresql.or
 Additionally, certain metrics and events must be explicitly enabled in the configuration. Check the sample collector configuration in the next section, and refer to the receiver documentation for a complete list of supported metrics and events.
 
 
-## Setup
+## How do I deploy this integration
 
-Install and configure the upstream OTel Collector to export metrics to ElasticSearch, as shown in the following example:
+### Onboard and configure
+
+Install and configure the upstream OTel Collector to export metrics to Elasticsearch, as shown in the following example:
 
 ```yaml
 postgresql:
@@ -76,8 +84,20 @@ Note: This configuration defines two pipelines — one for metrics and one for l
 - Metrics are ingested into the metrics-* data view in Elasticsearch.
 - Events (logs) are ingested into the logs-* data view in Elasticsearch.
 
-## Data reference
+For the full list of settings exposed for the receiver, refer to the [configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver#configuration) section.
 
-### PostgreSQL metrics and events
+### Validation
+
+To verify that the PostgreSQL OpenTelemetry integration is working:
+
+1. Check Collector Logs
+Ensure the OpenTelemetry Collector is running and the postgresqlreceiver is enabled. You should see logs confirming metric collection from your PostgreSQL instance.
+
+2. Check Dashboards
+Open **Kibana → Dashboards** and confirm that the PostgreSQL OpenTelemetry Metrics dashboard populates with the collected data.
+
+## Reference
+
+### PostgreSQL metrics and events reference
 
 Refer to the OpenTelemetry PostgreSQL receiver's [documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/documentation.md) for the complete list of metrics and events collected.
