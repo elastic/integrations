@@ -1,0 +1,194 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  batch_size : {{batch_size}}
+  client_id: {{client_id}}
+  secret: {{client_secret}}
+redact:
+  fields:
+    - client_id
+    - secret
+program: |-
+  (
+    state.with(
+      has(state.?next.expiry) && timestamp(state.next.expiry) > now ?
+        {
+          "access_token": state.next.access_token,
+          "expiry": state.next.expiry
+        }
+      :
+        post_request(
+          state.url.trim_right("/") + "/v1/login",
+          "",
+          {
+            "clientId": state.client_id,
+            "secret": state.secret,
+          }.encode_json()
+        ).with(
+          {
+            "Header": {
+              "Accept": ["application/json"],
+              "Content-Type": ["application/json"],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              "next": {
+                "access_token": body.jwt,
+                "expiry": (now() + duration("24h") - duration("30s")).format(time_layout.RFC3339),
+              },
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/v1/login " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+  ).as(state,
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "start_time": state.?cursor.updated_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+          "counter": 0,
+          "offset": 0,
+        }
+      )
+  ).as(state,
+    has(state.?events.error) ?
+      state
+    :
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/v1/events?" + {
+            "limit": [string(state.batch_size)],
+            "offset": [string(state.offset)],
+            "eventDateGte": [string(state.start_time)],
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.next.access_token],
+              "Accept": ["application/json"],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              "events": (has(body.results) && body.results.size() > 0) ?
+                body.results.map(e,
+                  {
+                    "message": e.encode_json(),
+                  }
+                )
+              :
+                [],
+              "offset": 
+                (has(body.results) && int(state.counter) + int(size(body.results)) < int(body.?total.orValue(-1))) ?
+                  int(state.offset) + int(size(body.results))
+                :
+                  state.batch_size,
+              "counter": (int(state.counter) + int(size(body.results)) < int(body.?total.orValue(-1))) ?
+                (int(state.counter) + int(size(body.results)))
+              :
+                0,
+              "want_more": has(body.total) && int(state.counter) + int(size(body.results)) < int(body.?total.orValue(-1)),
+              "cursor": {
+                ?"max_date_time": (has(body.total) && int(state.counter) + int(size(body.results)) <= int(body.?total.orValue(-1))) ?
+                  (
+                    (size(body.results) != 0) ?
+                      (
+                        has(state.?cursor.max_date_time) ?
+                          optional.of(string(max(state.cursor.max_date_time, body.results.map(e, e.date).max())))
+                        :
+                          optional.of(string(body.results.map(e, e.date).max()))
+                      )
+                    :
+                      optional.none()
+                  )
+                :
+                  optional.none(),
+                ?"updated_timestamp": (has(body.total) && int(state.counter) + int(size(body.results)) == int(body.?total.orValue(-1))) ?
+                  (
+                    (size(body.results) != 0) ?
+                      (
+                        has(state.?cursor.max_date_time) ?
+                          optional.of(string(max(state.cursor.max_date_time, body.results.map(e, e.date).max())))
+                        :
+                          optional.of(string(body.results.map(e, e.date).max()))
+                      )
+                    :
+                      state.?cursor.max_date_time
+                  )
+                :
+                  state.?cursor.updated_timestamp,
+              },
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/v1/events " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
