@@ -1,0 +1,28 @@
+name: Sync upstream -> main (FF-only)
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add upstream & fetch
+        run: |
+          git remote add upstream https://github.com/ORIGINAL_OWNER/ORIGINAL_REPO.git
+          git fetch upstream main
+      - name: Fast-forward main
+        run: |
+          git checkout main
+          if git merge --ff-only upstream/main; then
+            git push origin main
+          else
+            echo "Non-FF; open a PR instead." && exit 0
+          fi
