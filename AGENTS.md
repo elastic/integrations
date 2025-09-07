@@ -2,7 +2,7 @@
 
 This repository is a working fork of Elastic Integrations. It contains multiple integrations under `packages/` (for example `packages/ti_rapid7_threat_command` and `packages/rapid7_insightvm`). Day‑to‑day development and testing here centers around the `elastic-package` CLI and a local Elastic Stack running in Docker.
 
-Keep this file practical and process‑oriented: how to run, test, lint, and document your work so the next agent can move fast.
+Keep this file practical and process‑oriented: how to run, test, lint, and document your work so the next agent can move fast. SUPER IMPORTANT: UPDATE THIS FILE when you encounter friction using the tools or workflows described here and dont expect this file to be perfect or complete. It’s a living document. DEFINETLY ADJUST IT to your needs.
 
 ## Golden Rules
 - Prefer `elastic-package` for local dev, testing, formatting, linting, building, and installing packages.
@@ -24,6 +24,8 @@ Keep this file practical and process‑oriented: how to run, test, lint, and doc
 Installed here:
 - `elastic-package v0.111.0` (verified) and `Docker 28.x` are available in PATH.
 
+Tip: `elastic-package` will often suggest a newer version at runtime. Prefer the latest when you hit quirks (especially for system tests).
+
 ## Local Stack (READ THIS FIRST)
 
 🚨🚨 IMPORTANT: Before running any tests, check if the Elastic stack is up.
@@ -40,6 +42,14 @@ Installed here:
 Tips:
 - Use `elastic-package stack status` anytime to confirm readiness (Kibana + ES green).  
 - You can set a version with `STACK_VERSION=8.x.y elastic-package stack up -d` (see `docs/ci_pipelines.md:75`).
+- If the stack fails to dump logs at the end of tests with messages about missing `elastic-agent` logs, ensure the stack includes the `elastic-agent` service and is healthy:
+  - `elastic-package stack up -d -s elasticsearch,kibana,fleet-server,package-registry,elastic-agent`
+  - Then re-run system tests.
+
+Refreshing stack images:
+- A simple `stack up` may reuse cached images. To force pulling new images, you can:
+  - Change `--version` (e.g., `elastic-package stack up -d --version 8.17.4`), or
+  - Stop the stack (`elastic-package stack down`) and then start again. If issues persist, consider `docker compose pull` inside the stack profile folder (advanced; see elastic-package profiles docs).
 
 ## Common Workflows
 
@@ -105,6 +115,18 @@ Notes:
 - System tests often require the stack and may require credentials or service mocks depending on the package. Start with `pipeline` and `static` for fast feedback.
 - See upstream concepts and guardrails in `docs/extend/` (e.g., `docs/extend/general-guidelines.md:16`).
 
+Test types quick guide:
+- `pipeline`: runs ingest pipeline(s) locally against sample events. Fastest feedback; no mock containers.
+- `static`: validates fields/schemas and `sample_event.json` per spec.
+- `asset`: verifies assets (index template, pipeline) are loadable.
+- `system`: end-to-end with Dockerized mock services and Elastic stack; asserts behavior in Elasticsearch (e.g., hit counts, indexed docs). Slower but realistic.
+
+System tests lifecycle:
+- Provision: builds package, installs it into Kibana, spins up an independent Elastic Agent plus your mock service (from `_dev/deploy/docker`).
+- Exercise: Agent collects from the mock, data flows through ingest pipeline.
+- Assert: Test harness checks expectations (e.g., `hit_count`).
+- Teardown: Stops agent/service and attempts to dump stack logs for debugging.
+
 ### 4) Example: CrowdStrike Integration
 Quick way to validate changes using the CrowdStrike package present in this fork.
 
@@ -149,6 +171,80 @@ When you change behavior or add features, create a `docs-logs/` entry and add de
 - Lint/format issues: run `elastic-package format` first, then re-run `elastic-package lint`.
 - Tests failing locally but not obviously: re-run a single type (`pipeline`, then `static`) to bisect.
 - Kibana/ES version mismatches: pin `STACK_VERSION` when bringing up the stack.
+- System tests: common issues and fixes
+  - Error copying elastic-agent logs (post-run dump): ensure `elastic-agent` service is running in the stack. Use `elastic-package stack up -d -s elasticsearch,kibana,fleet-server,package-registry,elastic-agent`.
+  - Mock server templating errors (e.g., `function "Hostname" not defined`): avoid using `{{Hostname}}`/`{{Port}}` inside mock response bodies unless supported. Prefer static service URLs that match the mock container’s hostname and port (e.g., `http://bitsight-vulnerability:8090/...`).
+  - Pagination verification: ensure mock config provides `links.next` and a second page route, then set `hit_count` > 1 in the system test config.
+  - Inspect logs written to `build/container-logs/*` after system tests to diagnose mock/agent issues.
+
+Recommended workflow sequence:
+- `elastic-package format && elastic-package lint`
+- `elastic-package test pipeline -d <stream>` and `elastic-package test static`
+- `elastic-package test asset`
+- `elastic-package test system -d <stream>` (only after stack is green and mock config verified)
+
+Handy flags:
+- `-d <data_stream>` to scope tests to a single data stream.
+- `--generate` for pipeline tests to create expected outputs scaffold.
+
+## Pull Request Reviews via `gh` (GitHub CLI)
+
+Use this to extract reviewer tasks and maintain a single, readable log per PR. Write logs under `docs-logs/` for traceability, with correct heading hierarchy.
+
+1) Fetch review comments for a PR URL
+
+```sh
+# Replace with your PR URL
+PR=https://github.com/elastic/integrations/pull/14161
+
+# Quick human view
+gh pr view "$PR" --comments
+
+# Machine-readable (JSON)
+gh pr view "$PR" --json files,reviews,comments,title,author,url > /tmp/pr.json
+
+# All review comments (line-anchored code review entries)
+OWNER=elastic REPO=integrations NUM=14161
+gh api repos/$OWNER/$REPO/pulls/$NUM/comments --paginate > /tmp/review_comments.json
+```
+
+2) Generate a markdown skeleton grouped by file (H1 title → H2 reviewer → H3 file)
+
+```sh
+OUT="docs-logs/$(date +%F) pr-$(basename $PR)-review.md"
+echo "# Review Log for $PR" > "$OUT"
+echo "Date: $(date -Iseconds)" >> "$OUT"
+echo >> "$OUT"
+echo "## Reviewer: efd6" >> "$OUT"
+
+# Group comments by file with H3 per file, then bullets per line comment
+jq -r '
+  map(select(.user.login=="efd6"))
+  | group_by(.path)[]
+  | ("### " + .[0].path),
+    (map("- L" + ( .line|tostring ) + ": " + (.body|gsub("\n";" ")) ) | .[])
+' /tmp/review_comments.json >> "$OUT"
+```
+
+3) Write fixes and explanations directly under each reviewer item (no duplicates)
+- For every bullet under a given `### <path>` section, append a block immediately below it:
+  - Fix: concise summary of the applied change
+  - Files: precise file references (path:line)
+  - Explanation: 1–10 sentences (short for trivial, longer for nuanced changes)
+  - Status: done/pending
+
+4) Work item by item
+- Apply patches (change code/tests/docs).
+- Re-run format/lint/tests.
+- Update the corresponding reviewer bullet in the same `docs-logs/...pr-...-review.md` file with:
+  - Fix applied (what and where)
+  - Why (intent, tradeoffs, links to similar example if applicable)
+  - Test results snapshot
+
+Tips
+- Use `gh api ... | jq` to extract exact file+line references and comment bodies.
+- When reviewers suggest code snippets, adapt them literally unless conflicting with spec or recent best practice.
+- Keep the `docs-logs/...pr-...-review.md` tidy and up to date — it becomes your response plan when you reply on the PR.
 
 ## Issues
 Only note problems you can’t fix or work around.
