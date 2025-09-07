@@ -153,7 +153,7 @@ An example event for `nod_feed` looks as following:
 
 ### Newly Active Domains (NAD) Feed
 
-The `nod_feed` data stream provides events from [DomainTools Newly Active Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
+The `nad_feed` data stream provides events from [DomainTools Newly Active Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
