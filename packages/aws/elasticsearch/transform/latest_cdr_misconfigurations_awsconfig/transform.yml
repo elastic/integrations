@@ -1,0 +1,33 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-aws.config-*"
+dest:
+  index: "security_solution-awsconfig.misconfiguration_latest-v1"
+  aliases:
+    - alias: "security_solution-awsconfig.misconfiguration_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - rule.id
+    - resource.id
+    - data_stream.namespace
+  sort: "@timestamp"
+description: >-
+  Latest Findings from AWS Config. As findings get updated, this transform stores only the latest state of each finding inside the destination index. Thus the transform's destination index contains only the latest state of the finding.
+frequency: 5m
+settings:
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 24h
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
