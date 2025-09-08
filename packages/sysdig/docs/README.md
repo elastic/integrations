@@ -2,11 +2,19 @@
 This integration allows for the shipping of [Sysdig](https://sysdig.com/) logs to Elastic for security, observability and organizational awareness. Logs can then be analyzed by using either the dashboard included with the integration or via the creation of custom dashboards within Kibana.
 
 ## Data Streams
-The Sysdig integration collects two type of logs:
+The Sysdig integration collects three types of logs:
 
 **Alerts** The Alerts data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
 **Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/).
+
+**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
+
+For vulnerability data, Each interval fetches all available scan results from the configured stage. Currently, only one stage can be configured at a time. Users wishing to collect scan results from different stages must configure additional integrations for each desired stage.
+
+Scan results are broken down into separate events for each package-vulnerability pair. If no vulnerability is found for a package, then only the package details will be included in the published event. If the scans contain no package information, then only the scan details will be included in the published event.
+
+In detail, a package is included in one layer, which can be built upon several base images. Furthermore, a package can have multiple vulnerabilities, each of which can have multiple risk accepts.
 
 ## Requirements
 
@@ -44,6 +52,7 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 **Note**:
   - The URL may vary depending on your region. Please refer to the [Documentation](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints) to find the correct URL for your region.
   - If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the `Maximum Pages Per Interval` setting in the configuration.
+  - Users wishing to collect vulnerability scan results from multiple stages must configure individual integrations for each desired stage.
 
 ## Logs Reference
 
@@ -750,4 +759,307 @@ An example event for `event` looks as following:
 | sysdig.event.source_details.sub_type | A deeper particularization for the type of component that generated the raw event. Possible values are auditlogs, auditWebhooks, caas, dynamicAdmissionControl, host, container, workforce. | keyword |
 | sysdig.event.source_details.type | The type of component that generated the raw event. Possible values are cloud, git, iam, kubernetes, workload. | keyword |
 | sysdig.event.timestamp | The event timestamp in nanoseconds. | date |
+
+
+### Vulnerability
+
+This is the `vulnerability` dataset.
+
+#### Example
+
+An example event for `vulnerability` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-12T06:00:56.541Z",
+    "agent": {
+        "ephemeral_id": "edd7acb6-e05a-4b0c-b2d4-1829b5c379a3",
+        "id": "5febda80-7b8d-463d-8f2b-38961c964c62",
+        "name": "elastic-agent-75651",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "container": {
+        "image": {
+            "hash": {
+                "all": [
+                    "sha256:02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b"
+                ]
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "sysdig.vulnerability",
+        "namespace": "33886",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "5febda80-7b8d-463d-8f2b-38961c964c62",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
+        "created": "2025-04-12T06:00:56.541Z",
+        "dataset": "sysdig.vulnerability",
+        "ingested": "2025-08-11T13:03:09Z",
+        "kind": "event",
+        "original": "{\"assetType\":\"containerImage\",\"createdAt\":\"2025-04-12T06:00:56Z\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"metadata\":{\"architecture\":\"arm64\",\"baseOs\":\"debian 12.9\",\"createdAt\":\"2025-02-05T21:27:16Z\",\"digest\":\"sha256:02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"labels\":{\"maintainer\":\"NGINX Docker Maintainers \\u003cdocker-maint@nginx.com\\u003e\"},\"os\":\"linux\",\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"size\":201371136},\"policies\":{\"evaluations\":[],\"globalEvaluation\":\"noPolicy\"},\"producer\":{\"producedAt\":\"2025-04-12T06:00:56.541163Z\"},\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"resultId\":\"18357cce62f36e3c914a3708a1224483\",\"stage\":\"registry\",\"vendor\":\"dockerv2\",\"vulnTotalBySeverity\":{\"critical\":9,\"high\":18,\"low\":7,\"medium\":35,\"negligible\":86}}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "arm64",
+        "os": {
+            "family": "debian",
+            "full": "debian 12.9",
+            "name": "linux",
+            "type": "linux",
+            "version": "12.9"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Sysdig Secure",
+        "vendor": "Sysdig"
+    },
+    "related": {
+        "hash": [
+            "02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b",
+            "678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da"
+        ]
+    },
+    "sysdig": {
+        "vulnerability": {
+            "asset_type": "containerImage",
+            "created_at": "2025-04-12T06:00:56.000Z",
+            "image_id": "sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da",
+            "image_id_algorithm": "sha256",
+            "image_id_hash": "678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da",
+            "metadata": {
+                "created_at": "2025-02-05T21:27:16.000Z",
+                "image_id": "sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da",
+                "labels": {
+                    "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+                },
+                "pull_string": "docker.cloudsmith.io/secure/sysdig/new_nginx:v1",
+                "size": 201371136
+            },
+            "policies": {
+                "global_evaluation": "noPolicy"
+            },
+            "pull_string": "docker.cloudsmith.io/secure/sysdig/new_nginx:v1",
+            "stage": "registry",
+            "vendor": "dockerv2",
+            "vuln_total_by_severity": {
+                "critical": 9,
+                "high": 18,
+                "low": 7,
+                "medium": 35,
+                "negligible": 86
+            }
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "sysdig-vulnerability"
+    ],
+    "user": {
+        "domain": "docker-maint@nginx.com",
+        "name": "NGINX Docker Maintainers"
+    },
+    "vulnerability": {
+        "report_id": "18357cce62f36e3c914a3708a1224483",
+        "scanner": {
+            "vendor": "Sysdig Secure"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
+| resource.id | The ID of the vulnerable resource. | keyword |
+| resource.name | The name of the vulnerable resource. | keyword |
+| sysdig.vulnerability.asset_type | scan result asset type. | keyword |
+| sysdig.vulnerability.created_at | datetime of creation. | date |
+| sysdig.vulnerability.image_id | Identifier of the image. | keyword |
+| sysdig.vulnerability.image_id_algorithm | algorithm of the image hash. | keyword |
+| sysdig.vulnerability.image_id_hash | Identifier of the image (hash). | keyword |
+| sysdig.vulnerability.is_risk_spotlight_enabled | Whether risk spotlight is enabled or not. | boolean |
+| sysdig.vulnerability.main_asset_name | Name of the scanned asset. | keyword |
+| sysdig.vulnerability.metadata.architecture | image or host architecture. | keyword |
+| sysdig.vulnerability.metadata.author | image author. | keyword |
+| sysdig.vulnerability.metadata.base_os | image base os. | keyword |
+| sysdig.vulnerability.metadata.created_at | datetime of creation. | date |
+| sysdig.vulnerability.metadata.digest | image digest. | keyword |
+| sysdig.vulnerability.metadata.host_id | host id. | keyword |
+| sysdig.vulnerability.metadata.host_name | host name. | keyword |
+| sysdig.vulnerability.metadata.image_id | image id. | keyword |
+| sysdig.vulnerability.metadata.labels.homepage |  | keyword |
+| sysdig.vulnerability.metadata.labels.io.mend.image.dockerfile.path |  | keyword |
+| sysdig.vulnerability.metadata.labels.maintainer |  | keyword |
+| sysdig.vulnerability.metadata.labels.org.label_schema.build_date |  | date |
+| sysdig.vulnerability.metadata.labels.org.label_schema.name |  | keyword |
+| sysdig.vulnerability.metadata.labels.org.label_schema.vcs_ref |  | keyword |
+| sysdig.vulnerability.metadata.labels.org.label_schema.vcs_url |  | keyword |
+| sysdig.vulnerability.metadata.labels.org.opencontainers.image.description |  | keyword |
+| sysdig.vulnerability.metadata.labels.org.opencontainers.image.source |  | keyword |
+| sysdig.vulnerability.metadata.labels.repository |  | keyword |
+| sysdig.vulnerability.metadata.os | image os. | keyword |
+| sysdig.vulnerability.metadata.pull_string | image pull string. | keyword |
+| sysdig.vulnerability.metadata.size | image size in bytes. | long |
+| sysdig.vulnerability.package.is_removed | whether the package has been removed. | boolean |
+| sysdig.vulnerability.package.is_running | whether the package is used by a running process. | boolean |
+| sysdig.vulnerability.package.layers.base_images.base_images_ref | base images refs. | keyword |
+| sysdig.vulnerability.package.layers.base_images.pull_strings |  | keyword |
+| sysdig.vulnerability.package.layers.command | layer command. | keyword |
+| sysdig.vulnerability.package.layers.digest | sha256 digest of the layer. | keyword |
+| sysdig.vulnerability.package.layers.digest_algorithm | algorithm of the layer digest hash. | keyword |
+| sysdig.vulnerability.package.layers.digest_hash | sha256 digest of the layer. | keyword |
+| sysdig.vulnerability.package.layers.index | layer's index. | long |
+| sysdig.vulnerability.package.layers.layer_ref | reference to layer. | keyword |
+| sysdig.vulnerability.package.layers.size | size of the layer in bytes. | long |
+| sysdig.vulnerability.package.license | license of the package. | keyword |
+| sysdig.vulnerability.package.name | name of the package. | keyword |
+| sysdig.vulnerability.package.package_ref | reference to package. | keyword |
+| sysdig.vulnerability.package.path | path of the package. | keyword |
+| sysdig.vulnerability.package.suggested_fix | suggested fix for the package. | keyword |
+| sysdig.vulnerability.package.type | scan result package type, example values are: os, rust, java, ruby, javascript, python, php, golang, C#. | keyword |
+| sysdig.vulnerability.package.version | version of the affected package. | keyword |
+| sysdig.vulnerability.package.vulnerability.cvss_score.score | CVSS score. | double |
+| sysdig.vulnerability.package.vulnerability.cvss_score.vector | attack vector. | keyword |
+| sysdig.vulnerability.package.vulnerability.cvss_score.version |  | keyword |
+| sysdig.vulnerability.package.vulnerability.disclosure_date |  | date |
+| sysdig.vulnerability.package.vulnerability.exploit.links |  | keyword |
+| sysdig.vulnerability.package.vulnerability.exploit.publication_date | exploit publication date. | date |
+| sysdig.vulnerability.package.vulnerability.exploitable |  | boolean |
+| sysdig.vulnerability.package.vulnerability.fix_version |  | keyword |
+| sysdig.vulnerability.package.vulnerability.main_provider |  | keyword |
+| sysdig.vulnerability.package.vulnerability.name |  | keyword |
+| sysdig.vulnerability.package.vulnerability.package_ref | reference to the affected package. | keyword |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.almalinux.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.amazon.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.cisakev.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.euleros.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.first.org.epss_score.percentile |  | double |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.first.org.epss_score.score |  | double |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.first.org.epss_score.timestamp |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.gentoo.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.github.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.gitlab.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.nvd.cvss_score.score |  | double |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.nvd.cvss_score.vector |  | keyword |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.nvd.cvss_score.version |  | keyword |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.nvd.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.nvd.severity |  | keyword |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.pypiadvisory.publish-date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.rhel.cvss_score.score |  | double |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.rhel.cvss_score.vector |  | keyword |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.rhel.cvss_score.version |  | keyword |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.rhel.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.rhel.severity |  | keyword |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.rocky.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.rubyadvisory.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.ubuntu.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.providers_metadata.vulndb.publish_date |  | date |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.context.type | Enum: "packageName" "packageVersion" "imageName" "imagePrefix" "imageSuffix" "imageAssetToken" "hostName" "hostAssetToken". | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.context.value | Value for the context entry. | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.created_at | datetime of creation. | date |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.description | risk acceptance description. | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.entity_type | entity type for the risk. | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.entity_value | entity value relative to the the entity type. | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.expiration_date |  | date |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.id | id of the risk acceptance. | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.reason | risk acceptance reason. | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.risk_accept_refs | reference to risk acceptance. | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.status | Enum: "active" "expired". | keyword |
+| sysdig.vulnerability.package.vulnerability.risk_accepts.updated_at | datetime of last update. | date |
+| sysdig.vulnerability.package.vulnerability.severity | Enum: "critical" "high" "medium" "low" "negligible". | keyword |
+| sysdig.vulnerability.package.vulnerability.solution_date |  | date |
+| sysdig.vulnerability.package.vulnerability.vulnerabilities_ref |  | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.identifier | Identifier of the bundle. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.name | Name of the bundle. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.description | rule description. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.evaluation_result | Enum: "passed" "failed" "notApplicable" "accepted" | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.failure_type | Enum: "pkgVulnFailure" "imageConfigFailure" rule failure type. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.predicates.type | predicate type. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.rule_id | rule's id. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.rules.rule_type | rule type. | keyword |
+| sysdig.vulnerability.policies.evaluations.bundles.type | Enum: "predefined" "custom" | keyword |
+| sysdig.vulnerability.policies.evaluations.created_at | datetime of creation. | date |
+| sysdig.vulnerability.policies.evaluations.description | policy evaluation description. | keyword |
+| sysdig.vulnerability.policies.evaluations.evaluation | Enum: "passed" "failed" "accepted" "noPolicy" | keyword |
+| sysdig.vulnerability.policies.evaluations.identifier | policy evaluation id. | keyword |
+| sysdig.vulnerability.policies.evaluations.name | policy evaluation name. | keyword |
+| sysdig.vulnerability.policies.evaluations.updated_at | datetime of last update. | date |
+| sysdig.vulnerability.policies.global_evaluation | Enum: "passed" "failed" "accepted" "noPolicy" | keyword |
+| sysdig.vulnerability.policy_evaluation_result | Enum: "passed" "failed" "accepted" "noPolicy" "notApplicable" Policy evaluation result. | keyword |
+| sysdig.vulnerability.producer.produced_at |  | date |
+| sysdig.vulnerability.pull_string | image pull string. | keyword |
+| sysdig.vulnerability.resource_id | Identifier of the scanned resource: it will be the image ID for container images or the host ID for hosts. | keyword |
+| sysdig.vulnerability.result_id | Identifier of the scan result. | keyword |
+| sysdig.vulnerability.running_vuln_total_by_severity.critical | number of critical vulnerabilities. | long |
+| sysdig.vulnerability.running_vuln_total_by_severity.high | number of high vulnerabilities. | long |
+| sysdig.vulnerability.running_vuln_total_by_severity.low | number of low vulnerabilities. | long |
+| sysdig.vulnerability.running_vuln_total_by_severity.medium | number of medium vulnerabilities. | long |
+| sysdig.vulnerability.running_vuln_total_by_severity.negligible | number of negligible vulnerabilities. | long |
+| sysdig.vulnerability.sbom_id | Identifier of the sbom. | keyword |
+| sysdig.vulnerability.scope.asset.type |  | keyword |
+| sysdig.vulnerability.scope.aws.account.id |  | keyword |
+| sysdig.vulnerability.scope.aws.host.name |  | keyword |
+| sysdig.vulnerability.scope.aws.region |  | keyword |
+| sysdig.vulnerability.scope.azure.instance.id |  | keyword |
+| sysdig.vulnerability.scope.azure.instance.name |  | keyword |
+| sysdig.vulnerability.scope.azure.resource_group |  | keyword |
+| sysdig.vulnerability.scope.azure.subscription.id |  | keyword |
+| sysdig.vulnerability.scope.cloud_provider.account.id |  | keyword |
+| sysdig.vulnerability.scope.cloud_provider.name |  | keyword |
+| sysdig.vulnerability.scope.cloud_provider.region |  | keyword |
+| sysdig.vulnerability.scope.gcp.instance.id |  | keyword |
+| sysdig.vulnerability.scope.gcp.instance.zone |  | keyword |
+| sysdig.vulnerability.scope.gcp.project.id |  | keyword |
+| sysdig.vulnerability.scope.gcp.project.numeric_id |  | keyword |
+| sysdig.vulnerability.scope.host.host_name |  | keyword |
+| sysdig.vulnerability.scope.kubernetes.cluster.name |  | keyword |
+| sysdig.vulnerability.scope.kubernetes.namespace.name |  | keyword |
+| sysdig.vulnerability.scope.kubernetes.node.name |  | keyword |
+| sysdig.vulnerability.scope.kubernetes.pod.container.name |  | keyword |
+| sysdig.vulnerability.scope.kubernetes.workload.name |  | keyword |
+| sysdig.vulnerability.scope.kubernetes.workload.type |  | keyword |
+| sysdig.vulnerability.scope.registry.name |  | keyword |
+| sysdig.vulnerability.scope.registry.vendor | Identifier the vendor of the image. | keyword |
+| sysdig.vulnerability.scope.workload.name |  | keyword |
+| sysdig.vulnerability.scope.workload.orchestrator |  | keyword |
+| sysdig.vulnerability.stage | Enum: "pipeline" "runtime" "registry" scan result stage. | keyword |
+| sysdig.vulnerability.vendor | Identifier the vendor of the image. | keyword |
+| sysdig.vulnerability.vuln_total_by_severity.critical | number of critical vulnerabilities. | long |
+| sysdig.vulnerability.vuln_total_by_severity.high | number of high vulnerabilities. | long |
+| sysdig.vulnerability.vuln_total_by_severity.low | number of low vulnerabilities. | long |
+| sysdig.vulnerability.vuln_total_by_severity.medium | number of medium vulnerabilities. | long |
+| sysdig.vulnerability.vuln_total_by_severity.negligible | number of negligible vulnerabilities. | long |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
+| vulnerability.published_date | When the vulnerability was published. | date |
+| vulnerability.title | The human readeable title of the vulnerability. | keyword |
 
