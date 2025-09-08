@@ -4,7 +4,7 @@
 
 [Cyera](https://www.cyera.com/) is a cloud data security platform (DSPM – Data Security Posture Management). It focuses on discovering, classifying, monitoring, and protecting sensitive data across cloud environments (AWS, Azure, GCP, SaaS, M365, Snowflake, etc.).
 
-The Cyera integration for Elastic allows you to collect logs and visualise the data in Kibana.
+The Cyera integration for Elastic allows you to collect logs and visualize the data in Kibana.
 
 ### Compatibility
 
@@ -111,3 +111,7 @@ For more information on architectures that can be used for scaling this integrat
 These inputs can be used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+#### ILM Policy
+
+To facilitate issue data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
