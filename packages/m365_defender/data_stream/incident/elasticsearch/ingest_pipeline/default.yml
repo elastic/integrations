@@ -1397,15 +1397,6 @@ processors:
           allow_duplicates: false
           ignore_failure: true
   - foreach:
-      field: file.name
-      if: ctx.file?.name instanceof List && ctx.process?.command_line != null
-      ignore_failure: true
-      processor:
-        append:
-          field: process.name
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-  - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
@@ -1713,6 +1704,66 @@ processors:
           value: '{{{_ingest._value.process.command_line}}}'
           allow_duplicates: false
           ignore_failure: true
+  - script:
+      lang: painless
+      tag: set_process_name_from_command_line
+      description: Set process.name from process.command_line.
+      source: |
+        if (ctx.process == null) {
+          ctx.process = [: ];
+        }
+        if (ctx.process.name == null) {
+          ctx.process.name = [];
+        }
+        // Normalize process.name to a list
+        def nameList = [];
+        if (ctx.process.name != null) {
+          if (ctx.process.name instanceof String) {
+            nameList.add(ctx.process.name);
+          } else if (ctx.process.name instanceof List) {
+            nameList.addAll(ctx.process.name);
+          }
+        }
+
+        // Deduplication using HashSet
+        def currentNames = new HashSet();
+        currentNames.addAll(nameList);
+        // Handle process.command_line (string or list)
+        if (ctx.process.command_line != null) {
+          // Convert string to list for unified handling
+          def cmdList = [];
+          if (ctx.process.command_line instanceof String) {
+            cmdList.add(ctx.process.command_line);
+          } else if (ctx.process.command_line instanceof List) {
+            cmdList.addAll(ctx.process.command_line);
+          }
+          for (cmd in cmdList) {
+            if (cmd != null && cmd.length() > 0) {
+              // Extract the first token
+              def parts = cmd.trim().splitOnToken(" ");
+              if (parts.length > 0) {
+                def executable = parts[0];
+                // If executable is a path, take only the last part
+                if (executable.contains("/")) {
+                  def slashParts = executable.splitOnToken("/");
+                  executable = slashParts[slashParts.length - 1];
+                }
+                executable = /\"/.matcher(executable).replaceAll("");
+                currentNames.add(executable);
+              }
+            }
+          }
+        }
+        // Update process.name with unique list
+        if (currentNames != null && currentNames.size() == 1) {
+          ctx.process.name = currentNames.iterator().next();
+        } else {
+          ctx.process.name = new ArrayList(currentNames);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
@@ -1937,15 +1988,6 @@ processors:
           value: '{{{_ingest._value.process.creation_datetime}}}'
           allow_duplicates: false
           ignore_failure: true
-  - foreach:
-      field: json.alerts.evidence
-      if: ctx.json?.alerts?.evidence instanceof List && ctx.process?.command_line != null
-      ignore_failure: true
-      processor:
-        append:
-          field: process.name
-          value: '{{{_ingest._value.imageFile.fileName}}}'
-          allow_duplicates: false
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
