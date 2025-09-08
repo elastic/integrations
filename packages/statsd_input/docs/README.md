@@ -93,6 +93,7 @@ General troubleshooting checklist (detailed steps depend on the environment):
 - Check that the Elastic Agent is listening on the specified UDP port.
 - Inspect Network Connectivity and check firewall rules.
 - Examine Elastic Agent logs.
+- Ensure that the application or service sending metrics is correctly configured to point to the right UDP endpoint.
 
 If the `nc` is available in the environment, a sample UDP packet with StatsD payload may be sent using `nc` to check if the configuration is correct and the document appears in Kibana:
 
