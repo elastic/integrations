@@ -32,11 +32,6 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
       PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
       {
         "template": {
-          "settings": {
-            "index": {
-              "default_pipeline": "<VERSION>-ml_pad_ingest_pipeline"
-            }
-          },
           "mappings": {
             "properties": {
               "process": {

@@ -41,11 +41,6 @@ For more detailed information refer to the following blogs and webinar:
       PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
       {
         "template": {
-          "settings": {
-            "index": {
-              "default_pipeline": "<VERSION>-problem_child_ingest_pipeline"
-            }
-          },
           "mappings": {
             "properties": {
               "blocklist_label": {
