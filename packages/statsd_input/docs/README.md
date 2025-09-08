@@ -106,11 +106,9 @@ echo "sample:1|g"  | nc -u -w0 localhost 8125
 
 ### Example
 
-Provided that the elastic-agent with StatsD input integration is listening on `localhost:8125`, it is possible to send a UDP packet like the following one:
+Provided that the elastic-agent with StatsD input integration is listening on `localhost:8125`, it is possible to send a UDP packet with the following bash one-liner:
 
-```bash
-echo "python_gauge_foo:10|g"  | nc -u -w0 localhost 8125
-```
+`echo "python_gauge_foo:10|g"  | nc -u -w0 localhost 8125`
 
 The resulting event will look like this:
 
