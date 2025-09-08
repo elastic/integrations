@@ -68,7 +68,7 @@ For more detailed information refer to the following blogs and webinar:
       }
       ```
     - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
-    ![Component Templates](../img/component-templates-edit.png)åå
+    ![Component Templates](../img/component-templates-edit.png)
     - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
     ![Component Templates](../img/field1.png)
     - Then create an `Object` field for `problemchild`. 
