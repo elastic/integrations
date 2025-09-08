@@ -64,10 +64,10 @@ The `statsd` input has these additional configuration options:
 :   Bind address and port for the UDP server to listen on.
 
 **TTL**
-:   It defines how long a metric will be reported after it was last recorded. Irrespective of the given ttl, metrics will be reported at least once. A ttl of zero means metrics will never expire.
+:   It defines how long a metric will be reported after it was last recorded. Metrics are always reported at least once, regardless of the specified TTL. A TTL of zero indicates that the metrics never expire.
 
 **StatsD metric mappings (Optional)**
-:   It defines how metrics will mapped from the original metric label to the event json. Here’s an example configuration:
+:   It defines how metrics will be mapped from the original metric label to the event JSON. Here’s an example configuration:
 
 ```yaml
 - metric: 'ti_failures' <1>
@@ -81,10 +81,10 @@ The `statsd` input has these additional configuration options:
     field: started <2>
 ```
 
-1. `metric`, required: the label key of the metric in statsd, either as a exact match string or as a template with named label placeholder in the format `<label_placeholder>`
-2. `value.field`, required: field name where to save the metric value in the event json
-3. `label[].attr`, required when using named label placeholder: reference to the named label placeholder defined in `metric`
-4. `label[].field`, required when using named label placeholder field name where to save the named label placeholder value from the template in the event json
+1. `metric`, required: The label key of the metric in statsd, either as an exact match string, or as a template with named label placeholder in the format `<label_placeholder>`.
+2. `value.field`, required: Field name where to save the metric value in the event JSON.
+3. `label[].attr`, required when using the label placeholder: Reference to the label placeholder defined in `metric`.
+4. `label[].field`, required when using the label placeholder field name where to save the label placeholder value from the template in the event JSON.
 
 ## Metrics reference
 
