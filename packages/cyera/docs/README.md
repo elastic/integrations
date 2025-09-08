@@ -4,7 +4,7 @@
 
 [Cyera](https://www.cyera.com/) is a cloud data security platform (DSPM – Data Security Posture Management). It focuses on discovering, classifying, monitoring, and protecting sensitive data across cloud environments (AWS, Azure, GCP, SaaS, M365, Snowflake, etc.).
 
-The Cyera integration for Elastic allows you to collect logs and visualise the data in Kibana.
+The Cyera integration for Elastic allows you to collect logs and visualize the data in Kibana.
 
 ### Compatibility
 
@@ -147,13 +147,13 @@ An example event for `classification` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-25T10:38:07.608Z",
+    "@timestamp": "2025-08-25T06:16:36.929Z",
     "agent": {
-        "ephemeral_id": "24a2c926-b4be-42fc-9f63-21a734ef4617",
-        "id": "aac8f457-45f9-44fd-ad55-d8743253b902",
-        "name": "elastic-agent-15896",
+        "ephemeral_id": "045c1576-db46-4a15-8cce-064ded7d8c79",
+        "id": "e132f970-5576-45fa-9395-af4076413d36",
+        "name": "elastic-agent-61946",
         "type": "filebeat",
-        "version": "9.1.2"
+        "version": "8.18.0"
     },
     "cyera": {
         "classification": {
@@ -186,31 +186,27 @@ An example event for `classification` looks as following:
     },
     "data_stream": {
         "dataset": "cyera.classification",
-        "namespace": "37095",
+        "namespace": "68658",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "aac8f457-45f9-44fd-ad55-d8743253b902",
+        "id": "e132f970-5576-45fa-9395-af4076413d36",
         "snapshot": false,
-        "version": "9.1.2"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cyera.classification",
         "id": "01980ae3-3870-7f54-86b8-81aac1416d93",
-        "ingested": "2025-08-25T10:38:10Z",
+        "ingested": "2025-08-25T06:16:39Z",
         "kind": "event",
-        "module": "cyera",
         "original": "{\"classificationGroup\":\"Financial\",\"classificationLevel\":\"Element\",\"classificationName\":\"ABA Routing Number\",\"collections\":[],\"context\":{\"businessContext\":[],\"dataSubjectAge\":\"None\",\"geoLocations\":[],\"identifiability\":\"PossiblyIdentifiable\",\"identified\":false,\"role\":null,\"synthetic\":false,\"tokenization\":\"Plain\"},\"customCollections\":[],\"dataCategory\":\"Financial\",\"dataClassName\":\"ABA Routing Number\",\"defaultSensitivity\":\"Internal\",\"defaultSensitivityDisplayName\":\"Internal\",\"frameworks\":[],\"learned\":false,\"name\":\"ABA Routing Number\",\"sensitivity\":\"Internal\",\"sensitivityDisplayName\":\"Internal\",\"uid\":\"01980ae3-3870-7f54-86b8-81aac1416d93\"}"
     },
     "input": {
         "type": "cel"
-    },
-    "labels": {
-        "is_transform_source": "true"
     },
     "observer": {
         "product": "Cyera",
@@ -230,3 +226,7 @@ An example event for `classification` looks as following:
 These inputs can be used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
+
+#### ILM Policy
+
+To facilitate classification data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
