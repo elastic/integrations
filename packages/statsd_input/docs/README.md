@@ -1,20 +1,59 @@
 # StatsD input
 
+## Overview
+
 The `statsd input package` spawns a UDP server and listens for metrics in StatsD compatible format.
 This input can be used to collect metrics from services that send data over the StatsD protocol. To tailor the data you can provide custom mappings and ingest pipelines through Kibana.
 
-## Data streams
+### Compatibility
+
+#### Metric types
+
+The input supports the following types of metrics:
+
+**Counter (c)**
+:   Measurement which accumulates over period of time until flushed (value set to 0).
+
+**Gauge (g)**
+:   Measurement which can increase, decrease or be set to a value.
+
+**Timer (ms)**
+:   Time measurement (in milliseconds) of an event.
+
+**Histogram (h)**
+:   Time measurement, alias for timer.
+
+**Set (s)**
+:   Measurement which counts unique occurrences until flushed (value set to 0).
+
+#### Supported tag extensions
+
+Example of tag styles supported by the `statsd` input:
+
+[DogStatsD](https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/?tab=metrics#the-dogstatsd-protocol)
+
+`<metric name>:<value>|<type>|@samplerate|#<k>:<v>,<k>:<v>`
+
+[InfluxDB](https://github.com/influxdata/telegraf/blob/master/plugins/inputs/statsd/README.md#influx-statsd)
+
+`<metric name>,<k>=<v>,<k>=<v>:<value>|<type>|@samplerate`
+
+[Graphite_1.1.x](https://graphite.readthedocs.io/en/latest/tags.html#graphite-tag-support)
+
+`<metric name>;<k>=<v>;<k>=<v>:<value>|<type>|@samplerate`
+
+## What data does this integration collect?
 
 The StatsD input integration collects one type of data streams: metrics.
 
-## Requirements
+## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-## Setup
+## How do I deploy this integration?
 
-For step-by-step instructions on how to set up an integration, see the
+For step-by-step instructions on how to set up an integration, check the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ### Configuration options
@@ -46,43 +85,6 @@ The `statsd` input has these additional configuration options:
 2. `value.field`, required: field name where to save the metric value in the event json
 3. `label[].attr`, required when using named label placeholder: reference to the named label placeholder defined in `metric`
 4. `label[].field`, required when using named label placeholder field name where to save the named label placeholder value from the template in the event json
-
-## Compatibility
-
-### Metric types
-
-The input supports the following types of metrics:
-
-**Counter (c)**
-:   Measurement which accumulates over period of time until flushed (value set to 0).
-
-**Gauge (g)**
-:   Measurement which can increase, decrease or be set to a value.
-
-**Timer (ms)**
-:   Time measurement (in milliseconds) of an event.
-
-**Histogram (h)**
-:   Time measurement, alias for timer.
-
-**Set (s)**
-:   Measurement which counts unique occurrences until flushed (value set to 0).
-
-### Supported tag extensions
-
-Example of tag styles supported by the `statsd` input:
-
-[DogStatsD](https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/?tab=metrics#the-dogstatsd-protocol)
-
-`<metric name>:<value>|<type>|@samplerate|#<k>:<v>,<k>:<v>`
-
-[InfluxDB](https://github.com/influxdata/telegraf/blob/master/plugins/inputs/statsd/README.md#influx-statsd)
-
-`<metric name>,<k>=<v>,<k>=<v>:<value>|<type>|@samplerate`
-
-[Graphite_1.1.x](https://graphite.readthedocs.io/en/latest/tags.html#graphite-tag-support)
-
-`<metric name>;<k>=<v>;<k>=<v>:<value>|<type>|@samplerate`
 
 ## Metrics reference
 
