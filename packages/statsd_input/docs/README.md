@@ -104,7 +104,13 @@ echo "sample:1|g"  | nc -u -w0 localhost 8125
 
 ## Metrics reference
 
-### Example
+### Flattening
+
+Sending these are equivalent, as any dots `.` are replaced with underscores `_` in metric names:
+1. `python.gauge.foo:10|g`
+2. `python_gauge_foo:10|g`
+
+### Example document
 
 Provided that the elastic-agent with StatsD input integration is listening on `localhost:8125`, it is possible to send a UDP packet with the following bash one-liner:
 
