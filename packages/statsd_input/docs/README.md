@@ -90,7 +90,7 @@ The `statsd` input has these additional configuration options:
 
 ### Example
 
-Provided that the elastic-agent with StatsD input integration is listening on `localhost:8125`, it is possible to send a UDP packet like this:
+Provided that the elastic-agent with StatsD input integration is listening on `localhost:8125`, it is possible to send a UDP packet like the following one:
 
 ```bash
 echo "python_gauge_foo:10|g"  | nc -u -w0 localhost 8125
