@@ -86,6 +86,21 @@ The `statsd` input has these additional configuration options:
 3. `label[].attr`, required when using the label placeholder: Reference to the label placeholder defined in `metric`.
 4. `label[].field`, required when using the label placeholder field name where to save the label placeholder value from the template in the event JSON.
 
+## Troubleshooting
+
+General troubleshooting checklist (detailed steps depend on the environment):
+- Ensure Elastic Agent is Running.
+- Check that the Elastic Agent is listening on the specified UDP port.
+- Inspect Network Connectivity and check firewall rules.
+- Examine Elastic Agent logs.
+
+If the `nc` is available in the environment, a sample UDP packet with StatsD payload may be sent using `nc` to check if the configuration is correct and the document appears in Kibana:
+
+```bash
+# Replace "localhost" and "8125" with your values
+echo "sample:1|g"  | nc -u -w0 localhost 8125
+```
+
 ## Metrics reference
 
 ### Example
