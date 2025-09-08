@@ -1,180 +1,164 @@
-name: Documentation edit automation
+name: Documentation edit helper
 
 on:
-  push:
-    branches:
-      - 'docs-enhancement/**'
-      - 'docs-bugfix/**'
-
-permissions:
-  contents: write
-  pull-requests: write
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - 'packages/*/_dev/build/docs/README.md'
 
 jobs:
-  auto-update-docs:
-    # Skip if pushed by bot to avoid loops
-    if: github.actor != 'github-actions[bot]'
+  help-with-docs:
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      (startsWith(github.head_ref, 'docs-enhancement/') || startsWith(github.head_ref, 'docs-bugfix/'))
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-
-      - name: Install tools
-        run: |
-          go install github.com/elastic/elastic-package@latest
-          go install github.com/andrewkroh/go-examples/elastic-package-changelog@main
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Process documentation changes
-        id: process
+      - name: Analyze documentation changes and generate commands
+        id: analyze
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get PR number
-          PR_NUMBER=$(gh pr list --head ${{ github.ref_name }} --json number -q '.[0].number')
+          echo "🔍 Analyzing documentation changes..."
           
-          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-            echo "::notice::No PR found for branch ${{ github.ref_name }}"
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          
+          # Get changed files directly from PR
+          CHANGED_DOCS=$(gh pr view $PR_NUMBER --json files -q '.files[].path' | grep '^packages/.*/_dev/build/docs/README\.md$' || true)
+          
+          if [ -z "$CHANGED_DOCS" ]; then
+            echo "no_docs_changes=true" >> $GITHUB_OUTPUT
             exit 0
           fi
           
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-
           # Determine change type from branch name
           CHANGE_TYPE="enhancement"
+          VERSION_BUMP="minor"
           LABEL="enhancement"
-          if [[ "${{ github.ref_name }}" =~ ^docs-bugfix/ ]]; then
+          if [[ "${{ github.head_ref }}" =~ ^docs-bugfix/ ]]; then
             CHANGE_TYPE="bugfix"
+            VERSION_BUMP="patch"
             LABEL="bugfix"
           fi
           
-          echo "change_type=$CHANGE_TYPE" >> $GITHUB_OUTPUT
-          echo "label=$LABEL" >> $GITHUB_OUTPUT
+          # Get custom changelog description from PR body
+          PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""' 2>/dev/null || echo "")
           
-          # Get PR body for changelog description
-          PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""')
-          
-          CHANGELOG_DESC=""
-          if echo "$PR_BODY" | grep -qi "^changelog:"; then
-            CHANGELOG_DESC=$(echo "$PR_BODY" | grep -i "^changelog:" | sed 's/^changelog://i' | xargs)
+          CHANGELOG_DESC="Improve documentation"
+          if [ "$CHANGE_TYPE" = "bugfix" ]; then
+            CHANGELOG_DESC="Fix documentation"
           fi
           
-          # Ensure description uses default if empty
-          if [ -z "$CHANGELOG_DESC" ]; then
-            if [ "$CHANGE_TYPE" == "bugfix" ]; then
-              CHANGELOG_DESC="Fix documentation"
-            else
-              CHANGELOG_DESC="Improve documentation"
+          # Check for custom changelog description in PR body
+          if echo "$PR_BODY" | grep -qi "^changelog:"; then
+            CUSTOM_DESC=$(echo "$PR_BODY" | grep -i "^changelog:" | sed 's/^changelog://i' | xargs)
+            if [ -n "$CUSTOM_DESC" ]; then
+              # Escape quotes and special characters for safe command generation
+              CHANGELOG_DESC=$(echo "$CUSTOM_DESC" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
             fi
           fi
           
-          echo "changelog_description=$CHANGELOG_DESC" >> $GITHUB_OUTPUT
-          echo "::notice::Using changelog description: $CHANGELOG_DESC"
-        
+          echo "change_type=$CHANGE_TYPE" >> $GITHUB_OUTPUT
+          echo "version_bump=$VERSION_BUMP" >> $GITHUB_OUTPUT
+          echo "label=$LABEL" >> $GITHUB_OUTPUT
+          echo "changelog_desc=$CHANGELOG_DESC" >> $GITHUB_OUTPUT
           
-          # Find changed documentation files
-          CHANGED_DOCS=$(git diff --name-only origin/main...HEAD | grep '^packages/.*/_dev/build/docs/README\.md$' || true)
+          # Get all changed files from PR to check what's already updated
+          ALL_CHANGED_FILES=$(gh pr view $PR_NUMBER --json files -q '.files[].path')
           
-          if [ -z "$CHANGED_DOCS" ]; then
-            echo "::notice::No documentation changes found"
-            exit 0
-          fi
-          
-          # Process each package
-          PROCESSED=""
-          FAILED_PACKAGES=""
+          # Find packages that need updates vs already done
+          PACKAGES_NEEDING_UPDATE=""
+          PACKAGES_ALREADY_DONE=""
           
           while IFS= read -r doc_file; do
             [ -z "$doc_file" ] && continue
             
-            # Extract package name
             PACKAGE=$(echo "$doc_file" | sed 's|^packages/\([^/]*\)/.*|\1|')
-            echo "::group::Processing $PACKAGE"
             
-            PACKAGE_FAILED=false
-            cd "packages/$PACKAGE"
+            # Check if manifest.yml or changelog.yml are in the changed files
+            MANIFEST_CHANGED=$(echo "$ALL_CHANGED_FILES" | grep "^packages/$PACKAGE/manifest.yml$" || true)
+            CHANGELOG_CHANGED=$(echo "$ALL_CHANGED_FILES" | grep "^packages/$PACKAGE/changelog.yml$" || true)
             
-            # Update changelog if tool exists
-            if command -v elastic-package-changelog &> /dev/null; then
-              echo "Updating changelog for $PACKAGE..."
-              if ! elastic-package-changelog add-next \
-                --type "$CHANGE_TYPE" \
-                --description "$CHANGELOG_DESC" \
-                --pr "$PR_NUMBER"; then
-                echo "::error::Failed to update changelog for $PACKAGE"
-                PACKAGE_FAILED=true
-              fi
+            if [ -z "$MANIFEST_CHANGED" ] && [ -z "$CHANGELOG_CHANGED" ]; then
+              PACKAGES_NEEDING_UPDATE="$PACKAGES_NEEDING_UPDATE $PACKAGE"
             else
-              echo "::warning::elastic-package-changelog tool not found"
+              PACKAGES_ALREADY_DONE="$PACKAGES_ALREADY_DONE $PACKAGE"
             fi
             
-            # Build documentation
-            echo "Building documentation for $PACKAGE..."
-            if ! elastic-package build; then
-              echo "::error::Failed to build documentation for $PACKAGE"
-              PACKAGE_FAILED=true
-            fi
-            
-            if [ "$PACKAGE_FAILED" = "true" ]; then
-              FAILED_PACKAGES="$FAILED_PACKAGES $PACKAGE"
-            else
-              PROCESSED="$PROCESSED $PACKAGE"
-            fi
-            
-            cd ../..
-            echo "::endgroup::"
           done <<< "$CHANGED_DOCS"
           
-          # Fail if any packages failed
-          if [ -n "$FAILED_PACKAGES" ]; then
-            echo "::error::The following packages failed processing:$FAILED_PACKAGES"
-            exit 1
-          fi
-          
-          echo "processed=$PROCESSED" >> $GITHUB_OUTPUT
-          
-          # Add PR labels
-          gh pr edit $PR_NUMBER --add-label "$LABEL,documentation"
+          echo "packages_needing_update=$PACKAGES_NEEDING_UPDATE" >> $GITHUB_OUTPUT
+          echo "packages_already_done=$PACKAGES_ALREADY_DONE" >> $GITHUB_OUTPUT
 
-      - name: Auto-commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: >-
-            Auto-update documentation for PR #${{ steps.process.outputs.pr_number }}
-            
-            
-            Packages: ${{ steps.process.outputs.processed }}
-            
-            Type: ${{ steps.process.outputs.change_type }}
-          commit_user_name: github-actions[bot]
-          commit_user_email: github-actions[bot]@users.noreply.github.com
-          commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
-
-      - name: Comment on PR
-        if: steps.process.outputs.pr_number && steps.process.outputs.processed
+      - name: Comment with exact commands
+        if: steps.analyze.outputs.packages_needing_update
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PACKAGES="${{ steps.process.outputs.processed }}"
-          PR_NUMBER="${{ steps.process.outputs.pr_number }}"
+          PACKAGES="${{ steps.analyze.outputs.packages_needing_update }}"
+          CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
+          VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
+          CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
+          PR_NUMBER=${{ github.event.pull_request.number }}
           
-          COMMENT="## 📚 Documentation automation completed
+          # Create clean package list for the for loop
+          PACKAGE_LIST=$(echo $PACKAGES | xargs)
           
-          **Processed packages:**${PACKAGES}
+          # Safety check for empty package list
+          if [ -z "$PACKAGE_LIST" ]; then
+            echo "No packages found, skipping comment"
+            exit 0
+          fi
           
-          ### Automated actions:
-          - ✅ Built documentation with \`elastic-package build\`
-          - ✅ Updated \`manifest.yml\` and \`changelog.yml\`
-          - ✅ Applied label: \`${{ steps.process.outputs.label }}\`
-          
-          *Triggered by branch pattern: \`${{ github.ref_name }}\`*"
+          COMMENT="Please run these commands to update changelogs and build docs:
+
+\`\`\`bash
+for pkg in $PACKAGE_LIST; do
+  cd packages/\$pkg
+  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP
+  elastic-package build
+  cd ../..
+done
+git add -u
+git commit -m \"docs: update changelogs and build documentation\"
+git push
+\`\`\`
+
+Prerequisite: \`go install github.com/elastic/elastic-package@latest\`"
+
+          # Add info about packages already updated
+          if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
+            COMMENT="$COMMENT
+
+Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
+          fi
           
           gh pr comment $PR_NUMBER --body "$COMMENT"
+
+      - name: Add labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "${{ steps.analyze.outputs.label }},documentation"
+
+      - name: Handle edge cases
+        if: steps.analyze.outputs.no_docs_changes == 'true' || (!steps.analyze.outputs.packages_needing_update && steps.analyze.outputs.packages_already_done)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ steps.analyze.outputs.no_docs_changes }}" = "true" ]; then
+            MESSAGE="No documentation files (\`packages/*/_dev/build/docs/README.md\`) were changed in this PR."
+          else
+            MESSAGE="All packages with documentation changes already have updated changelogs and manifests."
+          fi
+          
+          gh pr comment ${{ github.event.pull_request.number }} --body "## 📚 Documentation Status
+
+$MESSAGE
+
+Your PR is ready for review! 🎉"
