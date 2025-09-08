@@ -54,14 +54,6 @@ The package transform supports data from Elastic Endpoint via Elastic Defend and
       ```
     - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
-    - On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
-      ```
-      {
-        "index": {
-          "default_pipeline": "<VERSION>-ml_pad_ingest_pipeline"
-        }
-      }
-      ```
     - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create an `Object` field for `process`:
     ![Component Templates](../img/field1.png)
     - Create a property under Process for `command_line_entropy` of type `Double`. 
