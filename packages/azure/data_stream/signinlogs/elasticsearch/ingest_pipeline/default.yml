@@ -46,6 +46,14 @@ processors:
   - drop:
       description: Drop non-SignInLogs.
       if: ctx.azure?.signinlogs?.category == null || !ctx.azure.signinlogs.category.endsWith('SignInLogs')
+    # Unfortunately, some Azure services generate logs with
+    # `created_date_time` field instead of `time` field.
+    #
+    # We need to rename `created_date_time` as `time` to
+    # apply the correct timestamp processing.
+    # 
+    # Refs;
+    # - https://github.com/elastic/integrations/issues/15083  
   - rename:
      field: azure.signinlogs.created_date_time
      target_field: azure.signinlogs.time
