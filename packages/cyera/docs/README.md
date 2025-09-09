@@ -4,7 +4,7 @@
 
 [Cyera](https://www.cyera.com/) is a cloud data security platform (DSPM – Data Security Posture Management). It focuses on discovering, classifying, monitoring, and protecting sensitive data across cloud environments (AWS, Azure, GCP, SaaS, M365, Snowflake, etc.).
 
-The Cyera integration for Elastic allows you to collect logs and visualise the data in Kibana.
+The Cyera integration for Elastic allows you to collect logs and visualize the data in Kibana.
 
 ### Compatibility
 
@@ -190,9 +190,9 @@ An example event for `datastore` looks as following:
 {
     "@timestamp": "2025-05-12T05:06:50.000Z",
     "agent": {
-        "ephemeral_id": "2ad732d6-eb3b-47a6-a78f-75fdb11de2bc",
-        "id": "254b95d2-4cda-4c5f-844d-ebca9ccfc2d5",
-        "name": "elastic-agent-74689",
+        "ephemeral_id": "e084c386-c026-4f29-82be-ca4ca7230293",
+        "id": "0437285c-0566-4da1-8818-96e6f628c346",
+        "name": "elastic-agent-90795",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -287,14 +287,14 @@ An example event for `datastore` looks as following:
     },
     "data_stream": {
         "dataset": "cyera.datastore",
-        "namespace": "89183",
+        "namespace": "97071",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "254b95d2-4cda-4c5f-844d-ebca9ccfc2d5",
+        "id": "0437285c-0566-4da1-8818-96e6f628c346",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -303,7 +303,7 @@ An example event for `datastore` looks as following:
         "created": "2025-05-12T05:06:50.000Z",
         "dataset": "cyera.datastore",
         "id": "0197abcd-1234-5678-90ab-dc221b36194d",
-        "ingested": "2025-09-04T06:53:53Z",
+        "ingested": "2025-09-09T09:30:35Z",
         "kind": "event",
         "original": "{\"account\":{\"inPlatformIdentifier\":\"abcd1234-5678-90ab-cdef-1234567890ab\",\"name\":\"MockAccount\"},\"autoScan\":false,\"classificationGroups\":[],\"classificationLevel\":\"Element\",\"cloudProviderTags\":[],\"cloudProviderUrl\":\"https://mocktenant.mockpoint.com/sites/teamx/Shared%20Documents\",\"collections\":[],\"createdDate\":\"2025-05-12T05:06:50.000Z\",\"customCollections\":[],\"dataType\":\"Unstructured\",\"datastoreOwners\":[{\"datastoreOwnerUid\":\"abcd1234-ef56-7890-abcd-ef1234567890\",\"datastoreUid\":\"0197abcd-1234-5678-90ab-dc221b36194d\",\"email\":\"teamx_owner@mocktenant.onexample.com\",\"ownerType\":\"\",\"source\":\"SaaSOwner\"},{\"datastoreOwnerUid\":\"1234abcd-5678-90ef-abcd-0987654321ef\",\"datastoreUid\":\"0197abcd-1234-5678-90ab-dc221b36194d\",\"email\":\"teamx_owner@mocktenant.onexample.com\",\"ownerType\":\"\",\"source\":\"SaaSOwner\"}],\"datastoreSizeInGiB\":0,\"discoveredDate\":\"2025-06-30T23:12:53.928Z\",\"driveId\":\"b!abcdEFGH1234ijkl5678mnop9qrstuvwxYZ\",\"encrypted\":true,\"engine\":\"mockpoint-library\",\"frameworks\":[],\"ghost\":false,\"infrastructure\":\"OneDrive\",\"issues\":{\"closed\":0,\"inProgress\":0,\"open\":0},\"learned\":false,\"logging\":\"Enabled\",\"name\":\"TeamX/Documents\",\"owner\":\"teamx_owner@mocktenant.onexample.com\",\"projectIds\":[],\"provider\":\"example365\",\"publicAccessibilityState\":\"Not Public\",\"rdsEndpoint\":null,\"recordCountBySensitivity\":{\"Internal\":0,\"NotSensitive\":0,\"Sensitive\":0,\"Unclassified\":0,\"VerySensitive\":0},\"regions\":[\"Americas\"],\"scanningState\":\"Unmonitored\",\"sensitivity\":\"Unclassified\",\"sensitivityDisplayName\":\"Unclassified\",\"siteId\":\"mocktenant.mockpoint.com,abcd1234-5678-90ab-cdef-112233445566,99887766-5544-3322-1100-aabbccddeeff\",\"siteName\":\"TeamX\",\"sslEnforced\":\"Unknown\",\"type\":\"M365_DRIVE\",\"uid\":\"0197abcd-1234-5678-90ab-dc221b36194d\",\"userId\":\"12345678-9abc-def0-1234-56789abcdef0\",\"userTags\":[],\"vpc\":null}"
     },
@@ -341,7 +341,3 @@ An example event for `datastore` looks as following:
 These inputs can be used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
-
-#### ILM Policy
-
-To facilitate datastore data, source data stream-backed indices `.ds-logs-cyera.datastore-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.datastore-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

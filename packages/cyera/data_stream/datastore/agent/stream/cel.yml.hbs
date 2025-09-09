@@ -51,7 +51,7 @@ program: |-
           {
             "next": {
               "access_token": body.jwt,
-              "expiry": (now() + duration("24h") - duration("30s")).format(time_layout.RFC3339),
+              "expiry": (now() + duration(string(body.expiresIn) + "s")).format(time_layout.RFC3339),
             },
           }
         )
@@ -132,9 +132,9 @@ program: |-
                       size(body.results) != 0 ?
                         (
                           has(state.?cursor.max_created_time) ?
-                            optional.of(string(max(state.cursor.max_created_time, body.results.map(e, e.createdDate).max())))
+                            optional.of(string(max(timestamp(state.cursor.max_created_time), body.results.map(e, timestamp(e.createdDate)).max())))
                           :
-                            optional.of(string(body.results.map(e, e.createdDate).max()))
+                            optional.of(string(body.results.map(e, timestamp(e.createdDate)).max()))
                         )
                       :
                         optional.none()
@@ -146,9 +146,9 @@ program: |-
                       size(body.results) != 0 ?
                         (
                           has(state.?cursor.max_created_time) ?
-                            optional.of(string(max(state.cursor.max_created_time, body.results.map(e, e.createdDate).max())))
+                            optional.of(string(max(timestamp(state.cursor.max_created_time), body.results.map(e, timestamp(e.createdDate)).max())))
                           :
-                            optional.of(string(body.results.map(e, e.createdDate).max()))
+                            optional.of(string(body.results.map(e, timestamp(e.createdDate)).max()))
                         )
                       :
                         state.?cursor.max_created_time
@@ -222,9 +222,9 @@ program: |-
                       size(body.results) != 0 ?
                         (
                           has(state.?cursor.max_update_time) ?
-                            optional.of(string(max(state.cursor.max_update_time, body.results.map(e, e.lastModifiedTime).max())))
+                            optional.of(string(max(timestamp(state.cursor.max_update_time), body.results.map(e, timestamp(e.lastModifiedTime)).max())))
                           :
-                            optional.of(string(body.results.map(e, e.lastModifiedTime).max()))
+                            optional.of(string(body.results.map(e, timestamp(e.lastModifiedTime)).max()))
                         )
                       :
                         optional.none()
@@ -236,9 +236,9 @@ program: |-
                       size(body.results) != 0 ?
                         (
                           has(state.?cursor.max_update_time) ?
-                            optional.of(string(max(state.cursor.max_update_time, body.results.map(e, e.lastModifiedTime).max())))
+                            optional.of(string(max(timestamp(state.cursor.max_update_time), body.results.map(e, timestamp(e.lastModifiedTime)).max())))
                           :
-                            optional.of(string(body.results.map(e, e.lastModifiedTime).max()))
+                            optional.of(string(body.results.map(e, timestamp(e.lastModifiedTime)).max()))
                         )
                       :
                         state.?cursor.max_update_time

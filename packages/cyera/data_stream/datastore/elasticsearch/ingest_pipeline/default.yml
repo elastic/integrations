@@ -3,7 +3,7 @@ description: Pipeline for processing Datastore logs.
 processors:
   - drop:
       description: Ignore retry placeholder message.
-      if: ctx.message == "retry"
+      if: ctx.message == 'retry'
   - remove:
       field:
         - organization
@@ -385,6 +385,10 @@ processors:
       tag: set_cloud_provider_from_datastore_provider
       copy_from: cyera.datastore.provider
       ignore_empty_value: true
+  - lowercase:
+      field: cloud.provider
+      tag: lowercase_cloud_provider
+      ignore_missing: true
   - rename:
       field: json.publicAccessibilityState
       tag: rename_publicAccessibilityState
