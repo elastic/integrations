@@ -128,10 +128,17 @@ processors:
       tag: set_process_parent_entity_id
       value: '{{{process.parent.pid}}}'
       ignore_empty_value: true
+  - set:
+      field: process.name
+      tag: set_process_name_from_executable
+      copy_from: process.executable
+      if: ctx.process?.name == null
+      ignore_empty_value: true
   - script:
       lang: painless
       tag: set_process_name_from_command_line
       description: Set process.name from process.command_line.
+      if: ctx.process?.name == null
       source: |
         if (ctx.process == null) {
           ctx.process = [: ];
