@@ -86,7 +86,10 @@ The `statsd` input has these additional configuration options:
 3. `label[].attr`, required when using the label placeholder: Reference to the label placeholder defined in `metric`.
 4. `label[].field`, required when using the label placeholder field name where to save the label placeholder value from the template in the event JSON.
 
-**Important**: If the mapping is provided, only the mapped metrics will remain
+**Important**:
+- If the `statsd.mappings` is provided, only the metrics mentioned in it will remain.
+- If the `statsd.mappings` is provided, then flattening (replacing dots `.` with underscores `_` in metric names) is not applied.
+- If the `statsd.mappings` is NOT provided (default), then flattening is applied, e.g. `python.gauge.foo:10|g` becomes `python_gauge_foo:10|g`.
 
 ## Troubleshooting
 
@@ -105,12 +108,6 @@ echo "sample:1|g"  | nc -u -w0 localhost 8125
 ```
 
 ## Metrics reference
-
-### Flattening
-
-Sending these are equivalent, as any dots `.` are replaced with underscores `_` in metric names:
-1. `python.gauge.foo:10|g`
-2. `python_gauge_foo:10|g`
 
 ### Example document
 
