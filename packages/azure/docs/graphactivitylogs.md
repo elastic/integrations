@@ -6,9 +6,9 @@ Tenant administrators can configure the collection and storage destinations of M
 
 ## Requirements and Setup
 
-### Prerequisites
+### What do I need to use this integration?
 
-Following privileges are required to collect Microsoft Graph Activity Logs:
+The following privileges are required to collect Microsoft Graph Activity Logs:
 - A Microsoft Entra ID P1 or P2 tenant license in your tenant.
 - A `Security Administrator` or `Global Administrator` Microsoft Entra ID role to configure the diagnostic settings.
 Refer to [Microsoft Graph Prerequisites](https://learn.microsoft.com/en-us/graph/microsoft-graph-activity-logs-overview#prerequisites) for more information on required privileges.
