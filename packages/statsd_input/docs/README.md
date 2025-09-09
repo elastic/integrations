@@ -86,6 +86,8 @@ The `statsd` input has these additional configuration options:
 3. `label[].attr`, required when using the label placeholder: Reference to the label placeholder defined in `metric`.
 4. `label[].field`, required when using the label placeholder field name where to save the label placeholder value from the template in the event JSON.
 
+**Important**: If the mapping is provided, only the mapped metrics will remain
+
 ## Troubleshooting
 
 General troubleshooting checklist (detailed steps depend on the environment):
