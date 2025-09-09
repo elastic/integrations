@@ -65,113 +65,126 @@ redact:
 {{#if max_executions}}
 max_executions: {{max_executions}}
 {{/if}}
-program: |
-  state.with(get_request(
-    state.url.trim_right("/") + state.?cursor.next.orValue(
-      state.end_point_type + state.issues_id + "/issues?" + {
-        "version": [state.version],
-        // limit must be multiple of 10 for ... reasons; see spec. Always return a
-        // non-zero value, but otherwise do not ask for more than the user configured.
-        ?"limit":                    has(state.limit) ?
-                                       optional.of([string(max([1, int(state.limit)/10])*10)])
-                                     :
-                                       optional.none(),
-        ?"created_after":            (has(state.?cursor.last_created) && !has(state.?cursor.last_updated)) ?
-                                       optional.of([state.cursor.last_created])
-                                     : has(state.lookback) ?
-                                       optional.of([string(now-duration(state.lookback))])
-                                     :
-                                       optional.none(),
-        ?"effective_severity_level": state.?effective_severity_level,
-        ?"status":                   state.?status,
-        ?"type":                     state.?type,
-        ?"scan_item.id":             has(state.scan_item_id) ?
-                                       optional.of([state.scan_item_id])
-                                     :
-                                       optional.none(),
-        ?"scan_item.type":           state.?scan_item_type,
-        ?"ignored":                  state.?ignored,
-      }.format_query()
-    )
-  ).with({
-    "Header":{
-      "Accept":        ["application/vnd.api+json"],
-      "Authorization": ["Token " + state.api_token],
-    }
-  }).do_request().as(resp, resp.StatusCode != 200 ?
-    {
-      "events": {
-        "error": {
-          "code": string(resp.StatusCode),
-          "id": string(resp.Status),
-          "message": "GET:"+(
-            size(resp.Body) != 0 ?
-              string(resp.Body)
-            :
-              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-          ),
-        },
-      },
-      "want_more": false,
-    }
-  :
-    bytes(resp.Body).decode_json().as(body, !has(body.data) ?
+program: |-
+  state.with(
+    get_request(
+      state.url.trim_right("/") + state.?cursor.next.orValue(
+        state.end_point_type + state.issues_id + "/issues?" + {
+          "version": [state.version],
+          // limit must be multiple of 10 for ... reasons; see spec. Always return a
+          // non-zero value, but otherwise do not ask for more than the user configured.
+          ?"limit": has(state.limit) ?
+            optional.of([string(max([1, int(state.limit) / 10]) * 10)])
+          :
+            optional.none(),
+          ?"created_after": (has(state.?cursor.last_created) && !has(state.?cursor.last_updated)) ?
+            optional.of([state.cursor.last_created])
+          : has(state.lookback) ?
+            optional.of([string(now - duration(state.lookback))])
+          :
+            optional.none(),
+          ?"effective_severity_level": state.?effective_severity_level,
+          ?"status": state.?status,
+          ?"type": state.?type,
+          ?"scan_item.id": has(state.scan_item_id) ?
+            optional.of([state.scan_item_id])
+          :
+            optional.none(),
+          ?"scan_item.type": state.?scan_item_type,
+          ?"ignored": state.?ignored,
+        }.format_query()
+      )
+    ).with(
       {
-        "events":[],
+        "Header": {
+          "Accept": ["application/vnd.api+json"],
+          "Authorization": ["Token " + state.api_token],
+        },
+      }
+    ).do_request().as(resp, (resp.StatusCode != 200) ?
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:" + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
         "want_more": false,
       }
     :
-      {
-        "events": body.data.map(issue,
-          (
-            state.fetch_related_projects == false ||
-            issue.?relationships.scan_item.links.related.orValue("") == "" ||
-            issue.?relationships.scan_item.data.type.orValue("") != "project"
-          ) ?
-            // not activated or no link or not a project, don't enrich
-            issue
-          :
-            // use the link to enrich
-            issue.with({
-              "relationships": issue.relationships.with({
-                "scan_item": issue.relationships.scan_item.with({
-                  "data": issue.relationships.scan_item.data.with(
-                    get_request(
-                      state.url.trim_right("/") + "/rest" +
-                        issue.relationships.scan_item.links.related +
-                        "?" + { "version": [state.version] }.format_query()
-                    ).with({
-                      "Header":{
-                        "Accept":        ["application/vnd.api+json"],
-                        "Authorization": ["Token " + state.api_token],
-                      }
-                    }).do_request().as(resp, resp.StatusCode != 200 ?
-                      { "_enrich_error_message": "Status code "+string(resp.StatusCode)+" received while fetching "+issue.relationships.scan_item.links.related }
-                    :
-                      bytes(resp.Body).decode_json().as(body,
-                        body.?data.orValue({
-                          "_enrich_error_message": "No data received for "+issue.relationships.scan_item.links.related,
-                        })
-                      )
-                    )
-                  )
-                })
-              })
-            })
-        ).map(issue, {
-          "message": issue.encode_json(),
-        }),
-        "cursor": {
-          ?"next": body.?links.next,
-          // Always keep last created. This is our next periodic start point.
-          "last_created": body.data.map(d, has(d.?attributes.created_at),
-            timestamp(d.attributes.created_at)
-          ).as(times, size(times) == 0 ? state.?cursor.last_created.orValue(now) : times.max()),
-        },
-        "want_more": has(body.?links.next),
-      }
+      bytes(resp.Body).decode_json().as(body, !has(body.data) ?
+        {
+          "events": [],
+          "want_more": false,
+        }
+      :
+        {
+          "events": body.data.map(issue,
+            (
+              state.fetch_related_projects == false || issue.?relationships.scan_item.links.related.orValue("") == "" ||
+              issue.?relationships.scan_item.data.type.orValue("") != "project"
+            ) ?
+              // not activated or no link or not a project, don't enrich
+              issue
+            :
+              // use the link to enrich
+              issue.with(
+                {
+                  "relationships": issue.relationships.with(
+                    {
+                      "scan_item": issue.relationships.scan_item.with(
+                        {
+                          "data": issue.relationships.scan_item.data.with(
+                            get_request(
+                              state.url.trim_right("/") + "/rest" + issue.relationships.scan_item.links.related + "?" + {"version": [state.version]}.format_query()
+                            ).with(
+                              {
+                                "Header": {
+                                  "Accept": ["application/vnd.api+json"],
+                                  "Authorization": ["Token " + state.api_token],
+                                },
+                              }
+                            ).do_request().as(resp, (resp.StatusCode != 200) ?
+                              {"_enrich_error_message": "Status code " + string(resp.StatusCode) + " received while fetching " + issue.relationships.scan_item.links.related}
+                            :
+                              bytes(resp.Body).decode_json().as(body,
+                                body.?data.orValue(
+                                  {
+                                    "_enrich_error_message": "No data received for " + issue.relationships.scan_item.links.related,
+                                  }
+                                )
+                              )
+                            )
+                          ),
+                        }
+                      ),
+                    }
+                  ),
+                }
+              )
+          ).map(issue,
+            {
+              "message": issue.encode_json(),
+            }
+          ),
+          "cursor": {
+            ?"next": body.?links.next,
+            // Always keep last created. This is our next periodic start point.
+            "last_created": body.data.map(d, has(d.?attributes.created_at),
+              timestamp(d.attributes.created_at)
+            ).as(times, (size(times) == 0) ? state.?cursor.last_created.orValue(now) : times.max()),
+          },
+          "want_more": has(body.?links.next),
+        }
+      )
     )
-  ))
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
