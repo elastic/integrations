@@ -13,7 +13,7 @@ Once the Microsoft Entra ID application is registered, you can set up its creden
     - Navigate to `Certificates & Secrets` section.
     - Click `New client secret`, provide a description and create the new secret.
     - Note the `Value` which is required for setup of the integration.
-3. Add permissions to your registered application. Please see the [Office 365 Management API documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#specify-the-permissions-your-app-requires-to-access-the-office-365-management-apis) for more details.
+3. Add permissions to your registered application. Please refer to the [Office 365 Management API documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#specify-the-permissions-your-app-requires-to-access-the-office-365-management-apis) for more details.
     - Navigate to `API permissions` page and click `Add a permission`
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
