@@ -33,20 +33,14 @@ state:
   - {{s}}
 {{/each}}
 {{/if}}
-{{#if type}}
-  type:
-{{#each type as |t|}}
-  - {{t}}
-{{/each}}
+{{#if type_selection}}
+  type: {{type_selection}}
 {{/if}}
 {{#if scan_item_id}}
   scan_item_id: {{scan_item_id}}
 {{/if}}
-{{#if scan_item_type}}
-  scan_item_type:
-{{#each scan_item_type as |t|}}
-  - {{t}}
-{{/each}}
+{{#if scan_item_type_selection}}
+  scan_item_type: {{scan_item_type_selection}}
 {{/if}}
 {{#if ignored}}
   ignored: {{ignored}}
@@ -73,25 +67,18 @@ program: |-
           "version": [state.version],
           // limit must be multiple of 10 for ... reasons; see spec. Always return a
           // non-zero value, but otherwise do not ask for more than the user configured.
-          ?"limit": has(state.limit) ?
-            optional.of([string(max([1, int(state.limit) / 10]) * 10)])
-          :
-            optional.none(),
+          ?"limit": state.?limit.optMap(l, [string(max([1, int(l) / 10]) * 10)]),
           ?"created_after": (has(state.?cursor.last_created) && !has(state.?cursor.last_updated)) ?
             optional.of([state.cursor.last_created])
-          : has(state.lookback) ?
-            optional.of([string(now - duration(state.lookback))])
-          :
-            optional.none(),
-          ?"effective_severity_level": state.?effective_severity_level,
-          ?"status": state.?status,
-          ?"type": state.?type,
-          ?"scan_item.id": has(state.scan_item_id) ?
-            optional.of([state.scan_item_id])
-          :
-            optional.none(),
-          ?"scan_item.type": state.?scan_item_type,
-          ?"ignored": state.?ignored,
+          : state.?lookback.optMap(l,
+            [string(now - duration(l))]
+          ),
+          ?"effective_severity_level": state.?effective_severity_level.optMap(l, [l.join(",")]),
+          ?"status": state.?status.optMap(s, [s.join(",")]),
+          ?"type": state.?type.optMap(t, [t]),
+          ?"scan_item.id": state.?scan_item_id.optMap(id, [id]),
+          ?"scan_item.type": state.?scan_item_type.optMap(t, [t]),
+          ?"ignored": state.?ignored.optMap(i, [string(i)]),
         }.format_query()
       )
     ).with(
