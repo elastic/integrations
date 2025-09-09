@@ -8,7 +8,7 @@ set -e
 # The loop checks the output of 'rabbitmqctl status' for several possible indicators of readiness.
 # It breaks out of the loop once RabbitMQ is ready, otherwise it waits and retries.
 while true; do
-  if gosu rabbitmq rabbitmqctl status 2>&1 | grep -Eiq 'pid,|Pid|Status of node|RabbitMQ'; then
+  if gosu rabbitmq rabbitmqctl status 2>&1 | grep -Eiq 'pid|Status of node|RabbitMQ'; then
     break
   fi
   echo "Waiting for RabbitMQ to start..."
