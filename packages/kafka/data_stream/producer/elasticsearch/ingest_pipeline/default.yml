@@ -18,6 +18,19 @@ processors:
   - set:
       field: service.type
       value: kafka
+      
+  - grok:
+      field: "kafka.producer.mbean"
+      patterns:
+        - "client-id=(?<kafka_producer_client_id>[^,]+)"
+      if: "ctx.kafka?.producer?.mbean != null"
+      ignore_failure: true
+
+  - set:
+      field: "kafka.producer.client_id"
+      copy_from: "kafka_producer_client_id"
+      if: "ctx.kafka_producer_client_id != null"
+      ignore_failure: true
 
   # Add metric fingerprint list
   - script:
@@ -55,6 +68,10 @@ processors:
       ignore_failure: true
 
   # Cleanup
+  - remove:
+      field: kafka_producer_client_id
+      ignore_missing: true
+      
   - remove:
       field: kafka.producer.kafka_producer.last_applied_record_timestamp_epoch
       ignore_missing: true

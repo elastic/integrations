@@ -19,6 +19,19 @@ processors:
       field: service.type
       value: kafka
 
+  - grok:
+      field: "kafka.consumer.mbean"
+      patterns:
+        - "client-id=(?<kafka_consumer_client_id>[^,]+)"
+      if: "ctx.kafka?.consumer?.mbean != null"
+      ignore_failure: true
+
+  - set:
+      field: "kafka.consumer.client_id"
+      copy_from: "kafka_consumer_client_id"
+      if: "ctx.kafka_consumer_client_id != null"
+      ignore_failure: true
+
   # Add metric fingerprint list
   - script:
       lang: painless
@@ -55,6 +68,10 @@ processors:
       ignore_failure: true
 
   # Cleanup
+  - remove:
+      field: kafka_consumer_client_id
+      ignore_missing: true
+
   - remove:
       field: kafka.consumer.kafka_consumer.last_applied_record_timestamp_epoch
       ignore_missing: true

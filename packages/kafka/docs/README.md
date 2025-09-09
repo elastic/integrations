@@ -1654,6 +1654,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | kafka.broker.address | Broker advertised address | keyword |  |  |
 | kafka.broker.id | Broker id | long |  |  |
 | kafka.consumer.bytes_consumed | The average number of bytes consumed for a specific topic per second. | float | byte | gauge |
+| kafka.consumer.client_id |  | keyword |  |  |
 | kafka.consumer.fetch_rate | The minimum rate at which the consumer sends fetch requests to a broker. | float |  | gauge |
 | kafka.consumer.in.bytes_per_sec | The rate of bytes coming in to the consumer. | float | byte | gauge |
 | kafka.consumer.max_lag | The maximum consumer lag. | float |  | gauge |
@@ -1723,6 +1724,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | kafka.producer.available_buffer_bytes | The total amount of buffer memory. | float | byte | gauge |
 | kafka.producer.batch_size_avg | The average number of bytes sent. | float | byte | gauge |
 | kafka.producer.batch_size_max | The maximum number of bytes sent. | long | byte | gauge |
+| kafka.producer.client_id |  | keyword |  |  |
 | kafka.producer.io_wait | The producer I/O wait time. | float | nanos | gauge |
 | kafka.producer.mbean | Mbean that this event is related to. | keyword |  |  |
 | kafka.producer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
