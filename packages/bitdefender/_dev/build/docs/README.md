@@ -1,5 +1,7 @@
 # BitDefender Integration
 
+## Overview
+
 [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) supports SIEM integration using "push notifications", which are JSON messages sent via HTTP POST to a HTTP or HTTPS endpoint, which this integration can consume.
 
 This integration additionally provides:
@@ -10,9 +12,9 @@ This integration additionally provides:
 
 This allows you to search, observe and visualize the BitDefender GravityZone events through Elastic, trigger alerts and monitor the BitDefender GravityZone Push Notification service for state and errors.
 
-For more information about BitDefender GravityZone, refer to [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) and read the  [Public API - Push](https://www.bitdefender.com/business/support/en/77209-135318-push.html) documentation.
+For more information about BitDefender GravityZone, refer to [BitDefender GravityZone](https://www.bitdefender.com/business/products/security-products.html) and check the [Public API - Push](https://www.bitdefender.com/business/support/en/77209-135318-push.html) documentation.
 
-## Compatibility
+### Compatibility
 
 This integration supports BitDefender GravityZone, which is the business oriented product set sold by BitDefender.
 
@@ -24,19 +26,18 @@ The `jsonrpc` format is recommended default, but the ingest pipeline will attemp
 
 The integration can also collect the push notification configuration and statistics by polling the BitDefender GravityZone API.
 
-## Configuration
+## How do I deploy this integration?
 
 ### Enabling the integration in Elastic
 
-1. In Kibana go to **Management > Integrations**
-2. In "Search for integrations" search bar type **GravityZone**
+1. In Kibana go to **Management > Integrations**.
+2. In "Search for integrations" search bar type **GravityZone**.
 3. Click on "BitDefender GravityZone" integration from the search results.
 4. Click on **Add BitDefender GravityZone** button to add BitDefender GravityZone integration.
 
 ![Example Integration Configuration](../img/bitdefender-integration-configuration-1.png)
 
 ![Example Integration Configuration](../img/bitdefender-integration-configuration-2.png)
-
 
 ### Create a BitDefender GravityZone API key that can configure a push notification service
 
@@ -140,9 +141,9 @@ There are two dashboards available as part of the integration,
 
 ![Configuration State & Statistics Dashboard](./img/bitdefender-dashboard-push-config-and-stats.png)
 
-## Data Stream
+## Data stream
 
-### Log Stream Push Notifications
+### Log stream push notifications
 
 The BitDefender GravityZone events dataset provides events from BitDefender GravityZone push notifications that have been received.
 
@@ -152,7 +153,7 @@ All BitDefender GravityZone log events are available in the `bitdefender_gravity
 
 {{event "push_notifications"}}
 
-### Log Stream Push Notification Configuration
+### Log stream push notification configuration
 
 The BitDefender GravityZone push notification configuration dataset provides configuration state collected from the BitDefender GravityZone API.
 
@@ -164,7 +165,7 @@ All BitDefender GravityZone push notification configuration states are available
 
 {{event "push_configuration"}}
 
-### Log Stream Push Notification Statistics
+### Log stream push notification statistics
 
 The BitDefender GravityZone push notification statistics dataset provides statistics collected from the BitDefender GravityZone API.
 
