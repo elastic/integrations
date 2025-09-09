@@ -83,7 +83,7 @@ curl --location --request POST 'https://cloud.gravityzone.bitdefender.com/api/v1
   "method": "setPushEventSettings",
   "params": {
     "status": 1,
-    "serviceType": "jsonrpc",
+    "serviceType": "jsonRPC",
     "serviceSettings": {
       "authorization": "secret value",
       "requireValidSslCertificate": true,
