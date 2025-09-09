@@ -17,7 +17,7 @@ resource.url: {{url}}
 
 state:
   batch_size: {{batch_size}}
-  Offset: 0
+  offset: 0
   api_key: {{api_key}}
 redact:
   fields:
@@ -26,7 +26,7 @@ program: |
   state.url.trim_right("/").as(base_url, state.with(
     request("GET",
       base_url + "/api/external/v1/users?" + {
-        "Offset": [string(state.Offset)],
+        "Offset": [string(state.offset)],
         "Limit": [string(state.batch_size)],
         "SortBy": ["CreatedDate"],
         "SortDirection": ["Asc"],
@@ -40,9 +40,8 @@ program: |
         "events": body.users.map(e,{
           "message": e.encode_json(),
         }),
-        "batch_size": state.batch_size,
-        "Offset": body != null && body.users.size() > 0 ? int(state.Offset) + body.users.size() : 0,
-        "want_more": body != null && body.users.size() > 0,
+        "offset": body.?users[0].hasValue() ? int(state.offset) + body.users.size() : 0,
+        "want_more": body.?users[0].hasValue(),
       })
     :
       {
@@ -59,7 +58,7 @@ program: |
           },
         },
         "want_more": false,
-        "Offset": 0
+        "offset": 0
       }
     )
   ))

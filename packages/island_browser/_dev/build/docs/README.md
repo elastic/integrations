@@ -120,7 +120,7 @@ These inputs can be used in this integration:
 
 ### API usage
 
-This integration datasets use the following APIs:
+This integration dataset uses the following API:
 
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
