@@ -4,15 +4,16 @@ This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/
 
 ## Setup
 
-To use this package you need to [enable `Audit Log`](https://learn.microsoft.com/en-us/purview/audit-log-enable-disable) and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
+To use this integration you need to [enable `Audit Log`](https://learn.microsoft.com/en-us/purview/audit-log-enable-disable) and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
 
-Once the application is registered, configure and/or note the following to setup O365 Elastic integration:
-1. Note `Application (client) ID` and the `Directory (tenant) ID` in the registered application's `Overview` page.
-2. Create a new secret to configure the authentication of your application.
+Once the Microsoft Entra ID application is registered, you can set up its credentials and permissions, and gather the information needed by the Microsoft Office 365 Elastic integration, as follows:
+
+1. Note the `Application (client) ID` and `Directory (tenant) ID` in the registered application's `Overview` page.
+2. Create a new secret to configure the authentication of your application, as follows:
     - Navigate to `Certificates & Secrets` section.
-    - Click `New client secret` and provide some description to create new secret.
-    - Note the `Value` which is required for the integration setup.
-3. Add permissions to your registered application. Please check [O365 Management API permissions](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#specify-the-permissions-your-app-requires-to-access-the-office-365-management-apis) for more details.
+    - Click `New client secret`, provide a description and create the new secret.
+    - Note the `Value` which is required for setup of the integration.
+3. Add permissions to your registered application. Please refer to the [Office 365 Management API documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#specify-the-permissions-your-app-requires-to-access-the-office-365-management-apis) for more details.
     - Navigate to `API permissions` page and click `Add a permission`
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
@@ -20,6 +21,12 @@ Once the application is registered, configure and/or note the following to setup
     - Click `Add permissions`.
     - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
     - After the permissions are added, the admin has to grant consent for these permissions.
+
+The instructions above assume that you wish to collect data from your own tenant. If that is not the case, additional steps are required to obtain tenant admin consent for the required permissions. The API documenation describes [a method of gathering consent via redirect URLs](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#get-office-365-tenant-admin-consent), and other consent flows may be possible.
+
+### Troubleshooting
+
+In the case of a permissions issue, it can be useful to enable request tracing and look at request trace logs to inspect the interaction with the server. Token values can be decoded using [https://jwt.ms/](https://jwt.ms/), and should include a `roles` section with the configured permissions.
 
 ### Agentless Enabled Integration
 
