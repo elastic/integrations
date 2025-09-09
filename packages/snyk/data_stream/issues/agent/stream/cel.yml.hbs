@@ -68,8 +68,8 @@ program: |-
           // limit must be multiple of 10 for ... reasons; see spec. Always return a
           // non-zero value, but otherwise do not ask for more than the user configured.
           ?"limit": state.?limit.optMap(l, [string(max([1, int(l) / 10]) * 10)]),
-          ?"created_after": (has(state.?cursor.last_created) && !has(state.?cursor.last_updated)) ?
-            optional.of([state.cursor.last_created])
+          ?"updated_after": has(state.?cursor.last_updated) ?
+            optional.of([state.cursor.last_updated])
           : state.?lookback.optMap(l,
             [string(now - duration(l))]
           ),
@@ -162,10 +162,10 @@ program: |-
           ),
           "cursor": {
             ?"next": body.?links.next,
-            // Always keep last created. This is our next periodic start point.
-            "last_created": body.data.map(d, has(d.?attributes.created_at),
+            // Always keep last updated. This is our next periodic start point.
+            "last_updated": body.data.map(d, has(d.?attributes.created_at),
               timestamp(d.attributes.created_at)
-            ).as(times, (size(times) == 0) ? state.?cursor.last_created.orValue(now) : times.max()),
+            ).as(times, (size(times) == 0) ? state.?cursor.last_updated.orValue(now) : times.max()),
           },
           "want_more": has(body.?links.next),
         }
