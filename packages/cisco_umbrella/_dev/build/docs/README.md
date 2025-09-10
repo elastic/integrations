@@ -24,7 +24,7 @@ To start collecting logs from Cisco Umbrella, you need to configure an S3 bucket
 
 ### Umbrella
 
-When using Cisco Managed S3 buckets that do not use SQS, there is no load balancing for multiple agents. A single agent should be configured to poll the S3 bucket for new and updated files, and the number of workers can be configured to scale vertically.
+When using Cisco Managed S3 buckets that do not use SQS; there is no load balancing for multiple agents. A single agent should be configured to poll the S3 bucket for new and updated files, and the number of workers can be configured to scale vertically.
 
 The `log` dataset collects Cisco Umbrella logs.
 
