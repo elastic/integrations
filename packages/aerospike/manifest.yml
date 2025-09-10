@@ -1,0 +1,89 @@
+format_version: 3.4.1
+name: aerospike
+title: "Aerospike"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Aerospike integration"
+type: integration
+categories:
+  - datastore
+  - monitoring
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: Aerospike Metrics
+    title: Collect metrics from Aerospike instances
+    description: Collecting Aerospike status metrics
+    inputs:
+      - type: aerospike/metrics
+        title: Collect metrics from Aerospike instances
+        description: Collecting Aerospike status metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - 127.0.0.1:3000
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+            type: text
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #   ...
+              #    -----END CERTIFICATE-----
+          - name: username
+            type: text
+            title: Username
+            description: Username for authentication
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            secret: true
+            description: Password for authentication
+            multi: false
+            required: false
+            show_user: false
+          - name: auth_mode
+            type: text
+            title: Authentication Mode
+            description: Authentication mode for connecting to Aerospike internal (default), external, pki
+            multi: false
+            required: false
+            show_user: false
+
+owner:
+  github: elastic/integrations
+  type: elastic
