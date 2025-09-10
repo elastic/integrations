@@ -5,8 +5,24 @@ container-logs integration collects and parses logs of Kubernetes containers.
 It requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
-By default only {{ url "filebeat-input-filestream-parsers" "container parser" }} is enabled. Additional log parsers can be added as an advanced options configuration.
+By default, only [container parser](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers) is enabled. Additional log parsers can be added as an advanced options configuration.
 
+## Ingesting Rotated Container Logs
+```{applies_to}
+stack: beta 9.2.0
+```
+
+::::{warning}
+**Potential Data Duplication**: When you first add a path, the integration reads all existing files in that directory from the beginning. This action causes a one-time re-ingestion of all previously rotated logs, which results in duplicate data.
+::::
+
+The integration can monitor and ingest rotated Kubernetes container logs, including on-the-fly decompression of GZIP archives.
+
+To enable this, use the following configurations:
+* **Include rotated log files**: Set to `true`.
+* **Kubernetes container rotated log path**: Specify the path where rotated log files are stored.
+
+After this initial scan, the integration tracks its state and will only ingest new log data. Subsequent file rotations are handled correctly without further duplication.
 
 ## Rerouting and preserve original event based on pod annotations
 
@@ -20,7 +36,7 @@ Customization can happen at:
 
 ### Set at pod definition time
 
-Here is an example of an Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
+Here is an example of a Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
 
 ```yaml
 # nginx-deployment.yaml

@@ -6,20 +6,6 @@ streams:
     title: Collect Kubernetes container logs
     description: Collect Kubernetes container logs
     vars:
-      - name: paths
-        type: text
-        required: true
-        title: Kubernetes container log path
-        multi: true
-        default:
-          - /var/log/containers/*${kubernetes.container.id}.log
-        description: >-
-          For every container the Elastic-Agent can see (usually every
-          container on the node) an instance of the input will be
-          created harvesting all paths defined here, even if 
-          the paths contain no variable! Refer to the [integration
-          documentation](https://www.elastic.co/guide/en/integrations/current/kubernetes.html)
-          for more details.
       - name: symlinks
         type: bool
         title: Use Symlinks
@@ -33,8 +19,49 @@ streams:
         title: Dataset name
         description: >
           Set the name for your dataset. Changing the dataset will send the data to a different index. For more info look at [data_stream field](https://www.elastic.co/guide/en/ecs/master/ecs-data_stream.html).
-
         type: text
+
+      - name: paths
+        type: text
+        required: true
+        show_user: false
+        title: Kubernetes container log path
+        multi: true
+        default:
+          - /var/log/containers/*${kubernetes.container.id}.log
+        description: >-
+          For every container the Elastic-Agent can see (usually every
+          container on the node) an instance of the input will be
+          created harvesting all paths defined here, even if 
+          the paths contain no variable! Refer to the [integration
+          documentation](https://www.elastic.co/guide/en/integrations/current/kubernetes.html)
+          for more details.
+
+      - name: rotated_logs
+        type: bool
+        title: Include rotated log files
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: |
+          Warning: it might lead to data re-ingestion. When enabled, Elastic-Agent will also ingest the rotated log files for each pod, including GZIP-compressed files (.gz), decompressing them as they are read. This is beta feature. For full details about GZIP decompression, see the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream#reading-gzip-files). Available for Elastic Agent 9.2.0 and newer.
+      - name: rotated_logs_paths
+        type: text
+        required: true
+        show_user: false
+        title: Kubernetes container rotated log path
+        multi: true
+        default:
+          - /var/log/pods/${kubernetes.namespace}_${kubernetes.pod.name}_${kubernetes.pod.uid}/${kubernetes.container.name}/*.log.*
+        description: >-
+          For every container the Elastic-Agent can see (usually every
+          container on the node) an instance of the input will be
+          created harvesting all paths defined here, even if 
+          the paths contain no variable! Refer to the [integration
+          documentation](https://www.elastic.co/guide/en/integrations/current/kubernetes.html)
+          for more details.
+
       - name: containerParserStream
         type: text
         title: Container parser's stream configuration
