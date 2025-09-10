@@ -30,14 +30,14 @@ processors:
       if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.level != null"
   - set:
       field: message
-      value: "{{rabbitmq.log.json.message}}"
-      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.message != null"
+      value: "{{rabbitmq.log.json.msg}}"
+      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.msg != null"
   - date:
-      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.timestamp != null"
-      field: rabbitmq.log.json.timestamp
+      if: "ctx.rabbitmq?.log?.json != null && ctx.rabbitmq.log.json.time != null"
+      field: rabbitmq.log.json.time
       target_field: "@timestamp"
       formats:
-        - ISO8601
+        - yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
   # If not JSON, fall back to text parsing
   - rename:
       field: message
