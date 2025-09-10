@@ -16,7 +16,7 @@ processors:
       (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}"
     - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{DATA:process.name}(?:\\[%{POSINT:process.pid:long}\\])?\\:
       %{GREEDYDATA:message}"
-    - "<%{NONNEGINT:log.syslog.priority:long}>%{INT} %{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}%{SPACE}(%{POSINT:process.pid:long}|-)( -)?%{SPACE}%{GREEDYDATA:message}"
+    - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}%{SPACE}(%{POSINT:process.pid:long}|-)( -)?%{SPACE}%{GREEDYDATA:message}"
     - "^ \\(%{TIMESTAMP_ISO8601:_tmp.timestamp} %{GREEDYDATA:message}\\)%{GREEDYDATA:_tmp.drop}"
     pattern_definitions:
       ECS_SYSLOG_PRIORITY: "<%{NONNEGINT:log.syslog.priority:long}>(\\d )?"
