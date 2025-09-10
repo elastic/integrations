@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -96,14 +100,14 @@ processors:
       ignore_empty_value: true
   - gsub:
       field: file.path
-      pattern: "\\\\"
-      replacement: "/"
+      pattern: '\\'
+      replacement: '/'
       ignore_failure: true
   - split:
       field: file.path
-      separator: "\\/"
+      separator: '/'
       target_field: file.name
-      if: ctx?.file?.path != null
+      if: ctx.file?.path != null
       ignore_failure: true
   - script:
       tag: script_file_name
@@ -111,7 +115,7 @@ processors:
       lang: painless
       source: |
         ctx.file.name = ctx.file.name[ctx.file.name.length-1];
-      if: 'ctx?.file?.name !=null && ctx?.file?.name.length > 1'
+      if: ctx.file?.name instanceof List && ctx.file.name.length > 0
   - rename:
       field: json.hostname
       tag: rename_hostname
@@ -286,10 +290,8 @@ processors:
         "16": "Blocklist Browser Execution"
         "17": "Trusted Installer Execution"
         "18": "Trusted Browser Metadata Execution"
+      if: ctx.json?.type != null && ctx.json.type != ''
       source: |-
-        if (ctx.json?.type == null || ctx.json.type == '') {
-          return;
-        }
         ctx.airlock_digital.execution_histories.type_value = params[(ctx.json.type).toString()];
   - rename:
       field: json.username

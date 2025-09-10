@@ -8,7 +8,7 @@ The Airlock Digital integration for Elastic allows you to collect logs from, [Ai
 
 ### Compatibility
 
-The Airlock Digital integration is compatible with `v6.1.x` and `v1` version of Airlock Digital REST API.
+The Airlock Digital integration is compatible with version `v6.1.x` of Airlock Digital and `v1` of the REST API.
 
 ### How it works
 
@@ -241,7 +241,7 @@ These inputs can be used in this integration:
 
 ### API usage
 
-This integration datasets use the following APIs:
+These integration datasets use the following API:
 
 - `Execution Histories`: [Airlock Digital REST API](https://api.airlockdigital.com/#3634a82d-eb6b-44b7-b662-dddc37d4d9d6). Supported execution types are:
     - Trusted Execution
