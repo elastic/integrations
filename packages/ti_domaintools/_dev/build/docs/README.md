@@ -84,3 +84,14 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 {{event "domainrdap_feed"}}
 
 {{fields "domainrdap_feed"}}
+
+### Domain Risk Feed
+
+The `domainrisk_feed` data stream provides events from [DomainTools Domain Risk](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
+
+#### Example
+
+{{event "domainrisk_feed"}}
+
+{{fields "domainrisk_feed"}}
