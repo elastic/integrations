@@ -65,11 +65,6 @@ processors:
       tag: rename_account_platform
       target_field: cyera.event.account.platform
       ignore_missing: true
-  - set:
-      field: cloud.provider
-      tag: set_cloud_provider_from_event_account_platform
-      copy_from: cyera.event.account.platform
-      ignore_empty_value: true
   - rename:
       field: json.account.uid
       tag: rename_account_uid
@@ -197,12 +192,11 @@ processors:
       tag: rename_cloudProvider
       target_field: cyera.event.cloud_provider
       ignore_missing: true
-  - append:
+  - set:
       field: cloud.provider
-      tag: append_cyera_event_cloud_provider_into_cloud_provider
-      value: '{{{cyera.event.cloud_provider}}}'
-      allow_duplicates: false
-      if: ctx.cyera?.event?.cloud_provider != null
+      tag: set_cloud_provider_from_event_cloud_provider
+      copy_from: cyera.event.cloud_provider
+      ignore_empty_value: true
   - rename:
       field: json.datastore.dataOwner
       tag: rename_datastore_dataOwner
@@ -614,7 +608,6 @@ processors:
   - remove:
       field:
         - cyera.event.account.name
-        - cyera.event.account.platform
         - cyera.event.account.uid
         - cyera.event.cloud_provider
         - cyera.event.datastore.infrastructure
