@@ -1709,12 +1709,8 @@ processors:
       tag: set_process_name_from_command_line
       description: Set process.name from process.command_line.
       source: |
-        if (ctx.process == null) {
-          ctx.process = [: ];
-        }
-        if (ctx.process.name == null) {
-          ctx.process.name = [];
-        }
+        ctx.process = ctx.process ?: [:];
+        ctx.process.name = ctx.process.name ?: [];
         // Normalize process.name to a list
         def nameList = [];
         if (ctx.process.name != null) {
