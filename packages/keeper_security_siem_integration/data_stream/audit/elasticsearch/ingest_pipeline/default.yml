@@ -17,6 +17,7 @@ processors:
   - set:
       field: event.kind
       value: event
+
   - set:
       field: event.category
       value: ["authentication", "web"]
@@ -45,32 +46,31 @@ processors:
         - append:
             field: error.message
             value: "Failed to parse timestamp: {{{keeper.timestamp}}}"
-
-  # If no keeper.timestamp, try to use existing @timestamp or set current time
+ 
   - set:
       field: '@timestamp'
       value: "{{_ingest.timestamp}}"
       if: ctx['@timestamp'] == null
+      description: "If no keeper.timestamp, try to use existing @timestamp or set current time"
 
-  # Set user information from username
   - set:
       field: user.name
       value: "{{username}}"
       if: ctx.username != null
-  
-  # If username looks like email, set user.email
+      description: "Set user name from username"
+
   - set:
       field: user.email  
       value: "{{username}}"
       if: ctx.username != null && ctx.username.contains("@")
+      description: "If username looks like email, set user.email"
 
-  # Set source IP from remote_address
   - set:
       field: source.ip
       value: "{{remote_address}}"
       if: ctx.remote_address != null
+      description: "Set source IP from remote_address"
 
-  # GeoIP enrichment -> ECS source.geo.*
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -78,27 +78,29 @@ processors:
         - append:
             field: error.message
             value: "GeoIP lookup failed for source.ip={{{source.ip}}}"
+      description: "GeoIP enrichment -> ECS source.geo.*"
 
-  # Set event action from audit_event
   - set:
       field: event.action
       value: "{{{audit_event}}}"
       if: ctx.audit_event != null
+      description: "Set event action from audit_event"
 
-  # Convert enterprise_id to organization fields
   - convert:
       field: enterprise_id
       type: string
       target_field: organization.id
       ignore_missing: true
       ignore_failure: true
-
-  # Set user agent from client_version
+      description: "Convert enterprise_id to organization fields"
+  
   - set:
       field: user_agent.original
       value: "Keeper/{{client_version}}"
       if: ctx.client_version != null
+      description: "Set user agent from client_version"
 
+      
   # Build related fields for correlation
   - append:
       field: related.user
@@ -123,10 +125,10 @@ processors:
       value: "failure"
       if: ctx.keeper?.category != null && ctx.keeper.category.contains("fail")
 
-  # Clean up - remove original timestamp to avoid confusion
   - remove:
       field: timestamp
       ignore_missing: true
+      description: "Clean up - remove original timestamp to avoid confusion"
 
 on_failure:
   - append:
