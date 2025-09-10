@@ -673,33 +673,34 @@ An example event for `domainhotlist_feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-10T17:13:16.748Z",
+    "@timestamp": "2025-09-10T18:07:38.822Z",
     "agent": {
-        "ephemeral_id": "4c3bec09-a0dc-44b4-8dd6-40fbaa915536",
-        "id": "b2456514-4b1d-41a2-9c43-fa3f1d2c309a",
-        "name": "elastic-agent-66378",
+        "ephemeral_id": "34f993bb-815c-4e8d-a9dc-1687d054c5c3",
+        "id": "d08bb0b1-0ff4-4bf1-a052-817d260c66e8",
+        "name": "elastic-agent-24406",
         "type": "filebeat",
         "version": "8.18.2"
     },
     "data_stream": {
-        "dataset": "ti_domaintools.domainrisk_feed",
-        "namespace": "89484",
+        "dataset": "ti_domaintools.domainhotlist_feed",
+        "namespace": "61981",
         "type": "logs"
     },
     "domaintools": {
-        "domain": "bathroom-remodeling-65908.bond",
+        "domain": "axrszo1ibm.click",
+        "expires": "2025-09-07T22:57:35Z",
         "malware_risk": 99,
         "overall_risk": 100,
         "phishing_risk": 99,
         "proximity_risk": 100,
-        "spam_risk": 77,
-        "timestamp": "2025-09-06T23:08:07Z"
+        "spam_risk": 99,
+        "timestamp": "2025-09-06T23:00:08Z"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "b2456514-4b1d-41a2-9c43-fa3f1d2c309a",
+        "id": "d08bb0b1-0ff4-4bf1-a052-817d260c66e8",
         "snapshot": false,
         "version": "8.18.2"
     },
@@ -708,8 +709,8 @@ An example event for `domainhotlist_feed` looks as following:
         "category": [
             "threat"
         ],
-        "dataset": "ti_domaintools.domainrisk_feed",
-        "ingested": "2025-09-10T17:13:19Z",
+        "dataset": "ti_domaintools.domainhotlist_feed",
+        "ingested": "2025-09-10T18:07:41Z",
         "kind": "enrichment",
         "type": [
             "indicator"
@@ -718,16 +719,16 @@ An example event for `domainhotlist_feed` looks as following:
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-66378",
+        "hostname": "elastic-agent-24406",
         "ip": [
             "172.24.0.2",
-            "172.18.0.5"
+            "172.18.0.7"
         ],
         "mac": [
-            "2A-6D-82-23-5E-4E",
-            "7E-AE-D2-7C-35-FB"
+            "32-58-91-83-8C-59",
+            "A6-55-24-A2-B7-F9"
         ],
-        "name": "elastic-agent-66378",
+        "name": "elastic-agent-24406",
         "os": {
             "family": "",
             "kernel": "6.10.14-linuxkit",
@@ -742,7 +743,7 @@ An example event for `domainhotlist_feed` looks as following:
     },
     "threat": {
         "indicator": {
-            "name": "bathroom-remodeling-65908.bond",
+            "name": "axrszo1ibm.click",
             "type": "domain-name"
         }
     }
