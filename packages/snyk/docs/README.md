@@ -295,6 +295,9 @@ An example event for `issues` looks as following:
 | snyk.issues.attributes.coordinates.resourcePath |  | keyword |
 | snyk.issues.attributes.created_at |  | date |
 | snyk.issues.attributes.effective_severity_level | The type from enumeration of the issue’s severity level: info, low, medium, high or critical. This is usually set from the issue’s producer, but can be overridden by policies. | keyword |
+| snyk.issues.attributes.exploit_details.maturity_levels.format |  | keyword |
+| snyk.issues.attributes.exploit_details.maturity_levels.level |  | keyword |
+| snyk.issues.attributes.exploit_details.sources |  | keyword |
 | snyk.issues.attributes.ignored |  | boolean |
 | snyk.issues.attributes.key |  | keyword |
 | snyk.issues.attributes.problems.disclosed_at | When this problem was disclosed to the public. | date |
@@ -307,6 +310,12 @@ An example event for `issues` looks as following:
 | snyk.issues.attributes.risk.score.model | Risk scoring model used to calculate the score value. | keyword |
 | snyk.issues.attributes.risk.score.updated_at |  | date |
 | snyk.issues.attributes.risk.score.value | Risk score value, which may be used for overall prioritization. | long |
+| snyk.issues.attributes.severities.level |  | keyword |
+| snyk.issues.attributes.severities.modification_time |  | keyword |
+| snyk.issues.attributes.severities.score |  | double |
+| snyk.issues.attributes.severities.source |  | keyword |
+| snyk.issues.attributes.severities.vector |  | keyword |
+| snyk.issues.attributes.severities.version |  | keyword |
 | snyk.issues.attributes.status | An issue's status: open or resolved. | keyword |
 | snyk.issues.attributes.title |  | keyword |
 | snyk.issues.attributes.type |  | keyword |
@@ -315,7 +324,59 @@ An example event for `issues` looks as following:
 | snyk.issues.relationships.organization.data.id |  | keyword |
 | snyk.issues.relationships.organization.data.type |  | keyword |
 | snyk.issues.relationships.organization.links.related |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.build_args.root_workspace |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.business_criticality |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.created |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.environment |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.lifecycle |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.name |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.origin |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.read_only |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_dependency_upgrade.ignored_dependencies |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_dependency_upgrade.is_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_dependency_upgrade.is_inherited |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_dependency_upgrade.is_major_upgrade_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_dependency_upgrade.limit |  | long |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_dependency_upgrade.minimum_age |  | long |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_remediation_prs.is_backlog_prs_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_remediation_prs.is_fresh_prs_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.auto_remediation_prs.is_patch_remediation_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.manual_remediation_prs.is_patch_remediation_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.pull_request_assignment.assignees |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.settings.pull_request_assignment.is_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.pull_request_assignment.type |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.settings.pull_requests.fail_only_for_issues_with_fix |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.pull_requests.is_enabled |  | boolean |
+| snyk.issues.relationships.scan_item.data.attributes.settings.pull_requests.policy |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.settings.pull_requests.severity_threshold |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.settings.recurring_tests.frequency |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.status |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.tags |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.target_file |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.target_reference |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.target_runtime |  | keyword |
+| snyk.issues.relationships.scan_item.data.attributes.type |  | keyword |
 | snyk.issues.relationships.scan_item.data.id |  | keyword |
+| snyk.issues.relationships.scan_item.data.meta.cli_monitored_at |  | date |
+| snyk.issues.relationships.scan_item.data.meta.latest_dependency_total.total |  | long |
+| snyk.issues.relationships.scan_item.data.meta.latest_dependency_total.updated_at |  | date |
+| snyk.issues.relationships.scan_item.data.meta.latest_issue_counts.critical |  | long |
+| snyk.issues.relationships.scan_item.data.meta.latest_issue_counts.high |  | long |
+| snyk.issues.relationships.scan_item.data.meta.latest_issue_counts.low |  | long |
+| snyk.issues.relationships.scan_item.data.meta.latest_issue_counts.medium |  | long |
+| snyk.issues.relationships.scan_item.data.meta.latest_issue_counts.updated_at |  | date |
+| snyk.issues.relationships.scan_item.data.relationships.importer.data.id |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.importer.data.type |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.importer.links.related.href |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.organization.data.id |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.organization.data.type |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.organization.links.related.href |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.owner.data.id |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.owner.data.type |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.owner.links.related.href |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.target.data.id |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.target.data.type |  | keyword |
+| snyk.issues.relationships.scan_item.data.relationships.target.links.related.href |  | keyword |
 | snyk.issues.relationships.scan_item.data.type |  | keyword |
 | snyk.issues.relationships.scan_item.links.related |  | keyword |
 | snyk.projects | Array with all related projects objects. | flattened |

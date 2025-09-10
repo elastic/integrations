@@ -33,7 +33,7 @@ program: |
       state.?cursor.host_last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))
   ).as(start_time, state.with(
       request("GET", state.url.trim_right("/") + "/api/" + string(state.version) + "/events/entity_scoring?" + {
-        "from": [string(state.?from.orValue(0))],
+        "from": [string(int(state.?from.orValue(0)))],
         "limit": [string(state.batch_size)],
         "event_timestamp_gte": [start_time],
         "type": [state.type],
@@ -42,8 +42,8 @@ program: |
             "events": body.events.map(e, {
               "message": e.encode_json(),
             }),
-            "want_more": int(body.remaining_count) > 0,
-            "from": int(body.next_checkpoint),
+            "want_more": has(body.remaining_count) && int(body.remaining_count) > 0,
+            "from": body.?next_checkpoint.orValue(null),
             "start_time": start_time,
             "cursor": {
               ?"host_last_timestamp": (has(body.events) && size(body.events) > 0 && state.type == "host") ?

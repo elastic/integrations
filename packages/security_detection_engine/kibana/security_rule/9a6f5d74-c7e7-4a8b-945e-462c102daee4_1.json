@@ -1,0 +1,102 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "The kubeconfig file is a critical component in Kubernetes environments, containing configuration details for accessing and managing Kubernetes clusters. Attackers may attempt to get access to, create, or modify kubeconfig files to gain unauthorized initial access to Kubernetes clusters or move laterally within the cluster. This rule detects process discovery executions that involve kubeconfig files, particularly those executed from common shell environments or world-writeable directories.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Kubeconfig File Discovery",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and (\n  process.parent.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") or\n  (\n    process.parent.executable like (\"/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/root/*\", \"/home/*\") or\n    process.parent.name like (\".*\", \"*.sh\")\n  )\n) and\n(\n  (\n    process.working_directory like (\"/etc/kubernetes\", \"/root/.kube\", \"/home/*/.kube\") and\n    process.args in (\"kubeconfig\", \"admin.conf\", \"super-admin.conf\", \"kubelet.conf\", \"controller-manager.conf\", \"scheduler.conf\")\n  ) or\n  process.args like (\n    \"/etc/kubernetes/admin.conf\",\n    \"/etc/kubernetes/super-admin.conf\",\n    \"/etc/kubernetes/kubelet.conf\",\n    \"/etc/kubernetes/controller-manager.conf\",\n    \"/etc/kubernetes/scheduler.conf\",\n    \"/home/*/.kube/config\",\n    \"/root/.kube/config\",\n    \"/var/lib/*/kubeconfig\"\n  )\n) and not process.name in (\"stat\", \"md5sum\", \"dirname\")\n",
+        "references": [
+            "https://kubernetes-threat-matrix.redguard.ch/initial-access/kubeconfig-file/",
+            "https://kubenomicon.com/Initial_access/Kubeconfig_file.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "9a6f5d74-c7e7-4a8b-945e-462c102daee4",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Container",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "9a6f5d74-c7e7-4a8b-945e-462c102daee4_1",
+    "type": "security-rule"
+}

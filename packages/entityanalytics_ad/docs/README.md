@@ -2,11 +2,18 @@
 
 This Active Directory Entity Analytics integration allows users to securely stream User Entities data to Elastic Security via the Active Directory LDAP look-ups. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for risk-scoring scenarios (e.g., context enrichments) and detecting advanced analytics (UBA) use cases.
 
+## Upgrading to v0.15.0 from v0.14 and lower of the integration
+
+In v0.15.0 of the integration the user and device data was split into separate data streams. The data ingested into your index will be the same but you may need to update device searches if you were using them.
+
+**NOTE**: When you upgrade from a version prior to v0.15.0 you will need to reconfigure the integration and enable it due to internal changes in the package. See [Resolve conflicts](https://www.elastic.co/guide/en/fleet/current/upgrade-integration.html#resolve-conflicts) in the Fleet documentation for details.
+
 ## Data streams
 
 The Active Directory Entity Analytics integration collects one type of data: user.
 
 - **User** is used to retrieve all user entries available from an Active Directory server.
+- **Device** is used to retrieve all device logs available from an Active Directory server.
 
 ## Requirements
 
@@ -33,77 +40,79 @@ The Active Directory provider periodically contacts the server, retrieving updat
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users during that event. Changes on a user can come in many forms, whether it be a change to the user’s metadata, or a user was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
+## Sample Events
+
+A user document:
+
+```json
+{
+    "@timestamp": "2024-02-05T06:37:40.876026-05:00",
+    "event": {
+        "action": "user-discovered",
+    },
+    "activedirectory": {
+        "id": "CN=Guest,CN=Users,DC=testserver,DC=local",
+        "user": {
+            "accountExpires": "2185-07-21T23:34:33.709551516Z",
+            "badPasswordTime": "0",
+            "badPwdCount": "0",
+            "cn": "Guest",
+            "codePage": "0",
+            "countryCode": "0",
+            "dSCorePropagationData": [
+                "2024-01-22T06:37:40Z",
+                "1601-01-01T00:00:01Z"
+            ],
+            "description": "Built-in account for guest access to the computer/domain",
+            "distinguishedName": "CN=Guest,CN=Users,DC=testserver,DC=local",
+            "instanceType": "4",
+            "isCriticalSystemObject": true,
+            "lastLogoff": "0",
+            "lastLogon": "2185-07-21T23:34:33.709551616Z",
+            "logonCount": "0",
+            "memberOf": "CN=Guests,CN=Builtin,DC=testserver,DC=local",
+            "name": "Guest",
+            "objectCategory": "CN=Person,CN=Schema,CN=Configuration,DC=testserver,DC=local",
+            "objectClass": [
+                "top",
+                "person",
+                "organizationalPerson",
+                "user"
+            ],
+            "objectGUID": "hSt/40XJQU6cf+J2XoYMHw==",
+            "objectSid": "AQUAAAAAAAUVAAAA0JU2Fq1k30YZ7UPx9QEAAA==",
+            "primaryGroupID": "514",
+            "pwdLastSet": "2185-07-21T23:34:33.709551616Z",
+            "sAMAccountName": "Guest",
+            "sAMAccountType": "805306368",
+            "uSNChanged": "8197",
+            "uSNCreated": "8197",
+            "userAccountControl": "66082",
+            "whenChanged": "2024-01-22T06:36:59Z",
+            "whenCreated": "2024-01-22T06:36:59Z"
+        },
+        "whenChanged": "2024-01-22T06:36:59Z"
+    },
+    "user": {
+        "id": "CN=Guest,CN=Users,DC=testserver,DC=local"
+    },
+    "labels": {
+        "identity_source": "activedirectory-1"
+    }
+}
+```
+
 ## Logs reference
 
 ### User
 
 This is the `User` dataset.
 
-#### Example
-
-An example event for `user` looks as following:
-
-```json
-{
-    "@timestamp": "2024-04-02T02:44:08.198Z",
-    "agent": {
-        "ephemeral_id": "c8f2cffa-8316-41a2-8ad6-89ef2f3ecd2b",
-        "id": "277a9e26-8aae-4bc6-abcc-21db22ad29d7",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.13.0"
-    },
-    "asset": {
-        "category": "entity",
-        "type": "activedirectory_user"
-    },
-    "data_stream": {
-        "dataset": "entityanalytics_ad.user",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "277a9e26-8aae-4bc6-abcc-21db22ad29d7",
-        "snapshot": false,
-        "version": "8.13.0"
-    },
-    "event": {
-        "action": "started",
-        "agent_id_status": "verified",
-        "category": [
-            "iam"
-        ],
-        "dataset": "entityanalytics_ad.user",
-        "ingested": "2024-04-02T02:44:20Z",
-        "kind": "asset",
-        "start": "2024-04-02T02:44:08.198Z",
-        "type": [
-            "info"
-        ]
-    },
-    "input": {
-        "type": "entity-analytics"
-    },
-    "labels": {
-        "identity_source": "entity-analytics-entityanalytics_ad.user-2270bd23-5392-4185-959b-b01ac2b8d89a"
-    },
-    "tags": [
-        "users-entities",
-        "preserve_duplicate_custom_fields",
-        "forwarded",
-        "entityanalytics_ad-user"
-    ]
-}
-```
-
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | asset.category |  | keyword |
 | asset.costCenter |  | keyword |
 | asset.create_date |  | date |
@@ -115,9 +124,9 @@ An example event for `user` looks as following:
 | asset.status |  | keyword |
 | asset.type |  | keyword |
 | asset.vendor |  | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | entityanalytics_ad.groups.admin_count |  | keyword |
 | entityanalytics_ad.groups.cn |  | keyword |
 | entityanalytics_ad.groups.description |  | keyword |
@@ -190,8 +199,137 @@ An example event for `user` looks as following:
 | entityanalytics_ad.user.when_changed |  | date |
 | entityanalytics_ad.user.when_created |  | date |
 | entityanalytics_ad.when_changed |  | date |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.identity_source |  | keyword |
+| user.account.activated_date |  | date |
+| user.account.change_date |  | date |
+| user.account.create_date |  | date |
+| user.account.password_change_date |  | date |
+| user.account.status.deprovisioned |  | boolean |
+| user.account.status.locked_out |  | boolean |
+| user.account.status.password_expired |  | boolean |
+| user.account.status.recovery |  | boolean |
+| user.account.status.suspended |  | boolean |
+| user.geo.city_name |  | keyword |
+| user.geo.country_iso_code |  | keyword |
+| user.geo.name |  | keyword |
+| user.geo.postal_code |  | keyword |
+| user.geo.region_name |  | keyword |
+| user.geo.timezone |  | keyword |
+| user.organization.name |  | keyword |
+| user.profile.department |  | keyword |
+| user.profile.first_name |  | keyword |
+| user.profile.id |  | keyword |
+| user.profile.job_title |  | keyword |
+| user.profile.last_name |  | keyword |
+| user.profile.manager |  | keyword |
+| user.profile.mobile_phone |  | keyword |
+| user.profile.other_identities |  | keyword |
+| user.profile.primaryPhone |  | keyword |
+| user.profile.secondEmail |  | keyword |
+| user.profile.status |  | keyword |
+| user.profile.type |  | keyword |
+
+
+### Device
+
+This is the `Device` dataset.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| asset.category |  | keyword |
+| asset.costCenter |  | keyword |
+| asset.create_date |  | date |
+| asset.id |  | keyword |
+| asset.last_seen |  | date |
+| asset.last_status_change_date |  | date |
+| asset.last_updated |  | date |
+| asset.name |  | keyword |
+| asset.status |  | keyword |
+| asset.type |  | keyword |
+| asset.vendor |  | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| entityanalytics_ad.device.account_expires |  | keyword |
+| entityanalytics_ad.device.account_never_expires | True if the account is set to never expire. | boolean |
+| entityanalytics_ad.device.admin_count |  | keyword |
+| entityanalytics_ad.device.bad_password_time |  | keyword |
+| entityanalytics_ad.device.bad_pwd_count |  | keyword |
+| entityanalytics_ad.device.cn |  | keyword |
+| entityanalytics_ad.device.code_page |  | keyword |
+| entityanalytics_ad.device.constrained_delegation | True if the account is trusted for constrained delegation. | boolean |
+| entityanalytics_ad.device.country_code |  | keyword |
+| entityanalytics_ad.device.description |  | keyword |
+| entityanalytics_ad.device.distinguished_name |  | keyword |
+| entityanalytics_ad.device.dont_require_preauth | True if the account does not require Kerberos pre-authentication. | boolean |
+| entityanalytics_ad.device.ds_core_propagation_data |  | date |
+| entityanalytics_ad.device.enabled | If the account is enabled. | boolean |
+| entityanalytics_ad.device.instance_type |  | keyword |
+| entityanalytics_ad.device.is_critical_system_object |  | boolean |
+| entityanalytics_ad.device.last_logoff |  | keyword |
+| entityanalytics_ad.device.last_logon |  | date |
+| entityanalytics_ad.device.last_logon_timestamp |  | date |
+| entityanalytics_ad.device.locked | True if the account is locked out. | boolean |
+| entityanalytics_ad.device.logon_count |  | keyword |
+| entityanalytics_ad.device.logon_script_enabled | True if a logon script is configured for the account. | boolean |
+| entityanalytics_ad.device.member_of |  | keyword |
+| entityanalytics_ad.device.msDS-\* |  | keyword |
+| entityanalytics_ad.device.name |  | keyword |
+| entityanalytics_ad.device.object_category |  | keyword |
+| entityanalytics_ad.device.object_class |  | keyword |
+| entityanalytics_ad.device.object_dn |  | keyword |
+| entityanalytics_ad.device.object_guid |  | keyword |
+| entityanalytics_ad.device.object_sid |  | keyword |
+| entityanalytics_ad.device.password_not_required | True if the account does not require a password. | boolean |
+| entityanalytics_ad.device.primary_group_id |  | keyword |
+| entityanalytics_ad.device.privileged_group_member | True if the user is a member of a privileged group. | boolean |
+| entityanalytics_ad.device.pwd_last_set |  | date |
+| entityanalytics_ad.device.reversible_encryption_password | True if the user password is stored with reversible encryption. | boolean |
+| entityanalytics_ad.device.sam_account_name |  | keyword |
+| entityanalytics_ad.device.sam_account_type |  | keyword |
+| entityanalytics_ad.device.sensitive_object | True if the account cannot be delegated. | boolean |
+| entityanalytics_ad.device.service_principal_name |  | keyword |
+| entityanalytics_ad.device.show_in_advanced_view_only |  | boolean |
+| entityanalytics_ad.device.uac_list |  | keyword |
+| entityanalytics_ad.device.unconstrained_delegation | True if the account is trusted for unconstrained delegation. | boolean |
+| entityanalytics_ad.device.use_des_key_only | True if the account is configured to only use DES encryption. | boolean |
+| entityanalytics_ad.device.user_account_control |  | keyword |
+| entityanalytics_ad.device.usn_changed |  | keyword |
+| entityanalytics_ad.device.usn_created |  | keyword |
+| entityanalytics_ad.device.when_changed |  | date |
+| entityanalytics_ad.device.when_created |  | date |
+| entityanalytics_ad.groups.admin_count |  | keyword |
+| entityanalytics_ad.groups.cn |  | keyword |
+| entityanalytics_ad.groups.description |  | keyword |
+| entityanalytics_ad.groups.distinguished_name |  | keyword |
+| entityanalytics_ad.groups.ds_core_propagation_data |  | date |
+| entityanalytics_ad.groups.group_type |  | keyword |
+| entityanalytics_ad.groups.id |  | keyword |
+| entityanalytics_ad.groups.instance_type |  | keyword |
+| entityanalytics_ad.groups.is_critical_system_object |  | boolean |
+| entityanalytics_ad.groups.member |  | keyword |
+| entityanalytics_ad.groups.member_of |  | keyword |
+| entityanalytics_ad.groups.name |  | keyword |
+| entityanalytics_ad.groups.object_category |  | keyword |
+| entityanalytics_ad.groups.object_class |  | keyword |
+| entityanalytics_ad.groups.object_guid |  | keyword |
+| entityanalytics_ad.groups.object_sid |  | keyword |
+| entityanalytics_ad.groups.sam_account_name |  | keyword |
+| entityanalytics_ad.groups.sam_account_type |  | keyword |
+| entityanalytics_ad.groups.usn_changed |  | keyword |
+| entityanalytics_ad.groups.usn_created |  | keyword |
+| entityanalytics_ad.groups.when_changed |  | date |
+| entityanalytics_ad.groups.when_created |  | date |
+| entityanalytics_ad.id |  | keyword |
+| entityanalytics_ad.when_changed |  | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | user.account.activated_date |  | date |

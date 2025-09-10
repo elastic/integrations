@@ -130,6 +130,19 @@ processors:
       tag: rename_destination_as_organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+  # Normalize user fields
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
   # Add related fields.
   - append:
       field: related.ip
@@ -212,6 +225,12 @@ processors:
         - '{{{user.name}}}'
       allow_duplicates: false
       if: ctx?.user?.name != null
+  - append:
+      field: related.user
+      value:
+        - '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx?.user?.email != null
   - append:
       field: related.user
       value:

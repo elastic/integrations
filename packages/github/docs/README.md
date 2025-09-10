@@ -2,11 +2,7 @@
 
 The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database. 
 
-## Logs
-
-### Audit
-
-The GitHub audit log records all events related to the GitHub organization/enterprise. See [Organization audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) and [Enterprise audit log actions](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) for more details.
+## What do I need to use this integration?
 
 To use this integration, the following prerequisites must be met:
 
@@ -23,13 +19,20 @@ For Organizations:
   - You must be using GitHub Enterprise Cloud.
   - The organization must be part of an enterprise plan that includes audit log functionality.
 
-Github integration can collect audit logs from 2 sources: [Github API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise) and [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs).
+## Logs
+
+### Audit
+
+The GitHub audit log records all events related to the GitHub organization/enterprise. See [Organization audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) and [Enterprise audit log actions](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) for more details.
+
+Github integration can collect audit logs from three sources: [Github API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise), [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs), and [AWS S3 or AWS SQS](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3).
 
 When using Github API to collect audit log events, below requirements must be met for Personal Access Token (PAT):
  - You must use a Personal Access Token with `read:audit_log` scope. This applies to both organization and enterprise admins.
  - If you're an enterprise admin, ensure your token also includes `admin:enterprise` scope to access enterprise-wide logs.
 
-To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming. For more details, see [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
+To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming.
+To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3) to setup audit log streaming. For more details, refer to this [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
 
 *This integration is not compatible with GitHub Enterprise server.*
 
@@ -38,6 +41,9 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -117,6 +123,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
 
 
 An example event for `audit` looks as following:
@@ -125,24 +132,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "00ee9264-c5fd-4eb4-ba61-2650d7b10b86",
-        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
-        "name": "elastic-agent-20844",
+        "ephemeral_id": "dfb11704-8962-47d6-b6db-273d5f5ceebc",
+        "id": "0f34c9a0-5d22-445a-a67c-213c32486e64",
+        "name": "elastic-agent-94967",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "80528",
+        "namespace": "33218",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
+        "id": "0f34c9a0-5d22-445a-a67c-213c32486e64",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "repo.destroy",
@@ -151,10 +158,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2025-03-18T07:21:56.275Z",
+        "created": "2025-07-29T06:21:44.111Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-03-18T07:21:57Z",
+        "ingested": "2025-07-29T06:21:45Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -189,10 +196,10 @@ An example event for `audit` looks as following:
 
 ### Code Scanning
 
-The Code Scanning lets you retrieve all security vulnerabilities and coding errors from a repository setup using GitHub Advanced Security Code Scanning feature. See [About code scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) for more details.
+The Code Scanning lets you retrieve all security vulnerabilities and coding errors from a repository setup using GitHub Advanced Security Code Scanning feature. Refer to [About code scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) for more details.
 
 To use this integration, GitHub Apps must have the `security_events` read permission. 
-Or use a personal access token with the `security_events` scope for private repos or `public_repo` scope for public repos. See [List code scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/code-scanning#list-code-scanning-alerts-for-a-repository)
+Or use a personal access token with the `security_events` scope for private repos or `public_repo` scope for public repos. Refer to [List code scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/code-scanning#list-code-scanning-alerts-for-a-repository).
 
 **Exported fields**
 
@@ -276,30 +283,30 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "6ff86bf4-40bb-48d0-a0c3-7620a07cc706",
-        "id": "2b4faf01-5ea6-4888-8ea5-db817b2b8915",
-        "name": "elastic-agent-67340",
+        "ephemeral_id": "6f5c6543-1ec5-4ebd-92ca-19a9411e709f",
+        "id": "dea91ede-5989-4df4-bcc2-52d312289c0f",
+        "name": "elastic-agent-33638",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "github.code_scanning",
-        "namespace": "68459",
+        "namespace": "46044",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2b4faf01-5ea6-4888-8ea5-db817b2b8915",
+        "id": "dea91ede-5989-4df4-bcc2-52d312289c0f",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2024-10-30T03:17:27Z",
+        "ingested": "2025-07-09T06:54:31Z",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}",
         "type": [
             "creation"
@@ -367,10 +374,10 @@ An example event for `code_scanning` looks as following:
 
 ### Secret Scanning
 
-The GitHub Secret Scanning lets you retrieve secret scanning for advanced security alerts from a repository setup using GitHub Advanced Security Secret Scanning feature. See [About Secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning) for more details.
+The GitHub Secret Scanning lets you retrieve secret scanning for advanced security alerts from a repository setup using GitHub Advanced Security Secret Scanning feature. Refer to [About Secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning) for more details.
 
 To use this integration, GitHub Apps must have the `secret_scanning_alerts` read permission. 
-Or you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [List secret scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning#list-secret-scanning-alerts-for-a-repository)
+Or you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. Refer to [List secret scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning#list-secret-scanning-alerts-for-a-repository)
 
 **Exported fields**
 
@@ -447,30 +454,30 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "b651a7b7-f9b4-4d2c-a268-85adcaf38b31",
-        "id": "a998f341-28a4-4447-91a3-2f132fd17d6e",
-        "name": "elastic-agent-83267",
+        "ephemeral_id": "469df46a-95c5-4dad-80a8-e6a85c09e9b6",
+        "id": "6c25a893-0a1b-4b3d-98e9-bb6681c5fa62",
+        "name": "elastic-agent-90778",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "github.secret_scanning",
-        "namespace": "15643",
+        "namespace": "59764",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a998f341-28a4-4447-91a3-2f132fd17d6e",
+        "id": "6c25a893-0a1b-4b3d-98e9-bb6681c5fa62",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2024-10-30T03:20:24Z",
+        "ingested": "2025-07-09T06:58:29Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}",
         "type": [
             "creation"
@@ -523,9 +530,9 @@ An example event for `secret_scanning` looks as following:
 
 ### Dependabot
 
-The GitHub Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using GitHub Advanced Security Dependabot feature. See [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
+The GitHub Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using GitHub Advanced Security Dependabot feature. Check [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
 
-To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
+To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. Check [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
 
 **Exported fields**
 
@@ -614,30 +621,30 @@ An example event for `dependabot` looks as following:
 {
     "@timestamp": "2022-07-11T11:39:07.000Z",
     "agent": {
-        "ephemeral_id": "e7f76da2-a5c1-461e-afff-c8d8aaab6f63",
-        "id": "63db2a58-1665-44a9-b23a-4dd2b0be9bd6",
-        "name": "elastic-agent-88319",
+        "ephemeral_id": "5e5fdbf3-c392-4d95-859b-00ac63daabcc",
+        "id": "db759089-b655-441f-8576-444f6ccaf526",
+        "name": "elastic-agent-69226",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "github.dependabot",
-        "namespace": "20232",
+        "namespace": "69666",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "63db2a58-1665-44a9-b23a-4dd2b0be9bd6",
+        "id": "db759089-b655-441f-8576-444f6ccaf526",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2022-07-11T11:39:07.000Z",
         "dataset": "github.dependabot",
-        "ingested": "2024-10-30T03:18:26Z",
+        "ingested": "2025-07-09T06:56:53Z",
         "original": "{\"createdAt\":\"2022-07-11T11:39:07Z\",\"dependabotUpdate\":{\"error\":{\"body\":\"The currently installed version can't be determined.\\n\\nTo resolve the issue add a supported lockfile (package-lock.json or yarn.lock).\",\"errorType\":\"dependency_file_not_supported\",\"title\":\"Dependabot can't update vulnerable dependencies without a lockfile\"},\"pullRequest\":null},\"dependencyScope\":\"RUNTIME\",\"dismissReason\":null,\"dismissedAt\":null,\"dismisser\":null,\"fixedAt\":null,\"number\":1,\"repository\":{\"description\":\"OWASP Juice Shop: Probably the most modern and sophisticated insecure web application\",\"isInOrganization\":false,\"isPrivate\":false,\"name\":\"sample_repo\",\"owner\":{\"login\":\"sample_owner\",\"url\":\"https://github.com/sample_owner\"},\"url\":\"https://github.com/sample_owner/sample_repo\"},\"securityAdvisory\":{\"classification\":\"GENERAL\",\"cvss\":{\"score\":0,\"vectorString\":null},\"cwes\":{\"nodes\":[{\"cweId\":\"CWE-20\",\"description\":\"The product receives input or data, but it does not validate or incorrectly validates that the input has the properties that are required to process the data safely and correctly.\",\"name\":\"Improper Input Validation\"}]},\"description\":\"Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\\n\\n\\n\\n\\n## Recommendation\\n\\nUpdate to version 4.2.2 or later.\",\"ghsaId\":\"GHSA-c7hr-j4mj-j2w6\",\"identifiers\":[{\"type\":\"GHSA\",\"value\":\"GHSA-c7hr-j4mj-j2w6\"},{\"type\":\"CVE\",\"value\":\"CVE-2015-9235\"}],\"origin\":\"UNSPECIFIED\",\"permalink\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\",\"publishedAt\":\"2018-10-09T00:38:30Z\",\"references\":[{\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2015-9235\"},{\"url\":\"https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687\"},{\"url\":\"https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/\"},{\"url\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\"},{\"url\":\"https://www.npmjs.com/advisories/17\"},{\"url\":\"https://www.timmclean.net/2015/02/25/jwt-alg-none.html\"},{\"url\":\"https://nodesecurity.io/advisories/17\"}],\"severity\":\"CRITICAL\",\"summary\":\"Verification Bypass in jsonwebtoken\",\"updatedAt\":\"2021-01-08T19:00:39Z\",\"withdrawnAt\":null},\"securityVulnerability\":{\"firstPatchedVersion\":{\"identifier\":\"4.2.2\"},\"package\":{\"ecosystem\":\"NPM\",\"name\":\"jsonwebtoken\"},\"severity\":\"CRITICAL\",\"updatedAt\":\"2018-11-30T19:54:28Z\",\"vulnerableVersionRange\":\"\\u003c 4.2.2\"},\"state\":\"OPEN\",\"vulnerableManifestFilename\":\"package.json\",\"vulnerableManifestPath\":\"package.json\",\"vulnerableRequirements\":\"= 0.4.0\"}",
         "start": "2022-07-11T11:39:07Z",
         "type": [
@@ -746,11 +753,11 @@ An example event for `dependabot` looks as following:
 
 ### Issues
 
-The GitHub Issues datastream lets you retrieve github issues, including pull requests, issue assignees, comments, labels, and milestones. See [About Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=latest) for more details. You can retrieve issues for specific repository or for entire organization. Since GitHub API considers pull requests as issues, users can use `github.issues.is_pr` field to filter for only pull requests. 
+The GitHub Issues datastream lets you retrieve github issues, including pull requests, issue assignees, comments, labels, and milestones. Check [About Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=latest) for more details. You can retrieve issues for specific repository or for entire organization. Since GitHub API considers pull requests as issues, users can use `github.issues.is_pr` field to filter for only pull requests. 
 
 All issues including `closed` are retrieved by default. If users want to retrieve only `open` requests, you need to change `State` parameter to `open`.
 
-To use this integration, users must use GitHub Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [GitHub Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+To use this integration, users must use GitHub Apps or Personal Access Token with `read` permission to repositories or organization. Refer to [GitHub Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
 
 **Exported fields**
 
@@ -851,30 +858,30 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "24244f5f-9ce8-4ce3-983d-e172bb7f9fad",
-        "id": "1cd88ff5-88f4-4117-b49f-204bb2d5e1c3",
-        "name": "elastic-agent-46814",
+        "ephemeral_id": "2104d082-ca1c-4f37-af08-a3c618b7a1b1",
+        "id": "82ca2524-bffb-48d1-8b37-a9bf993e6898",
+        "name": "elastic-agent-93717",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "github.issues",
-        "namespace": "81948",
+        "namespace": "15567",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1cd88ff5-88f4-4117-b49f-204bb2d5e1c3",
+        "id": "82ca2524-bffb-48d1-8b37-a9bf993e6898",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2024-10-30T03:19:25Z",
+        "ingested": "2025-07-09T06:57:42Z",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}",
         "type": [
             "creation"
@@ -980,7 +987,7 @@ An example event for `issues` looks as following:
 
 ### Security Advisories
 
-The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed global security advisories from the GitHub advisory database. See [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
+The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed global security advisories from the GitHub advisory database. Check [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
 
 To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) (GitHub App user access tokens, GitHub App installation access tokens, Fine-grained personal access tokens). This fine-grained token does not require any permissions. 
 
@@ -1067,26 +1074,26 @@ An example event for `security_advisories` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-08T18:11:33.974Z",
+    "@timestamp": "2025-07-09T07:00:19.578Z",
     "agent": {
-        "ephemeral_id": "bce1f914-1cba-4582-b13b-a1a05311af9d",
-        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
-        "name": "elastic-agent-27512",
+        "ephemeral_id": "783ac826-d0e3-421b-9e05-3f8df55ef1f4",
+        "id": "827d1836-740e-4d2c-840e-e42baa4160d9",
+        "name": "elastic-agent-76840",
         "type": "filebeat",
-        "version": "9.0.1"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "github.security_advisories",
-        "namespace": "19249",
+        "namespace": "89850",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
+        "id": "827d1836-740e-4d2c-840e-e42baa4160d9",
         "snapshot": false,
-        "version": "9.0.1"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1094,7 +1101,7 @@ An example event for `security_advisories` looks as following:
             "vulnerability"
         ],
         "dataset": "github.security_advisories",
-        "ingested": "2025-06-08T18:11:36Z",
+        "ingested": "2025-07-09T07:00:22Z",
         "kind": "enrichment",
         "type": [
             "info"
@@ -1102,41 +1109,125 @@ An example event for `security_advisories` looks as following:
     },
     "github": {
         "security_advisory": {
-            "cve_id": "CVE-2025-23096",
+            "credits": [
+                {
+                    "type": "reporter",
+                    "user": {
+                        "avatar_url": "https://avatars.githubusercontent.com/u/170187038?v=4",
+                        "events_url": "https://api.github.com/users/4rdr/events{/privacy}",
+                        "followers_url": "https://api.github.com/users/4rdr/followers",
+                        "following_url": "https://api.github.com/users/4rdr/following{/other_user}",
+                        "gists_url": "https://api.github.com/users/4rdr/gists{/gist_id}",
+                        "html_url": "https://github.com/4rdr",
+                        "id": 170187038,
+                        "login": "4rdr",
+                        "node_id": "U_kgDOCiTZHg",
+                        "organizations_url": "https://api.github.com/users/4rdr/orgs",
+                        "received_events_url": "https://api.github.com/users/4rdr/received_events",
+                        "repos_url": "https://api.github.com/users/4rdr/repos",
+                        "site_admin": false,
+                        "starred_url": "https://api.github.com/users/4rdr/starred{/owner}{/repo}",
+                        "subscriptions_url": "https://api.github.com/users/4rdr/subscriptions",
+                        "type": "User",
+                        "url": "https://api.github.com/users/4rdr",
+                        "user_view_type": "public"
+                    }
+                },
+                {
+                    "type": "remediation_developer",
+                    "user": {
+                        "avatar_url": "https://avatars.githubusercontent.com/u/1593467?v=4",
+                        "events_url": "https://api.github.com/users/Forceu/events{/privacy}",
+                        "followers_url": "https://api.github.com/users/Forceu/followers",
+                        "following_url": "https://api.github.com/users/Forceu/following{/other_user}",
+                        "gists_url": "https://api.github.com/users/Forceu/gists{/gist_id}",
+                        "html_url": "https://github.com/Forceu",
+                        "id": 1593467,
+                        "login": "Forceu",
+                        "node_id": "MDQ6VXNlcjE1OTM0Njc=",
+                        "organizations_url": "https://api.github.com/users/Forceu/orgs",
+                        "received_events_url": "https://api.github.com/users/Forceu/received_events",
+                        "repos_url": "https://api.github.com/users/Forceu/repos",
+                        "site_admin": false,
+                        "starred_url": "https://api.github.com/users/Forceu/starred{/owner}{/repo}",
+                        "subscriptions_url": "https://api.github.com/users/Forceu/subscriptions",
+                        "type": "User",
+                        "url": "https://api.github.com/users/Forceu",
+                        "user_view_type": "public"
+                    }
+                }
+            ],
+            "cve_id": "CVE-2025-48494",
             "cvss_severities": {
                 "cvss_v3": {
                     "score": 0
                 },
                 "cvss_v4": {
-                    "score": 0
+                    "score": 4.8,
+                    "vector_string": "CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:P/VC:N/VI:N/VA:N/SC:L/SI:L/SA:L"
                 }
             },
-            "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
-            "ghsa_id": "GHSA-vpq6-j9hp-2h3w",
-            "html_url": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
-            "identifiers": {
-                "type": [
-                    "GHSA",
-                    "CVE"
-                ],
-                "value": [
-                    "GHSA-vpq6-j9hp-2h3w",
-                    "CVE-2025-23096"
-                ]
-            },
-            "nvd_published_at": "2025-06-04T15:15:23.000Z",
-            "published_at": "2025-06-04T15:30:41.000Z",
-            "references": [
-                "https://nvd.nist.gov/vuln/detail/CVE-2025-23096",
-                "https://semiconductor.samsung.com/support/quality-support/product-security-updates",
-                "https://semiconductor.samsung.com/support/quality-support/product-security-updates/cve-2025-23096",
-                "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w"
+            "cwes": [
+                {
+                    "cwe_id": "CWE-79",
+                    "name": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+                },
+                {
+                    "cwe_id": "CWE-87",
+                    "name": "Improper Neutralization of Alternate XSS Syntax"
+                }
             ],
-            "severity": "unknown",
-            "summary": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double...",
-            "type": "unreviewed",
-            "updated_at": "2025-06-04T15:30:46.000Z",
-            "url": "https://api.github.com/advisories/GHSA-vpq6-j9hp-2h3w"
+            "description": "### Impact\n\nWhen using end-to-end encryption, a stored XSS vulnerability can be exploited by uploading a file with JavaScript code embedded in the filename. After upload and every time someone opens the upload list, the script is then parsed.\n\nWith the affected versions <v2.0, there was no user permission system implemented, therefore all authenticated users were already able to see and modify all resources, even if end-to-end encrypted, as the encryption key had to be the same for all users with <v2.0. Nethertheless with XSS, other attack vectors like redirection or crypto mining would be possble.\n\n### Patches\n\nThis CVE has been fixed in v2.0.0\n\n### Workarounds\n\nIf you are the only authenticated user using Gokapi, you are not affected. A workaround would be to disable end-to-end encryption.",
+            "epss": {
+                "percentage": 0.00023,
+                "percentile": 0.0471
+            },
+            "ghsa_id": "GHSA-95rc-wc32-gm53",
+            "github_reviewed_at": "2025-06-03T06:28:08.000Z",
+            "html_url": "https://github.com/advisories/GHSA-95rc-wc32-gm53",
+            "identifiers": [
+                {
+                    "type": "GHSA",
+                    "value": "GHSA-95rc-wc32-gm53"
+                },
+                {
+                    "type": "CVE",
+                    "value": "CVE-2025-48494"
+                }
+            ],
+            "nvd_published_at": "2025-06-02T11:15:22.000Z",
+            "published_at": "2025-06-03T06:28:08.000Z",
+            "references": [
+                "https://github.com/Forceu/Gokapi/security/advisories/GHSA-95rc-wc32-gm53",
+                "https://nvd.nist.gov/vuln/detail/CVE-2025-48494",
+                "https://github.com/Forceu/Gokapi/commit/343cc566cfd7f4efcd522c92371561d494aed6b0",
+                "https://github.com/Forceu/Gokapi/releases/tag/v2.0.0",
+                "https://github.com/advisories/GHSA-95rc-wc32-gm53"
+            ],
+            "repository_advisory_url": "https://api.github.com/repos/Forceu/Gokapi/security-advisories/GHSA-95rc-wc32-gm53",
+            "severity": "medium",
+            "source_code_location": "https://github.com/Forceu/Gokapi",
+            "summary": "Gokapi vulnerable to stored XSS via uploading file with malicious file name",
+            "type": "reviewed",
+            "updated_at": "2025-06-03T06:28:10.000Z",
+            "url": "https://api.github.com/advisories/GHSA-95rc-wc32-gm53",
+            "vulnerabilities": [
+                {
+                    "package": {
+                        "ecosystem": "go",
+                        "name": "github.com/forceu/gokapi"
+                    },
+                    "vulnerable_version_range": ">= 1.0.1, <= 1.9.6"
+                },
+                {
+                    "first_patched_version": "0.0.0-20250530191232-343cc566cfd7",
+                    "package": {
+                        "ecosystem": "go",
+                        "name": "github.com/forceu/gokapi"
+                    },
+                    "vulnerable_version_range": "< 0.0.0-20250530191232-343cc566cfd7"
+                }
+            ]
         }
     },
     "input": {
@@ -1148,17 +1239,17 @@ An example event for `security_advisories` looks as following:
     ],
     "url": {
         "domain": "github.com",
-        "full": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
-        "original": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
-        "path": "/advisories/GHSA-vpq6-j9hp-2h3w",
+        "full": "https://github.com/advisories/GHSA-95rc-wc32-gm53",
+        "original": "https://github.com/advisories/GHSA-95rc-wc32-gm53",
+        "path": "/advisories/GHSA-95rc-wc32-gm53",
         "scheme": "https"
     },
     "vulnerability": {
         "classification": "CVSS",
-        "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
+        "description": "### Impact\n\nWhen using end-to-end encryption, a stored XSS vulnerability can be exploited by uploading a file with JavaScript code embedded in the filename. After upload and every time someone opens the upload list, the script is then parsed.\n\nWith the affected versions <v2.0, there was no user permission system implemented, therefore all authenticated users were already able to see and modify all resources, even if end-to-end encrypted, as the encryption key had to be the same for all users with <v2.0. Nethertheless with XSS, other attack vectors like redirection or crypto mining would be possble.\n\n### Patches\n\nThis CVE has been fixed in v2.0.0\n\n### Workarounds\n\nIf you are the only authenticated user using Gokapi, you are not affected. A workaround would be to disable end-to-end encryption.",
         "enumeration": "CVE",
-        "id": "CVE-2025-23096",
-        "severity": "unknown"
+        "id": "CVE-2025-48494",
+        "severity": "medium"
     }
 }
 ```

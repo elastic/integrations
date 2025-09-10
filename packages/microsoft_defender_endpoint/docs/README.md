@@ -56,10 +56,11 @@ These values are:
 4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
 5. Select "Save and continue" to save the integration.
 
-### Data Retention and ILM Configuration (For Vulnerability Data Stream)
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+### Data Retention and ILM Configuration
 
-> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
+For `vulnerability` data stream, a full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes `vulnerability` data older than 7 days. This helps keep storage usage under control.
+
+> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index: `delete`, `delete_index`
 
 ## ECS mappings
 
@@ -111,13 +112,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-27T10:31:25.333Z",
+    "@timestamp": "2025-09-08T14:14:17.520Z",
     "agent": {
-        "ephemeral_id": "f481d28b-2b00-4bf2-b5b2-b1a40c1f3aaf",
-        "id": "69a70946-8492-4834-baf6-1db2cc9db17c",
-        "name": "elastic-agent-16526",
+        "ephemeral_id": "3f082892-0f6c-45a1-aa4d-4887bd3462c8",
+        "id": "36f3bbaf-2d4f-4f3c-af1f-4c13524514f5",
+        "name": "elastic-agent-19107",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "cloud": {
         "account": {
@@ -130,16 +131,16 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "48129",
+        "namespace": "61125",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "69a70946-8492-4834-baf6-1db2cc9db17c",
+        "id": "36f3bbaf-2d4f-4f3c-af1f-4c13524514f5",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "action": "Malware",
@@ -153,7 +154,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-06-30T10:07:44.333733Z",
         "id": "da637291085411733957_-1043898914",
-        "ingested": "2025-05-27T10:31:28Z",
+        "ingested": "2025-09-08T14:14:20Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 21,
@@ -460,24 +461,24 @@ An example event for `machine_action` looks as following:
 {
     "@timestamp": "2024-11-22T12:48:56.768Z",
     "agent": {
-        "ephemeral_id": "b8f3aa0a-03f9-46a5-a7a1-4d7e7fcc8827",
-        "id": "9f7d3c70-f0c6-4f5e-84f3-b6c9806bf2c1",
-        "name": "elastic-agent-61668",
+        "ephemeral_id": "9a1d6c29-c9ee-4fe3-b548-486c5816bac4",
+        "id": "adb7b810-f850-4c24-826a-be0de9006fc6",
+        "name": "elastic-agent-60393",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine_action",
-        "namespace": "94050",
+        "namespace": "82658",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9f7d3c70-f0c6-4f5e-84f3-b6c9806bf2c1",
+        "id": "adb7b810-f850-4c24-826a-be0de9006fc6",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": "RunAntiVirusScan",
@@ -485,7 +486,7 @@ An example event for `machine_action` looks as following:
         "created": "2024-11-22T12:48:33.993Z",
         "dataset": "microsoft_defender_endpoint.machine_action",
         "id": "d72456af-1234-5678-abcd-abcdef87fdee",
-        "ingested": "2025-05-27T10:33:29Z",
+        "ingested": "2025-06-03T13:37:04Z",
         "kind": "event",
         "original": "{\"cancellationComment\":null,\"cancellationDateTimeUtc\":null,\"cancellationRequestor\":null,\"commands\":[],\"computerDnsName\":\"c-lab-24\",\"creationDateTimeUtc\":\"2024-11-22T12:48:33.9936591Z\",\"errorHResult\":0,\"externalId\":null,\"id\":\"d72456af-1234-5678-abcd-abcdef87fdee\",\"lastUpdateDateTimeUtc\":\"2024-11-22T12:48:56.7684808Z\",\"machineId\":\"de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8\",\"relatedFileInfo\":null,\"requestSource\":\"Portal\",\"requestor\":\"testuser@example.com\",\"requestorComment\":\"Quick Scan\",\"scope\":\"Quick\",\"status\":\"Succeeded\",\"title\":null,\"troubleshootInfo\":null,\"type\":\"RunAntiVirusScan\"}",
         "outcome": "success",
@@ -521,6 +522,7 @@ An example event for `machine_action` looks as following:
             "de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8"
         ],
         "user": [
+            "testuser",
             "testuser@example.com"
         ]
     },
@@ -530,7 +532,9 @@ An example event for `machine_action` looks as following:
         "microsoft_defender_endpoint-machine_action"
     ],
     "user": {
-        "name": "testuser@example.com"
+        "domain": "example.com",
+        "email": "testuser@example.com",
+        "name": "testuser"
     }
 }
 ```
@@ -580,26 +584,26 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-27T10:44:32.171Z",
+    "@timestamp": "2025-08-05T14:25:21.991Z",
     "agent": {
-        "ephemeral_id": "c05fba64-b162-439c-bbab-497080970957",
-        "id": "18e5121d-7626-44f8-80d5-f01c9785dfa3",
-        "name": "elastic-agent-40132",
+        "ephemeral_id": "ac97f2cc-6015-4238-afeb-24d81bb1f4eb",
+        "id": "df992497-f3e8-40fa-8b14-a86461292d03",
+        "name": "elastic-agent-26886",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.vulnerability",
-        "namespace": "38546",
+        "namespace": "61041",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "18e5121d-7626-44f8-80d5-f01c9785dfa3",
+        "id": "df992497-f3e8-40fa-8b14-a86461292d03",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -607,8 +611,8 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "microsoft_defender_endpoint.vulnerability",
-        "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_--2025-05-27T10:44:33.192017651Z",
-        "ingested": "2025-05-27T10:44:33Z",
+        "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-",
+        "ingested": "2025-08-05T14:25:23Z",
         "kind": "event",
         "original": "{\"affectedMachine\":{\"aadDeviceId\":null,\"agentVersion\":\"30.124092.2.0\",\"computerDnsName\":\"bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01\",\"cveId\":\"CVE-2025-3074\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"Low\",\"firstSeen\":\"2025-01-08T13:05:05.3483549Z\",\"fixingKbId\":null,\"healthStatus\":\"Inactive\",\"id\":\"94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-\",\"ipAddresses\":[{\"ipAddress\":\"216.160.83.56\",\"macAddress\":\"000C2910F1DA\",\"operationalStatus\":\"Up\",\"type\":\"Other\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"175.16.199.0\",\"lastSeen\":\"2025-01-08T13:15:03.694371Z\",\"machineId\":\"94819846155826828d1603b913c67fe336d81295\",\"machineTags\":[\"test tag\"],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":6,\"osPlatform\":\"Ubuntu\",\"osProcessor\":\"x64\",\"osVersion\":null,\"productName\":\"edge_chromium-based\",\"productVendor\":\"microsoft\",\"productVersion\":\"134.0.3124.72\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"severity\":\"Medium\",\"version\":\"20.4\",\"vmMetadata\":null},\"cveSupportability\":\"Supported\",\"cvssV3\":6.5,\"cvssVector\":\"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C\",\"description\":\"Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]\",\"epss\":0.00111,\"exploitInKit\":false,\"exploitTypes\":[],\"exploitUris\":[],\"exploitVerified\":false,\"exposedMachines\":2,\"firstDetected\":\"2025-04-01T19:52:39Z\",\"id\":\"CVE-2025-3074\",\"name\":\"CVE-2025-3074\",\"patchFirstAvailable\":null,\"publicExploit\":false,\"publishedOn\":\"2025-04-01T00:00:00Z\",\"severity\":\"Medium\",\"tags\":[\"test\"],\"updatedOn\":\"2025-04-08T00:00:00Z\"}",
         "type": [
@@ -699,6 +703,7 @@ An example event for `vulnerability` looks as following:
             "published_on": "2025-04-01T00:00:00.000Z",
             "remediation": "Apply the latest patches and updates provided by the respective vendors.",
             "severity": "Medium",
+            "summary": "An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website.",
             "tags": [
                 "test"
             ],
@@ -706,7 +711,7 @@ An example event for `vulnerability` looks as following:
         }
     },
     "observer": {
-        "product": "Microsoft 365 Defender",
+        "product": "Microsoft Defender for Endpoint",
         "vendor": "Microsoft"
     },
     "package": {
@@ -736,6 +741,7 @@ An example event for `vulnerability` looks as following:
     ],
     "vulnerability": {
         "classification": "CVSS",
+        "cve": "CVE-2025-3074",
         "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
         "enumeration": "CVE",
         "id": "CVE-2025-3074",
@@ -745,10 +751,11 @@ An example event for `vulnerability` looks as following:
             "vendor": "Microsoft"
         },
         "score": {
-            "base": 6.5
+            "base": 6.5,
+            "version": "3.1"
         },
         "severity": "Medium",
-        "title": "An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website."
+        "title": "Vulnerability found in edge_chromium-based 134.0.3124.72 - CVE-2025-3074"
     }
 }
 ```
@@ -757,13 +764,16 @@ An example event for `vulnerability` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cloud.resource_id | Cloud provider-specific native identifier of the monitored cloud resource. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Log offset. | long |
 | microsoft_defender_endpoint.vulnerability.affected_machine.aad_device_id | Microsoft Entra Device ID (when machine is Microsoft Entra joined). | keyword |
 | microsoft_defender_endpoint.vulnerability.affected_machine.agent_version |  | keyword |
@@ -820,19 +830,23 @@ An example event for `vulnerability` looks as following:
 | microsoft_defender_endpoint.vulnerability.exposed_machines | Number of exposed devices. | long |
 | microsoft_defender_endpoint.vulnerability.first_detected |  | date |
 | microsoft_defender_endpoint.vulnerability.id | Vulnerability ID. | keyword |
-| microsoft_defender_endpoint.vulnerability.impact |  | keyword |
+| microsoft_defender_endpoint.vulnerability.impact | Impact of vulnerability. | keyword |
 | microsoft_defender_endpoint.vulnerability.name | Vulnerability title. | keyword |
 | microsoft_defender_endpoint.vulnerability.patch_first_available |  | date |
 | microsoft_defender_endpoint.vulnerability.public_exploit | Public exploit exists. | boolean |
 | microsoft_defender_endpoint.vulnerability.published_on | Date when vulnerability was published. | date |
-| microsoft_defender_endpoint.vulnerability.remediation |  | keyword |
+| microsoft_defender_endpoint.vulnerability.remediation | Remediation fix for vulnerability to mitigate the problem. | keyword |
 | microsoft_defender_endpoint.vulnerability.severity | Vulnerability Severity. Possible values are: Low, Medium, High, or Critical. | keyword |
+| microsoft_defender_endpoint.vulnerability.summary | Summary of vulnerability. | keyword |
 | microsoft_defender_endpoint.vulnerability.tags |  | keyword |
 | microsoft_defender_endpoint.vulnerability.updated_on | Date when vulnerability was updated. | date |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version |  | keyword |
 | package.name | Package name | keyword |
 | package.version | Package version | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date |  | date |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
 | vulnerability.title |  | keyword |

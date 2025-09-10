@@ -291,9 +291,11 @@ processors:
 ####################################################
 # Handle client_vpn_connect
 ####################################################
-- dissect:
+- grok:
     field: event.original
-    pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{_temp.client_ip}"
+    patterns:
+      - "^%{DATA} events client_vpn_connect user id '%{DATA:user.name}' local ip %{IP:network.forwarded_ip} (reconnected from|connected from) %{IP:_temp.client_ip}$"
+      - "^%{GREEDYDATA}$"
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
 - grok:
     field: event.original
@@ -371,9 +373,11 @@ processors:
 ####################################################
 # Handle anyconnect_vpn_connect
 ####################################################
-- dissect:
+- grok:
     field: event.original
-    pattern: "%{} events anyconnect_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} reconnected from %{_temp.client_ip}"
+    patterns:
+      - "^%{DATA} events anyconnect_vpn_connect user id '%{DATA:user.name}' local ip %{IP:network.forwarded_ip} (reconnected from|connected from) %{IP:_temp.client_ip}$"
+      - "^%{GREEDYDATA}$"
     if: ctx?.cisco_meraki?.event_subtype == "anyconnect_vpn_connect"
 - grok:
     field: event.original
@@ -459,6 +463,32 @@ processors:
 - uppercase:
     field: server.mac
     ignore_missing: true
+
+# Normalize user fields
+- rename:
+    field: user.name
+    target_field: user.email
+    tag: rename_user_email
+    if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+- dissect:
+    field: user.email
+    pattern: '%{user.name}@%{user.domain}'
+    tag: dissect_user_email
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.user?.name == null
+- append:
+    field: related.user
+    value: "{{{user.name}}}"
+    if: ctx.user?.name != null
+    allow_duplicates: false
+    ignore_failure: true
+- append:
+    field: related.user
+    value: "{{{user.email}}}"
+    if: ctx.user?.email != null
+    allow_duplicates: false
+    ignore_failure: true
 
 on_failure:
 - set:

@@ -223,16 +223,35 @@ processors:
      description: "The user principal name (UPN) of the user."
      ignore_missing: true
   - set:
-     field: user.email
+     field: user.name
      copy_from: azure.identityprotection.properties.user_principal_name
-     if: ctx.azure?.identityprotection?.properties?.user_principal_name?.contains('@') == true
-  - grok:
-     field: azure.identityprotection.properties.user_principal_name
-     patterns:
-       - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
-       - '%{GREEDYDATA:user.name}'
-     ignore_missing: true
-     ignore_failure: true
+     ignore_empty_value: true
+     tag: set_user_name
+  - set:
+      field: user.email
+      copy_from: user.name
+      tag: set_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  # Don't dissect the user email into <user.name>@<user.domain>
+  # as the parts are meaningless on their own
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.full_name}}}'
+      if: ctx.user?.full_name != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
      field: azure.identityprotection.properties.userType
      target_field: azure.identityprotection.properties.user_type

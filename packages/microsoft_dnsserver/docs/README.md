@@ -12,26 +12,7 @@ The Microsoft DNS Server integration collects two type of data: audit and analyt
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 This integration is supported in every Windows versions supported by [`Filebeat`](https://www.elastic.co/support/matrix), starting from Windows 10 and Windows Server 2016.
 
@@ -39,9 +20,9 @@ The minimum **kibana.version** required is **8.13.0**.
 
 ## Configuration
  
-DNS analytical events are not enabled by default. To enable it, you can follow the [guide to enable DNS diagnostics logging](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn800669(v=ws.11)#to-enable-dns-diagnostic-logging) of Microsoft's documentation.
+DNS analytical events are not enabled by default. To enable it, check the [guide to enable DNS diagnostics logging](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn800669(v=ws.11)#to-enable-dns-diagnostic-logging) of Microsoft's documentation.
 
-**Note:**  DNS logging and diagnostics feature in Windows is designed to have a very low impact on performance. However, according to the [Audit and analytic event logging section](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn800669(v=ws.11)#audit-and-analytic-event-logging) of the docs, typically will only affect DNS server performance at very high DNS query rates. For example, a DNS server running on modern hardware that is receiving 100,000 queries per second (QPS) can experience a performance degradation of 5% when analytic logs are enabled.
+**NOTE:**  DNS logging and diagnostics feature in Windows is designed to have a very low impact on performance. However, according to the [Audit and analytic event logging section](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn800669(v=ws.11)#audit-and-analytic-event-logging) of the docs, typically will only affect DNS server performance at very high DNS query rates. For example, a DNS server running on modern hardware that is receiving 100,000 queries per second (QPS) can experience a performance degradation of 5% when analytic logs are enabled.
 
 ## Usage
 
@@ -265,13 +246,20 @@ On the other hand, **Audit** events are exposed through Microsoft-Windows-DNS-Se
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
-| winlog.channel | Used to enable special event processing. Channel values below 16 are reserved for use by Microsoft to enable special treatment by the ETW runtime. Channel values 16 and above will be ignored by the ETW runtime (treated the same as channel 0) and can be given user-defined semantics. | keyword |
+| winlog.channel | The channel field indicates the channel that the event was logged to. Channels are used to categorize events and can be used to filter events in the Windows Event Viewer. | keyword |
 | winlog.flags | Flags that provide information about the event such as the type of session it was logged to and if the event contains extended data. | keyword |
+| winlog.flags_raw | Raw bitmask representation of the flags field. This is useful for debugging purposes. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
+| winlog.keywords_raw | Raw bitmask representation of the keywords field. This is useful for debugging purposes. | keyword |
+| winlog.level | The level field indicates the severity of the event. It is used to classify the event into categories such as informational, warning, error, etc. | keyword |
+| winlog.level_raw | Raw numeric representation of the level field. This is useful for debugging purposes. | long |
 | winlog.opcode | Code used to mark events with special semantics. Internal ETW metadata. | keyword |
+| winlog.opcode_raw | Raw numeric representation of the opcode field. This is useful for debugging purposes. | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
+| winlog.provider_message | A human-readable representation of the provider that logged the event. This is typically the name of the provider. | keyword |
 | winlog.session | Configured session to forward ETW events from providers to consumers. | keyword |
 | winlog.task | A categorical identifier for the type of task performed during the event. | keyword |
+| winlog.task_raw | Raw numeric representation of the task field. This is useful for debugging purposes. | long |
 | winlog.version | Specify the version of a manifest-based event. | long |
 
 

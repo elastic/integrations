@@ -159,6 +159,30 @@ processors:
       field: host.ip
       value: ['{{{host.ip}}}']
       if: ctx.host?.ip instanceof String
+  - rename:
+      field: client.user.name
+      target_field: client.user.email
+      tag: rename_client_user_email
+      if: ctx.client?.user?.name != null && ctx.client.user.name.indexOf("@") > 0
+  - dissect:
+      field: client.user.email
+      pattern: '%{client.user.name}@%{client.user.domain}'
+      tag: dissect_client_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.client?.user?.name == null
+  - append:
+      field: related.user
+      value: '{{{client.user.name}}}'
+      if: ctx.client?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{client.user.email}}}'
+      if: ctx.client?.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
   - convert:
       field: cisco_ise.log.log_details.ConfigVersionId
       target_field: cisco_ise.log.config_version.id

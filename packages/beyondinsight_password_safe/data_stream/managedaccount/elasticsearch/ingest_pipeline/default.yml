@@ -1,17 +1,18 @@
 ---
-description: Pipeline for processing BeyondInsight and Password Safe Managed Accounts logs
+description: Pipeline for processing BeyondInsight and Password Safe Managed Accounts logs.
 processors:
-  - rename:
-      field: message
-      target_field: beyondinsight_password_safe.managedaccount
-
-  - drop:
-      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
-
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - fingerprint:
       fields:
-        - beyondinsight_password_safe.managedaccount
-      target_field: "_id"
+        - event.original
+      target_field: _id
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondinsight_password_safe.managedaccount
 
 ####################
 # Scripts for processing input #
@@ -34,6 +35,10 @@ processors:
         }
         dropEmptyFields(ctx);
 
+  - rename:
+      field: beyondinsight_password_safe.managedaccount.IsISAAccess
+      target_field: beyondinsight_password_safe.managedaccount.is_isa_access
+      ignore_missing: true
   - script:
       description: Convert Additional Info keys to snake case.
       tag: additional-info-keys-to-snake-case
@@ -88,14 +93,6 @@ processors:
       field: event.type
       value: info
 
-  - set:
-      field: event.dataset
-      value: beyondinsight_password_safe.managedaccount
-
-  - set:
-      field: event.module
-      value: beyondinsight_password_safe
-
   - convert:
       field: beyondinsight_password_safe.managedaccount.system_id
       type: string
@@ -133,6 +130,12 @@ processors:
       copy_from: beyondinsight_password_safe.managedaccount.domain_name
       if: ctx.beyondinsight_password_safe.managedaccount.domain_name != null
 
+  - convert:
+      field: beyondinsight_password_safe.managedaccount.application_id
+      type: string
+  - convert:
+      field: beyondinsight_password_safe.managedaccount.platform_id
+      type: string
   - convert:
       field: beyondinsight_password_safe.managedaccount.account_id
       type: string
@@ -186,11 +189,32 @@ processors:
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SS
         - ISO8601
-
+  - convert:
+      field: beyondinsight_password_safe.managedaccount.change_state
+      type: string
+      ignore_missing: true
+  - script:
+      description: Convert ChangeState numeric values to human-readable format.
+      tag: script_change_state_strings
+      lang: painless
+      params:
+        descriptions:
+          "0": idle
+          "1": changing
+          "2": queued
+      if: ctx.beyondinsight_password_safe?.managedaccount?.change_state != null
+      source: |
+        def description = params.descriptions.get(ctx.beyondinsight_password_safe.managedaccount.change_state);
+        if (description != null) {
+          ctx.beyondinsight_password_safe.managedaccount.change_state = description;
+        }
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

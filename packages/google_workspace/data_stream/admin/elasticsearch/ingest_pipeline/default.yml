@@ -1,6 +1,17 @@
 ---
 description: Pipeline for parsing google_workspace logs
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.16.0'
@@ -451,6 +462,62 @@ processors:
       target_field: google_workspace.admin.old_value
       ignore_missing: true
   - rename:
+      field: google_workspace.admin.ALERT_ID
+      tag: rename_alert_id
+      target_field: google_workspace.admin.alert.id
+      ignore_missing: true
+  - split:
+      tag: split_related_alert_id
+      field: google_workspace.admin.RELATED_ALERT_ID
+      target_field: google_workspace.admin.alert.related_id
+      separator: ','
+      ignore_missing: true
+      if: ctx.google_workspace?.admin?.RELATED_ALERT_ID != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.admin.CHART_FILTERS
+      tag: rename_chart_filters
+      target_field: google_workspace.admin.chart.filters
+      ignore_missing: true
+  - rename:
+      field: google_workspace.admin.CHART_NAME
+      tag: rename_chart_name
+      target_field: google_workspace.admin.chart.name
+      ignore_missing: true
+  - rename:
+      field: google_workspace.admin.INVESTIGATION_ACTION
+      tag: rename_investigation_action
+      target_field: google_workspace.admin.investigation.action
+      ignore_missing: true
+  - rename:
+      field: google_workspace.admin.INVESTIGATION_DATA_SOURCE
+      tag: rename_investigation_data_source
+      target_field: google_workspace.admin.investigation.data_source
+      ignore_missing: true
+  - rename:
+      field: google_workspace.admin.INVESTIGATION_ENTITY_IDS
+      tag: rename_investigation_entity_ids
+      target_field: google_workspace.admin.investigation.entity_ids
+      ignore_missing: true
+  - rename:
+      field: google_workspace.admin.INVESTIGATION_OBJECT_IDENTIFIER
+      tag: rename_investigation_object_identifier
+      target_field: google_workspace.admin.investigation.object_identifier
+      ignore_missing: true
+  - rename:
+      field: google_workspace.admin.INVESTIGATION_QUERY
+      tag: rename_investigation_query
+      target_field: google_workspace.admin.investigation.query
+      ignore_missing: true
+  - rename:
+      field: google_workspace.admin.INVESTIGATION_URL_DISPLAY_TEXT
+      tag: rename_investigation_url_display_text
+      target_field: google_workspace.admin.investigation.url_display_text
+      ignore_missing: true
+  - rename:
       field: google_workspace.admin.ALERT_NAME
       target_field: google_workspace.admin.alert.name
       ignore_missing: true
@@ -804,6 +871,7 @@ processors:
         - google_workspace.admin.END_DATE
         - google_workspace.admin.END_DATE_TIME
         - google_workspace.admin.WHITELISTED_GROUPS
+        - google_workspace.admin.RELATED_ALERT_ID
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values

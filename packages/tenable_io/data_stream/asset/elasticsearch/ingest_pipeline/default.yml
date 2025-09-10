@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Tenable Vulnerability Management asset logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -558,26 +569,62 @@ processors:
       field: json.network_interfaces
       target_field: tenable_io.asset.network_interfaces
       ignore_missing: true
-  - convert:
-      field: json.acr_score
-      target_field: tenable_io.asset.acr_score
-      type: long
-      if: ctx.json?.acr_score != ''
-      ignore_missing: true
+  - script:
+      if: ctx.json?.acr_score != null && ctx.json?.acr_score != ''
+      tag: acr_score_is_long
+      lang: painless
+      source: >
+        if (ctx.json.acr_score instanceof String) {
+          try {
+            long acr_score = Long.parseLong(ctx.json.acr_score);
+            ctx.tenable_io.asset.acr_score = acr_score;
+          } catch (NumberFormatException e) {
+            double acr_score = Double.parseDouble(ctx.json.acr_score);
+            ctx.tenable_io.asset.acr_score = (long) acr_score; 
+          }
+          return;
+        }
+        if (ctx.json.acr_score instanceof int || ctx.json.acr_score instanceof long) {
+          ctx.tenable_io.asset.acr_score = (long) ctx.json.acr_score;
+          return;
+        }
+        if (ctx.json.acr_score instanceof double) {
+          ctx.tenable_io.asset.acr_score = (long) ctx.json.acr_score;
+          return;
+        } 
+
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.exposure_score
-      target_field: tenable_io.asset.exposure_score
-      type: long
-      if: ctx.json?.exposure_score != ''
-      ignore_missing: true
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      if: ctx.json?.exposure_score != null && ctx.json?.exposure_score != ''
+      tag: exposure_score_is_long
+      lang: painless
+      source: >
+        if (ctx.json.exposure_score instanceof String) {
+          try {
+            long exposure_score = Long.parseLong(ctx.json.exposure_score);
+            ctx.tenable_io.asset.exposure_score = exposure_score;
+          } catch (Exception e) {
+            double exposure_score = Double.parseDouble(ctx.json.exposure_score);
+            ctx.tenable_io.asset.exposure_score = (long) exposure_score;
+          }
+          return;
+        }
+        if (ctx.json.exposure_score instanceof int || ctx.json.exposure_score instanceof long) {
+          ctx.tenable_io.asset.exposure_score = (long) ctx.json.exposure_score;
+          return;
+        } 
+        if (ctx.json.exposure_score instanceof double) {
+          ctx.tenable_io.asset.exposure_score = (long) ctx.json.exposure_score;
+          return;
+        }
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.network_id
       target_field: tenable_io.asset.network.id

@@ -22,7 +22,7 @@ This module has been tested against the latest CSPM version **v2** and CWP versi
 
 ## Data streams
 
-The Prisma Cloud integration collects data for the following five events:
+The Prisma Cloud integration collects data for the following event types:
 
 | Event Type                    |
 |-------------------------------|
@@ -38,60 +38,38 @@ Alert and Audit data-streams are part of [CSPM](https://pan.dev/prisma-cloud/api
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### Agentless Enabled Integration
+### Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
 ## Setup
 
-### To collect data through REST API, follow the below steps:
+### To collect data through REST API, follow these steps"
 
 ### CSPM
 
-1. Considering you already have a Prisma Cloud account, to obtain an access key ID and secret access key from the Prisma Cloud system administrator, refer this [link](https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/manage-prisma-cloud-administrators/create-access-keys).
-2. The base URL of your CSPM API request depends on the region of your Prisma Cloud tenant and is similar to your Prisma Cloud administrative console URL. Obtain your URL from this [link](https://pan.dev/prisma-cloud/api/cspm/api-urls/).
+1. Assuming that you already have a Prisma Cloud account, to obtain an access key ID and secret access key from the Prisma Cloud system administrator, check [how to create access keys](https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/manage-prisma-cloud-administrators/create-access-keys).
+2. The base URL of your CSPM API request depends on the region of your Prisma Cloud tenant and is similar to your Prisma Cloud administrative console URL. Check your URL from the [API URLs](https://pan.dev/prisma-cloud/api/cspm/api-urls/).
 
 ### CWP
 
-1. Assuming you've already generated your access key ID and secret access key from the Prisma Cloud Console; if not, see the section above.
-2. The base URL of your CWP API request depends on the console path and the API version of your Prisma Cloud Compute console.
-3. To find your API version, log in to your Prisma Cloud Compute console, click the bell icon in the top right of the page, your API version is displayed.
-4. To get your console path, navigate to Compute > Manage > System > Downloads. you can find your console path listed under Path to Console.
-5. Now you can create your base URL in this format: `https://<CONSOLE>/api/v<VERSION>`.
+1. Assuming that you've already generated your access key ID and secret access key from the Prisma Cloud Console; if not, check the CSPM section. The base URL of your CWP API request depends on the console path and the API version of your Prisma Cloud Compute console.
+3. To find your API version, log in to your Prisma Cloud Compute console and click the bell icon in the top right of the page.
+4. To get your console path, navigate to **Compute** > **Manage** > **System** > **Downloads**. Your console path is listed under **Path to Console**.
+5. Create your base URL in this format: `https://<CONSOLE>/api/v<VERSION>`.
 
 **NOTE**: You can specify a date and time for the access key validity. If you do not select key expiry, the key is set to never expire; if you select it, but do not specify a date, the key expires in a month.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Palo Alto Prisma Cloud.
-3. Click on the "Palo Alto Prisma Cloud" integration from the search results.
-4. Click on the Add Palo Alto Prisma Cloud Integration button to add the integration.
-5. While adding the integration, if you want to collect Alert and Audit data via REST API, then you have to put the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Palo Alto Prisma Cloud**.
+3. Select the **Palo Alto Prisma Cloud** integration and add it.
+4. While adding the integration, if you want to collect Alert and Audit data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -112,7 +90,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
    - listen address
    - listen port
 
-**NOTE**: Your Access key ID is your username and Secret Access key is your password.
+**NOTE**: Your Access key ID is your username and the Secret Access key is your password.
 
 ## Logs Reference
 

@@ -1,7 +1,16 @@
 version: "2.3"
 services:
-  opencanary-log:
-    image: docker.elastic.co/observability/stream:v0.6.2
+  test-filestream:
+    image: alpine
     volumes:
       - ./sample_logs:/sample_logs:ro
-    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/*.log
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  test-http_endpoint:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:10002/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/events.log

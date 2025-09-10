@@ -9,6 +9,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
@@ -70,6 +75,29 @@ processors:
       field: json.loginName
       target_field: client.user.id
       ignore_missing: true
+  - set:
+      field: client.user.email
+      copy_from: client.user.id
+      tag: copy_client_user_email
+      if: ctx.client?.user?.id != null && ctx.client.user.id.indexOf("@") > 0
+  - dissect:
+      field: client.user.email
+      pattern: '%{client.user.name}@%{client.user.domain}'
+      tag: dissect_client_user_email
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{client.user.id}}}'
+      if: ctx.client?.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{client.user.name}}}'
+      if: ctx.client?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.eventId
       target_field: event.id
