@@ -58,6 +58,30 @@ The processor v2 is in preview. Processor v1 is still the default and is recomme
 
 See the "Event Hub Processor v2 only" section in the integration settings for more details about enabling the processor v2.
 
+### FAQ
+
+Here are a few frequently asked questions about the integration v2 preview.
+
+#### Question: Is the integration v2 production ready?
+
+Yes, the integration v2 is production ready.
+
+The integration v2 is marked with "preview" as we were testing this routing approach, and wanted to keep the option of changing course, if needed. Since the experiment was successful, we'll remove the "preview" from the name as we finalize the plans to transition from v1 to v2.
+
+#### Question: Are all logs routed to the relevant data streams?
+
+Yes, all known logs are routed to the data stream with the best parsing and mapping functionality available.
+
+The `logs-azure.events-default` contains the routing logic based on the `category` field. The routing rules are available in the integrations repo at [packages/azure/data_stream/events/routing_rules.yml](https://github.com/elastic/integrations/blob/main/packages/azure/data_stream/events/routing_rules.yml).
+
+#### Question: How are unsupported Azure logs handled?
+
+The integration v2 inspects the category field to see if there's an integration available with full support. If there isn't a specific integration available, the routing falls back to `logs-azure.platformlogs-default` to apply the standard parsing and mapping.
+
+#### Question: What is in the undocumented data-stream `logs-azure.events-default`?
+
+The `logs-azure.events-default` data stream is the logs entry point for the integration v2. It contains the core logs routing logic.
+
 ## Data streams
 
 The Azure Logs integration (v2 preview) collects logs.

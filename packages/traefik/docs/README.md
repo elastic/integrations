@@ -26,7 +26,7 @@ Note:
 
 The Traefik datasets were tested with Traefik 1.6, 1.7 and 2.9 versions.
 
-## Prerequisites
+## What do I need to use this integration?
 
 User need Elasticsearch for storing and searching user's data and Kibana for visualizing and managing it. User can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on user's own hardware.
 

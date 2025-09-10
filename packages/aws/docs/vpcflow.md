@@ -52,10 +52,14 @@ For more information on implementation, see the Amazon documentation on:
 This integration supports various plain text VPC flow log formats:
 
 * The default pattern of 14 version 2 fields
-* A custom pattern including all 29 fields, version 2 though 5:
+* A custom pattern including all 40 fields, version 2 though 8:
 
 ```
-${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}
+${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path} ${ecs-cluster-arn} ${ecs-cluster-name} ${ecs-container-instance-arn} ${ecs-container-instance-id} ${ecs-container-id} ${ecs-second-container-id} ${ecs-service-name} ${ecs-task-definition-arn} ${ecs-task-arn} ${ecs-task-id} ${reject-reason}
+```
+* Version 6 transit gateway VPC flow format:
+```
+${version} ${resource-type} ${account-id} ${tgw-id} ${tgw-attachment-id} ${tgw-src-vpc-account-id} ${tgw-dst-vpc-account-id} ${tgw-src-vpc-id} ${tgw-dst-vpc-id} ${tgw-src-subnet-id} ${tgw-dst-subnet-id} ${tgw-src-eni} ${tgw-dst-eni} ${tgw-src-az-id} ${tgw-dst-az-id} ${tgw-pair-attachment-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${log-status} ${type} ${packets-lost-no-route} ${packets-lost-blackhole} ${packets-lost-mtu-exceeded} ${packets-lost-ttl-expired} ${tcp-flags} ${region} ${flow-direction} ${pkt-src-service} ${pkt-dst-service}
 ```
 
 ### Advanced options
@@ -95,18 +99,46 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
 | aws.vpcflow.account_id | The AWS account ID for the flow log. | keyword |
 | aws.vpcflow.action | The action that is associated with the traffic, ACCEPT or REJECT. | keyword |
+| aws.vpcflow.ecs_cluster_arn | ARN of the ECS Cluster if the traffic comes from a running ECS Task. | keyword |
+| aws.vpcflow.ecs_cluster_name | Name of the ECS Cluster if the traffic comes from a running ECS Task. | keyword |
+| aws.vpcflow.ecs_container_id | Docker runtime ID of the container (first container in the task). | keyword |
+| aws.vpcflow.ecs_container_instance_arn | ARN of the ECS Container Instance (for tasks using EC2 launch type). | keyword |
+| aws.vpcflow.ecs_container_instance_id | ID of the ECS Container Instance (for EC2 launch type). | keyword |
+| aws.vpcflow.ecs_second_container_id | Docker runtime ID of the second container in the task, if present. | keyword |
+| aws.vpcflow.ecs_service_name | Name of the ECS Service if the task is started by a service. | keyword |
+| aws.vpcflow.ecs_task_arn | ARN of the ECS Task generating the flow. | keyword |
+| aws.vpcflow.ecs_task_definition_arn | ARN of the ECS Task Definition for the running task. | keyword |
+| aws.vpcflow.ecs_task_id | ID of the ECS Task generating the flow. | keyword |
 | aws.vpcflow.instance_id | The ID of the instance that's associated with network interface for which the traffic is recorded, if the instance is owned by you. | keyword |
 | aws.vpcflow.interface_id | The ID of the network interface for which the traffic is recorded. | keyword |
 | aws.vpcflow.log_status | The logging status of the flow log, OK, NODATA or SKIPDATA. | keyword |
+| aws.vpcflow.packets_lost_blackhole | Number of packets dropped due to a black hole route. | long |
+| aws.vpcflow.packets_lost_mtu_exceeded | Number of packets dropped because they exceeded the MTU. | long |
+| aws.vpcflow.packets_lost_no_route | Number of packets dropped because no route was found. | long |
+| aws.vpcflow.packets_lost_ttl_expired | Number of packets dropped because their TTL expired. | long |
 | aws.vpcflow.pkt_dst_service | The name of the subset of IP address ranges for the pkt-dstaddr field, if the source IP address is for an AWS service. | keyword |
 | aws.vpcflow.pkt_dstaddr | The packet-level (original) destination IP address for the traffic. | ip |
 | aws.vpcflow.pkt_src_service | The name of the subset of IP address ranges for the pkt-srcaddr field, if the source IP address is for an AWS service. | keyword |
 | aws.vpcflow.pkt_srcaddr | The packet-level (original) source IP address of the traffic. | ip |
+| aws.vpcflow.resource_type | Indicates whether the record is for a Transit Gateway or a Transit Gateway Attachment. | keyword |
 | aws.vpcflow.sublocation.id | The ID of the sublocation that contains the network interface for which traffic is recorded. If the traffic is not from a sublocation, the field is removed. | keyword |
 | aws.vpcflow.sublocation.type | The type of sublocation that's returned in the sublocation-id field. The possible values are: wavelength | outpost | localzone. If the traffic is not from a sublocation, the field is removed. | keyword |
 | aws.vpcflow.subnet_id | The ID of the subnet that contains the network interface for which the traffic is recorded. | keyword |
 | aws.vpcflow.tcp_flags | The bitmask value for the following TCP flags: 2=SYN,18=SYN-ACK,1=FIN,4=RST | keyword |
 | aws.vpcflow.tcp_flags_array | List of TCP flags: 'fin, syn, rst, psh, ack, urg' | keyword |
+| aws.vpcflow.tgw_attachment_id | The ID of the Transit Gateway attachment (e.g., VPC, VPN, DX, or Peering). | keyword |
+| aws.vpcflow.tgw_dst_az_id | Availability Zone ID for the destination attachment. | keyword |
+| aws.vpcflow.tgw_dst_eni | The ENI ID on the destination side of the attachment. | keyword |
+| aws.vpcflow.tgw_dst_subnet_id | The subnet ID associated with the destination of the traffic. | keyword |
+| aws.vpcflow.tgw_dst_vpc_account_id | AWS account ID of the destination VPC. | keyword |
+| aws.vpcflow.tgw_dst_vpc_id | The ID of the destination VPC. | keyword |
+| aws.vpcflow.tgw_id | The ID of the Transit Gateway that handled the flow. | keyword |
+| aws.vpcflow.tgw_pair_attachment_id | The paired ingress/egress attachment ID for the flow (depends on flow direction). | keyword |
+| aws.vpcflow.tgw_src_az_id | Availability Zone ID for the source attachment. | keyword |
+| aws.vpcflow.tgw_src_eni | The ENI (Elastic Network Interface) ID on the source side of the attachment. | keyword |
+| aws.vpcflow.tgw_src_subnet_id | The subnet ID associated with the source of the traffic. | keyword |
+| aws.vpcflow.tgw_src_vpc_account_id | AWS account ID of the source VPC. | keyword |
+| aws.vpcflow.tgw_src_vpc_id | The ID of the source VPC. | keyword |
 | aws.vpcflow.traffic_path | The path that egress traffic takes to the destination. To determine whether the traffic is egress traffic, check the `network.direction` field. The possible values can be found [here](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html#flow-logs-fields). If none of the values apply, the field is set to -. | keyword |
 | aws.vpcflow.type | The type of traffic: IPv4, IPv6, or EFA. | keyword |
 | aws.vpcflow.version | The VPC Flow Logs version. If you use the default format, the version is 2. If you specify a custom format, the version is 3. | keyword |
@@ -129,17 +161,17 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2014-12-14T04:07:50.000Z",
     "agent": {
-        "ephemeral_id": "884f01cb-3cd3-4f05-a4c3-c97c0eccb33d",
-        "id": "6f7e7793-7439-41de-9909-93ced0496b71",
-        "name": "elastic-agent-64848",
+        "ephemeral_id": "e40a4ff2-5014-4e73-b739-ba3e97b54cb3",
+        "id": "60c7c230-415e-4699-b658-b052c2ca13d5",
+        "name": "elastic-agent-74905",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-51558",
-                "name": "elastic-package-aws-bucket-51558"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-10802",
+                "name": "elastic-package-aws-bucket-10802"
             },
             "object": {
                 "key": "extra-samples.log"
@@ -162,7 +194,7 @@ An example event for `vpcflow` looks as following:
     },
     "data_stream": {
         "dataset": "aws.vpcflow",
-        "namespace": "18794",
+        "namespace": "74125",
         "type": "logs"
     },
     "destination": {
@@ -192,8 +224,8 @@ An example event for `vpcflow` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6f7e7793-7439-41de-9909-93ced0496b71",
-        "snapshot": true,
+        "id": "60c7c230-415e-4699-b658-b052c2ca13d5",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -204,7 +236,7 @@ An example event for `vpcflow` looks as following:
         ],
         "dataset": "aws.vpcflow",
         "end": "2014-12-14T04:07:50.000Z",
-        "ingested": "2025-03-13T10:01:27Z",
+        "ingested": "2025-08-29T10:18:26Z",
         "kind": "event",
         "original": "2 123456789010 eni-1235b8ca123456789 89.160.20.156 89.160.20.156 20641 22 6 20 4249 1418530010 1418530070 ACCEPT OK",
         "outcome": "success",
@@ -219,7 +251,7 @@ An example event for `vpcflow` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-51558.s3.us-east-1.amazonaws.com/extra-samples.log"
+            "path": "https://elastic-package-aws-bucket-10802.s3.us-east-1.amazonaws.com/extra-samples.log"
         },
         "offset": 338
     },

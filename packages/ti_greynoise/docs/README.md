@@ -4,18 +4,18 @@
 
 [GreyNoise](https://www.greynoise.io/) is a cybersecurity platform that helps security teams filter out "internet noise" — background internet scanning activity that's not necessarily targeted or malicious. It collects, analyzes, and labels massive amounts of data from internet-wide scans, typically originating from bots, security researchers, or compromised systems.
 
-## Prerequisites for GreyNoise
+## What do I need to use this integration?
 
 Customers must have access to the **Enterprise API** to fetch data from GreyNoise. You can verify your API key access [here](https://viz.greynoise.io/account/api-key).
 
-## Requirements
-
 ### Agentless-enabled integration
+
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based installation
+
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
@@ -25,7 +25,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. After logging in to GreyNoise, navigate to your [account page](https://viz.greynoise.io/account/api-key).
 2. Click "View API Key" to display and copy your unique API key.
 
-### Enabling the Integration in Elastic
+### Enable the integration in Elastic
 
 1. In Kibana, go to **Management > Integrations**.
 2. In the "Search for integrations" search bar, type **GreyNoise**.
@@ -39,7 +39,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 **Note:** The "last_seen" field should not be included in the query as it is predefined with a fixed value of "1d".
 
-## Transforming Data for Up-to-Date Insights
+## Transform data for up-to-date insights
 
 To keep the collected data up to date, **Transforms** are used.
 
@@ -65,13 +65,13 @@ A **retention policy** removes data older than the default retention period. For
 
 In this integration, the IP data stream has a default **retention period of 7 days**.
 
-## Enrichment with Detection Rules
+## Enrichment with detection rules
 
 Detection Rules match your Elastic environment data with GreyNoise data, generating an alert when a match is found.
 
 Follow **Steps to Create Detection Rule** below to create indicator match detection rule in Elastic.
 
-### Steps to Create Detection Rule
+### Steps to create detection rule
 
 1. Navigate to **Security > Rules > Detection Rules** and click **Create New Rule**.
 2. Select **Indicator Match** as the rule type and do following changes.
@@ -135,7 +135,7 @@ The following transform and its associated pipelines are used to filter relevant
    - Click the **three dots** next to the transform, then select **Reset**.
    - After resetting, restart the transform.
 
-## Logs Reference
+## Logs reference
 
 ### IP
 
