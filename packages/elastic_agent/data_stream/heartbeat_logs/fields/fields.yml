@@ -45,3 +45,72 @@
     - name: dataset
       type: keyword
       ignore_above: 1024
+# Metrics currently logged in "Non-zero metrics in the last 30s" logs
+# TODO: Update Agent to move these to the "metrics" data streams
+# Note: none of thes metric_type fields are used on logs data streams
+- name: monitoring.metrics.libbeat.pipeline
+  type: group
+  fields:
+    - name: events
+      type: group
+      fields:
+        - name: active
+          type: long
+          metric_type: gauge
+          description: Number of events currently in the pipeline. The maximum size is the configured queue size plus one event per event pipeline client.
+        - name: published
+          type: long
+          metric_type: counter
+          description: Number of events published by the pipeline
+        - name: total
+          type: long
+          metric_type: counter
+          description: Number of events processed by the pipeline
+    - name: queue.acked
+      type: long
+      metric_type: counter
+      description: Number of events successfully acknowledged by the output
+    - name: queue.max_events
+      type: long
+      metric_type: counter
+      description: Maximum number of events in a queue if it has one, otherwise zero.
+    - name: queue.max_bytes
+      type: long
+      metric_type: counter
+      description: Maximum number of bytes in a queue if it has one, otherwise zero.
+    - name: queue.filled.events
+      type: long
+      metric_type: gauge
+      description: Number of events currently stored in the queue.
+    - name: queue.filled.bytes
+      type: long
+      metric_type: gauge
+      description: Number of bytes currently in the queue.
+    - name: queue.filled.pct
+      type: float
+      metric_type: gauge
+      description: Maximum number of events in a queue
+    - name: queue.added.events
+      type: long
+      metric_type: gauge
+      description: Number of events currently stored in the queue.
+    - name: queue.added.bytes
+      type: long
+      metric_type: gauge
+      description: Number of bytes currently in the queue.
+    - name: queue.consumed.events
+      type: long
+      metric_type: gauge
+      description: Number of events currently stored in the queue.
+    - name: queue.consumed.bytes
+      type: long
+      metric_type: gauge
+      description: Number of bytes currently in the queue.
+    - name: queue.removed.events
+      type: long
+      metric_type: gauge
+      description: Number of events currently stored in the queue.
+    - name: queue.removed.bytes
+      type: long
+      metric_type: gauge
+      description: Number of bytes currently in the queue.
