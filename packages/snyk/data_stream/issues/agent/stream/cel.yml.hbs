@@ -163,8 +163,8 @@ program: |-
           "cursor": {
             ?"next": body.?links.next,
             // Always keep last updated. This is our next periodic start point.
-            "last_updated": body.data.map(d, has(d.?attributes.created_at),
-              timestamp(d.attributes.created_at)
+            "last_updated": body.data.map(d, has(d.?attributes.updated_at),
+              timestamp(d.attributes.updated_at)
             ).as(times, (size(times) == 0) ? state.?cursor.last_updated.orValue(now) : times.max()),
           },
           "want_more": has(body.?links.next),
