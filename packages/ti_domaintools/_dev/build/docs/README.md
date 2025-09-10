@@ -95,3 +95,14 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 {{event "domainrisk_feed"}}
 
 {{fields "domainrisk_feed"}}
+
+### Domain Hotlist Feed
+
+The `domainhotlist_feed` data stream provides events from [DomainTools Domain Hotlist](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
+
+#### Example
+
+{{event "domainhotlist_feed"}}
+
+{{fields "domainhotlist_feed"}}
