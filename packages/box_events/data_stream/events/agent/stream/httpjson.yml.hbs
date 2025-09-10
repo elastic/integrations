@@ -32,11 +32,9 @@ response.split:
   type: array
   keep_parent: false
 response.pagination:
-  - delete:
-      target: url.params.stream_position
   - set:
       target: url.params.stream_position
-      value: '[[if index .last_response.body "next_stream_position"]][[toInt .last_response.body.next_stream_position]][[end]]'
+      value: '[[ if and (index .last_response.body "next_stream_position") (ge (len .last_response.body.entries) {{limit}}) ]][[toInt .last_response.body.next_stream_position]][[end]]'
       fail_on_template_error: true
 cursor:
   next_stream_position:
