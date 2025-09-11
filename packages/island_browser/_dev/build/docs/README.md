@@ -12,16 +12,17 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve devices.
+This integration periodically queries the Island Browser API to retrieve users and devices.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
+- `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 
 ### Supported use cases
-Integrating Island Browser Device endpoint data with Elastic SIEM improves visibility into device activity and health across the environment. Kibana dashboards track active, archived, and jailbroken devices, while line and pie charts highlight policy updates, status, type, and OS platform distribution. Metrics quickly surface total active devices and risk indicators, and breakdowns by browser update status, Windows license status, and MDM provider expose important compliance and management details. A saved search of essential device attributes—IDs, IPs, MACs, users, and organizations—provides context for investigations. These insights help analysts monitor device posture, detect anomalies, and strengthen overall endpoint oversight.
+Integrating Island Browser User and Device endpoint data with Elastic SIEM provides comprehensive visibility into account activity and device posture. Kibana dashboards track total and active users, login trends, and group distributions alongside device activity, including active, archived, and jailbroken states. Breakdowns by user source, type, and status, as well as device OS platform, policy updates, browser update status, and compliance indicators, highlight key usage and risk patterns. Saved searches and tables surface essential context—such as verified emails, IDs, IPs, MACs, and associated users—enabling analysts to detect anomalies, investigate efficiently, and strengthen both identity and endpoint oversight.
 
 ## What do I need to use this integration?
 
@@ -102,6 +103,16 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
+#### User
+
+{{fields "user"}}
+
+### Example event
+
+#### User
+
+{{event "user"}}
+
 #### Device
 
 {{fields "device"}}
@@ -120,10 +131,11 @@ These inputs can be used in this integration:
 
 ### API usage
 
-This integration dataset uses the following API:
+This integration dataset uses the following APIs:
 
+- `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 
 #### ILM Policy
 
-To facilitate device data, source data stream-backed indices `.ds-logs-island_browser.device-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-island_browser.device-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate user and device data, source data stream-backed indices `.ds-logs-island_browser.user-*` and `.ds-logs-island_browser.device-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-island_browser.user-default_policy` and `logs-island_browser.device-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
