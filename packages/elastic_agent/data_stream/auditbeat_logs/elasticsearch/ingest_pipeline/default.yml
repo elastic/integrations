@@ -1,11 +1,18 @@
 ---
 description: "Pipeline for adapting Elastic Agent fields"
 processors:
-  # Rename field from older versions of Beats.
-  - rename:
-      field: monitoring.metrics.libbeat.pipeline.queue.filled.pct.events
-      target_field: monitoring.metrics.libbeat.pipeline.queue.filled.events
-      ignore_missing: true
-  - remove:
-      field: monitoring.metrics.libbeat.pipeline.queue.filled.pct
-      ignore_missing: true
+  - script:
+      lang: painless
+      description: Rename field from older versions of Beats.
+      if: ctx.monitoring?.metrics?.libbeat?.pipeline?.queue?.filled?.pct instanceof Map && ctx.monitoring.metrics.libbeat.pipeline.queue.filled.pct.events != null
+      source: |
+          ctx.monitoring.metrics.libbeat.pipeline.queue.filled.pct = ctx.monitoring.metrics.libbeat.pipeline.queue.filled.pct.events;
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
