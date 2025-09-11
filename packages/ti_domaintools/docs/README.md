@@ -27,6 +27,8 @@ Log data streams collected by the DomainTools integration include the following 
 - `Newly Active Domains (NAD)`
 - `Domain Discovery`
 - `Domain RDAP`
+- `Domain Risk`
+- `Domain Hotlist`
 
 ## Requirements
 
