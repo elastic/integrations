@@ -93,7 +93,7 @@ An example event for `statsd` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "97400795-188c-4140-a1ee-0002078c785d",
