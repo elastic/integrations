@@ -592,7 +592,7 @@ elastic-package test [pipeline|test|static|asset] -v -g
     $ elastic-package test -v
     ```
 
-    Keep in mind that the `elastic-package test` command requires a live cluster running and exported environment variables. The environment variables can be set with `eval "$(elastic-package stack shellinit)"`.
+    Keep in mind that the `elastic-package test` command requires a live cluster running.
 
 #### Fields [_fields]
 

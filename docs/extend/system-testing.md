@@ -14,7 +14,6 @@ For more information on system tests, please refer to [HOWTO: Writing system tes
 ```bash
 # Start the Elastic stack
 elastic-package stack up -d
-$(elastic-package stack shellinit)
 
 # Run system tests
 cd packages/your-package
@@ -276,9 +275,6 @@ data_stream:
 ```bash
 # Start Elastic stack (one-time setup)
 elastic-package stack up -d
-
-# Initialize environment variables
-$(elastic-package stack shellinit)
 
 # Verify stack is running
 elastic-package stack status

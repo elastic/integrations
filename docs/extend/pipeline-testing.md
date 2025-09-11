@@ -230,9 +230,6 @@ Define expected output in `-expected.json` files:
 # Start only Elasticsearch (faster than full stack)
 elastic-package stack up -d --services=elasticsearch
 
-# Set environment variables
-$(elastic-package stack shellinit)
-
 # Verify Elasticsearch is running
 curl -X GET "localhost:9200/_cluster/health"
 ```
