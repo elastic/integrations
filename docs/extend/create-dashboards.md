@@ -5,23 +5,35 @@ mapped_pages:
 
 # Create and export dashboards [create-dashboards]
 
-Visualizing integration data in a meaningful way is an important aspect of an integration.
+Visualizing integration data in a meaningful way is a key aspect of building a great integration. Dashboards help users quickly understand and explore the data your integration ingests
 
-When creating a new integration, it’s important to add dashboards.
+## Getting started [_getting_started]
 
-To get started, create a new dashboard, or customize an existing one. You can use `elastic-package` to boot up the service stack. Navigate to the package you want to create dashboards for, and run:
+1. Create or customize a dashboard
+
+* In {{kib}}, create a new dashboard or customize an existing one to visualize your integration’s data.
+
+* Use [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html) for new visualizations whenever possible. If Lens doesn’t meet your needs, use TSVB.
+
+2. Boot up the service stack
+
+Use `elastic-package` to start the service stack for your integration:
 
 ```bash
 elastic-package service
 ```
 
-When you’re done making changes, you can use `elastic-package` to export the dashboards and their dependencies to the package source.
+3. Export dashboards and dependencies
 
+When you’re done, export your dashboards and their dependencies to the package source
+```bash
+elastic-package export
+```
 
 ## Dashboard planning [_dashboard_planning]
 
 Many integrations cover more than one component of a target system. For example, the RabbitMQ module provides several metricsets covering connection, exchange, node, queue. It makes sense to break this information down into several interconnected dashboards. The default one is an overview of a target system, and the others provide deep-dives into the various parts of the target system. The content of the Overview dashboard should be cherry-picked from all datasets and individually compiled for every such integration.
-
+ 
 
 ### Metrics [_metrics]
 
@@ -82,15 +94,15 @@ When building dashboards, use the following naming convention.
 #### Visualizations [_visualizations]
 
 ```text
-<NAME> [<Metrics | Logs> <PACKAGE NAME>]
+<Name>
 ```
 
 Examples:
 
-* Memory Usage Gauge [Metrics System]
-* New groups [Logs System]
+* Memory Usage Gauge
+* New groups
 
-Rename all visualizations added to a dashboard only to show the <NAME> part.
+To avoid adding repetitive information such as the package name, rename all visualizations added to a dashboard only to show the <Name> part.
 
 
 #### Dashboards [_dashboards]
@@ -117,7 +129,22 @@ These descriptions are visualized in the {{kib}} UI. It would be better experien
 
 ## Exporting [_exporting]
 
+When your dashboards are ready, export them with:
+
 ```bash
 elastic-package export
 ```
 
+This command exports dashboards and their dependencies to your integration package.
+
+## Additional best practices [_best_practices]
+
+* Use stable {{kib}} versions: Build dashboards on officially released {{kib}} versions, not SNAPSHOTs.
+
+* Limit visualizations per dashboard: Avoid overcrowding. Split into multiple dashboards if needed.
+
+* Update dashboards for field changes: If field names or types change, update all affected dashboards.
+
+* Add visualizations by value: Prefer adding visualizations by value (not by reference) to avoid accidental deletion or dependency issues.
+
+* Link dashboards with drilldowns: Use drilldowns(external, opens in a new tab or window) for advanced navigation between dashboards.

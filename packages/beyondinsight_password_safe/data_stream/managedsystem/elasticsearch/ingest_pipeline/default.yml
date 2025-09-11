@@ -1,17 +1,18 @@
 ---
-description: Pipeline for processing BeyondInsight and Password Safe Managed Systems logs
+description: Pipeline for processing BeyondInsight and Password Safe Managed Systems logs.
 processors:
-  - rename:
-      field: message
-      target_field: beyondinsight_password_safe.managedsystem
-
-  - drop:
-      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
-
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - fingerprint:
       fields:
-        - beyondinsight_password_safe.managedsystem
-      target_field: "_id"
+        - event.original
+      target_field: _id
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondinsight_password_safe.managedsystem
 
 ####################
 # Scripts for processing input #
@@ -34,6 +35,18 @@ processors:
         }
         dropEmptyFields(ctx);
 
+  - rename:
+      field: beyondinsight_password_safe.managedsystem.IPAddress
+      target_field: beyondinsight_password_safe.managedsystem.ip_address
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.managedsystem.DNSName
+      target_field: beyondinsight_password_safe.managedsystem.dns_name
+      ignore_missing: true
+  - rename:
+      field: beyondinsight_password_safe.managedsystem.ISAReleaseDuration
+      target_field: beyondinsight_password_safe.managedsystem.isa_release_duration
+      ignore_missing: true
   - script:
       description: Convert Additional Info keys to snake case.
       tag: additional-info-keys-to-snake-case
@@ -88,13 +101,6 @@ processors:
       field: event.type
       value: info
 
-  - set:
-      field: event.dataset
-      value: beyondinsight_password_safe.managedsystem
-
-  - set:
-      field: event.module
-      value: beyondinsight_password_safe
 
   - set:
       field: host.name
@@ -103,7 +109,6 @@ processors:
   - append:
       field: related.hosts
       value: '{{{beyondinsight_password_safe.managedsystem.host_name}}}'
-
       allow_duplicates: false
       if: ctx.beyondinsight_password_safe.managedsystem.host_name != null
 
@@ -137,6 +142,7 @@ processors:
   - convert:
       field: beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode
       type: string
+      if: ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null
 
   - script:
       description: Convert ssh_key_enforcement_mode to their text meaning
@@ -148,39 +154,33 @@ processors:
           "2": "Strict"
       if: ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null
       source: |
-        ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = params.descriptions.getOrDefault(
-          ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode,
-          "unknown"
-        );
+        def description = params.descriptions.get(ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode);
+        if (description != null) {
+          ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = description;
+        }
 
  #################### Override host.ip ######################
   - gsub:
-      field: beyondinsight_password_safe.managedsystem.ipaddress
+      description: Remove leading zeros from IP address octets.
+      field: beyondinsight_password_safe.managedsystem.ip_address
       pattern: "\\b0+(\\d)"
       replacement: "$1"
   - convert:
-      field: beyondinsight_password_safe.managedsystem.ipaddress
+      field: beyondinsight_password_safe.managedsystem.ip_address
       type: ip
-      if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
-
+      on_failure:
+        - remove:
+            field: beyondinsight_password_safe.managedsystem.ip_address
   - append:
+      if: ctx.beyondinsight_password_safe?.managedsystem.ip_address != null
       field: host.ip
-      value: "{{{beyondinsight_password_safe.managedsystem.ipaddress}}}"     
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.managedsystem.ipaddress}}}'
+      value: "{{{beyondinsight_password_safe.managedsystem.ip_address}}}"
       allow_duplicates: false
-
-  - convert:
-      field: beyondinsight_password_safe.managedsystem.ipaddress
-      target_field: beyondinsight_password_safe.managedsystem.ipaddress
-      type: ip
-      if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
-      ignore_missing: true
-
   - append:
-      field: host.ip
-      value: "{{{beyondinsight_password_safe.managedsystem.ipaddress}}}"
+      if: ctx.beyondinsight_password_safe?.managedsystem.ip_address != null
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedsystem.ip_address}}}'
+      allow_duplicates: false
 
   - geoip:
       field: host.ip
@@ -189,9 +189,12 @@ processors:
       ignore_failure: true
 
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,136 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: "metrics"
+period: {{period}}
+http_method: {{http_method}}
+
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+
+username: {{username}}
+password: {{password}}
+
+jmx.mappings:
+# Partition metrics
+- mbean: 'kafka.cluster:type=Partition,name=AtMinIsr,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: partition.at_min_isr
+
+- mbean: 'kafka.cluster:type=Partition,name=InSyncReplicasCount,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: partition.insync_replicas_count
+
+- mbean: 'kafka.cluster:type=Partition,name=LastStableOffsetLag,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: partition.last_stable_offset_lag
+
+- mbean: 'kafka.cluster:type=Partition,name=ReplicasCount,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: partition.replicas_count
+
+- mbean: 'kafka.cluster:type=Partition,name=UnderMinIsr,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: partition.under_min_isr
+
+- mbean: 'kafka.cluster:type=Partition,name=UnderReplicated,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: partition.under_replicated
+
+# Log metrics
+- mbean: 'kafka.log:type=Log,name=LogEndOffset,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: log.end_offset
+
+- mbean: 'kafka.log:type=Log,name=LogStartOffset,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: log.start_offset
+
+- mbean: 'kafka.log:type=Log,name=NumLogSegments,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: log.segments_count
+
+- mbean: 'kafka.log:type=Log,name=Size,topic=*,partition=*'
+  attributes:
+    - attr: Value
+      field: log.size
+
+# Broker Topic Metrics
+- mbean: 'kafka.server:type=BrokerTopicMetrics,name=BytesRejectedPerSec,topic=*'
+  attributes:
+    - attr: OneMinuteRate
+      field: topic.bytes_rejected_per_sec
+
+- mbean: 'kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec,topic=*'
+  attributes:
+    - attr: OneMinuteRate
+      field: topic.bytes_in_per_sec
+
+- mbean: 'kafka.server:type=BrokerTopicMetrics,name=BytesOutPerSec,topic=*'
+  attributes:
+    - attr: OneMinuteRate
+      field: topic.bytes_out_per_sec
+
+- mbean: 'kafka.server:type=BrokerTopicMetrics,name=MessagesInPerSec,topic=*'
+  attributes:
+    - attr: OneMinuteRate
+      field: topic.messages_in_per_sec
+
+- mbean: 'kafka.server:type=BrokerTopicMetrics,name=TotalFetchRequestsPerSec,topic=*'
+  attributes:
+    - attr: OneMinuteRate
+      field: topic.fetch_requests_per_sec
+
+{{#if headers}}
+{{headers}}
+{{/if}}
+
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -592,6 +592,7 @@ processors:
         - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
         - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
         - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}(\\(%{CISCO_USER_OR_SGT_SRC}\\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST}(\\(%{CISCO_USER_OR_SGT_DST}\\))? \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?(\\(%{CISCO_USER_OR_SGT_SRC}\\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?(\\(%{CISCO_USER_OR_SGT_DST}\\))? \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: <%{NOTSPACE:input.type}>[.]?"
       pattern_definitions:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
@@ -1887,13 +1888,24 @@ processors:
         if (ctx.event == null) {
             ctx['event'] = new HashMap();
         }
-        String end = ctx['@timestamp'];
-        ctx.event['end'] = end;
-        long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
-        ctx.event['duration'] = nanos;
-        ctx.event['start'] = ZonedDateTime.ofInstant(
-            Instant.parse(end).minusNanos(nanos),
-            ZoneOffset.UTC);
+        if (ctx?._temp_.cisco?.message_id == '430003') {
+          String start = ctx['@timestamp'];
+          ctx.event['start'] = start;
+          long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
+          ctx.event['duration'] = nanos;
+          ctx.event['end'] = ZonedDateTime.ofInstant(
+              Instant.parse(start).plusNanos(nanos),
+              ZoneOffset.UTC);
+        } else {
+          String end = ctx['@timestamp'];
+          ctx.event['end'] = end;
+          long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
+          ctx.event['duration'] = nanos;
+          ctx.event['start'] = ZonedDateTime.ofInstant(
+              Instant.parse(end).minusNanos(nanos),
+              ZoneOffset.UTC);
+        }
+
   #
   # Parse Source/Dest Username/Domain
   #

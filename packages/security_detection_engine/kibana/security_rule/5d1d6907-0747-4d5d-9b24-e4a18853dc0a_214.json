@@ -1,0 +1,145 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution of a suspicious program via scheduled tasks by looking at process lineage and command line usage.",
+        "false_positives": [
+            "Legitimate scheduled tasks running third party software."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Execution via Scheduled Task",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Execution via Scheduled Task\n\nScheduled tasks in Windows automate routine tasks, but adversaries exploit them for persistence and execution of malicious programs. By examining process lineage and command line usage, the detection rule identifies suspicious executions initiated by scheduled tasks. It flags known malicious executables and unusual file paths, while excluding benign processes, to pinpoint potential threats effectively.\n\n### Possible investigation steps\n\n- Review the process lineage to confirm the parent process is \"svchost.exe\" with arguments containing \"Schedule\" to verify the execution was initiated by a scheduled task.\n- Examine the command line arguments and file paths of the suspicious process to identify any unusual or unauthorized file locations, such as those listed in the query (e.g., \"C:\\Users\\*\", \"C:\\ProgramData\\*\").\n- Check the original file name of the process against the list of known suspicious executables (e.g., \"PowerShell.EXE\", \"Cmd.Exe\") to determine if it matches any commonly abused binaries.\n- Investigate the user context under which the process was executed, especially if it deviates from expected system accounts or known service accounts.\n- Correlate the event with other security logs or alerts to identify any related suspicious activities or patterns that might indicate a broader attack campaign.\n- Assess the risk and impact of the detected activity by considering the severity and risk score provided, and determine if immediate containment or remediation actions are necessary.\n\n### False positive analysis\n\n- Scheduled tasks running legitimate scripts or executables like cmd.exe or cscript.exe in system directories may trigger false positives. To manage this, create exceptions for these processes when they are executed from known safe directories such as C:\\Windows\\System32.\n- PowerShell scripts executed by the system account (S-1-5-18) for administrative tasks can be mistakenly flagged. Exclude these by specifying exceptions for PowerShell executions with arguments like -File or -PSConsoleFile when run by the system account.\n- Legitimate software installations or updates using msiexec.exe by the system account may be incorrectly identified as threats. Mitigate this by excluding msiexec.exe processes initiated by the system account.\n- Regular maintenance tasks or scripts stored in common directories like C:\\ProgramData or C:\\Windows\\Temp might be flagged. Review these tasks and exclude known benign scripts or executables from these paths.\n- Custom scripts or administrative tools that mimic suspicious executables (e.g., PowerShell.EXE, RUNDLL32.EXE) but are part of routine operations should be reviewed and excluded if verified as safe.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread of any potential malicious activity.\n- Terminate any suspicious processes identified by the detection rule, especially those matching the flagged executables and paths.\n- Conduct a thorough review of scheduled tasks on the affected system to identify and disable any unauthorized or suspicious tasks.\n- Remove any malicious files or executables found in the suspicious paths listed in the detection rule.\n- Restore the system from a known good backup if malicious activity is confirmed and system integrity is compromised.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for scheduled tasks and the flagged executables to detect similar threats in the future.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n    /* Schedule service cmdline on Win10+ */\n    process.parent.name : \"svchost.exe\" and process.parent.args : \"Schedule\" and\n    /* add suspicious programs here */\n    process.pe.original_file_name in\n                                (\n                                  \"cscript.exe\",\n                                  \"wscript.exe\",\n                                  \"PowerShell.EXE\",\n                                  \"Cmd.Exe\",\n                                  \"MSHTA.EXE\",\n                                  \"RUNDLL32.EXE\",\n                                  \"REGSVR32.EXE\",\n                                  \"MSBuild.exe\",\n                                  \"InstallUtil.exe\",\n                                  \"RegAsm.exe\",\n                                  \"RegSvcs.exe\",\n                                  \"msxsl.exe\",\n                                  \"CONTROL.EXE\",\n                                  \"EXPLORER.EXE\",\n                                  \"Microsoft.Workflow.Compiler.exe\",\n                                  \"msiexec.exe\"\n                                  ) and\n    /* add suspicious paths here */\n    process.args : (\n       \"C:\\\\Users\\\\*\",\n       \"C:\\\\ProgramData\\\\*\",\n       \"C:\\\\Windows\\\\Temp\\\\*\",\n       \"C:\\\\Windows\\\\Tasks\\\\*\",\n       \"C:\\\\PerfLogs\\\\*\",\n       \"C:\\\\Intel\\\\*\",\n       \"C:\\\\Windows\\\\Debug\\\\*\",\n       \"C:\\\\HP\\\\*\") and\n\n    not (process.name : \"cmd.exe\" and process.args : \"?:\\\\*.bat\" and process.working_directory : \"?:\\\\Windows\\\\System32\\\\\") and\n    not (process.name : \"cscript.exe\" and process.args : \"?:\\\\Windows\\\\system32\\\\calluxxprovider.vbs\") and\n    not (\n       process.name : \"powershell.exe\" and\n       process.args : (\n           \"-File\", \"-PSConsoleFile\",\n           \"C:\\\\ProgramData\\\\Microsoft\\\\AutopatchSetupScheduled\\\\SetupAutopatchClientV2Package.ps1\",\n           \"C:\\\\ProgramData\\\\Microsoft\\\\AutopatchSetupScheduled\\\\SetupAutopatchClientPackage.ps1\"                \n       ) and user.id : \"S-1-5-18\"\n    ) and\n    not (process.name : \"msiexec.exe\" and user.id : \"S-1-5-18\")\n",
+        "references": [
+            "https://www.elastic.co/security-labs/elastic-protects-against-data-wiper-malware-targeting-ukraine-hermeticwiper"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5d1d6907-0747-4d5d-9b24-e4a18853dc0a",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Data Source: Sysmon"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 214
+    },
+    "id": "5d1d6907-0747-4d5d-9b24-e4a18853dc0a_214",
+    "type": "security-rule"
+}

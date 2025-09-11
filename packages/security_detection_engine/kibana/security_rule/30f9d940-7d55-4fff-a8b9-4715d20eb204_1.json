@@ -1,0 +1,132 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to execute Jscript/Vbscript files from an archive file. The use of archives is a common delivery method of malicious scripts.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Windows Script Execution from Archive",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Windows Script Execution from Archive\n\nWindows scripts, often used for legitimate automation tasks, can be exploited by adversaries to execute malicious code. Attackers may download scripts via browsers or file utilities, then execute them using scripting tools like wscript or mshta. The detection rule identifies such threats by monitoring script creation from internet sources and subsequent execution, focusing on unusual parent-child process relationships and script attributes.\n\n### Possible investigation steps\n\n- Review the file creation event to identify the specific script file that was downloaded, noting its name, path, and extension to understand the potential threat.\n- Examine the origin URL or referrer URL of the downloaded script to determine the source and assess its legitimacy or potential malicious intent.\n- Investigate the parent process, such as chrome.exe or explorer.exe, to understand how the script was downloaded and whether it aligns with typical user behavior.\n- Analyze the execution event of the scripting utility (wscript.exe or mshta.exe) to identify the command-line arguments used, which may provide insight into the script's intended actions.\n- Check the user account associated with the script execution to determine if the activity is expected for that user or if it indicates a compromised account.\n- Correlate the timing of the script creation and execution events to see if they fall within a suspicious timeframe, such as outside of normal working hours.\n- Look for any additional related alerts or logs on the host that might indicate further malicious activity or lateral movement following the script execution.\n\n### False positive analysis\n\n- Legitimate script automation tools may trigger this rule if they download and execute scripts from the internet. Users can create exceptions for known safe tools by excluding specific file paths or process names.\n- Software updates or installations that download scripts as part of their process might be flagged. To handle this, users can whitelist specific origin URLs or referrer URLs associated with trusted software vendors.\n- Internal scripts distributed via corporate intranet sites could be misidentified as threats. Users should consider excluding scripts with known internal origin URLs or specific user IDs associated with IT operations.\n- Browser extensions or plugins that automate tasks using scripts may cause false positives. Users can exclude these by identifying and excluding the specific browser process names or file extensions involved.\n- Frequent use of file utilities like winrar or 7zFM for legitimate script handling can be excluded by specifying trusted file paths or user IDs that regularly perform these actions.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further execution of potentially malicious scripts and lateral movement.\n- Terminate any suspicious processes identified in the alert, such as wscript.exe or mshta.exe, to stop the execution of the downloaded script.\n- Quarantine the downloaded script file and any associated files to prevent further execution and facilitate forensic analysis.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious files or remnants.\n- Review and analyze the origin URL and referrer URL of the downloaded script to identify potential malicious websites or compromised sources, and block these URLs at the network level.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement application whitelisting to restrict the execution of unauthorized scripts and scripting utilities, reducing the risk of similar threats in the future.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"wscript.exe\" and\n process.parent.name : (\"explorer.exe\", \"winrar.exe\", \"7zFM.exe\") and\n process.args :\n        (\"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\7z*\\\\*\",\n         \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\*.zip.*\\\\*\",\n         \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Rar$*\\\\*\",\n         \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\Temp?_*\\\\*\",\n         \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\BNZ.*\")\n",
+        "references": [
+            "https://medium.com/walmartglobaltech/smartapesg-4605157a5b80"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "30f9d940-7d55-4fff-a8b9-4715d20eb204",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            },
+                            {
+                                "id": "T1059.005",
+                                "name": "Visual Basic",
+                                "reference": "https://attack.mitre.org/techniques/T1059/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "30f9d940-7d55-4fff-a8b9-4715d20eb204_1",
+    "type": "security-rule"
+}

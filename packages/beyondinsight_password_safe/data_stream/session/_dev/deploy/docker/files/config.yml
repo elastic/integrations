@@ -1,0 +1,156 @@
+# BeyondInsight Password Safe - Sessions Test Mock Configuration
+#
+# Test Scenario: Simulates session retrieval with authentication and session expiration:
+# 1. Initial authentication via SignAppin endpoint (returns 200, sets session cookie)
+# 2. First Sessions request (returns 200, all session data - 3 sessions)
+# 3. Second Sessions request (returns 401, session expired) 
+# 4. Re-authentication via SignAppin endpoint (returns 200, new session cookie)
+# 5. Retry Sessions request (returns 200, session data again - 1 session)
+#
+# NOTE: Unlike managedaccount and managedsystem data streams, the Sessions API does NOT support
+# pagination with limit/offset parameters. The API returns all sessions at once with an upper 
+# cap of 100,000 sessions maximum.
+
+rules:
+  # Auth
+  - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key; runas=testuser; pwd=\[password\];']
+      Content-Type: ['application/json']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}']
+        body: |
+          {{ minify_json `
+          {
+            "UserId": 1,
+            "SID": null,
+            "EmailAddress": "test.user@example.com",
+            "UserName": "testuser",
+            "Name": "Test User"
+          }
+          `}}
+
+  - path: "/BeyondTrust/api/public/v3/Sessions"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=session_cookie1']
+    as_sequence: true
+    responses:
+      # Sessions - first request (successful)
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          [
+            {
+              "SessionID": 1001,
+              "UserID": 123,
+              "NodeID": "node-001",
+              "Status": 1,
+              "ArchiveStatus": 1,
+              "Protocol": 0,
+              "StartTime": "2025-01-15T08:30:00Z",
+              "EndTime": "2025-01-15T10:45:00Z",
+              "Duration": 8100,
+              "AssetName": "web-server-01",
+              "ManagedSystemID": 456,
+              "ManagedAccountID": 789,
+              "ManagedAccountName": "admin_user",
+              "RecordKey": "rec_key_abc123",
+              "Token": "token_xyz789",
+              "ApplicationID": 101,
+              "RequestID": 201,
+              "SessionType": 1
+            },
+            {
+              "SessionID": 1002,
+              "UserID": 124,
+              "NodeID": "node-002",
+              "Status": 2,
+              "ArchiveStatus": 0,
+              "Protocol": 1,
+              "StartTime": "2025-01-15T09:00:00Z",
+              "EndTime": "2025-01-15T11:15:00Z",
+              "Duration": 8100,
+              "AssetName": "db-server-01",
+              "ManagedSystemID": 457,
+              "ManagedAccountID": 790,
+              "ManagedAccountName": "database_admin",
+              "RecordKey": "rec_key_def456",
+              "Token": "token_abc123",
+              "ApplicationID": null,
+              "RequestID": null,
+              "SessionType": 2
+            },
+            {
+              "SessionID": 1003,
+              "UserID": 125,
+              "NodeID": "node-003",
+              "Status": 8,
+              "ArchiveStatus": 6,
+              "Protocol": 0,
+              "StartTime": "2025-01-15T10:30:00Z",
+              "EndTime": "2025-01-15T12:00:00Z",
+              "Duration": 5400,
+              "AssetName": "app-server-01",
+              "ManagedSystemID": null,
+              "ManagedAccountID": 791,
+              "ManagedAccountName": "service_account",
+              "RecordKey": "rec_key_ghi789",
+              "Token": "token_def456",
+              "ApplicationID": 102,
+              "RequestID": 202,
+              "SessionType": 3
+            }
+          ]
+          `}}
+
+      # Sessions - second request (session expired)
+      - status_code: 401
+        headers:
+          Content-Type: ['application/json']
+        body: >-
+          "User not authenticated"
+
+  # Sessions - retry after re-authentication
+  - path: "/BeyondTrust/api/public/v3/Sessions"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=session_cookie2']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |-
+          {{ minify_json `
+          [
+            {
+              "SessionID": 1004,
+              "UserID": 126,
+              "NodeID": "node-004",
+              "Status": 0,
+              "ArchiveStatus": 2,
+              "Protocol": 1,
+              "StartTime": "2025-01-15T11:00:00Z",
+              "EndTime": null,
+              "Duration": 0,
+              "AssetName": "test-server-192.0.2.100",
+              "ManagedSystemID": 458,
+              "ManagedAccountID": 792,
+              "ManagedAccountName": "test_user",
+              "RecordKey": "rec_key_jkl012",
+              "Token": "token_ghi789",
+              "ApplicationID": null,
+              "RequestID": null,
+              "SessionType": 1
+            }
+          ]
+          `}}

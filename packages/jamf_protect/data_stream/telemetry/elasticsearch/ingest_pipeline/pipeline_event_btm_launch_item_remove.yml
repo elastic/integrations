@@ -81,6 +81,14 @@ processors:
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null        
         type: string
         ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.e_username
+        target_field: process.user.name
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.e_username
+        target_field: process.user.name
+        ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.euid
         target_field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.euid
@@ -114,20 +122,20 @@ processors:
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         ignore_missing: true
     - rename:
-        field: jamf_protect.telemetry.event.btm_launch_item_add.app.is_platform_binary
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.is_platform_binary
         target_field: process.platform_binary
         ignore_missing: true
     - rename:
-        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_platform_binary
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.is_platform_binary
         target_field: process.platform_binary
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         ignore_missing: true
     - rename:
-        field: jamf_protect.telemetry.event.btm_launch_item_add.app.is_es_client
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.is_es_client
         target_field: process.endpoint_security_client
         ignore_missing: true
     - rename:
-        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_es_client
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.is_es_client
         target_field: process.endpoint_security_client
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         ignore_missing: true
@@ -316,6 +324,15 @@ processors:
         type: string
         ignore_missing: true
 
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.e_username
+        target_field: process.parent.user.name
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.e_username
+        target_field: process.parent.user.name
+        ignore_missing: true
+
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.ruid
         target_field: process.parent.real_user.id
@@ -347,6 +364,15 @@ processors:
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.signing_id
         target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.exec_path
+        target_field: process.parent.executable
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.exec_path
+        target_field: process.parent.executable
         ignore_missing: true
 
 ##########################
@@ -385,6 +411,15 @@ processors:
         type: string
         ignore_missing: true
 
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.e_username
+        target_field: process.responsible.user.name
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.e_username
+        target_field: process.responsible.user.name
+        ignore_missing: true
+
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.ruid
         target_field: process.responsible.real_user.id
@@ -416,6 +451,15 @@ processors:
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.signing_id
         target_field: process.responsible.code_signature.signing_id
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.exec_path
+        target_field: process.responsible.executable
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.exec_path
+        target_field: process.responsible.executable
         ignore_missing: true
 
     - pipeline:

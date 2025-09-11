@@ -42,6 +42,7 @@ spec:
           - analytics_engine
           - application_observability
           - app_search
+          - asset_inventory
           - auditd
           - authentication
           - aws
@@ -93,6 +94,7 @@ spec:
           - proxy_security
           - sdk_search
           - security
+          - siem
           - stream_processing
           - support
           - threat_intel
@@ -287,6 +289,10 @@ spec:
         - title
         - url
         - type
+    fips_compatible:
+      type: boolean
+      description: Indicate if this package is capable of satisfying FIPS requirements. Set to false if it uses any input that cannot be configured to use FIPS cryptography.
+      default: true
     icons:
       description: List of icons for by this package.
       type: array
@@ -494,6 +500,8 @@ spec:
             $ref: "#/definitions/deployment_modes"
           configuration_links:
             $ref: "#/definitions/configuration_links"
+          fips_compatible:
+            $ref: "#/definitions/fips_compatible"
           inputs:
             description: List of inputs supported by policy template.
             type: array
@@ -529,6 +537,22 @@ spec:
                   description: Can input be defined multiple times
                   type: boolean
                   default: false
+                deployment_modes:
+                  description: >
+                    List of deployment modes that this input is compatible with.
+                    If not specified, the input is compatible with all deployment modes.
+                  type: array
+                  minItems: 1
+                  uniqueItems: true
+                  items:
+                    type: string
+                    enum:
+                      - default
+                      - agentless
+                  examples:
+                    - ["default"]
+                    - ["agentless"]
+                    - ["default", "agentless"]
                 required_vars:
                   $ref: "./data_stream/manifest.spec.yml#/definitions/required_vars"
                 vars:

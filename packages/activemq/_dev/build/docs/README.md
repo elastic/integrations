@@ -32,7 +32,7 @@ Note:
 
 This integration has been tested against ActiveMQ 5.17.1 (independent from the operating system).
 
-## Prerequisites
+## What do I need to use this integration?
 
 You need Elasticsearch to store and search your data and Kibana to visualize and manage it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your hardware.
