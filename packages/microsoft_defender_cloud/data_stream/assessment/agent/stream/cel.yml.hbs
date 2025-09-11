@@ -1,0 +1,197 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url:  {{login_url}}/{{tenant_id}}/oauth2/v2.0/token
+  scopes: {{token_scopes}}
+state:
+  assessment_api_version: "2021-06-01"
+  sub_assessment_api_version: 2019-01-01-preview
+  {{#if management_group_name}}
+  scope: /providers/Microsoft.Management/managementGroups/{{management_group_name}}
+  {{else if subscription_id}}
+  scope: /subscriptions/{{subscription_id}}
+  {{/if}}
+redact:
+  fields: ~
+program: |-
+  (
+    state.?worklist[0].hasValue() ?
+      {
+        "worklist": state.worklist,
+        ?"assessment_next_url": state.?assessment_next_url
+      }
+    :
+      has(state.scope) ?
+        (request("GET",
+          state.?assessment_next_url.orValue(
+            state.url.trim_right("/") + state.scope + "/providers/Microsoft.Security/assessments?" + {
+              "api-version": [state.assessment_api_version],
+            }.format_query()
+          )
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+            "worklist": body.value,
+            ?"assessment_next_url": body.?nextLink
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/subscriptions/" + state.subscription_id + "/providers/Microsoft.Security/assessments :" + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+            "assessment_api_version": state.assessment_api_version,
+            "sub_assessment_api_version": state.sub_assessment_api_version,
+            "scope": state.scope,
+          }
+        ))
+      :
+        {
+          "events": {
+            "error": {
+              "message": "A request scope is missing. Please provide a 'Subscription ID' or 'Management Group Name' while configuring",
+            },
+          },
+          "want_more": false,
+          "assessment_api_version": state.assessment_api_version,
+          "sub_assessment_api_version": state.sub_assessment_api_version,
+          "scope": state.scope,
+        }
+  ).as(work,
+    has(work.events) ? state : // Exit early due to GET failure.
+      work.?worklist[0].hasValue() ?
+        (work.?worklist[0].properties.additionalData.subAssessmentsLink.hasValue() ?
+          request("GET",
+            state.?subassessment_next_url.orValue(
+              state.url.trim_right("/") + work.worklist[0].properties.additionalData.subAssessmentsLink + "?" + {
+                "api-version": [state.sub_assessment_api_version],
+              }.format_query()
+            )
+          ).do_request().as(resp, resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body, {
+              "events": body.?value[0].hasValue() ?
+                body.value.map(e, {
+                  "message": work.worklist[0].with({
+                    "properties": {
+                      "additionalData": {
+                        "subAssessment": e
+                      }
+                    }
+                  }).encode_json(),
+                })
+              :
+                (
+                  has(state.subassessment_next_url) ?
+                    [{"message": "retry"}]
+                  :
+                    [{
+                      "message": work.worklist[0].encode_json(),
+                    }]
+                ),
+              ?"worklist": has(body.nextLink) ?
+                optional.of(work.worklist)
+              :
+                tail(work.worklist)[?0].hasValue() ? optional.of(tail(work.worklist)) : optional.none(),
+              "want_more": (tail(work.worklist)[?0].hasValue()) || has(work.assessment_next_url) || has(body.nextLink),
+              ?"assessment_next_url": work.?assessment_next_url,
+              ?"subassessment_next_url": body.?nextLink,
+              "assessment_api_version": state.assessment_api_version,
+              "sub_assessment_api_version": state.sub_assessment_api_version,
+              "scope": state.scope,
+            })
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + work.worklist[0].properties.additionalData.subAssessmentsLink + " :" + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+              "assessment_api_version": state.assessment_api_version,
+              "sub_assessment_api_version": state.sub_assessment_api_version,
+              "scope": state.scope,
+            }
+          )
+        :
+          {
+            "events": [{
+              "message": work.worklist[0].encode_json(),
+            }],
+            ?"worklist": (tail(work.worklist)[?0].hasValue()) ? optional.of(tail(work.worklist)) : optional.none(),
+            "want_more": (tail(work.worklist)[?0].hasValue()) || has(work.assessment_next_url),
+            ?"assessment_next_url": work.?assessment_next_url,
+            "assessment_api_version": state.assessment_api_version,
+            "sub_assessment_api_version": state.sub_assessment_api_version,
+            "scope": state.scope,
+          }
+        )
+      :
+        {
+          "events": [],
+          "want_more": false,
+          "assessment_api_version": state.assessment_api_version,
+          "sub_assessment_api_version": state.sub_assessment_api_version,
+          "scope": state.scope,
+        }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event:
+    when:
+      equals:
+        message: retry
+{{#if processors}}
+{{processors}}
+{{/if}}
