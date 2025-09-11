@@ -12,7 +12,7 @@ Use the Airflow integration to:
 
 ## Compatibility
 
-The Airflow module is tested with Airflow `2.4.0`. It should work with versions `2.0.0` and later.
+The Airflow package is tested with Airflow `2.4.0` and `3.0.6`. It should work with any `2.*` and `3.*` versions.
 
 ## What data does this integration collect?
 
