@@ -55,8 +55,8 @@ program: |
           ),
           "want_more": size(body.response.exechistories) >= state.max_batch_size,
           "cursor": {
-            ?"checkpoint": (has(body.?response.exechistories) && size(body.response.exechistories) > 0) ?
-              optional.of(body.response.exechistories[size(body.response.exechistories) - 1].checkpoint)
+            ?"checkpoint": has(body.?response.exechistories) && size(body.response.exechistories) > 0 ?
+              body.response.exechistories.last().checkpoint
             :
               state.?cursor.checkpoint,
           },
