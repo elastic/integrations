@@ -3,7 +3,7 @@ name: cel
 title: Custom API using Common Expression Language
 description: Collect custom events from an API with Elastic agent
 type: input
-version: "1.16.1"
+version: "1.18.0"
 categories:
   - custom
 conditions:
@@ -68,12 +68,11 @@ policy_templates:
         default: |
           # // Fetch the agent's public IP every minute and note when the last request was made.
           # // It does not use the Resource URL configuration value.
-          # bytes(get("https://api.ipify.org/?format=json").Body).as(body, {
+          # get("https://api.ipify.org/?format=json").Body.as(body, {
           #     "events": [body.decode_json().with({
-          #         "last_requested_at": has(state.cursor) && has(state.cursor.last_requested_at) ?
-          #             state.cursor.last_requested_at
-          #         :
-          #             now
+          #         // Note the last time the request was made. No note is added
+          #         // if there is no previous request time stored in the cursor.
+          #         ?"last_requested_at": state.?cursor.last_requested_at
           #     })],
           #     "cursor": {"last_requested_at": now}
           # })
@@ -279,6 +278,21 @@ policy_templates:
         type: text
         title: OAuth2 Provider
         description: Used to configure supported oAuth2 providers. Each supported provider will require specific settings. It is not set by default. Supported providers are "azure" and "google".
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_user
+        type: text
+        title: OAuth2 User
+        description: The user used as part of the authentication flow. It is required for authentication - grant type password. It is only available for provider `default`.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_password
+        type: password
+        secret: true
+        title: OAuth2 Password
+        description: The password used as part of the authentication flow. It is required for authentication - grant type password. It is only available for provider `default`.
         show_user: false
         multi: false
         required: false
