@@ -15,8 +15,12 @@ For more details, see [HOWTO: Writing policy tests for a package](https://github
 
 ## Running policy tests [policy-tests]
 
-Policy tests don’t require the {{stack}} to be up and running. Simply navigate to the package’s root folder (or any sub-folder under it) and run the following command.
+Policy tests require the {{stack}} to be running. Start the Elastic stack with elastic-package, if it's not already running. Then simply navigate to the package’s root folder (or any sub-folder under it) and run the following command.
 
 ```bash
+# Start the stack (if not already running)
+elastic-package stack up -d
+
+# Run policy tests
 elastic-package test policy
 ```

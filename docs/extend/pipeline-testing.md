@@ -15,7 +15,6 @@ For more information on pipeline tests, refer to [https://github.com/elastic/ela
 ```bash
 # Start Elasticsearch
 elastic-package stack up -d --services=elasticsearch
-$(elastic-package stack shellinit)
 
 # Run pipeline tests
 cd packages/your-package
@@ -131,6 +130,12 @@ numeric_keyword_fields:
   - http.response.status_code
   - network.iana_number
 ```
+
+The `fields` section defines fields which will be added to all events _before_ the ingest pipeline is run on test data.
+
+The `dynamic_fields` allows pipeline tests to handle dynamically changing test results, by comparing the actual results for the field to the specified pattern, rather than static values.
+
+The `numeric_keyword_fields` section identifies fields whose values are numbers but are expected to be stored in {{es}} as `keyword` fields.
 
 ### Multiline Configuration [multiline-config]
 
@@ -394,3 +399,11 @@ curl -X POST "localhost:9200/_ingest/pipeline/_simulate" \
 elastic-package test pipeline --generate
 jq '.expected[0] | keys' test-sample.log-expected.json
 ```
+
+## Under the hood
+
+Pipeline tests work by uploading the ingest pipelines to be tested to the configured Elasticsearch instance. The [Simulate API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-ingest-simulate)
+is used to process the logs/metrics from the test data files, and then compares the actual results in Elasticsearch to the expected results defined in the test files.
+
+For more information, refer to [https://github.com/elastic/elastic-package/blob/main/docs/howto/pipeline_testing.md](https://github.com/elastic/elastic-package/blob/main/docs/howto/pipeline_testing.md).
+
