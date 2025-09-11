@@ -17,6 +17,8 @@ processors:
         - 'Received disconnect from %{IP:source.ip} port %{NUMBER:source.port}(?::%{NUMBER:sshd.disconnect_code})?: %{GREEDYDATA:sshd.disconnect_reason}'
         - 'error: %{WORD:authentication.mechanism}: Authentication error for %{USERNAME:user.name} from %{IP:source.ip}'
         - '%{WORD:authentication.mechanism}: error trying to bind as user "uid=%{USERNAME:user.name},%{GREEDYDATA:sshd.ldap_dn}" \(%{GREEDYDATA:event.reason}\)'
+        - 'Postponed %{DATA:authentication.method}\/%{WORD:authentication.mechanism} for %{USERNAME:user.name} from %{IP:source.ip} port %{NUMBER:source.port}'
+        - 'Timeout, client not responding from user %{USERNAME:user.name} %{IP:source.ip} port %{NUMBER:source.port}'
   - set:
       field: event.module
       value: sshd
@@ -49,6 +51,9 @@ processors:
           ctx.event.outcome = "failure";
         } else if (msg.contains("error trying to bind as user")) {
           ctx.event.action = "ssh_ldap_bind_failed";
+          ctx.event.outcome = "failure";
+        } else if (msg.contains("postponed")) {
+          ctx.event.action = "ssh_login_postponed";
           ctx.event.outcome = "failure";
         } else {
           ctx.event.action = "ssh_unclassified";

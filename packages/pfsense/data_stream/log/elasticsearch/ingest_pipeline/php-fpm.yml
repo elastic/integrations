@@ -5,22 +5,30 @@ processors:
       field: message
       patterns:
         - '^%{DATA}: %{PF_APP_DATA}'
+        - '^%{DATA:log.file.name}: %{DATA:event.type}: %{DATA:user.name}@%{IP:source.ip} \(%{DATA}\): %{GREEDYDATA:message}'
+        - '^%{DATA:log.file.name}: %{DATA:event.type}, %{GREEDYDATA:message}'
         - '^%{GREEDYDATA}'
       pattern_definitions:
         PF_APP_DATA: '(%{PF_APP_LOGIN}|%{PF_APP_LOGOUT}|%{PF_APP_ERROR})'
         PF_APP_LOGIN: "(%{DATA:_tmp.action}) for user '%{USER:user.name}' from: %{IP:source.address} \\(%{DATA}\\)"
         PF_APP_LOGOUT: "User (%{DATA:_tmp.action}) for user '%{USER:user.name}' from: %{IP:source.address}"
         PF_APP_ERROR: "webConfigurator %{DATA:_tmp.action} for user '%{DATA:user.name}' from: %{IP:source.address}"
-  - append:
-      field: event.category
-      value: authentication
-      allow_duplicates: false
-      if: 'ctx.log?.file?.name != "/firewall_rules_edit.php"'
-  - append:
-      field: event.category
-      value: configuration
-      allow_duplicates: false
-      if: 'ctx.log?.file?.name == "/firewall_rules_edit.php"'
+  - script:
+      source: |
+        if (ctx.event == null) {
+          ctx.event = [:];
+        }
+        if (ctx.event.type != null) {
+          String typeStr = ctx.event.type.toString().toLowerCase();
+          if (typeStr.contains("change")) {
+            ctx.event.category = "configuration";
+            ctx.event.type = "change";
+          } else if (typeStr.contains("gateway")) {
+            ctx.event.category = "system";
+          }
+        } else {
+          ctx.event.category = "authentication";
+        }
   - set:
       field: event.outcome
       value: success
