@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Indicator logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -164,16 +175,11 @@ processors:
       tag: rename_custom_attributes
       target_field: ti_cyware_intel_exchange.indicator.custom_attributes
       ignore_missing: true
-  - convert:
+  - rename:
       field: json.custom_scores
-      tag: convert_custom_scores_to_long
+      tag: rename_custom_scores
       target_field: ti_cyware_intel_exchange.indicator.custom_scores
-      type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.external_references
       tag: rename_external_references
@@ -499,9 +505,57 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  ######################
+  #   IOC expiration   #
+  ######################
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.ti_cyware_intel_exchange?.indicator?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && (ctx._conf.ioc_expiration_duration instanceof String) && ctx._conf.ioc_expiration_duration != ''
+      description: Indicator Expiration is done after `_conf.ioc_expiration_duration` (default 90d) since the indicator's last_seen time (if not present, then since first_seen). This script adds a default `ti_cyware_intel_exchange.indicator.deleted_at` field to allow indicator expiration.
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        ZonedDateTime _tmp_deleted_at;
+        ZonedDateTime _tmp_updated_at;
+        _tmp_updated_at = ZonedDateTime.parse(ctx.ti_cyware_intel_exchange.indicator.ctix_modified);
+        String time_unit = dur.substring(dur.length() -  1, dur.length());
+        String time_value = dur.substring(0, dur.length() - 1);
+        if (time_unit == 'd') {
+          _tmp_deleted_at = _tmp_updated_at.plusDays(Long.parseLong(time_value));
+        } else if (time_unit == 'h') {
+          _tmp_deleted_at = _tmp_updated_at.plusHours(Long.parseLong(time_value));
+        } else if (time_unit == 'm') {
+          _tmp_deleted_at = _tmp_updated_at.plusMinutes(Long.parseLong(time_value));
+        } else {
+          _tmp_deleted_at = _tmp_updated_at.plusDays(90L);
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
+          }
+          if (ctx.error.message == null) {
+            ctx.error.message = new ArrayList();
+          }
+          ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+        }
+        ctx.ti_cyware_intel_exchange.indicator.deleted_at = _tmp_deleted_at;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ti_cyware_intel_exchange.indicator.deleted_at
+      tag: date_deleted_at
+      target_field: ti_cyware_intel_exchange.indicator.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: ti_cyware_intel_exchange.indicator.ioc_expiration_duration
+      ignore_missing: true
   - foreach:
       field: ti_cyware_intel_exchange.indicator.sources
-      tag: foreach_ti_cyware_intel_exchange_indicator_sources_/
+      tag: foreach_ti_cyware_intel_exchange_indicator_sources
       if: ctx.ti_cyware_intel_exchange?.indicator?.sources instanceof List
       processor:
         remove:
@@ -518,7 +572,6 @@ processors:
         - ti_cyware_intel_exchange.indicator.country
         - ti_cyware_intel_exchange.indicator.ctix_created
         - ti_cyware_intel_exchange.indicator.ctix_modified
-        - ti_cyware_intel_exchange.indicator.external_references
         - ti_cyware_intel_exchange.indicator.id
         - ti_cyware_intel_exchange.indicator.ioc_type
         - ti_cyware_intel_exchange.indicator.modified

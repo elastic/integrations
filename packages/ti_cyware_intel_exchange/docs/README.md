@@ -128,10 +128,12 @@ For more information on architectures that can be used for scaling this integrat
 | ti_cyware_intel_exchange.indicator.ctix_tlp |  | keyword |
 | ti_cyware_intel_exchange.indicator.custom_attributes |  | flattened |
 | ti_cyware_intel_exchange.indicator.custom_scores |  | long |
+| ti_cyware_intel_exchange.indicator.deleted_at | The indicator expiration timestamp. | date |
 | ti_cyware_intel_exchange.indicator.external_references |  | flattened |
 | ti_cyware_intel_exchange.indicator.id |  | keyword |
 | ti_cyware_intel_exchange.indicator.indicator_type.attribute_field |  | keyword |
 | ti_cyware_intel_exchange.indicator.indicator_type.type |  | keyword |
+| ti_cyware_intel_exchange.indicator.ioc_expiration_duration | The configured expiration duration. | keyword |
 | ti_cyware_intel_exchange.indicator.ioc_type |  | keyword |
 | ti_cyware_intel_exchange.indicator.ip |  | ip |
 | ti_cyware_intel_exchange.indicator.is_actioned |  | boolean |
