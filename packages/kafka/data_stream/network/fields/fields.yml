@@ -1,0 +1,395 @@
+- name: kafka.network
+  type: group
+  fields:
+  - name: metric_fingerprint
+    type: keyword
+    dimension: true
+    description: A fingerprint of the metric path.
+    
+  - name: acceptor_blocked
+    type: group
+    description: Metrics about blocked network acceptors
+    fields:
+    - name: listener
+      type: keyword
+      dimension: true
+      description: The name of the network listener (e.g., BROKER, CONTROLLER).
+    - name: count
+      type: double
+      metric_type: counter
+      description: Total count of times the network acceptor thread was blocked.
+    - name: one_minute_rate
+      type: double
+      metric_type: gauge
+      description: One-minute rate of blocked acceptor events.
+    - name: five_minute_rate
+      type: double
+      metric_type: gauge
+      description: Five-minute rate of blocked acceptor events.
+    - name: fifteen_minute_rate
+      type: double
+      metric_type: gauge
+      description: Fifteen-minute rate of blocked acceptor events.
+    - name: mean_rate
+      type: double
+      metric_type: gauge
+      description: Mean rate of blocked acceptor events.
+      
+  - name: processor_idle_percent
+    type: group
+    description: Metrics about network processor idle percentage
+    fields:
+    - name: network_processor
+      type: keyword
+      dimension: true
+      description: The ID of the network processor.
+    - name: value
+      type: double
+      unit: percent
+      metric_type: gauge
+      description: Idle percentage for the network processor.
+  
+  - name: request_channel
+    type: group
+    description: Metrics about request channel performance
+    fields:
+    - name: request_queue_size
+      type: double
+      metric_type: gauge
+      description: The size of the request queue.
+    - name: response_queue_size
+      type: group
+      fields:
+        - name: value
+          type: double
+          metric_type: gauge
+          description: The size of the response queue 
+        - name: processor
+          type: keyword
+          dimension: true
+          description: The ID of the network processor
+
+  - name: socket_server
+    type: group
+    description: Metrics about Kafka SocketServer performance
+    fields:
+    - name: expired_connections_killed_count
+      type: double
+      metric_type: counter
+      description: The total number of expired connections killed by the socket server.
+    - name: memory_pool_available
+      type: double
+      unit: byte
+      metric_type: gauge
+      description: The amount of memory currently available in the socket server's memory pool.
+    - name: memory_pool_used
+      type: double
+      unit: byte
+      metric_type: gauge
+      description: The amount of memory currently used in the socket server's memory pool.
+    - name: processor_idle_percent
+      type: double
+      unit: percent
+      metric_type: gauge
+      description: Average idle percentage across all network processors.
+      
+  - name: request_metrics
+    type: group
+    description: Metrics about Kafka request operations
+    fields:
+    - name: request_type
+      type: keyword
+      dimension: true
+      description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+    - name: error_type
+      type: keyword
+      dimension: true
+      description: The type of error that occurred (e.g., NONE, LEADER_NOT_AVAILABLE).
+    - name: errors_per_min
+      type: group
+      fields:
+        - name: one_min_rate
+          type: double
+          metric_type: gauge
+          description: One-minute rate of errors per second for the request type.
+    - name: local_time_ms
+      type: group
+      description: Local processing time in milliseconds.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum local processing time in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum local processing time in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile local processing time in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile local processing time in milliseconds.
+    - name: message_conversions_time_ms
+      type: group
+      description: Time in milliseconds spent on message format conversions.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum time spent on message conversions in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum time spent on message conversions in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile time spent on message conversions in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile time spent on message conversions in milliseconds.
+    - name: remote_time_ms
+      type: group
+      description: Remote processing time in milliseconds.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum remote processing time in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum remote processing time in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile remote processing time in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile remote processing time in milliseconds.
+    - name: request_bytes
+      type: group
+      description: Size of request in bytes.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: Minimum request size in bytes.
+        - name: max
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: Maximum request size in bytes.
+        - name: p95
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: 95th percentile request size in bytes.
+        - name: p99
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: 99th percentile request size in bytes.
+    - name: request_queue_time_ms
+      type: group
+      description: Time spent in request queue in milliseconds.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum time spent in request queue in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum time spent in request queue in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile time spent in request queue in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile time spent in request queue in milliseconds.
+    - name: response_queue_time_ms
+      type: group
+      description: Time spent in response queue in milliseconds.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum time spent in response queue in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum time spent in response queue in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile time spent in response queue in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile time spent in response queue in milliseconds.
+    - name: response_send_time_ms
+      type: group
+      description: Time taken to send the response in milliseconds.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum time to send response in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum time to send response in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile time to send response in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile time to send response in milliseconds.
+    - name: temporary_memory_bytes
+      type: group
+      description: Amount of temporary memory used in bytes.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: Minimum temporary memory used in bytes.
+        - name: max
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: Maximum temporary memory used in bytes.
+        - name: p95
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: 95th percentile temporary memory used in bytes.
+        - name: p99
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: 99th percentile temporary memory used in bytes.
+    - name: throttle_time_ms
+      type: group
+      description: Time the request was throttled in milliseconds.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum throttle time in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum throttle time in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile throttle time in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile throttle time in milliseconds.
+    - name: total_time_ms
+      type: group
+      description: Total time to serve the request in milliseconds.
+      fields:
+        - name: request_type
+          type: keyword
+          dimension: true
+          description: The type of Kafka request (e.g., Produce, Fetch, Metadata).
+        - name: min
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Minimum total request time in milliseconds.
+        - name: max
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: Maximum total request time in milliseconds.
+        - name: p95
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 95th percentile total request time in milliseconds.
+        - name: p99
+          type: double
+          unit: ms
+          metric_type: gauge
+          description: 99th percentile total request time in milliseconds.
+
