@@ -35,7 +35,7 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Add `Directory (tenant) ID` noted in Step 1 into `Directory (tenant) ID` parameter. This is required field.
 - Add `Application (client) ID` noted in Step 1 into `Application (client) ID` parameter. This is required field.
 - Add the secret `Value` noted in Step 2 into `Client Secret` parameter. This is required field.
-- Oauth2 Token URL can be added to generate the tokens during the oauth2 flow. If not provided, above `Directory (tenant) ID` will be used for oauth2 token generation.
+- `OAuth 2.0 Token URL` can be added to generate the tokens during the OAuth 2.0 flow. If not provided, above `Directory (tenant) ID` will be used for OAuth 2.0 token generation.
 - Modify any other parameters as necessary.
 
 ### Migration From the Deprecated o365audit Input
