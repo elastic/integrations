@@ -209,11 +209,13 @@ processors:
       target_field: source.geo
       ignore_missing: true
       tag: geo_source_ip
+      if: ctx.source?.ip != ''
   - geoip:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
       tag: geo_destination_ip
+      if: ctx.destination?.ip != ''
 
   # IP Autonomous System (AS) Lookup
   - geoip:
@@ -225,6 +227,7 @@ processors:
           - organization_name
       ignore_missing: true
       tag: geo_source_as
+      if: ctx.source?.ip != ''
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -234,6 +237,7 @@ processors:
           - organization_name
       ignore_missing: true
       tag: geo_destination_as
+      if: ctx.destination?.ip != ''
   - rename:
       field: source.as.asn
       target_field: source.as.number
