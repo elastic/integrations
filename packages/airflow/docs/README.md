@@ -31,8 +31,6 @@ Note:
 
 Users require Elasticsearch to store and search user data, and Kibana to visualize and manage it. They can utilize the hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
 
-To ingest data from Airflow, users must have [StatsD](https://github.com/statsd/statsd) to receive the same.
-
 ## How do I deploy this integration?
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
