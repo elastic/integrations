@@ -629,40 +629,41 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-20T06:35:49.927Z",
+    "@timestamp": "2023-06-20T14:45:00Z",
     "agent": {
-        "ephemeral_id": "ee5bb248-a156-4a58-9ff2-5cf0db711952",
-        "id": "9d14623d-4f5b-4917-9921-c93862af36a1",
-        "name": "elastic-agent-38826",
+        "ephemeral_id": "666c4132-794a-41d0-bde8-609ab3a60c33",
+        "id": "ebe93be5-e99a-4f02-8679-198df50717de",
+        "name": "elastic-agent-21480",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "beyondinsight_password_safe": {
         "asset": {
-            "asset_id": 2,
-            "asset_name": "EPINHYDW002A",
-            "asset_type": "WorkStation",
-            "create_date": "2024-11-20T06:12:21.047Z",
-            "dns_name": "EPINHYDW002A",
-            "domain_name": "Unknown",
-            "ipaddress": "81.2.69.142",
-            "last_update_date": "2024-11-20T06:35:49.927Z",
-            "operating_system": "Windows 11 Enterprise",
-            "workgroup_id": 1
+            "asset_id": "101",
+            "asset_name": "TestServer01",
+            "asset_type": "Server",
+            "create_date": "2023-01-15T10:30:00Z",
+            "dns_name": "testserver01.example.com",
+            "domain_name": "example.com",
+            "ip_address": "192.0.2.10",
+            "last_update_date": "2023-06-20T14:45:00Z",
+            "mac_address": "00-1B-44-11-3A-B7",
+            "operating_system": "Ubuntu 20.04",
+            "workgroup_id": "1"
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.asset",
-        "namespace": "25291",
+        "namespace": "90442",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9d14623d-4f5b-4917-9921-c93862af36a1",
+        "id": "ebe93be5-e99a-4f02-8679-198df50717de",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -670,45 +671,51 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "beyondinsight_password_safe.asset",
-        "ingested": "2025-01-30T07:19:04Z",
+        "ingested": "2025-08-29T16:33:00Z",
         "kind": "asset",
-        "module": "beyondinsight_password_safe",
+        "original": "{\"AssetID\":101,\"AssetName\":\"TestServer01\",\"AssetType\":\"Server\",\"CreateDate\":\"2023-01-15T10:30:00Z\",\"DnsName\":\"testserver01.example.com\",\"DomainName\":\"example.com\",\"IPAddress\":\"192.0.2.10\",\"LastUpdateDate\":\"2023-06-20T14:45:00Z\",\"MacAddress\":\"00:1B:44:11:3A:B7\",\"OperatingSystem\":\"Ubuntu 20.04\",\"WorkgroupID\":1}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "domain": "Unknown",
+        "domain": "example.com",
         "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
+            "city_name": "Las Vegas",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
             "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
+                "lat": 36.17497,
+                "lon": -115.13722
             },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
+            "region_iso_code": "US-NV",
+            "region_name": "Nevada"
         },
         "ip": [
-            "81.2.69.142",
-            "81.2.69.142"
-        ]
+            "192.0.2.10"
+        ],
+        "mac": [
+            "00-1B-44-11-3A-B7"
+        ],
+        "name": "TestServer01"
     },
     "input": {
         "type": "cel"
     },
     "os": {
-        "name": "Windows 11 Enterprise"
+        "name": "Ubuntu 20.04"
     },
     "related": {
         "hosts": [
-            "Unknown",
-            "81.2.69.142"
+            "TestServer01",
+            "00-1B-44-11-3A-B7",
+            "example.com",
+            "192.0.2.10"
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "beyondinsight_password_safe.asset"
     ]
@@ -725,22 +732,22 @@ The following non-ECS fields are used in asset documents:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.asset.asset_id | Unique identifier for the asset | keyword |
-| beyondinsight_password_safe.asset.asset_name | Name of the asset | keyword |
-| beyondinsight_password_safe.asset.asset_type | Type of the asset | keyword |
-| beyondinsight_password_safe.asset.create_date | Date the asset was created | date |
-| beyondinsight_password_safe.asset.dns_name | DNS name of the asset | keyword |
-| beyondinsight_password_safe.asset.domain_name | Domain name of the asset | keyword |
-| beyondinsight_password_safe.asset.ipaddress | IP address of the asset | ip |
-| beyondinsight_password_safe.asset.last_update_date | Date the asset was last updated | date |
-| beyondinsight_password_safe.asset.mac_address | MAC address of the asset | keyword |
-| beyondinsight_password_safe.asset.operating_system | Operating system of the asset | keyword |
-| beyondinsight_password_safe.asset.workgroup_id | Unique identifier for the workgroup | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset |  | constant_keyword |
-| event.module |  | constant_keyword |
-| input.type | Input type | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| beyondinsight_password_safe.asset.asset_id | Unique identifier for the asset. | keyword |
+| beyondinsight_password_safe.asset.asset_name | Name of the asset. | keyword |
+| beyondinsight_password_safe.asset.asset_type | Type of the asset. | keyword |
+| beyondinsight_password_safe.asset.create_date | Date the asset was created. | date |
+| beyondinsight_password_safe.asset.dns_name | DNS name of the asset. | keyword |
+| beyondinsight_password_safe.asset.domain_name | Domain name of the asset. | keyword |
+| beyondinsight_password_safe.asset.ip_address | IP address of the asset. | ip |
+| beyondinsight_password_safe.asset.last_update_date | Date the asset was last updated. | date |
+| beyondinsight_password_safe.asset.mac_address | MAC address of the asset. | keyword |
+| beyondinsight_password_safe.asset.operating_system | Operating system of the asset. | keyword |
+| beyondinsight_password_safe.asset.workgroup_id | Unique identifier for the workgroup. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Input type. | keyword |
 
