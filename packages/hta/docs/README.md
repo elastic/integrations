@@ -12,3 +12,6 @@ The Host Traffic Anomalies package includes a dashboard that offers a high-level
         - Index pattern : `.ml-anomalies-shared`
         - Select **Show Advanced settings** enable **Allow hidden and system indices**
         - Custom data view ID: `.ml-anomalies-shared`
+
+    _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
+    ![Dashboard Error](../img/dashboard-hta-error.png)
