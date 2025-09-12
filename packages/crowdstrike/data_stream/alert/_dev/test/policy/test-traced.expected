@@ -13,109 +13,87 @@ inputs:
           config_version: 2
           data_stream:
             dataset: crowdstrike.alert
-            type: logs
-          interval: 5m
+          interval: 24h
           program: |-
-            (
-              state.want_more ?
-                state.?page.start
-              :
-                optional.of(state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)))
-            ).as(filter,
-              state.with(
-                get_request(
-                  state.url.trim_right("/") + "/alerts/queries/alerts/v2?" + {
-                    "sort": ["timestamp|asc"],
-                    "offset": [string(state.offset)],
-                    "limit": [string(state.batch_size)],
-                    ?"filter": (filter.hasValue() || state.?query.orValue("") != "") ?
-                      optional.of(
-                        [
-                          [
-                            ?filter.optMap(f, "timestamp:>\"" + f + "\""),
-                            ?state.?query.optMap(q, "(" + q + ")"),
-                          ].join("+"),
-                        ]
-                      )
-                    :
-                      optional.none(),
-                  }.format_query()
-                ).do_request().as(get_resp, (get_resp.StatusCode == 200) ?
-                  bytes(get_resp.Body).decode_json().as(body,
-                    (int(state.offset) + body.resources.size() < body.meta.pagination.total).as(want_more,
+            state.with(
+              (
+                state.?want_more.orValue(false) ?
+                  state.start_time
+                :
+                  state.?cursor.last_timestamp.orValue(
+                    (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
+                  )
+              ).as(start_time,
+                post_request(
+                  state.url.trim_right("/") + "/alerts/combined/alerts/v1?",
+                  "application/json",
+                  {
+                    ?"after": state.?next.page_token.optMap(v, v),
+                    "limit": int(state.batch_size),
+                    "sort": "updated_timestamp|asc",
+                    "filter": [
+                      "updated_timestamp:>'" + start_time + "'",
+                      ?state.?query.optMap(q, "(" + q + ")"),
+                    ].join("+"),
+                  }.encode_json()
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    (size(body.?errors.orValue([])) > 0) ?
                       {
-                        ?"resources": (body.resources.size() > 0) ? optional.of(body.resources) : optional.none(),
-                        "events": [],
-                        "offset": want_more ? (int(state.offset) + body.resources.size()) : 0,
-                        "want_more": want_more,
+                        "events": body.errors.map(error,
+                          {
+                            "error": {
+                              "code": string(error.code),
+                              "id": string(error.code),
+                              "message": string(error.message),
+                            },
+                          }
+                        ),
+                        "next": {},
+                        "want_more": false,
                       }
-                    )
+                    :
+                      {
+                        "events": has(body.resources) ?
+                          body.resources.map(e,
+                            {
+                              "message": e.encode_json(),
+                            }
+                          )
+                        :
+                          [],
+                        "start_time": start_time,
+                        "next": {
+                          ?"page_token": body.?meta.pagination.after.optMap(v, v),
+                        },
+                        "cursor": {
+                          // The records are sorted in ascending order based on the value of updated_timestamp,
+                          // in the next interval we start from the last event (newest) time.
+                          ?"last_timestamp": (has(body.resources) && body.resources.size() > 0) ?
+                            optional.of(timestamp(body.resources[size(body.resources) - 1].updated_timestamp).format(time_layout.RFC3339Nano))
+                          :
+                            state.?cursor.last_timestamp,
+                        },
+                        "want_more": has(body.?meta.pagination.after),
+                      }
                   )
                 :
                   {
                     "events": {
                       "error": {
-                        "code": string(get_resp.StatusCode),
-                        "id": string(get_resp.Status),
-                        "message": "GET:" + (
-                          (size(get_resp.Body) != 0) ?
-                            string(get_resp.Body)
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "POST " + state.url.trim_right("/") + "/alerts/combined/alerts/v1:" + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
                           :
-                            string(get_resp.Status) + " (" + string(get_resp.StatusCode) + ")"
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                         ),
                       },
                     },
+                    "next": {},
                     "want_more": false,
                   }
-                )
-              ).as(state,
-                state.with(
-                  !has(state.resources) ? // Exit early due to GET failure or no resources to collect.
-                    state
-                  :
-                    post_request(
-                      state.url.trim_right("/") + "/alerts/entities/alerts/v2",
-                      "application/json",
-                      {"composite_ids": state.resources}.encode_json()
-                    ).do_request().as(post_resp, (post_resp.StatusCode == 200) ?
-                      bytes(post_resp.Body).decode_json().as(inner_body,
-                        {
-                          "events": inner_body.resources.map(e,
-                            {
-                              "message": e.encode_json(),
-                            }
-                          ),
-                          "cursor": {
-                            ?"last_timestamp": (has(inner_body.resources) && inner_body.resources.size() > 0) ?
-                              optional.of(inner_body.resources.map(e, timestamp(e.timestamp)).max().format(time_layout.RFC3339))
-                            :
-                              state.?cursor.last_timestamp,
-                          },
-                          "page": {
-                            "start": has(state.?cursor.start) ?
-                              (state.want_more ? state.cursor.start : state.cursor.last_timestamp)
-                            :
-                              now.format(time_layout.RFC3339),
-                          },
-                        }
-                      )
-                    :
-                      {
-                        "events": {
-                          "error": {
-                            "code": string(post_resp.StatusCode),
-                            "id": string(post_resp.Status),
-                            "message": "POST:" + (
-                              (size(post_resp.Body) != 0) ?
-                                string(post_resp.Body)
-                              :
-                                string(post_resp.Status) + " (" + string(post_resp.StatusCode) + ")"
-                            ),
-                          },
-                        },
-                        "want_more": false,
-                      }
-                    )
                 )
               )
             )
@@ -132,8 +110,6 @@ inputs:
           state:
             batch_size: 1000
             initial_interval: 24h
-            offset: 0
-            want_more: false
           tags:
             - preserve_original_event
             - preserve_duplicate_custom_fields
