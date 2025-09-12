@@ -42,6 +42,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| rabbitmq.log.domain | Domain | keyword |
 | rabbitmq.log.pid | The Erlang process id | keyword |
 
 
