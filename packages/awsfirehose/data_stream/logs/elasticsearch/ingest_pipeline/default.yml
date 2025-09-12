@@ -66,6 +66,7 @@ processors:
         // AWS S3 Access Logs, CloudFront, and ELB Logs
         else {
             // Inlined logic for splitting tokens
+            // Note - Tokenization split Time field into two sections, hence token count after index 3 (0 based) is increased by 1
             def tokens_result = new ArrayList();
             StringBuilder currentToken = new StringBuilder();
             boolean insideQuotes = false;
@@ -89,15 +90,20 @@ processors:
             def tokens = tokens_result.toArray(new String[0]);
             def tokenCount = tokens.length;
         
-            // Check for S3 Access logs first using a more reliable token count
+            // Check for S3 Access logs first using a more reliable token content check
             if (tokenCount >= 24) {
                 def hostHeader = tokens[23];
                 if (hostHeader.contains('s3') && hostHeader.contains('amazonaws.com')) {
                     ctx.event.dataset = 'aws.s3access';
+                    return;
+                } 
+
+                // Check for operation field content. Refer - https://docs.aws.amazon.com/AmazonS3/latest/userguide/LogFormat.html#log-record-fields
+                def opField = tokens[7];
+                if (opField.startsWith("SOAP.") || opField.startsWith("REST.") || opField.startsWith("BATCH.") || opField.startsWith("WEBSITE.") || opField.startsWith("S3.")) {
+                     ctx.event.dataset = 'aws.s3access';
+                     return;
                 }
-            }
-            if (tokenCount == 25) {
-                ctx.event.dataset = 'aws.s3access';
             }
         
             // Fallback to CloudFront and ELB if S3 check fails
