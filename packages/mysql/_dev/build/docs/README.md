@@ -6,7 +6,7 @@
 
 ### Compatibility
 
-Databases version compatibility across data streams.
+Database version compatibility across data streams.
 
 |Data Stream      | MySQL Version   | MariaDB Version    |Percona Version | 
 | ----------------|-----------------|--------------------|----------------|
