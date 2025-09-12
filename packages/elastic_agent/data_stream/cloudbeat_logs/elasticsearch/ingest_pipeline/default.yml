@@ -1,12 +1,11 @@
 ---
 description: "Pipeline for adapting Elastic Agent fields"
 processors:
-  - script:
-      lang: painless
-      description: Rename field from older versions of Beats.
-      if: ctx.monitoring?.metrics?.libbeat?.pipeline?.queue?.filled?.pct instanceof Map && ctx.monitoring.metrics.libbeat.pipeline.queue.filled.pct.events != null
-      source: |
-          ctx.monitoring.metrics.libbeat.pipeline.queue.filled.pct = ctx.monitoring.metrics.libbeat.pipeline.queue.filled.pct.events;
+  - remove:
+      description: "Remove object that contained invalid data and can cause mapping conflicts"
+      field: monitoring.metrics.libbeat.pipeline.queue.filled.pct
+      if: ctx.monitoring?.metrics?.libbeat?.pipeline?.queue?.filled?.pct instanceof Map
+      ignore_missing: true
 
 on_failure:
   - set:
