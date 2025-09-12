@@ -1,0 +1,123 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  auth_token: {{auth_token}}
+redact:
+  fields:
+    - auth_token
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state.start_time
+    :
+      state.?cursor.last_timestamp.orValue(string(int(now - duration(state.initial_interval))*1000))
+  ).as(start_time, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/siem/offenses?" + {
+        "filter": ["last_persisted_time>=" + start_time]
+      }.format_query()
+    ).with({
+      "Header": {
+        "SEC": [state.auth_token],
+        "Range": [
+          "items=" + string(state.?next.offset.orValue(0)) + "-" + string(int(state.batch_size) + int(state.?next.offset.orValue(0)) - 1)
+        ]
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (
+          body.size() > 0 ?
+            body.map(e, {
+              "message": e.encode_json(),
+            })
+          :
+            // Added placeholder to ensure cursor gets stored
+            // This will be dropped later in the pipeline
+            [{"message": "empty_events_placeholder"}]
+        ),
+        "start_time": start_time,
+        "next":{
+          ?"offset": (body.size() > 0 ?
+            optional.of(int(state.?next.offset.orValue(0)) + int(state.batch_size))
+          :
+            optional.none()
+          ),
+          ?"max_time": (body.size() > 0 ?
+            (has(state.?next.max_time) ?
+              optional.of(
+                max([
+                  state.next.max_time,
+                  string(int(body.map(e, e.last_persisted_time).max()))
+                ])
+              )
+            :
+              optional.of(string(int(body.map(e, e.last_persisted_time).max())))
+            )
+          :
+            state.?next.max_time
+          )
+        },
+        "cursor": {
+          // Updating cursor on the last page because data is not returned in sorted order
+          ?"last_timestamp": (body.size() == 0 && has(state.?next.max_time) ?
+            state.?next.max_time
+          :
+            state.?cursor.last_timestamp
+          )
+        },
+        "want_more": body.size() > 0,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/api/siem/offenses: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "next":{},
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
