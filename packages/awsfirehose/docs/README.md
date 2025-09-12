@@ -52,11 +52,15 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 
     To effectively utilize your data, you need to install the necessary integrations. Log in to Kibana, navigate to **Management** > **Integrations** in the sidebar.
 
-    - First Install the **Amazon Data Firehose Integration**. This integration will receive and route your Firehose data to various backend datasets. Find it by searching or browse the catalog.
+    - First Install **Amazon Data Firehose Integration** assets. Assets installed through this integration will receive and route your Firehose data to various backend datasets. Find it by searching or browse the catalog.
     
     ![Amazon Data Firehose](../img/amazonfirehose.png)
-    
-    - Second install the **AWS integration**. This integration provides assets such as index templates, ingest pipelines, and dashboards that will serve as the destination points for the data routed by the Firehose Integration.
+
+     Navigate to the **Settings** tab and click **Install Amazon Data Firehose**. Confirm by clicking **Install Amazon Data Firehose** in the popup.
+
+    ![Install Firehose assets](../img/firehose_settings.png)
+
+    - Then install the **AWS integration** assets. This integration provides assets such as index templates, ingest pipelines, and dashboards that will serve as the destination points for the data routed by the Firehose Integration.
     Find the **AWS** integration by searching or browsing the catalog.
     
     ![AWS integration](../img/aws.png)
