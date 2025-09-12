@@ -983,6 +983,7 @@ An example event for `admin` looks as following:
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.admin.alert.id |  | keyword |
 | google_workspace.admin.alert.name | The alert name. | keyword |
+| google_workspace.admin.alert.related_id |  | keyword |
 | google_workspace.admin.api.client.name | The API client name. | keyword |
 | google_workspace.admin.api.scopes | The API scopes. | keyword |
 | google_workspace.admin.application.asp_id | The application specific password ID. | keyword |
@@ -1238,6 +1239,7 @@ An example event for `drive` looks as following:
 | google_workspace.drive.old_visibility | When visibility changes, this holds the old value. | keyword |
 | google_workspace.drive.originating_app_id | The Google Cloud Project ID of the application that performed the action. | keyword |
 | google_workspace.drive.owner_is_team_drive | Whether the owner is a Team Drive. | boolean |
+| google_workspace.drive.parsed_query |  | keyword |
 | google_workspace.drive.primary_event | Whether this is a primary event. A single user action in Drive may generate several events. | boolean |
 | google_workspace.drive.removed_role | Removed membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.script_id | The document ID of the executing script. | keyword |
@@ -3109,6 +3111,7 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.remove_user_reason | Parameter explaining why a user was removed from a device. | keyword |
 | google_workspace.chrome.scan_id | A parameter that contains the scan id of the content analysis scan which triggered the event. | keyword |
 | google_workspace.chrome.server_scan_status | Status indicates the outcome of the event's server scan, which could be complete, require a manual audit due to configuration settings, or require a manual audit because the scan took too long. | keyword |
+| google_workspace.chrome.tab_url |  | keyword |
 | google_workspace.chrome.timestamp | The server timestamp of the Chrome Safe Browsing event. | date |
 | google_workspace.chrome.trigger_destination | A parameter that contains the destination of the rule which triggered the event. | keyword |
 | google_workspace.chrome.trigger_source | A parameter that contains the source of the rule which triggered the event. | keyword |
@@ -3122,6 +3125,7 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.virtual_device_id | Virtual device ID of the browser on which the event happened. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 
 
 ### Data Studio
