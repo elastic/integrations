@@ -112,99 +112,103 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-14T09:54:33.700Z",
+    "@timestamp": "2025-09-08T14:14:17.520Z",
     "agent": {
-        "ephemeral_id": "393f8737-5e9d-4fcd-8011-f822561aef86",
-        "id": "d4dcc8f4-d861-428d-8124-fc5d03288645",
-        "name": "elastic-agent-21835",
+        "ephemeral_id": "3f082892-0f6c-45a1-aa4d-4887bd3462c8",
+        "id": "36f3bbaf-2d4f-4f3c-af1f-4c13524514f5",
+        "name": "elastic-agent-19107",
         "type": "filebeat",
-        "version": "8.19.2"
+        "version": "8.19.0"
     },
     "cloud": {
         "account": {
-            "id": "a839b112-1253-6432-9bf6-94542403f21c"
+            "id": "123543-d66c-4c7e-9e30-40034eb7c6f3"
         },
         "instance": {
-            "id": "111e6dd8c833c8a052ea231ec1b19adaf497b625"
+            "id": "c5a964f417c11f6277d5bf9489f0d"
         },
         "provider": "azure"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "65143",
+        "namespace": "61125",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d4dcc8f4-d861-428d-8124-fc5d03288645",
+        "id": "36f3bbaf-2d4f-4f3c-af1f-4c13524514f5",
         "snapshot": false,
-        "version": "8.19.2"
+        "version": "8.19.0"
     },
     "event": {
-        "action": "Execution",
+        "action": "Malware",
         "agent_id_status": "verified",
         "category": [
-            "host"
+            "host",
+            "malware"
         ],
-        "created": "2021-01-26T20:33:57.7220239Z",
+        "created": "2020-06-30T10:09:01.1569718Z",
         "dataset": "microsoft_defender_endpoint.log",
-        "duration": 101466100,
-        "end": "2021-01-26T20:31:33.0577322Z",
-        "id": "da637472900382838869_1364969609",
-        "ingested": "2025-08-14T09:54:36Z",
+        "duration": 0,
+        "end": "2020-06-30T10:07:44.333733Z",
+        "id": "da637291085411733957_-1043898914",
+        "ingested": "2025-09-08T14:14:20Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 21,
-        "start": "2021-01-26T20:31:32.9562661Z",
+        "start": "2020-06-30T10:07:44.333733Z",
         "timezone": "UTC",
         "type": [
-            "access",
-            "start"
+            "end"
         ]
     },
+    "file": {
+        "name": "SB.xsl",
+        "path": "C:\\Windows\\Temp\\sb-sim-temp-ikyxqi\\sb_10554_bs_h4qpk5"
+    },
     "host": {
-        "hostname": "temp123.middleeast.corp.microsoft.com",
-        "id": "111e6dd8c833c8a052ea231ec1b19adaf497b625",
-        "name": "temp123.middleeast.corp.microsoft.com"
+        "hostname": "testserver4",
+        "id": "c5a964f417c11f6277d5bf9489f0d",
+        "name": "testserver4"
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
     },
-    "message": "Low-reputation arbitrary code executed by signed executable",
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/defender_atp-test.json.log"
+        },
+        "offset": 0
+    },
+    "message": "An active 'Exeselrun' malware was detected",
     "microsoft": {
         "defender_endpoint": {
             "assignedTo": "elastic@elasticuser.com",
             "evidence": {
-                "aadUserId": "11118379-2a59-1111-ac3c-a51eb4a3c627",
-                "accountName": "name",
-                "domainName": "DOMAIN",
-                "entityType": "User",
-                "userPrincipalName": "temp123@microsoft.com"
+                "entityType": "File"
             },
-            "incidentId": "1126093",
-            "investigationState": "Queued",
-            "lastUpdateTime": "2021-01-26T20:33:59.2Z",
-            "rbacGroupName": "A",
-            "status": "New"
+            "incidentId": "12",
+            "investigationId": "9",
+            "investigationState": "Benign",
+            "lastUpdateTime": "2020-07-03T15:15:39.13Z",
+            "resolvedTime": "2020-06-30T11:13:12.2680434Z",
+            "status": "Resolved"
         }
     },
     "observer": {
-        "name": "WindowsDefenderAtp",
+        "name": "WindowsDefenderAv",
         "product": "Defender for Endpoint",
         "vendor": "Microsoft"
     },
     "related": {
         "hosts": [
-            "temp123.middleeast.corp.microsoft.com"
-        ],
-        "user": [
-            "temp123"
+            "testserver4"
         ]
     },
     "rule": {
-        "description": "Binaries signed by Microsoft can be used to run low-reputation arbitrary code. This technique hides the execution of malicious code within a trusted process. As a result, the trusted process might exhibit suspicious behaviors, such as opening a listening port or connecting to a command-and-control (C&C) server."
+        "description": "Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nA malware is considered active if it is found running on the machine or it already has persistence mechanisms in place. Active malware detections are assigned higher severity ratings.\n\nBecause this malware was active, take precautionary measures and check for residual signs of infection."
     },
     "tags": [
         "microsoft-defender-endpoint",
@@ -214,14 +218,9 @@ An example event for `log` looks as following:
         "framework": "MITRE ATT&CK",
         "technique": {
             "name": [
-                "Execution"
+                "Malware"
             ]
         }
-    },
-    "user": {
-        "domain": "DOMAIN",
-        "id": "S-1-5-21-11111607-1111760036-109187956-75141",
-        "name": "temp123"
     }
 }
 ```
