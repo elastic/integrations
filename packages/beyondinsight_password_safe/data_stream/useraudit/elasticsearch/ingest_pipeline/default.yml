@@ -1,11 +1,17 @@
 ---
-description: Pipeline for processing BeyondInsight User Audit Events 
+description: Pipeline for processing BeyondInsight User Audit events.
 processors:
+  - set:
+      field: ecs.version
+      value: '9.1.0'
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      description: >-
+        The fingerprint prevents some duplication of user audit events in cases
+        of retransmission on connection failures.
       fields:
         - event.original
       target_field: _id
@@ -13,177 +19,143 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: beyondinsight_password_safe.useraudit
-
-##################### Scripts for processing input #####################
   - script:
-      description: Drops null/empty values recursively.
+      description: Remove null values and empty strings from beyondinsight_password_safe.useraudit.
       lang: painless
       source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
-
-  - rename:
-      field: beyondinsight_password_safe.useraudit.IPAddress
-      target_field: beyondinsight_password_safe.useraudit.ip_address
-      ignore_missing: true
+        ctx.beyondinsight_password_safe.useraudit.entrySet().removeIf(entry ->
+          entry.getValue() == null ||
+          (entry.getValue() instanceof String && entry.getValue().isEmpty())
+        );
   - script:
-      description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
-      lang: painless
+      tag: script_numeric_id_to_string
+      description: Convert numeric ID fields to strings.
+      params:
+        numeric_ids:
+          - AuditID
+          - UserID
       source: |
-        Map keysToSnakeCase(Map m) {
-          def regex = /_?([a-z])([A-Z]+)/;
-          def snakeCaseMap = [:];
-
-          for (entry in m.entrySet()) {
-            def k = entry.getKey();
-            def v = entry.getValue();
-
-            if (v instanceof Map) {
-              v = keysToSnakeCase(v);
-            } else if (v instanceof List) {
-              for (int i = 0; i < v.size(); i++) {
-                def item = v.get(i);
-                if (item instanceof Map) {
-                  v.set(i, keysToSnakeCase(item));
-                }
-              }
-            }
-
-            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
-            snakeCaseMap.put(k, v);
+        for (field in params.numeric_ids) {
+          def value = ctx.beyondinsight_password_safe.useraudit[field];
+          if (value instanceof Number) {
+            ctx.beyondinsight_password_safe.useraudit[field] =
+              Integer.toString(value.intValue());
           }
-          return snakeCaseMap;
         }
-
-        if (ctx.beyondinsight_password_safe.useraudit != null) {
-          ctx.beyondinsight_password_safe.useraudit = keysToSnakeCase(ctx.beyondinsight_password_safe.useraudit);
+  - script:
+      tag: script_camel_to_snake_naming
+      description: Rename CapitalCamelCase-ish fields to lower_snake_case.
+      params:
+        field_mappings:
+          ActionType: action_type
+          AuditID: audit_id
+          CreateDate: create_date
+          IPAddress: ip_address
+          Section: section
+          UserID: user_id
+          UserName: user_name
+      source: |
+        Map renamedFields = [:];
+        for (entry in ctx.beyondinsight_password_safe.useraudit.entrySet()) {
+          def originalKey = entry.getKey();
+          def snakeKey = params.field_mappings[originalKey];
+          if (snakeKey != null) {
+            renamedFields[snakeKey] = entry.getValue();
+          } else {
+            renamedFields[originalKey] = entry.getValue();
+          }
         }
-  - convert:
-      field: beyondinsight_password_safe.useraudit.audit_id
-      type: string
-      if: ctx.beyondinsight_password_safe?.useraudit?.audit_id != null
-  - convert:
-      field: beyondinsight_password_safe.useraudit.user_id
-      type: string
-      if: ctx.beyondinsight_password_safe?.useraudit?.user_id != null
-  - remove:
-      field: beyondinsight_password_safe.useraudit.user_id
-      if: ctx.beyondinsight_password_safe.useraudit?.user_id == -1
-##################### ECS Fields #####################
+        ctx.beyondinsight_password_safe.useraudit = renamedFields;
+  - date:
+      if: ctx.beyondinsight_password_safe?.useraudit?.create_date != null
+      field: beyondinsight_password_safe.useraudit.create_date
+      target_field: beyondinsight_password_safe.useraudit.create_date
+      formats:
+        - ISO8601
   - set:
-      field: ecs.version
-      value: '8.11.0'
-
+      if: ctx.beyondinsight_password_safe?.useraudit?.create_date != null
+      copy_from: beyondinsight_password_safe.useraudit.create_date
+      field: "@timestamp"
   - set:
       field: event.kind
       value: event
-
   - append:
       field: event.category
       value: iam
-
   - append:
       field: event.type
       value: info
-
-
   - set:
       field: event.id
       copy_from: ctx.beyondinsight_password_safe.useraudit.audit_id
       ignore_empty_value: true
-
   - set:
+      if: ctx.beyondinsight_password_safe?.useraudit?.user_id != "-1"
       field: user.id
-      value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
-      if: ctx.beyondinsight_password_safe.useraudit?.user_id != -1
+      copy_from: beyondinsight_password_safe.useraudit.user_id
       ignore_empty_value: true
-
-  - append:
-      field: related.user
-      value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
-      if: ctx.beyondinsight_password_safe.useraudit?.user_id == -1
-      allow_duplicates: false
-
   - set:
       field: user.name
-      value: "{{{beyondinsight_password_safe.useraudit.user_name}}}"
+      copy_from: beyondinsight_password_safe.useraudit.user_name
       ignore_empty_value: true
-
- #################### Override host.ip ######################
   - gsub:
-      field: "beyondinsight_password_safe.useraudit.ip_address"
-      pattern: "\\b0+(\\d)"
-      replacement: "$1"
-  - append:
-      field: related.hosts
-      value: "{{{beyondinsight_password_safe.useraudit.ip_address}}}"
-      allow_duplicates: false    
+      if: ctx.beyondinsight_password_safe?.useraudit?.ip_address != null
+      description: Remove leading zeros from IP address octets.
+      field: beyondinsight_password_safe.useraudit.ip_address
+      pattern: '\b0+(\d)'
+      replacement: '$1'
   - convert:
+      if: ctx.beyondinsight_password_safe.useraudit?.ip_address != null
       field: beyondinsight_password_safe.useraudit.ip_address
       type: ip
-      if: ctx.beyondinsight_password_safe.useraudit?.ip_address != null && ctx.beyondinsight_password_safe.useraudit.ip_address != ''
-      ignore_missing: true
-
+      on_failure:
+        - remove:
+            field: beyondinsight_password_safe.useraudit.ip_address
   - append:
+      if: ctx.beyondinsight_password_safe?.useraudit?.ip_address != null
       field: host.ip
       value: "{{{beyondinsight_password_safe.useraudit.ip_address}}}"
-
+      allow_duplicates: false
   - geoip:
       field: host.ip
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
-################### Set @timestamp ##########################
   - set:
-     field: "@timestamp"
-     copy_from: beyondinsight_password_safe.useraudit.create_date
-     ignore_empty_value: true
- ################### User Audit Log fields ###################
+      copy_from: beyondinsight_password_safe.useraudit.user
+      field: user.name
+      ignore_empty_value: true
   - rename:
-      field: "beyondinsight_password_safe.useraudit.user"
-      target_field: "user.name"
-      ignore_missing: true
-
-  - rename:
+      tag: rename_user_email
+      if: ctx.user?.name instanceof String && ctx.user.name.indexOf("@") > 0
       field: user.name
       target_field: user.email
-      tag: rename_user_email
-      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
-
   - dissect:
+      tag: dissect_user_email
+      if: ctx.user?.email != null
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_user_email
-      ignore_missing: true
       ignore_failure: true
-      if: ctx.user?.name == null
-
   - append:
+      if: ctx.beyondinsight_password_safe?.useraudit?.ip_address != null
+      field: related.ip
+      value: "{{{beyondinsight_password_safe.useraudit.ip_address}}}"
+      allow_duplicates: false
+  - append:
+      if: ctx.user?.name != null
       field: related.user
       value: "{{{user.name}}}"
-      if: ctx.user?.name != null
       allow_duplicates: false
-      ignore_failure: true
-
   - append:
+      if: ctx.user?.email != null
       field: related.user
       value: "{{{user.email}}}"
-      if: ctx.user?.email != null
       allow_duplicates: false
-      ignore_failure: true
-
+  - append:
+      if: ctx.beyondinsight_password_safe.useraudit?.user_id == "-1"
+      field: related.user
+      value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
+      allow_duplicates: false
 on_failure:
   - set:
       field: event.kind
