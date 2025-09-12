@@ -87,17 +87,17 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2024-01-01T01:00:00.123Z",
     "agent": {
-        "ephemeral_id": "10166c35-0c59-4fea-976e-8615fb6be40a",
-        "id": "cfee7fe4-90a0-4cc8-8f00-1699ef5c3603",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "860cd4e2-418c-4cdb-a7ab-60155067bde8",
+        "id": "d4ca30b3-0f86-4dea-a919-235cb2014360",
+        "name": "elastic-agent-19022",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.5"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-canva-bucket-76803",
-                "name": "elastic-package-canva-bucket-76803"
+                "arn": "arn:aws:s3:::elastic-package-canva-bucket-57347",
+                "name": "elastic-package-canva-bucket-57347"
             },
             "object": {
                 "key": "audit.log"
@@ -464,19 +464,19 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "canva.audit",
-        "namespace": "91976",
+        "namespace": "74807",
         "type": "logs"
     },
     "device": {
         "id": "Ddb44"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "cfee7fe4-90a0-4cc8-8f00-1699ef5c3603",
+        "id": "d4ca30b3-0f86-4dea-a919-235cb2014360",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.5"
     },
     "event": {
         "action": "remove_team_from_organization",
@@ -488,7 +488,7 @@ An example event for `audit` looks as following:
         "duration": 10540800000000000,
         "end": "2024-07-06T18:57:27.000Z",
         "id": "3849ef51-ca85-4028-bae3-1b8de3ee5738",
-        "ingested": "2024-08-13T15:05:32Z",
+        "ingested": "2025-09-11T07:12:05Z",
         "kind": "event",
         "original": "{\"id\":\"3849ef51-ca85-4028-bae3-1b8de3ee5738\",\"timestamp\":1704070800123,\"actor\":{\"type\":\"USER\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"OXtgecafZvh\"},\"details\":{\"type\":\"SCIM\"}},\"target\":{\"target_type\":\"USER\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"abc\"},\"owner\":{\"type\":\"USER\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"abc\"}},\"resource_type\":\"DESIGN\",\"id\":\"abc123\",\"name\":\"abc\"},\"action\":{\"type\":\"REMOVE_TEAM_FROM_ORGANIZATION\",\"display_name\":\"Marketing\",\"first_name\":\"string\",\"last_name\":\"string\",\"email\":\"alex.doe@example.com\",\"email_verified\":true,\"phone_number\":\"string\",\"country_code\":\"string\",\"locale\":\"string\",\"managing_entity\":{\"type\":\"TEAM\",\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"Abc11233\"}},\"saml_accounts\":[{\"idp_issuer\":\"string\",\"name_id\":\"string\"}],\"oauth_accounts\":[{\"platform\":\"string\",\"external_user_id\":\"string\"}],\"totp_mfa_enabled\":true,\"sms_mfa_enabled\":true,\"reason\":{\"type\":\"SAML_JIT_PROVISIONING\"},\"changed_fields\":\"ADDRESS\",\"login_type\":\"PASSWORD\",\"oauth_platform\":\"APPLE\",\"user_scope\":\"CURRENT_USER\",\"session_scope\":\"CURRENT_SESSION\",\"app_id\":\"string\",\"app_version\":\"string\",\"app_name\":\"string\",\"permissions\":[\"DESIGN_CONTENT_READ\"],\"old_permissions\":[\"DESIGN_CONTENT_READ\"],\"new_permissions\":[\"DESIGN_CONTENT_READ\"],\"output_type\":\"PDF\",\"create_type\":\"CREATE\",\"title\":\"Myawesomedesign\",\"original_design_id\":\"DAGKs37VOUl\",\"design_type\":\"Presentation(16:9)\",\"view_type\":\"VIEW_IN_EDITOR\",\"changes\":[{\"type\":\"CREATE_DESIGN_ACCESS_INVITE\",\"token_prefix\":\"ZMrbBHL2\",\"recipient\":\"ash.doe@example.com\",\"access\":{\"read\":true,\"write\":true}},{\"type\":\"REDEEM_DESIGN_ACCESS_INVITE\",\"token_prefix\":\"ZMrbBHL2\",\"recipient\":\"ash.doe@example.com\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"DELETE_DESIGN_ACCESS_INVITE\",\"token_prefix\":\"ZMrbBHL2\",\"recipient\":\"ash.doe@example.com\"},{\"type\":\"UPDATE_DESIGN_OWNER\",\"old_owner\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"new_owner\":{\"id\":\"UXqwwoQDSbb\",\"display_name\":\"AshDoe\",\"email\":\"ash.doe@example.com\"}},{\"type\":\"CREATE_DESIGN_ACCESS_RESTRICTION\"},{\"type\":\"GRANT_USER_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"REVOKE_USER_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"UPDATE_USER_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"GRANT_GROUP_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"group\":\"GADkBZ48E04\"},{\"type\":\"REVOKE_GROUP_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"group\":\"GADkBZ48E04\"},{\"type\":\"UPDATE_GROUP_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"group\":\"GADkBZ48E04\"},{\"type\":\"GRANT_TEAM_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},{\"type\":\"REVOKE_TEAM_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},{\"type\":\"UPDATE_TEAM_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},{\"type\":\"GRANT_ORGANIZATION_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"organization\":{\"id\":\"OXtgecafZvh\"}},{\"type\":\"REVOKE_ORGANIZATION_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"organization\":{\"id\":\"OXtgecafZvh\"}},{\"type\":\"UPDATE_ORGANIZATION_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"organization\":{\"id\":\"OXtgecafZvh\"}},{\"type\":\"GRANT_DESIGN_LINK_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"owning_team_only\":true},{\"type\":\"REVOKE_DESIGN_LINK_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"owning_team_only\":true},{\"type\":\"UPDATE_DESIGN_LINK_ACCESS\",\"old_link_role\":{\"access\":{\"read\":true,\"write\":false},\"owning_team_only\":true},\"new_link_role\":{\"access\":{\"read\":true,\"write\":true},\"owning_team_only\":false}}],\"description\":\"TheAcmeCorporationmarketinggroup.\",\"old_display_name\":\"Marketing\",\"new_display_name\":\"Growth\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"role\":\"ADMIN\",\"new_role\":\"ADMIN\",\"old_role\":\"ADMIN\",\"team_address\":{\"street1\":\"110Kippaxstreet\",\"city\":\"SurryHills\",\"subdivision\":\"AU-NSW\",\"country_code\":\"AU\",\"postcode\":2010},\"approval_status\":\"PENDING\",\"emails\":[\"ash.doe@example.com\",\"alex.doe@example.com\"],\"report_type\":\"USER\",\"start_timestamp\":1709751447000,\"end_timestamp\":1720292247000,\"old_name\":\"UntitledCorporation\",\"new_name\":\"AcmeCorporation\",\"default_team_id\":\"BXeFatjDhdR\",\"default_team_policy\":\"ADMIN_AND_UP\",\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},\"outcome\":{\"result\":\"PERMITTED\",\"details\":{\"type\":\"RESOURCE_CREATED\",\"resource_id\":\"DXWEBartcNg\",\"resource_type\":\"DESIGN\",\"user_id\":\"ac343\"}},\"context\":{\"ip_address\":\"81.2.69.142\",\"session\":\"abc111\",\"request_id\":\"fafas\",\"device_id\":\"Ddb44\"}}",
         "outcome": "success",
@@ -502,7 +502,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-canva-bucket-76803.s3.us-east-1.amazonaws.com/audit.log"
+            "path": "https://elastic-package-canva-bucket-57347.s3.us-east-1.amazonaws.com/audit.log"
         },
         "offset": 0
     },
@@ -579,7 +579,7 @@ An example event for `audit` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
@@ -710,11 +710,11 @@ An example event for `audit` looks as following:
 | canva.audit.target.user.email | The email address of the user. | keyword |
 | canva.audit.target.user.id | The user ID. | keyword |
 | canva.audit.timestamp | The time the event occurred, as a Unix timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | tags | User defined tags. | keyword |
