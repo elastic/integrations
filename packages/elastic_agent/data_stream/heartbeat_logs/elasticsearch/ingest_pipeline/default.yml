@@ -1,0 +1,17 @@
+---
+description: "Pipeline for adapting Elastic Agent fields"
+processors:
+  - remove:
+      description: "Remove object that contained invalid data and can cause mapping conflicts"
+      field: monitoring.metrics.libbeat.pipeline.queue.filled.pct
+      if: ctx.monitoring?.metrics?.libbeat?.pipeline?.queue?.filled?.pct instanceof Map
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
