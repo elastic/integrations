@@ -27,6 +27,11 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+  - script:
+      description: Remove all empty values from event_data.
+      lang: painless
+      source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
+      if: ctx.winlog?.event_data != null
   - set:
       field: log.level
       copy_from: winlog.level
@@ -102,6 +107,11 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx.winlog?.event_data?.HostName != ""
+  - set:
+      field: process.pid
+      copy_from: winlog.process.pid
+      ignore_failure: true
+      ignore_empty_value: true
 
   ## User fields.
 
@@ -533,11 +543,6 @@ processors:
         - winlog.level
       ignore_missing: true
       ignore_failure: true
-  - script:
-      description: Remove all empty values from event_data.
-      lang: painless
-      source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals(""));
-      if: ctx.winlog?.event_data != null
   - remove:
       description: Remove empty event data.
       field: winlog.event_data

@@ -1,0 +1,446 @@
+---
+description: Pipeline for processing aws config logs.
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.EvaluationResultIdentifier.EvaluationResultQualifier.ResourceId
+        - json.ConfigRuleInvokedTime
+        - json.ConfigRuleInfo.ConfigRuleId
+      tag: fingerprint_aws_config
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider
+      value: aws
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: AWS Config
+  - append:
+      field: event.category
+      tag: append_to_event_category
+      value: configuration
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_to_event_type
+      value: info
+  - rename:
+      field: json.Annotation
+      tag: rename_Annotation
+      target_field: aws.config.annotation
+      ignore_missing: true
+  - dissect:
+      field: json.ConfigRuleInfo.ConfigRuleArn
+      tag: dissect_ConfigRuleInfo_ConfigRuleArn
+      pattern: "%{}:%{}:%{}:%{}:%{cloud.account.id}:%{}"
+      ignore_failure: true
+  - set:
+      field: cloud.account.name
+      tag: set_cloud_account_name_from_cloud_account_id
+      copy_from: cloud.account.id
+      ignore_empty_value: true
+  - rename:
+      field: json.ConfigRuleInfo.ConfigRuleArn
+      tag: rename_ConfigRuleInfo_ConfigRuleArn
+      target_field: aws.config.rule_info.config_rule_arn
+      ignore_missing: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference_from_config_config_rule_info_config_rule_arn
+      copy_from: aws.config.rule_info.config_rule_arn
+      ignore_empty_value: true
+  - rename:
+      field: json.ConfigRuleInfo.ConfigRuleId
+      tag: rename_ConfigRuleInfo_ConfigRuleId
+      target_field: aws.config.rule_info.config_rule_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_config_config_rule_info_config_rule_id
+      copy_from: aws.config.rule_info.config_rule_id
+      ignore_empty_value: true
+  - rename:
+      field: json.ConfigRuleInfo.ConfigRuleName
+      tag: rename_ConfigRuleInfo_ConfigRuleName
+      target_field: aws.config.rule_info.config_rule_name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_config_config_rule_info_config_rule_name
+      copy_from: aws.config.rule_info.config_rule_name
+      ignore_empty_value: true
+  - rename:
+      field: json.ConfigRuleInfo.ConfigRuleState
+      tag: rename_ConfigRuleInfo_ConfigRuleState
+      target_field: aws.config.rule_info.config_rule_state
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{json.ConfigRuleInfo.CreatedBy}}}'
+      allow_duplicates: false
+      if: ctx.json?.ConfigRuleInfo?.CreatedBy !=null
+  - rename:
+      field: json.ConfigRuleInfo.CreatedBy
+      tag: rename_ConfigRuleInfo_CreatedBy
+      target_field: aws.config.rule_info.created_by
+      ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Description
+      tag: rename_ConfigRuleInfo_Description
+      target_field: aws.config.rule_info.description
+      ignore_missing: true
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_aws_config_config_rule_info_description
+      copy_from: aws.config.rule_info.description
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_aws_config_config_rule_info_description
+      copy_from: aws.config.rule_info.description
+      ignore_empty_value: true
+  - foreach:
+      field: json.ConfigRuleInfo.EvaluationModes
+      if: ctx.json?.ConfigRuleInfo?.EvaluationModes instanceof List
+      processor:
+        rename:
+          field: _ingest._value.Mode
+          tag: rename_ConfigRuleInfo_EvaluationModes_Mode
+          target_field: _ingest._value.mode
+          ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.EvaluationModes
+      tag: rename_ConfigRuleInfo_EvaluationModes
+      target_field: aws.config.rule_info.evaluation_modes
+      ignore_missing: true
+  - json:
+      field: json.ConfigRuleInfo.InputParameters
+      if: ctx.json?.ConfigRuleInfo?.InputParameters != null && ctx.json.ConfigRuleInfo.InputParameters != ''
+      tag: json_ConfigRuleInfo_InputParameters
+      target_field: aws.config.rule_info.input_parameters
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ConfigRuleInfo.MaximumExecutionFrequency
+      tag: rename_ConfigRuleInfo_MaximumExecutionFrequency
+      target_field: aws.config.rule_info.maximum_execution_frequency
+      ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Scope.ComplianceResourceId
+      tag: rename_ConfigRuleInfo_Scope_ComplianceResourceId
+      target_field: aws.config.rule_info.scope.compliance_resource_id
+      ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Scope.ComplianceResourceTypes
+      tag: rename_ConfigRuleInfo_Scope_ComplianceResourceTypes
+      target_field: aws.config.rule_info.scope.compliance_resource_types
+      ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Scope.TagKey
+      tag: rename_ConfigRuleInfo_Scope_TagKey
+      target_field: aws.config.rule_info.scope.tag_key
+      ignore_missing: true
+  - convert:
+      field: json.ConfigRuleInfo.Source.CustomPolicyDetails.EnableDebugLogDelivery
+      tag: convert_ConfigRuleInfo_Source_CustomPolicyDetails_EnableDebugLogDelivery_to_boolean
+      target_field: aws.config.rule_info.source.custom_policy_details.enable_debug_log_delivery
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ConfigRuleInfo.Source.CustomPolicyDetails.PolicyRuntime
+      tag: rename_ConfigRuleInfo_Source_CustomPolicyDetails_PolicyRuntime
+      target_field: aws.config.rule_info.source.custom_policy_details.policy_runtime
+      ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Source.CustomPolicyDetails.PolicyText
+      tag: rename_ConfigRuleInfo_Source_CustomPolicyDetails_PolicyText
+      target_field: aws.config.rule_info.source.custom_policy_details.policy_text
+      ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Source.Owner
+      tag: rename_ConfigRuleInfo_Source_Owner
+      target_field: aws.config.rule_info.source.owner
+      ignore_missing: true
+  - foreach:
+      field: json.ConfigRuleInfo.Source.SourceDetails
+      if: ctx.json?.ConfigRuleInfo?.Source?.SourceDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.EventSource
+          tag: rename_ConfigRuleInfo_Source_SourceDetails_EventSource
+          target_field: _ingest._value.event_source
+          ignore_missing: true
+  - foreach:
+      field: json.ConfigRuleInfo.Source.SourceDetails
+      if: ctx.json?.ConfigRuleInfo?.Source?.SourceDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.MaximumExecutionFrequency
+          tag: rename_ConfigRuleInfo_Source_SourceDetails_MaximumExecutionFrequency
+          target_field: _ingest._value.maximum_execution_frequency
+          ignore_missing: true
+  - foreach:
+      field: json.ConfigRuleInfo.Source.SourceDetails
+      if: ctx.json?.ConfigRuleInfo?.Source?.SourceDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.MessageType
+          tag: rename_ConfigRuleInfo_Source_SourceDetails_MessageType
+          target_field: _ingest._value.message_type
+          ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Source.SourceDetails
+      tag: rename_ConfigRuleInfo_Source_SourceDetails
+      target_field: aws.config.rule_info.source.source_details
+      ignore_missing: true
+  - rename:
+      field: json.ConfigRuleInfo.Source.SourceIdentifier
+      tag: rename_ConfigRuleInfo_Source_SourceIdentifier
+      target_field: aws.config.rule_info.source.source_identifier
+      ignore_missing: true
+  - date:
+      field: json.ConfigRuleInvokedTime
+      tag: date_ConfigRuleInvokedTime
+      target_field: aws.config.config_rule_invoked_time
+      formats:
+        - UNIX_MS
+        - UNIX
+      if: ctx.json?.ConfigRuleInvokedTime != null && ctx.json.ConfigRuleInvokedTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.EvaluationResultIdentifier.EvaluationResultQualifier.ConfigRuleName
+      tag: rename_EvaluationResultIdentifier_EvaluationResultQualifier_ConfigRuleName
+      target_field: aws.config.evaluation_result_identifier.evaluation_result_qualifier.config_rule_name
+      ignore_missing: true
+  - rename:
+      field: json.EvaluationResultIdentifier.EvaluationResultQualifier.EvaluationMode
+      tag: rename_EvaluationResultIdentifier_EvaluationResultQualifier_EvaluationMode
+      target_field: aws.config.evaluation_result_identifier.evaluation_result_qualifier.evaluation_mode
+      ignore_missing: true
+  - date:
+      field: json.EvaluationResultIdentifier.OrderingTimestamp
+      tag: date_EvaluationResultIdentifier_OrderingTimestamp
+      target_field: aws.config.evaluation_result_identifier.ordering_timestamp
+      formats:
+        - UNIX_MS
+        - UNIX
+      if: ctx.json?.EvaluationResultIdentifier?.OrderingTimestamp != null && ctx.json.EvaluationResultIdentifier.OrderingTimestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_config_evaluation_result_identifier_ordering_timestamp
+      copy_from: aws.config.evaluation_result_identifier.ordering_timestamp
+      ignore_empty_value: true
+  - rename:
+      field: json.EvaluationResultIdentifier.ResourceEvaluationId
+      tag: rename_EvaluationResultIdentifier_ResourceEvaluationId
+      target_field: aws.config.evaluation_result_identifier.resource_evaluation_id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_config_evaluation_result_identifier_resource_evaluation_id
+      copy_from: aws.config.evaluation_result_identifier.resource_evaluation_id
+      ignore_empty_value: true
+  - date:
+      field: json.ResultRecordedTime
+      tag: date_ResultRecordedTime
+      target_field: aws.config.result_recorded_time
+      formats:
+        - UNIX_MS
+        - UNIX
+      if: ctx.json?.ResultRecordedTime != null && ctx.json.ResultRecordedTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ResultToken
+      tag: rename_ResultToken
+      target_field: aws.config.result_token
+      ignore_missing: true
+  - rename:
+      field: json.EvaluationResultIdentifier.EvaluationResultQualifier.ResourceId
+      tag: rename_EvaluationResultIdentifier_EvaluationResultQualifier_ResourceId
+      target_field: aws.config.evaluation_result_identifier.evaluation_result_qualifier.resource_id
+      ignore_missing: true
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_config_evaluation_result_identifier_evaluation_result_qualifier_resource_id
+      copy_from: aws.config.evaluation_result_identifier.evaluation_result_qualifier.resource_id
+      ignore_empty_value: true
+  - rename:
+      field: json.EvaluationResultIdentifier.EvaluationResultQualifier.ResourceType
+      tag: rename_EvaluationResultIdentifier_EvaluationResultQualifier_ResourceType
+      target_field: aws.config.evaluation_result_identifier.evaluation_result_qualifier.resource_type
+      ignore_missing: true
+  - set:
+      field: resource.type
+      tag: set_resource_type_from_config_evaluation_result_identifier_evaluation_result_qualifier_resource_type
+      copy_from: aws.config.evaluation_result_identifier.evaluation_result_qualifier.resource_type
+      ignore_empty_value: true
+  - rename:
+      field: json.ComplianceType
+      tag: rename_ComplianceType
+      target_field: aws.config.compliance_type
+      ignore_missing: true
+  - script:
+      tag: set_event_outcome_and_result_evaluation_from_aws_config_compliance_type
+      lang: painless
+      description: set event.outcome and result.evaluation from compliance_type
+      if : ctx.aws?.config?.compliance_type instanceof String
+      source: >-
+        if (ctx.aws.config.compliance_type == 'NON_COMPLIANT') {
+          ctx.event.outcome = 'failure';
+        } else if (ctx.aws.config.compliance_type == 'COMPLIANT') {
+          ctx.event.outcome = 'success';
+        } else {
+          ctx.event.outcome = 'unknown';
+        }
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: passed
+      if: ctx.aws?.config?.compliance_type == 'COMPLIANT'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: failed
+      if: ctx.aws?.config?.compliance_type == 'NON_COMPLIANT'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
+      ignore_empty_value: true
+  - rename:
+      field: json.ConfigRuleInfo.Scope.TagValue
+      tag: rename_ConfigRuleInfo_Scope_TagValue
+      target_field: aws.config.rule_info.scope.tag_value
+      ignore_missing: true
+  - set:
+      field: rule.tags
+      tag: set_rule_tags_from_config_config_rule_info_scope_tag_value
+      copy_from: aws.config.rule_info.scope.tag_value
+      ignore_empty_value: true
+  - remove:
+      field:
+        - aws.config.evaluation_result_identifier.ordering_timestamp
+        - aws.config.evaluation_result_identifier.resource_evaluation_id
+        - aws.config.rule_info.config_rule_arn
+        - aws.config.rule_info.config_rule_id
+        - aws.config.rule_info.config_rule_name
+        - aws.config.rule_info.description
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

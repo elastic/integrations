@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the deletion of a subscription in Google Cloud Platform (GCP). In GCP, the publisher-subscriber relationship (Pub/Sub) is an asynchronous messaging service that decouples event-producing and event-processing services. A subscription is a named resource representing the stream of messages to be delivered to the subscribing application.",
+        "false_positives": [
+            "Subscription deletions may be done by a system or network administrator. Verify whether the user email, resource name, and/or hostname should be making changes in your environment. Subscription deletions by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-gcp*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GCP Pub/Sub Subscription Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GCP Pub/Sub Subscription Deletion\n\nGoogle Cloud Pub/Sub is a messaging service that enables asynchronous communication between event producers and consumers. Subscriptions in Pub/Sub are crucial for message delivery to applications. Adversaries may delete subscriptions to disrupt communication, evade detection, or impair defenses. The detection rule monitors audit logs for successful subscription deletions, flagging potential defense evasion activities.\n\n### Possible investigation steps\n\n- Review the audit logs for the specific event.action: google.pubsub.v*.Subscriber.DeleteSubscription to identify the user or service account responsible for the deletion.\n- Check the event.dataset:gcp.audit logs for any preceding or subsequent actions by the same user or service account to determine if there is a pattern of suspicious activity.\n- Investigate the context of the deleted subscription by examining the associated project and any related resources to understand the potential impact on the application or service.\n- Verify if the deletion aligns with any recent changes or maintenance activities within the organization to rule out legitimate actions.\n- Assess the permissions and roles assigned to the user or service account to ensure they are appropriate and not overly permissive, which could indicate a security risk.\n- Consult with the relevant application or service owners to confirm whether the subscription deletion was authorized and necessary.\n\n### False positive analysis\n\n- Routine maintenance activities by administrators may lead to subscription deletions that are not malicious. To manage this, create exceptions for known maintenance windows or specific admin accounts.\n- Automated scripts or tools used for managing Pub/Sub resources might delete subscriptions as part of their normal operation. Identify these scripts and exclude their actions from triggering alerts by using service account identifiers.\n- Development and testing environments often involve frequent creation and deletion of subscriptions. Exclude these environments from alerts by filtering based on project IDs or environment tags.\n- Subscription deletions as part of a resource cleanup process can be non-threatening. Document and exclude these processes by identifying patterns in the audit logs, such as specific user agents or IP addresses associated with cleanup operations.\n\n### Response and remediation\n\n- Immediately verify the legitimacy of the subscription deletion by contacting the responsible team or individual to confirm if the action was authorized.\n- If unauthorized, revoke access for the user or service account involved in the deletion to prevent further unauthorized actions.\n- Restore the deleted subscription from backup or recreate it if necessary, ensuring that message delivery to the application is resumed.\n- Conduct a thorough review of audit logs to identify any other suspicious activities or patterns that may indicate further compromise.\n- Implement additional access controls and monitoring for Pub/Sub resources to prevent unauthorized deletions in the future.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems or data were affected.\n- Update incident response plans and playbooks to include specific procedures for handling Pub/Sub subscription deletions and similar threats.",
+        "query": "event.dataset:gcp.audit and event.action:google.pubsub.v*.Subscriber.DeleteSubscription and event.outcome:success\n",
+        "references": [
+            "https://cloud.google.com/pubsub/docs/overview"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "cc89312d-6f47-48e4-a87c-4977bd4633c3",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Log Auditing",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 107
+    },
+    "id": "cc89312d-6f47-48e4-a87c-4977bd4633c3_107",
+    "type": "security-rule"
+}

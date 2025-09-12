@@ -1,0 +1,376 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: https://config.{{aws_region}}.{{tld}}/
+state:
+  access_key: {{access_key_id}}
+  secret_key: {{secret_access_key}}
+  session_token: {{session_token}}
+  aws_region: {{aws_region}}
+  batch_size: {{batch_size}}
+  tld: {{tld}}
+redact:
+  fields:
+    - access_key
+    - secret_key
+    - session_token
+program: |
+  (
+    // Stage 1: Check if we have existing config rules to process
+    // If we have worklist with ConfigRules, we already fetched rules and now need to get compliance details
+    has(state.?worklist.ConfigRules) && size(state.worklist.ConfigRules) > 0 ?
+      {
+        // State management: preserve existing state from previous iteration
+        "worklist": state.worklist,
+        "batch_size": state.batch_size,
+        "has_next": state.has_next,
+        "next": state.next,
+        "next_page": state.next_page,
+
+        // AWS SigV4 Signing: Generate signing key for GetComplianceDetailsByConfigRule request
+        // Perform a succession of keyed hash operations (HMAC) on the request date, Region, and service,
+        // with the AWS secret access key as the key for the initial hashing operation.
+        // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key
+
+        "signing_key": "aws4_request".hmac("sha256",
+          "config".hmac("sha256",
+            state.aws_region.hmac("sha256",
+              now.format("20060102").hmac("sha256",
+                bytes("AWS4" + state.secret_key)
+              )
+            )
+          )
+        ),
+        // Create a string_to_sign that includes the algorithm, request timestamp, credential scope, and hashed canonical request.
+        // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#create-string-to-sign
+
+        "string_to_sign": [
+          'AWS4-HMAC-SHA256',
+          now.format("20060102T150405Z"),
+          now.format("20060102") + '/' + state.aws_region + '/config/aws4_request',
+          [
+            'POST',
+            '/',
+            '',
+            "content-type:application/x-amz-json-1.1",
+            "host:config." + state.aws_region + "." + state.tld,
+            "x-amz-date:" + now.format("20060102T150405Z"),
+            "x-amz-target:StarlingDoveService.GetComplianceDetailsByConfigRule",
+            '',
+            "content-type;host;x-amz-date;x-amz-target",
+            {
+              ?"NextToken": state.?next_page.result_token,
+              "ConfigRuleName": state.worklist.ConfigRules[int(state.next)].ConfigRuleName,
+              "Limit": int(state.batch_size)
+            }.encode_json().sha256().hex()
+          ].join("\n").sha256().hex()
+        ].join("\n"),
+        ?"session_token": state.?session_token,
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+        "aws_region": state.aws_region,
+        "tld": state.tld,
+      }
+    :
+      // Stage 2: First time execution - need to fetch config rules first
+      (
+        state.with({
+          // AWS SigV4 Signing: Generate signing key for DescribeConfigRules request
+          // Perform a succession of keyed hash operations (HMAC) on the request date, Region, and service, 
+          // with the AWS secret access key as the key for the initial hashing operation.
+          // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key
+
+          "signing_key": "aws4_request".hmac("sha256",
+            "config".hmac("sha256",
+              state.aws_region.hmac("sha256",
+                now.format("20060102").hmac("sha256",
+                  bytes("AWS4" + state.secret_key)
+                )
+              )
+            )
+          ),
+          // Create a string_to_sign that includes the algorithm, request timestamp, credential scope, and hashed canonical request
+          // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#create-string-to-sign
+
+          "string_to_sign": [
+            'AWS4-HMAC-SHA256',
+            now.format("20060102T150405Z"),
+            now.format("20060102") + '/' + state.aws_region + '/config/aws4_request',
+            [
+              'POST',
+              '/',
+              '',
+              "content-type:application/x-amz-json-1.1",
+              "host:config." + state.aws_region + "." + state.tld,
+              "x-amz-date:" + now.format("20060102T150405Z"),
+              "x-amz-target:StarlingDoveService.DescribeConfigRules",
+              '',
+              "content-type;host;x-amz-date;x-amz-target",
+              {
+                ?"NextToken": state.?next_page.rule_token
+              }.encode_json().sha256().hex()
+            ].join("\n").sha256().hex()
+          ].join("\n"),
+        })
+      ).as(state,
+        // API Call: Execute DescribeConfigRules request to get list of config rules
+        post_request(
+          state.url.trim_right("/"),
+          "application/json",
+          {
+            ?"NextToken": has(state.next_page) && has(state.next_page.rule_token) ? optional.of(state.next_page.rule_token) : optional.none(),
+          }.encode_json()
+        ).with(
+          {
+            "Header": {
+              "Content-Type": ["application/x-amz-json-1.1"],
+              "X-Amz-Date": [now.format("20060102T150405Z")],
+
+              // Perform a keyed hash operation on the string to sign using the derived signing key as the hash key to calculate the signature
+              // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#calculate-signature
+              // and construct the Authorization header by combining the algorithm, credential scope, signed headers, and calculated signature.
+              // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#add-signature-to-request
+
+              "Authorization": [
+                "AWS4-HMAC-SHA256 Credential="
+                + state.access_key
+                + "/" + now.format("20060102")
+                + "/" + state.aws_region
+                + "/config/aws4_request, SignedHeaders=content-type;host;x-amz-date;x-amz-target, Signature="
+                + (state.string_to_sign).hmac("sha256", state.signing_key).hex()
+              ],
+              "X-Amz-Target": ["StarlingDoveService.DescribeConfigRules"],
+              ?"X-Amz-Security-Token": has(state.session_token) ? optional.of([state.session_token]) : optional.none(),
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          // Response Processing: Successfully got config rules list
+          resp.Body.decode_json().as(body,
+            {
+              // State Update: Store the fetched config rules as worklist
+              "worklist": body,
+              "next": 0,
+              "has_next": has(body.NextToken),
+              "batch_size": state.batch_size,
+              "next_page": {
+                ?"rule_token": body.?NextToken,
+              },
+
+              // AWS SigV4 Signing: Prepare signing key for next GetComplianceDetailsByConfigRule request
+              // Perform a succession of keyed hash operations (HMAC) on the request date, Region, and service, 
+              // with the AWS secret access key as the key for the initial hashing operation.
+              // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key
+
+              "signing_key": "aws4_request".hmac("sha256",
+                "config".hmac("sha256",
+                  state.aws_region.hmac("sha256",
+                    now.format("20060102").hmac("sha256",
+                      bytes("AWS4" + state.secret_key)
+                    )
+                  )
+                )
+              ),
+              // Create a string_to_sign that includes the algorithm, request timestamp, credential scope, and hashed canonical request.
+              // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#create-string-to-sign
+
+              "string_to_sign": [
+                'AWS4-HMAC-SHA256',
+                now.format("20060102T150405Z"),
+                now.format("20060102") + '/' + state.aws_region + '/config/aws4_request',
+                [
+                  'POST',
+                  '/',
+                  '',
+                  "content-type:application/x-amz-json-1.1",
+                  "host:config." + state.aws_region + "." + state.tld,
+                  "x-amz-date:" + now.format("20060102T150405Z"),
+                  "x-amz-target:StarlingDoveService.GetComplianceDetailsByConfigRule",
+                  '',
+                  "content-type;host;x-amz-date;x-amz-target",
+                  {
+                    ?"NextToken": state.?next_page.result_token,
+                    ?"ConfigRuleName": body.?ConfigRules[0].optMap(r, r.ConfigRuleName),
+                    "Limit": int(state.batch_size)
+                  }.encode_json().sha256().hex()
+                ].join("\n").sha256().hex()
+              ].join("\n"),
+              ?"session_token": state.?session_token,
+              "access_key": state.access_key,
+              "secret_key": state.secret_key,
+              "aws_region": state.aws_region,
+              "tld": state.tld,
+            }
+          )
+        :
+          // Error Handling: DescribeConfigRules request failed
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "DescribeConfigRules: POST " + state.url.trim_right("/") + " " +
+                (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+            "batch_size": state.batch_size,
+            ?"session_token": state.?session_token,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "aws_region": state.aws_region,
+            "tld": state.tld,
+          }
+        )
+      )
+  ).as(config_rules,
+    // Stage 3: Process results - either exit early on failure or fetch compliance details
+    !has(config_rules.worklist) ? // Exit early due to POST failure.
+      config_rules
+    : has(config_rules.worklist.ConfigRules) && size(config_rules.worklist.ConfigRules) > 0 ?
+      // API Call: Execute GetComplianceDetailsByConfigRule for specific config rule
+      post_request(
+        state.url.trim_right("/"),
+        "application/json",
+        {
+          ?"NextToken": has(config_rules.next_page) && has(config_rules.next_page.result_token) ? optional.of(config_rules.next_page.result_token) : optional.none(),
+          "ConfigRuleName": config_rules.worklist.ConfigRules[int(config_rules.next)].ConfigRuleName,
+          "Limit": int(config_rules.batch_size),
+        }.encode_json()
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/x-amz-json-1.1"],
+            "X-Amz-Date": [now.format("20060102T150405Z")],
+
+            // Perform a keyed hash operation on the string to sign using the derived signing key as the hash key to calculate the signature
+            // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#calculate-signature
+            // and construct the Authorization header by combining the algorithm, credential scope, signed headers, and calculated signature.
+            // Refer https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#add-signature-to-request
+
+            "Authorization": [
+              "AWS4-HMAC-SHA256 Credential="
+              + config_rules.access_key
+              + "/" + now.format("20060102")
+              + "/" + config_rules.aws_region
+              + "/config/aws4_request, SignedHeaders=content-type;host;x-amz-date;x-amz-target, Signature="
+              + (config_rules.string_to_sign).hmac("sha256", config_rules.signing_key).hex()
+            ],
+            "X-Amz-Target": ["StarlingDoveService.GetComplianceDetailsByConfigRule"],
+            ?"X-Amz-Security-Token": has(config_rules.session_token) ? optional.of([config_rules.session_token]) : optional.none(),
+          },
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        // Response Processing: Successfully got compliance details
+        bytes(resp.Body).decode_json().as(body,
+          {
+            "events": (has(body.EvaluationResults) && size(body.EvaluationResults) > 0) ?
+              body.EvaluationResults.orValue([]).map(evt,
+                {
+                  "message": evt.with(
+                    {
+                      "ConfigRuleInfo": config_rules.worklist.ConfigRules[int(config_rules.next)],
+                    }
+                  ).encode_json(),
+                }
+              )
+            :
+              [{}],
+            "next_page": {
+              ?"result_token": body.?NextToken,
+              ?"rule_token": config_rules.?next_page.rule_token,
+            },
+            "want_more": config_rules.has_next || has(body.NextToken) || (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)),
+            "next": has(body.NextToken) ?
+              config_rules.next
+            :
+              (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)) ?
+                (int(config_rules.next) + 1)
+              :
+                0,
+            "worklist": has(body.NextToken) ?
+              config_rules.worklist
+            : (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)) ?
+                config_rules.worklist
+              :
+                {},
+            "has_next": config_rules.has_next,
+            "batch_size": config_rules.batch_size,
+            ?"session_token": config_rules.?session_token,
+            "access_key": config_rules.access_key,
+            "secret_key": config_rules.secret_key,
+            "aws_region": config_rules.aws_region,
+            "tld": config_rules.tld,
+          }
+        )
+      :
+        // Error Handling: GetComplianceDetailsByConfigRule request failed
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GetComplianceDetailsByConfigRule: POST " + state.url.trim_right("/") + " " +
+              (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+          "batch_size": config_rules.batch_size,
+          ?"session_token": config_rules.?session_token,
+          "access_key": config_rules.access_key,
+          "secret_key": config_rules.secret_key,
+          "aws_region": config_rules.aws_region,
+          "tld": config_rules.tld,
+        }
+      )
+    :
+      // Final State: No config rules found, return empty result
+      {
+        "events": [],
+        "want_more": false,
+        "batch_size": config_rules.batch_size,
+        ?"session_token": config_rules.?session_token,
+        "access_key": config_rules.access_key,
+        "secret_key": config_rules.secret_key,
+        "aws_region": config_rules.aws_region,
+        "tld": config_rules.tld,
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

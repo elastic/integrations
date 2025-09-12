@@ -1,0 +1,65 @@
+title: "Swimlane Turbine API logs"
+type: logs
+dataset: turbine.api
+streams:
+  - input: filestream
+    template_path: stream.yml.hbs
+    title: Fetch Swimlane Turbine API logs
+    description: Collect Swimlane Turbine API logs
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: false
+        show_user: true
+        default:
+          - /var/log/containers/turbine-api*.log
+        required: true
+      - name: symlinks
+        type: bool
+        title: Use Symlinks
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: containerParserStream
+        type: text
+        title: Container parser's stream configuration
+        multi: false
+        required: true
+        default: stdout
+      - name: excludePaths
+        type: text
+        title: Exclude Paths
+        multi: true
+        required: false
+        show_user: true
+      - name: containerParserFormat
+        type: text
+        title: Container parser's format configuration
+        multi: false
+        required: true
+        default: auto
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream. Refer to [Kubernetes provider](http://localhost:8000/guide/providers.html#kubernetes-provider) to find the available keys and to [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions) on how to use the available keys in conditions.
+        type: text
+        multi: false
+        required: false
+        show_user: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: custom
+        title: Custom configurations
+        show_user: false
+        description: >
+          Here YAML configuration options can be used to be added to your configuration. Be careful using this as it might break your configuration file.
+
+        type: yaml
+        default: ""

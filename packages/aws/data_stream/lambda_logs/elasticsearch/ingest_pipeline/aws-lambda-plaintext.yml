@@ -1,0 +1,59 @@
+---
+description: "Parse AWS Lambda logs with fallback to raw message"
+processors:
+  - grok:
+      field: event.original
+      pattern_definitions:
+        GREEDYMULTILINE: "(.|\n|\t)*"
+        NOSPACE: "[^\\s]+"
+      patterns:
+        - '^(?<aws.lambda.event_type>START)\s+RequestId:\s+%{DATA:aws.lambda.request_id}\s+Version:\s+(?<aws.lambda.version>\$LATEST|[^\s]+)\s+%{GREEDYMULTILINE:message}'
+        - '^(?<aws.lambda.event_type>INIT_START)\s+Runtime Version: %{DATA:aws.lambda.runtime_version}\s+Runtime Version ARN: %{GREEDYDATA:aws.lambda.arn}'
+        - '^(?<aws.lambda.event_type>LOGS)\s+Name: %{DATA:aws.lambda.log_extension.name}\s+State: %{DATA:aws.lambda.log_extension.state}\s+Types: \[%{DATA:aws.lambda.log_extension.types}\]'
+        - '^(?<aws.lambda.event_type>EXTENSION)\s+Name: %{DATA:aws.lambda.extension.name}\s+State: %{DATA:aws.lambda.extension.state}\s+Events: \[%{DATA:aws.lambda.extension.events}\]'
+        - '^(?<aws.lambda.event_type>REPORT)\s+RequestId:\s+%{DATA:aws.lambda.request_id}\s+Duration:\s+%{NUMBER:aws.lambda.metrics.duration_ms:float} ms\s+Billed Duration:\s+%{NUMBER:aws.lambda.metrics.billed_duration_ms:float} ms\s+Memory Size:\s+%{NUMBER:aws.lambda.metrics.memory_size_mb:float} MB\s+Max Memory Used:\s+%{NUMBER:aws.lambda.metrics.max_memory_used_mb:float} MB(?:\s+Init Duration:\s+%{NUMBER:aws.lambda.metrics.init_duration_ms:float} ms)?'
+        - '^(?<aws.lambda.event_type>XRAY)\s+TraceId:\s+%{NOSPACE:aws.lambda.tracing.xray_trace_id}\s+SegmentId:\s+%{NOSPACE:aws.lambda.tracing.segment_id}(?:\s+Sampled:\s+%{NOSPACE:aws.lambda.tracing.sampled})?'
+        - '^(?<aws.lambda.event_type>END)\s+RequestId:\s+%{GREEDYDATA:aws.lambda.request_id}'
+        - '^\[%{WORD:log.level}\]\s+%{TIMESTAMP_ISO8601:timestamp}\s+%{NOSPACE:aws.lambda.request_id}\s+%{GREEDYMULTILINE:message}'
+        - '^%{TIMESTAMP_ISO8601:timestamp}\s+%{DATA:aws.lambda.request_id}\s+%{LOGLEVEL:log.level}\s+%{GREEDYMULTILINE:message}'
+        - '^%{NOSPACE:aws.lambda.log_stream_id}\s+%{TIMESTAMP_ISO8601:timestamp}\s+(?<aws.lambda.event_type>INIT_START)\s+Runtime Version:\s+%{NOSPACE:aws.lambda.runtime_version}\s+Runtime Version ARN:\s+%{NOSPACE:aws.lambda.runtime_version_arn}'
+        - '^%{NOSPACE:aws.lambda.log_stream_id}\s+%{TIMESTAMP_ISO8601:timestamp}\s+(?<aws.lambda.event_type>START)\s+RequestId:\s+%{NOSPACE:aws.lambda.request_id}\s+Version:\s+%{NOSPACE:aws.lambda.version}\s+%{GREEDYMULTILINE:message}'
+        - '^%{NOSPACE:aws.lambda.log_stream_id}\s+%{TIMESTAMP_ISO8601:timestamp}\s+(?<aws.lambda.event_type>REPORT)\s+RequestId:\s+%{NOSPACE:aws.lambda.request_id}\s+Duration:\s+%{NUMBER:aws.lambda.metrics.duration_ms:float} ms\s+Billed Duration:\s+%{NUMBER:aws.lambda.metrics.billed_duration_ms:float} ms\s+Memory Size:\s+%{NUMBER:aws.lambda.metrics.memory_size_mb:float} MB\s+Max Memory Used:\s+%{NUMBER:aws.lambda.metrics.max_memory_used_mb:float} MB(?:\s+Init Duration:\s+%{NUMBER:aws.lambda.metrics.init_duration_ms:float} ms)?'
+        - '^%{NOSPACE:aws.lambda.log_stream_id}\s+%{TIMESTAMP_ISO8601:timestamp}\s+(?<aws.lambda.event_type>END)\s+RequestId:\s+%{NOSPACE:aws.lambda.request_id}'
+        - '^%{NOSPACE:aws.lambda.log_stream_id}\s+%{TIMESTAMP_ISO8601:timestamp}\s+%{WORD:aws.lambda.event_type}\s+RequestId:\s+%{NOSPACE:aws.lambda.request_id}'
+        - '^%{NOSPACE:aws.lambda.log_stream_id}\s+%{TIMESTAMP_ISO8601:timestamp}\s+%{GREEDYMULTILINE:message}'
+        - '^(?i)(?:%{LOGLEVEL:log.level}:?\s*)?%{GREEDYMULTILINE:message}'
+      ignore_missing: true
+      ignore_failure: true
+
+  - date:
+      if: ctx.timestamp != null
+      field: timestamp
+      target_field: "@timestamp"
+      formats: 
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - "yyyy-MM-dd HH:mm:ss"
+        - "yyyy/MM/dd HH:mm:ss"
+        - "ISO8601"
+      ignore_failure: true
+
+  - set:
+      if: "ctx['@timestamp'] == null"
+      field: "@timestamp"
+      value: "{{_ingest.timestamp}}"
+      ignore_failure: true
+
+  - remove:
+      field: timestamp
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

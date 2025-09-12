@@ -58,12 +58,59 @@ The processor v2 is in preview. Processor v1 is still the default and is recomme
 
 See the "Event Hub Processor v2 only" section in the integration settings for more details about enabling the processor v2.
 
+### FAQ
+
+Here are a few frequently asked questions about the integration v2 preview.
+
+#### Question: Is the integration v2 production ready?
+
+Yes, the integration v2 is production ready.
+
+The integration v2 is marked with "preview" as we were testing this routing approach, and wanted to keep the option of changing course, if needed. Since the experiment was successful, we'll remove the "preview" from the name as we finalize the plans to transition from v1 to v2.
+
+#### Question: Are all logs routed to the relevant data streams?
+
+Yes, all known logs are routed to the data stream with the best parsing and mapping functionality available.
+
+The `logs-azure.events-default` contains the routing logic based on the `category` field. The routing rules are available in the integrations repo at [packages/azure/data_stream/events/routing_rules.yml](https://github.com/elastic/integrations/blob/main/packages/azure/data_stream/events/routing_rules.yml).
+
+#### Question: How are unsupported Azure logs handled?
+
+The integration v2 inspects the category field to see if there's an integration available with full support. If there isn't a specific integration available, the routing falls back to `logs-azure.platformlogs-default` to apply the standard parsing and mapping.
+
+#### Question: What is in the undocumented data-stream `logs-azure.events-default`?
+
+The `logs-azure.events-default` data stream is the logs entry point for the integration v2. It contains the core logs routing logic.
+
 ## Data streams
 
 The Azure Logs integration (v2 preview) collects logs.
 
 **Logs** help you keep a record of events that happen on your Azure account.
 Log data streams collected by the Azure Logs integration include Activity, Platform, Microsoft Entra ID (Sign-in, Audit, Identity Protection, Provisioning), Microsoft Graph Activity, and Spring Apps logs.
+
+## Routing
+
+The integration routes the logs to the most appropriate data stream based on the log category. 
+
+Use the following table to identify the target data streams for each log category. For example, if the integration receives a log event with the `NonInteractiveUserSignInLogs` category, it will infer `azure.signinlogs` as dataset, indexing the log into `logs-azure.signinlogs-default` data stream. 
+
+| Data Stream                        | Log Categories                                                                                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `logs-azure.activitylogs-*`        | `Administrative`, `Security`, `ServiceHealth`, `Alert`, `Recommendation`, `Policy`, `Autoscale`, `ResourceHealth`                                            |
+| `logs-azure.application_gateway-*` | `ApplicationGatewayFirewallLog`, `ApplicationGatewayAccessLog`                                                                                               |
+| `logs-azure.auditlogs-*`           | `AuditLogs`                                                                                                                                                  |
+| `logs-azure.firewall_logs-*`       | `AzureFirewallApplicationRule`, `AzureFirewallNetworkRule`, `AzureFirewallDnsProxy`, `AZFWApplicationRule`, `AZFWNetworkRule`, `AZFWNatRule`, `AZFWDnsQuery` |
+| `logs-azure.graphactivitylog-*`    | `MicrosoftGraphActivityLogs`                                                                                                                                 |
+| `logs-azure.identity_protection-*` | `RiskyUsers`, `UserRiskEvents`                                                                                                                               |
+| `logs-azure.provisioning-*`        | `ProvisioningLogs`                                                                                                                                           |
+| `logs-azure.signinlogs-*`          | `SignInLogs`, `NonInteractiveUserSignInLogs`, `ServicePrincipalSignInLogs`, `ManagedIdentitySignInLogs`                                                      |
+| `logs-azure.springcloudlogs-*`     | `ApplicationConsole`, `SystemLogs`, `IngressLogs`, `BuildLogs`, `ContainerEventLogs`                                                                         |
+| `logs-azure.platformlogs-*`        | All other log categories                                                                                                                                     |
+
+### What about all other log categories?
+
+The integration indexes all other Azure logs categories using the `logs-azure.platformlogs-*` data stream.
 
 ## Requirements
 
@@ -529,6 +576,10 @@ _boolean_
 (processor v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
 
 Default is `false`, which means the processor will not perform the checkpoint migration.
+
+`endpoint_suffix` :
+_string_
+Override the default endpoint suffix used to construct the connection string. Default is set to `core.windows.net`. For example, US Government Cloud users should set this to `core.usgovcloudapi.net`.
 
 `partition_receive_timeout` :
 _string_

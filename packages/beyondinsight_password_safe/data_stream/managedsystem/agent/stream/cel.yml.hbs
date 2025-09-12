@@ -17,72 +17,151 @@ resource.ssl: {{ssl}}
 {{/if}}
 state:
   limit: {{limit}}
-  apikey: {{apikey}}
-  password: {{password}}
-  username: {{username}}
+  apikey: {{escape_string apikey}}
+  password: {{escape_string password}}
+  username: {{escape_string username}}
 redact:
   fields:
     - apikey
     - password
+{{!--
+API References:
+  https://docs.beyondtrust.com/bips/docs/api#post-authsignappin
+  https://docs.beyondtrust.com/bips/docs/password-safe-apis#get-managedsystems
+--}}
 program: |-
-  state.?cursor.cookies.orValue(
-  	// Authenticating using API to retrieve Cookie
-  	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
-  		{
-  			"Header": {
-  				"Authorization": [
-  					"PS-Auth key=" + state.apikey + ";runas=" + state.username + ((state.?password.orValue("") != "") ? (";pwd=[" + state.password + "];") : ""),
-  				],
-  				"Content-Type": ["application/json"],
-  			},
-  		}
-  	).do_request().as(resp,
-  		resp.Header["Set-Cookie"]
-  	)
-  ).as(cookies,
-  	request(
-  		"GET",
-  		state.url.trim_suffix("/") + "/ManagedSystems?" + {
-  			"limit": [string(state.limit)],
-  			"offset": [string(state.?cursor.offset.orValue(0))],
-  		}.format_query()
-  	).with(
-  		{
-  			"Header": {
-  				"Content-Type": ["application/json"],
-  				"Cookie": cookies,
-  			},
-  		}
-  	).do_request().as(resp,
-  		(resp.StatusCode == 401) ?
-  			state.with(
-  				{
-  					"events": {"error": {"message": "Authentication expired or incorrect. Clearing and retrying...", "statuscode": string(resp.StatusCode)}},
-  					"want_more": true,
-  					"cursor": {
-  						"cookies": null,
-  					},
-  				}
-  			)
-  		:
-  			bytes(resp.Body).decode_json().as(body,
-  				state.with(
-  					{
-  						"events": body.Data.map(e,
-  							{
-  								"message": e,
-  								?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
-  							}
-  						),
-  						"want_more": size(body.Data) + int(state.?cursor.offset.orValue(0)) < body.TotalCount,
-  						"cursor": {
-  							"cookies": cookies,
-  							"offset": (size(body.Data) + int(state.?cursor.offset.orValue(0)) < body.TotalCount) ? (int(state.?cursor.offset.orValue(0)) + size(body.Data)) : 0,
-  						},
-  					}
-  				)
-  			)
-  	)
+  state.with(
+    has(state.?cursor.cookies) ?
+      // Fetch managed systems using authenticated session.
+      request(
+        "GET",
+        state.url.trim_suffix("/") + "/ManagedSystems?" + {
+          "limit": [string(state.limit)],
+          "offset": [string(state.?offset.orValue(0))],
+        }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/json"],
+            "Cookie": state.cursor.cookies,
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          // Success: process JSON response with Data array of managed system objects.
+          // More data may exist if returned array size equals the limit.
+          resp.Body.decode_json().as(body,
+            {
+              "events": body.Data.map(e,
+                {
+                  "event": {
+                    "original": e.encode_json(),
+                  },
+                }
+              ),
+              "want_more": size(body.Data) == int(state.limit),
+              "offset": (size(body.Data) == int(state.limit)) ?
+                (int(state.?offset.orValue(0)) + size(body.Data))
+              :
+                0,
+              "retries": 0,
+            }
+          )
+        : (resp.StatusCode == 401) ?
+          (
+            // Authentication failure: clear session and retry once.
+            (int(state.?retries.orValue(0)) == 0) ?
+              {
+                "events": [
+                  // Must produce an event for want_more=true to be honored.
+                  {"cel": true},
+                ],
+                "retries": 1,
+                "want_more": true,
+                "cursor": {},
+              }
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "Authentication failed after retry: " + "GET " + state.url.trim_suffix("/") + "/ManagedSystems: " + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        :
+          // Handle all other HTTP error responses.
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_suffix("/") + "/ManagedSystems: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    :
+      // Establish new authenticated session.
+      request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+        {
+          "Header": {
+            "Authorization": [
+              sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) + (
+              // pwd is required only if the user password is required on the application API registration.
+              (state.password != "") ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+            ],
+            "Content-Type": ["application/json"],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          {
+            "events": [
+              // Must produce an event for want_more=true to be honored.
+              {"cel": true},
+            ],
+            "cursor": {
+              "cookies": resp.Header["Set-Cookie"],
+            },
+            "want_more": true,
+          }
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "Failed to create session: " + "POST " + state.url.trim_suffix("/") + "/Auth/SignAppin: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+  ).as(state, (state.want_more == false) ?
+    // Reset retry counter when execution completes.
+    state.drop("retries")
+  :
+    state
   )
 tags:
 {{#if preserve_original_event}}
@@ -94,7 +173,9 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
+
 processors:
+- drop_event.when.equals.cel: true
+{{#if processors}}
 {{processors}}
 {{/if}}

@@ -1,0 +1,123 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies unusual instances of Control Panel with suspicious keywords or paths in the process command line value. Adversaries may abuse control.exe to proxy execution of malicious code.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Control Panel Process with Unusual Arguments",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Control Panel Process with Unusual Arguments\n\nThe Control Panel in Windows is a system utility that allows users to view and adjust system settings. Adversaries may exploit this by using control.exe to execute malicious code under the guise of legitimate processes. The detection rule identifies anomalies in command-line arguments, such as unexpected file types or suspicious paths, which may indicate an attempt to evade defenses or execute unauthorized actions.\n\n### Possible investigation steps\n\n- Review the command line arguments of the control.exe process to identify any unusual file types or suspicious paths, such as image file extensions or paths like */AppData/Local/*.\n- Check the parent process of control.exe to determine if it was spawned by a legitimate application or a potentially malicious one.\n- Investigate the user account associated with the process to verify if the activity aligns with their typical behavior or if it appears suspicious.\n- Examine recent file modifications or creations in directories like \\AppData\\Local\\ or \\Users\\Public\\ to identify any unauthorized or unexpected changes.\n- Correlate the event with other security alerts or logs from data sources like Microsoft Defender for Endpoint or Sysmon to gather additional context on the potential threat.\n- Assess the network activity of the host during the time of the alert to identify any unusual outbound connections that may indicate data exfiltration or command and control communication.\n\n### False positive analysis\n\n- Image file paths in command-line arguments may trigger false positives if users or applications are legitimately accessing image files through control.exe. To mitigate this, create exceptions for known applications or user activities that frequently access image files.\n- Paths involving AppData or Users\\Public directories might be flagged if legitimate software installations or updates use these locations. Review and whitelist specific software processes that are known to use these directories for legitimate purposes.\n- Relative path traversal patterns like ../../.. could be used by legitimate scripts or applications for configuration purposes. Identify and exclude these scripts or applications from the detection rule if they are verified as non-malicious.\n- Frequent use of control.exe with specific command-line arguments by system administrators or IT personnel for legitimate system management tasks can be excluded by creating user-based exceptions for these roles.\n- If certain security tools or monitoring software are known to trigger this rule due to their operational behavior, consider excluding these tools after confirming their legitimacy and necessity.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further malicious activity and lateral movement.\n- Terminate the suspicious control.exe process to stop any ongoing malicious execution.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious files or remnants.\n- Review and clean up any unauthorized changes or files in the directories specified in the alert, such as AppData/Local or Users/Public, to ensure no persistence mechanisms remain.\n- Restore any affected files or system settings from a known good backup to ensure system integrity.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems are compromised.\n- Implement additional monitoring and alerting for similar command-line anomalies to enhance detection and prevent recurrence of this threat.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : \"control.exe\" and\n  process.command_line : (\n    \"*.jpg*\", \"*.png*\",\n    \"*.gif*\", \"*.bmp*\",\n    \"*.jpeg*\", \"*.TIFF*\",\n    \"*.inf*\", \"*.cpl:*/*\",\n    \"*../../..*\",\n    \"*/AppData/Local/*\",\n    \"*:\\\\Users\\\\Public\\\\*\",\n    \"*\\\\AppData\\\\Local\\\\*\"\n)\n",
+        "references": [
+            "https://www.joesandbox.com/analysis/476188/1/html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "416697ae-e468-4093-a93d-59661fa619ec",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.002",
+                                "name": "Control Panel",
+                                "reference": "https://attack.mitre.org/techniques/T1218/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 317
+    },
+    "id": "416697ae-e468-4093-a93d-59661fa619ec_317",
+    "type": "security-rule"
+}

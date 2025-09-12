@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of Distributed Component Object Model (DCOM) to run commands from a remote host, which are launched via the ShellBrowserWindow or ShellWindows Application COM Object. This behavior may indicate an attacker abusing a DCOM application to stealthily move laterally.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Incoming DCOM Lateral Movement with ShellBrowserWindow or ShellWindows",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Incoming DCOM Lateral Movement with ShellBrowserWindow or ShellWindows\n\nDCOM enables software components to communicate over a network, often used in Windows environments for legitimate inter-process communication. Adversaries exploit DCOM, particularly ShellBrowserWindow or ShellWindows, to execute commands remotely, facilitating stealthy lateral movement. The detection rule identifies suspicious network activity and process creation patterns, such as incoming TCP connections to high ports and explorer.exe spawning processes, which may indicate DCOM abuse.\n\n### Possible investigation steps\n\n- Review the network activity to identify the source IP address of the incoming TCP connection. Verify if the source IP is known or expected within the network environment.\n- Examine the process tree for explorer.exe to identify any unusual or unexpected child processes that were spawned. Investigate these processes for any signs of malicious activity.\n- Check the destination port and source port numbers to determine if they are commonly used for legitimate services or if they are unusual for the environment.\n- Correlate the event with other security logs or alerts to identify any additional suspicious activities or patterns associated with the same source IP or process entity.\n- Investigate the user account associated with the explorer.exe process to determine if there are any signs of compromise or unauthorized access.\n- Review historical data for any previous occurrences of similar network connections or process creations to identify potential patterns or repeated attempts.\n\n### False positive analysis\n\n- Legitimate software updates or installations may trigger the rule due to the use of DCOM for remote management tasks. Users can create exceptions for known update processes by identifying their specific network and process patterns.\n- Internal IT management tools that utilize DCOM for remote administration might cause false positives. Review and whitelist these tools by confirming their source IP addresses and process behaviors.\n- Automated scripts or scheduled tasks that leverage DCOM for legitimate purposes can be mistaken for lateral movement. Document and exclude these tasks by correlating their execution times and process chains.\n- Network scanning or monitoring tools that generate high-port TCP connections could be misinterpreted as suspicious activity. Validate and exclude these tools by cross-referencing their network traffic with known benign sources.\n- User-initiated remote desktop sessions or file transfers using DCOM may appear as lateral movement. Verify and exclude these activities by checking user authentication logs and session details.\n\n### Response and remediation\n\n- Isolate the affected host immediately from the network to prevent further lateral movement and potential data exfiltration.\n- Terminate any suspicious processes spawned by explorer.exe that are not part of normal operations, focusing on those initiated through high TCP ports.\n- Conduct a thorough review of recent network connections and process creation logs on the affected host to identify any additional compromised systems or lateral movement attempts.\n- Reset credentials for any accounts that were active on the affected host during the time of the alert to prevent unauthorized access.\n- Apply patches and updates to the affected systems to address any vulnerabilities that may have been exploited during the attack.\n- Enhance monitoring and logging on the network to detect similar DCOM abuse attempts, ensuring that alerts are configured for high TCP port activity and unusual process spawning by explorer.exe.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional containment or remediation actions are necessary.",
+        "query": "sequence by host.id with maxspan=5s\n [network where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"explorer.exe\" and\n  network.direction : (\"incoming\", \"ingress\") and network.transport == \"tcp\" and\n  source.port > 49151 and destination.port > 49151 and source.ip != \"127.0.0.1\" and source.ip != \"::1\"\n ] by process.entity_id\n [process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : \"explorer.exe\"\n ] by process.parent.entity_id\n",
+        "references": [
+            "https://enigma0x3.net/2017/01/23/lateral-movement-via-dcom-round-2/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.direction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8f919d4b-a5af-47ca-a594-6be59cd924a4",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.003",
+                                "name": "Distributed Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1021/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 210
+    },
+    "id": "8f919d4b-a5af-47ca-a594-6be59cd924a4_210",
+    "type": "security-rule"
+}

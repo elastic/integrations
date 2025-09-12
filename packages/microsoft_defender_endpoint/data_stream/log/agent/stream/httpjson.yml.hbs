@@ -21,6 +21,9 @@ request.method: GET
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
 request.transforms:
   - set:
       target: "header.User-Agent"
@@ -31,7 +34,7 @@ request.transforms:
   - set:
       target: "url.params.$filter"
       value: 'lastUpdateTime gt [[formatDate .cursor.lastUpdateTime "2006-01-02T15:04:05.9999999Z"]]'
-      default: 'lastUpdateTime gt [[formatDate (now (parseDuration "-5m")) "2006-01-02T15:04:05.9999999Z"]]'
+      default: 'lastUpdateTime gt [[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.9999999Z"]]'
 response.split:
   target: body.value
   ignore_empty_value: true
@@ -40,7 +43,8 @@ response.split:
     keep_parent: true
 cursor:
   lastUpdateTime:
-    value: "[[.last_response.body.lastUpdateTime]]"
+    value: '[[with (index .last_response.body "lastUpdateTime")]][[.]][[end]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

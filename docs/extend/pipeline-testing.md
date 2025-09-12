@@ -20,7 +20,9 @@ Conceptually, running a pipeline test involves the following steps:
 
 ## Limitations [pipeline-limitations]
 
-At the moment, pipeline tests have limitations. The main ones are: * As you’re only testing the ingest pipeline, you can prepare mocked documents with imaginary fields, different from ones collected in {{beats}}. Also, the other way round, you can skip most of the example fields and use tiny documents with a minimal set of fields just to satisfy the pipeline validation. * There might be integrations that transform data mainly using {{beats}} processors instead of ingest pipelines. In such cases, ingest pipelines are rather plain.
+At the moment, pipeline tests have limitations. The main ones are:
+* As you’re only testing the ingest pipeline, you can prepare mocked documents with imaginary fields, different from ones collected in {{beats}}. Also, the other way round, you can skip most of the example fields and use tiny documents with a minimal set of fields just to satisfy the pipeline validation.
+* There might be integrations that transform data mainly using {{beats}} processors instead of ingest pipelines. In such cases, ingest pipelines are rather plain.
 
 
 ## Defining a pipeline test [pipeline-defining-test]

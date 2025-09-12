@@ -1,0 +1,99 @@
+format_version: 3.0.0
+name: endace
+title: "Endace"
+version: 0.1.1
+source:
+  license: "Elastic-2.0"
+description: "This Endace integration configures Network Packet Capture for flow generation and adds a pivot field to your Endace platform."
+type: integration
+categories:
+  - aws
+  - cloud
+  - custom
+  - network
+conditions:
+  kibana:
+    version: "^8.13.0 || ^9.0.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/endace-screenshot-1.png
+    title: Endace
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/endace-logo.svg
+    title: Endace logo
+    size: 128x128
+    type: image/svg+xml
+vars:
+  - name: endace_url
+    type: text
+    title: Endace UI URL
+    multi: false
+    required: true
+    show_user: true
+    description: "Base URL for Endace UI. Example: https://myvprobe.com"
+  - name: endace_datasources
+    type: text
+    title: Endace Datasources
+    description: Datasource within Endace
+    multi: false
+    required: true
+    show_user: false
+    default: "tag:rotation-file"
+  - name: endace_tools
+    type: text
+    title: Endace Tools
+    description: Tools within Endace
+    multi: false
+    required: true
+    show_user: false
+    default: "trafficOverTime_by_app,conversations_by_ipaddress"
+  - name: endace_view_window
+    type: text
+    title: View Window Time
+    description: "Window of vizualization in minutes, centered in the event timestamp. Example 10"
+    multi: false
+    required: true
+    show_user: true
+    default: "10"
+policy_templates:
+  - name: endace
+    title: Endace Flow logs
+    description: Capture network traffic via Endace Flow or Network Packet Capture
+    inputs:
+      - type: packet
+        title: Capture network traffic
+        description: Collecting network traffic. Use this if using Endace vProbe
+        vars:
+          - name: interface
+            type: text
+            title: Interface
+            required: false
+            show_user: true
+          - name: never_install
+            type: bool
+            title: Never Install Npcap on Windows
+            description: |-
+              On Windows, the Network Packet Capture integration requires an Npcap DLL installation.
+              This is provided by the integration for users of the Elastic Licenced version. In some
+              cases users may wish to use their own installed version. In order to allow this, this
+              option can be used. Setting it to `true` will disable installation of the bundled Npcap
+              library.
+
+              Note that if there is no Npcap installed the integration will not function, and versions
+              of the Npcap library other than the bundled version may not provide functionality required
+              by the integration.
+            required: false
+            show_user: false
+            default: false
+      - type: netflow
+        title: Collect Endace Flow logs
+        description: Collecting Endace Flow logs using the netflow input
+agent:
+  privileges:
+    root: true
+owner:
+  github: elastic/integration-experience
+  type: partner

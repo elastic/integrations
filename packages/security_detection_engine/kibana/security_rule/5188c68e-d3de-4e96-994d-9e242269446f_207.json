@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies DACL modifications to deny access to a service, making it unstoppable, or hide it from system and users.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-m365_defender.event-*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Service DACL Modification via sc.exe",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Service DACL Modification via sc.exe\n\nThe `sc.exe` utility in Windows is used to manage services, including modifying their Discretionary Access Control Lists (DACLs). Adversaries may exploit this to alter service permissions, making them unmanageable or hidden. The detection rule identifies such modifications by monitoring for specific command patterns that indicate DACL changes, focusing on access denial to key user groups, thus flagging potential defense evasion attempts.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of \"sc.exe\" with the \"sdset\" argument, indicating a potential DACL modification attempt.\n- Examine the specific arguments used with \"sc.exe\" to identify which user groups (e.g., IU, SU, BA, SY, WD) were targeted for access denial.\n- Check the process execution timeline to determine if this activity coincides with other suspicious behavior or unauthorized access attempts.\n- Investigate the user account associated with the process execution to assess if it has the necessary privileges and if the activity aligns with their typical behavior.\n- Correlate this event with other security alerts or logs from data sources like Elastic Endgame, Sysmon, or Microsoft Defender for Endpoint to identify potential patterns or related incidents.\n- Assess the impact on the affected service by verifying its current state and functionality, ensuring it is not hidden or unmanageable.\n- If necessary, consult with system administrators to understand the legitimate need for such modifications and confirm if the activity was authorized.\n\n### False positive analysis\n\n- Routine administrative tasks using sc.exe to modify service permissions may trigger the rule. Review the context of the command and verify if it aligns with standard IT maintenance activities.\n- Automated scripts or software deployment tools that adjust service DACLs for legitimate configuration purposes can cause false positives. Identify these scripts and consider excluding their specific command patterns from the rule.\n- Security software updates or patches that modify service permissions as part of their installation process might be flagged. Confirm the legitimacy of the update and exclude the associated process arguments if necessary.\n- Custom applications that require specific service permissions for functionality may inadvertently match the detection criteria. Validate the application's behavior and create exceptions for its known safe operations.\n- Regular audits or compliance checks that involve service DACL modifications could be misinterpreted as malicious. Document these activities and adjust the rule to ignore them when performed by authorized personnel.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or changes to service permissions.\n- Terminate any suspicious processes related to sc.exe that are actively modifying service DACLs to stop ongoing malicious activity.\n- Restore the original DACL settings for the affected services using a known good configuration or backup to ensure proper access control is reinstated.\n- Conduct a thorough review of user accounts and permissions to identify and revoke any unauthorized access that may have been granted during the attack.\n- Implement additional monitoring on the affected system and similar systems to detect any further attempts to modify service DACLs, using enhanced logging and alerting mechanisms.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if the attack is part of a larger campaign.\n- Review and update endpoint protection policies to prevent similar threats in the future, ensuring that all systems are equipped with the latest security patches and configurations.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (process.name : \"sc.exe\" or ?process.pe.original_file_name : \"sc.exe\") and\n  process.args : \"sdset\" and process.args : \"*D;*\" and\n  process.args : (\"*;IU*\", \"*;SU*\", \"*;BA*\", \"*;SY*\", \"*;WD*\")\n",
+        "references": [
+            "https://blogs.jpcert.or.jp/en/2024/07/mirrorface-attack-against-japanese-organisations.html",
+            "https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_sc_sdset_deny_service_access.yml",
+            "https://learn.microsoft.com/en-us/windows/win32/secauthz/sid-strings",
+            "https://www.sans.org/blog/red-team-tactics-hiding-windows-services/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5188c68e-d3de-4e96-994d-9e242269446f",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.003",
+                                "name": "Windows Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 207
+    },
+    "id": "5188c68e-d3de-4e96-994d-9e242269446f_207",
+    "type": "security-rule"
+}

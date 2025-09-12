@@ -619,6 +619,36 @@ processors:
 - community_id:
     ignore_failure: true
 
+############################
+## User fields normalization
+############################
+
+- rename:
+    field: user.name
+    target_field: user.email
+    tag: rename_user_email
+    if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+- dissect:
+    field: user.email
+    pattern: '%{user.name}@%{user.domain}'
+    tag: dissect_user_email
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.user?.name == null && ctx.user?.domain == null
+
+- rename:
+    field: source.user.name
+    target_field: source.user.email
+    tag: rename_source_user_email
+    if: ctx.source?.user?.email == null && ctx.source?.user?.name != null && ctx.source?.user.name.indexOf("@") > 0
+- dissect:
+    field: source.user.email
+    pattern: '%{source.user.name}@%{source.user.domain}'
+    tag: dissect_source_user_email
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.source?.user?.name == null && ctx.source?.user?.domain == null
+
 ####################
 ## ECS Related Hosts
 ####################
@@ -671,9 +701,24 @@ processors:
 ## ECS Related User
 ###################
 - append:
+    if: ctx.user?.name != null
+    field: related.user
+    value: "{{{user.name}}}"
+    allow_duplicates: false
+- append:
+    if: ctx.user?.email != null
+    field: related.user
+    value: "{{{user.email}}}"
+    allow_duplicates: false
+- append:
     if: ctx.source?.user?.name != null
     field: related.user
     value: "{{{source.user.name}}}"
+    allow_duplicates: false
+- append:
+    if: ctx.source?.user?.email != null
+    field: related.user
+    value: "{{{source.user.email}}}"
     allow_duplicates: false
 
 ###################
@@ -709,11 +754,6 @@ processors:
       - sophos.xg.sent_bytes
       - sophos.xg.severity
       - sophos.xg.src_country
-    ignore_missing: true
-- remove:
-    field: event.original
-    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
     ignore_missing: true
 on_failure:
 - set:

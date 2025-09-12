@@ -677,7 +677,7 @@ The following non-ECS fields are used in system log documents:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type. | keyword |
-| message | The detailed message of the log. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tenable_ot_security.system_log.message | The detailed message of the log. | keyword |
 | tenable_ot_security.system_log.time_stamp | The timestamp of the log. | date |
 | tenable_ot_security.system_log.user_name | The username in the log. | keyword |

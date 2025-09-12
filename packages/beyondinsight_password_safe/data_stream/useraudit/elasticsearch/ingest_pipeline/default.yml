@@ -1,17 +1,19 @@
 ---
 description: Pipeline for processing BeyondInsight User Audit Events 
 processors:
-  - rename:
-      field: message
-      target_field: beyondinsight_password_safe.useraudit
-
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - fingerprint:
       fields:
-        - beyondinsight_password_safe.useraudit
-      target_field: "_id"
+        - event.original
+      target_field: _id
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondinsight_password_safe.useraudit
 
-  - drop:
-      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200 
 ##################### Scripts for processing input #####################
   - script:
       description: Drops null/empty values recursively.
@@ -31,6 +33,10 @@ processors:
         }
         dropEmptyFields(ctx);
 
+  - rename:
+      field: beyondinsight_password_safe.useraudit.IPAddress
+      target_field: beyondinsight_password_safe.useraudit.ip_address
+      ignore_missing: true
   - script:
       description: Convert Additional Info keys to snake case.
       tag: additional-info-keys-to-snake-case
@@ -64,6 +70,14 @@ processors:
         if (ctx.beyondinsight_password_safe.useraudit != null) {
           ctx.beyondinsight_password_safe.useraudit = keysToSnakeCase(ctx.beyondinsight_password_safe.useraudit);
         }
+  - convert:
+      field: beyondinsight_password_safe.useraudit.audit_id
+      type: string
+      if: ctx.beyondinsight_password_safe?.useraudit?.audit_id != null
+  - convert:
+      field: beyondinsight_password_safe.useraudit.user_id
+      type: string
+      if: ctx.beyondinsight_password_safe?.useraudit?.user_id != null
   - remove:
       field: beyondinsight_password_safe.useraudit.user_id
       if: ctx.beyondinsight_password_safe.useraudit?.user_id == -1
@@ -84,13 +98,6 @@ processors:
       field: event.type
       value: info
 
-  - set:
-      field: event.dataset
-      value: beyondinsight_password_safe.useraudit
-
-  - set:
-      field: event.module
-      value: beyondinsight_password_safe
 
   - set:
       field: event.id
@@ -114,29 +121,24 @@ processors:
       value: "{{{beyondinsight_password_safe.useraudit.user_name}}}"
       ignore_empty_value: true
 
-  - append:
-      field: related.user
-      value: "{{{beyondinsight_password_safe.useraudit.user_name}}}"  
-      allow_duplicates: false
-
  #################### Override host.ip ######################
   - gsub:
-      field: "beyondinsight_password_safe.useraudit.ipaddress"
+      field: "beyondinsight_password_safe.useraudit.ip_address"
       pattern: "\\b0+(\\d)"
       replacement: "$1"
   - append:
       field: related.hosts
-      value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
+      value: "{{{beyondinsight_password_safe.useraudit.ip_address}}}"
       allow_duplicates: false    
   - convert:
-      field: beyondinsight_password_safe.useraudit.ipaddress
+      field: beyondinsight_password_safe.useraudit.ip_address
       type: ip
-      if: ctx.beyondinsight_password_safe.useraudit?.ipaddress != null && ctx.beyondinsight_password_safe.useraudit.ipaddress != ''
+      if: ctx.beyondinsight_password_safe.useraudit?.ip_address != null && ctx.beyondinsight_password_safe.useraudit.ip_address != ''
       ignore_missing: true
 
   - append:
       field: host.ip
-      value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
+      value: "{{{beyondinsight_password_safe.useraudit.ip_address}}}"
 
   - geoip:
       field: host.ip
@@ -154,10 +156,41 @@ processors:
       target_field: "user.name"
       ignore_missing: true
 
-on_failure:
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+
   - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+
+on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

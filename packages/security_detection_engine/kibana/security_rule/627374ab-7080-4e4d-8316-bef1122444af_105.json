@@ -1,0 +1,92 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects private key searching activity on Linux systems. Searching for private keys can be an indication of an attacker attempting to escalate privileges or exfiltrate sensitive information.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Private Key Searching Activity",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Private Key Searching Activity\n\nIn Linux environments, private keys are crucial for secure communications and authentication. Adversaries may exploit this by searching for private keys to gain unauthorized access or escalate privileges. The detection rule identifies suspicious use of the 'find' command targeting key files in sensitive directories, signaling potential malicious intent. This proactive monitoring helps mitigate risks associated with unauthorized key access.\n\n### Possible investigation steps\n\n- Review the process details to confirm the 'find' command was executed with parameters targeting private key files, as indicated by the command line containing patterns like \"*id_dsa*\", \"*id_rsa*\", etc., and directories such as \"/home/\", \"/etc/ssh\", or \"/root/\".\n- Identify the user account associated with the process to determine if the activity aligns with expected behavior for that user or if it suggests potential compromise.\n- Check the process's parent process to understand the context in which the 'find' command was executed, which may provide insights into whether this was part of a legitimate script or an unauthorized action.\n- Investigate any recent login activity or changes in user privileges for the account involved to assess if there has been any unauthorized access or privilege escalation.\n- Examine system logs and other security alerts around the time of the event to identify any correlated suspicious activities or anomalies that might indicate a broader attack campaign.\n\n### False positive analysis\n\n- System administrators or automated scripts may use the 'find' command to locate private keys for legitimate maintenance tasks. To handle this, create exceptions for known administrative accounts or scripts that regularly perform these actions.\n- Backup processes might search for private keys as part of routine data protection activities. Identify and exclude these processes by specifying their unique command-line patterns or process IDs.\n- Security audits or compliance checks often involve scanning for private keys to ensure proper security measures are in place. Exclude these activities by recognizing the specific tools or scripts used during audits.\n- Developers or DevOps teams may search for private keys during application deployment or configuration. Establish a list of trusted users or processes involved in these operations and exclude them from triggering alerts.\n- Automated configuration management tools like Ansible or Puppet might search for keys as part of their operations. Identify these tools and exclude their specific command-line patterns to prevent false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes identified by the detection rule, particularly those involving the 'find' command searching for private keys.\n- Conduct a thorough review of access logs and process execution history to identify any unauthorized access or privilege escalation attempts.\n- Change all potentially compromised private keys and associated credentials, ensuring new keys are securely generated and stored.\n- Implement stricter access controls and permissions on directories containing private keys to limit exposure to unauthorized users.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems are affected.\n- Enhance monitoring and alerting for similar activities by ensuring that detection rules are tuned to capture variations of the 'find' command targeting sensitive files.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\n  event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\") and process.name == \"find\" and\n  process.command_line like (\"*id_dsa*\", \"*id_rsa*\", \"*id_ed*\", \"*id_ecdsa*\", \"*id_xmss*\", \"*id_dh*\") and\n  process.command_line like (\"*/home/*\", \"*/etc/ssh*\", \"*/root/*\", \"/\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "627374ab-7080-4e4d-8316-bef1122444af",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 105
+    },
+    "id": "627374ab-7080-4e4d-8316-bef1122444af_105",
+    "type": "security-rule"
+}

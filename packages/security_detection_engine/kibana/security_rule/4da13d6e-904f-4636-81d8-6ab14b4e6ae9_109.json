@@ -1,0 +1,83 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects attempts to disable Gatekeeper on macOS. Gatekeeper is a security feature that's designed to ensure that only trusted software is run. Adversaries may attempt to disable Gatekeeper before executing malicious code.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Attempt to Disable Gatekeeper",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Attempt to Disable Gatekeeper\n\nGatekeeper is a macOS security feature that ensures only trusted software runs by verifying app signatures. Adversaries may attempt to disable it to execute unauthorized code, bypassing security checks. The detection rule identifies such attempts by monitoring process events for specific commands used to disable Gatekeeper, flagging potential defense evasion activities.\n\n### Possible investigation steps\n\n- Review the process event details to confirm the presence of the command `spctl --master-disable` in the `process.args` field, which indicates an attempt to disable Gatekeeper.\n- Identify the user account associated with the process event to determine if the action was initiated by a legitimate user or an unauthorized actor.\n- Check the `event.category` and `event.type` fields to ensure the event is categorized as a process start, which aligns with the rule's detection criteria.\n- Investigate the parent process of the flagged event to understand the context in which the Gatekeeper disabling attempt was made, looking for any suspicious or unexpected parent processes.\n- Examine recent process events on the same host to identify any subsequent or preceding suspicious activities that might indicate a broader attack or compromise.\n- Review system logs and other security alerts on the host for additional indicators of compromise or related malicious activities.\n- Assess the risk and impact of the event by considering the host's role, the sensitivity of data it handles, and any potential exposure resulting from the attempted Gatekeeper disablement.\n\n### False positive analysis\n\n- System administrators or IT personnel may intentionally disable Gatekeeper for legitimate software installations or troubleshooting. To manage this, create exceptions for known administrative accounts or specific maintenance windows.\n- Some legitimate applications may require Gatekeeper to be disabled temporarily for installation. Identify these applications and whitelist their installation processes to prevent false alerts.\n- Development environments on macOS might disable Gatekeeper to test unsigned applications. Consider excluding processes initiated by development tools or specific user accounts associated with development activities.\n- Automated scripts or management tools that configure macOS settings might trigger this rule. Review and adjust these scripts to ensure they are recognized as non-threatening, or exclude them from monitoring if they are verified as safe.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS device from the network to prevent potential lateral movement or further execution of unauthorized code.\n- Terminate any suspicious processes associated with the attempt to disable Gatekeeper, specifically those involving the 'spctl --master-disable' command.\n- Conduct a thorough review of recent system changes and installed applications on the affected device to identify and remove any unauthorized or malicious software.\n- Restore Gatekeeper settings to their default state to ensure that only trusted software can be executed on the device.\n- Escalate the incident to the security operations team for further analysis and to determine if additional devices or systems may be affected.\n- Implement additional monitoring on the affected device and similar systems to detect any further attempts to disable Gatekeeper or other security features.\n- Review and update endpoint security policies to enhance protection against similar threats, ensuring that all macOS devices are configured to prevent unauthorized changes to security settings.",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n process.name == \"spctl\" and\n process.args like~ \"--master-disable\"\n",
+        "references": [
+            "https://support.apple.com/en-us/HT202491",
+            "https://community.carbonblack.com/t5/Threat-Advisories-Documents/TAU-TIN-Shlayer-OSX/ta-p/68397"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "4da13d6e-904f-4636-81d8-6ab14b4e6ae9",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1553",
+                        "name": "Subvert Trust Controls",
+                        "reference": "https://attack.mitre.org/techniques/T1553/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "4da13d6e-904f-4636-81d8-6ab14b4e6ae9_109",
+    "type": "security-rule"
+}

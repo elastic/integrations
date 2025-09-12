@@ -21,45 +21,24 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data using Entity Analytics Input and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **kibana.version** required is **8.9.0**.
 
 ## Setup
 
-### To collect data from Okta, follow the below steps:
+### Collect data from Okta
 
-- Required URL namespace, which should be preceded by an organization's subdomain (tenant) or configured custom domain.
-- Create an Okta API Token for Authentication. Follow this [guide](https://developer.okta.com/docs/guides/create-an-api-token/main/).
+1. Get the required URL namespace, which should be preceded by an organization's subdomain (tenant) or configured custom domain.
+2. Create an Okta API Token for Authentication. Follow this [guide](https://developer.okta.com/docs/guides/create-an-api-token/main/).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana, go to Management > Integrations.
-2. In the "Search for integrations" search bar, type Okta Entity Analytics.
-3. Click on the "Okta Entity Analytics" integration from the search results.
-4. Click on the Add Okta Entity Analytics Integration button to add the integration.
-5. While adding the integration, add the URL and API Token that we got earlier.
-6. Save the integration by adding other necessary parameters.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Okta Entity Analytics**.
+3. Select the **Okta Entity Analytics** integration and add it.
+4. While adding the integration, add the URL and API Token that you got earlier.
+5. Save the integration.
 
 ## Usage
 
@@ -106,7 +85,7 @@ A user document:
     },
     "_links": {
       "self": {
-        "href": "https://localhost/api/v1/users/userid"
+        "href": "http://example.com/api/v1/users/userid"
       }
     }
   },
@@ -155,7 +134,7 @@ A device document:
                         "POST"
                     ]
                 },
-                "href": "https://localhost/api/v1/devices/deviceid/lifecycle/activate"
+                "href": "http://example.com/api/v1/devices/deviceid/lifecycle/activate"
             },
             "self": {
                 "hints": {
@@ -165,7 +144,7 @@ A device document:
                         "PUT"
                     ]
                 },
-                "href": "https://localhost/api/v1/devices/deviceid"
+                "href": "http://example.com/api/v1/devices/deviceid"
             },
             "users": {
                 "hints": {
@@ -173,7 +152,7 @@ A device document:
                         "GET"
                     ]
                 },
-                "href": "https://localhost/api/v1/devices/deviceid/users"
+                "href": "http://example.com/api/v1/devices/deviceid/users"
             }
         },
         "users": [
@@ -204,7 +183,7 @@ A device document:
                 },
                 "_links": {
                     "self": {
-                        "href": "https://localhost/api/v1/users/userid"
+                        "href": "http://example.com/api/v1/users/userid"
                     }
                 }
             }
@@ -336,6 +315,13 @@ This is the `User` dataset.
 | data_stream.type | Data stream type. | constant_keyword |
 | entityanalytics_okta.groups.id | The ID for the group. | keyword |
 | entityanalytics_okta.groups.profile.\* | Group profile details. | object |
+| entityanalytics_okta.roles.assignment_type | The Okta type the role is assigned to. | keyword |
+| entityanalytics_okta.roles.created | When the role was created. | date |
+| entityanalytics_okta.roles.id | The ID for the role. | keyword |
+| entityanalytics_okta.roles.label | Name of the role. | keyword |
+| entityanalytics_okta.roles.last_updated | When the role was last updated. | date |
+| entityanalytics_okta.roles.status | Role status. | keyword |
+| entityanalytics_okta.roles.type | Okta role type. | keyword |
 | entityanalytics_okta.user._embedded | embedded resources related to the user. | flattened |
 | entityanalytics_okta.user._links | link relations for the user's current status. | flattened |
 | entityanalytics_okta.user.activated | timestamp when transition to ACTIVE status completed. | date |

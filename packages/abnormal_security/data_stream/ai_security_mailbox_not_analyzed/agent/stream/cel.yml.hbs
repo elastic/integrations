@@ -1,0 +1,109 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  access_token: {{access_token}}
+  want_more: false
+{{#if wait_interval}}
+  wait: {{wait_interval}}
+{{/if}}
+redact:
+  fields:
+    - access_token
+program: |
+  {
+    "start_time": state.?cursor.last_timestamp.optMap(t,
+      t.parse_time(time_layout.RFC3339)
+    ).orValue(
+      now - duration(state.initial_interval)
+    ),
+    "end_time": now - duration(state.?wait.orValue("0s")),
+  }.as(query_range, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/v1/abuse_mailbox/not_analyzed?" + {
+        // Condition the start of the request interval so that start is never
+        // after end. Sacrifice a null interval request in the case that the
+        // last start is still within the wait interval.
+        // TODO: replace list min with diadic min when stack version is at least v8.18.
+        "start": [min([query_range.start_time, query_range.end_time]).format(time_layout.RFC3339)],
+        "end": [query_range.end_time.format(time_layout.RFC3339)],
+      }.format_query()
+    ).with({
+      "Header":{
+        "Authorization": ["Bearer " + string(state.access_token)],
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, has(body.results) && size(body.results) > 0 ?
+          {
+            "events": body.results.map(result,
+              {
+                "message": result.encode_json(),
+              }
+            ),
+            "cursor": {
+              "last_timestamp": has(body.results) && body.results.size() > 0 ?
+                body.results.map(r, timestamp(r.reported_datetime)).max().format(time_layout.RFC3339)
+              : has(state.?cursor.last_timestamp) ?
+                state.cursor.last_timestamp
+              :
+                // If we did not get any messages, keep the start as
+                // the next cursor.
+                query_range.start_time
+            },
+          }
+        :
+          {
+            // Empty response, do nothing
+            "events":[],
+          }
+
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET "+state.url.trim_right("/") + "/v1/abuse_mailbox/not_analyzed:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+        }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

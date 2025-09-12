@@ -1,0 +1,60 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies concurrent azure signin events for the same user and from multiple sources, and where one of the authentication event has some suspicious properties often associated to DeviceCode and OAuth phishing. Adversaries may steal Refresh Tokens (RTs) via phishing to bypass multi-factor authentication (MFA) and gain unauthorized access to Azure resources.",
+        "false_positives": [
+            "Users authenticating from multiple devices and using the deviceCode protocol or the Visual Studio Code client."
+        ],
+        "from": "now-60m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Entra ID Concurrent Sign-Ins with Suspicious Properties",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Entra ID Concurrent Sign-Ins with Suspicious Properties\n\n### Possible investigation steps\n\n- Review the sign-in logs to assess the context and reputation of the source.ip address.\n- Investigate the user account associated with the successful sign-in to determine if the activity aligns with expected behavior or if it appears suspicious.\n- Check for any recent changes or anomalies in the user's account settings or permissions that could indicate compromise.\n- Review the history of sign-ins for the user to identify any patterns or unusual access times that could suggest unauthorized access.\n- Assess the device from which the sign-in was attempted to ensure it is a recognized and authorized device for the user.\n\n### Response and remediation\n\n- Immediately revoke the compromised Primary Refresh Tokens (PRTs) to prevent further unauthorized access. This can be done through the Azure portal by navigating to the user's account and invalidating all active sessions.\n- Enforce a password reset for the affected user accounts to ensure that any credentials potentially compromised during the attack are no longer valid.\n- Implement additional Conditional Access policies that require device compliance checks and restrict access to trusted locations or devices only, to mitigate the risk of future PRT abuse.\n- Conduct a thorough review of the affected accounts' recent activity logs to identify any unauthorized actions or data access that may have occurred during the compromise.\n- Escalate the incident to the security operations team for further investigation and to determine if there are any broader implications or additional compromised accounts.\n- Enhance monitoring by configuring alerts for unusual sign-in patterns or device code authentication attempts from unexpected locations or devices, to improve early detection of similar threats.\n- Coordinate with the incident response team to perform a post-incident analysis and update the incident response plan with lessons learned from this event.",
+        "query": "FROM logs-azure.signinlogs* metadata _id, _version, _index\n// the rule is scheduled to run every hour and looks for events occured during last 1 hour.\n| where @timestamp > NOW() - 1 hours\n| where event.dataset == \"azure.signinlogs\" and source.ip is not null and azure.signinlogs.identity is not null and to_lower(event.outcome) == \"success\"\n| keep @timestamp, azure.signinlogs.identity, source.ip, azure.signinlogs.properties.authentication_requirement, azure.signinlogs.properties.app_id, azure.signinlogs.properties.resource_display_name, azure.signinlogs.properties.authentication_protocol, azure.signinlogs.properties.app_display_name\n// devicecode authentication no MFA\n| eval device_code = case(azure.signinlogs.properties.authentication_protocol == \"deviceCode\" and azure.signinlogs.properties.authentication_requirement != \"multiFactorAuthentication\", azure.signinlogs.identity, null),\n// potential Visual Studio Code OAuth code phish - sign-in events with client set to Visual Studio Code\n visual_studio = case(azure.signinlogs.properties.app_id == \"aebc6443-996d-45c2-90f0-388ff96faa56\" and azure.signinlogs.properties.resource_display_name == \"Microsoft Graph\", azure.signinlogs.identity, null),\n// Other sign-in events\n other = case(azure.signinlogs.properties.authentication_protocol != \"deviceCode\" and azure.signinlogs.properties.app_id != \"aebc6443-996d-45c2-90f0-388ff96faa56\", azure.signinlogs.identity, null)\n| stats total = COUNT(*), device_code_count = COUNT_DISTINCT(device_code), vsc = count_distinct(visual_studio), other_count = COUNT_DISTINCT(other), src_ip = COUNT_DISTINCT(source.ip), ips = values(source.ip), clients = values(azure.signinlogs.properties.app_display_name), resources = VALUES(azure.signinlogs.properties.resource_display_name), auth_requirement = VALUES(azure.signinlogs.properties.authentication_requirement) by azure.signinlogs.identity\n// 2 unique source.ip for same account - which may indicate the presence 2 sign-ins one by the adversary and the other by the victim\n| where src_ip >= 2 and (device_code_count > 0 or vsc >0)\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/entra/identity/",
+            "https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-sign-ins",
+            "https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-azure-monitor-sign-ins-log-schema",
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/"
+        ],
+        "risk_score": 73,
+        "rule_id": "e3bd85e9-7aff-46eb-b60e-20dfc9020d98",
+        "setup": "#### Required Azure Entra Sign-In Logs\nThis rule requires the Azure logs integration be enabled and configured to collect all logs, including sign-in logs from Entra. In Entra, sign-in logs must be enabled and streaming to the Event Hub used for the Azure logs integration.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Data Source: Azure",
+            "Data Source: Entra ID",
+            "Data Source: Entra ID Sign-in",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "e3bd85e9-7aff-46eb-b60e-20dfc9020d98_1",
+    "type": "security-rule"
+}

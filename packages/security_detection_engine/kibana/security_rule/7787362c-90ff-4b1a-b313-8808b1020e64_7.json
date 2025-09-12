@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Monitors for the elevation of regular user permissions to root permissions through a previously unknown executable. Attackers may attempt to evade detection by hijacking the execution flow and hooking certain functions/syscalls through a rootkit in order to provide easy access to root via a special modified command.",
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "UID Elevation from Previously Unknown Executable",
+        "new_terms_fields": [
+            "process.executable"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating UID Elevation from Previously Unknown Executable\n\nIn Linux environments, UID elevation is a process where a user's permissions are increased, often to root level, allowing full system control. Adversaries exploit this by using unknown executables to hijack execution flow, often via rootkits, to gain unauthorized root access. The detection rule identifies such activities by monitoring for UID changes initiated by non-standard executables, excluding known safe paths and processes, thus highlighting potential privilege escalation attempts.\n\n### Possible investigation steps\n\n- Review the process details to identify the unknown executable that triggered the alert, focusing on the process.executable field to determine its path and origin.\n- Examine the parent process information using process.parent.name to understand the context in which the unknown executable was launched, checking for any unusual or unexpected shell activity.\n- Investigate the user account associated with the UID change by analyzing the user.id field to determine if the account has a history of privilege escalation attempts or if it has been compromised.\n- Check the system logs for any recent changes or installations that might have introduced the unknown executable, focusing on the time frame around the event.action:\"uid_change\".\n- Assess the network activity around the time of the alert to identify any potential external connections or data exfiltration attempts that might correlate with the privilege escalation.\n- Cross-reference the executable path and name against known threat intelligence databases to determine if it is associated with any known malicious activity or rootkits.\n- If possible, perform a forensic analysis of the executable to understand its behavior and potential impact on the system, looking for signs of function or syscall hooking as indicated in the rule description.\n\n### False positive analysis\n\n- Executables in custom directories may trigger false positives if they are legitimate but not included in the known safe paths. Users can mitigate this by adding these directories to the exclusion list in the detection rule.\n- Scripts or binaries executed by system administrators from non-standard locations for maintenance or deployment purposes might be flagged. To handle this, users should document and exclude these specific processes or paths if they are verified as safe.\n- Development or testing environments where new executables are frequently introduced can cause alerts. Users should consider creating exceptions for these environments or paths to reduce noise while ensuring they are monitored separately for any unusual activity.\n- Automated scripts or tools that perform legitimate UID changes but are not part of the standard system paths can be excluded by adding their specific executable paths or names to the rule's exception list.\n- Temporary or ephemeral processes that are part of containerized applications might be flagged. Users should review and exclude these processes if they are confirmed to be part of normal operations.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any suspicious processes identified by the detection rule that are not part of the known safe paths or processes.\n- Conduct a thorough review of the affected system's logs to identify any additional indicators of compromise or related suspicious activities.\n- Remove any unauthorized or unknown executables found on the system, especially those involved in the UID elevation attempt.\n- Restore the system from a known good backup if any rootkits or persistent threats are detected that cannot be easily removed.\n- Update and patch the system to the latest security standards to close any vulnerabilities that may have been exploited.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on other systems.",
+        "query": "host.os.type:\"linux\" and event.category:\"process\" and event.action:\"uid_change\" and event.type:\"change\" and user.id:\"0\"\nand process.parent.name:(\"bash\" or \"dash\" or \"sh\" or \"tcsh\" or \"csh\" or \"zsh\" or \"ksh\" or \"fish\") and not (\n  process.executable:(\n    /bin/* or /usr/bin/* or /sbin/* or /usr/sbin/* or /snap/* or /tmp/newroot/* or /var/lib/docker/* or /usr/local/* or\n    /opt/psa/admin/* or /usr/lib/snapd/snap-confine or /opt/dynatrace/* or /opt/microsoft/* or\n    /var/lib/snapd/snap/bin/node or /opt/gitlab/embedded/sbin/logrotate or /etc/apt/universal-hooks/* or\n    /opt/puppetlabs/puppet/bin/puppet or /opt/cisco/* or /run/k3s/containerd/* or /usr/lib/postfix/sbin/master or\n    /usr/libexec/postfix/local or /var/lib/snapd/snap/bin/postgresql* or /opt/puppetlabs/puppet/bin/ruby\n  ) or\n  process.name:(\n    \"bash\" or \"dash\" or \"sh\" or \"tcsh\" or \"csh\" or \"zsh\" or \"ksh\" or \"fish\" or \"sudo\" or \"su\" or \"apt\" or \"apt-get\" or\n    \"aptitude\" or \"squid\" or \"snap\" or \"fusermount\" or \"pkexec\" or \"umount\" or \"master\" or \"omsbaseline\" or \"dzdo\" or\n    \"sandfly\" or \"logrotate\" or \"nix-installer\" \n  ) or\n  process.args:/usr/bin/python*\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "7787362c-90ff-4b1a-b313-8808b1020e64",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows\nthe Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click Add integrations.\n- In the query bar, search for Elastic Defend and select the integration to see more details about it.\n- Click Add Elastic Defend.\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either Traditional Endpoints or Cloud Workloads.\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest to select \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in New agent policy name. If other agent policies already exist, you can click the Existing hosts tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click Save and Continue.\n- To complete the integration, select Add Elastic Agent to your hosts and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.013",
+                                "name": "KernelCallbackTable",
+                                "reference": "https://attack.mitre.org/techniques/T1574/013/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1014",
+                        "name": "Rootkit",
+                        "reference": "https://attack.mitre.org/techniques/T1014/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 7
+    },
+    "id": "7787362c-90ff-4b1a-b313-8808b1020e64_7",
+    "type": "security-rule"
+}

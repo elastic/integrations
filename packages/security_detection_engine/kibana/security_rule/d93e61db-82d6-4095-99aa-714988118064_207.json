@@ -1,0 +1,152 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of wbadmin to access the NTDS.dit file in a domain controller. Attackers with privileges from groups like Backup Operators can abuse the utility to perform credential access and compromise the domain.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "NTDS Dump via Wbadmin",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating NTDS Dump via Wbadmin\n\nWbadmin is a Windows utility for backup and recovery, often used by administrators to safeguard critical data. However, adversaries with sufficient privileges, such as those in the Backup Operators group, can exploit it to access the NTDS.dit file on domain controllers, which contains sensitive credential information. The detection rule identifies suspicious use of wbadmin by monitoring for its execution with specific arguments related to NTDS.dit, helping to flag potential credential dumping activities.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of wbadmin.exe with the specific arguments related to NTDS.dit, as indicated by the process.command_line field.\n- Check the user account associated with the process execution to determine if it belongs to a privileged group such as Backup Operators, which could indicate potential misuse of privileges.\n- Investigate the source host identified by host.os.type to determine if it is a domain controller, as this would be a critical factor in assessing the risk of the activity.\n- Correlate the event with other security logs or alerts from data sources like Microsoft Defender for Endpoint or Sysmon to identify any related suspicious activities or patterns.\n- Examine recent changes or access attempts to the NTDS.dit file on the domain controller to identify any unauthorized access or modifications.\n- Assess the risk score and severity level to prioritize the investigation and determine if immediate response actions are necessary.\n\n### False positive analysis\n\n- Scheduled backups by legitimate IT staff can trigger the rule. Verify the identity and role of the user executing wbadmin and consider excluding known backup schedules from detection.\n- Automated recovery processes in disaster recovery plans might use wbadmin with similar arguments. Review and whitelist these processes if they are part of approved recovery procedures.\n- Security audits or compliance checks may involve accessing NTDS.dit for validation purposes. Confirm the legitimacy of these activities and exclude them if they are part of regular audits.\n- Test environments that mimic production setups might execute similar commands. Ensure these environments are properly documented and excluded from detection if they are used for testing purposes.\n\n### Response and remediation\n\n- Immediately isolate the affected domain controller from the network to prevent further unauthorized access or data exfiltration.\n- Revoke any suspicious or unauthorized accounts from the Backup Operators group and review all accounts with elevated privileges for legitimacy.\n- Conduct a thorough review of recent backup and recovery operations on the affected domain controller to identify any unauthorized access or data manipulation.\n- Change all domain administrator and service account passwords to mitigate potential credential compromise.\n- Restore the NTDS.dit file from a known good backup if any unauthorized modifications are detected.\n- Implement enhanced monitoring and logging for wbadmin.exe usage across all domain controllers to detect future unauthorized access attempts.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on the broader network.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n    (process.name : \"wbadmin.exe\" or ?process.pe.original_file_name : \"wbadmin.exe\") and\n     process.args : \"recovery\" and process.command_line : \"*ntds.dit*\"\n",
+        "references": [
+            "https://medium.com/r3d-buck3t/windows-privesc-with-sebackupprivilege-65d2cd1eb960"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d93e61db-82d6-4095-99aa-714988118064",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.002",
+                                "name": "Security Account Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1003/002/"
+                            },
+                            {
+                                "id": "T1003.003",
+                                "name": "NTDS",
+                                "reference": "https://attack.mitre.org/techniques/T1003/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1006",
+                        "name": "Direct Volume Access",
+                        "reference": "https://attack.mitre.org/techniques/T1006/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 207
+    },
+    "id": "d93e61db-82d6-4095-99aa-714988118064_207",
+    "type": "security-rule"
+}

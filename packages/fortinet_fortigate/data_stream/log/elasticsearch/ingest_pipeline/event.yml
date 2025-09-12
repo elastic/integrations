@@ -207,9 +207,10 @@ processors:
       keep_original: false
       if: ctx.fortinet?.firewall?.url != null
       on_failure:
-        - append:
-            field: error.message
-            value: "url parsing failed with message {{ _ingest.on_failure_message }}"
+        - set:
+            tag: event_set_url_original_on_fail
+            field: url.original
+            copy_from: fortinet.firewall.url
   # Need to do a set, then remove since rename w/ override
   # is not supported in 8.3.0
   - set:
@@ -243,6 +244,17 @@ processors:
       field: fortinet.firewall.latency
       type: float
       ignore_missing: true
+  - set:
+      field: source.user.name
+      copy_from: fortinet.firewall.xauthuser
+      if: ctx.fortinet?.firewall?.subtype == 'vpn' && ctx.fortinet.firewall.xauthuser != null
+  - script:
+      lang: painless
+      tag: script_convert_advpnsc
+      source: |
+        if (ctx.fortinet?.firewall?.advpnsc != null) {
+          ctx.fortinet.firewall.advpnsc = ctx.fortinet.firewall.advpnsc != '0';
+        }
   - remove:
       field:
         - fortinet.firewall.dstport

@@ -1,6 +1,6 @@
 name: azure_metrics
 title: Azure Resource Metrics
-version: 1.7.0
+version: "1.10.0"
 description: Collect metrics from Azure resources with Elastic Agent.
 type: integration
 icons:
@@ -21,7 +21,7 @@ categories:
   - custom
 conditions:
   kibana:
-    version: "^8.12.0 || ^9.0.0"
+    version: "~8.17.7 || ^8.18.2 || ^9.0.2"
 vars:
   - name: client_id
     type: text
@@ -67,10 +67,28 @@ vars:
     multi: false
     required: false
     show_user: true
+  - name: enable_batch_api
+    type: bool
+    title: Enable Batch Api
+    description: >
+      When enabled, the azure batch api will be used to fetch metrics of multiple resources in one api call. Enable this when facing scalability issues.
+
+    multi: false
+    required: false
+    show_user: false
+    default: false
+  - name: latency
+    type: text
+    title: Latency
+    description: Latency is the time it takes for the Azure service to publish the metric values to Azure Monitor. The integration uses the latency value to compensate for the delay in metric value publishing. Default value is `0`. Typical values are `30s` or `1m`. [Learn more](https://www.elastic.co/docs/reference/integrations/azure_metrics/#advanced-options).
+    multi: false
+    required: false
+    show_user: false
 policy_templates:
   - name: monitor
     title: Azure Monitor Metrics
     description: Collect metrics from Azure Monitor with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - monitor
     inputs:
@@ -91,6 +109,7 @@ policy_templates:
   - name: compute_vm
     title: Azure Virtual Machines Metrics
     description: Collect metrics from Azure Virtual Machines with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - compute_vm
     inputs:
@@ -111,6 +130,7 @@ policy_templates:
   - name: compute_vm_scaleset
     title: Azure Virtual Machines Scaleset Metrics
     description: Collect metrics from Azure Virtual Machine Scalesets with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - compute_vm_scaleset
     inputs:
@@ -131,6 +151,7 @@ policy_templates:
   - name: container_registry
     title: Azure Container Registry Metrics
     description: Collect metrics from Azure Container Registry with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - container_registry
     categories:
@@ -153,6 +174,7 @@ policy_templates:
   - name: container_instance
     title: Azure Container Instance Metrics
     description: Collect metrics from Azure Container Instances with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - container_instance
     categories:
@@ -175,6 +197,7 @@ policy_templates:
   - name: container_service
     title: Azure Container Service Metrics
     description: Collect metrics from Azure Container Service with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - container_service
     categories:
@@ -197,6 +220,7 @@ policy_templates:
   - name: database_account
     title: Azure Database Account Metrics
     description: Collect metrics from Azure Database accounts with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - database_account
     categories:
@@ -219,6 +243,7 @@ policy_templates:
   - name: storage_account
     title: Azure Storage Account Metrics
     description: Collect metrics from Azure Storage accounts with Elastic Agent.
+    fips_compatible: false
     data_streams:
       - storage_account
     inputs:

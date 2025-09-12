@@ -23,6 +23,15 @@ processors:
       name: '{{ IngestPipeline "device" }}'
       tag: pipeline_to_device
       if: ctx.device?.id != null
+  - rename:
+      field: okta_domain
+      target_field: host.name
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: okta_domain
+            target_field: okta.okta_domain
+            ignore_failure: true
 
   - script:
       lang: painless

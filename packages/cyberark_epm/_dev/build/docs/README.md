@@ -20,42 +20,25 @@ This integration collects the following logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect data from the CyberArk EPM API:
+### Collect data from the CyberArk EPM API
 
-- Navigate to **Administration > Account Management** and create a user. While creating the user, check the **Allow to manage Sets** option and provide **ViewOnlySetAdmin** for all the required sets.
-- Log in with the newly created user and navigate to **Administration > Account Configuration**. Update the **Timeout for inactive session** parameter, which is a prerequisite for creating an integration in Elastic.
-    - **Note**: It is recommended to set a high value for the **Timeout for inactive session** parameter to minimize multiple authentication calls.
+1. Navigate to **Administration > Account Management** and create a user. While creating the user, check the **Allow to manage Sets** option and provide **ViewOnlySetAdmin** for all the required sets.
+2. Log in with the newly created user and navigate to **Administration > Account Configuration**. 
+3. Update the **Timeout for inactive session** parameter, which is a prerequisite for creating an integration in Elastic.
 
-### Enabling the integration in Elastic:
+NOTE: Set a high value for the **Timeout for inactive session** parameter to minimize multiple authentication calls.
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `CyberArk EPM`.
-3. Select the "CyberArk EPM" integration from the search results.
-4. Select "Add CyberArk EPM" to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Username, Password, API Version, Session Timeout, Interval, and Initial Interval, to enable data collection.
-6. Select "Save and continue" to save the integration.
+### Enable the integration in Elastic
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **CyberArk EPM**.
+3. Select the **CyberArk EPM** integration and add it.
+4. Add all the required integration configuration parameters, including the URL, Username, Password, API Version, Session Timeout, Interval, and Initial Interval, to enable data collection.
+5. Save the integration.
 
 **Note**:
   - The default URL is `https://login.epm.cyberark.com`, but this may vary depending on your region. Please refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region.

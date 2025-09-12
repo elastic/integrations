@@ -1,12 +1,12 @@
 format_version: 3.1.5
 name: filestream
-title: Custom Filestream Logs
+title: Custom Logs (Filestream)
 description: Collect log data using filestream with Elastic Agent.
 type: input
 version: 2.0.0
 conditions:
   kibana:
-    version: "^8.15.0 || ^9.0.0"
+    version: "^9.2.0"
 categories:
   - custom
   - custom_logs
@@ -228,7 +228,7 @@ policy_templates:
         required: false
         show_user: false
       - name: fingerprint
-        title: Fingerprint file identity
+        title: "File identity: Fingerprint"
         type: bool
         default: true
         description: |
@@ -238,9 +238,12 @@ policy_templates:
           the default, this can be configured via Fingerprint offset
           and length) to identify a file instead inode + device ID.
           Refer to https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_file_identity_2
-          for more details.
+          for more details. If this option is disabled (and 'Native
+          file identity is not enabled'), Elastic-Agent < 9.0.0 will
+          use Native as the file identity, and >= 9.0.0 will use
+          Fingerprint with the default offset and length.
       - name: fingerprint_offset
-        title: Fingerprint offset
+        title: "File identity: Fingerprint offset"
         type: integer
         default: 0
         description: |
@@ -250,7 +253,7 @@ policy_templates:
         required: false
         show_user: false
       - name: fingerprint_length
-        title: Fingerprint length
+        title: "File identity: Fingerprint length"
         type: integer
         default: 1024
         description: |
@@ -259,6 +262,21 @@ policy_templates:
           identity is selected.
         required: false
         show_user: false
+      - name: file_identity_native
+        title: "File identity: Native"
+        type: bool
+        default: false
+        show_user: false
+        description: |
+          **Changing file_identity methods between runs may result in
+          duplicated events in the output.**
+          Uses a native identifier for files, on most Unix-like
+          file systems this is the inode + device ID. On file systems
+          that do not support inode, the native equivalent is used.
+          If you enable this option you **MUST disable Fingerprint
+          file identity**. Refer to
+          https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream
+          for more details.
       - name: rotation_external_strategy_copytruncate
         type: yaml
         title: Rotation Strategy

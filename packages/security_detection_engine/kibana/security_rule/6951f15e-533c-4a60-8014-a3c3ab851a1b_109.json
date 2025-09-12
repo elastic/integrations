@@ -1,0 +1,90 @@
+{
+    "attributes": {
+        "author": [
+            "Xavier Pich"
+        ],
+        "description": "Identifies attempts to disable or schedule the deletion of an AWS KMS Customer Managed Key (CMK). Deleting an AWS KMS key is destructive and potentially dangerous. It deletes the key material and all metadata associated with the KMS key and is irreversible. After a KMS key is deleted, the data that was encrypted under that KMS key can no longer be decrypted, which means that data becomes unrecoverable.",
+        "false_positives": [
+            "A KMS customer managed key may be disabled or scheduled for deletion by a system administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Key deletions by unfamiliar users should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-60m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "interval": "10m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS KMS Customer Managed Key Disabled or Scheduled for Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS KMS Customer Managed Key Disabled or Scheduled for Deletion\n\nAWS Key Management Service (KMS) allows users to create and manage cryptographic keys for data encryption. Customer Managed Keys (CMKs) are crucial for securing sensitive data. Adversaries may disable or schedule deletion of CMKs to render encrypted data inaccessible, causing data loss. The detection rule monitors successful disablement or deletion attempts, alerting analysts to potential data destruction activities.\n\n### Possible investigation steps\n\n- Review the CloudTrail logs for the specific event.dataset:aws.cloudtrail entries to identify the user or role that initiated the DisableKey or ScheduleKeyDeletion action.\n- Check the event.provider:kms.amazonaws.com logs to gather additional context about the KMS key involved, including its key ID and any associated metadata.\n- Investigate the event.action:(\"DisableKey\" or \"ScheduleKeyDeletion\") to determine if the action was authorized and aligns with recent changes or requests within the organization.\n- Analyze the event.outcome:success to confirm the success of the action and assess the potential impact on encrypted data.\n- Cross-reference the timing of the event with any known incidents or maintenance activities to rule out false positives or expected behavior.\n- Contact the user or team responsible for the action to verify the intent and ensure it was a legitimate operation.\n\n### False positive analysis\n\n- Routine key management activities by authorized personnel can trigger alerts. Regularly review and document key management procedures to differentiate between legitimate and suspicious activities.\n- Automated scripts or tools used for key rotation or lifecycle management might disable or schedule deletion of keys as part of their process. Identify and whitelist these scripts or tools to prevent unnecessary alerts.\n- Testing environments where keys are frequently created and deleted for development purposes can generate false positives. Exclude these environments from monitoring or adjust the rule to focus on production environments.\n- Scheduled maintenance or compliance audits may involve disabling keys temporarily. Coordinate with relevant teams to schedule these activities and temporarily adjust monitoring rules to avoid false alerts.\n- Misconfigured alerts due to incorrect tagging or categorization of keys can lead to false positives. Ensure that all keys are correctly tagged and categorized to align with monitoring rules.\n\n### Response and remediation\n\n- Immediately verify the legitimacy of the disablement or deletion action by contacting the key owner or relevant stakeholders to confirm if the action was intentional.\n- If the action was unauthorized, revoke any access credentials or permissions associated with the user or service that performed the action to prevent further unauthorized activities.\n- Restore access to encrypted data by identifying any backup keys or data recovery options available, and initiate data recovery procedures if possible.\n- Escalate the incident to the security operations team and relevant management to assess the impact and coordinate a broader response if necessary.\n- Implement additional monitoring and alerting for any further attempts to disable or delete KMS keys, ensuring that alerts are sent to the appropriate personnel for rapid response.\n- Review and tighten IAM policies and permissions related to KMS key management to ensure that only authorized personnel have the ability to disable or delete keys.\n- Conduct a post-incident review to identify any gaps in the current security posture and update incident response plans to address similar threats in the future.",
+        "query": "event.dataset:aws.cloudtrail and event.provider:kms.amazonaws.com and event.action:(\"DisableKey\" or \"ScheduleKeyDeletion\") and event.outcome:success\n",
+        "references": [
+            "https://docs.aws.amazon.com/cli/latest/reference/kms/disable-key.html",
+            "https://docs.aws.amazon.com/cli/latest/reference/kms/schedule-key-deletion.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "6951f15e-533c-4a60-8014-a3c3ab851a1b",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS KMS",
+            "Use Case: Log Auditing",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 109
+    },
+    "id": "6951f15e-533c-4a60-8014-a3c3ab851a1b_109",
+    "type": "security-rule"
+}

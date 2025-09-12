@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a remote file copy attempt to a hidden network share. This may indicate lateral movement or data staging activity.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Remote File Copy to a Hidden Share",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Remote File Copy to a Hidden Share\n\nIn Windows environments, hidden network shares are often used for legitimate administrative tasks, allowing file transfers without user visibility. However, adversaries can exploit these shares for lateral movement or data exfiltration. The detection rule identifies suspicious file copy attempts using common command-line tools like cmd.exe and powershell.exe, focusing on hidden share patterns to flag potential threats.\n\n### Possible investigation steps\n\n- Review the process details to identify the specific command-line tool used (cmd.exe, powershell.exe, xcopy.exe, or robocopy.exe) and examine the arguments to understand the nature of the file copy operation.\n- Investigate the source and destination of the file copy by analyzing the network share path in the process arguments, focusing on the hidden share pattern (e.g., \\\\*\\\\*$).\n- Check the user account associated with the process to determine if it has legitimate access to the hidden share and assess if the activity aligns with the user's typical behavior.\n- Correlate the event with other logs or alerts from the same host or user to identify any additional suspicious activities, such as unusual login attempts or privilege escalation.\n- Examine the historical activity of the involved host to identify any previous instances of similar file copy attempts or other indicators of lateral movement.\n- Consult threat intelligence sources to determine if the detected pattern or tools are associated with known adversary techniques or campaigns.\n\n### False positive analysis\n\n- Administrative tasks using hidden shares can trigger alerts. Regularly review and document legitimate administrative activities that involve file transfers to hidden shares.\n- Backup operations often use hidden shares for data storage. Identify and exclude backup processes by specifying known backup software and their typical command-line arguments.\n- Software deployment tools may utilize hidden shares for distributing updates. Create exceptions for recognized deployment tools by listing their process names and associated arguments.\n- IT maintenance scripts might copy files to hidden shares for system updates. Maintain a list of approved maintenance scripts and exclude them from triggering alerts.\n- User-initiated file transfers for legitimate purposes can be mistaken for threats. Educate users on proper file transfer methods and monitor for unusual patterns that deviate from documented procedures.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further lateral movement or data exfiltration.\n- Terminate any suspicious processes identified in the alert, such as cmd.exe, powershell.exe, xcopy.exe, or robocopy.exe, that are involved in the file copy attempt.\n- Conduct a forensic analysis of the affected system to identify any additional indicators of compromise or unauthorized access.\n- Change credentials for any accounts that were used in the suspicious activity to prevent further unauthorized access.\n- Review and restrict permissions on network shares, especially hidden shares, to ensure only authorized users have access.\n- Monitor network traffic for any further suspicious activity related to hidden shares and lateral movement attempts.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : (\"cmd.exe\", \"powershell.exe\", \"xcopy.exe\", \"pwsh.exe\", \"powershell_ise.exe\") and \n  process.command_line : \"*\\\\\\\\*\\\\*$*\" and process.command_line : (\"*copy*\", \"*move*\", \"* cp *\", \"* mv *\")\n",
+        "references": [
+            "https://www.elastic.co/security-labs/hunting-for-lateral-movement-using-event-query-language"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "fa01341d-6662-426b-9d0c-6d81e33c8a9d",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.002",
+                                "name": "SMB/Windows Admin Shares",
+                                "reference": "https://attack.mitre.org/techniques/T1021/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 316
+    },
+    "id": "fa01341d-6662-426b-9d0c-6d81e33c8a9d_316",
+    "type": "security-rule"
+}

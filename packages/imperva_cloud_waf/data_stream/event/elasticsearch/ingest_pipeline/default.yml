@@ -5,10 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - fail:
+  - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process.
+      description: error message set and no data to process.
   - set:
       field: event.kind
       tag: set_event_kind_alert
@@ -355,6 +355,24 @@ processors:
       tag: rename_extensions_qstr
       target_field: imperva_cloud_waf.event.extensions.qstr
       ignore_missing: true
+  - gsub:
+      field: url.original
+      pattern: ' '
+      replacement: '%20'
+      tag: gsub_url_original
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: url.original
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.original
+      tag: prepend_scheme_to_url_original
+      value: '{{{network.application}}}://{{{url.original}}}'
+      if: ctx.url?.original != null && ctx.url.original != '' && ctx.network?.application != null && ctx.network.application != ''
   - uri_parts:
       field: url.original
       tag: uri_parts_url_original

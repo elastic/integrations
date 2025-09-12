@@ -1,7 +1,7 @@
 format_version: "3.0.2"
 name: kafka
 title: Kafka
-version: "1.18.4"
+version: "1.22.0"
 description: Collect logs and metrics from Kafka servers with Elastic Agent.
 type: integration
 categories:
@@ -31,6 +31,116 @@ policy_templates:
     title: Kafka logs and metrics
     description: Collect logs and metrics from Kafka brokers
     inputs:
+      - type: jolokia/metrics
+        title: Collect metrics from Kafka through the Jolokia endpoint
+        description: Collect metrics from Kafka through the Jolokia endpoint.
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://127.0.0.1:8778
+          - name: metrics_path
+            type: text
+            title: Metrics Path
+            multi: false
+            required: true
+            show_user: true
+            default: /jolokia
+          - name: http_method
+            type: text
+            title: HTTP Method
+            multi: false
+            required: true
+            show_user: true
+            default: GET
+          - name: bearer_token_file
+            type: text
+            title: 'HTTP config options: bearer_token_file'
+            description: If defined, the contents of the file will be read once at initialization and then the value will be used in an HTTP Authorization header.
+            multi: false
+            secret: false
+            required: false
+            show_user: false
+          - name: ssl.verification_mode
+            type: text
+            title: SSL Verification Mode
+            description: SSL verification mode. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: none
+          - name: ssl.certificate_authorities
+            type: text
+            title: SSL Certificate Authorities
+            description: SSL certificate authorities.  See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            multi: true
+            required: false
+            show_user: true
+          - name: ssl.certificate
+            type: text
+            title: SSL Certificate
+            description: SSL certificate. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            show_user: true
+          - name: ssl.key
+            type: text
+            title: SSL Private Key
+            description: SSL private key. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            show_user: true
+          - name: ssl.key_passphrase
+            type: password
+            title: SSL Key Passphrase
+            description: SSL key passphrase. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            secret: true
+            show_user: true
+          - name: ssl.ca_trusted_fingerprint
+            type: text
+            title: SSL CA Trusted Fingerprint
+            description: SSL CA trusted fingerprint. See [documentation](https://www.elastic.co/guide/en/fleet/current/elastic-agent-ssl-configuration.html) for details.
+            show_user: true
+          - name: username
+            type: text
+            title: 'HTTP config options: Username'
+            description: The username to use for basic authentication.
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            secret: true
+            title: 'HTTP config options: Password'
+            description: The password to use for basic authentication.
+            multi: false
+            required: false
+            show_user: false
+          - name: connect_timeout
+            type: text
+            title: 'HTTP config options: connect_timeout'
+            description: Total time limit for an HTTP connection to be completed (Default 2 seconds)
+            multi: false
+            required: false
+            show_user: false
+          - name: timeout
+            type: text
+            title: 'HTTP config options: timeout'
+            description: Total time limit for HTTP requests made by the module (Default 10 seconds)
+            multi: false
+            required: false
+            show_user: false
+          - name: headers
+            type: yaml
+            title: "HTTP config options: headers"
+            description: A list of headers to use with the HTTP request
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              # headers:
+              #   Cookie: abcdef=123456
+              #   My-Custom-Header: my-custom-value
       - type: logfile
         title: Collect logs from Kafka brokers
         description: Collecting Kafka log logs

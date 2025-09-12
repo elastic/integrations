@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Monitors for the execution of a unix binary with read, write and execute memory region permissions, followed by a network connection. The mprotect() system call is used to change the access protections on a region of memory that has already been allocated. This syscall allows a process to modify the permissions of pages in its virtual address space, enabling or disabling permissions such as read, write, and execute for those pages. RWX permissions on memory is in many cases overly permissive, and should (especially in conjunction with an outbound network connection) be analyzed thoroughly.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-endpoint.events.network*",
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Network Connection from Binary with RWX Memory Region",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Network Connection from Binary with RWX Memory Region\n\nIn Linux environments, the `mprotect()` system call adjusts memory permissions, potentially enabling read, write, and execute (RWX) access. Adversaries exploit this to execute malicious code in memory, often followed by network connections to exfiltrate data or communicate with command-and-control servers. The detection rule identifies such behavior by monitoring for RWX memory changes and subsequent network activity, flagging suspicious processes for further analysis.\n\n### Possible investigation steps\n\n- Review the process details using the process.pid and process.name fields to identify the binary that requested RWX memory permissions.\n- Investigate the context of the mprotect() syscall by examining the process's command line arguments and parent process to understand its origin and purpose.\n- Analyze the network connection details, focusing on the destination.ip field, to determine if the connection was made to a known malicious IP or an unusual external server.\n- Check the process's execution history and any associated files or scripts to identify potential malicious payloads or scripts that may have been executed.\n- Correlate the event with other security logs or alerts from the same host.id to identify any related suspicious activities or patterns.\n- Assess the risk and impact by determining if any sensitive data was accessed or exfiltrated during the network connection attempt.\n\n### False positive analysis\n\n- Legitimate software updates or patches may temporarily use RWX memory regions. Monitor the specific process names and verify if they are associated with known update mechanisms. Consider adding these processes to an exception list if they are verified as safe.\n- Development tools and environments often require RWX permissions for debugging or testing purposes. Identify these tools and exclude them from the rule if they are part of a controlled and secure development environment.\n- Certain system services or daemons, like custom web servers or network services, might use RWX memory regions for legitimate reasons. Review the process names and network destinations to determine if they are part of expected system behavior, and exclude them if confirmed.\n- Security software or monitoring tools may exhibit this behavior as part of their normal operation. Validate these processes and consider excluding them if they are recognized as part of your security infrastructure.\n- Custom scripts or automation tasks that require dynamic code execution might trigger this rule. Ensure these scripts are reviewed and approved, then exclude them if they are deemed non-threatening.\n\n### Response and remediation\n\n- Isolate the affected host from the network immediately to prevent further data exfiltration or communication with potential command-and-control servers.\n- Terminate the suspicious process identified by the detection rule to halt any ongoing malicious activity.\n- Conduct a memory dump of the affected system to capture the current state for forensic analysis, focusing on the RWX memory regions.\n- Review and analyze the network logs to identify any external IP addresses or domains the process attempted to connect to, and block these on the network firewall.\n- Patch and update the affected system to the latest security updates to mitigate any known vulnerabilities that could have been exploited.\n- Implement stricter memory protection policies to prevent processes from obtaining RWX permissions unless absolutely necessary.\n- Escalate the incident to the security operations center (SOC) for further investigation and to determine if this is part of a larger attack campaign.",
+        "query": "sample by host.id, process.pid, process.name\n  /* auditd.data.a2 == \"7\" translates to RWX memory region protection (PROT_READ | PROT_WRITE | PROT_EXEC) */\n  [process where host.os.type == \"linux\" and auditd.data.syscall == \"mprotect\" and auditd.data.a2 == \"7\" and\n   not process.name == \"httpd\"]\n  [network where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and\n   not cidrmatch(destination.ip, \"127.0.0.0/8\", \"169.254.0.0/16\", \"224.0.0.0/4\", \"::1\")]\n",
+        "references": [
+            "https://man7.org/linux/man-pages/man2/mprotect.2.html",
+            "https://www.elastic.co/security-labs/linux-detection-engineering-with-auditd"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "auditd.data.a2",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "auditd.data.syscall",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "32300431-c2d5-432d-8ec8-0e03f9924756",
+        "setup": "## Setup\n\nThis rule requires the use of the `auditd_manager` integration. `Auditd_manager` is a tool designed to simplify and enhance the management of the audit subsystem in Linux systems. It provides a user-friendly interface and automation capabilities for configuring and monitoring system auditing through the auditd daemon. With `auditd_manager`, administrators can easily define audit rules, track system events, and generate comprehensive audit reports, improving overall security and compliance in the system. The following steps should be executed in order to install and deploy `auditd_manager` on a Linux system.\n```\nKibana -->\nManagement -->\nIntegrations -->\nAuditd Manager -->\nAdd Auditd Manager\n```\n`Auditd_manager` subscribes to the kernel and receives events as they occur without any additional configuration. However, if more advanced configuration is required to detect specific behavior, audit rules can be added to the integration in either the \"audit rules\" configuration box or the \"auditd rule files\" box by specifying a file to read the audit rules from.\nFor this detection rule to trigger, the following additional audit rules are required to be added to the integration:\n```\n-a always,exit -F arch=b64 -S mprotect\n```\nAdd the newly installed `auditd manager` to an agent policy, and deploy the agent on a Linux system from which auditd log files are desirable.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 7
+    },
+    "id": "32300431-c2d5-432d-8ec8-0e03f9924756_7",
+    "type": "security-rule"
+}

@@ -122,6 +122,12 @@ streams:
           value: cloud_formation
         - name: aws.account_type
           value: single-account
+      cloud_connectors:
+        - name: aws.credentials.type
+          value: cloud_connectors
+        - name: aws.account_type
+        - name: role_arn
+        - name: aws.credentials.external_id
     vars:
       - name: condition
         title: Condition
@@ -191,7 +197,7 @@ streams:
         show_user: false
         secret: false
       - name: aws.credentials.external_id
-        type: text
+        type: password
         title: External ID
         multi: false
         required: false
@@ -208,42 +214,35 @@ streams:
           value: organization-account
         - name: gcp.credentials.type
           value: credentials-none
-        - name: gcp.organization_id
-        - name: gcp.project_id
       organization_account_manual_file:
         - name: gcp.account_type
           value: organization-account
         - name: gcp.credentials.type
           value: credentials-file
         - name: gcp.organization_id
-        - name: gcp.project_id
         - name: gcp.credentials.file
       organization_account_manual_json:
         - name: gcp.account_type
           value: organization-account
         - name: gcp.credentials.type
           value: credentials-json
-        - name: gcp.organization_id
         - name: gcp.credentials.json
       single_account_cloud_shell:
         - name: gcp.account_type
           value: single-account
         - name: gcp.credentials.type
           value: credentials-none
-        - name: gcp.project_id
       single_account_manual_file:
         - name: gcp.account_type
           value: single-account
         - name: gcp.credentials.type
           value: credentials-file
-        - name: gcp.project_id
         - name: gcp.credentials.file
       single_account_manual_json:
         - name: gcp.account_type
           value: single-account
         - name: gcp.credentials.type
           value: credentials-json
-        - name: gcp.project_id
         - name: gcp.credentials.json
     vars:
       - name: condition
@@ -323,6 +322,21 @@ streams:
         - name: azure.credentials.client_id
         - name: azure.credentials.client_certificate_path
         - name: azure.credentials.tenant_id
+        - name: azure.credentials.client_certificate_password
+      single_account_cloud_connectors:
+        - name: azure.account_type
+          value: single-account
+        - name: azure.credentials.type
+          value: cloud_connectors
+        - name: azure.credentials.client_id
+        - name: azure.credentials.tenant_id
+      organization_account_cloud_connectors:
+        - name: azure.account_type
+          value: organization-account
+        - name: azure.credentials.type
+          value: cloud_connectors
+        - name: azure.credentials.client_id
+        - name: azure.credentials.tenant_id
       single_account_arm_template:
         - name: azure.account_type
           value: single-account
@@ -349,6 +363,7 @@ streams:
         - name: azure.credentials.client_id
         - name: azure.credentials.client_certificate_path
         - name: azure.credentials.tenant_id
+        - name: azure.credentials.client_certificate_password
     vars:
       - name: condition
         title: Condition
@@ -372,12 +387,14 @@ streams:
         show_user: false
       - name: azure.credentials.client_id
         type: text
+        secret: true
         title: Client ID
         multi: false
         required: false
         show_user: true
       - name: azure.credentials.tenant_id
         type: text
+        secret: true
         title: Tenant ID
         multi: false
         required: false
@@ -385,19 +402,6 @@ streams:
       - name: azure.credentials.client_secret
         type: password
         title: Client Secret
-        multi: false
-        required: false
-        show_user: true
-        secret: true
-      - name: azure.credentials.client_username
-        type: text
-        title: Client Username
-        multi: false
-        required: false
-        show_user: true
-      - name: azure.credentials.client_password
-        type: password
-        title: Client Password
         multi: false
         required: false
         show_user: true
@@ -415,3 +419,10 @@ streams:
         required: false
         show_user: true
         secret: true
+      - name: azure.supports_cloud_connectors
+        type: bool
+        title: Supports Cloud Connectors
+        multi: false
+        required: false
+        show_user: false
+        secret: false

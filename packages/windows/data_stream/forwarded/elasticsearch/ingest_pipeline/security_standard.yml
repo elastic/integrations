@@ -2875,8 +2875,15 @@ processors:
           }
         }
         if (ctx.winlog?.event_data?.AuditPolicyChanges != null) {
+          ArrayList policyChanges = null;
+          if (ctx.winlog.event_data.AuditPolicyChanges instanceof String) {
+            String[] tokens = ctx.winlog.event_data.AuditPolicyChanges.splitOnToken(",");
+            policyChanges = new ArrayList(Arrays.asList(tokens));
+          } else if (ctx.winlog.event_data.AuditPolicyChanges instanceof ArrayList) {
+            policyChanges = ctx.winlog.event_data.AuditPolicyChanges;
+          }
           ArrayList results = new ArrayList();
-          for (elem in ctx.winlog.event_data.AuditPolicyChanges.splitOnToken(",")) {
+          for (elem in policyChanges) {
             def code = elem.replace("%%","").trim();
             if (params.descriptions.containsKey(code)) {
               results.add(params.descriptions[code]);
@@ -2891,7 +2898,13 @@ processors:
         if (ctx.winlog?.event_data?.AccessList != null) {
           ArrayList codes = new ArrayList();
           ArrayList results = new ArrayList();
-          for (elem in split(ctx.winlog.event_data.AccessList)) {
+          ArrayList accessList = null;
+          if (ctx.winlog.event_data.AccessList instanceof String) {
+            accessList = split(ctx.winlog.event_data.AccessList);
+          } else if (ctx.winlog.event_data.AccessList instanceof ArrayList) {
+            accessList = ctx.winlog.event_data.AccessList;
+          }
+          for (elem in accessList) {
             def code = elem.replace("%%","").trim();
             if (code != "") {
               codes.add(code);
@@ -2923,8 +2936,14 @@ processors:
         }
         if (ctx.winlog?.event_data?.AccessMask != null) {
           ArrayList list = new ArrayList();
-          long accessMask;
-          for (elem in split(ctx.winlog.event_data.AccessMask)) {
+          long lAccessMask;
+          ArrayList accessMask = null;
+          if (ctx.winlog.event_data.AccessMask instanceof String) {
+            accessMask = split(ctx.winlog.event_data.AccessMask);
+          } else if (ctx.winlog.event_data.AccessMask instanceof ArrayList) {
+            accessMask = ctx.winlog.event_data.AccessMask;
+          }
+          for (elem in accessMask) {
             if (elem.length() == 0) {
               continue;
             }
@@ -2938,7 +2957,7 @@ processors:
             }
             try {
               def longCode = Long.decode(code).longValue();
-              accessMask |= longCode;
+              lAccessMask |= longCode;
             } catch (Exception e) {}
           }
           if (list.length > 0) {
@@ -2949,7 +2968,7 @@ processors:
           def[] w = new def[] { null };
           for (long b = 0; b < 32; b++) {
             long flag = 1L << b;
-            if ((accessMask & flag) == flag) {
+            if ((lAccessMask & flag) == flag) {
               w[0] = flag;
               def fDesc = params.AccessMaskDescriptions[String.format("0x%08X", w)];
               if (fDesc != null) {

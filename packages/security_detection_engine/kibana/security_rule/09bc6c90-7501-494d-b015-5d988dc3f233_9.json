@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule monitors for the creation of a file, followed by its execution and self-deletion in a short timespan within a directory often used for malicious purposes by threat actors. This behavior is often used by malware to execute malicious code and delete itself to hide its tracks.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*",
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "File Creation, Execution and Self-Deletion in Suspicious Directory",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating File Creation, Execution and Self-Deletion in Suspicious Directory\n\nIn Linux environments, temporary directories like `/tmp` and `/var/tmp` are often used for storing transient files. Adversaries exploit these directories to execute malicious payloads and erase traces by creating, running, and deleting files swiftly. The detection rule identifies this pattern by monitoring file creation, execution, and deletion events within these directories, flagging suspicious activities that align with common malware behaviors.\n\n### Possible investigation steps\n\n- Review the file creation event details, focusing on the file path and name to determine if it matches known malicious patterns or if it is a legitimate file.\n- Examine the process execution event, paying attention to the process name and parent process name to identify if the execution was initiated by a suspicious or unauthorized shell.\n- Investigate the user.id and host.id associated with the events to determine if the activity aligns with expected user behavior or if it indicates potential compromise.\n- Check for any network activity or connections initiated by the process to identify potential data exfiltration or communication with command and control servers.\n- Analyze the deletion event to confirm whether the file was removed by a legitimate process or if it was part of a self-deletion mechanism used by malware.\n- Correlate these events with any other alerts or logs from the same host or user to identify patterns or additional indicators of compromise.\n\n### False positive analysis\n\n- Development and testing activities in temporary directories can trigger false positives. Exclude specific paths or processes related to known development tools or scripts that frequently create, execute, and delete files in these directories.\n- Automated system maintenance scripts may perform similar actions. Identify and whitelist these scripts by their process names or paths to prevent unnecessary alerts.\n- Backup or deployment tools like Veeam or Spack may use temporary directories for legitimate operations. Add exceptions for these tools by specifying their executable paths or process names.\n- Temporary file operations by legitimate applications such as web servers or database services might be flagged. Monitor and exclude these applications by their known behaviors or specific file paths they use.\n- Regular system updates or package installations can involve temporary file handling. Recognize and exclude these activities by identifying the associated package manager processes or update scripts.\n\n### Response and remediation\n\n- Isolate the affected host immediately to prevent further spread of the potential malware. Disconnect it from the network to contain the threat.\n- Terminate any suspicious processes identified in the alert, especially those executed from temporary directories, to stop any ongoing malicious activity.\n- Conduct a thorough examination of the affected directories (/tmp, /var/tmp, etc.) to identify and remove any remaining malicious files or scripts.\n- Restore any affected systems from a known good backup to ensure that no remnants of the malware remain.\n- Update and patch the affected system to close any vulnerabilities that may have been exploited by the threat actor.\n- Enhance monitoring and logging on the affected host and similar systems to detect any recurrence of this behavior, focusing on file creation, execution, and deletion events in temporary directories.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems may be compromised.",
+        "query": "sequence by host.id, user.id with maxspan=1m\n  [file where host.os.type == \"linux\" and event.action == \"creation\" and\n   process.name in (\"curl\", \"wget\", \"fetch\", \"ftp\", \"sftp\", \"scp\", \"rsync\", \"ld\") and\n   file.path : (\"/dev/shm/*\", \"/run/shm/*\", \"/tmp/*\", \"/var/tmp/*\",\n     \"/run/*\", \"/var/run/*\", \"/var/www/*\", \"/proc/*/fd/*\")] by file.name\n  [process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and\n   process.parent.name in (\"bash\", \"dash\", \"ash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\") and\n   not process.parent.executable like (\n     \"/tmp/VeeamApp*\", \"/tmp/rajh/spack-stage/*\", \"plz-out/bin/vault/bridge/test/e2e/base/bridge-dev\",\n     \"/usr/bin/ranlib\", \"/usr/bin/ar\", \"plz-out/bin/vault/bridge/test/e2e/base/local-k8s\"\n   )] by process.name\n  [file where host.os.type == \"linux\" and event.action == \"deletion\" and\n   file.path : (\n     \"/dev/shm/*\", \"/run/shm/*\", \"/tmp/*\", \"/var/tmp/*\", \"/run/*\", \"/var/run/*\", \"/var/www/*\", \"/proc/*/fd/*\"\n    ) and not process.name in (\"rm\", \"ld\", \"conftest\", \"link\", \"gcc\", \"getarch\", \"ld\")] by file.name\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "09bc6c90-7501-494d-b015-5d988dc3f233",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 9
+    },
+    "id": "09bc6c90-7501-494d-b015-5d988dc3f233_9",
+    "type": "security-rule"
+}

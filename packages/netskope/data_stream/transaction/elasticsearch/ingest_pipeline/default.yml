@@ -1,0 +1,1117 @@
+---
+description: Pipeline for processing transaction events.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.17.0'
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - rename:
+      field: message
+      tag: rename_message
+      target_field: event.original
+      ignore_missing: true
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: netskope.transaction
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_convert_kebab_case_to_snake_case
+      lang: painless
+      description: Convert kebab-case to snake_case.
+      source: |
+        // Helper function to convert kebab-case to snake_case
+        String kebabToSnake(String str) {
+          return str.replace("-", "_");
+        }
+
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = kebabToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+
+        // Apply the conversion
+        if (ctx.netskope?.transaction != null) {
+          ctx.netskope.transaction = convertToSnakeCase(ctx.netskope.transaction);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == '-' || v == 'N/A' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL'
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == '-' || v == 'N/A' || v == 'NotChecked' || v == 'NotAvailable' || v == 'NoSSL'
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.action
+      tag: set_event_action_from_transaction_x_policy_action
+      copy_from: netskope.transaction.x_policy_action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.id
+      tag: set_event_id_from_transaction_x_transaction_id
+      copy_from: netskope.transaction.x_transaction_id
+      ignore_empty_value: true
+  - append:
+      field: event.category
+      tag: append_network_to_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_allowed_to_event_type
+      value: allowed
+      if: ctx.event?.action == 'allow'
+  - append:
+      field: event.type
+      tag: append_denied_to_event_type
+      value: denied
+      if: ctx.event?.action == 'block'
+  - append:
+      field: event.type
+      tag: append_allow_to_event_type
+      value: info
+      if: ctx.event?.type == null
+  - convert:
+        field: netskope.transaction.bytes
+        tag: convert_netskope_transaction_bytes_to_long
+        target_field: netskope.transaction.bytes
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.bytes
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+        field: netskope.transaction.c_ip
+        tag: convert_netskope_transaction_c_ip_to_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.c_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.c_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_transaction_c_ip
+      copy_from: netskope.transaction.c_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_transaction_c_ip_into_related_ip
+      value: '{{{netskope.transaction.c_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.c_ip != null
+  - convert:
+        field: netskope.transaction.cs_bytes
+        tag: convert_netskope_transaction_cs_bytes_to_long
+        target_field: netskope.transaction.cs_bytes
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.cs_bytes
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      tag: set_source_bytes_from_transaction_cs_bytes
+      copy_from: netskope.transaction.cs_bytes
+      ignore_empty_value: true
+  - set:
+      field: client.geo.country_name
+      tag: set_client_geo_country_name_from_transaction_x_c_country
+      copy_from: netskope.transaction.x_c_country
+      ignore_empty_value: true
+  - convert:
+      field: netskope.transaction.x_c_latitude
+      tag: convert_x_c_latitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_c_latitude
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.transaction.x_c_longitude
+      tag: convert_x_c_longitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_c_longitude
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.geo.location.lat
+      tag: set_client_geo_location_latitude_from_transaction_x_c_latitude
+      copy_from: netskope.transaction.x_c_latitude
+      ignore_empty_value: true
+  - set:
+      field: client.geo.location.lon
+      tag: set_client_geo_location_longitude_from_transaction_x_c_latitude
+      copy_from: netskope.transaction.x_c_longitude
+      ignore_empty_value: true
+  - remove:
+      field: client.geo.location
+      if: >-
+        !(ctx.client?.geo?.location?.lat instanceof double)
+        || !(ctx.client.geo.location.lon instanceof double)
+        || ctx.client.geo.location.lat < -90.0
+        || ctx.client.geo.location.lat > 90.0
+        || ctx.client.geo.location.lon < -180.0
+        || ctx.client.geo.location.lon > 180.0
+      ignore_failure: true
+  - set:
+      field: client.geo.city_name
+      tag: set_client_geo_city_name_from_transaction_x_c_location
+      copy_from: netskope.transaction.x_c_location
+      ignore_empty_value: true
+  - set:
+      field: client.geo.region_name
+      tag: set_client_geo_region_name_from_transaction_x_c_region
+      copy_from: netskope.transaction.x_c_region
+      ignore_empty_value: true
+  - set:
+      field: client.geo.postal_code
+      tag: set_client_geo_postal_code_from_transaction_x_c_zipcode
+      copy_from: netskope.transaction.x_c_zipcode
+      ignore_empty_value: true
+  - set:
+      field: source.geo
+      tag: copy_source_geo_from_client_geo
+      copy_from: client.geo
+      ignore_empty_value: true
+  - convert:
+        field: netskope.transaction.rs_status
+        tag: convert_netskope_transaction_rs_status_to_long
+        target_field: netskope.transaction.rs_status
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.rs_status
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_transaction_rs_status
+      copy_from: netskope.transaction.rs_status
+      if: ctx.http?.response?.status_code == null
+      ignore_empty_value: true
+  - convert:
+        field: netskope.transaction.sc_status
+        tag: convert_netskope_transaction_sc_status_to_long
+        target_field: netskope.transaction.sc_status
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.sc_status
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_transaction_sc_status
+      copy_from: netskope.transaction.sc_status
+      ignore_empty_value: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_transaction_cs_method
+      copy_from: netskope.transaction.cs_method
+      ignore_empty_value: true
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referrer_from_transaction_cs_referer
+      copy_from: netskope.transaction.cs_referer
+      ignore_empty_value: true
+  - dissect:
+      field: netskope.transaction.x_cs_http_version
+      tag: dissect_http_version_from_transaction_x_cs_http_version
+      pattern: 'HTTP%{http.version}'
+      ignore_failure: true
+  - convert:
+        field: netskope.transaction.s_ip
+        tag: convert_netskope_transaction_s_ip_to_ip
+        target_field: netskope.transaction.s_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.s_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.s_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.ip
+      tag: set_server_ip_from_transaction_s_ip
+      copy_from: netskope.transaction.s_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_transaction_s_ip_into_related_ip
+      value: '{{{netskope.transaction.s_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.s_ip != null
+  - convert:
+        field: netskope.transaction.sc_bytes
+        tag: convert_netskope_transaction_sc_bytes_to_long
+        target_field: netskope.transaction.sc_bytes
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.sc_bytes
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes_from_transaction_sc_bytes
+      copy_from: netskope.transaction.sc_bytes
+      ignore_empty_value: true
+  - convert:
+        field: netskope.transaction.x_cs_app_cci
+        tag: convert_netskope_transaction_x_cs_app_cci_to_long
+        target_field: netskope.transaction.x_cs_app_cci
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_app_cci
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+        field: netskope.transaction.x_cs_dst_ip
+        tag: convert_netskope_transaction_x_cs_dst_ip_to_ip
+        target_field: netskope.transaction.x_cs_dst_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_cs_dst_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_dst_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_transaction_x_cs_dst_ip
+      copy_from: netskope.transaction.x_cs_dst_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_transaction_x_cs_dst_ip_into_related_ip
+      value: '{{{netskope.transaction.x_cs_dst_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_dst_ip != null
+  - convert:
+        field: netskope.transaction.x_cs_dst_port
+        tag: convert_netskope_transaction_x_cs_dst_port_to_long
+        target_field: netskope.transaction.x_cs_dst_port
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_dst_port
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_transaction_x_cs_dst_port
+      copy_from: netskope.transaction.x_cs_dst_port
+      ignore_empty_value: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_transaction_cs_dns
+      copy_from: netskope.transaction.cs_dns
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.country_name
+      tag: set_destination_geo_country_name_from_transaction_x_s_country
+      copy_from: netskope.transaction.x_s_country
+      ignore_empty_value: true
+  - convert:
+      field: netskope.transaction.x_s_latitude
+      tag: convert_x_s_latitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_s_latitude
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.transaction.x_s_longitude
+      tag: convert_x_s_longitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_s_longitude
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.geo.location.lat
+      tag: set_destination_geo_location_from_transaction_x_s_latitude
+      copy_from: netskope.transaction.x_s_latitude
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.location.lon
+      tag: set_destination_geo_location_from_transaction_x_s_longitude
+      copy_from: netskope.transaction.x_s_longitude
+      ignore_empty_value: true
+  - remove:
+      field: destination.geo.location
+      if: >-
+        !(ctx.destination?.geo?.location?.lat instanceof double)
+        || !(ctx.destination.geo.location.lon instanceof double)
+        || ctx.destination.geo.location.lat < -90.0
+        || ctx.destination.geo.location.lat > 90.0
+        || ctx.destination.geo.location.lon < -180.0
+        || ctx.destination.geo.location.lon > 180.0
+      ignore_failure: true
+  - set:
+      field: destination.geo.city_name
+      tag: set_destination_geo_city_name_from_transaction_x_s_location
+      copy_from: netskope.transaction.x_s_location
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.region_name
+      tag: set_destination_geo_region_name_from_transaction_x_s_region
+      copy_from: netskope.transaction.x_s_region
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.postal_code
+      tag: set_destination_geo_postal_code_from_transaction_x_s_zipcode
+      copy_from: netskope.transaction.x_s_zipcode
+      ignore_empty_value: true
+  - set:
+      field: server.geo
+      tag: copy_server_geo_from_destination_geo
+      copy_from: destination.geo
+      ignore_empty_value: true
+  - convert:
+        field: netskope.transaction.cs_uri_port
+        tag: convert_netskope_transaction_cs_uri_port_to_long
+        target_field: netskope.transaction.cs_uri_port
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.cs_uri_port
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.port
+      tag: set_url_port_from_transaction_cs_uri_port
+      copy_from: netskope.transaction.cs_uri_port
+      ignore_empty_value: true
+  - set:
+      field: url.query
+      tag: set_url_query_from_transaction_cs_uri_query
+      copy_from: netskope.transaction.cs_uri_query
+      ignore_empty_value: true
+  - set:
+      field: url.scheme
+      tag: set_url_scheme_from_transaction_cs_uri_scheme
+      copy_from: netskope.transaction.cs_uri_scheme
+      ignore_empty_value: true
+  - set:
+      field: url.path
+      tag: set_url_path_from_transaction_x_cs_uri_path
+      copy_from: netskope.transaction.x_cs_uri_path
+      ignore_empty_value: true
+  - set:
+      field: url.full
+      tag: set_url_full_from_transaction_x_cs_url
+      copy_from: netskope.transaction.x_cs_url
+      ignore_empty_value: true
+  - convert:
+        field: netskope.transaction.x_cs_ip_connect_xff
+        tag: convert_netskope_transaction_x_cs_ip_connect_xff_to_ip
+        target_field: netskope.transaction.x_cs_ip_connect_xff
+        type: ip
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_ip_connect_xff
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_cs_ip_connect_xff_into_related_ip
+      value: '{{{netskope.transaction.x_cs_ip_connect_xff}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_ip_connect_xff != null
+  - convert:
+        field: netskope.transaction.x_cs_ip_xff
+        tag: convert_netskope_transaction_x_cs_ip_xff_to_ip
+        target_field: netskope.transaction.x_cs_ip_xff
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_cs_ip_xff != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_ip_xff
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_cs_ip_xff_into_related_ip
+      value: '{{{netskope.transaction.x_cs_ip_xff}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_ip_xff != null
+  - convert:
+        field: netskope.transaction.x_cs_src_ip
+        tag: convert_netskope_transaction_x_cs_src_ip_to_ip
+        target_field: netskope.transaction.x_cs_src_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_cs_src_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_src_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_transaction_x_cs_src_ip
+      copy_from: netskope.transaction.x_cs_src_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_transaction_x_cs_src_ip_into_related_ip
+      value: '{{{netskope.transaction.x_cs_src_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_src_ip != null
+  - convert:
+        field: netskope.transaction.x_cs_src_ip_egress
+        tag: convert_netskope_transaction_x_cs_src_ip_egress_to_ip
+        target_field: netskope.transaction.x_cs_src_ip_egress
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_cs_src_ip_egress != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_src_ip_egress
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_cs_src_ip_egress_into_related_ip
+      value: '{{{netskope.transaction.x_cs_src_ip_egress}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_src_ip_egress != null
+  - convert:
+        field: netskope.transaction.x_cs_src_port
+        tag: convert_netskope_transaction_x_cs_src_port_to_long
+        target_field: netskope.transaction.x_cs_src_port
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_src_port
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_transaction_x_cs_src_port
+      copy_from: netskope.transaction.x_cs_src_port
+      ignore_empty_value: true
+  - convert:
+        field: netskope.transaction.x_cs_userip
+        tag: convert_netskope_transaction_x_cs_userip_to_ip
+        target_field: netskope.transaction.x_cs_userip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_cs_userip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_userip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_cs_userip_into_related_ip
+      value: '{{{netskope.transaction.x_cs_userip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_userip != null
+  - convert:
+        field: netskope.transaction.x_sr_dst_ip
+        tag: convert_netskope_transaction_x_sr_dst_ip_to_ip
+        target_field: netskope.transaction.x_sr_dst_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_sr_dst_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_sr_dst_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_sr_dst_ip_into_related_ip
+      value: '{{{netskope.transaction.x_sr_dst_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_sr_dst_ip != null
+  - convert:
+        field: netskope.transaction.x_sr_dst_port
+        tag: convert_netskope_transaction_x_sr_dst_port_to_long
+        target_field: netskope.transaction.x_sr_dst_port
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_sr_dst_port
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+        field: netskope.transaction.x_sr_src_ip
+        tag: convert_netskope_transaction_x_sr_src_ip_to_ip
+        target_field: netskope.transaction.x_sr_src_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_sr_src_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_sr_src_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_sr_src_ip_into_related_ip
+      value: '{{{netskope.transaction.x_sr_src_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_sr_src_ip != null
+  - convert:
+        field: netskope.transaction.x_sr_src_port
+        tag: convert_netskope_transaction_x_sr_src_port_to_long
+        target_field: netskope.transaction.x_sr_src_port
+        type: long
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_sr_src_port
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+        field: netskope.transaction.x_ssl_policy_dst_ip
+        tag: convert_netskope_transaction_x_ssl_policy_dst_ip_to_ip
+        target_field: netskope.transaction.x_ssl_policy_dst_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_ssl_policy_dst_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_ssl_policy_dst_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_ssl_policy_dst_ip_into_related_ip
+      value: '{{{netskope.transaction.x_ssl_policy_dst_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_ssl_policy_dst_ip != null
+  - convert:
+        field: netskope.transaction.x_ssl_policy_src_ip
+        tag: convert_netskope_transaction_x_ssl_policy_src_ip_to_ip
+        target_field: netskope.transaction.x_ssl_policy_src_ip
+        type: ip
+        ignore_missing: true
+        if: ctx.netskope?.transaction?.x_ssl_policy_src_ip != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_ssl_policy_src_ip
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_transaction_x_ssl_policy_src_ip_into_related_ip
+      value: '{{{netskope.transaction.x_ssl_policy_src_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_ssl_policy_src_ip != null
+  - date:
+        field: netskope.transaction.date
+        tag: date_netskope_transaction_date
+        target_field: netskope.transaction.date
+        formats:
+          - ISO8601
+        if: ctx.netskope?.transaction?.date != null && ctx.netskope.transaction.date != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.date
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+        field: netskope.transaction.x_c_local_time
+        tag: date_netskope_transaction_x_c_local_time
+        target_field: netskope.transaction.x_c_local_time
+        formats:
+          - 'yyyy-MM-dd HH:mm:ss'
+        if: ctx.netskope?.transaction?.x_c_local_time != null && ctx.netskope.transaction.x_c_local_time != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_c_local_time
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+        field: netskope.transaction.x_cs_timestamp
+        tag: date_netskope_transaction_x_cs_timestamp
+        target_field: netskope.transaction.x_cs_timestamp
+        formats:
+          - epoch_second
+        if: ctx.netskope?.transaction?.x_cs_timestamp != null && ctx.netskope.transaction.x_cs_timestamp != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_cs_timestamp
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_transaction_x_cs_timestamp
+      copy_from: netskope.transaction.x_cs_timestamp
+      ignore_empty_value: true
+  - date:
+        field: netskope.transaction.x_r_cert_enddate
+        tag: date_netskope_transaction_x_r_cert_enddate
+        target_field: netskope.transaction.x_r_cert_enddate
+        formats:
+          - 'MMM dd HH:mm:ss yyyy z'
+        if: ctx.netskope?.transaction?.x_r_cert_enddate != null && ctx.netskope.transaction.x_r_cert_enddate != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_r_cert_enddate
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.not_after
+      tag: set_tls_server_not_after_from_transaction_x_r_cert_enddate
+      copy_from: netskope.transaction.x_r_cert_enddate
+      ignore_empty_value: true
+  - date:
+        field: netskope.transaction.x_r_cert_startdate
+        tag: date_netskope_transaction_x_r_cert_startdate
+        target_field: netskope.transaction.x_r_cert_startdate
+        formats:
+          - 'MMM dd HH:mm:ss yyyy z'
+        if: ctx.netskope?.transaction?.x_r_cert_startdate != null && ctx.netskope.transaction.x_r_cert_startdate != ''
+        on_failure:
+          - remove:
+              field: netskope.transaction.x_r_cert_startdate
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.not_before
+      tag: set_tls_server_not_before_from_transaction_x_r_cert_startdate
+      copy_from: netskope.transaction.x_r_cert_startdate
+      ignore_empty_value: true
+  - split:
+      field: netskope.transaction.x_cs_app_tags
+      separator: ","
+      preserve_trailing: true
+      ignore_missing: true
+      if: ctx.netskope?.transaction?.x_cs_app_tags != ''
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_cs_app_tags
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: netskope.transaction.x_ssl_policy_categories
+      separator: ","
+      preserve_trailing: true
+      ignore_missing: true
+      if: ctx.netskope?.transaction?.x_ssl_policy_categories != ''
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_ssl_policy_categories
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: netskope.transaction.x_sr_headers_name
+      separator: ","
+      preserve_trailing: true
+      ignore_missing: true
+      if: ctx.netskope?.transaction?.x_sr_headers_name != ''
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_sr_headers_name
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: netskope.transaction.x_sr_headers_value
+      separator: ","
+      preserve_trailing: true
+      ignore_missing: true
+      if: ctx.netskope?.transaction?.x_sr_headers_value != ''
+      on_failure:
+        - remove:
+            field: netskope.transaction.x_sr_headers_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: message
+      tag: set_message_from_transaction_x_policy_justification_reason
+      copy_from: netskope.transaction.x_policy_justification_reason
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_transaction_x_cs_app_instance_id
+      copy_from: netskope.transaction.x_cs_app_instance_id
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_transaction_x_cs_app_instance_id_into_related_hosts
+      value: '{{{netskope.transaction.x_cs_app_instance_id}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_app_instance_id != null
+  - set:
+      field: file.name
+      tag: set_file_name_from_transaction_x_cs_app_object_name
+      copy_from: netskope.transaction.x_cs_app_object_name
+      if: ctx.netskope?.transaction?.x_cs_app_object_type == "file"
+      ignore_empty_value: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_transaction_x_rs_file_md5
+      copy_from: netskope.transaction.x_rs_file_md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_transaction_x_rs_file_md5_into_related_hash
+      value: '{{{netskope.transaction.x_rs_file_md5}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_rs_file_md5 != null
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_transaction_x_rs_file_sha256
+      copy_from: netskope.transaction.x_rs_file_sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_transaction_x_rs_file_sha256_into_related_hash
+      value: '{{{netskope.transaction.x_rs_file_sha256}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_rs_file_sha256 != null
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_transaction_x_c_os
+      copy_from: netskope.transaction.x_c_os
+      ignore_empty_value: true
+  - set:
+      field: tls.client.server_name
+      tag: set_tls_client_server_name_from_transaction_x_cs_sni
+      copy_from: netskope.transaction.x_cs_sni
+      ignore_empty_value: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_transaction_x_cs_sni
+      copy_from: netskope.transaction.x_cs_sni
+      if: ctx.netskope?.transaction?.x_cs_sni != null
+      ignore_empty_value: true
+  - set:
+      field: tls.cipher
+      tag: set_tls_cipher_from_transaction_x_cs_ssl_cipher
+      copy_from: netskope.transaction.x_cs_ssl_cipher
+      ignore_empty_value: true
+  - set:
+      field: tls.client.ja3
+      tag: set_tls_client_ja3_from_transaction_x_cs_ssl_ja3
+      copy_from: netskope.transaction.x_cs_ssl_ja3
+      ignore_empty_value: true
+  - dissect:
+      field: netskope.transaction.x_cs_ssl_version
+      tag: dissect_tls_version_from_transaction_x_cs_ssl_version
+      pattern:  '%{tls.version_protocol}v%{tls.version}'
+      ignore_failure: true
+  - lowercase:
+      field: tls.version_protocol
+      tag: lowercase_tls_version_protocol
+      ignore_missing: true
+  - set:
+      field: tls.established
+      tag: set_tls_established_to_true
+      value: true
+      if: ctx.netskope?.transaction?.x_r_cert_valid == 'yes'
+  - set:
+      field: tls.established
+      tag: set_tls_established_to_false
+      value: false
+      if: ctx.netskope?.transaction?.x_r_cert_valid == 'no'
+  - set:
+      field: tls.server.ja3s
+      tag: set_tls_server_ja3s_from_transaction_x_sr_ssl_ja3s
+      copy_from: netskope.transaction.x_sr_ssl_ja3s
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_transaction_cs_username
+      copy_from: netskope.transaction.cs_username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_transaction_cs_username_into_related_user
+      value: '{{{netskope.transaction.cs_username}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.cs_username != null
+  - append:
+      field: related.user
+      tag: append_transaction_x_cs_app_to_user_into_related_user
+      value: '{{{netskope.transaction.x_cs_app_to_user}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_app_to_user != null
+  - append:
+      field: related.user
+      tag: append_transaction_x_cs_app_from_user_into_related_user
+      value: '{{{netskope.transaction.x_cs_app_from_user}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_app_from_user != null
+  - append:
+      field: related.hosts
+      tag: append_transaction_x_cs_connect_host_into_related_hosts
+      value: '{{{netskope.transaction.x_cs_connect_host}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_cs_connect_host != null
+  - append:
+      field: related.ip
+      tag: append_transaction_x_policy_dst_ip_into_related_ip
+      value: '{{{netskope.transaction.x_policy_dst_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_policy_dst_ip != null
+  - append:
+      field: related.ip
+      tag: append_transaction_x_policy_src_ip_into_related_ip
+      value: '{{{netskope.transaction.x_policy_src_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_policy_src_ip != null
+  - append:
+      field: related.hosts
+      tag: append_transaction_x_ssl_policy_dst_host_into_related_hosts
+      value: '{{{netskope.transaction.x_ssl_policy_dst_host}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.transaction?.x_ssl_policy_dst_host != null
+  - user_agent:
+      field: netskope.transaction.cs_user_agent
+      if: ctx.netskope?.transaction?.cs_user_agent != null && ctx.netskope.transaction.cs_user_agent != ''
+      tag: 'user_agent_processor'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - log.file.path
+        - log.offset
+      tag: remove_log_fields
+      if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null 
+      ignore_missing: true
+  - remove:
+      field:
+        - netskope.transaction.c_ip
+        - netskope.transaction.cs_bytes
+        - netskope.transaction.cs_dns
+        - netskope.transaction.cs_method
+        - netskope.transaction.cs_referer
+        - netskope.transaction.cs_uri_port
+        - netskope.transaction.cs_uri_query
+        - netskope.transaction.cs_uri_scheme
+        - netskope.transaction.cs_username
+        - netskope.transaction.rs_status
+        - netskope.transaction.s_ip
+        - netskope.transaction.sc_bytes
+        - netskope.transaction.sc_status
+        - netskope.transaction.x_c_country
+        - netskope.transaction.x_c_location
+        - netskope.transaction.x_c_os
+        - netskope.transaction.x_c_region
+        - netskope.transaction.x_c_zipcode
+        - netskope.transaction.x_cs_app_instance_id
+        - netskope.transaction.x_cs_app_object_name
+        - netskope.transaction.x_cs_dst_ip
+        - netskope.transaction.x_cs_dst_port
+        - netskope.transaction.x_cs_http_version
+        - netskope.transaction.x_cs_sni
+        - netskope.transaction.x_cs_src_port
+        - netskope.transaction.x_cs_ssl_cipher
+        - netskope.transaction.x_cs_ssl_ja3
+        - netskope.transaction.x_cs_ssl_version
+        - netskope.transaction.x_cs_timestamp
+        - netskope.transaction.x_cs_uri_path
+        - netskope.transaction.x_cs_url
+        - netskope.transaction.x_policy_action
+        - netskope.transaction.x_policy_justification_reason
+        - netskope.transaction.x_r_cert_enddate
+        - netskope.transaction.x_r_cert_startdate
+        - netskope.transaction.x_r_cert_valid
+        - netskope.transaction.x_rs_file_md5
+        - netskope.transaction.x_rs_file_sha256
+        - netskope.transaction.x_s_country
+        - netskope.transaction.x_s_location
+        - netskope.transaction.x_s_region
+        - netskope.transaction.x_s_zipcode
+        - netskope.transaction.x_cs_src_ip
+        - netskope.transaction.x_sr_ssl_ja3s
+        - netskope.transaction.x_transaction_id
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

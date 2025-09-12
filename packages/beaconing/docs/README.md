@@ -1,7 +1,9 @@
 # Network Beaconing Identification
 
 The Network Beaconing Identification package consists of a framework to identify beaconing activity in your environment. The framework surfaces significant indicators of compromise (IoCs) for threat hunters and analysts to use as a starting point for an investigation in addition to helping them monitor network traffic for beaconing activities. 
-This package is licensed under Elastic License 2.0. 
+This package is licensed under Elastic License 2.0.
+
+This package leverages event logs on Linux, macOS, and Windows. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
 For more detailed information refer to the following blog:
 - [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
@@ -24,9 +26,9 @@ For more detailed information refer to the following blog:
 
 To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
 
-| Transform name            | Purpose| 	Source index  | Destination index       | Alias |
-|---------------------------|--------|----------------|-------------------------|------------|
-| beaconing.pivot_transform |	Flags beaconing activity in your environment| 	logs-*        | 	ml_beaconing-[version] | ml_beaconing.all |
+| Transform name            | Purpose                                      | Source index | Destination index       | Alias            | Supported Platforms   |
+|---------------------------|----------------------------------------------|--------------|-------------------------|------------------|-----------------------|
+| beaconing.pivot_transform | Flags beaconing activity in your environment | logs-*       | ml_beaconing-[version]  | ml_beaconing.all | Linux, macOS, Windows |
 
 When querying the destination index to enquire about beaconing activities, we advise using the alias for the destination index (`ml_beaconing.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings.
 

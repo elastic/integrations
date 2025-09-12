@@ -36,10 +36,30 @@ program: |-
   				"Content-Type": ["application/json"],
   			},
   		}
-  	).do_request().as(resp,
+  	).do_request().as(resp, resp.StatusCode == 200 ?
   		resp.Header["Set-Cookie"]
+  	:
+  		{
+  			"events": {
+  				"error": {
+  					"code": string(resp.StatusCode),
+  					"id": string(resp.Status),
+  					"message": "POST " + state.url.trim_right("/") + "/Auth/SignAppin: " + 
+  					(
+  						(size(resp.Body) != 0) ?
+  							string(resp.Body)
+  						:
+  							string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+  					),
+  				},
+  			},
+  			"want_more": false,
+  		}
   	)
-  ).as(cookies,
+  ).as(cookies, type(cookies) == map ?
+  	// Early return on POST request failure; on success, cookies is a list.
+  	state.with(cookies)
+  :
   	state.?cursor.asset_reqs.orValue(
   		request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
   			{
