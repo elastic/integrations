@@ -367,50 +367,71 @@ An example event for `raft` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-12T10:00:28.913Z",
+    "@timestamp": "2025-07-21T08:52:02.169Z",
     "agent": {
-        "ephemeral_id": "8fe845c4-53e0-4f71-afd8-c52a8498a0d6",
-        "id": "3b782242-007e-4900-bef6-4752be77b6ca",
-        "name": "elastic-agent-52693",
+        "ephemeral_id": "9b3488ec-43b2-4927-992d-66e7916db610",
+        "id": "98300b09-b816-4ff7-87aa-a3dd3410656c",
+        "name": "elastic-agent-92636",
         "type": "metricbeat",
-        "version": "8.19.0"
+        "version": "8.16.6"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "5798221542184199336",
+            "name": "service-integration-dev-idc-ubuntu25-4"
+        },
+        "machine": {
+            "type": "n1-standard-4"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "region": "asia-south1",
+        "service": {
+            "name": "GCE"
+        }
     },
     "data_stream": {
         "dataset": "kafka.raft",
-        "namespace": "93470",
+        "namespace": "60294",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "3b782242-007e-4900-bef6-4752be77b6ca",
+        "id": "98300b09-b816-4ff7-87aa-a3dd3410656c",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.16.6"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "kafka.raft",
-        "duration": 672557334,
-        "ingested": "2025-09-12T10:00:30Z",
+        "duration": 29347144,
+        "ingested": "2025-07-21T08:52:04Z",
         "module": "jolokia"
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-52693",
+        "hostname": "elastic-agent-92636",
         "ip": [
-            "172.19.0.4",
-            "172.22.0.2"
+            "172.21.0.2",
+            "172.19.0.6"
         ],
         "mac": [
-            "1A-2C-3A-B5-7A-3F",
-            "1E-0D-8C-43-61-57"
+            "0A-4F-66-38-0A-41",
+            "A2-41-CC-86-C2-F0"
         ],
-        "name": "elastic-agent-52693",
+        "name": "elastic-agent-92636",
         "os": {
             "family": "",
-            "kernel": "6.8.0-64-generic",
+            "kernel": "6.14.0-1006-gcp",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
@@ -419,7 +440,7 @@ An example event for `raft` looks as following:
     },
     "kafka": {
         "raft": {
-            "append_records_rate": 0.39147193447362083,
+            "append_records_rate": 0.672182006204757,
             "commit_latency_avg": 0,
             "commit_latency_max": 0,
             "current_epoch": 1,
@@ -427,12 +448,12 @@ An example event for `raft` looks as following:
             "current_state": "leader",
             "current_vote": 1,
             "fetch_records_rate": 0,
-            "high_watermark": 13,
+            "high_watermark": 26,
             "log_end_epoch": 1,
-            "log_end_offset": 13,
+            "log_end_offset": 26,
             "number_of_voters": 1,
             "number_unknown_voter_connections": 0,
-            "poll_idle_ratio_avg": 0.9066757493188011
+            "poll_idle_ratio_avg": 0.9814143775569842
         }
     },
     "metricset": {
@@ -440,7 +461,7 @@ An example event for `raft` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://svc-kafka:8780/jolokia",
+        "address": "http://kafka:8779/jolokia",
         "type": "jolokia"
     }
 }
@@ -664,32 +685,53 @@ An example event for `replica_manager` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-12T10:01:46.534Z",
+    "@timestamp": "2025-07-23T16:35:37.935Z",
     "agent": {
-        "ephemeral_id": "efa55a49-5e62-4593-b68c-6cbea0713a1a",
-        "id": "d57314be-ce65-4bd9-bc64-39154e0a800a",
-        "name": "elastic-agent-95913",
+        "ephemeral_id": "a4700138-4aca-47fb-a345-5bbfba6ceed0",
+        "id": "167e67fc-65ea-457a-97a7-72bf3cbf5b3f",
+        "name": "elastic-agent-77103",
         "type": "metricbeat",
-        "version": "8.19.0"
+        "version": "8.16.6"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "5798221542184199336",
+            "name": "service-integration-dev-idc-ubuntu25-4"
+        },
+        "machine": {
+            "type": "n1-standard-4"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "region": "asia-south1",
+        "service": {
+            "name": "GCE"
+        }
     },
     "data_stream": {
         "dataset": "kafka.replica_manager",
-        "namespace": "53129",
+        "namespace": "28369",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "d57314be-ce65-4bd9-bc64-39154e0a800a",
+        "id": "167e67fc-65ea-457a-97a7-72bf3cbf5b3f",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.16.6"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "kafka.replica_manager",
-        "duration": 1122108455,
-        "ingested": "2025-09-12T10:01:48Z",
+        "duration": 5881449397,
+        "ingested": "2025-07-23T16:35:44Z",
         "kind": "metric",
         "module": "jolokia",
         "type": [
@@ -697,21 +739,21 @@ An example event for `replica_manager` looks as following:
         ]
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-95913",
+        "hostname": "elastic-agent-77103",
         "ip": [
-            "172.19.0.4",
-            "172.22.0.2"
+            "172.19.0.5",
+            "172.21.0.2"
         ],
         "mac": [
-            "12-63-DD-4D-07-01",
-            "1E-68-FE-F3-AF-E7"
+            "66-AA-DE-78-FA-8A",
+            "F6-D6-75-D4-7D-B8"
         ],
-        "name": "elastic-agent-95913",
+        "name": "elastic-agent-77103",
         "os": {
             "family": "",
-            "kernel": "6.8.0-64-generic",
+            "kernel": "6.14.0-1006-gcp",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
@@ -729,7 +771,7 @@ An example event for `replica_manager` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://svc-kafka:8780/jolokia",
+        "address": "http://kafka:8779/jolokia",
         "type": "kafka"
     }
 }
@@ -1160,32 +1202,53 @@ An example event for `network` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-12T09:59:10.071Z",
+    "@timestamp": "2025-07-30T14:34:01.976Z",
     "agent": {
-        "ephemeral_id": "75865c51-6176-417e-9514-aac853c762ea",
-        "id": "97871401-222b-46e8-b013-6aad8b466899",
-        "name": "elastic-agent-23528",
+        "ephemeral_id": "121634c5-89ec-4c65-9050-4f4cacb5cd5f",
+        "id": "73ccdce9-578e-414a-89b9-c4fb1e3bfb33",
+        "name": "elastic-agent-94680",
         "type": "metricbeat",
-        "version": "8.19.0"
+        "version": "8.16.6"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "5798221542184199336",
+            "name": "service-integration-dev-idc-ubuntu25-4"
+        },
+        "machine": {
+            "type": "n1-standard-4"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "region": "asia-south1",
+        "service": {
+            "name": "GCE"
+        }
     },
     "data_stream": {
         "dataset": "kafka.network",
-        "namespace": "39692",
+        "namespace": "99080",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97871401-222b-46e8-b013-6aad8b466899",
+        "id": "73ccdce9-578e-414a-89b9-c4fb1e3bfb33",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.16.6"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "kafka.network",
-        "duration": 2606449238,
-        "ingested": "2025-09-12T09:59:12Z",
+        "duration": 1844428828,
+        "ingested": "2025-07-30T14:34:03Z",
         "kind": "metric",
         "module": "jolokia",
         "type": [
@@ -1193,21 +1256,21 @@ An example event for `network` looks as following:
         ]
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-23528",
+        "hostname": "elastic-agent-94680",
         "ip": [
-            "172.19.0.4",
-            "172.22.0.2"
+            "172.19.0.5",
+            "172.21.0.2"
         ],
         "mac": [
-            "26-2E-EB-45-01-C6",
-            "8A-5E-63-15-73-F5"
+            "FE-1B-8B-4B-3C-E4",
+            "FE-AF-C2-4B-E7-A7"
         ],
-        "name": "elastic-agent-23528",
+        "name": "elastic-agent-94680",
         "os": {
             "family": "",
-            "kernel": "6.8.0-64-generic",
+            "kernel": "6.14.0-1006-gcp",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
@@ -1227,7 +1290,7 @@ An example event for `network` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://svc-kafka:8780/jolokia",
+        "address": "http://kafka:8779/jolokia",
         "type": "kafka"
     }
 }
