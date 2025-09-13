@@ -762,31 +762,31 @@ An example event for `cspm` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-05T09:43:03.978Z",
+    "@timestamp": "2025-09-13T08:40:07.229Z",
     "agent": {
-        "ephemeral_id": "aed8de5a-bfd8-4b89-b118-5b4128388d7d",
-        "id": "86c1f0d5-8a53-4c72-a094-498448211713",
-        "name": "elastic-agent-90543",
+        "ephemeral_id": "dd987912-3b8f-4862-bcd4-890866173b36",
+        "id": "923f4854-7f8c-47e8-8b01-e9a5cc48999e",
+        "name": "elastic-agent-80660",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "sysdig.cspm",
-        "namespace": "70190",
+        "namespace": "34503",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "86c1f0d5-8a53-4c72-a094-498448211713",
+        "id": "923f4854-7f8c-47e8-8b01-e9a5cc48999e",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "sysdig.cspm",
-        "ingested": "2025-09-05T09:43:06Z",
+        "ingested": "2025-09-13T08:40:10Z",
         "kind": "event",
         "original": "{\"acceptedCount\":0,\"control\":{\"acceptedCount\":0,\"authors\":\"Sysdig\",\"description\":\"Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.\",\"id\":\"21344\",\"isManual\":false,\"lastUpdate\":\"1752149383\",\"name\":\"Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys\",\"objectsCount\":2879,\"pass\":false,\"passingCount\":0,\"platform\":\"\",\"remediationId\":\"21344\",\"resourceApiEndpoint\":\"/api/cspm/v1/cloud/resources?controlId=21344\\u0026providerType=AWS\\u0026resourceKind=AWS_LAMBDA_FUNCTION\\u0026filter=policyId=52 and zones.id=119\",\"resourceKind\":\"AWS_LAMBDA_FUNCTION\",\"severity\":\"High\",\"supportedDistributions\":[{\"maxVersion\":0,\"minVersion\":0,\"name\":\"AWS\"}],\"target\":\"AWS\",\"type\":8},\"description\":\"All Amazon Web Services Controls.\",\"failedControls\":136,\"highSeverityCount\":3147,\"lowSeverityCount\":2926,\"mediumSeverityCount\":20805,\"name\":\"AWS Controls\",\"pass\":false,\"passingCount\":23735,\"policyId\":\"52\",\"policyName\":\"All Posture Findings\",\"requirementId\":\"637489\",\"severity\":\"High\",\"zone\":{\"id\":\"119\",\"name\":\"Entire Infrastructure\"}}",
         "outcome": "failure",
@@ -840,6 +840,7 @@ An example event for `cspm` looks as following:
             "high_severity_count": 3147,
             "low_severity_count": 2926,
             "medium_severity_count": 20805,
+            "name": "AWS Controls",
             "pass": false,
             "passing_count": 23735,
             "requirement_id": "637489",
