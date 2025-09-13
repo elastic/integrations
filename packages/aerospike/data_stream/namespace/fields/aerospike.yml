@@ -1,17 +1,159 @@
-- name: aerospike.namespace.name
-  type: keyword
-  description: Aerospike namespace name
-  dimension: true
-  example: my_namespace
+- name: aerospike.namespace
+  type: group
+  # description: Aerospike namespace metrics
+  fields:
+    - name: name
+      type: keyword
+      description: Aerospike namespace name
+      dimension: true
+      example: my_namespace
 
-- name: aerospike.node.name
-  type: keyword
-  description: Aerospike node name
-  dimension: true
-  example: my_node
+    - name: node
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Aerospike node name
+          dimension: true
+          example: my_node
 
-- name: aerospike.namespace.node.host
-  type: keyword
-  description: Aerospike namespace node host
-  dimension: true
-  example: 127.0.0.1:3000
+        - name: host
+          type: keyword
+          description: Aerospike namespace node host
+          dimension: true
+          example: 127.0.0.1
+
+    - name: client
+      type: group
+      fields:
+        - name: delete
+          type: group
+          fields:
+            - name: error
+              type: long
+              metric_type: counter
+              description: Number of client delete errors
+              dimension: false
+              example: 0
+            - name: not_found
+              type: long
+              metric_type: counter
+              description: Number of client delete not found
+              dimension: false
+              example: 0
+            - name: success
+              type: long
+              metric_type: counter
+              description: Number of client delete successes
+              dimension: false
+              example: 12345
+            - name: timeout
+              type: long
+              metric_type: counter
+              description: Number of client delete timeouts
+              dimension: false
+              example: 0
+
+        - name: read
+          type: group
+          fields:
+            - name: error
+              type: long
+              metric_type: counter
+              description: Number of client read errors
+              dimension: false
+              example: 0
+            - name: not_found
+              type: long
+              metric_type: counter
+              description: Number of client read not found
+              dimension: false
+              example: 10
+            - name: success
+              type: long
+              metric_type: counter
+              description: Number of client read successes
+              dimension: false
+              example: 98765
+            - name: timeout
+              type: long
+              metric_type: counter
+              description: Number of client read timeouts
+              dimension: false
+              example: 0
+
+        - name: write
+          type: group
+          fields:
+            - name: error
+              type: long
+              metric_type: counter
+              description: Number of client write errors
+              dimension: false
+              example: 0
+            - name: success
+              type: long
+              metric_type: counter
+              description: Number of client write successes
+              dimension: false
+              example: 12345
+            - name: timeout
+              type: long
+              metric_type: counter
+              description: Number of client write timeouts
+              dimension: false
+              example: 0
+
+    - name: hwm_breached
+      type: boolean
+      description: Is high-water mark breached
+      example: false
+
+    # - name: memory
+    #   type: group
+    #   fields:
+    #     - name: used
+    #       type: group
+    #       fields:
+    #         - name: data
+    #           type: object
+    #           description: Memory used by data
+    #           dimension: false
+    #           example: null
+    #         - name: index
+    #           type: object
+    #           description: Memory used by index
+    #           dimension: false
+    #           example: null
+    #         - name: sindex
+    #           type: object
+    #           description: Memory used by sindex
+    #           dimension: false
+    #           example: null
+    #         - name: total
+    #           type: object
+    #           description: Total memory used
+    #           dimension: false
+    #           example: null
+
+    - name: objects
+      type: group
+      fields:
+        - name: master
+          type: long
+          description: Number of master objects
+          dimension: false
+          metric_type: counter
+          example: 500000
+        - name: total
+          type: long
+          metric_type: counter
+          description: Total number of objects
+          dimension: false
+          example: 1000000
+
+    - name: stop_writes
+      type: boolean
+      description: Are writes stopped
+      dimension: false
+      example: false
