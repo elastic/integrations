@@ -1,0 +1,169 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  api_key: {{api_key}}
+redact:
+  fields:
+    - api_key
+program: |
+  (
+    state.?worklist.agents[0].hasValue() ?
+      state
+    :
+      state.drop("worklist").with(
+        request(
+          "POST",
+          state.url.trim_right("/") + "/v1/agent/find"
+        ).with(
+          {
+            "Header": {
+              "Content-Type": ["application/json"],
+              "X-ApiKey": [string(state.api_key)],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              // saving the agent response inside worklist to fetch particular group id's policy in below chain call.
+              ?"worklist": body.?response,
+              "want_more": has(body.?response.agents) && size(body.response.agents) > 0,
+              "api_key": state.api_key,
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/v1/agent/find " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "api_key": state.api_key,
+          }
+        )
+      )
+  ).as(state,
+    !has(state.worklist) ? // Exit early due to POST failure.
+      state
+    : size(state.worklist) != 0 ?
+      (
+        has(state.worklist.agents[0].groupid) ?
+          request(
+            "POST",
+            state.url.trim_right("/") + "/v1/group/policies?" + {
+              "groupid": [string(state.worklist.agents[0].groupid)],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Content-Type": ["application/json"],
+                "X-ApiKey": [string(state.api_key)],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                // Enriching the specific agent response with groupid's policy details to construct the final object.
+                "events": (has(body.response) && size(body.response) > 0) ?
+                  [
+                    {
+                      "message": state.worklist.agents[0].with(
+                        {
+                          "policy_details": body.response,
+                        }
+                      ).encode_json(),
+                    },
+                  ]
+                :
+                  [
+                    {
+                      // Include only the agent response in the final object if the policy details for the groupid are null.
+                      "message": state.worklist.agents[0].encode_json(),
+                    },
+                  ],
+                "worklist": {
+                  "agents": tail(state.worklist.agents),
+                },
+                "want_more": size(state.worklist.agents) > 1,
+                "api_key": state.api_key,
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST " + state.url.trim_right("/") + "/v1/group/policies?groupid=" + string(state.worklist.agents[0].groupid) + " " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "api_key": state.api_key,
+            }
+          )
+        :
+          {
+            // Include only the agent response in the final object if the groupid field is missing in the response from the /v1/agent/find API.
+            "events": [
+              {
+                "message": state.worklist.agents[0].encode_json(),
+              },
+            ],
+            "worklist": {
+              "agents": tail(state.worklist.agents),
+            },
+            "want_more": size(state.worklist.agents) > 1,
+            "api_key": state.api_key,
+          }
+      )
+    :
+      {
+        "events": [],
+        "want_more": false,
+        "api_key": state.api_key,
+      }
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
