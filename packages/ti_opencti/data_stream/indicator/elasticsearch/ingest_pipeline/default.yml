@@ -6,9 +6,10 @@ processors:
   # Send errors from CEL to the failure handler #
   ###############################################
 
-  - fail:
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null
-      message: "Error during CEL program evaluation"
+      description: error message set and no data to process.
 
   ####################
   # Event ECS fields #
@@ -885,6 +886,33 @@ processors:
         ctx.threat.indicator.containsKey('x509') ||
         false
       allow_duplicates: false
+
+  - script:
+      tag: remove-nulls
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
 
 ###################
 # Failure handler #

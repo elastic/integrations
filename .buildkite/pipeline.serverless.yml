@@ -95,13 +95,16 @@ steps:
     continue_on_failure: true
 
   - label: ":junit: Junit annotate"
+    agents:
+      # requires at least "bash", "curl" and "git"
+      image: "docker.elastic.co/ci-agent-images/buildkite-junit-annotate:1.0"
     plugins:
-      - junit-annotate#v2.5.0:
+      - junit-annotate#v2.7.0:
           artifacts: "build/test-results/*.xml"
           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
           report-skipped: true
-    agents:
-      provider: "gcp"  # junit plugin requires docker
+          always-annotate: true
+          run-in-docker: false
 
   - label: ":github: Report failed tests"
     key: report-failed-tests
@@ -110,6 +113,8 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
     # not fail build if this step fails
     soft_fail: true
     # run this step when if it is triggered by the daily job

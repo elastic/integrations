@@ -1,7 +1,9 @@
 # Network Beaconing Identification
 
 The Network Beaconing Identification package consists of a framework to identify beaconing activity in your environment. The framework surfaces significant indicators of compromise (IoCs) for threat hunters and analysts to use as a starting point for an investigation in addition to helping them monitor network traffic for beaconing activities. 
-This package is licensed under Elastic License 2.0. 
+This package is licensed under Elastic License 2.0.
+
+This package leverages event logs on Linux, macOS, and Windows. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
 For more detailed information refer to the following blog:
 - [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
@@ -17,6 +19,10 @@ For more detailed information refer to the following blog:
         - Select **Show Advanced settings** and enable **Allow hidden and system indices**
 	    - Custom data view ID: `ml_beaconing`
 
+    _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
+    ![Dashboard Error](../img/dashboard-error-beaconing.png)
+1. **Enable detection rules**: You can also enable detection rules to alert on beaconing activity in your environment, based on events flagged by this package. These rules are available as part of the Detection Engine, and can be found using the tag `Use Case: C2 Beaconing Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
+
 ![Data Exfiltration Detection Rules](../img/beaconingrules.png)
 *In Security > Rules, filtering with the “Use Case: C2 Beaconing Detection” tag*
 
@@ -24,9 +30,9 @@ For more detailed information refer to the following blog:
 
 To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
 
-| Transform name            | Purpose| 	Source index  | Destination index       | Alias |
-|---------------------------|--------|----------------|-------------------------|------------|
-| beaconing.pivot_transform |	Flags beaconing activity in your environment| 	logs-*        | 	ml_beaconing-[version] | ml_beaconing.all |
+| Transform name            | Purpose                                      | Source index | Destination index       | Alias            | Supported Platforms   |
+|---------------------------|----------------------------------------------|--------------|-------------------------|------------------|-----------------------|
+| beaconing.pivot_transform | Flags beaconing activity in your environment | logs-*       | ml_beaconing-[version]  | ml_beaconing.all | Linux, macOS, Windows |
 
 When querying the destination index to enquire about beaconing activities, we advise using the alias for the destination index (`ml_beaconing.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings.
 

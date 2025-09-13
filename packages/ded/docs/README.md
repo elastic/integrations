@@ -2,6 +2,8 @@
 
 The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network and file data. Data Exfiltration Detection package currently supports only unidirectional flows and does not yet accommodate bi-directional flows. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
+This package leverages event logs. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information. The transform only supports Linux and Windows. The **Anomaly Detection Jobs** section outlines platform support for each job.
+
 For more detailed information refer to the following blog:
 - [Detect data exfiltration activity with Kibana’s new integration](https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration)
 
@@ -10,12 +12,12 @@ For more detailed information refer to the following blog:
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Data Exfiltration Detection**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Install assets**: Install the assets by clicking **Settings > Install Data Exfiltration Detection assets**.
 1. **Check the health of the transform**: The transform is scheduled to run every 30 minutes. This transform creates the index `ml_network_ded-<VERSION>`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`. Follow the instructions under the header `Customize Data Exfiltration Detection Transform` below to adjust filters based on your environment's needs.
-1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file events (`logs-endpoint.events.file-*`), and the other index (`ml_network_ded.all`) collects network logs from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
+1. **Create data views for anomaly detection jobs**: This package contains anomaly detection jobs that work on network events (e.g. `logs-endpoint.events.network-*`) and file events (`logs-endpoint.events.file-*`) respectively. See the _Anomaly Detection Jobs_ section below for more details. _Tip: If you only have one of the above data sources (network or file), you can only follow the steps pertaining to that index._ A separate designated index (`ml_network_ded.all`) collects network logs from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
     1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
-    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-endpoint.events.file-*, ml_network_ded.all`, and copy the same in the **Name** field.
+    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-endpoint.events.file-*`, `logs-endpoint.events.network-*` (depending which one(s) you have), `ml_network_ded.all`, and copy the same in the **Name** field.
     1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
-    1. Use the new data view (`logs-endpoint.events.file-*, ml_network_ded.all`) to create anomaly detection jobs for this package.
-1. **Add preconfigured anomaly detection jobs**: In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for **Data Exfiltration Detection**. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10). For example, this would be available in `logs-endpoint.events.*` if you used Elastic Defend to collect events.
+    1. Use the new data view (`logs-endpoint.events.network-*`, `logs-endpoint.events.file-*`, `ml_network_ded.all`) to create anomaly detection jobs for this package.
+1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see **Data Exfiltration Detection**. If you do not see this card, events must be ingested from a source that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10), such as Elastic Defend. When you select the card, you will see pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. If you are using Elastic Defend to collect events, file events are in `logs-endpoint.events.file-*` and network events in `logs-endpoint.events.network-*`. If you are only collecting file or network events, select only the relevant jobs at this step.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana. 
     1. You have started the above anomaly detection jobs.
     1. You have **read** access to `.ml-anomalies-shared` index or are assigned the `machine_learning_user` role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
@@ -24,6 +26,9 @@ For more detailed information refer to the following blog:
         - Index pattern : `.ml-anomalies-shared`
         - Select **Show Advanced settings** enable **Allow hidden and system indices**
         - Custom data view ID: `.ml-anomalies-shared`
+
+    _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
+    ![Dashboard Error](../img/dashboard-ded-error.png)
 1. **Enable detection rules**: You can also enable detection rules to alert on Data Exfiltration activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Data Exfiltration Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ![Data Exfiltration Detection Rules](../img/dedrules.png)
@@ -52,27 +57,28 @@ To customize filters in the Data Exfiltration Detection transform, follow the be
 1. Lastly, select the **Create and Start** option. Your updated transform will now start collecting data. **Note:** Do not forget to update your data view based on the new **Destination index** you have just created.
 ![Data Exfiltration Detection Rules](../img/ded_transform_4.png)
 
-The transform applies only to network data and does not currently support macOS network logs. 
+The transform applies only to network data and does not currently support macOS network logs.
+
 ## Dashboard
 
 After the data view for the dashboard is configured, the **Data Exfiltration Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the data exfiltration detection package.
 
 ### Anomaly Detection Jobs
 
-| Job                                                  | Description                                                                                                        | Supported OS   |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------- |
-| ded_high_sent_bytes_destination_geo_country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows |
-| ded_high_sent_bytes_destination_ip                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows |
-| ded_high_sent_bytes_destination_port                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows |
-| ded_high_sent_bytes_destination_region_name          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows |
-| ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows        |
-| ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows        |
-| ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS          |
+| Job                                                  | Description                                                                                                        | Supported Platform | Event Category |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------ | ----- |
+| ded_high_sent_bytes_destination_geo_country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     | network |
+| ded_high_sent_bytes_destination_ip                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     | network |
+| ded_high_sent_bytes_destination_port                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows     | network |
+| ded_high_sent_bytes_destination_region_name          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows     | network |
+| ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            | file |
+| ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            | file |
+| ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              | file |
 
 ## v2.0.0 and beyond
 
 v2.0.0 of the package introduces breaking changes, namely deprecating detection rules from the package. To continue receiving updates to Data Exfiltration Detection, we recommend upgrading to v2.0.0 after doing the following:
-- Delete existing ML jobs: Navigate to **Machine Learning > Anomaly Detection** and delete jobs corresponding to the following IDs:
+- Delete existing ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete jobs corresponding to the following IDs:
     - high-sent-bytes-destination-geo-country_iso_code
     - high-sent-bytes-destination-ip
     - high-sent-bytes-destination-port

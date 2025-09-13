@@ -301,6 +301,25 @@ processors:
       field: json.alerts.determination
       target_field: m365_defender.incident.alert.determination
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops empty string values recursively.
+      tag: painless_remove_empty_from_evidence
+      if: ctx.json?.alerts?.evidence != null
+      source: |-
+        boolean drop(Object object) {
+          if (object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx.json.alerts.evidence);
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
@@ -1685,6 +1704,62 @@ processors:
           value: '{{{_ingest._value.process.command_line}}}'
           allow_duplicates: false
           ignore_failure: true
+  - script:
+      lang: painless
+      tag: set_process_name_from_command_line
+      description: Set process.name from process.command_line.
+      source: |
+        ctx.process = ctx.process ?: [:];
+        ctx.process.name = ctx.process.name ?: [];
+        // Normalize process.name to a list
+        def nameList = [];
+        if (ctx.process.name != null) {
+          if (ctx.process.name instanceof String) {
+            nameList.add(ctx.process.name);
+          } else if (ctx.process.name instanceof List) {
+            nameList.addAll(ctx.process.name);
+          }
+        }
+
+        // Deduplication using HashSet
+        def currentNames = new HashSet();
+        currentNames.addAll(nameList);
+        // Handle process.command_line (string or list)
+        if (ctx.process.command_line != null) {
+          // Convert string to list for unified handling
+          def cmdList = [];
+          if (ctx.process.command_line instanceof String) {
+            cmdList.add(ctx.process.command_line);
+          } else if (ctx.process.command_line instanceof List) {
+            cmdList.addAll(ctx.process.command_line);
+          }
+          for (cmd in cmdList) {
+            if (cmd != null && cmd.length() > 0) {
+              // Extract the first token
+              def parts = cmd.trim().splitOnToken(" ");
+              if (parts.length > 0) {
+                def executable = parts[0];
+                // If executable is a path, take only the last part
+                if (executable.contains("/")) {
+                  def slashParts = executable.splitOnToken("/");
+                  executable = slashParts[slashParts.length - 1];
+                }
+                executable = /\"/.matcher(executable).replaceAll("");
+                currentNames.add(executable);
+              }
+            }
+          }
+        }
+        // Update process.name with unique list
+        if (currentNames != null && currentNames.size() == 1) {
+          ctx.process.name = currentNames.iterator().next();
+        } else {
+          ctx.process.name = new ArrayList(currentNames);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List

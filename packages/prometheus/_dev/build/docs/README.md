@@ -144,12 +144,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Prometheus Server Remote-Write
 
-The Prometheus `remote_write` can receive metrics from a Prometheus server that
-has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
+The Prometheus `remote_write` can receive metrics from a Prometheus server that has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 setting accordingly, for instance:
+
 ```yml
 remote_write:
-  - url: "http://localhost:9201/write"
+  - url: "http://example.com:9201/write"
 ```
 
 In Kubernetes, a Service resource should also be created:
@@ -178,8 +178,7 @@ remote_write:
   - url: "http://elastic-agent.kube-system:9201/write"
 ```
 
-> TIP: In order to assure the health of the whole queue, the following configuration
- [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
+> TIP: In order to assure the health of the whole queue, the following configuration [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
 
 - `max_shards`: Sets the maximum number of parallelism with which Prometheus will try to send samples to Elastic Agent.
 It is recommended that this setting should be equal to the number of cores of the machine where Elastic Agent runs.
@@ -197,7 +196,7 @@ be able to cover `max_samples_per_send`.
 configuration. It is a relabeling, that applies to samples before sending them to the remote endpoint. Example:
 ```
 remote_write:
-  - url: "http://localhost:9201/write"
+  - url: "http://example.com:9201/write"
     write_relabel_configs:
       - source_labels: [job]
         regex: 'prometheus'
@@ -211,8 +210,6 @@ A basic configuration would look like:
 host: "localhost"
 port: "9201"
 ```
-
-
 Also consider using secure settings for the server, configuring the module with TLS/SSL as shown:
 
 ```yml
@@ -221,12 +218,11 @@ ssl.certificate: "/etc/pki/server/cert.pem"
 ssl.key: "/etc/pki/server/cert.key"
 port: "9201"
 ```
-
 and on Prometheus side:
 
 ```yml
 remote_write:
-  - url: "https://localhost:9201/write"
+  - url: "http://example.com:9201/write"
     tls_config:
         cert_file: "/etc/prometheus/my_key.pem"
         key_file: "/etc/prometheus/my_key.key"
