@@ -109,32 +109,100 @@
       description: Is high-water mark breached
       example: false
 
-    # - name: memory
-    #   type: group
-    #   fields:
-    #     - name: used
-    #       type: group
-    #       fields:
-    #         - name: data
-    #           type: object
-    #           description: Memory used by data
-    #           dimension: false
-    #           example: null
-    #         - name: index
-    #           type: object
-    #           description: Memory used by index
-    #           dimension: false
-    #           example: null
-    #         - name: sindex
-    #           type: object
-    #           description: Memory used by sindex
-    #           dimension: false
-    #           example: null
-    #         - name: total
-    #           type: object
-    #           description: Total memory used
-    #           dimension: false
-    #           example: null
+    - name: memory
+      type: group
+      fields:
+        - name: used
+          type: group
+          fields:
+            - name: data
+              type: group
+              dimension: false
+              fields:
+                - name: bytes
+                  type: long
+                  description: Amount of memory occupied by data (Available in Aerospike 6.x or below)
+                  metric_type: gauge
+                  unit: byte
+                  example: 4194304
+            - name: index
+              type: group
+              dimension: false
+              fields:
+                - name: bytes
+                  type: long
+                  description: Amount of memory occupied by the index for this namespace (Available in Aerospike 6.x or below)
+                  metric_type: gauge
+                  unit: byte
+                  example: 4194304
+            - name: sindex
+              type: group
+              dimension: false
+              fields:
+                - name: bytes
+                  type: long
+                  description: Amount of memory occupied by secondary indexes for this namespace on this node (Available in Aerospike 6.x or below)
+                  metric_type: gauge
+                  unit: byte
+                  example: 4194304
+            - name: total
+              type: group
+              dimension: false
+              fields:
+                - name: bytes
+                  type: long
+                  description: Total bytes of memory used by this namespace on this node (Available in Aerospike 6.x or below)
+                  metric_type: gauge
+                  unit: byte
+                  example: 4194304
+
+    - name: device
+      type: group
+      fields:
+        - name: available
+          type: group
+          fields:
+            - name: pct
+              type: scaled_float
+              description: Measures the minimum contiguous disk space across all devices in a namespace (Available in Aerospike 6.x or below  )
+              dimension: false
+              metric_type: gauge
+              unit: percent
+              example: 76.5
+
+        - name: free
+          type: group
+          fields:
+            - name: pct
+              type: scaled_float
+              description: Percentage of disk capacity free for this namespace. (Available in Aerospike 6.x or below)
+              dimension: false
+              metric_type: gauge
+              unit: percent
+              example: 76.5
+
+        - name: used
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Total bytes of disk space used by this namespace on this node. (Available in Aerospike 6.x or below)
+              dimension: false
+              metric_type: gauge
+              unit: byte
+              example: 1234567890
+
+
+        - name: total
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Total bytes of disk space allocated to this namespace on this node. (Available in Aerospike 6.x or below)
+              dimension: false
+              metric_type: gauge
+              unit: byte
+              example: 1234567890
 
     - name: objects
       type: group
