@@ -1,0 +1,119 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  batch_size: {{batch_size}}
+  offset: 0
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+redact:
+  fields:
+    - api_key
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+        "end_time": now.format(time_layout.RFC3339),
+      })
+  ).as(state,
+    state.url.trim_right("/").as(base_url, state.with(
+      request(
+        "GET",
+        base_url + "/api/external/v1/timeline?" + {
+          "Offset": [string(state.offset)],
+          "Limit": [string(state.batch_size)],
+          "Start": [string(state.start_time)],
+          "End": [string(state.end_time)],
+        }.format_query()
+      ).with({
+        "Header":{
+          "api-key": [state.api_key],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, {
+          "events": (size(body.events) != 0) ?
+            body.events.map(e,{
+              "message": e.encode_json(),
+            })
+          :
+            [{
+              "message": "retry"
+            }],
+          "offset": body.?events[0].hasValue() ? int(state.offset) + body.events.size() : 0,
+          "want_more": body.?events[0].hasValue(),
+          "cursor": {
+            ?"max_modified_time": (size(body.events) != 0) ?
+              (
+                has(state.?cursor.max_modified_time) ?
+                  optional.of(
+                    max([
+                      state.cursor.max_modified_time.parse_time("2006-01-02T15:04:05.000Z"),
+                      body.events.map(e, e.timestamp).map(t, timestamp(t)).max()
+                    ]).format("2006-01-02T15:04:05.000Z")
+                  )
+                :
+                  optional.of(body.events.map(e, e.timestamp).map(t, timestamp(t)).max().format("2006-01-02T15:04:05.000Z"))
+              )
+            :
+              state.?cursor.max_modified_time,
+            ?"last_timestamp": (size(body.events) == 0) ?
+              state.?cursor.max_modified_time
+            :
+              state.?cursor.last_timestamp,
+          }
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + base_url + "/api/external/v1/timeline: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    ))
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+  {{processors}}
+{{/if}}

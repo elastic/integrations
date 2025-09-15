@@ -1,0 +1,103 @@
+title: Collect Audit logs from Island Browser.
+type: logs
+streams:
+  - input: cel
+    title: Island Browser Audit Logs
+    description: Collect Island Browser Audit Logs.
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: How far back to pull the audit events from Island Browser API. Supported units for this parameter are h/m/s.
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Island Browser API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 30m
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Page size for the response of the Island Browser API. Maximum allowed value is 100.
+        multi: false
+        required: true
+        show_user: false
+        default: 100
+      - name: resource_rate_limit_limit
+        type: text
+        title: Resource Rate Limit
+        default: "0.01"
+        description: In requests per second. This controls polling frequency.
+        show_user: false
+        multi: false
+        required: true
+      - name: resource_rate_limit_burst
+        type: integer
+        title: Resource Rate Limit Burst
+        default: 1
+        description: In requests. The maximum number of requests that can be immediately made following an idle period.
+        show_user: false
+        multi: false
+        required: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        default: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field event.original.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data-stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - island_browser-audit
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: preserve_duplicate_custom_fields
+        required: false
+        title: Preserve duplicate custom fields
+        description: Preserve island_browser.audit fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.
