@@ -1333,7 +1333,8 @@ An example event for `vulnerability` looks as following:
         "score": {
             "base": 5.5
         },
-        "severity": "MEDIUM"
+        "severity": "MEDIUM",
+        "title": "Vulnerability found - CVE-2020-3333"
     },
     "wiz": {
         "vulnerability": {
