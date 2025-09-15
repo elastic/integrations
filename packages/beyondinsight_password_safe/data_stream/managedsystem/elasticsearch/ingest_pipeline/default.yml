@@ -1,193 +1,212 @@
 ---
-description: Pipeline for processing BeyondInsight and Password Safe Managed Systems logs.
+description: Pipeline for processing BeyondTrust Password Safe Managed Systems.
 processors:
+  - set:
+      field: ecs.version
+      value: '9.1.0'
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      description: >-
+        This API does does not have a cursor.
+        The integration collects all assets on each execution.
+        The fingerprint prevents some duplication of managed system records that have not changed.
       fields:
         - event.original
       target_field: _id
   - json:
-      field: event.original
       tag: json_event_original
+      field: event.original
       target_field: beyondinsight_password_safe.managedsystem
-
-####################
-# Scripts for processing input #
-####################
   - script:
-      description: Drops null/empty values recursively.
+      description: Remove null values and empty strings from beyondinsight_password_safe.managedsystem.
       lang: painless
       source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
-
-  - rename:
-      field: beyondinsight_password_safe.managedsystem.IPAddress
-      target_field: beyondinsight_password_safe.managedsystem.ip_address
-      ignore_missing: true
-  - rename:
-      field: beyondinsight_password_safe.managedsystem.DNSName
-      target_field: beyondinsight_password_safe.managedsystem.dns_name
-      ignore_missing: true
-  - rename:
-      field: beyondinsight_password_safe.managedsystem.ISAReleaseDuration
-      target_field: beyondinsight_password_safe.managedsystem.isa_release_duration
-      ignore_missing: true
+        ctx.beyondinsight_password_safe.managedsystem.entrySet().removeIf(entry ->
+          entry.getValue() == null ||
+          (entry.getValue() instanceof String && entry.getValue().isEmpty())
+        );
   - script:
-      description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
-      lang: painless
+      tag: script_numeric_id_to_string
+      description: Convert numeric ID fields to strings.
+      params:
+        numeric_ids:
+          - ApplicationHostID
+          - AssetID
+          - CloudID
+          - DatabaseID
+          - DirectoryID
+          - DSSKeyRuleID
+          - EntityTypeID
+          - FunctionalAccountID
+          - LoginAccountID
+          - ManagedSystemID
+          - PasswordRuleID
+          - PlatformID
+          - SshKeyEnforcementMode
+          - WorkgroupID
       source: |
-        Map keysToSnakeCase(Map m) {
-          def regex = /_?([a-z])([A-Z]+)/;
-          def snakeCaseMap = [:];
-
-          for (entry in m.entrySet()) {
-            def k = entry.getKey();
-            def v = entry.getValue();
-
-            if (v instanceof Map) {
-              v = keysToSnakeCase(v);
-            } else if (v instanceof List) {
-              for (int i = 0; i < v.size(); i++) {
-                def item = v.get(i);
-                if (item instanceof Map) {
-                  v.set(i, keysToSnakeCase(item));
-                }
-              }
-            }
-
-            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
-            snakeCaseMap.put(k, v);
+        for (field in params.numeric_ids) {
+          def value = ctx.beyondinsight_password_safe.managedsystem[field];
+          if (value instanceof Number) {
+            ctx.beyondinsight_password_safe.managedsystem[field] =
+              Integer.toString(value.intValue());
           }
-          return snakeCaseMap;
         }
-
-        if (ctx.beyondinsight_password_safe.managedsystem != null) {
-          ctx.beyondinsight_password_safe.managedsystem = keysToSnakeCase(ctx.beyondinsight_password_safe.managedsystem);
+  - script:
+      tag: script_camel_to_snake_naming
+      description: Rename CapitalCamelCase-ish fields to lower_snake_case.
+      params:
+        field_mappings:
+          AccessURL: access_url
+          AccountNameFormat: account_name_format
+          ApplicationHostID: application_host_id
+          AssetID: asset_id
+          AutoManagementFlag: auto_management_flag
+          ChangeFrequencyDays: change_frequency_days
+          ChangeFrequencyType: change_frequency_type
+          ChangePasswordAfterAnyReleaseFlag: change_password_after_any_release_flag
+          ChangeTime: change_time
+          CheckPasswordFlag: check_password_flag
+          CloudID: cloud_id
+          ContactEmail: contact_email
+          DNSName: dns_name
+          DSSKeyRuleID: dss_key_rule_id
+          DatabaseID: database_id
+          Description: description
+          DirectoryID: directory_id
+          ElevationCommand: elevation_command
+          EntityTypeID: entity_type_id
+          ForestName: forest_name
+          FunctionalAccountID: functional_account_id
+          HostName: host_name
+          IPAddress: ip_address
+          ISAReleaseDuration: isa_release_duration
+          InstanceName: instance_name
+          IsApplicationHost: is_application_host
+          IsDefaultInstance: is_default_instance
+          LoginAccountID: login_account_id
+          ManagedSystemID: managed_system_id
+          MaxReleaseDuration: max_release_duration
+          NetBiosName: net_bios_name
+          OracleInternetDirectoryID: oracle_internet_directory_id
+          OracleInternetDirectoryServiceName: oracle_internet_directory_service_name
+          PasswordRuleID: password_rule_id
+          PlatformID: platform_id
+          Port: port
+          ReleaseDuration: release_duration
+          RemoteClientType: remote_client_type
+          ResetPasswordOnMismatchFlag: reset_password_on_mismatch_flag
+          SshKeyEnforcementMode: ssh_key_enforcement_mode
+          SystemName: system_name
+          Template: template
+          Timeout: timeout
+          UseSSL: use_ssl
+          WorkgroupID: workgroup_id
+      source: |
+        Map renamedFields = [:];
+        for (entry in ctx.beyondinsight_password_safe.managedsystem.entrySet()) {
+          def originalKey = entry.getKey();
+          def snakeKey = params.field_mappings[originalKey];
+          if (snakeKey != null) {
+            renamedFields[snakeKey] = entry.getValue();
+          } else {
+            renamedFields[originalKey] = entry.getValue();
+          }
         }
-
-
-####################
-# ECS Fields #
-####################
-  - set:
-      field: ecs.version
-      value: '8.11.0'
-
+        ctx.beyondinsight_password_safe.managedsystem = renamedFields;
   - set:
       field: event.kind
       value: asset
-
   - append:
       field: event.category
       value: iam
-
   - append:
       field: event.type
       value: info
-
-
   - set:
-      field: host.name
+      if: ctx.beyondinsight_password_safe?.managedsystem?.host_name != null
+      field: host.hostname
       copy_from: beyondinsight_password_safe.managedsystem.host_name
-
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.managedsystem.host_name}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedsystem.host_name != null
-
   - set:
-      field: host.domain
+      if: ctx.beyondinsight_password_safe?.managedsystem?.dns_name != null
+      field: host.name
       copy_from: beyondinsight_password_safe.managedsystem.dns_name
-      if: ctx.beyondinsight_password_safe.managedsystem.dns_name != null
-
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.managedsystem.dns_name}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedsystem.dns_name != null
-
+  - gsub:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.dns_name != null
+      field: beyondinsight_password_safe.managedsystem.dns_name
+      target_field: host.domain
+      pattern: '^[^.]+\.'
+      replacement: ''
+      ignore_failure: true
   - set:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.contact_email != null
       field: user.email
       copy_from: beyondinsight_password_safe.managedsystem.contact_email
-      if: ctx.beyondinsight_password_safe.managedsystem.contact_email != null
-
-  - append:
-      field: related.user
-      value: '{{beyondinsight_password_safe.managedsystem.contact_email}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedsystem.contact_email != null
-
   - set:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.access_url != null
       field: url.full
-      value: '{{{beyondinsight_password_safe.managedsystem.access_url}}}'
-      if: ctx.beyondinsight_password_safe.managedsystem.access_url != null
-
-  - convert:
-      field: beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode
-      type: string
-      if: ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null
-
+      copy_from: beyondinsight_password_safe.managedsystem.access_url
   - script:
-      description: Convert ssh_key_enforcement_mode to their text meaning
+      tag: script_ssh_key_enforcement_mode_enum
+      if: ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null
+      description: Convert ssh_key_enforcement_mode to its text meaning.
       lang: painless
       params:
         descriptions:
           "0": "None"
           "1": "Auto"
           "2": "Strict"
-      if: ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null
       source: |
         def description = params.descriptions.get(ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode);
         if (description != null) {
           ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = description;
         }
-
- #################### Override host.ip ######################
   - gsub:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
       description: Remove leading zeros from IP address octets.
       field: beyondinsight_password_safe.managedsystem.ip_address
       pattern: "\\b0+(\\d)"
       replacement: "$1"
   - convert:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
       field: beyondinsight_password_safe.managedsystem.ip_address
       type: ip
       on_failure:
         - remove:
             field: beyondinsight_password_safe.managedsystem.ip_address
   - append:
-      if: ctx.beyondinsight_password_safe?.managedsystem.ip_address != null
+      if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
       field: host.ip
-      value: "{{{beyondinsight_password_safe.managedsystem.ip_address}}}"
-      allow_duplicates: false
-  - append:
-      if: ctx.beyondinsight_password_safe?.managedsystem.ip_address != null
-      field: related.hosts
       value: '{{{beyondinsight_password_safe.managedsystem.ip_address}}}'
       allow_duplicates: false
-
   - geoip:
       field: host.ip
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
-
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
+      field: related.ip
+      value: '{{{beyondinsight_password_safe.managedsystem.ip_address}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.host_name != null
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedsystem.host_name}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.dns_name != null
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedsystem.dns_name}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.beyondinsight_password_safe?.managedsystem?.contact_email != null
+      field: related.user
+      value: '{{{beyondinsight_password_safe.managedsystem.contact_email}}}'
+      allow_duplicates: false
 on_failure:
   - set:
       field: event.kind
