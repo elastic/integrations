@@ -1750,6 +1750,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | kafka.producer.io_wait | The producer I/O wait time. | float | nanos | gauge |
 | kafka.producer.mbean | Mbean that this event is related to. | keyword |  |  |
 | kafka.producer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
+| kafka.producer.node_id |  | keyword |  |  |
 | kafka.producer.out.bytes_per_sec | The rate of bytes going out for the producer. | float | byte | gauge |
 | kafka.producer.record_error_rate | The average number of retried record sends per second. | float |  | gauge |
 | kafka.producer.record_retry_rate | The average number of retried record sends per second. | float |  | gauge |
