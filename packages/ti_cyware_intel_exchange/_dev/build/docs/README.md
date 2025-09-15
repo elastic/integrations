@@ -8,11 +8,11 @@ The Cyware Intel Exchange integration for Elastic allows you to collect logs usi
 
 ### Compatibility
 
-The Cyware Intel Exchange integration is compatible with `v3` version.
+The Cyware Intel Exchange integration is compatible with CTIX API version `v3`.
 
 ### How it works
 
-This integration periodically queries the CTIX API to retrieve IOC indicators.
+This integration periodically queries the [CTIX API](https://ctixapiv3.cyware.com/intel-exchange-api-reference) to retrieve Indicators of Compromise (IOCs).
 
 ## What data does this integration collect?
 
@@ -39,8 +39,8 @@ To collect data from the CTIX APIs, ensure that you have `Create` and `Update` p
 1. Go to **Administration** > **Integration Management**.
 2. In **Third Party Developers**, click **CTIX Integrators**.
 3. Click **Add New**. Enter the following details:
-   - **Name**: Enter a unique name for the API credentials within 50 characters.
-   - **Description**: Enter a description for the credentials within 1000 characters.
+   - **Name**: Enter a unique name for the API credentials up to 50 characters long.
+   - **Description**: Enter a description for the credentials up to 1000 characters long.
    - **Expiry Date**: Select an expiry date for open API keys. To apply an expiration date for the credentials, you can select **Expires On** and select the date. To ensure the credentials never expire, you can select **Never Expire**.
 4. Click **Add New**.
 5. Click **Download** to download the API credentials in CSV format. You can also click **Copy** to copy the endpoint URL, secret key, and access ID.
@@ -128,4 +128,3 @@ Destination index is aliased to `logs-ti_cyware_intel_exchange_latest.indicator`
 #### ILM Policy
 
 To facilitate IoC expiration, source data stream-backed indices `.ds-logs-ti_cyware_intel_exchange.indicator-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_cyware_intel_exchange.indicator-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `5 days` from ingested date.
-
