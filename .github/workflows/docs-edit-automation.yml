@@ -29,7 +29,11 @@ jobs:
           PR_NUMBER=${{ github.event.pull_request.number }}
           
           # Get changed files directly from PR
-          CHANGED_DOCS=$(gh pr view $PR_NUMBER --json files -q '.files[].path' | grep '^packages/.*/_dev/build/docs/README\.md$' || true)
+          if ! PR_FILES=$(gh pr view $PR_NUMBER --json files -q '.files[].path' 2>/dev/null); then
+            echo "Error: Failed to fetch PR files"
+            exit 1
+          fi
+          CHANGED_DOCS=$(echo "$PR_FILES" | grep '^packages/.*/_dev/build/docs/README\.md$' || true)
           
           if [ -z "$CHANGED_DOCS" ]; then
             echo "no_docs_changes=true" >> $GITHUB_OUTPUT
@@ -47,7 +51,10 @@ jobs:
           fi
           
           # Get custom changelog description from PR body
-          PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""' 2>/dev/null || echo "")
+          if ! PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body // ""' 2>/dev/null); then
+            echo "Warning: Failed to fetch PR body, using default changelog description"
+            PR_BODY=""
+          fi
           
           CHANGELOG_DESC="Improve documentation"
           if [ "$CHANGE_TYPE" = "bugfix" ]; then
@@ -69,7 +76,8 @@ jobs:
           echo "changelog_desc=$CHANGELOG_DESC" >> $GITHUB_OUTPUT
           
           # Get all changed files from PR to check what's already updated
-          ALL_CHANGED_FILES=$(gh pr view $PR_NUMBER --json files -q '.files[].path')
+          # Reuse the PR_FILES we already fetched to avoid another API call
+          ALL_CHANGED_FILES="$PR_FILES"
           
           # Find packages that need updates vs already done
           PACKAGES_NEEDING_UPDATE=""
@@ -118,7 +126,7 @@ jobs:
           COMMENT="Please run these commands to update changelogs and build docs:
 
 \`\`\`bash
-for pkg in $PACKAGE_LIST; do
+for pkg in ${PACKAGE_LIST}; do
   cd packages/\$pkg
   elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP
   elastic-package build
@@ -129,7 +137,7 @@ git commit -m \"docs: update changelogs and build documentation\"
 git push
 \`\`\`
 
-Prerequisite: \`go install github.com/elastic/elastic-package@latest\`"
+Prerequisite: \`go install github.com/elastic/elastic-package@v0.114.0\`"
 
           # Add info about packages already updated
           if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
@@ -144,10 +152,10 @@ Note: These packages already updated: \`${{ steps.analyze.outputs.packages_alrea
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "${{ steps.analyze.outputs.label }},documentation"
+          echo "Please add the following labels — ${{ steps.analyze.outputs.label }},documentation"
 
       - name: Handle edge cases
-        if: steps.analyze.outputs.no_docs_changes == 'true' || (!steps.analyze.outputs.packages_needing_update && steps.analyze.outputs.packages_already_done)
+        if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -157,7 +165,7 @@ Note: These packages already updated: \`${{ steps.analyze.outputs.packages_alrea
             MESSAGE="All packages with documentation changes already have updated changelogs and manifests."
           fi
           
-          gh pr comment ${{ github.event.pull_request.number }} --body "## 📚 Documentation Status
+          echo "## 📚 Documentation Status
 
 $MESSAGE
 
