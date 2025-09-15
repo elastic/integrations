@@ -52,6 +52,9 @@ To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://d
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
 | github.active |  | boolean |
 | github.actor_id | The id of the actor who performed the action. | keyword |
 | github.actor_ip | The IP address of the entity performing the action. | ip |

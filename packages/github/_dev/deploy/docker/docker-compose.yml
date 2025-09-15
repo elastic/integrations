@@ -12,47 +12,53 @@ services:
       - http-server
       - --addr=:8080
       - --config=/files/config.yml
-
   azure-blob-storage-emulator:
     image: mcr.microsoft.com/azure-storage/azurite:latest
     command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck --disableProductStyleUrl
     ports:
       - "10000/tcp"
+    healthcheck: 
+      test: nc 127.0.0.1 10000 -z
+      interval: 10s
+      timeout: 5s
   azure-cli:
     image: mcr.microsoft.com/azure-cli
     depends_on:
-      - azure-blob-storage-emulator
+      azure-blob-storage-emulator:
+        condition: service_healthy
     volumes:
       - ./sample_logs:/sample_logs
     entrypoint: >
-      sh -c " sleep 5 && 
-      export AZURE_STORAGE_CONNECTION_STRING='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azure-blob-storage-emulator:10000/devstoreaccount1;' && 
+      sh -c " 
+      sleep 5 &&  
+      export AZURE_STORAGE_CONNECTION_STRING='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azure-blob-storage-emulator:10000/devstoreaccount1;' &&  
       az storage container create --name test-container && 
       az storage blob upload --container-name test-container --file /sample_logs/cloud-storage-data.log --name cloud-storage-data.log"
 
-  gcs-mock-service: 
-    image: golang:1.24-alpine
+  gcs-mock-service:
+    image: golang:1.24.7-alpine
     working_dir: /app
     volumes:
       - ./gcs-mock-service:/app
     ports:
-      - "4443:4443"
+      - "4443/tcp"
     healthcheck:
       test: "wget --no-verbose --tries=1 --spider http://localhost:4443/health || exit 1"
       interval: 10s
       timeout: 5s
-    command: ["go", "run", "main.go", "-host=0.0.0.0", "-port=4443"]
+    command: ["go", "run", "main.go"]
   gcs-uploader:
     image: curlimages/curl:latest
     depends_on:
-      - gcs-mock-service
+      gcs-mock-service:
+        condition: service_healthy
     volumes:
       - ./sample_logs/:/data
     entrypoint: >
-      sh -c "
-        sleep 5 &&   
-        echo 'Creating bucket...' &&
-        curl -X POST http://gcs-mock-service:4443/storage/v1/b -H 'Content-Type: application/json' -d '{\"name\": \"testbucket\"}' &&
-        echo 'Uploading cloud-storage-data.log with correct content-type...' &&
-        curl -X POST 'http://gcs-mock-service:4443/upload/storage/v1/b/testbucket/o?uploadType=media&name=cloud-storage-data.ndjson' -H 'Content-Type: application/x-ndjson' -T '/data/cloud-storage-data.log' &&
-        echo 'Upload finished. Object available in emulator.'"
+      sh -c " 
+      sleep 5 &&   
+      echo 'Creating bucket...' &&
+      curl -X POST http://gcs-mock-service:4443/storage/v1/b -H 'Content-Type: application/json' -d '{\"name\": \"testbucket\"}' && 
+      echo 'Uploading cloud-storage-data.log with correct content-type...' && 
+      curl -X POST 'http://gcs-mock-service:4443/upload/storage/v1/b/testbucket/o?uploadType=media&name=cloud-storage-data.ndjson' -H 'Content-Type: application/x-ndjson' -T '/data/cloud-storage-data.log' && 
+      echo 'Upload finished. Object available in emulator.'"

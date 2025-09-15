@@ -205,7 +205,7 @@ func handleListObjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	host := flag.String("host", "localhost", "host to listen on")
+	host := flag.String("host", "0.0.0.0", "host to listen on")
 	port := flag.String("port", "4443", "port to listen on")
 	flag.Parse()
 
