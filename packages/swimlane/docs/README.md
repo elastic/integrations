@@ -61,9 +61,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-04-23T22:17:40.362Z",
     "agent": {
-        "ephemeral_id": "134e9a56-7243-4d21-971a-2ff89abad819",
-        "id": "8fdd30a1-e5f1-4c7f-aa82-034c42c4c9c0",
-        "name": "elastic-agent-88365",
+        "ephemeral_id": "746054e4-580b-44ed-b43f-4fb8f9ba0051",
+        "id": "56fec57e-c0fe-4035-89f2-3242af12350a",
+        "name": "elastic-agent-10047",
         "type": "filebeat",
         "version": "8.17.4"
     },
@@ -79,21 +79,21 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "swimlane.audit_logs",
-        "namespace": "97938",
+        "namespace": "22282",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "8fdd30a1-e5f1-4c7f-aa82-034c42c4c9c0",
+        "id": "56fec57e-c0fe-4035-89f2-3242af12350a",
         "snapshot": false,
         "version": "8.17.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "swimlane.audit_logs",
-        "ingested": "2025-09-12T11:02:25Z",
+        "ingested": "2025-07-15T05:24:45Z",
         "kind": "event",
         "original": "{\"$type\":\"Core.Models.ElasticAudit.AuditLogSchema, Core\",\"accountId\":\"01966444-24d9-7a76-b517-3699a780b068\",\"actionType\":\"Update\",\"authenticationType\":\"JWT\",\"category\":\"Record\",\"description\":\"admin@domain.tld updated report 68095b8dce404ef1b500f7e8\",\"endpoint\":\"/app/a8FJwIi_XeE5big7m\",\"eventOutcome\":\"Success\",\"eventTime\":\"2025-04-23T22:17:40.362641Z\",\"id\":\"68095b8dce404ef1b500f7e8\",\"isAdmin\":true,\"newValue\":\"{\\\"GroupBys\\\":[],\\\"Aggregates\\\":[],\\\"ApplicationIds\\\":[\\\"a8FJwIi_XeE5big7m\\\"],\\\"Keywords\\\":null,\\\"Columns\\\":[\\\"68095b8dce404ef1b500f7e6\\\"],\\\"Sorts\\\":{\\\"68095b8dce404ef1b500f7e6\\\":1},\\\"Filters\\\":[],\\\"CountByApplicationFacet\\\":false,\\\"PageSize\\\":10,\\\"Offset\\\":0,\\\"DefaultSearchReport\\\":true,\\\"Allowed\\\":[],\\\"Permissions\\\":{},\\\"CreatedDate\\\":\\\"2025-04-23T21:28:45.686Z\\\",\\\"ModifiedDate\\\":\\\"2025-04-23T22:17:40.3466444Z\\\",\\\"CreatedByUser\\\":{\\\"Id\\\":\\\"01966448-16a7-7474-9f83-40b1dd9a2fb2\\\",\\\"Name\\\":\\\"admin@swimlane.com\\\"},\\\"ModifiedByUser\\\":{\\\"Id\\\":\\\"01966448-16a7-7474-9f83-40b1dd9a2fb2\\\",\\\"Name\\\":\\\"admin@swimlane.com\\\"},\\\"ChartOptions\\\":null,\\\"StatsDrillin\\\":null,\\\"FilterType\\\":\\\"And\\\",\\\"ColorCoding\\\":[],\\\"Uid\\\":\\\"default-6bbd7\\\",\\\"Version\\\":4,\\\"Id\\\":\\\"68095b8dce404ef1b500f7e8\\\",\\\"Name\\\":\\\"Default\\\",\\\"Disabled\\\":false}\",\"sourceIp\":[\"81.2.69.144\"],\"tenantId\":\"0196648c-68b6-78f0-9f56-e0eea2faa288\",\"user\":\"admin@domain.tld\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\",\"userId\":\"01966448-16a7-7474-9f83-40b1dd9a2fb2\"}",
         "outcome": "success",
@@ -185,9 +185,9 @@ An example event for `swimlane_api` looks as following:
 {
     "@timestamp": "2025-04-10T19:26:36.081Z",
     "agent": {
-        "ephemeral_id": "58ff8985-f039-4e2a-9b0b-bb030ceb4438",
-        "id": "a36b25fe-52f1-4683-94e9-63b9743e1468",
-        "name": "elastic-agent-37131",
+        "ephemeral_id": "5814bbee-5352-4992-8532-0beb51e09fe5",
+        "id": "69d7d16c-ed6a-4ec8-85d7-9a58c6b644e8",
+        "name": "elastic-agent-97098",
         "type": "filebeat",
         "version": "8.17.4"
     },
@@ -203,21 +203,21 @@ An example event for `swimlane_api` looks as following:
     },
     "data_stream": {
         "dataset": "swimlane.api",
-        "namespace": "94113",
+        "namespace": "95416",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a36b25fe-52f1-4683-94e9-63b9743e1468",
+        "id": "69d7d16c-ed6a-4ec8-85d7-9a58c6b644e8",
         "snapshot": false,
         "version": "8.17.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "swimlane.api",
-        "ingested": "2025-09-12T11:03:12Z",
+        "ingested": "2025-07-15T05:25:42Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -226,20 +226,20 @@ An example event for `swimlane_api` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-37131",
+        "containerized": false,
+        "hostname": "elastic-agent-97098",
         "ip": [
-            "192.168.249.2",
-            "192.168.242.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-C0-A8-F2-07",
-            "02-42-C0-A8-F9-02"
+            "BE-04-BE-91-B9-23",
+            "FA-33-80-61-9E-D2"
         ],
-        "name": "elastic-agent-37131",
+        "name": "elastic-agent-97098",
         "os": {
             "family": "",
-            "kernel": "3.10.0-1160.119.1.el7.x86_64",
+            "kernel": "6.10.14-linuxkit",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
@@ -332,29 +332,29 @@ An example event for `tenant_api` looks as following:
 {
     "@timestamp": "2025-04-09T22:09:49.893Z",
     "agent": {
-        "ephemeral_id": "c3227a0e-955b-4d59-8a9a-d14520c31dba",
-        "id": "d39716d0-ed8d-4615-a7d5-c5e471902984",
-        "name": "elastic-agent-14549",
+        "ephemeral_id": "3fe09c78-b6dd-475e-b016-10f9a9de6bea",
+        "id": "563da48e-31cc-43c2-8202-4a3817d48e83",
+        "name": "elastic-agent-95513",
         "type": "filebeat",
         "version": "8.17.4"
     },
     "data_stream": {
         "dataset": "swimlane.tenant",
-        "namespace": "38616",
+        "namespace": "76420",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d39716d0-ed8d-4615-a7d5-c5e471902984",
+        "id": "563da48e-31cc-43c2-8202-4a3817d48e83",
         "snapshot": false,
         "version": "8.17.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "swimlane.tenant",
-        "ingested": "2025-09-12T11:04:00Z",
+        "ingested": "2025-07-15T05:26:33Z",
         "kind": "event",
         "outcome": "failure",
         "type": [
@@ -363,20 +363,20 @@ An example event for `tenant_api` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-14549",
+        "containerized": false,
+        "hostname": "elastic-agent-95513",
         "ip": [
-            "192.168.240.2",
-            "192.168.242.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-C0-A8-F0-02",
-            "02-42-C0-A8-F2-07"
+            "56-B1-32-0A-8E-63",
+            "5A-39-ED-C8-CE-DC"
         ],
-        "name": "elastic-agent-14549",
+        "name": "elastic-agent-95513",
         "os": {
             "family": "",
-            "kernel": "3.10.0-1160.119.1.el7.x86_64",
+            "kernel": "6.10.14-linuxkit",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
@@ -469,9 +469,9 @@ An example event for `turbine_api` looks as following:
 {
     "@timestamp": "2025-04-10T20:32:26.677Z",
     "agent": {
-        "ephemeral_id": "204a6444-81c4-463b-906b-1589f4cec3e6",
-        "id": "4a1ee2bb-8dac-48b6-943a-992907919c96",
-        "name": "elastic-agent-78203",
+        "ephemeral_id": "3576ff0a-b7df-43af-9bd8-a5bf57bc2cf2",
+        "id": "ed5d0a88-05fc-4039-8d6d-3a8b3ca1290c",
+        "name": "elastic-agent-27143",
         "type": "filebeat",
         "version": "8.17.4"
     },
@@ -487,21 +487,21 @@ An example event for `turbine_api` looks as following:
     },
     "data_stream": {
         "dataset": "turbine.api",
-        "namespace": "78136",
+        "namespace": "50763",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "4a1ee2bb-8dac-48b6-943a-992907919c96",
+        "id": "ed5d0a88-05fc-4039-8d6d-3a8b3ca1290c",
         "snapshot": false,
         "version": "8.17.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "turbine.api",
-        "ingested": "2025-09-12T11:04:50Z",
+        "ingested": "2025-07-15T05:27:22Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -510,20 +510,20 @@ An example event for `turbine_api` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-78203",
+        "containerized": false,
+        "hostname": "elastic-agent-27143",
         "ip": [
-            "192.168.244.2",
-            "192.168.242.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-C0-A8-F2-07",
-            "02-42-C0-A8-F4-02"
+            "2A-47-79-C2-78-65",
+            "9A-4A-F1-87-EA-4B"
         ],
-        "name": "elastic-agent-78203",
+        "name": "elastic-agent-27143",
         "os": {
             "family": "",
-            "kernel": "3.10.0-1160.119.1.el7.x86_64",
+            "kernel": "6.10.14-linuxkit",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
