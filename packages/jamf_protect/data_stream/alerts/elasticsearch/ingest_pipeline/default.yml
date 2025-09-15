@@ -48,7 +48,7 @@ processors:
         value: file
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPDownloadEvent'
     - script:
-        if: >
+        if: >-
           ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
           ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
           ctx.jamf_protect.alerts.input.match.facts[0].name != null
@@ -59,7 +59,7 @@ processors:
           }
           ctx.rule.name = ctx.jamf_protect.alerts.input.match.facts[0].name
     - script:
-        if: >
+        if: >-
           ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
           ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
           ctx.jamf_protect.alerts.input.match.facts[0].human != null
@@ -72,32 +72,40 @@ processors:
     - script:
         description: Populates event.action with the name of the event
         lang: painless
+        if: >-
+          ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List &&
+          ctx.jamf_protect.alerts.input.match.facts.size() > 0 &&
+          ctx.jamf_protect.alerts.input.match.facts[0].containsKey('name')
         source: >
-          if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-            if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('name')) {
-              ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
-            }
-          }
+            ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
         ignore_failure: true
     - script:
         description: Populates event.reason with the name of the event
         lang: painless
+        if: >-
+          ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List &&
+          ctx.jamf_protect.alerts.input.match.facts.size() > 0 &&
+          ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')
         source: >
-          if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-            if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')) {
-              ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
-            }
-          }
+          ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
         ignore_failure: true
     - script:
         description: Populates event.tags with tags from the event
         lang: painless
+        if: >-
+          ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List &&
+          ctx.jamf_protect.alerts.input.match.facts.size() > 0 &&
+          ctx.jamf_protect.alerts.input.match.facts[0].tags instanceof List
         source: >
-          if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-            if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('tags')) {
-              ctx.tags = ctx.jamf_protect.alerts.input.match.facts[0].tags;
-            }
+          if (!(ctx.tags instanceof List) || ctx.tags.size() == 0) {
+            ctx.tags = ctx.jamf_protect.alerts.input.match.facts[0].tags;
+            return;
+          } 
+          HashSet tags = new HashSet(ctx.tags);
+          for (def t: ctx.jamf_protect.alerts.input.match.facts[0].tags) {
+            tags.add(t);
           }
+          ctx.tags = tags;
         ignore_failure: true
     - rename:
         field: jamf_protect.alerts.input.match.uuid
