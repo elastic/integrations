@@ -38,9 +38,9 @@ program: |
       "events": has(body.data) && size(body.data) > 0 ?
         // Create an event for each control with its parent's field.
         body.data.map(result,
-          result.controls.map(con, {
-            "message": result.with({"control": con}).drop("controls").encode_json()
-          })
+          result.controls.as(controls, result.drop("controls").as(result, controls.map(con, {
+            "message": result.with({"control": con}).encode_json()
+          })))
         ).flatten()
       :
         [],
