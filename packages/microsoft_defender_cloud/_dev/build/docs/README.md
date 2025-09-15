@@ -18,11 +18,11 @@ For the **assessment** data stream, the `/assessments` endpoint retrieves all av
 
 This integration collects log messages of the following types:
 
-- `Event`: allows users to preserve a record of security events that occurred on the subscription, which includes real-time events that affect the security of the user's environment. For further information connected to security alerts and type, Refer to the page [here](https://learn.microsoft.com/en-us/azure/defender-for-cloud/alerts-reference).
-- `Assessment`: collect security assessments on all your scanned resources inside a scope via [Assessments endpoint](https://learn.microsoft.com/en-us/rest/api/defenderforcloud-composite/assessments/list?view=rest-defenderforcloud-composite-latest&tabs=HTTP) & [Sub Assessments endpoint](https://learn.microsoft.com/en-us/rest/api/defenderforcloud-composite/sub-assessments/list?view=rest-defenderforcloud-composite-latest&tabs=HTTP).
+- `Event`: allows users to preserve a record of security events that occurred on the subscription, which includes real-time events that affect the security of the user's environment. For further information connected to security alerts and type, refer to the [security alerts reference guide](https://learn.microsoft.com/en-us/azure/defender-for-cloud/alerts-reference).
+- `Assessment`: collect security assessments on all your scanned resources inside a scope from the [Assessments](https://learn.microsoft.com/en-us/rest/api/defenderforcloud-composite/assessments/list?view=rest-defenderforcloud-composite-latest&tabs=HTTP) and [Sub Assessments](https://learn.microsoft.com/en-us/rest/api/defenderforcloud-composite/sub-assessments/list?view=rest-defenderforcloud-composite-latest&tabs=HTTP) endpoints.
 
 ### Supported use cases
-Integrating Microsoft Defender for Cloud with Elastic SIEM provides advanced threat protection and security assessments for your cloud services. It monitors security events in real-time, offers actionable recommendations to improve your security posture, and helps ensure compliance with industry standards. Leveraging Defender for Cloud integration allows organizations to enhance their cloud security and mitigate potential risks.
+Integrating Microsoft Defender for Cloud with Elastic SIEM provides advanced threat protection and security assessments for your cloud services. It monitors security events in real time, offers actionable recommendations to improve your security posture, and helps ensure compliance with industry standards. Leveraging Defender for Cloud integration allows organizations to enhance their cloud security and mitigate potential risks.
 
 ## What do I need to use this integration?
 
@@ -39,10 +39,12 @@ Configure the Microsoft Defender for Cloud on Azure subscription. For more detai
 - [Configure continuous export to stream security events to your Azure Event Hub](https://learn.microsoft.com/en-us/azure/defender-for-cloud/continuous-export).
 
 #### 2. Collecting Data from Microsoft Defender for Endpoint API
+
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/rest/api/azure/?view=rest-defenderforcloud-composite-latest#register-your-client-application-with-microsoft-entra-id).
 - Assign the required permission: **user_impersonation** in Azure Service Management.
+- Assign the built-in **Reader** role to the new application for the required scope, which will be used in the API to retrieve the assessments. For more details, check out the [role assignment using the Azure portal](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal) documentation.
 - Once the application is registered, note the following values for use during configuration:
   - Client ID
   - Client Secret

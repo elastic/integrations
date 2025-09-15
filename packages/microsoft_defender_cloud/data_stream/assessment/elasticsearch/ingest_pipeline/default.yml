@@ -71,22 +71,22 @@ processors:
       source: |
         // Helper function to convert camelCase to snake_case
         String camelToSnake(String str) {
-          def result = "";
+          def sb = new StringBuilder();
           def lastCharWasUpperCase = false;
           for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             if (Character.isUpperCase(c)) {
               if (i > 0 && !lastCharWasUpperCase) {
-                result += "_";
+                sb.append("_");
               }
-              result += Character.toLowerCase(c);
+              sb.append(Character.toLowerCase(c));
               lastCharWasUpperCase = true;
             } else {
-              result += c;
+              sb.append(c);
               lastCharWasUpperCase = false;
             }
           }
-          return result;
+          return sb.toString();
         }
 
         // Recursive function to handle nested fields
@@ -798,13 +798,13 @@ processors:
       if: ctx.microsoft_defender_cloud?.assessment?.additional_data?.sub_assessment?.status?.severity != null
       source: |-
         def severity = ctx.microsoft_defender_cloud.assessment.additional_data.sub_assessment.status.severity;
-          if (severity == 'Low') {
-            ctx.event.severity = 21;
-          } else if (severity == 'Medium') {
-            ctx.event.severity = 47;
-          } else if (severity == 'High') {
-            ctx.event.severity = 73;
-          }
+        if (severity == 'Low') {
+          ctx.event.severity = 21;
+        } else if (severity == 'Medium') {
+          ctx.event.severity = 47;
+        } else if (severity == 'High') {
+          ctx.event.severity = 73;
+        }
       on_failure:
         - append:
             field: error.message
