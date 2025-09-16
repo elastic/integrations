@@ -1,0 +1,517 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "9c2d6228-4677-4df1-8c01-161983f70ab9": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "threat.indicator.type",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Indicator Type"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "Dashboard providing statistics about Software and x509-Certificates type indicators from the abuse.ch integration",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.module",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.module",
+                            "negate": false,
+                            "params": {
+                                "query": "ti_abusech"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.module": "ti_abusech"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "threat.indicator.type",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "threat.indicator.type",
+                            "negate": false,
+                            "params": [
+                                "software",
+                                "x509-certificate"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "threat.indicator.type": "software"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "threat.indicator.type": "x509-certificate"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "params": {
+                                "query": "true"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_ioc_transform_source": "true"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n[abuse.ch Domain and IP Addresses](/app/dashboards#/view/ti_abusech-d11a94be-9b9f-42f8-9fed-d5e89005f24d)  \n[abuse.ch Files](/app/dashboards#/view/ti_abusech-6a90c980-3b32-11ec-ae50-2fdf1e96c6a6)\n   [abuse.ch Overview](/app/dashboards#/view/ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6)   \n**abuse.ch Software and x509 Certificates**  \n[abuse.ch URLs](/app/dashboards#/view/ti_abusech-2457fb50-3bc3-11ec-ae8c-7d00429ad420)  \n\n\n**[Integrations Page](/app/integrations/detail/ti_abusech/overview)**\n\n\n**Overview**\n\nThe dashboard provides a clear view of threat indicators related to different software types. The Indicators over Time line chart tracks the trend of indicators detected over a period, helping to identify spikes or unusual activity. The Indicators by Name bar chart shows which specific software types are most frequently associated with threat indicators, highlighting high-risk applications. ",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    },
+                    "title": "Table of Contents"
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "07f93bcd-cc56-4727-9eab-3a0b7f2f9bef",
+                    "w": 20,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "07f93bcd-cc56-4727-9eab-3a0b7f2f9bef",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-62ae893f-ef3c-48b8-8e45-0cbecdb7c933",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "62ae893f-ef3c-48b8-8e45-0cbecdb7c933": {
+                                            "columnOrder": [
+                                                "3ca9a66f-e35d-49ad-887f-b3f01c1893fc",
+                                                "8d2e26e6-5176-4df5-a3a3-a9098ee1c172"
+                                            ],
+                                            "columns": {
+                                                "3ca9a66f-e35d-49ad-887f-b3f01c1893fc": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8d2e26e6-5176-4df5-a3a3-a9098ee1c172": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8d2e26e6-5176-4df5-a3a3-a9098ee1c172"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "62ae893f-ef3c-48b8-8e45-0cbecdb7c933",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "3ca9a66f-e35d-49ad-887f-b3f01c1893fc"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Indicators over Time"
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "2ee389e7-af5d-475c-a71e-5f24d2eb9561",
+                    "w": 28,
+                    "x": 20,
+                    "y": 0
+                },
+                "panelIndex": "2ee389e7-af5d-475c-a71e-5f24d2eb9561",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-727b4975-75e8-4150-a237-95c5ad4960f6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "727b4975-75e8-4150-a237-95c5ad4960f6": {
+                                            "columnOrder": [
+                                                "f4afd295-389f-4195-8703-85bfcb3f0225",
+                                                "73280a02-cacd-4ae9-b9a6-c7f12bd01d45"
+                                            ],
+                                            "columns": {
+                                                "73280a02-cacd-4ae9-b9a6-c7f12bd01d45": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f4afd295-389f-4195-8703-85bfcb3f0225": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Threat Indicator Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "73280a02-cacd-4ae9-b9a6-c7f12bd01d45",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "threat.indicator.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "73280a02-cacd-4ae9-b9a6-c7f12bd01d45"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "727b4975-75e8-4150-a237-95c5ad4960f6",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "f4afd295-389f-4195-8703-85bfcb3f0225"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Indicators by Name"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "314175a2-46d0-43cc-9083-cadd684e6281",
+                    "w": 48,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "314175a2-46d0-43cc-9083-cadd684e6281",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs abuse.ch] Software and X-509 Certificates",
+        "version": 3
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-09-16T11:13:02.718Z",
+    "id": "ti_abusech-68ac01ad-dddf-476c-9a54-8c33c1047e53",
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2ee389e7-af5d-475c-a71e-5f24d2eb9561:indexpattern-datasource-layer-62ae893f-ef3c-48b8-8e45-0cbecdb7c933",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "314175a2-46d0-43cc-9083-cadd684e6281:indexpattern-datasource-layer-727b4975-75e8-4150-a237-95c5ad4960f6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_9c2d6228-4677-4df1-8c01-161983f70ab9:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}

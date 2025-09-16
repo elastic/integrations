@@ -1,5 +1,17 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
         "description": "Dashboard providing statistics about file type indicators from the abuse.ch integration",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -11,42 +23,18 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
+                            "field": "event.module",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.dataset",
+                            "key": "event.module",
                             "negate": false,
-                            "params": [
-                                "ti_abusech.malware",
-                                "ti_abusech.malwarebazaar",
-                                "ti_abusech.url",
-                                "ti_abusech.threatfox"
-                            ],
-                            "type": "phrases"
+                            "params": {
+                                "query": "ti_abusech"
+                            },
+                            "type": "phrase"
                         },
                         "query": {
-                            "bool": {
-                                "minimum_should_match": 1,
-                                "should": [
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.malware"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.malwarebazaar"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.url"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.threatfox"
-                                        }
-                                    }
-                                ]
+                            "match_phrase": {
+                                "event.module": "ti_abusech"
                             }
                         }
                     },
@@ -131,7 +119,11 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -147,7 +139,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n[abuse.ch Overview](/app/dashboards#/view/ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6)  \n**abuse.ch Files**  \n[abuse.ch URLs](/app/dashboards#/view/ti_abusech-2457fb50-3bc3-11ec-ae8c-7d00429ad420)  \n\n[Integrations Page](/app/integrations/detail/ti_abusech/overview)\n\n\n**Overview**\n\nThis dashboard is an overview of the different threat intelligence indicators with a **threat.indicator.type: file**.\n\nThe dashboard is made to provide general statistics and show the health of your indicators like hash type counters, popular domains, statistics about how many unique indicators are ingested and other relevant information.",
+                            "markdown": "**Navigation**\n\n[abuse.ch Domain and IP Addresses](/app/dashboards#/view/ti_abusech-d11a94be-9b9f-42f8-9fed-d5e89005f24d)  \n**abuse.ch Files**   \n[abuse.ch Overview](/app/dashboards#/view/ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6)  \n[abuse.ch Software and x509 Certificates](/app/dashboards#/view/ti_abusech-68ac01ad-dddf-476c-9a54-8c33c1047e53)   \n[abuse.ch URLs](/app/dashboards#/view/ti_abusech-2457fb50-3bc3-11ec-ae8c-7d00429ad420)  \n\n**[Integrations Page](/app/integrations/detail/ti_abusech/overview)**\n\n\n**Overview**\n\nThis dashboard is an overview of the different threat intelligence indicators with a **threat.indicator.type: file**.\n\nThe dashboard is made to provide general statistics and show the health of your indicators like hash type counters, popular domains, statistics about how many unique indicators are ingested and other relevant information.",
                             "openLinksInNewTab": false
                         },
                         "title": "Files Navigation Textbox [Logs abuse.ch]",
@@ -171,20 +163,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-98786f76-dac4-4fc7-9cad-8bfce17bd00d",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-2e2257a0-3b39-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -209,24 +193,39 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "8622e147-406f-4711-8f68-e2425614106e",
                                 "layerId": "98786f76-dac4-4fc7-9cad-8bfce17bd00d",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
+                                "metricAccessor": "8622e147-406f-4711-8f68-e2425614106e",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
                             }
                         },
                         "title": "Unique File Types [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -236,7 +235,6 @@
                     "y": 0
                 },
                 "panelIndex": "31ea16d1-7591-42a7-b773-6fca00e5db14",
-                "title": "Unique File Types [Logs abuse.ch]",
                 "type": "lens"
             },
             {
@@ -245,20 +243,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b83c382d-fab9-4e60-a632-475e221cc20c",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-d888e3e0-3b38-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -283,24 +273,39 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "eda3c6d9-dacb-4e5e-b977-50104f76e91a",
                                 "layerId": "b83c382d-fab9-4e60-a632-475e221cc20c",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
+                                "metricAccessor": "eda3c6d9-dacb-4e5e-b977-50104f76e91a",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
                             }
                         },
                         "title": "Unique MD5 [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -310,18 +315,12 @@
                     "y": 0
                 },
                 "panelIndex": "4d3e11dc-c4cc-4373-bb83-3d39fe6ffa98",
-                "title": "Unique MD5 [Logs abuse.ch]",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-85ad73b3-3b76-49f1-ad20-6256b58918f8",
@@ -335,6 +334,7 @@
                         "state": {
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "85ad73b3-3b76-49f1-ad20-6256b58918f8": {
                                             "columnOrder": [
@@ -351,7 +351,8 @@
                                                     "sourceField": "threat.indicator.file.hash.sha1"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -362,19 +363,29 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "289bd005-bdd2-4f3b-83b9-ad6ae52a9ed3",
                                 "layerId": "85ad73b3-3b76-49f1-ad20-6256b58918f8",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
+                                "metricAccessor": "289bd005-bdd2-4f3b-83b9-ad6ae52a9ed3"
                             }
                         },
                         "title": "Unique SHA1 [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -384,18 +395,12 @@
                     "y": 0
                 },
                 "panelIndex": "e9b6f0ad-5e6b-44da-923e-dc0d5ccfdfea",
-                "title": "Unique SHA1 [Logs abuse.ch]",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-49b7070a-f1d3-46e1-a980-2f6d6d130167",
@@ -409,6 +414,7 @@
                         "state": {
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "49b7070a-f1d3-46e1-a980-2f6d6d130167": {
                                             "columnOrder": [
@@ -425,7 +431,8 @@
                                                     "sourceField": "threat.indicator.file.hash.sha256"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -436,19 +443,29 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "b6c5e221-88ff-490e-bd3e-188b3e0dd1f4",
                                 "layerId": "49b7070a-f1d3-46e1-a980-2f6d6d130167",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
+                                "metricAccessor": "b6c5e221-88ff-490e-bd3e-188b3e0dd1f4"
                             }
                         },
                         "title": "Unique SHA256 [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -458,18 +475,12 @@
                     "y": 0
                 },
                 "panelIndex": "93e32abe-87e3-469e-b7e9-a7ef7dfa2cce",
-                "title": "Unique SHA256 [Logs abuse.ch]",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-12768311-834b-48d5-8aad-d17d139c2ae5",
@@ -483,6 +494,7 @@
                         "state": {
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "12768311-834b-48d5-8aad-d17d139c2ae5": {
                                             "columnOrder": [
@@ -499,7 +511,8 @@
                                                     "sourceField": "threat.indicator.file.hash.tlsh"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -510,19 +523,29 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "0255894e-dd88-4eb1-b21b-0cccecb2cd1b",
                                 "layerId": "12768311-834b-48d5-8aad-d17d139c2ae5",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
+                                "metricAccessor": "0255894e-dd88-4eb1-b21b-0cccecb2cd1b"
                             }
                         },
                         "title": "Unique TLSH [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -532,18 +555,12 @@
                     "y": 0
                 },
                 "panelIndex": "b77edd3f-b171-4e61-b519-169b5aade031",
-                "title": "Unique TLSH [Logs abuse.ch]",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-9070dc46-c06d-4b64-a2c5-7b6d4056a14d",
@@ -557,6 +574,7 @@
                         "state": {
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "9070dc46-c06d-4b64-a2c5-7b6d4056a14d": {
                                             "columnOrder": [
@@ -573,7 +591,8 @@
                                                     "sourceField": "threat.indicator.file.pe.imphash"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -584,19 +603,29 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "f1bdf831-1fd2-4dc8-b1f9-c6e05d93b801",
                                 "layerId": "9070dc46-c06d-4b64-a2c5-7b6d4056a14d",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
+                                "metricAccessor": "f1bdf831-1fd2-4dc8-b1f9-c6e05d93b801"
                             }
                         },
                         "title": "Unique Imphash [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -606,18 +635,12 @@
                     "y": 0
                 },
                 "panelIndex": "f9eb44f8-6174-4b12-a8ca-5c542687006b",
-                "title": "Unique Imphash [Logs abuse.ch]",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-e27d5a76-ae51-44fa-b17e-e486bbc01b56",
@@ -631,6 +654,7 @@
                         "state": {
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "e27d5a76-ae51-44fa-b17e-e486bbc01b56": {
                                             "columnOrder": [
@@ -647,7 +671,8 @@
                                                     "sourceField": "threat.indicator.file.hash.ssdeep"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -658,19 +683,29 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "b5cdfd94-1e22-4673-8216-59aca2131761",
                                 "layerId": "e27d5a76-ae51-44fa-b17e-e486bbc01b56",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
+                                "metricAccessor": "b5cdfd94-1e22-4673-8216-59aca2131761"
                             }
                         },
                         "title": "Unique SSDEEP [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -680,7 +715,6 @@
                     "y": 0
                 },
                 "panelIndex": "c9d59178-9b19-4255-8098-653cb30f3d09",
-                "title": "Unique SSDEEP [Logs abuse.ch]",
                 "type": "lens"
             },
             {
@@ -776,7 +810,8 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Top Countries [Logs abuse.ch]"
                 },
                 "gridData": {
                     "h": 19,
@@ -786,7 +821,6 @@
                     "y": 8
                 },
                 "panelIndex": "6189e979-9121-4247-9942-fa7a3cc3839c",
-                "title": "Top Countries [Logs abuse.ch]",
                 "type": "lens"
             },
             {
@@ -880,7 +914,8 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "File Types [Logs abuse.ch]"
                 },
                 "gridData": {
                     "h": 19,
@@ -890,7 +925,6 @@
                     "y": 8
                 },
                 "panelIndex": "5f1d0cf1-c331-4495-99d5-5e80d023c482",
-                "title": "File Types [Logs abuse.ch]",
                 "type": "lens"
             },
             {
@@ -918,35 +952,44 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Most seen indicator tags",
+                                                    "label": "Most Seen Indicator Tags",
                                                     "operationType": "terms",
                                                     "params": {
-                                                        "exclude": [],
+                                                        "exclude": [
+                                                            "forwarded",
+                                                            "abusech-url",
+                                                            "abusech-ja3_fingerprints",
+                                                            "abusech-malware",
+                                                            "abusech-malwarebazaar",
+                                                            "abusech-sslblacklist",
+                                                            "abusech-threatfox"
+                                                        ],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "443ed6a7-aff3-4f30-ad3e-e992809a4a40",
-                                                            "type": "column"
+                                                            "fallback": false,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "abusech.malwarebazaar.tags"
+                                                    "sourceField": "tags"
                                                 },
                                                 "443ed6a7-aff3-4f30-ad3e-e992809a4a40": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count of records",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -956,9 +999,6 @@
                                             "sampling": 1
                                         }
                                     }
-                                },
-                                "textBased": {
-                                    "layers": {}
                                 }
                             },
                             "filters": [],
@@ -999,7 +1039,8 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "right",
+                                    "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_horizontal",
                                 "tickLabelsVisibilitySettings": {
@@ -1014,8 +1055,21 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Most seen indicator tags [Logs abuse.ch]"
                 },
                 "gridData": {
                     "h": 19,
@@ -1025,7 +1079,6 @@
                     "y": 27
                 },
                 "panelIndex": "1f92363c-a693-4950-81cd-d8da6f5832ea",
-                "title": "Most seen indicator tags [Logs abuse.ch]",
                 "type": "lens"
             },
             {
@@ -1117,7 +1170,8 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Most popular file names [Logs abuse.ch]"
                 },
                 "gridData": {
                     "h": 19,
@@ -1127,16 +1181,15 @@
                     "y": 27
                 },
                 "panelIndex": "b733385b-14f8-4469-b777-86d0139cc56b",
-                "title": "Most popular file names [Logs abuse.ch]",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs abuse.ch] Files",
-        "version": 1
+        "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-08-07T08:51:41.875Z",
+    "created_at": "2025-09-16T11:13:01.541Z",
     "id": "ti_abusech-6a90c980-3b32-11ec-ae50-2fdf1e96c6a6",
     "references": [
         {
@@ -1160,18 +1213,23 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "31ea16d1-7591-42a7-b773-6fca00e5db14:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
+            "id": "ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
+            "name": "tag-ref-ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
+            "type": "tag"
+        },
+        {
+            "id": "ti_abusech-security-solution-default",
+            "name": "tag-ref-ti_abusech-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "ti_abusech-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         },
         {
             "id": "logs-*",
             "name": "31ea16d1-7591-42a7-b773-6fca00e5db14:indexpattern-datasource-layer-98786f76-dac4-4fc7-9cad-8bfce17bd00d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "4d3e11dc-c4cc-4373-bb83-3d39fe6ffa98:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -1181,17 +1239,7 @@
         },
         {
             "id": "logs-*",
-            "name": "e9b6f0ad-5e6b-44da-923e-dc0d5ccfdfea:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "e9b6f0ad-5e6b-44da-923e-dc0d5ccfdfea:indexpattern-datasource-layer-85ad73b3-3b76-49f1-ad20-6256b58918f8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "93e32abe-87e3-469e-b7e9-a7ef7dfa2cce:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -1201,27 +1249,12 @@
         },
         {
             "id": "logs-*",
-            "name": "b77edd3f-b171-4e61-b519-169b5aade031:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "b77edd3f-b171-4e61-b519-169b5aade031:indexpattern-datasource-layer-12768311-834b-48d5-8aad-d17d139c2ae5",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f9eb44f8-6174-4b12-a8ca-5c542687006b:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "f9eb44f8-6174-4b12-a8ca-5c542687006b:indexpattern-datasource-layer-9070dc46-c06d-4b64-a2c5-7b6d4056a14d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c9d59178-9b19-4255-8098-653cb30f3d09:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -1265,21 +1298,27 @@
             "type": "index-pattern"
         },
         {
-            "id": "ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
-            "name": "tag-ref-ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "ti_abusech-security-solution-default",
-            "name": "tag-ref-ti_abusech-security-solution-default",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "ti_abusech-security-solution-default",
-            "name": "tag-ref-security-solution-default",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0"
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
