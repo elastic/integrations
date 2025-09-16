@@ -669,8 +669,8 @@ processors:
       field: "message"
       description: "315011"
       patterns:
-        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
-        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
+        - 'SSH session from %{IP:source.ip} on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
+        - 'SSH session from %{IP:source.ip} on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
       pattern_definitions:
         CISCO_USER: '\"?(?:\*{5}|%{USERNAME:source.user.name})\"?'
   - dissect:
@@ -1178,11 +1178,12 @@ processors:
       tag: parse_602303-602304
       field: "message"
       pattern: "%{network.type}: An %{network.direction} %{_temp_.cisco.tunnel_type} SA (SPI= %{}) between %{source.address} and %{destination.address} (user= %{user.name}) has been %{}."
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '750002'"
       tag: parse_750002
       field: "message"
-      pattern: "Local:%{source.address}:%{source.port} Remote:%{destination.address}:%{destination.port} Username:%{user.name} %{event.reason}"
+      patterns:
+        - "Local:%{IP:source.address}:%{NUMBER:source.port} Remote:%{IP:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '713120'"
       tag: parse_713120
@@ -1201,11 +1202,12 @@ processors:
       patterns:
         - "Authentication: rejected, group = %{NOTSPACE:source.user.group.name} user = %{USER:source.user.name} , Session Type: %{NOTSPACE:_temp_.cisco.session_type}"
         - "Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '750003'"
       tag: parse_750003
       field: "message"
-      pattern: "Local:%{source.address}:%{source.port} Remote:%{destination.address}:%{destination.port} Username:%{user.name} %{event.reason} ERROR:%{+event.reason}"
+      patterns:
+        - "Local:%{IP:source.address}:%{NUMBER:source.port} Remote:%{IP:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
   - grok:
       if: '["713905", "713904", "713906", "713902", "713901"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_713901-713906
