@@ -51,19 +51,19 @@ An example event for `useraudit` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-22T10:10:00Z",
+    "@timestamp": "2025-08-22T10:10:00.000Z",
     "agent": {
-        "ephemeral_id": "e2c1b87e-05b5-4bcf-8694-daded90867a3",
-        "id": "dedd7833-0617-4781-8067-58768198fc4e",
-        "name": "elastic-agent-70915",
+        "ephemeral_id": "3758adeb-3280-49be-b12b-9f6a59e4bbc3",
+        "id": "ca8aec7c-bb1b-4a17-bcfb-a435ed4b3aec",
+        "name": "elastic-agent-58050",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "beyondinsight_password_safe": {
         "useraudit": {
             "action_type": "AccessDenied",
             "audit_id": "1",
-            "create_date": "2025-08-22T10:10:00Z",
+            "create_date": "2025-08-22T10:10:00.000Z",
             "ip_address": "203.0.113.100",
             "section": "Authorization",
             "user_id": "105",
@@ -72,16 +72,16 @@ An example event for `useraudit` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.useraudit",
-        "namespace": "74134",
+        "namespace": "35398",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.1.0"
     },
     "elastic_agent": {
-        "id": "dedd7833-0617-4781-8067-58768198fc4e",
+        "id": "ca8aec7c-bb1b-4a17-bcfb-a435ed4b3aec",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -89,7 +89,7 @@ An example event for `useraudit` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.useraudit",
-        "ingested": "2025-08-29T02:19:48Z",
+        "ingested": "2025-09-12T15:05:26Z",
         "kind": "event",
         "type": [
             "info"
@@ -116,7 +116,7 @@ An example event for `useraudit` looks as following:
         "type": "cel"
     },
     "related": {
-        "hosts": [
+        "ip": [
             "203.0.113.100"
         ],
         "user": [
@@ -168,41 +168,48 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-27T17:12:48.443Z",
+    "@timestamp": "2025-01-15T10:45:00.000Z",
     "agent": {
-        "ephemeral_id": "916661e9-ed15-4d6f-bfcf-5c5704a5c1ec",
-        "id": "650cd1fc-0c46-4ef4-b269-1112fb37690e",
-        "name": "elastic-agent-17681",
+        "ephemeral_id": "0ec4e96b-9b86-4f19-a2d2-b07d06efddaf",
+        "id": "217cf62f-7384-4be2-a2e1-056839a4d821",
+        "name": "elastic-agent-46617",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "beyondinsight_password_safe": {
         "session": {
-            "archive_status": "not_archived",
-            "asset_name": "localhost",
-            "duration": 0,
-            "managed_account_name": "example.com\\sdfsfdf",
-            "managed_system_id": 13,
-            "node_id": "a5c29153-b351-41f1-a12b-0c4da9408d79",
+            "application_id": "101",
+            "archive_status": "archived",
+            "asset_name": "web-server-01",
+            "duration": 8100,
+            "end_time": "2025-01-15T10:45:00.000Z",
+            "managed_account_id": "789",
+            "managed_account_name": "admin_user",
+            "managed_system_id": "456",
+            "node_id": "node-001",
             "protocol": "rdp",
-            "record_key": "3958d725d16119a95e64af424a7f8dfsf13f1fgffbe4a6cd34earwr324454bcecce70ee37cbaed",
-            "session_id": 1,
-            "status": "not_started",
-            "user_id": 6
+            "record_key": "rec_key_abc123",
+            "request_id": "201",
+            "session_id": "1001",
+            "session_type": "regular",
+            "start_time": "2025-01-15T08:30:00.000Z",
+            "status": "in_progress",
+            "token": "token_xyz789",
+            "user_id": "123"
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.session",
-        "namespace": "97390",
+        "namespace": "86539",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.1.0"
     },
     "elastic_agent": {
-        "id": "650cd1fc-0c46-4ef4-b269-1112fb37690e",
+        "id": "217cf62f-7384-4be2-a2e1-056839a4d821",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -210,11 +217,13 @@ An example event for `session` looks as following:
             "session"
         ],
         "dataset": "beyondinsight_password_safe.session",
-        "duration": 0,
-        "id": "1",
-        "ingested": "2025-01-27T17:12:51Z",
+        "duration": 8100000000000,
+        "end": "2025-01-15T10:45:00.000Z",
+        "id": "1001",
+        "ingested": "2025-09-12T15:04:25Z",
         "kind": "event",
-        "module": "beyondinsight_password_safe",
+        "original": "{\"ApplicationID\":101,\"ArchiveStatus\":1,\"AssetName\":\"web-server-01\",\"Duration\":8100,\"EndTime\":\"2025-01-15T10:45:00Z\",\"ManagedAccountID\":789,\"ManagedAccountName\":\"admin_user\",\"ManagedSystemID\":456,\"NodeID\":\"node-001\",\"Protocol\":0,\"RecordKey\":\"rec_key_abc123\",\"RequestID\":201,\"SessionID\":1001,\"SessionType\":1,\"StartTime\":\"2025-01-15T08:30:00Z\",\"Status\":1,\"Token\":\"token_xyz789\",\"UserID\":123}",
+        "start": "2025-01-15T08:30:00.000Z",
         "type": [
             "info"
         ]
@@ -223,19 +232,26 @@ An example event for `session` looks as following:
         "type": "cel"
     },
     "network": {
-        "protocol": [
-            "rdp"
-        ]
+        "protocol": "rdp"
     },
     "related": {
+        "hosts": [
+            "web-server-01"
+        ],
         "user": [
-            "6"
+            "admin_user",
+            "123"
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "beyondinsight_password_safe.session"
-    ]
+    ],
+    "user": {
+        "id": "123",
+        "name": "admin_user"
+    }
 }
 ```
 
@@ -249,27 +265,31 @@ The following non-ECS fields are used in session documents:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.session.archive_status | Session archive status (applicable only when Session Archiving is enabled and configured) | keyword |
-| beyondinsight_password_safe.session.asset_name | Name of the asset | keyword |
-| beyondinsight_password_safe.session.duration | Duration of the session in seconds | integer |
-| beyondinsight_password_safe.session.end_time | End date/time of the session | date |
-| beyondinsight_password_safe.session.managed_account_id | ID of the target managed account | integer |
-| beyondinsight_password_safe.session.managed_account_name | Name of the target managed account | keyword |
-| beyondinsight_password_safe.session.managed_system_id | ID of the target managed system | integer |
-| beyondinsight_password_safe.session.node_id | ID of the session node | keyword |
-| beyondinsight_password_safe.session.protocol | Protocol used for the session | keyword |
-| beyondinsight_password_safe.session.record_key | Record key use for the session replay | keyword |
-| beyondinsight_password_safe.session.session_id | ID of the session | keyword |
-| beyondinsight_password_safe.session.start_time | Start date/time of the session | date |
-| beyondinsight_password_safe.session.status | Status of the session | keyword |
-| beyondinsight_password_safe.session.user_id | ID of the user | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset |  | constant_keyword |
-| event.module |  | constant_keyword |
-| input.type | Input type | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| beyondinsight_password_safe.session.application_id | The related application ID (if applicable, can be null). | keyword |
+| beyondinsight_password_safe.session.archive_status | Session archive status: not_archived, archived, restoring, archiving, session_not_found, repository_offline, unknown | keyword |
+| beyondinsight_password_safe.session.asset_name | Name of the target managed system. | keyword |
+| beyondinsight_password_safe.session.duration | Session duration (seconds.) | long |
+| beyondinsight_password_safe.session.end_time | End date/time of the session. | date |
+| beyondinsight_password_safe.session.managed_account_id | ID of the target managed account. | keyword |
+| beyondinsight_password_safe.session.managed_account_name | Name of the target managed account. | keyword |
+| beyondinsight_password_safe.session.managed_system_id | ID of the target managed system (can be null). | keyword |
+| beyondinsight_password_safe.session.node_id | ID of the session node. | keyword |
+| beyondinsight_password_safe.session.protocol | Session protocol: rdp, ssh | keyword |
+| beyondinsight_password_safe.session.record_key | The record key used for session replay. | keyword |
+| beyondinsight_password_safe.session.request_id | The related request ID (if applicable, can be null). | keyword |
+| beyondinsight_password_safe.session.session_id | ID of the session. | keyword |
+| beyondinsight_password_safe.session.session_type | Session type: regular, isa, admin | keyword |
+| beyondinsight_password_safe.session.start_time | Start date/time of the session. | date |
+| beyondinsight_password_safe.session.status | Session status: not_started, in_progress, completed, locked, terminated, logged_off, disconnected | keyword |
+| beyondinsight_password_safe.session.token | The token used for session replay. | keyword |
+| beyondinsight_password_safe.session.user_id | ID of the user. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Input type. | keyword |
 
 
 ### ManagedSystem
@@ -280,73 +300,75 @@ An example event for `managedsystem` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-21T19:51:44.321Z",
+    "@timestamp": "2025-09-12T15:03:32.393Z",
     "agent": {
-        "ephemeral_id": "65102e1f-0356-43fb-86b7-7194c420165b",
-        "id": "5515e62d-ab14-4d0b-a3a9-f0b226d4b586",
-        "name": "elastic-agent-42570",
+        "ephemeral_id": "97ef9370-d7bd-4721-be6c-b2ce77a254e9",
+        "id": "34f51b07-adf7-49e2-9abd-e0dbc4d6fcd0",
+        "name": "elastic-agent-19588",
         "type": "filebeat",
-        "version": "9.0.4"
+        "version": "8.18.0"
     },
     "beyondinsight_password_safe": {
         "managedsystem": {
             "access_url": "http://aardvarkagreement.com/manage",
             "account_name_format": 0,
-            "application_host_id": 2,
-            "asset_id": 13,
+            "application_host_id": "2",
+            "asset_id": "13",
             "auto_management_flag": true,
             "change_frequency_days": 30,
             "change_frequency_type": "first",
             "change_password_after_any_release_flag": false,
             "change_time": "23:30",
             "check_password_flag": false,
-            "cloud_id": 1,
+            "cloud_id": "1",
             "contact_email": "admin@aardvarkagreement.com",
-            "database_id": 5,
+            "database_id": "5",
             "description": "Primary Managed System for AardvarkAgreement",
-            "directory_id": 3,
+            "directory_id": "3",
             "dns_name": "AardvarkAgreement.example.com",
-            "dsskey_rule_id": 0,
+            "dss_key_rule_id": "0",
             "elevation_command": "sudo",
-            "entity_type_id": 1,
+            "entity_type_id": "1",
             "forest_name": "PrimaryForest",
-            "functional_account_id": 14,
+            "functional_account_id": "14",
             "host_name": "AardvarkAgreement",
             "instance_name": "InstanceOne",
             "ip_address": "198.51.100.10",
             "is_application_host": false,
             "is_default_instance": true,
             "isa_release_duration": 120,
-            "login_account_id": 20,
-            "managed_system_id": 13,
+            "login_account_id": "20",
+            "managed_system_id": "13",
             "max_release_duration": 525600,
             "net_bios_name": "AardvarkNet",
+            "oracle_internet_directory_id": "550e8400-e29b-41d4-a716-446655440000",
             "oracle_internet_directory_service_name": "OiDService",
-            "password_rule_id": 0,
-            "platform_id": 4,
+            "password_rule_id": "0",
+            "platform_id": "4",
             "port": 8080,
             "release_duration": 120,
             "remote_client_type": "None",
             "reset_password_on_mismatch_flag": false,
+            "ssh_key_enforcement_mode": "Auto",
             "system_name": "AardvarkAgreement",
             "template": "ServerTemplate",
             "timeout": 30,
             "use_ssl": true,
-            "workgroup_id": 1
+            "workgroup_id": "1"
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "namespace": "41053",
+        "namespace": "51641",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.1.0"
     },
     "elastic_agent": {
-        "id": "5515e62d-ab14-4d0b-a3a9-f0b226d4b586",
+        "id": "34f51b07-adf7-49e2-9abd-e0dbc4d6fcd0",
         "snapshot": false,
-        "version": "9.0.4"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -354,34 +376,31 @@ An example event for `managedsystem` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "ingested": "2025-08-21T19:51:47Z",
+        "ingested": "2025-09-12T15:03:35Z",
         "kind": "asset",
-        "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
     "host": {
-        "domain": "AardvarkAgreement.example.com",
+        "domain": "example.com",
         "geo": {
             "city_name": "Amsterdam",
             "continent_name": "Europe",
             "country_iso_code": "NL",
             "country_name": "Netherlands",
             "location": {
-                "coordinates": [
-                    4.889689916744828,
-                    52.37403995823115
-                ],
-                "type": "Point"
+                "lat": 52.37404,
+                "lon": 4.88969
             },
             "region_iso_code": "NL-NH",
             "region_name": "North Holland"
         },
+        "hostname": "AardvarkAgreement",
         "ip": [
             "198.51.100.10"
         ],
-        "name": "AardvarkAgreement"
+        "name": "AardvarkAgreement.example.com"
     },
     "input": {
         "type": "cel"
@@ -389,7 +408,9 @@ An example event for `managedsystem` looks as following:
     "related": {
         "hosts": [
             "AardvarkAgreement",
-            "AardvarkAgreement.example.com",
+            "AardvarkAgreement.example.com"
+        ],
+        "ip": [
             "198.51.100.10"
         ],
         "user": [
@@ -436,7 +457,7 @@ The following non-ECS fields are used in managedsystem documents:
 | beyondinsight_password_safe.managedsystem.description | Description of the managed system. | keyword |
 | beyondinsight_password_safe.managedsystem.directory_id | Directory ID; set if the managed system is a directory. | integer |
 | beyondinsight_password_safe.managedsystem.dns_name | DNS name of the managed system. | keyword |
-| beyondinsight_password_safe.managedsystem.dsskey_rule_id | ID of the default DSS key rule assigned to managed accounts. | integer |
+| beyondinsight_password_safe.managedsystem.dss_key_rule_id | ID of the default DSS key rule assigned to managed accounts. | integer |
 | beyondinsight_password_safe.managedsystem.elevation_command | Elevation command to use (sudo, pbrun, pmrun). | keyword |
 | beyondinsight_password_safe.managedsystem.entity_type_id | ID of the entity type. | integer |
 | beyondinsight_password_safe.managedsystem.forest_name | Forest name of the managed system. | keyword |
@@ -470,7 +491,7 @@ The following non-ECS fields are used in managedsystem documents:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Input type | keyword |
+| input.type | Input type. | keyword |
 
 
 ### ManagedAccount
@@ -481,13 +502,13 @@ An example event for `managedaccount` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-21T20:36:43.795Z",
+    "@timestamp": "2024-12-10T08:57:45.900Z",
     "agent": {
-        "ephemeral_id": "ff445f51-5192-4f3e-a363-87f79be97910",
-        "id": "bf400122-2b4e-4f05-b539-cad4ea38233d",
-        "name": "elastic-agent-30281",
+        "ephemeral_id": "13485d3b-415b-474c-a674-2c2f0fd7b247",
+        "id": "8429ee5a-d3f6-41ad-87ad-c6a35397b64e",
+        "name": "elastic-agent-29194",
         "type": "filebeat",
-        "version": "9.0.4"
+        "version": "8.18.0"
     },
     "beyondinsight_password_safe": {
         "managedaccount": {
@@ -514,16 +535,16 @@ An example event for `managedaccount` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "namespace": "76959",
+        "namespace": "59569",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.1.0"
     },
     "elastic_agent": {
-        "id": "bf400122-2b4e-4f05-b539-cad4ea38233d",
+        "id": "8429ee5a-d3f6-41ad-87ad-c6a35397b64e",
         "snapshot": false,
-        "version": "9.0.4"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -531,9 +552,8 @@ An example event for `managedaccount` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "ingested": "2025-08-21T20:36:46Z",
+        "ingested": "2025-09-12T15:02:45Z",
         "kind": "event",
-        "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
@@ -548,9 +568,8 @@ An example event for `managedaccount` looks as following:
     },
     "related": {
         "hosts": [
-            "KittenGrowth",
             "5",
-            "example.com"
+            "KittenGrowth"
         ],
         "user": [
             "5",
@@ -605,7 +624,7 @@ The following non-ECS fields are used in managedaccount documents:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Input type | keyword |
+| input.type | Input type. | keyword |
 
 
 ### Asset
@@ -616,40 +635,41 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-20T06:35:49.927Z",
+    "@timestamp": "2023-06-20T14:45:00.000Z",
     "agent": {
-        "ephemeral_id": "ee5bb248-a156-4a58-9ff2-5cf0db711952",
-        "id": "9d14623d-4f5b-4917-9921-c93862af36a1",
-        "name": "elastic-agent-38826",
+        "ephemeral_id": "ab8bf717-8595-45da-b4da-abf52b88ec95",
+        "id": "88f34c64-f736-496f-b988-3e17eca87055",
+        "name": "elastic-agent-94001",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "beyondinsight_password_safe": {
         "asset": {
-            "asset_id": 2,
-            "asset_name": "EPINHYDW002A",
-            "asset_type": "WorkStation",
-            "create_date": "2024-11-20T06:12:21.047Z",
-            "dns_name": "EPINHYDW002A",
-            "domain_name": "Unknown",
-            "ipaddress": "81.2.69.142",
-            "last_update_date": "2024-11-20T06:35:49.927Z",
-            "operating_system": "Windows 11 Enterprise",
-            "workgroup_id": 1
+            "asset_id": "101",
+            "asset_name": "TestServer01",
+            "asset_type": "Server",
+            "create_date": "2023-01-15T10:30:00Z",
+            "dns_name": "testserver01.example.com",
+            "domain_name": "example.com",
+            "ip_address": "192.0.2.10",
+            "last_update_date": "2023-06-20T14:45:00Z",
+            "mac_address": "00-1B-44-11-3A-B7",
+            "operating_system": "Ubuntu 20.04",
+            "workgroup_id": "1"
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.asset",
-        "namespace": "25291",
+        "namespace": "56817",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.1.0"
     },
     "elastic_agent": {
-        "id": "9d14623d-4f5b-4917-9921-c93862af36a1",
+        "id": "88f34c64-f736-496f-b988-3e17eca87055",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -657,45 +677,53 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "beyondinsight_password_safe.asset",
-        "ingested": "2025-01-30T07:19:04Z",
+        "ingested": "2025-09-12T15:01:45Z",
         "kind": "asset",
-        "module": "beyondinsight_password_safe",
+        "original": "{\"AssetID\":101,\"AssetName\":\"TestServer01\",\"AssetType\":\"Server\",\"CreateDate\":\"2023-01-15T10:30:00Z\",\"DnsName\":\"testserver01.example.com\",\"DomainName\":\"example.com\",\"IPAddress\":\"192.0.2.10\",\"LastUpdateDate\":\"2023-06-20T14:45:00Z\",\"MacAddress\":\"00:1B:44:11:3A:B7\",\"OperatingSystem\":\"Ubuntu 20.04\",\"WorkgroupID\":1}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "domain": "Unknown",
+        "domain": "example.com",
         "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
+            "city_name": "Las Vegas",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
             "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
+                "lat": 36.17497,
+                "lon": -115.13722
             },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
+            "region_iso_code": "US-NV",
+            "region_name": "Nevada"
         },
         "ip": [
-            "81.2.69.142",
-            "81.2.69.142"
-        ]
+            "192.0.2.10"
+        ],
+        "mac": [
+            "00-1B-44-11-3A-B7"
+        ],
+        "name": "TestServer01",
+        "os": {
+            "full": "Ubuntu 20.04"
+        }
     },
     "input": {
         "type": "cel"
     },
-    "os": {
-        "name": "Windows 11 Enterprise"
-    },
     "related": {
         "hosts": [
-            "Unknown",
-            "81.2.69.142"
+            "192.0.2.10",
+            "TestServer01",
+            "testserver01.example.com"
+        ],
+        "ip": [
+            "192.0.2.10"
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "beyondinsight_password_safe.asset"
     ]
@@ -712,22 +740,22 @@ The following non-ECS fields are used in asset documents:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.asset.asset_id | Unique identifier for the asset | keyword |
-| beyondinsight_password_safe.asset.asset_name | Name of the asset | keyword |
-| beyondinsight_password_safe.asset.asset_type | Type of the asset | keyword |
-| beyondinsight_password_safe.asset.create_date | Date the asset was created | date |
-| beyondinsight_password_safe.asset.dns_name | DNS name of the asset | keyword |
-| beyondinsight_password_safe.asset.domain_name | Domain name of the asset | keyword |
-| beyondinsight_password_safe.asset.ipaddress | IP address of the asset | ip |
-| beyondinsight_password_safe.asset.last_update_date | Date the asset was last updated | date |
-| beyondinsight_password_safe.asset.mac_address | MAC address of the asset | keyword |
-| beyondinsight_password_safe.asset.operating_system | Operating system of the asset | keyword |
-| beyondinsight_password_safe.asset.workgroup_id | Unique identifier for the workgroup | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset |  | constant_keyword |
-| event.module |  | constant_keyword |
-| input.type | Input type | keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| beyondinsight_password_safe.asset.asset_id | Unique identifier for the asset. | keyword |
+| beyondinsight_password_safe.asset.asset_name | Name of the asset. | keyword |
+| beyondinsight_password_safe.asset.asset_type | Type of the asset. | keyword |
+| beyondinsight_password_safe.asset.create_date | Date the asset was created. | date |
+| beyondinsight_password_safe.asset.dns_name | DNS name of the asset. | keyword |
+| beyondinsight_password_safe.asset.domain_name | Domain name of the asset. | keyword |
+| beyondinsight_password_safe.asset.ip_address | IP address of the asset. | ip |
+| beyondinsight_password_safe.asset.last_update_date | Date the asset was last updated. | date |
+| beyondinsight_password_safe.asset.mac_address | MAC address of the asset. | keyword |
+| beyondinsight_password_safe.asset.operating_system | Operating system of the asset. | keyword |
+| beyondinsight_password_safe.asset.workgroup_id | Unique identifier for the workgroup. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Input type. | keyword |
 
