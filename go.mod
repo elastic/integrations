@@ -10,6 +10,7 @@ require (
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.8.8
 	github.com/elastic/package-registry v1.31.1
+	github.com/jstemmer/go-junit-report/v2 v2.1.0
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
