@@ -159,16 +159,17 @@ rules:
           Content-Type:
             - "application/json"
           NextPageUri:
-            - 'http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contentType=Audit.SharePoint&startTime={{ .request.vars.startTime }}&endTime={{ .request.vars.endTime }}&nextPage=2023071100R022885001761'
+            - 'http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contenttype=Audit.SharePoint&starttime={{ .request.vars.startTime }}&endtime={{ .request.vars.endTime }}&nextpage=2023071100R022885001761'
         body: |-
           [{"contentType": "Audit.Sharepoint","contentId": "celid1","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celsp1/activity/feed/audit/celid1","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
-      contentType: "Audit.SharePoint"
-      startTime: "{startTime:.*}"
-      endTime: "{endTime:.*}"
-      nextPage: "2023071100R022885001761"
+      # New, undocumented, syntax returned in NextPageUri.
+      contenttype: "Audit.SharePoint"
+      starttime: "{startTime:.*}"
+      endtime: "{endTime:.*}"
+      nextpage: "2023071100R022885001761"
     request_headers:
       Authorization:
         - "Bearer CELtoken"

@@ -7,6 +7,13 @@ vars:
   resource_url: http://{{Hostname}}:{{Port}}/testoauth/api
   enable_request_tracer: true
   program: |
-    get(state.url).Body.as(body, {
+    get(state.url).as(resp, resp.StatusCode == 200 ?
+      resp.Body.as(body, {
         "events": [body.decode_json()]
-    })
+      })
+    :
+      {"events": []}
+    )
+  resource_headers: |-
+    "Accept": ["application/json"]
+    "X-Custom-Header": ["custom value"]

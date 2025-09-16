@@ -4,7 +4,7 @@
 
 This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) and [Microsoft Management API](https://learn.microsoft.com/en-us/office/office-365-management-api/) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and service health.
 
-## What data does this integration collect?[#what-data-this-integration-collects]
+## What data does this integration collect?
 
 The following data can be collected with the Microsoft Office 365 Metrics integration:
 
