@@ -160,11 +160,11 @@ An example event for `app_connector_status` looks as following:
 {
     "@timestamp": "2019-07-03T05:17:22.000Z",
     "agent": {
-        "ephemeral_id": "2b9e8c22-3a98-4cfd-bbb2-a20949d0801b",
-        "id": "6d6e7f83-d964-4fed-a813-9abde122c632",
-        "name": "elastic-agent-25332",
+        "ephemeral_id": "a668f81e-2848-4d79-95ef-1ecd5a6d332c",
+        "id": "85fbad05-ff47-41ab-b16e-b299c3b10b39",
+        "name": "elastic-agent-11095",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "client": {
         "nat": {
@@ -173,16 +173,16 @@ An example event for `app_connector_status` looks as following:
     },
     "data_stream": {
         "dataset": "zscaler_zpa.app_connector_status",
-        "namespace": "70197",
+        "namespace": "67128",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6d6e7f83-d964-4fed-a813-9abde122c632",
+        "id": "85fbad05-ff47-41ab-b16e-b299c3b10b39",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -190,9 +190,8 @@ An example event for `app_connector_status` looks as following:
             "package"
         ],
         "dataset": "zscaler_zpa.app_connector_status",
-        "ingested": "2025-09-15T09:55:30Z",
+        "ingested": "2025-09-16T07:32:52Z",
         "kind": "event",
-        "module": "zscaler_zpa",
         "original": "{\"LogTimestamp\":\"Wed Jul 3 05:17:22 2019\",\"Customer\":\"Customer Name\",\"SessionID\":\"8A64Qwj9zCkfYDGJVoUZ\",\"SessionType\":\"ZPN_ASSISTANT_BROKER_CONTROL\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.20.3\",\"Platform\":\"el7\",\"ZEN\":\"US-NY-8179\",\"Connector\":\"Some App Connector\",\"ConnectorGroup\":\"Some App Connector Group\",\"PrivateIP\":\"10.0.0.4\",\"PublicIP\":\"0.0.0.0\",\"Latitude\":47,\"Longitude\":-122,\"CountryCode\":\"\",\"TimestampAuthentication\":\"2019-06-27T05:05:23.348Z\",\"TimestampUnAuthentication\":\"\",\"CPUUtilization\":1,\"MemUtilization\":20,\"ServiceCount\":2,\"InterfaceDefRoute\":\"eth0\",\"DefRouteGW\":\"10.0.0.1\",\"PrimaryDNSResolver\":\"168.63.129.16\",\"HostStartTime\":\"1513229995\",\"ConnectorStartTime\":\"1555920005\",\"NumOfInterfaces\":2,\"BytesRxInterface\":319831966346,\"PacketsRxInterface\":1617569938,\"ErrorsRxInterface\":0,\"DiscardsRxInterface\":0,\"BytesTxInterface\":192958782635,\"PacketsTxInterface\":1797471190,\"ErrorsTxInterface\":0,\"DiscardsTxInterface\":0,\"TotalBytesRx\":10902554,\"TotalBytesTx\":48931771}",
         "type": [
             "info"
@@ -216,17 +215,14 @@ An example event for `app_connector_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.3:33486"
+            "address": "172.21.0.3:43448"
         }
     },
     "observer": {
         "geo": {
             "location": {
-                "coordinates": [
-                    -122.0000000204891,
-                    46.99999996460974
-                ],
-                "type": "Point"
+                "lat": 47,
+                "lon": -122
             }
         },
         "ip": [
@@ -331,24 +327,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-17T04:29:38.000Z",
     "agent": {
-        "ephemeral_id": "5cb3bdd6-e274-4a35-9d1a-57f9e41499e2",
-        "id": "14f74fdc-469f-43f7-bbe0-cd94f35fa6a3",
-        "name": "elastic-agent-94491",
+        "ephemeral_id": "44b51929-01cc-40e0-9f61-1cd201dfb5f1",
+        "id": "2a639f99-de36-4f57-92a5-c693d32d599d",
+        "name": "elastic-agent-52871",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "zscaler_zpa.audit",
-        "namespace": "49683",
+        "namespace": "69804",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "14f74fdc-469f-43f7-bbe0-cd94f35fa6a3",
+        "id": "2a639f99-de36-4f57-92a5-c693d32d599d",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -358,9 +354,8 @@ An example event for `audit` looks as following:
         "created": "2021-11-17T04:29:38.000Z",
         "dataset": "zscaler_zpa.audit",
         "id": "11111111-1111-1111-1111-111111111111",
-        "ingested": "2025-09-15T09:56:17Z",
+        "ingested": "2025-09-16T07:33:42Z",
         "kind": "event",
-        "module": "zscaler_zpa",
         "original": "{\"ModifiedTime\":\"2021-11-17T04:29:38.000Z\",\"CreationTime\":\"2021-11-17T04:29:38.000Z\",\"ModifiedBy\":12345678901234567,\"RequestID\":\"11111111-1111-1111-1111-111111111111\",\"SessionID\":\"1idn23nlfm2q1txa5h3r4mep6\",\"AuditOldValue\":\"\",\"AuditNewValue\":\"{\\\"id\\\":\\\"72058340288495701\\\",\\\"name\\\":\\\"Some-Name\\\",\\\"domainOrIpAddress\\\":\\\"1.0.0.1\\\",\\\"description\\\":\\\"This is a description field\\\",\\\"enabled\\\":\\\"true\\\"}\",\"AuditOperationType\":\"Create\",\"ObjectType\":\"Server\",\"ObjectName\":\"Some-Name\",\"ObjectID\":12345678901234567,\"CustomerID\":98765432109876543,\"User\":\"zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com\",\"ClientAuditUpdate\":0}",
         "outcome": "success",
         "type": [
@@ -372,7 +367,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.3:57538"
+            "address": "172.21.0.3:49510"
         }
     },
     "organization": {
@@ -474,11 +469,11 @@ An example event for `browser_access` looks as following:
 {
     "@timestamp": "2019-07-03T05:12:25.000Z",
     "agent": {
-        "ephemeral_id": "6fa86150-356b-4cd8-a8ee-82f3f2ea42a0",
-        "id": "489b68c5-1c84-4857-bfbe-e18767c52b5a",
-        "name": "elastic-agent-97716",
+        "ephemeral_id": "4f05f964-ac22-415a-b61a-751c5dd904dc",
+        "id": "da5dbc19-3716-438a-84f1-667080bf03f1",
+        "name": "elastic-agent-72091",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "client": {
         "geo": {
@@ -487,11 +482,8 @@ An example event for `browser_access` looks as following:
             "country_iso_code": "GB",
             "country_name": "United Kingdom",
             "location": {
-                "coordinates": [
-                    -0.0931000616401434,
-                    51.514199981465936
-                ],
-                "type": "Point"
+                "lat": 51.5142,
+                "lon": -0.0931
             },
             "region_iso_code": "GB-ENG",
             "region_name": "England"
@@ -501,16 +493,16 @@ An example event for `browser_access` looks as following:
     },
     "data_stream": {
         "dataset": "zscaler_zpa.browser_access",
-        "namespace": "86055",
+        "namespace": "88779",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "489b68c5-1c84-4857-bfbe-e18767c52b5a",
+        "id": "da5dbc19-3716-438a-84f1-667080bf03f1",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -519,9 +511,8 @@ An example event for `browser_access` looks as following:
             "session"
         ],
         "dataset": "zscaler_zpa.browser_access",
-        "ingested": "2025-09-15T09:57:07Z",
+        "ingested": "2025-09-16T07:34:33Z",
         "kind": "event",
-        "module": "zscaler_zpa",
         "original": "{\"LogTimestamp\":\"Wed Jul 3 05:12:25 2019\",\"ConnectionID\":\"\",\"Exporter\":\"unset\",\"TimestampRequestReceiveStart\":\"2019-07-03T05:12:25.723Z\",\"TimestampRequestReceiveHeaderFinish\":\"2019-07-03T05:12:25.723Z\",\"TimestampRequestReceiveFinish\":\"2019-07-03T05:12:25.723Z\",\"TimestampRequestTransmitStart\":\"2019-07-03T05:12:25.790Z\",\"TimestampRequestTransmitFinish\":\"2019-07-03T05:12:25.790Z\",\"TimestampResponseReceiveStart\":\"2019-07-03T05:12:25.791Z\",\"TimestampResponseReceiveFinish\":\"2019-07-03T05:12:25.791Z\",\"TimestampResponseTransmitStart\":\"2019-07-03T05:12:25.791Z\",\"TimestampResponseTransmitFinish\":\"2019-07-03T05:12:25.791Z\",\"TotalTimeRequestReceive\":127,\"TotalTimeRequestTransmit\":21,\"TotalTimeResponseReceive\":73,\"TotalTimeResponseTransmit\":13,\"TotalTimeConnectionSetup\":66995,\"TotalTimeServerResponse\":1349,\"Method\":\"GET\",\"Protocol\":\"HTTPS\",\"Host\":\"portal.beta.zdemo.net\",\"URL\":\"/media/Regular.woff\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.1 Safari/605.1.15\",\"XFF\":\"\",\"NameID\":\"admin@zdemo.net\",\"StatusCode\":304,\"RequestSize\":615,\"ResponseSize\":331,\"ApplicationPort\":443,\"ClientPublicIp\":\"81.2.69.144\",\"ClientPublicPort\":60006,\"ClientPrivateIp\":\"81.2.69.193\",\"Customer\":\"ANZ Team/zdemo in beta\",\"ConnectionStatus\":\"\",\"ConnectionReason\":\"\"}",
         "type": [
             "connection"
@@ -546,7 +537,7 @@ An example event for `browser_access` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.3:56770"
+            "address": "172.21.0.3:51684"
         }
     },
     "organization": {
@@ -713,37 +704,34 @@ An example event for `user_activity` looks as following:
 {
     "@timestamp": "2019-05-31T17:35:42.000Z",
     "agent": {
-        "ephemeral_id": "fb8224d7-ed44-4dcd-92e3-63f89afde4f3",
-        "id": "bccd93d8-8f9b-4018-bf02-dace7ae34a69",
-        "name": "elastic-agent-55237",
+        "ephemeral_id": "6fb1a136-9af8-4d32-9dd8-c392ae6f2580",
+        "id": "157c5fae-90f8-4fe0-8069-e93ccb609fe1",
+        "name": "elastic-agent-97104",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "client": {
         "geo": {
             "country_iso_code": "US",
             "location": {
-                "coordinates": [
-                    -119.00000003166497,
-                    45
-                ],
-                "type": "Point"
+                "lat": 45,
+                "lon": -119
             }
         },
         "ip": "81.2.69.193"
     },
     "data_stream": {
         "dataset": "zscaler_zpa.user_activity",
-        "namespace": "77965",
+        "namespace": "25160",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bccd93d8-8f9b-4018-bf02-dace7ae34a69",
+        "id": "157c5fae-90f8-4fe0-8069-e93ccb609fe1",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -751,9 +739,8 @@ An example event for `user_activity` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zpa.user_activity",
-        "ingested": "2025-09-15T09:57:56Z",
+        "ingested": "2025-09-16T07:35:23Z",
         "kind": "event",
-        "module": "zscaler_zpa",
         "original": "{\"LogTimestamp\": \"Fri May 31 17:35:42 2019\",\"Customer\": \"Customer XYZ\",\"SessionID\": \"LHJdkjmNDf12nclBsvwA\",\"ConnectionID\": \"SqyZIMkg0JTj7EABsvwA,Q+EjXGdrvbF2lPiBbedm\",\"InternalReason\": \"\",\"ConnectionStatus\": \"active\",\"IPProtocol\": 6,\"DoubleEncryption\": 0,\"Username\": \"ZPA LSS Client\",\"ServicePort\": 10011,\"ClientPublicIP\": \"81.2.69.193\",\"ClientLatitude\": 45.000000,\"ClientLongitude\": -119.000000,\"ClientCountryCode\": \"US\",\"ClientZEN\": \"broker2b.pdx\",\"Policy\": \"ABC Lab Apps\",\"Connector\": \"ZDEMO ABC\",\"ConnectorZEN\": \"broker2b.pdx\",\"ConnectorIP\": \"67.43.156.12\",\"ConnectorPort\": 60266,\"Host\": \"175.16.199.1\",\"Application\": \"ABC Lab Apps\",\"AppGroup\": \"ABC Lab Apps\",\"Server\": \"0\",\"ServerIP\": \"175.16.199.1\",\"ServerPort\": 10011,\"PolicyProcessingTime\": 28,\"CAProcessingTime\": 1330,\"ConnectorZENSetupTime\": 191017,\"ConnectionSetupTime\": 192397,\"ServerSetupTime\": 465,\"AppLearnTime\": 0,\"TimestampConnectionStart\": \"2019-05-30T08:20:42.230Z\",\"TimestampConnectionEnd\": \"\",\"TimestampCATx\": \"2019-05-30T08:20:42.230Z\",\"TimestampCARx\": \"2019-05-30T08:20:42.231Z\",\"TimestampAppLearnStart\": \"\",\"TimestampZENFirstRxClient\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENFirstTxClient\": \"\",\"TimestampZENLastRxClient\": \"2019-05-31T17:34:27.348Z\",\"TimestampZENLastTxClient\": \"\",\"TimestampConnectorZENSetupComplete\": \"2019-05-30T08:20:42.422Z\",\"TimestampZENFirstRxConnector\": \"\",\"TimestampZENFirstTxConnector\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENLastRxConnector\": \"\",\"TimestampZENLastTxConnector\": \"2019-05-31T17:34:27.348Z\",\"ZENTotalBytesRxClient\": 2406926,\"ZENBytesRxClient\": 7115,\"ZENTotalBytesTxClient\": 0,\"ZENBytesTxClient\": 0,\"ZENTotalBytesRxConnector\": 0,\"ZENBytesRxConnector\": 0,\"ZENTotalBytesTxConnector\": 2406926,\"ZENBytesTxConnector\": 7115,\"Idp\": \"Example IDP Config\",\"ClientToClient\": \"0\"}",
         "type": [
             "info",
@@ -770,7 +757,7 @@ An example event for `user_activity` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.3:36068"
+            "address": "172.21.0.3:40418"
         }
     },
     "network": {
@@ -924,37 +911,34 @@ An example event for `user_status` looks as following:
 {
     "@timestamp": "2019-05-31T17:34:48.000Z",
     "agent": {
-        "ephemeral_id": "51ce9ec2-d53e-4c44-958d-e1342fe87b25",
-        "id": "b38824da-2dcc-4aaa-b60c-d41c68443f18",
-        "name": "elastic-agent-80382",
+        "ephemeral_id": "1abe1ea0-4a67-4535-ac7c-c525e6248a65",
+        "id": "080c4b8f-729b-46b0-b898-8c927e9d39a8",
+        "name": "elastic-agent-82171",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "client": {
         "geo": {
             "country_iso_code": "US",
             "location": {
-                "coordinates": [
-                    -119.00000003166497,
-                    45
-                ],
-                "type": "Point"
+                "lat": 45,
+                "lon": -119
             }
         },
         "ip": "81.2.69.144"
     },
     "data_stream": {
         "dataset": "zscaler_zpa.user_status",
-        "namespace": "27692",
+        "namespace": "13582",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b38824da-2dcc-4aaa-b60c-d41c68443f18",
+        "id": "080c4b8f-729b-46b0-b898-8c927e9d39a8",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -962,9 +946,8 @@ An example event for `user_status` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zpa.user_status",
-        "ingested": "2025-09-15T09:58:46Z",
+        "ingested": "2025-09-16T07:36:12Z",
         "kind": "state",
-        "module": "zscaler_zpa",
         "original": "{\"LogTimestamp\":\"Fri May 31 17:34:48 2019\",\"Customer\":\"Customer XYZ\",\"Username\":\"ZPA LSS Client\",\"SessionID\":\"vkczUERSLl88Y+ytH8v5\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.12.0-36-g87dad18\",\"ZEN\":\"broker2b.pdx\",\"CertificateCN\":\"loggerz2x.pde.zpabeta.net\",\"PublicIP\":\"81.2.69.144\",\"Latitude\":45,\"Longitude\":-119,\"CountryCode\":\"US\",\"TimestampAuthentication\":\"2019-05-29T21:18:38.000Z\",\"TimestampUnAuthentication\":\"\",\"TotalBytesRx\":31274866,\"TotalBytesTx\":25424152,\"Idp\":\"IDP Config\",\"Hostname\":\"DESKTOP-99HCSJ1\",\"Platform\":\"windows\",\"ClientType\":\"zpn_client_type_zapp\",\"TrustedNetworks\":\"TN1_stc1\",\"TrustedNetworksNames\":\"145248739466696953\",\"SAMLAttributes\":\"myname:user,myemail:user@zscaler.com\",\"PosturesHit\":\"sm-posture1,sm-posture2\",\"PosturesMiss\":\"sm-posture11,sm-posture12\",\"ZENLatitude\":47,\"ZENLongitude\":-122,\"ZENCountryCode\":\"\",\"FQDNRegistered\": \"0\",\"FQDNRegisteredError\": \"CUSTOMER_NOT_ENABLED\"}",
         "type": [
             "info",
@@ -982,7 +965,7 @@ An example event for `user_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.3:37514"
+            "address": "172.21.0.3:51342"
         }
     },
     "organization": {
@@ -999,11 +982,8 @@ An example event for `user_status` looks as following:
     "server": {
         "geo": {
             "location": {
-                "coordinates": [
-                    -122.0000000204891,
-                    46.99999996460974
-                ],
-                "type": "Point"
+                "lat": 47,
+                "lon": -122
             }
         }
     },
