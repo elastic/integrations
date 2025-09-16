@@ -127,6 +127,15 @@ with_mage() {
 
     go install "github.com/magefile/mage@${SETUP_MAGE_VERSION:-"latest"}"
 
+    # Install test dependencies
+    local install_packages=(
+       "github.com/jstemmer/go-junit-report"
+       "gotest.tools/gotestsum"
+    )
+    for pkg in "${install_packages[@]}"; do
+        go install "${pkg}
+    done
+
     mage --version
 }
 
