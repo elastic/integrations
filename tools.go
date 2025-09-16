@@ -7,6 +7,7 @@
 package main
 
 import (
+	_ "github.com/magefile/mage"
 	_ "golang.org/x/tools/cmd/goimports"
 	_ "gotest.tools/gotestsum"
 
