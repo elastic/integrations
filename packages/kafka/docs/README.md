@@ -1576,51 +1576,73 @@ An example event for `consumer` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-01T07:43:38.918Z",
+    "@timestamp": "2025-09-12T11:07:25.711Z",
     "agent": {
-        "ephemeral_id": "9c137f1e-bcc8-46ea-af40-14bfb4b58828",
-        "id": "4fc53335-1c20-4184-bf19-72f3ebe95de7",
-        "name": "EPUALVIW0487",
+        "ephemeral_id": "326018cd-af13-47dc-8878-aa8c94563fd9",
+        "id": "8b71396e-713d-4903-9fab-bf8e337e0f21",
+        "name": "elastic-agent-55314",
         "type": "metricbeat",
-        "version": "8.19.2"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "kafka.consumer",
-        "namespace": "default",
+        "namespace": "31101",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4fc53335-1c20-4184-bf19-72f3ebe95de7",
+        "id": "8b71396e-713d-4903-9fab-bf8e337e0f21",
         "snapshot": false,
-        "version": "8.19.2"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "kafka.consumer",
-        "duration": 231604334,
-        "ingested": "2025-09-01T07:43:40Z",
+        "duration": 190897139,
+        "ingested": "2025-09-12T11:07:28Z",
         "kind": "metric",
         "module": "jolokia",
-        "type": "info"
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-55314",
+        "ip": [
+            "172.19.0.4",
+            "172.22.0.2"
+        ],
+        "mac": [
+            "6E-33-D1-42-50-99",
+            "BA-62-17-83-57-BC"
+        ],
+        "name": "elastic-agent-55314",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
     },
     "kafka": {
         "consumer": {
-            "bytes_consumed": 1344,
-            "fetch_rate": 1.927553,
-            "mbean": "kafka.consumer:type=consumer-fetch-manager-metrics,client-id=consumer-1",
-            "metric_fingerprint": "HEkohlG0wHttWKO0XWl1d0Qg8sQ=",
-            "records_consumed": 34
+            "client_id": "console-consumer",
+            "mbean": "kafka.consumer:type=consumer-fetch-manager-metrics,client-id=console-consumer",
+            "metric_fingerprint": "gkttPSbYlnXwXHsW2bmYbgRVYVs="
         }
     },
     "metricset": {
         "name": "jmx",
-        "period": 60000
+        "period": 10000
     },
     "service": {
-        "address": "http://localhost:8774/jolokia",
+        "address": "http://svc-kafka:8774/jolokia",
         "type": "kafka"
     }
 }
@@ -1728,6 +1750,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | kafka.producer.io_wait | The producer I/O wait time. | float | nanos | gauge |
 | kafka.producer.mbean | Mbean that this event is related to. | keyword |  |  |
 | kafka.producer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
+| kafka.producer.node_id |  | keyword |  |  |
 | kafka.producer.out.bytes_per_sec | The rate of bytes going out for the producer. | float | byte | gauge |
 | kafka.producer.record_error_rate | The average number of retried record sends per second. | float |  | gauge |
 | kafka.producer.record_retry_rate | The average number of retried record sends per second. | float |  | gauge |

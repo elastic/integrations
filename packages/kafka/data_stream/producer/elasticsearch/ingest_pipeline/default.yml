@@ -26,10 +26,23 @@ processors:
       if: "ctx.kafka?.producer?.mbean != null"
       ignore_failure: true
 
+  - grok:
+      field: "kafka.producer.mbean"
+      patterns:
+        - "node-id=(?<kafka_producer_node_id>[^,]+)"
+      if: "ctx.kafka?.producer?.mbean != null"
+      ignore_failure: true
+
   - set:
       field: "kafka.producer.client_id"
       copy_from: "kafka_producer_client_id"
       if: "ctx.kafka_producer_client_id != null"
+      ignore_failure: true
+
+  - set:
+      field: "kafka.producer.node_id"
+      copy_from: "kafka_producer_node_id"
+      if: "ctx.kafka_producer_node_id != null"
       ignore_failure: true
 
   # Add metric fingerprint list
@@ -68,6 +81,10 @@ processors:
       ignore_failure: true
 
   # Cleanup
+  - remove:
+      field: kafka_producer_node_id
+      ignore_missing: true
+      
   - remove:
       field: kafka_producer_client_id
       ignore_missing: true
