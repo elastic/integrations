@@ -7,7 +7,6 @@
 package main
 
 import (
-	_ "github.com/jstemmer/go-junit-report"
 	_ "golang.org/x/tools/cmd/goimports"
 	_ "gotest.tools/gotestsum"
 
