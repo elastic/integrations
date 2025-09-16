@@ -64,8 +64,6 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 Sysdig alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
-#### Example
-
 An example event for `alerts` looks as following:
 
 ```json
@@ -340,8 +338,6 @@ An example event for `alerts` looks as following:
 ### Event
 
 This is the `event` dataset.
-
-#### Example
 
 An example event for `event` looks as following:
 
@@ -758,38 +754,40 @@ An example event for `event` looks as following:
 
 This is the `CSPM` dataset.
 
-#### Example
-
 An example event for `cspm` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-13T10:03:35.476Z",
+    "@timestamp": "2025-09-16T07:09:22.352Z",
     "agent": {
-        "ephemeral_id": "03e746db-51f2-4f3e-b931-6192d2142366",
-        "id": "2a638257-dbda-4523-b7c1-5566cf840bce",
-        "name": "elastic-agent-72022",
+        "ephemeral_id": "44ca4103-4c73-4286-9a0c-4b20ac6bdb81",
+        "id": "af37b9a4-71dd-4ebb-964e-85832bb68218",
+        "name": "elastic-agent-32566",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "sysdig.cspm",
-        "namespace": "67796",
+        "namespace": "30841",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "2a638257-dbda-4523-b7c1-5566cf840bce",
+        "id": "af37b9a4-71dd-4ebb-964e-85832bb68218",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
         "dataset": "sysdig.cspm",
-        "ingested": "2025-09-13T10:03:38Z",
-        "kind": "event",
+        "id": "21344",
+        "ingested": "2025-09-16T07:09:25Z",
+        "kind": "state",
         "original": "{\"acceptedCount\":0,\"control\":{\"acceptedCount\":0,\"authors\":\"Sysdig\",\"description\":\"Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.\",\"id\":\"21344\",\"isManual\":false,\"lastUpdate\":\"1752149383\",\"name\":\"Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys\",\"objectsCount\":2879,\"pass\":false,\"passingCount\":0,\"platform\":\"\",\"remediationId\":\"21344\",\"resourceApiEndpoint\":\"/api/cspm/v1/cloud/resources?controlId=21344\\u0026providerType=AWS\\u0026resourceKind=AWS_LAMBDA_FUNCTION\\u0026filter=policyId=52 and zones.id=119\",\"resourceKind\":\"AWS_LAMBDA_FUNCTION\",\"severity\":\"High\",\"supportedDistributions\":[{\"maxVersion\":0,\"minVersion\":0,\"name\":\"AWS\"}],\"target\":\"AWS\",\"type\":8},\"description\":\"All Amazon Web Services Controls.\",\"failedControls\":136,\"highSeverityCount\":3147,\"lowSeverityCount\":2926,\"mediumSeverityCount\":20805,\"name\":\"AWS Controls\",\"pass\":false,\"passingCount\":23735,\"policyId\":\"52\",\"policyName\":\"All Posture Findings\",\"requirementId\":\"637489\",\"severity\":\"High\",\"zone\":{\"id\":\"119\",\"name\":\"Entire Infrastructure\"}}",
         "outcome": "failure",
         "severity": 73,
@@ -805,9 +803,18 @@ An example event for `cspm` looks as following:
         "product": "Sysdig Secure",
         "vendor": "Sysdig"
     },
+    "result": {
+        "evaluation": "failed"
+    },
     "rule": {
-        "id": "52",
-        "name": "All Posture Findings"
+        "benchmark": {
+            "name": "All Posture Findings",
+            "rule_number": "52"
+        },
+        "description": "Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.",
+        "id": "21344",
+        "name": "Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys",
+        "uuid": "oa/CQUKtlb6YkI7MHaPyXvYQoss="
     },
     "sysdig": {
         "cspm": {
@@ -815,11 +822,8 @@ An example event for `cspm` looks as following:
             "control": {
                 "accepted_count": 0,
                 "authors": "Sysdig",
-                "description": "Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.",
-                "id": "21344",
                 "is_manual": false,
                 "last_update": "2025-07-10T12:09:43.000Z",
-                "name": "Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys",
                 "objects_count": 2879,
                 "pass": false,
                 "passing_count": 0,
@@ -873,6 +877,11 @@ An example event for `cspm` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| result.evaluation | The result of the evaluation. | keyword |
+| rule.benchmark.name | The pretty name of the benchmark. | keyword |
+| rule.benchmark.rule_number | The rule number in a given benchmark. | keyword |
 | sysdig.cspm.accepted_count | Number of accepted resources. | long |
 | sysdig.cspm.control.accepted_count | Number of accepted resources. | long |
 | sysdig.cspm.control.authors |  | keyword |
@@ -899,7 +908,7 @@ An example event for `cspm` looks as following:
 | sysdig.cspm.high_severity_count | Number of failing resources for high-severity controls. | long |
 | sysdig.cspm.low_severity_count | Number of failing resources for low-severity controls. | long |
 | sysdig.cspm.medium_severity_count | Number of failing resources for medium-severity controls. | long |
-| sysdig.cspm.name | Requirement name. | match_only_text |
+| sysdig.cspm.name | Requirement name. | keyword |
 | sysdig.cspm.pass | Is requirement passing. | boolean |
 | sysdig.cspm.passing_count |  | long |
 | sysdig.cspm.policy_id | Policy ID. | keyword |
@@ -913,8 +922,6 @@ An example event for `cspm` looks as following:
 ### Vulnerability
 
 This is the `vulnerability` dataset.
-
-#### Example
 
 An example event for `vulnerability` looks as following:
 

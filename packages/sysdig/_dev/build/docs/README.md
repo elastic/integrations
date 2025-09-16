@@ -64,8 +64,6 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 Sysdig alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
-#### Example
-
 {{ event "alerts" }}
 
 {{ fields "alerts" }}
@@ -73,8 +71,6 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 ### Event
 
 This is the `event` dataset.
-
-#### Example
 
 {{event "event"}}
 
@@ -84,8 +80,6 @@ This is the `event` dataset.
 
 This is the `CSPM` dataset.
 
-#### Example
-
 {{event "cspm"}}
 
 {{fields "cspm"}}
@@ -93,8 +87,6 @@ This is the `CSPM` dataset.
 ### Vulnerability
 
 This is the `vulnerability` dataset.
-
-#### Example
 
 {{event "vulnerability"}}
 

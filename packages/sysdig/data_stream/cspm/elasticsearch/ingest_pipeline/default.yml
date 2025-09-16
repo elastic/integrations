@@ -298,22 +298,32 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      value: event
+      value: state
+  - append:
+      field: event.category
+      tag: append_configuration_into_event_category
+      value: configuration
   - append:
       field: event.type
       tag: append_info_into_event_type
       value: info
+  - set:
+      field: event.id
+      tag: set_event_id_from_control_id
+      copy_from: sysdig.cspm.control.id
+      ignore_empty_value: true
   - script:
-      description: Set event severity based on severity.
-      if: ctx.sysdig?.cspm?.severity != null
+      description: Set event severity based on control severity.
+      if: ctx.sysdig?.cspm?.control?.severity != null
       lang: painless
       params:
+        info: 21
         low: 21
         medium: 47
         high: 73
       source: |-
         ctx.event = ctx.event ?: [:];
-        ctx.event.severity = params.get(ctx.sysdig.cspm.severity.toLowerCase());
+        ctx.event.severity = params.get(ctx.sysdig.cspm.control.severity.toLowerCase());
       on_failure:
         - append:
             field: error.message
@@ -333,7 +343,7 @@ processors:
       tag: set_event_outcome_to_unknown
       value: unknown
       if: ctx.event?.outcome == null
-
+  
   # observer.*
   - set:
       field: observer.vendor
@@ -343,23 +353,64 @@ processors:
       field: observer.product
       tag: set_observer_product
       value: Sysdig Secure
+  
+  # result.*
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_passed
+      value: passed
+      if: ctx.sysdig?.cspm?.pass == true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_failed
+      value: failed
+      if: ctx.sysdig?.cspm?.pass == false
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_to_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
 
   # rule.*
   - set:
-      field: rule.id
-      tag: set_rule_id_from_cspm_policy_id
+      field: rule.benchmark.rule_number
+      tag: set_rule_benchmark_rule_number_from_cspm_policy_id
       copy_from: sysdig.cspm.policy_id
       ignore_empty_value: true
   - set:
-      field: rule.name
-      tag: set_rule_name_from_cspm_policy_name
+      field: rule.benchmark.name
+      tag: set_rule_benchmark_name_from_cspm_policy_name
       copy_from: sysdig.cspm.policy_name
       ignore_empty_value: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_cspm_control_id
+      copy_from: sysdig.cspm.control.id
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_cspm_control_name
+      copy_from: sysdig.cspm.control.name
+      ignore_empty_value: true
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_cspm_control_description
+      copy_from: sysdig.cspm.control.description
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - rule.name
+      tag: fingerprint_rule_uuid
+      target_field: rule.uuid
+      ignore_missing: true
 
   - remove:
       field:
         - sysdig.cspm.policy_id
         - sysdig.cspm.policy_name
+        - sysdig.cspm.control.id
+        - sysdig.cspm.control.name
+        - sysdig.cspm.control.description
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
