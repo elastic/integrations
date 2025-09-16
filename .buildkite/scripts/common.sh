@@ -123,14 +123,8 @@ with_mage() {
     create_bin_folder
     with_go
 
-    local install_packages=(
-            "github.com/magefile/mage"
-            "github.com/jstemmer/go-junit-report"
-            "gotest.tools/gotestsum"
-    )
-    for pkg in "${install_packages[@]}"; do
-        go install "${pkg}@latest"
-    done
+    go install "github.com/magefile/mage@${SETUP_MAGE_VERSION:-"latest"}"
+
     mage --version
 }
 
