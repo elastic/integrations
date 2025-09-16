@@ -125,14 +125,8 @@ with_mage() {
     create_bin_folder
     with_go
 
-    local install_packages=(
-            "github.com/magefile/mage"
-            "github.com/jstemmer/go-junit-report"
-            "gotest.tools/gotestsum"
-    )
-    for pkg in "${install_packages[@]}"; do
-        go install "${pkg}@latest"
-    done
+    go install github.com/magefile/mage@latest
+
     mage --version
 }
 
@@ -831,7 +825,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^elastic_package_registry$'
 }
 
 check_package() {

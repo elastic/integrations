@@ -7,7 +7,9 @@
 package main
 
 import (
+	_ "github.com/jstemmer/go-junit-report"
 	_ "golang.org/x/tools/cmd/goimports"
+	_ "gotest.tools/gotestsum"
 
 	_ "github.com/elastic/elastic-package"
 	_ "github.com/elastic/go-licenser"
