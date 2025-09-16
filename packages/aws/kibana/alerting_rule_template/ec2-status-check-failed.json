@@ -1,0 +1,37 @@
+{
+  "id": "b6513de4-6c36-499a-8f0a-98431cd4dbee",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "EC2 Status Check Failed",
+    "tags": [],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ec2_metrics-default\n| STATS statusfailed=max(aws.ec2.metrics.StatusCheckFailed.avg) by cloud.account.id, cloud.region, aws.dimensions.InstanceId\n| WHERE statusfailed > 0"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "event.ingested",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

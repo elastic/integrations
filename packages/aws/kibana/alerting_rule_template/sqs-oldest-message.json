@@ -1,0 +1,37 @@
+{
+  "id": "b6513de4-6c36-499a-8f0a-98431cd4dbee",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "SQS Oldest Message",
+    "tags": [],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.sqs-default\n| STATS oldestmsgage=max(aws.sqs.oldest_message_age.sec) by cloud.account.id, cloud.region, aws.dimensions.QueueName\n| WHERE oldestmsgage >= 300"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "event.ingested",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
