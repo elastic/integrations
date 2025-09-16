@@ -125,6 +125,7 @@ with_mage() {
     create_bin_folder
     with_go
 
+    # Install version from go.mod"
     go install "github.com/magefile/mage"
 
     mage --version
