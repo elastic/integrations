@@ -335,7 +335,7 @@ processors:
 {{/if}}
 ```
 
-### More Detail
+### More detail
 
 Pipeline tests are the best way to get the processors working and resolve painless bugs.
 
@@ -373,6 +373,8 @@ When running `elastic-package export dashboards`, it will list all dashboards an
 If edits to the dashboard are needed later, the file may need to be completely replaced with a new export, as all the UUIDs will change if cloning is required.
 
 When in the dashboard view, create a data filter, otherwise `elastic-package check` will fail the dashboard. Next to the `KQL` search box is a `+` button for this purpose. A good initial filter is `data_stream.dataset : integration-name.log`.
+
+Existing dashboards can be edited with `elastic-package edit dashboards`. By default, dashboards are read-only. This subcommand removes this flag, so they can be edited and exported.
 
 # Pipeline Best Practices
 
@@ -500,10 +502,10 @@ elastic-package stack down
 elastic-package stack up -vd --services package-registry
 	Recreates the package-registry container. Use after the build command to make the registry aware of your new package. Beware: If you install the package in Kibana, you can no longer update the package at that version. Increment the package version to make new packages show up. Remember to revert the version back to the original before submitting a PR.
 
-elastic-package test [pipeline|test|static|asset] -v
+elastic-package test [pipeline|static|asset|policy|system] -v
     Run package tests. Make sure you are in the package's directory. A stack needs to be running for this to work. It is not necessary to build the package for the tests. Pipeline tests are great for rapid iteration given how quickly they run and how comprehensive the validations are. System tests are great for end-to-end tests and validating any changes made to Filebeat (this includes the *.yml.hbs files in data_stream/NAME/agent/stream).
 
-elastic-package test [pipeline|test|static|asset] -v -g
+elastic-package test [pipeline|static|asset|policy|system] -v -g
     Regenerate the expected files (pipeline test) or sample_event.json (system system) after the tests run. Ensure that the output is expected before committing changes, as regressions could accidentally become the new expected behavior.
 ```
 

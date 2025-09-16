@@ -34,7 +34,6 @@ Pipeline tests verify:
 - Data type conversions and formatting
 - ECS field mapping compliance
 - Error handling and edge cases
-- Performance of complex processors
 
 ## Test Structure [test-structure]
 
@@ -55,6 +54,8 @@ packages/your-package/
 ```
 
 ## Test Input Types [input-types]
+
+There are two input types for pipeline tests, raw log files and JSON event files. They are differentiated by their extension; raw log files use `.log` and JSON event files use `.json`.
 
 ### Raw Log Files [raw-logs]
 
@@ -231,7 +232,7 @@ Define expected output in `-expected.json` files:
 elastic-package stack up -d --services=elasticsearch
 
 # Verify Elasticsearch is running
-curl -X GET "localhost:9200/_cluster/health"
+curl -X GET "https://localhost:9200/_cluster/health"
 ```
 
 ### Basic Test Execution [basic-execution]
@@ -252,7 +253,7 @@ elastic-package test pipeline --report-format human
 
 ### Generating Expected Results [generating-results]
 
-Use this for initial test setup or when updating pipelines:
+Use this for initial test setup or when updating pipelines. `--generate` will write (or overwrite) the expected files with the output from the current ingest pipelines.
 
 ```bash
 # Generate expected results for all tests
@@ -266,6 +267,7 @@ git diff _dev/test/pipeline/
 ```
 
 Verify the correctness of the generated expected files. `elastic-package` will create the expected files from the output of the current ingest pipeline. It cannot know if this is actually correct; you will need to verify this.
+If the expected files are not correct, you'll need to iterate by updating the ingest pipeline and regenerating the expected files until they are correct.
 
 **Workflow tip:**
 1. Create test input files first
@@ -297,7 +299,7 @@ elastic-package test pipeline --data-streams your-stream --generate
 
 **Common issues and solutions:**
 
-**Test failures with field mismatches:**
+**Test failures with field value mismatches:**
 ```bash
 # Run with verbose output to see detailed diffs
 elastic-package test pipeline -v --report-format human
@@ -315,10 +317,12 @@ ls -la data_stream/*/elasticsearch/ingest_pipeline/
 elastic-package lint
 
 # Manually test pipeline upload
-curl -X PUT "localhost:9200/_ingest/pipeline/your-pipeline" \
+curl -X PUT "https://localhost:9200/_ingest/pipeline/your-pipeline" \
   -H "Content-Type: application/json" \
   -d @data_stream/your-stream/elasticsearch/ingest_pipeline/default.yml
 ```
+If using curl on localhost, `--insecure` flag may be required, or the CA certificate can be specified with
+`--cacert ~/.elastic-package/profiles/default/stack/certs/ca-cert.pem`.
 
 **Multiline parsing issues:**
 ```bash
@@ -381,7 +385,7 @@ test-unicode.log
 
 ```bash
 # Test individual pipeline components
-curl -X POST "localhost:9200/_ingest/pipeline/_simulate" \
+curl -X POST "https://localhost:9200/_ingest/pipeline/_simulate" \
   -H "Content-Type: application/json" \
   -d '{
     "pipeline": {"processors": [{"grok": {"field": "message", "patterns": ["your-pattern"]}}]},

@@ -5,7 +5,7 @@ mapped_pages:
 
 # Policy testing [policy-testing]
 
-Policy tests allow you to verify that an integration policy will be accepted by Fleet, and will create an expect Elastic Agent policy.
+Policy tests allow you to verify that an integration policy will be accepted by Fleet, and will create an expected Elastic Agent policy.
 
 An Elastic Agent policy is used by Fleet to define the data that will be collected by the Elastic Agent. Within the Elastic Agent policies is a set of integration policies, which define how each integration's input will be configured.
 
@@ -19,7 +19,7 @@ Policy tests require the {{stack}} to be running. Start the Elastic stack with e
 
 ```bash
 # Start the stack (if not already running)
-elastic-package stack up -d
+elastic-package stack up -d --services kibana,elasticsearch
 
 # Run policy tests
 elastic-package test policy

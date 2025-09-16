@@ -36,7 +36,7 @@ The test framework automatically:
 1. Deploys your integration service (Docker/Kubernetes/Terraform)
 2. Configures the Elastic Agent with test policies
 3. Collects and indexes sample data
-4. Validates the first 500 documents by timestamp
+4. Validates documents
 5. Checks field mappings and data type compatibility
 6. Cleans up test artifacts
 
@@ -267,6 +267,10 @@ data_stream:
     paths: ["{{SERVICE_LOGS_DIR}}/*.log"]
     url: "http://{{Hostname}}:{{Ports.0}}/metrics"
 ```
+
+### Configuration Options
+
+For the complete list of options that can be used to define test case behaviour, refer to [Test case definition](https://github.com/elastic/elastic-package/blob/main/docs/howto/system_testing.md#test-case-definition).
 
 ## Running System Tests [running-tests]
 
