@@ -540,8 +540,8 @@ processors:
           kind: event
           outcome: success
         AssociateIndicator:
-          category: [ malware ]
-          type: [ info ]
+          category: [ threat ]
+          type: [ indicator ]
           kind: alert
           outcome: unknown
         AssociateTreeIdWithRoot:
@@ -664,9 +664,9 @@ processors:
           kind: alert
           outcome: success
         DetectionExcluded:
-          category: [ configuration, malware ]
+          category: [ configuration ]
           type: [ change, info ]
-          kind: alert
+          kind: event
           outcome: success
         DirectoryCreate:
           category: [ file ]
@@ -750,7 +750,7 @@ processors:
           outcome: success
         FileDetectInfo:
           category: [ file ]
-          type: [ info ]
+          type: [ creation ]
           kind: alert
           outcome: unknown
         FileInfo:
@@ -776,7 +776,7 @@ processors:
         FileSystemOperationDetectInfo:
           category: [ file ]
           type: [ change, deletion ]
-          kind: alert
+          kind: event
           outcome: unknown
         FileTimestampsModified:
           category: [ file ]
@@ -1036,7 +1036,7 @@ processors:
         ModifyServiceBinary:
           category: [ file ]
           type: [ change ]
-          kind: alert
+          kind: event
           outcome: unknown
         ModuleBlockedEvent:
           category: [ process, malware ]
@@ -1251,7 +1251,7 @@ processors:
         RansomwareCreateFile:
           category: [ file ]
           type: [ creation ]
-          kind: alert
+          kind: event
           outcome: success
         RansomwareFileAccessPattern:
           category: [ file ]
@@ -1261,7 +1261,7 @@ processors:
         RansomwareOpenFile:
           category: [ file ]
           type: [ access ]
-          kind: alert
+          kind: event
           outcome: success
         RarFileWritten:
           category: [ file ]
@@ -1283,6 +1283,16 @@ processors:
           type: [ access ]
           kind: alert
           outcome: success
+        RegCrowdstrikeKeyUpdate:
+          category: [ registry ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        RegCrowdstrikeValueUpdate:
+          category: [ registry ]
+          type: [ change ]
+          kind: event
+          outcome: success
         RegGenericValueUpdate:
           category: [ registry ]
           type: [ change ]
@@ -1299,7 +1309,7 @@ processors:
           kind: event
           outcome: success
         RegistryOperationDetectInfo:
-          category: [ malware, registry ]
+          category: [ registry ]
           type: [ info ]
           kind: alert
           outcome: success
@@ -1361,7 +1371,7 @@ processors:
         ScriptControlErrorEvent:
           category: [ malware, file ]
           type: [ info ]
-          kind: alert
+          kind: event
           outcome: failure
         ScriptControlScanInfo:
           category: [ malware, file ]
@@ -1374,9 +1384,9 @@ processors:
           kind: state
           outcome: success
         SensitiveWmiQuery:
-          category: [ malware, process ]
+          category: [ process ]
           type: [ info ]
-          kind: alert
+          kind: event
           outcome: success
         SensorHeartbeat:
           category: [ package ]
@@ -1449,7 +1459,7 @@ processors:
           kind: event
           outcome: unknown
         SuspiciousCreateSymbolicLink:
-          category: [ malware, file ]
+          category: [ file ]
           type: [ creation, info ]
           kind: alert
           outcome: success
@@ -1671,6 +1681,10 @@ processors:
       field: _temp.isProcess
       value: true
       if: ctx.event?.category?.contains('process') == true
+  - set:
+      field: _temp.isDriver
+      value: true
+      if: ctx.event?.category?.contains('driver') == true
 
   ## Event fields.
   - set:
@@ -1748,11 +1762,10 @@ processors:
         }
   
   ## Observer fields.
-  - rename:
-      field: crowdstrike.aid
-      target_field: observer.serial_number
-      ignore_missing: true
-      ignore_failure: true
+  - set:
+      field: observer.serial_number
+      copy_from: crowdstrike.aid
+      ignore_empty_value: true
   - split:
       field: crowdstrike.aip
       separator: "\\s+"
@@ -1802,10 +1815,11 @@ processors:
           allow_duplicates: false
 
   ## Host fields.
-  - set:
-      field: host.id
-      copy_from: crowdstrike.aid
-      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.aid
+      target_field: host.id
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: crowdstrike.ComputerName
       target_field: host.hostname
@@ -1910,6 +1924,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
+  ## Service fields.
+  - set:
+      field: service.name
+      copy_from: crowdstrike.ServiceDisplayName
+      if: ctx._temp?.isDriver == true
+      ignore_empty_value: true
+
   ## Process fields.
   - rename:
       field: crowdstrike.CommandLine
@@ -2002,7 +2023,7 @@ processors:
   - rename:
       field: crowdstrike.ImageFileName
       target_field: process.executable
-      if: ctx._temp?.isLibrary != true
+      if: ctx._temp?.isLibrary != true && ctx._temp?.isDriver != true
       ignore_missing: true
   - script:
       tag: process-name
@@ -2134,19 +2155,11 @@ processors:
       field: crowdstrike.ProcessGroupId
       target_field: process.pgid
       ignore_missing: true
-  - rename:
-      field: crowdstrike.ContextProcessId
-      target_field: process.entity_id
-      ignore_missing: true
-      ignore_failure: true
-      if: ctx.process?.entity_id == null && ctx.host?.os?.type != 'windows'
-  - convert:
-      field: crowdstrike.ContextProcessId
-      type: long
-      target_field: process.pid
-      if: ctx._temp?.isLibrary == true && ctx.crowdstrike?.ContextProcessId != '' && ctx.host?.os?.type == 'windows'
-      ignore_missing: true
-      ignore_failure: true
+  - set:
+      field: process.entity_id
+      copy_from: crowdstrike.ContextProcessId
+      if: ctx.process?.entity_id == null
+      ignore_empty_value: true
   - convert:
       field: crowdstrike.ContextThreadId
       type: long
@@ -2203,7 +2216,7 @@ processors:
   - set:
       field: process.pe.original_file_name
       copy_from: crowdstrike.OriginalFilename
-      if: ctx.host?.os?.type == 'windows'
+      if: ctx._temp?.isProcess == true && ctx.host?.os?.type == 'windows'
       ignore_empty_value: true
   - convert:
       field: process.pgid
@@ -2244,6 +2257,15 @@ processors:
       ignore_empty_value: true
 
   ## Library fields.
+  - set:
+      field: event.action
+      value: load
+      if: ctx._temp?.isDriver == true
+  - set:
+      field: dll.pe.original_file_name
+      copy_from: crowdstrike.OriginalFilename
+      if: (ctx._temp?.isLibrary == true || ctx._temp?.isDriver == true) && ctx.host?.os?.type == 'windows'
+      ignore_empty_value: true
   - rename:
       field: process.name
       target_field: dll.name
@@ -2257,7 +2279,7 @@ processors:
   - rename:
       field: crowdstrike.MD5HashData
       target_field: dll.hash.md5
-      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      if: (ctx._temp?.isLibrary == true || ctx._temp?.isDriver == true) && ctx.host?.os?.type == 'windows'
       ignore_missing: true
   - rename:
       field: crowdstrike.SHA1HashData
@@ -2267,7 +2289,7 @@ processors:
   - rename:
       field: crowdstrike.SHA256HashData
       target_field: dll.hash.sha256
-      if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
+      if: (ctx._temp?.isLibrary == true || ctx._temp?.isDriver == true) && ctx.host?.os?.type == 'windows'
       ignore_missing: true
   - convert:
       field: crowdstrike.ModuleSize
@@ -2278,7 +2300,10 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx._temp?.isLibrary == true && ctx.crowdstrike?.ImageFileName != null && ctx.host?.os?.type == 'windows'
+      if: >-
+        (ctx._temp?.isLibrary == true || ctx._temp?.isDriver == true) &&
+        ctx.crowdstrike?.ImageFileName != null &&
+        ctx.host?.os?.type == 'windows'
       ignore_failure: true
       source: |-
         int idx = ctx.crowdstrike.ImageFileName.lastIndexOf('\\');
@@ -2290,7 +2315,9 @@ processors:
       field: crowdstrike.ImageFileName
       target_field: dll.path
       ignore_missing: true
-      if: ctx.event?.action == 'ClassifiedModuleLoad' && ctx.host?.os?.type == 'windows'
+      if: >-
+        (ctx.event?.action == 'ClassifiedModuleLoad' || ctx._temp?.isDriver == true) &&
+        ctx.host?.os?.type == 'windows'
   - script:
       lang: painless
       if: ctx._temp?.isLibrary == true && ctx.crowdstrike?.TargetImageFileName != null && ctx.host?.os?.type == 'windows'
@@ -2307,17 +2334,39 @@ processors:
       if: ctx._temp?.isLibrary == true && ctx.host?.os?.type == 'windows'
       ignore_missing: true
   - script:
+      tag: set_dll_code_signature_fields
+      description: Set dll.code_signature.* based on ImageSignatureType and ImageSignatureLevel.
       lang: painless
-      if: ctx.event?.action == 'ClassifiedModuleLoad' && ctx.crowdstrike?.ImageSignatureLevel != null && ctx.crowdstrike.ImageSignatureLevel != ''
-      ignore_failure: true
+      if: >-
+        ctx.event?.action == 'ClassifiedModuleLoad' &&
+        ctx.crowdstrike?.ImageSignatureLevel != null &&
+        ctx.crowdstrike.ImageSignatureLevel != '' &&
+        ctx.crowdstrike?.ImageSignatureType != null &&
+        ctx.crowdstrike.ImageSignatureType != ''
       source: |-
         long signatureLevel = Long.parseLong(ctx.crowdstrike.ImageSignatureLevel);
+        long signatureType = Long.parseLong(ctx.crowdstrike.ImageSignatureType);
         ctx.dll = ctx.dll ?: [:];
         ctx.dll.code_signature = ctx.dll.code_signature ?: [:];
-        if (signatureLevel > 0) {
-          ctx.dll.code_signature.exists = signatureLevel > 1;
+        if (signatureType == 0) {
+          ctx.dll.code_signature.exists = false;
+          ctx.dll.code_signature.trusted = false;
+        } else if (signatureType >= 1 && (signatureLevel == 0 || signatureLevel == 1)) {
+          ctx.dll.code_signature.exists = true;
+          ctx.dll.code_signature.trusted = false;
+        } else if (signatureType >= 1 && signatureLevel >= 2) {
+          ctx.dll.code_signature.exists = true;
+          ctx.dll.code_signature.trusted = true;
         }
-        ctx.dll.code_signature.trusted = signatureLevel > 1;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dll.code_signature.subject_name
+      copy_from: crowdstrike.CertificatePublisher
+      if: ctx._temp?.isDriver == true && ctx.host?.os?.type == 'windows'
+      ignore_empty_value: true
 
   ## Registry fields.
   - append:
@@ -2336,7 +2385,7 @@ processors:
   - gsub:
       field: crowdstrike.RegObjectName
       target_field: registry.key
-      pattern: '^\\REGISTRY\\(?:USER|MACHINE)'
+      pattern: '^\\REGISTRY\\(?:USER|MACHINE)\\'
       replacement: ''
       ignore_missing: true
       ignore_failure: true
@@ -2348,10 +2397,22 @@ processors:
           '1':
             type: change
             action: modification
+          '2':
+            type: deletion
+            action: deletion
           '3':
             type: creation
             action: creation
+          '4':
+            type: deletion
+            action: deletion
           '5':
+            type: change
+            action: modification
+          '6':
+            type: info
+            action: load
+          '7':
             type: change
             action: modification
           '8':
@@ -2364,22 +2425,8 @@ processors:
         def op = params.get('op_types')[ctx.crowdstrike.RegOperationType];
         if (op != null) {
           ctx.event = ctx.event ?: [:];
-          if (ctx.event.type instanceof List) {
-            Set type = new HashSet();
-            for (String t: ctx.event.type) {
-              type.add(t);
-            }
-            type.add(op.type);
-            ctx.event.type = type;
-          } else if (ctx.event.type instanceof String) {
-            String type = ctx.event.type;
-            ctx.event.type = [];
-            ctx.event.type.add(type);
-            ctx.event.type.add(op.type);
-          } else {
-            ctx.event.type = [];
-            ctx.event.type.add(op.type);
-          }
+          ctx.event.type = [];
+          ctx.event.type.add(op.type);
           ctx.event.action = op.action;
         }
   - script:
@@ -2442,6 +2489,11 @@ processors:
       target_field: user.id
       ignore_missing: true
       if: ctx.user?.id == null || ctx.user.id == ""
+  - set:
+      field: user.id
+      copy_from: crowdstrike.FileOperatorSid
+      if: ctx.user?.id == null && ctx._temp?.isFile == true
+      ignore_empty_value: true
   - append:
       field: user.roles
       value: admin
@@ -2948,6 +3000,11 @@ processors:
       if: ctx.event?.action != null && ctx.destination?.domain == null && ctx.event.action.contains("SmbServerShareOpenedEtw")
 
   ## File fields.
+  - set:
+      field: file.pe.original_file_name
+      copy_from: crowdstrike.OriginalFilename
+      if: ctx._temp?.isFile == true && ctx.host?.os?.type == 'windows'
+      ignore_empty_value: true
   - convert:
       field: crowdstrike.Size
       type: long
@@ -2961,6 +3018,11 @@ processors:
       field: crowdstrike.FileIdentifier
       target_field: file.inode
       ignore_missing: true
+  - set:
+      field: file.Ext.original.path
+      copy_from: crowdstrike.SourceFileName
+      if: ctx.event?.action == 'NewExecutableRenamed' || ctx.event?.action == 'FileRenameInfo'
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.SourceFileName
       target_field: file.path
@@ -2970,6 +3032,11 @@ processors:
       target_field: file.path
       ignore_missing: true
       ignore_failure: true
+  - set:
+      field: file.path
+      copy_from: crowdstrike.TargetFileName
+      if: ctx.event?.action == 'NewExecutableRenamed' || ctx.event?.action == 'FileRenameInfo'
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.DiskParentDeviceInstanceId
       target_field: file.device
@@ -3016,6 +3083,28 @@ processors:
         if (path.indexOf(':') == 1) {
           ctx.file.drive_letter = path.substring(0, 1).toUpperCase();
         }
+  - script:
+      tag: parse_file_ext_original_path
+      description: Adds file.Ext.original.* information.
+      lang: painless
+      if: ctx.file?.Ext?.original?.path != null && ctx.file.Ext.original.path.length() > 1
+      source: |-
+        def removeSuffix(String s, String suffix) {
+          if (s != null && suffix != null && s.endsWith(suffix)) {
+            return s.substring(0, s.length() - suffix.length());
+          }
+          return s;
+        }
+
+        def path = removeSuffix(ctx.file.Ext.original.path, "/");
+        path = removeSuffix(path, "\\");
+        def idx = path.lastIndexOf("\\");
+        if (idx == -1) {
+          idx = path.lastIndexOf("/");
+        }
+        if (idx > -1) {
+          ctx.file.Ext.original.name = path.substring(idx+1);
+        }
   - rename:
       field: _temp.hashes
       target_field: file.hash
@@ -3040,6 +3129,16 @@ processors:
       copy_from: crowdstrike.SHA256HashData
       if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'linux'
       ignore_empty_value: true
+  - set:
+      field: event.action
+      value: creation
+      if: >-
+        ctx.event?.action != null &&
+        ctx.event.action.endsWith('Written') &&
+        ctx.event.action != 'PeFileWritten' &&
+        ctx.event.action != 'NewExecutableWritten' &&
+        ctx.event.action != 'NewScriptWritten' &&
+        ctx.host?.os?.type == 'windows'
 
   ## Device Fields.
   - set:
