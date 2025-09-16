@@ -1464,6 +1464,7 @@ An example event for `vulnerability` looks as following:
 | vulnerability.package.fixed_version |  | keyword |
 | vulnerability.package.name |  | keyword |
 | vulnerability.package.version |  | keyword |
+| vulnerability.title |  | keyword |
 | wiz.vulnerability.cve_description |  | keyword |
 | wiz.vulnerability.cvss_severity |  | keyword |
 | wiz.vulnerability.data_source_name |  | keyword |
