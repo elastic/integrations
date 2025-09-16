@@ -232,7 +232,37 @@ An example event for `asset` looks as following:
                 "support_group": "ABC_01",
                 "supported_by": "Nick"
             },
-            "cloud_provider": "Amazon Web Services",
+            "cloud_provider": {
+                "aws": {
+                    "ec2": {
+                        "account_id": "123456789012",
+                        "availability_zone": "us-east-1e",
+                        "has_agent": true,
+                        "hostname": "test_dns.ec2.internal",
+                        "image_id": "ami-XXX",
+                        "instance_id": "i-XXX",
+                        "instance_state": "RUNNING",
+                        "instance_type": "i3.2xlarge",
+                        "launchdate": "2025-06-23T14:26:03.000Z",
+                        "private_dns": "test_dns.ec2.internal",
+                        "private_ip_address": "10.0.0.1",
+                        "qualys_scanner": false,
+                        "region": {
+                            "code": "us-east-1",
+                            "name": "US East (N. Virginia)"
+                        },
+                        "spot_instance": false,
+                        "subnet_id": "subnet-XXX",
+                        "vpc_id": "vpc-XXX"
+                    },
+                    "tags": [
+                        {
+                            "value": "production",
+                            "key": "environment"
+                        }
+                    ]
+                }
+            },
             "container": {
                 "has_sensor": "temp_value",
                 "no_of_containers": 5,
