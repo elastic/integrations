@@ -133,7 +133,7 @@ with_mage() {
        "gotest.tools/gotestsum"
     )
     for pkg in "${install_packages[@]}"; do
-        go install "${pkg}
+        go install "${pkg}"
     done
 
     mage --version
