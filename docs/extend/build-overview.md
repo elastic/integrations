@@ -5,10 +5,17 @@ mapped_pages:
 
 # Overview and prerequisites [build-overview]
 
-Before building an integration, you should have an understanding of the following:
+## Understand {{stack}} concepts [understand-concepts]
 
-* {{stack}} concepts, like data streams, ingest pipelines, and mappings
-* The [*Package specification*](/extend/package-spec.md)
+Before building an integration, you should have an understanding of the following {{stack}} concepts:
 
-In addition, you must have [`elastic-package`](/extend/elastic-package.md) installed on your machine. Using `elastic-package` is recommended for integration maintainers as it provides crucial utilities and scripts for building out integrations.
+* [Data streams](https://www.elastic.co/docs/manage-data/data-store/data-streams): Logic abstraction for time-series data. 
+* [Ingest pipelines](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/ingest-pipelines): Preprocessing and enrichment of incoming data.
+* [Mappings](https://www.elastic.co/docs/manage-data/data-store/mapping): Define the structure and types of your data.
+* [Package specification](/extend/package-spec.md) to understand the required structure and fields for your integration package.
+
+## Set up your development environment [setup-env]
+
+* Install the [`elastic-package`](/extend/elastic-package.md) CLI tool. Using `elastic-package` is recommended for integration maintainers as it provides crucial utilities and scripts for building out integrations.
+* Clone the [integrations repository](https://github.com/elastic/integrations) if you plan to contribute to official packages.
 
