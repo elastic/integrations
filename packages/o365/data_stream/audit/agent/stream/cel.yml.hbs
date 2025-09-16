@@ -152,7 +152,12 @@ program: |-
             :
               e.with(
                 {
-                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().endTime[0],
+                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().as(q,
+                    [
+                      ?q.?endTime[0],
+                      ?q.?endtime[0],
+                    ]
+                  )[?0].orValue(now),
                 }
               )
           ).as(list, (size(list) != 0) ?
