@@ -7,7 +7,9 @@ set -euo pipefail
 add_bin_path
 with_mage
 
-mage -v check
+mage -v check | tee tests-report.txt
+
+go-junit-report > tests-report.xml < tests-report.txt
 
 check_git_diff
 

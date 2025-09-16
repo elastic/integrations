@@ -57,6 +57,24 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
+    artifact_paths:
+      - tests-report.xml
+
+  - label: ":junit: Junit annotate"
+    agents:
+      # requires at least "bash", "curl" and "git"
+      image: "docker.elastic.co/ci-agent-images/buildkite-junit-annotate:1.0"
+    depends_on:
+      - step: "check"
+        allow_failure: true
+    plugins:
+      - junit-annotate#v2.7.0:
+          artifacts: "tests-report.xml"
+          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+          report-skipped: true
+          always-annotate: true
+          run-in-docker: false
+          context: junit-sources
 
   - label: "Trigger integrations"
     key: "test-integrations"
