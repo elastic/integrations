@@ -8,6 +8,7 @@ package main
 
 import (
 	_ "golang.org/x/tools/cmd/goimports"
+	_ "gotest.tools/gotestsum"
 
 	_ "github.com/elastic/elastic-package"
 	_ "github.com/elastic/go-licenser"
