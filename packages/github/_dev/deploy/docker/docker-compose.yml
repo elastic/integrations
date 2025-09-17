@@ -40,25 +40,12 @@ services:
     working_dir: /app
     volumes:
       - ./gcs-mock-service:/app
+      - ./files/manifest.yml:/files/manifest.yml:ro
+      - ./sample_logs/:/data
     ports:
       - "4443/tcp"
     healthcheck:
       test: "wget --no-verbose --tries=1 --spider http://localhost:4443/health || exit 1"
       interval: 10s
       timeout: 5s
-    command: ["go", "run", "main.go"]
-  gcs-uploader:
-    image: curlimages/curl:latest
-    depends_on:
-      gcs-mock-service:
-        condition: service_healthy
-    volumes:
-      - ./sample_logs/:/data
-    entrypoint: >
-      sh -c " 
-      sleep 5 &&   
-      echo 'Creating bucket...' &&
-      curl -X POST http://gcs-mock-service:4443/storage/v1/b -H 'Content-Type: application/json' -d '{\"name\": \"testbucket\"}' && 
-      echo 'Uploading cloud-storage-data.log with correct content-type...' && 
-      curl -X POST 'http://gcs-mock-service:4443/upload/storage/v1/b/testbucket/o?uploadType=media&name=cloud-storage-data.ndjson' -H 'Content-Type: application/x-ndjson' -T '/data/cloud-storage-data.log' && 
-      echo 'Upload finished. Object available in gcs-mock-service.'"
+    command: go run main.go -manifest /files/manifest.yml
