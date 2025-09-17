@@ -43,6 +43,18 @@ processors:
     copy_from: parsed._aws
     ignore_failure: true
 
+- set:
+    field: aws.lambda.message.log
+    if: "ctx.parsed?.message != null && ctx.parsed?.message instanceof String"
+    copy_from: parsed.message
+    ignore_failure: true
+
+- set:
+    field: aws.lambda.message
+    if: "ctx.parsed?.message != null && ctx.parsed?.message instanceof Map"
+    copy_from: parsed.message
+    ignore_failure: true
+
 - rename:
     field: parsed.service
     target_field: service.name
