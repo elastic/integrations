@@ -14,14 +14,15 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
 
 state:
   batch_size: {{batch_size}}
   offset: 0
   api_key: {{api_key}}
   initial_interval: {{initial_interval}}
-resource.rate_limit.limit: {{resource_rate_limit_limit}}
-resource.rate_limit.burst: {{resource_rate_limit_burst}}
+
 redact:
   fields:
     - api_key
@@ -67,11 +68,11 @@ program: |
                   optional.of(
                     max([
                       state.cursor.max_modified_time.parse_time("2006-01-02T15:04:05.000Z"),
-                      body.events.map(e, e.timestamp).map(t, timestamp(t)).max()
+                      body.events.map(e, timestamp(e.timestamp)).max()
                     ]).format("2006-01-02T15:04:05.000Z")
                   )
                 :
-                  optional.of(body.events.map(e, e.timestamp).map(t, timestamp(t)).max().format("2006-01-02T15:04:05.000Z"))
+                  optional.of(body.events.map(e, timestamp(e.timestamp)).max().format("2006-01-02T15:04:05.000Z"))
               )
             :
               state.?cursor.max_modified_time,

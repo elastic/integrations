@@ -12,18 +12,23 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve Audit, Devices and Users.
+This integration periodically queries the Island Browser API to retrieve audit events, and details for devices and users.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
-- `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
-- `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `Audit`: Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
+- `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
+- `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
 ### Supported use cases
-Integrating Island Browser User, Device, and Audit endpoint data with Elastic SIEM provides unified visibility into identity activity, device posture, and security events across the environment. Dashboards track total and active users, login trends, and group distributions, alongside device insights such as active, archived, and jailbroken states, OS platform distribution, policy updates, browser update status, Windows license status, and MDM provider compliance. Audit visualizations further enhance oversight by showing event activity over time, verdicts and reasons, top rules, users, source IPs, event types, geographic distributions, and compatibility modes. Saved searches and tables consolidate essential attributes—including verified emails, device and host IDs, IPs, MACs, users, and organizations—adding valuable investigative context. Together, these insights enable analysts to monitor user behavior, track device health, analyze audit activity, detect anomalies, and strengthen compliance, identity management, and endpoint security oversight.
+
+Integrating Island Browser User, Device, and Audit endpoint data with Elastic SIEM provides unified visibility into identity activity, device posture, and security events across the environment.
+
+Dashboards track total and active users, login trends, and group distributions, alongside device insights such as active, archived, and jailbroken states, OS platform distribution, policy updates, browser update status, Windows license status, and MDM provider compliance.
+
+Audit visualizations further enhance oversight by showing event activity over time, verdicts and reasons, top rules, users, source IPs, event types, geographic distributions, and compatibility modes. Saved searches and tables consolidate essential attributes—including verified emails, device and host IDs, IPs, MACs, users, and organizations—adding valuable investigative context. Together, these insights enable analysts to monitor user behavior, track device health, analyze audit activity, detect anomalies, and strengthen compliance, identity management, and endpoint security oversight.
 
 ## What do I need to use this integration?
 
@@ -586,15 +591,15 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-09-09T13:29:38.000Z",
     "agent": {
-        "ephemeral_id": "a11c05f1-e723-49d6-a9b7-658ec96b32d1",
-        "id": "cffe83e3-a6ce-4d54-b0c4-ec9840b4c904",
-        "name": "elastic-agent-18537",
+        "ephemeral_id": "c47c8fe8-1c04-44de-8c4f-0151a17ec928",
+        "id": "caf0149d-fb8e-45cc-991f-f2c6f4aa0524",
+        "name": "elastic-agent-29545",
         "type": "filebeat",
         "version": "8.18.5"
     },
     "data_stream": {
         "dataset": "island_browser.audit",
-        "namespace": "31325",
+        "namespace": "65876",
         "type": "logs"
     },
     "device": {
@@ -604,7 +609,7 @@ An example event for `audit` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "cffe83e3-a6ce-4d54-b0c4-ec9840b4c904",
+        "id": "caf0149d-fb8e-45cc-991f-f2c6f4aa0524",
         "snapshot": false,
         "version": "8.18.5"
     },
@@ -613,7 +618,7 @@ An example event for `audit` looks as following:
         "created": "2025-09-09T09:24:36.278Z",
         "dataset": "island_browser.audit",
         "id": "0554e3ab-618a-4171-a5d7-33555ac4476b",
-        "ingested": "2025-09-12T08:16:23Z",
+        "ingested": "2025-09-16T13:22:29Z",
         "kind": "event",
         "original": "{\"clientEventId\":\"d14e7489-e627-4cf8-bf89-daeb6c4b6a55\",\"compatibilityMode\":\"None\",\"country\":\"India\",\"countryCode\":\"IN\",\"createdDate\":\"2025-09-09T09:24:36.278692Z\",\"details\":\"{\\n  \\\"navigation_details\\\": {\\n    \\\"referrer\\\": \\\"https://google.com\\\",\\n    \\\"user_agent\\\": \\\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36\\\"\\n  },\\n  \\\"policy_version_details\\\": {\\n    \\\"application_access_policy_version\\\": \\\"1\\\",\\n    \\\"browser_access_policy_version\\\": \\\"1\\\",\\n    \\\"browser_policy_version\\\": \\\"1\\\",\\n    \\\"dlp_policy_version\\\": \\\"1\\\",\\n    \\\"pam_policy_version\\\": \\\"1\\\"\\n  }\\n}\",\"deviceId\":\"7748cf6a-1a23-4572-b5ee-129962616b25\",\"devicePostureMatchingDetails\":\"Device meets all security requirements\",\"domainOrTenant\":\"example.com\",\"email\":\"john.doe@example.com\",\"frameId\":67890,\"frameUrl\":\"https://example.com/iframe\",\"id\":\"0554e3ab-618a-4171-a5d7-33555ac4476b\",\"incognito\":false,\"isIslandPrivateAccess\":false,\"keystrokes\":\"example search query\",\"machineId\":\"iNUa5F_2xgH0L51ZW5_YCFI7b7U\",\"machineName\":\"ub22-50-6-126.manage.local\",\"matchedDevicePosture\":\"Compliant\",\"matchedUserGroup\":\"Standard Users\",\"origin\":\"Island\",\"osPlatform\":\"Linux\",\"osUserName\":\"serviceuser\",\"processedDate\":\"2025-09-09T13:29:39.123456Z\",\"publicIp\":\"89.160.20.112\",\"region\":\"Asia\",\"ruleId\":\"rule-12345\",\"ruleName\":\"Standard Navigation Policy\",\"saasApplicationCategory\":\"Productivity\",\"saasApplicationId\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"saasApplicationName\":\"Microsoft 365\",\"screenshotFileName\":\"screenshot_20250909_132938.png\",\"shortTopLevelUrl\":\"example.com\",\"sourceIp\":\"10.50.6.126\",\"submittedUrl\":\"https://example.com/page\",\"tabId\":935959881,\"tenantId\":\"elastic-testing\",\"timestamp\":\"2025-09-09T13:29:38.000Z\",\"topLevelUrl\":\"https://example.com\",\"type\":\"Navigation\",\"updatedDate\":\"2025-09-09T09:24:36.278693Z\",\"urlWebCategories\":[\"Business\",\"Technology\"],\"urlWebReputation\":85,\"userId\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"userName\":\"John Doe\",\"verdict\":\"Allowed\",\"verdictReason\":\"Navigation allowed by policy\",\"websiteTopLevelUrl\":\"https://example.com\",\"windowId\":12345}"
     },
