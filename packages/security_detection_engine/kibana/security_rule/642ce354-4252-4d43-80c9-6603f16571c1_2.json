@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies DNS queries to known public IP address lookup web services. Malwares tend to perform this action to assess potential targets.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.network-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "System Public IP Discovery via DNS Query",
+        "note": "## Triage and analysis\n\n### Investigating System Public IP Discovery via DNS Query\n\n#### Possible investigation steps\n\n- Investigate the process execution chain (parent process tree) for unknown processes or malicious scripts.\n- Verify if the executed process is persistent on the host like common mechanisms Startup folder, task or Run key.\n- Review any unusual network, files or registry events by the same process.\n- Investigate other alerts associated with the user/host during the past 48 hours.\n- Extract this communication's indicators of compromise (IoCs) and use traffic logs to search for other potentially compromised hosts.\n\n### False positive analysis\n\n- Trusted domain from an expected process running in the environment.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Isolate the involved host to prevent further post-compromise behavior.\n- Immediately block the identified indicators of compromise (IoCs).\n- Implement any temporary network rules, procedures, and segmentation required to contain the attack.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords for these accounts and other potentially compromised credentials, such as email, business systems, and web services.\n- Update firewall rules to be more restrictive.\n- Reimage the host operating system or restore the compromised files to clean versions.\n- Run a full antimalware scan. This may reveal additional artifacts left in the system, persistence mechanisms, and malware components.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection through the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
+        "query": "network where host.os.type == \"windows\" and dns.question.name != null and process.name != null and\n(\n  process.name : (\"MSBuild.exe\", \"mshta.exe\", \"wscript.exe\", \"powershell.exe\", \"pwsh.exe\", \"msiexec.exe\", \"rundll32.exe\",\n  \"bitsadmin.exe\", \"InstallUtil.exe\", \"RegAsm.exe\", \"vbc.exe\", \"RegSvcs.exe\", \"python.exe\", \"regsvr32.exe\", \"dllhost.exe\",\n  \"node.exe\", \"javaw.exe\", \"java.exe\", \"*.pif\", \"*.com\") or\n\n  (?process.code_signature.trusted == false or ?process.code_signature.exists == false) or\n\n  ?process.code_signature.subject_name : (\"AutoIt Consulting Ltd\", \"OpenJS Foundation\", \"Python Software Foundation\") or\n\n  ?process.executable : (\"?:\\\\Users\\\\*.exe\", \"?:\\\\ProgramData\\\\*.exe\")\n ) and\n dns.question.name :\n         (\n          \"ip-api.com\",\n          \"checkip.dyndns.org\",\n          \"api.ipify.org\",\n          \"api.ipify.com\",\n          \"whatismyip.akamai.com\",\n          \"bot.whatismyipaddress.com\",\n          \"ifcfg.me\",\n          \"ident.me\",\n          \"ipof.in\",\n          \"ip.tyk.nu\",\n          \"icanhazip.com\",\n          \"curlmyip.com\",\n          \"wgetip.com\",\n          \"eth0.me\",\n          \"ipecho.net\",\n          \"ip.appspot.com\",\n          \"api.myip.com\",\n          \"geoiptool.com\",\n          \"api.2ip.ua\",\n          \"api.ip.sb\",\n          \"ipinfo.io\",\n          \"checkip.amazonaws.com\",\n          \"wtfismyip.com\",\n          \"iplogger.*\",\n          \"freegeoip.net\",\n          \"freegeoip.app\",\n          \"ipinfo.io\",\n          \"geoplugin.net\",\n          \"myip.dnsomatic.com\",\n          \"www.geoplugin.net\",\n          \"api64.ipify.org\",\n          \"ip4.seeip.org\",\n          \"*.geojs.io\",\n          \"*portmap.io\",\n          \"api.2ip.ua\",\n          \"api.db-ip.com\",\n          \"geolocation-db.com\",\n          \"httpbin.org\",\n          \"myip.opendns.com\"\n         )\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1016/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "642ce354-4252-4d43-80c9-6603f16571c1",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Data Source: Sysmon"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1016",
+                        "name": "System Network Configuration Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1016/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/",
+                        "subtechnique": [
+                            {
+                                "id": "T1071.004",
+                                "name": "DNS",
+                                "reference": "https://attack.mitre.org/techniques/T1071/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "642ce354-4252-4d43-80c9-6603f16571c1_2",
+    "type": "security-rule"
+}
