@@ -54,9 +54,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-10-14T07:02:11.229Z",
     "agent": {
-        "ephemeral_id": "165ae7d4-eb8e-49ce-9e08-bcc8d670a986",
-        "id": "9f65d3d8-75cd-4c13-b4a0-7e004e2d8569",
-        "name": "elastic-agent-86426",
+        "ephemeral_id": "4212f748-0155-47d2-9f8a-36005b5c9b5d",
+        "id": "c7fe2335-91fd-4a8d-a52b-a5bc63c52933",
+        "name": "elastic-agent-89980",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -80,14 +80,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_email.event",
-        "namespace": "68804",
+        "namespace": "29281",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9f65d3d8-75cd-4c13-b4a0-7e004e2d8569",
+        "id": "c7fe2335-91fd-4a8d-a52b-a5bc63c52933",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -105,7 +105,7 @@ An example event for `event` looks as following:
         "created": "2024-10-14T07:02:11.229Z",
         "dataset": "checkpoint_email.event",
         "id": "a6d8674a04c30123456789e4d3ebd98",
-        "ingested": "2025-09-15T10:46:19Z",
+        "ingested": "2025-09-17T05:59:16Z",
         "kind": "alert",
         "original": "{\"actions\":[],\"additionalData\":null,\"availableEventActions\":null,\"confidenceIndicator\":\"detected\",\"customerId\":\"exampletest\",\"data\":\"#{\\\"entity_id\\\": \\\"a6d8674a04c30123456789e4d3ebd98\\\", \\\"entity_type\\\": \\\"google_mail_email\\\", \\\"label\\\": \\\"Shadow IT\\\"} - #{\\\"entity_id\\\": \\\"113012345678906535444\\\", \\\"entity_type\\\": \\\"google_user\\\", \\\"label\\\": \\\"john@example.com\\\"} is using #{\\\"entity_id\\\": \\\"google.com\\\", \\\"entity_type\\\": \\\"av_dns_info\\\", \\\"label\\\": \\\"google.com (Search Engine)\\\"}\",\"description\":\"Shadow IT - john@example.com is using google.com (Search Engine)\",\"entityId\":\"25e0c50123456789e351b0dafa6aafa6\",\"entityLink\":\"https://in.portal.checkpoint.com/dashboard/email\\u0026collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg==\",\"eventCreated\":\"2024-10-14T07:02:11.229935+00:00\",\"eventId\":\"a6d8674a04c30123456789e4d3ebd98\",\"saas\":\"google_mail\",\"senderAddress\":\"google-workspace-alerts-noreply@google.com\",\"severity\":\"3\",\"state\":\"pending\",\"type\":\"shadow_it\"}",
         "severity": 3,
@@ -175,9 +175,9 @@ An example event for `event` looks as following:
 | checkpoint_email.event.severity_enum | Lowest, Low, Medium, High, Critical. | keyword |
 | checkpoint_email.event.state | Current state of the security event. | keyword |
 | checkpoint_email.event.type | Security event type. | keyword |
-| checkpoint_email.event.user_action |  | keyword |
-| checkpoint_email.event.user_address |  | keyword |
-| checkpoint_email.event.user_country |  | keyword |
+| checkpoint_email.event.user.action |  | keyword |
+| checkpoint_email.event.user.address |  | keyword |
+| checkpoint_email.event.user.country |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

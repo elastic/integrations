@@ -189,7 +189,7 @@ processors:
         - "^%{DATA}(A user|has detected) #%{DATA:_temp.scan_information} in an email from #%{DATA:_temp.source_user} - '#%{DATA:_temp.email_subject}' \\(#%{DATA:_temp.destination_user}'s mailbox\\)$"
         - "^%{DATA} has detected malicious attachment\\(s\\) in '#%{DATA:_temp.email_subject}' \\(#%{DATA:_temp.destination_user}'s mailbox\\)$"
         - "^User #%{DATA:_temp.destination_user} reported a phishing email #%{DATA:_temp.email_subject}$"
-        - "^Unusual geo activity for #%{DATA:_temp.user_address}: #%{DATA:_temp.user_action} for the first time from %{DATA:checkpoint_email.event.user_country}$"
+        - "^Unusual geo activity for #%{DATA:_temp.user_address}: #%{DATA:_temp.user_action} for the first time from %{DATA:checkpoint_email.event.user.country}$"
         - '^%{GREEDYDATA}$'
       on_failure:
         - append:
@@ -273,7 +273,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: checkpoint_email.event.user_address
+      field: checkpoint_email.event.user.address
       tag: set_event_user_address_from_temp_user_address_label
       copy_from: _temp.user_address.label
       ignore_empty_value: true
@@ -281,7 +281,7 @@ processors:
   - set:
       field: user.email
       tag: set_user_email_from_user_address
-      copy_from: checkpoint_email.event.user_address
+      copy_from: checkpoint_email.event.user.address
       ignore_empty_value: true
   # Keeping ignore_failure: true because we do not want to log a failure when unable to parse the user name and domain.
   - dissect:
@@ -293,9 +293,9 @@ processors:
   - append:
       field: related.user
       tag: append_user_address_into_related.user
-      value: '{{{checkpoint_email.event.user_address}}}'
+      value: '{{{checkpoint_email.event.user.address}}}'
       allow_duplicates: false
-      if: ctx.checkpoint_email?.event?.user_address != null
+      if: ctx.checkpoint_email?.event?.user?.address != null
   - json:
       field: _temp.user_action
       tag: json_temp_user_action
@@ -305,7 +305,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: checkpoint_email.event.user_action
+      field: checkpoint_email.event.user.action
       tag: set_event_user_action_from_temp_user_action_label
       copy_from: _temp.user_action.label
       ignore_empty_value: true
