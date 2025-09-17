@@ -53,8 +53,8 @@ program: |-
   				"queryResultFilter": {},
   			}.encode_json(),
   		}
-  	).do_request().as(resp,
-  		bytes(resp.Body).decode_json().as(body,
+  	).do_request().as(resp, resp.StatusCode == 200 ?
+  		resp.Body.decode_json().as(body,
   			state.with(
   				{
   					"events": body.map(e,
@@ -67,6 +67,22 @@ program: |-
   				}
   			)
   		)
+  	:
+  		{
+  			"events": {
+  				"error": {
+  				  "code": string(resp.StatusCode),
+  				  "id": string(resp.Status),
+  				  "message": "POST " + state.url.trim_right("/") + "/" + state.api_version + "/search: "+(
+  				    size(resp.Body) != 0 ?
+  				      string(resp.Body)
+  				    :
+  				      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  				  ),
+  				},
+  			},
+  			"want_more": false,
+  		}
   	)
   )
 tags:
