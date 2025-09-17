@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to delete or modify critical files used during the boot process to prevent the system from booting. This may indicate a destructive attack behavior.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.file-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential System Tampering via File Modification",
+        "note": "## Triage and analysis\n\n### Investigating Potential System Tampering via File Modification\n\nThis rule identifies attempts to delete or modify critical files used during the boot process to prevent the system from booting.\n\n#### Possible investigation steps\n\n- Investigate the process execution chain (parent process tree) for unknown processes.\n- Assess all deleted or modified system critical files and perform a complete recovery of those files to prevent system booting issues.\n- Investigate other alerts associated with the user/host during the past 48 hours.\n- Identify the user account that performed the action and whether it should perform this kind of action, if not immedialy disable the account.\n\n### False positive analysis\n\n- Analysts can dismiss the alert if the administrator is aware of the activity, no other suspicious activity was identified, and there are justifications for the execution.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n  - Prioritize cases involving critical servers and users.\n- Isolate the involved hosts to prevent further post-compromise behavior.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords for these accounts and other potentially compromised credentials, such as email, business systems, and web services.\n- If important data was encrypted, deleted, or modified, activate your data recovery plan.\n    - Perform data recovery locally or restore the backups from replicated copies (cloud, other servers, etc.).\n- Run a full antimalware scan. This may reveal additional artifacts left in the system, persistence mechanisms, and malware components.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection through the same vector.\n- Review the privileges assigned to the user to ensure that the least privilege principle is being followed.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
+        "query": "file where host.os.type == \"windows\" and event.type in (\"change\", \"deletion\") and\n file.name : (\"winload.exe\", \"winlod.efi\", \"ntoskrnl.exe\", \"bootmgr\") and\n file.path : (\"?:\\\\Windows\\\\*\", \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\*\") and\n not process.executable : (\"?:\\\\Windows\\\\System32\\\\poqexec.exe\", \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\poqexec.exe\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "1a3f2a4c-12d0-4b88-961a-2711ee295637",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Impact",
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    },
+                    {
+                        "id": "T1490",
+                        "name": "Inhibit System Recovery",
+                        "reference": "https://attack.mitre.org/techniques/T1490/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "1a3f2a4c-12d0-4b88-961a-2711ee295637_2",
+    "type": "security-rule"
+}

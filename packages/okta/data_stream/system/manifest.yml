@@ -44,6 +44,16 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: limit
+        type: integer
+        default: 1000
+        show_user: false
+        description: Sets the maximum number of results that are returned in the Okta API response. Maximum value is 1000.
+        hide_in_deployment_modes:
+          # This is not meant to be user-configurable, but it must be configurable for testing purposes so hide it.
+          # This works around system tests not allowing an assert.hit_count > 500.
+          - default
+          - agentless
 
     template_path: httpjson.yml.hbs
     title: Okta system logs

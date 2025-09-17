@@ -2447,6 +2447,11 @@ processors:
       value: admin
       if: ctx.crowdstrike?.UserIsAdmin == "1"
   - rename:
+      field: crowdstrike.User.Name
+      target_field: user.name
+      ignore_missing: true
+      if: ctx.crowdstrike?.User?.Name != null && ctx.user?.name == null
+  - rename:
       field: crowdstrike.UserName
       target_field: user.name
       ignore_missing: true
