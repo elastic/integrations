@@ -418,6 +418,7 @@ processors:
     field: aws.lambda.message
     copy_from: event.original
     if: "ctx.parsed == null"
+    ignore_failure: true
 
 - remove:
     field: parsed
@@ -432,6 +433,7 @@ processors:
 - script:
     description: Drops null/empty values recursively
     lang: painless
+    ignore_failure: true
     source: |
         boolean drop(Object o) {
             if (o == null || o == "") {
