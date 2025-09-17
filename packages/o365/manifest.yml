@@ -1,10 +1,16 @@
 name: o365
 title: Microsoft Office 365
-version: "2.27.0"
+version: "2.29.0"
 description: Collect logs from Microsoft Office 365 with Elastic Agent.
 type: integration
 format_version: "3.2.3"
-categories: [security, productivity_security]
+categories:
+  - security
+  - productivity_security
+  # Added cloud_security category as it monitors cloud-based Office 365 services, and iam category as it collects Azure AD activity logs related to identity and access management
+  - iam
+  # Added observability category as it provides visibility into user activity, service health, and performance metrics across Office 365 services
+  - observability
 conditions:
   kibana:
     version: "^8.18.0 || ^9.0.0"
@@ -35,12 +41,12 @@ policy_templates:
         division: engineering
         team: security-service-integrations
     inputs:
-      - type: o365audit
-        title: "Collect Office 365 audit logs - Deprecated. Please disable this and use the CEL input instead."
-        description: "Collect audit logs from Office 365 via the Management Activity API using Filebeat's O365Audit Input"
       - type: cel
-        title: "Collect Office 365 audit logs via Management Activity API using CEL Input"
-        description: "Collect audit logs from Office 365 via the Management Activity API using CEL Input"
+        title: "Collect audit logs"
+        description: "Collect audit logs using the Management Activity API"
+      - type: o365audit
+        title: "DEPRECATED - Collect audit logs"
+        description: "Please deactivate this option and instead use the one described above. This option collects audit logs using the Management Activity API through a deprecated method."
 owner:
   github: elastic/security-service-integrations
   type: elastic

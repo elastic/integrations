@@ -96,4 +96,3 @@ For more information on variable property definitions, refer to [Define variable
 Agentless deployments are protected by a capabilities file (capabilities.yml). This file lists what inputs and features are allowed or blocked in agentless mode, making sure only safe and supported features run.
 
 You can see the current allowed capabilities in the [`capabilities.yml`](https://github.com/elastic/agentless-controller/blob/main/controllers/config/capabilities.yml).
-
