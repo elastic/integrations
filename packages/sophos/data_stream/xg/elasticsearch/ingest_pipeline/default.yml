@@ -525,12 +525,12 @@ processors:
     field: source.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.geo == null"
+    if: "ctx.source?.geo == null && ctx.source?.ip != ''"
 - geoip:
     field: destination.ip
     target_field: destination.geo
     ignore_missing: true
-    if: "ctx.destination?.geo == null"
+    if: "ctx.destination?.geo == null && ctx.destination?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
@@ -539,6 +539,7 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
+    if: "ctx.source?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: destination.ip
@@ -547,16 +548,17 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
+    if: "ctx.destination?.ip != ''"
 - geoip:
     field: source.nat.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.geo == null"
+    if: "ctx.source?.geo == null && ctx.source?.nat?.ip != ''"
 - geoip:
     field: destination.nat.ip
     target_field: destination.geo
     ignore_missing: true
-    if: "ctx.destination?.geo == null"
+    if: "ctx.destination?.geo == null && ctx.destination?.nat?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: source.nat.ip
@@ -565,7 +567,7 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
-    if: "ctx.source?.as == null"
+    if: "ctx.source?.as == null && ctx.source?.nat?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: destination.nat.ip
@@ -574,7 +576,7 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
-    if: "ctx.destination?.as == null"
+    if: "ctx.destination?.as == null && ctx.destination?.nat?.ip != ''"
 - rename:
     field: source.as.asn
     target_field: source.as.number

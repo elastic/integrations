@@ -65,6 +65,7 @@ auth.oauth2.okta.jwk_pem: {{escape_string key_pem}}
 {{/if}}
 {{/unless}}
 
+{{! API Reference: https://developer.okta.com/docs/api/openapi/okta-management/management/tag/SystemLog/#tag/SystemLog }}
 request.transforms:
 {{#unless oin_app}}
 {{#unless client_id}}
@@ -79,7 +80,7 @@ request.transforms:
 {{/unless}}
   - set:
       target: url.params.limit
-      value: '1000'
+      value: '{{limit}}'
   - set:
       target: url.params.since
       value: "[[.cursor.published]]"
@@ -88,8 +89,9 @@ request.transforms:
 response.pagination:
   - set:
       target: url.value
-      value: '[[ getRFC5988Link "next" .last_response.header.Link ]]'
+      value: '[[ if (ge (len .last_response.body) {{limit}}) ]][[ getRFC5988Link "next" .last_response.header.Link ]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 
 cursor:
   published:
