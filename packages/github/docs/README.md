@@ -34,7 +34,7 @@ To collect audit log events from Azure Blob Storage, follow the [guide](https://
 To collect audit log events from AWS S3 or AWS SQS, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-amazon-s3) to setup audit log streaming. For more details, refer to this [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
 To collect audit log events from Google Cloud Storage, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-google-cloud-storage) to setup audit log streaming.
 
-For Filebeat input documentation, please refer to the following:
+For Filebeat input documentation, refer to the following pages:
  - [Azure Event Hub](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-azure-eventhub)
  - [Azure Blob Storage](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-azure-blob-storage)
  - [AWS S3](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3)
