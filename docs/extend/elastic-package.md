@@ -360,4 +360,3 @@ To uninstall the package in {{kib}}, the command uses the {{kib}} API. The packa
 *Context: global*
 
 Use this command to print the version of elastic-package that you have installed. This command is especially useful when reporting bugs.
-
