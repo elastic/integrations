@@ -1,20 +1,18 @@
 # Cassandra Integration
 
-This integration periodically fetches metrics from [Cassandra](https://cassandra.apache.org/) using jolokia agent. It can parse System logs.
+This integration periodically fetches metrics from [Cassandra](https://cassandra.apache.org/) using Jolokia agent. It can parse System logs.
 
 ## Compatibility
 
 This integration has been tested against `Cassandra version 3.11.11`.
 
-## Steps to Setup Jolokia
+## Setup Jolokia
 
-### Prerequisites
+### What do I need to use this integration?
 
 - Java Development Kit (JDK) 1.8 or later
 - Apache Cassandra 3.x or 4.x (depending on user's version)
 - Jolokia agent JAR file
-
-### Jolokia Setup
 
 Follow these steps to set up Jolokia for monitoring Apache Cassandra:
 
@@ -55,7 +53,7 @@ Follow these steps to set up Jolokia for monitoring Apache Cassandra:
    - The exact steps will vary based on the installation type, the setup process might differ based on the specific deployment method or environment.
    - Procedures for restarting Cassandra may vary based on user's specific setup and configuration.
 
-## Verifying the setup
+## Verify the setup
 
 After restarting Cassandra, user can verify that Jolokia is properly set up by accessing the Jolokia endpoint:
 

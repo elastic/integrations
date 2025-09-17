@@ -5,29 +5,57 @@ mapped_pages:
 
 # Edit field mappings [add-a-mapping]
 
-Ingest pipelines create fields in an {{es}} index, but don’t define the fields themselves. Instead, each field requires a defined data type or mapping.
+When you build an integration, you need to tell {{es}} how to store and index each field in your data. This is called mapping. Mappings define the data type (like keyword, date, or integer) and other properties for every field your integration creates.
+
 
 ::::{admonition}
-**Mapping** is the process of defining how a document, and the fields it contains, are stored and indexed. Each document is a collection of fields, each having its own data type. When mapping your data, create a mapping definition containing a list of fields pertinent to the document. A mapping definition also includes metadata fields, like the _source field, which customize how the associated metadata of a document is handled.
+**Mapping** is how you describe the structure of your data to {{es}}. Each field in your documents needs a mapping so {{es}} knows how to store, search, and analyze it. Each document is a collection of fields, each having its own data type. When mapping your data, you create a mapping definition listing all relevant fields and their types. A mapping definition can also include metadata fields, like the `_source` field, which control how document metadata is handled.
 
 To learn more, see [mapping](docs-content://manage-data/data-store/mapping.md).
 
 ::::
 
+## Where do mappings live in an integration [where-do-mappings-live]
 
-In the integration, the `fields` directory serves as the blueprint used to create component templates for the integration. The content from all files in this directory will be unified when the integration is built, so the mappings need to be unique per data stream dataset.
+Each data stream in your integration has a `fields` directory. This directory contains YAML files that describe all the fields for that data stream. When you build your integration, these files are combined to create the mapping for the data stream.
 
 Like ingest pipelines, mappings only apply to the data stream dataset, for our example the `apache.access` dataset.
 
+Example structure:
+
+```text
+apache
+└───data_stream
+    ├── access
+    │   └── fields
+    │       ├── agent.yml
+    │       ├── base-fields.yml
+    │       ├── ecs.yml
+    │       └── fields.yml
+    ├── error
+    │   └── fields
+    │       ├── agent.yml
+    │       ├── base-fields.yml
+    │       ├── ecs.yml
+    │       └── fields.yml
+    └── status
+```
+
 :::{note}
-The names of these files are conventions, any file name with a `.yml` extension will work.
+You can name these files however you like, as long as they end with `.yml`.
 :::
 
-Integrations have had significant enhancements in how ECS fields are defined. Below is a guide on which approach to use, based on the version of Elastic your integration will support.
+## How to define field mappings [how-to-define-mappings]
 
-1. ECS mappings component template (>=8.13.0) Integrations **only** supporting version 8.13.0 and up, can use the [ecs@mappings](https://github.com/elastic/elasticsearch/blob/c2a3ec42632b0339387121efdef13f52c6c66848/x-pack/plugin/core/template-resources/src/main/resources/ecs%40mappings.json) component template installed by Fleet. This makes explicitly declaring ECS fields unnecessary; the `ecs@mappings` component template in Elasticsearch will automatically detect and configure them. However, should ECS fields be explicitly defined, they will overwrite the dynamic mapping provided by the `ecs@mappings` component template. They can also be imported with an `external` declaration, as seen in the example below.
+### 1. Use ECS (Elastic Common Schema) fields when possible [use-ecs]
 
-1. Dynamic mappings imports (<8.13.0 & >=8.13.0) Integrations supporting the Elastic stack below version 8.13.0 can still dynamically import ECS field mappings by defining `import_mappings: true` in the ECS section of the `_dev/build/build.yml` file in the root of the package directory. This introduces a [dynamic mapping](https://github.com/elastic/elastic-package/blob/f439b96a74c27c5adfc3e7810ad584204bfaf85d/internal/builder/_static/ecs_mappings.yaml) with most of the ECS definitions. Using this method means that, just like the previous approach, ECS fields don’t need to be defined in your integration, they are dynamically integrated into the package at build time. Explicitly defined ECS fields can be used and will also overwrite this mechanism.
+ECS is a shared schema for common fields (like `host.name`, `event.dataset`, etc.).
+
+* If your integration only supports Elastic Stack 8.13.0 and above:
+You can rely on the [ecs@mappings](https://github.com/elastic/elasticsearch/blob/c2a3ec42632b0339387121efdef13f52c6c66848/x-pack/plugin/core/template-resources/src/main/resources/ecs%40mappings.json) component template installed by {{fleet}}. This makes explicitly declaring ECS fields unnecessary; the `ecs@mappings` component template in {{es}} will automatically detect and configure them. However, should ECS fields be explicitly defined, they will overwrite the dynamic mapping provided by the `ecs@mappings` component template.
+
+* If your integration supports older versions (<8.13.0):
+You can import ECS mappings dynamically by setting `import_mappings: true` in the ECS section of the `_dev/build/build.yml` file in the root of the package directory. This introduces a [dynamic mapping](https://github.com/elastic/elastic-package/blob/f439b96a74c27c5adfc3e7810ad584204bfaf85d/internal/builder/_static/ecs_mappings.yaml) with most of the ECS definitions. Using this method means that, just like the previous approach, ECS fields don’t need to be defined in your integration, they are dynamically integrated into the package at build time. Explicitly defined ECS fields can be used and will also overwrite this mechanism.
 
     An example of the aformentioned `build.yml` file for this method:
 
@@ -38,9 +66,22 @@ Integrations have had significant enhancements in how ECS fields are defined. Be
         import_mappings: true
     ```
 
-1. Explicit ECS mappings As mentioned in the previous two approaches, ECS mappings can still be set explicitly and will overwrite the dynamic mappings. This can be done in two ways: - Using an `external: ecs` reference to import the definition of a specific field. - Literally defining the ECS field.
+* Explicitly define or import individual ECS fields:
+You can always explicitly define ECS fields, which will override dynamic mappings.
+This can be done in two ways: 
+  - Use `external: ecs` to reference a field from ECS.
+  - Or, define the field directly in your YAML.
 
-    The `external: ecs` definition instructs the `elastic-package` command line tool to refer to an external ECS reference to resolve specific fields. By default it looks at the [ECS reference](https://raw.githubusercontent.com/elastic/ecs/v8.6.0/generated/ecs/ecs_nested.yml) file hosted on Github. This external reference file is determined by a Git reference found in the `_dev/build/build.yml` file, in the root of the package directory. The `build.yml` file set up for external references:
+  #### How does `external: ecs` work? [how-ecs-works]
+  
+  * When you define a field in your integration’s mapping YAML with `external: ecs`, you’re telling the `elastic-package` tool *not* to define the field’s mapping details directly in your package. Instead, you want to import the field definition from the official ECS.
+
+  * The `elastic-package` CLI will look up the field’s definition in an external ECS reference file, rather than requiring you to copy the full field definition into your package.
+
+  * Important: The ECS reference file location (and version) is controlled by the reference setting in the package’s `_dev/build/build.yml` file.
+  If the `_dev/build/build.yml` file does not exist, or if it does not specify an ECS reference, defining fields with `external: ecs` will fail the build process.
+
+  * By default, if configured, the ECS reference point to the [ECS reference file](https://raw.githubusercontent.com/elastic/ecs/v8.6.0/generated/ecs/ecs_nested.yml) hosted on GitHub, but its value must be explicitly set in `_dev/build/build.yml`. For example:
 
     ```yaml
     dependencies:
@@ -48,7 +89,9 @@ Integrations have had significant enhancements in how ECS fields are defined. Be
         reference: git@v8.6.0
     ```
 
-    Literal definition a ECS field:
+    This tells `elastic-package` to use ECS version 8.6.0.
+
+    Example explicit field definition:
 
     ```yaml
     - name: cloud.acount.id
@@ -59,56 +102,31 @@ Integrations have had significant enhancements in how ECS fields are defined. Be
       example: 43434343
     ```
 
-1. Local ECS reference file (air-gapped setup) By changing the Git reference in in `_dev/build/build.yml` to the path of the downloaded [ECS reference](https://raw.githubusercontent.com/elastic/ecs/v8.6.0/generated/ecs/ecs_nested.yml) file, it is possible for the `elastic-package` command line tool to look for this file locally. Note that the path should be the full path to the reference file. Doing this, our `build.yml` file looks like:
 
-    ```
+
+* Local ECS reference file (air-gapped setup):
+In some environments—such as secure, air-gapped, or offline setups—you may not have internet access to fetch the ECS field definitions directly from GitHub. In these cases, you can download the ECS reference file manually and tell the elastic-package tool to use this local file instead of the remote one.
+
+  
+    * First, download the [ECS YAML file](https://raw.githubusercontent.com/elastic/ecs/v8.6.0/generated/ecs/ecs_nested.yml) to a location on your local machine or network.
+
+    * In your integration’s `_dev/build/build.yml` file, set the reference to the full file path of your downloaded ECS reference. For example:
+
+    ```yaml
     dependencies:
       ecs:
         reference: file:///home/user/integrations/packages/apache/ecs_nested.yml
     ```
+    (Make sure to use the correct absolute path for your environment.)
+
+    * Now, when you use external: ecs in your field mappings, the `elastic-package` CLI will look up field definitions in your local ECS file, not on GitHub.
 
 
-The `access` data stream dataset of the Apache integration has four different field definitions:
+### 2. Define custom fields [define-custom-fields]
 
-:::{note}
-The `apache` integration below has not yet been updated to use the dynamic ECS field definition and uses `external` references to define ECS fields in `ecs.yml`.
-:::
+If your integration needs fields that aren’t in ECS, define them in `fields.yml`:
 
-```text
-apache
-└───data_stream
-│   └───access
-│   │   └───elasticsearch/ingest_pipeline
-│   │   │      default.yml
-│   │   └───fields
-│   │          agent.yml
-│   │          base-fields.yml
-│   │          ecs.yml
-│   │          fields.yml
-│   └───error
-│   │   └───elasticsearch/ingest_pipeline
-│   │   │      default.yml
-│   │   └───fields
-│   │          agent.yml
-│   │          base-fields.yml
-│   │          ecs.yml
-│   │          fields.yml
-│   └───status
-```
-
-## agent.yml [_agent_yml]
-
-The `agent.yml` file defines fields used by default processors. Examples: `cloud.account.id`, `container.id`, `input.type`
-
-
-## base-fields.yml [_base_fields_yml]
-
-In this file, the `data_stream` subfields `type`, `dataset` and `namespace` are defined as type `constant_keyword`, the values for these fields are added by the integration. The `event.module` and `event.dataset` fields are defined with a fixed value specific for this integration: - `event.module: apache` - `event.dataset: apache.access` Field `@timestamp` is defined here as type `date`.
-
-
-## fields.yml [_fields_yml]
-
-Here we define fields that we need in our integration and are not found in the ECS. The example below defines field `apache.access.ssl.protocol` in the Apache integration.
+The example below defines field `apache.access.ssl.protocol` in the Apache integration.
 
 ```yaml
 - name: apache.access
@@ -120,4 +138,29 @@ Here we define fields that we need in our integration and are not found in the E
         SSL protocol version.
 ```
 
+### 3. Understand the common field files [understand-common-field-files]
+
+#### agent.yml [_agent_yml]
+
+The `agent.yml` file defines fields used by default processors. Examples: `cloud.account.id`, `container.id`, `input.type`
+
+#### base-fields.yml [_base_fields_yml]
+
+In this file, the `data_stream` subfields `type`, `dataset` and `namespace` are defined as type `constant_keyword`, the values for these fields are added by the integration. The `event.module` and `event.dataset` fields are defined with a fixed value specific for this integration: - `event.module: apache` - `event.dataset: apache.access` Field `@timestamp` is defined here as type `date`.
+
+#### ecs.yml [_ecs_yml]:
+
+Contains ECS fields, either imported or explicitly defined.
+
+#### fields.yml [_fields_yml]
+
+Custom fields unique to your integration.
+
 Learn more about fields in the [general guidelines](/extend/general-guidelines.md#_document_all_fields).
+
+:::{tips}
+* Start with ECS fields: Use ECS wherever possible for compatibility and consistency.
+* Be descriptive: Add clear descriptions to each field to help users and maintainers.
+* Keep fields unique: Each field name should be unique within a data stream.
+* Test your mappings: Use `elastic-package check` to validate your mappings before submitting.
+:::
