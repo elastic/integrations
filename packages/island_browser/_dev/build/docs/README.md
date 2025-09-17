@@ -12,17 +12,21 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve users and devices.
+This integration periodically queries the Island Browser API to retrieve details for users, devices and compromised credentials.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
-- `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
+- `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
+- `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
 ### Supported use cases
-Integrating Island Browser User and Device endpoint data with Elastic SIEM provides comprehensive visibility into account activity and device posture. Kibana dashboards track total and active users, login trends, and group distributions alongside device activity, including active, archived, and jailbroken states. Breakdowns by user source, type, and status, as well as device OS platform, policy updates, browser update status, and compliance indicators, highlight key usage and risk patterns. Saved searches and tables surface essential context—such as verified emails, IDs, IPs, MACs, and associated users—enabling analysts to detect anomalies, investigate efficiently, and strengthen both identity and endpoint oversight.
+
+Integrating Island Browser User, Device, and Compromised Credential data streams with Elastic SIEM provides a holistic view of identity posture, endpoint activity, and credential exposure.
+
+Dashboards monitor user metrics such as total and active accounts, login trends, and group distributions, alongside device insights including activity status, archived or jailbroken states, OS platform coverage, policy updates, browser version compliance, and risk indicators. Compromised credential dashboards enrich this context by surfacing unresolved exposures over time, breach sources, impacted domains, and top affected users. Saved searches and tables provide essential investigation details such as verified emails, IDs, IPs, MAC addresses, and user associations enabling analysts to detect anomalies, prioritize unresolved risks, investigate efficiently, and strengthen security oversight across identities, endpoints, and credential hygiene.
 
 ## What do I need to use this integration?
 
@@ -107,6 +111,14 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "user"}}
 
+#### Device
+
+{{fields "device"}}
+
+#### Compromised Credential
+
+{{fields "compromised_credential"}}
+
 ### Example event
 
 #### User
@@ -115,13 +127,11 @@ For more information on architectures that can be used for scaling this integrat
 
 #### Device
 
-{{fields "device"}}
-
-### Example event
-
-#### Device
-
 {{event "device"}}
+
+#### Compromised Credential
+
+{{event "compromised_credential"}}
 
 ### Inputs used
 
@@ -135,6 +145,7 @@ This integration dataset uses the following APIs:
 
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
+- `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 
 #### ILM Policy
 
