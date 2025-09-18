@@ -10,54 +10,37 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "0fd7eadf-5f89-4b84-9c1d-9f8f1dab24b5": {
+                "894555fe-8740-4af2-b812-a0789826b169": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "host.type",
+                        "fieldName": "island_browser.audit.type",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
                         },
-                        "title": "Device Type"
+                        "title": "Type"
                     },
                     "grow": true,
                     "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
                 },
-                "1ae09bdb-e75b-4ffc-83d9-9a3d978d850e": {
+                "930d8596-6411-4860-9c00-1957171f46a0": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "host.os.platform",
+                        "fieldName": "island_browser.audit.verdict",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
                         },
-                        "title": "OS Platform"
+                        "title": "Verdict"
                     },
                     "grow": true,
                     "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "e7c818d8-49e4-4d22-ba7c-eb3e6063fe29": {
-                    "explicitInput": {
-                        "dataViewId": "logs-*",
-                        "fieldName": "island_browser.device.status",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Status"
-                    },
-                    "grow": true,
-                    "order": 2,
                     "type": "optionsListControl",
                     "width": "medium"
                 }
@@ -80,35 +63,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "island_browser.device"
+                                "query": "island_browser.audit"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "island_browser.device"
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "field": "labels.is_transform_source",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "labels.is_transform_source",
-                            "negate": false,
-                            "params": {
-                                "query": "false"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "labels.is_transform_source": "false"
+                                "data_stream.dataset": "island_browser.audit"
                             }
                         }
                     }
@@ -133,7 +94,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-c0f80539-c811-4653-bae1-01b7d5a2ec9d",
+                                "name": "indexpattern-datasource-layer-c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
                                 "type": "index-pattern"
                             }
                         ],
@@ -142,20 +103,46 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "c0f80539-c811-4653-bae1-01b7d5a2ec9d": {
+                                        "c0f8e0e8-ffca-4e54-992b-c830cd1f8447": {
                                             "columnOrder": [
-                                                "d58d99a0-d13b-4bd4-ae9d-cb4c1d0daa66",
-                                                "04f0940c-428a-4349-a0fe-47b3c4e08490"
+                                                "a1f73b8c-e32b-40db-bd39-5841da7141bc",
+                                                "aa790e9b-e086-4525-b78f-ad1d1f33104b"
                                             ],
                                             "columns": {
-                                                "04f0940c-428a-4349-a0fe-47b3c4e08490": {
+                                                "a1f73b8c-e32b-40db-bd39-5841da7141bc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Rule",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "aa790e9b-e086-4525-b78f-ad1d1f33104b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "rule.name"
+                                                },
+                                                "aa790e9b-e086-4525-b78f-ad1d1f33104b": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -165,32 +152,6 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
-                                                },
-                                                "d58d99a0-d13b-4bd4-ae9d-cb4c1d0daa66": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Browser Update Status",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "04f0940c-428a-4349-a0fe-47b3c4e08490",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "island_browser.device.browser_update_status"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -212,47 +173,23 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "c0f80539-c811-4653-bae1-01b7d5a2ec9d",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "04f0940c-428a-4349-a0fe-47b3c4e08490"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "d58d99a0-d13b-4bd4-ae9d-cb4c1d0daa66"
-                                        ],
-                                        "truncateLegend": false
+                                        "columnId": "a1f73b8c-e32b-40db-bd39-5841da7141bc",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "aa790e9b-e086-4525-b78f-ad1d1f33104b",
+                                        "isTransposed": false
                                     }
                                 ],
-                                "shape": "pie"
+                                "layerId": "c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -270,13 +207,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "df320821-b5f8-41da-8848-7e08c015e2ed",
+                    "i": "39b181d1-3268-4673-b219-2f7dbf255d6f",
                     "w": 24,
-                    "x": 24,
-                    "y": 26
+                    "x": 0,
+                    "y": 58
                 },
-                "panelIndex": "df320821-b5f8-41da-8848-7e08c015e2ed",
-                "title": "Devices by Browser Update Status",
+                "panelIndex": "39b181d1-3268-4673-b219-2f7dbf255d6f",
+                "title": "Top Rule",
                 "type": "lens"
             },
             {
@@ -285,7 +222,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-393fe063-57f3-4090-a789-ca7d4ae58c8e",
+                                "name": "indexpattern-datasource-layer-c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
                                 "type": "index-pattern"
                             }
                         ],
@@ -294,17 +231,299 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "393fe063-57f3-4090-a789-ca7d4ae58c8e": {
+                                        "c0f8e0e8-ffca-4e54-992b-c830cd1f8447": {
                                             "columnOrder": [
-                                                "d8819d15-852a-4850-9601-eb5b88e72ad0",
-                                                "6f140624-e69a-4281-a402-c11ae897b14d"
+                                                "a1f73b8c-e32b-40db-bd39-5841da7141bc",
+                                                "aa790e9b-e086-4525-b78f-ad1d1f33104b"
                                             ],
                                             "columns": {
-                                                "6f140624-e69a-4281-a402-c11ae897b14d": {
+                                                "a1f73b8c-e32b-40db-bd39-5841da7141bc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "User ",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "aa790e9b-e086-4525-b78f-ad1d1f33104b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.email"
+                                                },
+                                                "aa790e9b-e086-4525-b78f-ad1d1f33104b": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "a1f73b8c-e32b-40db-bd39-5841da7141bc",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "aa790e9b-e086-4525-b78f-ad1d1f33104b",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "3e3b3f6c-7225-4bc8-81d6-2f56a1d4241f",
+                    "w": 24,
+                    "x": 24,
+                    "y": 43
+                },
+                "panelIndex": "3e3b3f6c-7225-4bc8-81d6-2f56a1d4241f",
+                "title": "Top User",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "c0f8e0e8-ffca-4e54-992b-c830cd1f8447": {
+                                            "columnOrder": [
+                                                "a1f73b8c-e32b-40db-bd39-5841da7141bc",
+                                                "aa790e9b-e086-4525-b78f-ad1d1f33104b"
+                                            ],
+                                            "columns": {
+                                                "a1f73b8c-e32b-40db-bd39-5841da7141bc": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Source IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "aa790e9b-e086-4525-b78f-ad1d1f33104b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                },
+                                                "aa790e9b-e086-4525-b78f-ad1d1f33104b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "initialContext": null,
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "a1f73b8c-e32b-40db-bd39-5841da7141bc",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "aa790e9b-e086-4525-b78f-ad1d1f33104b",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "1ee198c6-ff48-44eb-9716-10e32ab08f62",
+                    "w": 24,
+                    "x": 24,
+                    "y": 58
+                },
+                "panelIndex": "1ee198c6-ff48-44eb-9716-10e32ab08f62",
+                "title": "Top Source IP",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4bd6b31f-db78-4f03-952f-f839644abb46",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4bd6b31f-db78-4f03-952f-f839644abb46": {
+                                            "columnOrder": [
+                                                "6bba123f-a345-4bc8-98dd-8c78c604da0c",
+                                                "e94036e9-7369-4631-80f7-4425e0701cd4"
+                                            ],
+                                            "columns": {
+                                                "6bba123f-a345-4bc8-98dd-8c78c604da0c": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e94036e9-7369-4631-80f7-4425e0701cd4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Audit Events",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -316,33 +535,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "d8819d15-852a-4850-9601-eb5b88e72ad0": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "OS Platform",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "6f140624-e69a-4281-a402-c11ae897b14d",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "host.os.platform"
+                                                    "sourceField": "event.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -383,7 +576,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "6f140624-e69a-4281-a402-c11ae897b14d"
+                                            "e94036e9-7369-4631-80f7-4425e0701cd4"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -403,10 +596,186 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "393fe063-57f3-4090-a789-ca7d4ae58c8e",
+                                        "layerId": "4bd6b31f-db78-4f03-952f-f839644abb46",
                                         "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "6bba123f-a345-4bc8-98dd-8c78c604da0c"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "c2b73afc-f5a0-433d-ab33-2fbe281ae332",
+                    "w": 36,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "c2b73afc-f5a0-433d-ab33-2fbe281ae332",
+                "title": "Audit Events over Time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-b490b179-ffdd-48d7-9cb4-ce912d6ba4fe",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "b490b179-ffdd-48d7-9cb4-ce912d6ba4fe": {
+                                            "columnOrder": [
+                                                "9f6dc3f2-ff88-4788-a457-96df61089deb",
+                                                "5c890788-ee3e-45c1-9f8b-93a224f95112"
+                                            ],
+                                            "columns": {
+                                                "5c890788-ee3e-45c1-9f8b-93a224f95112": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "9f6dc3f2-ff88-4788-a457-96df61089deb": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Verdict",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "5c890788-ee3e-45c1-9f8b-93a224f95112",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "island_browser.audit.verdict"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "5c890788-ee3e-45c1-9f8b-93a224f95112"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "b490b179-ffdd-48d7-9cb4-ce912d6ba4fe",
+                                        "layerType": "data",
+                                        "position": "top",
                                         "seriesType": "bar_horizontal_stacked",
-                                        "xAccessor": "d8819d15-852a-4850-9601-eb5b88e72ad0"
+                                        "showGridlines": false,
+                                        "xAccessor": "9f6dc3f2-ff88-4788-a457-96df61089deb"
                                     }
                                 ],
                                 "legend": {
@@ -414,7 +783,7 @@
                                     "position": "right",
                                     "showSingleSeries": false
                                 },
-                                "preferredSeriesType": "bar",
+                                "preferredSeriesType": "bar_stacked",
                                 "tickLabelsVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -443,13 +812,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "726624c0-6440-4777-8932-539d5cafd38d",
+                    "i": "399e54b9-d16b-4304-bebb-a1f25272e210",
                     "w": 24,
-                    "x": 24,
-                    "y": 41
+                    "x": 0,
+                    "y": 28
                 },
-                "panelIndex": "726624c0-6440-4777-8932-539d5cafd38d",
-                "title": "Devices by OS Platform",
+                "panelIndex": "399e54b9-d16b-4304-bebb-a1f25272e210",
+                "title": "Audit Events by Verdict",
                 "type": "lens"
             },
             {
@@ -458,7 +827,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-70d45923-2782-4a08-a599-68b853f2511b",
+                                "name": "indexpattern-datasource-layer-5eb77bd9-a98a-4cf6-b200-0ad31701d5b9",
                                 "type": "index-pattern"
                             }
                         ],
@@ -467,13 +836,31 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "70d45923-2782-4a08-a599-68b853f2511b": {
+                                        "5eb77bd9-a98a-4cf6-b200-0ad31701d5b9": {
                                             "columnOrder": [
-                                                "107ac73a-06e0-4f7a-bf8e-b489579d2dc7",
-                                                "eaa76469-f6e0-430c-b481-4dac65ac62d4"
+                                                "e105a41d-2267-40df-9d57-c8432e716c3b",
+                                                "06192284-ade1-4941-b9bb-f4fe2b8dc544"
                                             ],
                                             "columns": {
-                                                "107ac73a-06e0-4f7a-bf8e-b489579d2dc7": {
+                                                "06192284-ade1-4941-b9bb-f4fe2b8dc544": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "e105a41d-2267-40df-9d57-c8432e716c3b": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -486,159 +873,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "eaa76469-f6e0-430c-b481-4dac65ac62d4",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "host.type"
-                                                },
-                                                "eaa76469-f6e0-430c-b481-4dac65ac62d4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "70d45923-2782-4a08-a599-68b853f2511b",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "eaa76469-f6e0-430c-b481-4dac65ac62d4"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "107ac73a-06e0-4f7a-bf8e-b489579d2dc7"
-                                        ],
-                                        "truncateLegend": false
-                                    }
-                                ],
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "8316634e-0c0c-491a-bacb-20d1a2edba34",
-                    "w": 24,
-                    "x": 0,
-                    "y": 41
-                },
-                "panelIndex": "8316634e-0c0c-491a-bacb-20d1a2edba34",
-                "title": "Devices by Type",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-40b74149-4fbb-4196-b429-608fc7bf348e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "40b74149-4fbb-4196-b429-608fc7bf348e": {
-                                            "columnOrder": [
-                                                "24b7ec88-f35f-43bd-8a20-dd55041ae493",
-                                                "c1071ca8-b352-4065-8047-99ed20ababe7"
-                                            ],
-                                            "columns": {
-                                                "24b7ec88-f35f-43bd-8a20-dd55041ae493": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "MDM Provider",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "c1071ca8-b352-4065-8047-99ed20ababe7",
+                                                            "columnId": "06192284-ade1-4941-b9bb-f4fe2b8dc544",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -649,166 +884,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "island_browser.device.mdm_provider"
-                                                },
-                                                "c1071ca8-b352-4065-8047-99ed20ababe7": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "24b7ec88-f35f-43bd-8a20-dd55041ae493"
-                                    },
-                                    {
-                                        "columnId": "c1071ca8-b352-4065-8047-99ed20ababe7"
-                                    }
-                                ],
-                                "layerId": "40b74149-4fbb-4196-b429-608fc7bf348e",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "ac18839d-175b-4694-80a9-03bcd0eb1fe2",
-                    "w": 24,
-                    "x": 24,
-                    "y": 56
-                },
-                "panelIndex": "ac18839d-175b-4694-80a9-03bcd0eb1fe2",
-                "title": "Top MDM Provider",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "78fc8a76-efc2-4166-a1da-5f118c827c32",
-                    "w": 48,
-                    "x": 0,
-                    "y": 71
-                },
-                "panelIndex": "78fc8a76-efc2-4166-a1da-5f118c827c32",
-                "panelRefName": "panel_78fc8a76-efc2-4166-a1da-5f118c827c32",
-                "title": "Device Essential Details",
-                "type": "search"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-0ac04731-214d-4f6b-bf5b-7445e9c972fc",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "0ac04731-214d-4f6b-bf5b-7445e9c972fc": {
-                                            "columnOrder": [
-                                                "7254cce8-e494-43cb-80e9-efd75c6049a9",
-                                                "24a93c0a-bea6-47c5-a7cb-deafd0d1d428"
-                                            ],
-                                            "columns": {
-                                                "24a93c0a-bea6-47c5-a7cb-deafd0d1d428": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "7254cce8-e494-43cb-80e9-efd75c6049a9": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Windows License Status",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "24a93c0a-bea6-47c5-a7cb-deafd0d1d428",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "island_browser.device.windows_license_status"
+                                                    "sourceField": "island_browser.audit.type"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -849,7 +925,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "24a93c0a-bea6-47c5-a7cb-deafd0d1d428"
+                                            "06192284-ade1-4941-b9bb-f4fe2b8dc544"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -869,12 +945,12 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "0ac04731-214d-4f6b-bf5b-7445e9c972fc",
+                                        "layerId": "5eb77bd9-a98a-4cf6-b200-0ad31701d5b9",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_horizontal_stacked",
                                         "showGridlines": false,
-                                        "xAccessor": "7254cce8-e494-43cb-80e9-efd75c6049a9"
+                                        "xAccessor": "e105a41d-2267-40df-9d57-c8432e716c3b"
                                     }
                                 ],
                                 "legend": {
@@ -910,307 +986,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "64353826-5d36-4975-a518-d2e8578a4c7b",
+                    "i": "fcc62d88-aae3-4f2d-8290-c91d06d97594",
                     "w": 24,
-                    "x": 0,
-                    "y": 56
-                },
-                "panelIndex": "64353826-5d36-4975-a518-d2e8578a4c7b",
-                "title": "Devices by Windows License Status",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "aa2c0fc4-8dc4-4954-95ea-d076c8b8c3c2",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "1aebc86b-2968-4c98-bb56-e59a96fbd3e8": {
-                                            "columnOrder": [
-                                                "21316db3-e715-46fb-aeeb-91e13c0758d4"
-                                            ],
-                                            "columns": {
-                                                "21316db3-e715-46fb-aeeb-91e13c0758d4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Active Devices",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "island_browser.device.status",
-                                        "index": "aa2c0fc4-8dc4-4954-95ea-d076c8b8c3c2",
-                                        "key": "island_browser.device.status",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "Active"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "island_browser.device.status": "Active"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-                                "layerType": "data",
-                                "metricAccessor": "21316db3-e715-46fb-aeeb-91e13c0758d4"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "island_browser.device.status",
-                                "index": "aa2c0fc4-8dc4-4954-95ea-d076c8b8c3c2",
-                                "key": "island_browser.device.status",
-                                "negate": false,
-                                "params": {
-                                    "query": "Active"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "island_browser.device.status": "Active"
-                                }
-                            }
-                        }
-                    ],
-                    "hidePanelTitles": true,
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "26d27a7c-277d-4116-a2dd-6380b56681ea",
-                    "w": 12,
-                    "x": 12,
-                    "y": 0
-                },
-                "panelIndex": "26d27a7c-277d-4116-a2dd-6380b56681ea",
-                "title": "Total Active Devices",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "1aebc86b-2968-4c98-bb56-e59a96fbd3e8": {
-                                            "columnOrder": [
-                                                "21316db3-e715-46fb-aeeb-91e13c0758d4"
-                                            ],
-                                            "columns": {
-                                                "21316db3-e715-46fb-aeeb-91e13c0758d4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Archived Devices",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*"
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "logs-*",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
-                                    "initialContext": null,
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "island_browser.device.is_archived",
-                                        "index": "0b28a844-0545-4231-9954-2927edb90980",
-                                        "key": "island_browser.device.is_archived",
-                                        "negate": false,
-                                        "params": {
-                                            "query": true
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "island_browser.device.is_archived": true
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-                                "layerType": "data",
-                                "metricAccessor": "21316db3-e715-46fb-aeeb-91e13c0758d4"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "island_browser.device.is_archived",
-                                "index": "0b28a844-0545-4231-9954-2927edb90980",
-                                "key": "island_browser.device.is_archived",
-                                "negate": false,
-                                "params": {
-                                    "query": true
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "island_browser.device.is_archived": true
-                                }
-                            }
-                        }
-                    ],
-                    "hidePanelTitles": true,
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "64fc7e8f-9a80-4dc7-91c0-86c1da42b0c7",
-                    "w": 12,
                     "x": 24,
-                    "y": 0
+                    "y": 28
                 },
-                "panelIndex": "64fc7e8f-9a80-4dc7-91c0-86c1da42b0c7",
-                "title": "Total Archived Devices",
+                "panelIndex": "fcc62d88-aae3-4f2d-8290-c91d06d97594",
+                "title": "Audit Events by Type",
                 "type": "lens"
             },
             {
@@ -1219,12 +1001,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "c1bd577e-89cb-4fd1-bd78-60680750e636",
+                                "name": "indexpattern-datasource-layer-9c548640-5ab1-414f-9d90-fe96ab9f295e",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1233,156 +1010,18 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "1aebc86b-2968-4c98-bb56-e59a96fbd3e8": {
+                                        "9c548640-5ab1-414f-9d90-fe96ab9f295e": {
                                             "columnOrder": [
-                                                "21316db3-e715-46fb-aeeb-91e13c0758d4"
+                                                "01b85c91-ccb8-45a9-89e2-4e1ee72aeddd",
+                                                "a11bcb50-4454-4e6e-b4e0-e4a50d92c3ad",
+                                                "b217f55f-3b56-4b71-b2ae-674226038ee8"
                                             ],
                                             "columns": {
-                                                "21316db3-e715-46fb-aeeb-91e13c0758d4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Jailbroken Devices",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "island_browser.device.is_jailbroken",
-                                        "index": "c1bd577e-89cb-4fd1-bd78-60680750e636",
-                                        "key": "island_browser.device.is_jailbroken",
-                                        "negate": false,
-                                        "params": {
-                                            "query": true
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "island_browser.device.is_jailbroken": true
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-                                "layerType": "data",
-                                "metricAccessor": "21316db3-e715-46fb-aeeb-91e13c0758d4"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "island_browser.device.is_jailbroken",
-                                "index": "c1bd577e-89cb-4fd1-bd78-60680750e636",
-                                "key": "island_browser.device.is_jailbroken",
-                                "negate": false,
-                                "params": {
-                                    "query": true
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "island_browser.device.is_jailbroken": true
-                                }
-                            }
-                        }
-                    ],
-                    "hidePanelTitles": true,
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "aae514bd-5665-4631-aa7b-f9e0b160d48c",
-                    "w": 12,
-                    "x": 36,
-                    "y": 0
-                },
-                "panelIndex": "aae514bd-5665-4631-aa7b-f9e0b160d48c",
-                "title": "Total Jailbroken Devices",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-66c62dea-a8d0-490a-bd97-806d988c6300",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "66c62dea-a8d0-490a-bd97-806d988c6300": {
-                                            "columnOrder": [
-                                                "6b892759-8d5d-4bca-b0bf-1eef7e8947f0",
-                                                "85998b26-9a5c-406d-a573-766e4c255d69"
-                                            ],
-                                            "columns": {
-                                                "6b892759-8d5d-4bca-b0bf-1eef7e8947f0": {
+                                                "01b85c91-ccb8-45a9-89e2-4e1ee72aeddd": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Status",
+                                                    "label": "Verdict",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1391,7 +1030,34 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "85998b26-9a5c-406d-a573-766e4c255d69",
+                                                            "columnId": "b217f55f-3b56-4b71-b2ae-674226038ee8",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "island_browser.audit.verdict"
+                                                },
+                                                "a11bcb50-4454-4e6e-b4e0-e4a50d92c3ad": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Verdict Reason",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b217f55f-3b56-4b71-b2ae-674226038ee8",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -1402,9 +1068,9 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "island_browser.device.status"
+                                                    "sourceField": "island_browser.audit.verdict_reason"
                                                 },
-                                                "85998b26-9a5c-406d-a573-766e4c255d69": {
+                                                "b217f55f-3b56-4b71-b2ae-674226038ee8": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1421,6 +1087,431 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b217f55f-3b56-4b71-b2ae-674226038ee8"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "9c548640-5ab1-414f-9d90-fe96ab9f295e",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a11bcb50-4454-4e6e-b4e0-e4a50d92c3ad",
+                                        "xAccessor": "01b85c91-ccb8-45a9-89e2-4e1ee72aeddd"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "dbea97ab-0ff8-4346-bc33-d29ad28d9aeb",
+                    "w": 24,
+                    "x": 0,
+                    "y": 43
+                },
+                "panelIndex": "dbea97ab-0ff8-4346-bc33-d29ad28d9aeb",
+                "title": "Audit Events by Verdict and Verdict Reason",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "e95fb80d-1400-4f50-bf6b-1aea0146fdaf",
+                    "w": 48,
+                    "x": 0,
+                    "y": 73
+                },
+                "panelIndex": "e95fb80d-1400-4f50-bf6b-1aea0146fdaf",
+                "panelRefName": "panel_e95fb80d-1400-4f50-bf6b-1aea0146fdaf",
+                "title": "Audit Essential Details",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1a8490e9-2989-43c0-a128-7d9fce6e5744",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "1a8490e9-2989-43c0-a128-7d9fce6e5744": {
+                                            "columnOrder": [
+                                                "4394029f-cf5d-4e64-835c-4fe860052dd4",
+                                                "f01b50fe-372c-4fe0-9598-7a9794e95f67"
+                                            ],
+                                            "columns": {
+                                                "4394029f-cf5d-4e64-835c-4fe860052dd4": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Source Region",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f01b50fe-372c-4fe0-9598-7a9794e95f67",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.geo.country_iso_code"
+                                                },
+                                                "f01b50fe-372c-4fe0-9598-7a9794e95f67": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "emsField": "iso2",
+                                "emsLayerId": "world_countries",
+                                "layerId": "1a8490e9-2989-43c0-a128-7d9fce6e5744",
+                                "regionAccessor": "4394029f-cf5d-4e64-835c-4fe860052dd4",
+                                "valueAccessor": "f01b50fe-372c-4fe0-9598-7a9794e95f67"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsChoropleth"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "a4f9e1e6-7aa9-4135-9bae-cb9df2d6c661",
+                    "w": 48,
+                    "x": 0,
+                    "y": 88
+                },
+                "panelIndex": "a4f9e1e6-7aa9-4135-9bae-cb9df2d6c661",
+                "title": "Source Region",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "vertical",
+                        "links": [
+                            {
+                                "destinationRefName": "link_bfd287d8-b859-4992-bab5-8454c331e33f_dashboard",
+                                "id": "bfd287d8-b859-4992-bab5-8454c331e33f",
+                                "label": "Device",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": false,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_8b4237aa-ef17-4817-be72-0cf5d3582f77_dashboard",
+                                "id": "8b4237aa-ef17-4817-be72-0cf5d3582f77",
+                                "label": "User",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": false,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_62af94bc-0096-497b-9368-33556f726857_dashboard",
+                                "id": "62af94bc-0096-497b-9368-33556f726857",
+                                "label": "Audit",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": false,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "af599e78-d0bb-4d5a-ad14-11079678dcbc",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "af599e78-d0bb-4d5a-ad14-11079678dcbc",
+                "title": "Navigation",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "#### Island Browser\n\n#### Overview\n\nThis dashboard provides visibility into audit events across the Island Browser platform, helping analysts track user and system activity.\n\nFilters allow refinement by event type and verdict, while time-series charts highlight audit trends over time. Bar and pie charts break down events by verdict, verdict reason, type, OS platform, and compatibility mode. Tables showcase top rules, top users, and source IPs, while a map displays geographic distribution by source region.\n\nAn audit essentials panel with host, device, and source details provides quick context for monitoring and investigations.\n\n**[Integration Page](/app/integrations/detail/island_browser/overview)**",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 21,
+                    "i": "a0f3d2e6-e290-4744-a66a-7d8d2b9b3170",
+                    "w": 12,
+                    "x": 0,
+                    "y": 7
+                },
+                "panelIndex": "a0f3d2e6-e290-4744-a66a-7d8d2b9b3170",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1612f3ee-fa28-497e-8fa4-a56faf8735ba",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "1612f3ee-fa28-497e-8fa4-a56faf8735ba": {
+                                            "columnOrder": [
+                                                "a8bf040a-b146-4ccf-9907-7d02bd008547",
+                                                "18c3aa74-b017-440f-9de2-5da33fc46141"
+                                            ],
+                                            "columns": {
+                                                "18c3aa74-b017-440f-9de2-5da33fc46141": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "a8bf040a-b146-4ccf-9907-7d02bd008547": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Compatibility Mode",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "18c3aa74-b017-440f-9de2-5da33fc46141",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "island_browser.audit.compatibility_mode"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1463,16 +1554,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "66c62dea-a8d0-490a-bd97-806d988c6300",
+                                        "layerId": "1612f3ee-fa28-497e-8fa4-a56faf8735ba",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "metrics": [
-                                            "85998b26-9a5c-406d-a573-766e4c255d69"
+                                            "18c3aa74-b017-440f-9de2-5da33fc46141"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "6b892759-8d5d-4bca-b0bf-1eef7e8947f0"
+                                            "a8bf040a-b146-4ccf-9907-7d02bd008547"
                                         ],
                                         "truncateLegend": false
                                     }
@@ -1499,111 +1590,15 @@
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "cd27ecb2-0736-49b1-b8c5-b395b7949e0d",
-                    "w": 24,
-                    "x": 0,
-                    "y": 26
+                    "h": 13,
+                    "i": "311d75be-dcb3-4f70-9362-b8893768ab9a",
+                    "w": 18,
+                    "x": 12,
+                    "y": 15
                 },
-                "panelIndex": "cd27ecb2-0736-49b1-b8c5-b395b7949e0d",
-                "title": "Devices by Status",
+                "panelIndex": "311d75be-dcb3-4f70-9362-b8893768ab9a",
+                "title": "Audit Events by Compatibility Mode",
                 "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "layout": "vertical",
-                        "links": [
-                            {
-                                "destinationRefName": "link_454fa333-5434-472e-b811-3b0134abe407_dashboard",
-                                "id": "454fa333-5434-472e-b811-3b0134abe407",
-                                "label": "Device",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": false,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 0,
-                                "type": "dashboardLink"
-                            },
-                            {
-                                "destinationRefName": "link_ef913524-bc73-44b3-8984-964645d565cb_dashboard",
-                                "id": "ef913524-bc73-44b3-8984-964645d565cb",
-                                "label": "User",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": false,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 1,
-                                "type": "dashboardLink"
-                            },
-                            {
-                                "destinationRefName": "link_6e5549b0-2297-46c2-b4dd-c9d433ef1749_dashboard",
-                                "id": "6e5549b0-2297-46c2-b4dd-c9d433ef1749",
-                                "label": "Audit",
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": false,
-                                    "useCurrentFilters": false
-                                },
-                                "order": 2,
-                                "type": "dashboardLink"
-                            }
-                        ]
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "fea6befa-f4aa-4a46-b72f-1ab75a2dfb75",
-                    "w": 12,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "fea6befa-f4aa-4a46-b72f-1ab75a2dfb75",
-                "title": "Navigation",
-                "type": "links"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "#### Island Browser\n\n#### Overview\n\nThis dashboard provides visibility into device activity and compliance within the Island Browser platform.\n\nFilters allow you to refine by device type, OS platform, and status. Key metrics highlight active, archived, and jailbroken devices for a quick health snapshot. Visualizations include policy updates over time, device distribution by status, type, OS platform, and browser update status.\n\nA table of top MDM providers and essential device details such as IDs, IPs, MAC addresses, users, and organizations which supports monitoring and auditing.\n\n**[Integration Page](/app/integrations/detail/island_browser/overview)**",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 19,
-                    "i": "0a5f13d6-6213-4a97-8161-aa80f40c822c",
-                    "w": 12,
-                    "x": 0,
-                    "y": 7
-                },
-                "panelIndex": "0a5f13d6-6213-4a97-8161-aa80f40c822c",
-                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -1611,7 +1606,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-8e85fca7-8bea-480b-8e83-811d8d380ab4",
+                                "name": "indexpattern-datasource-layer-1612f3ee-fa28-497e-8fa4-a56faf8735ba",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1620,17 +1615,17 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "8e85fca7-8bea-480b-8e83-811d8d380ab4": {
+                                        "1612f3ee-fa28-497e-8fa4-a56faf8735ba": {
                                             "columnOrder": [
-                                                "42ed6cab-bfb9-48bf-98a3-e42ed6a00693",
-                                                "29d49763-3a1b-448a-8b55-9996919ae438"
+                                                "a8bf040a-b146-4ccf-9907-7d02bd008547",
+                                                "18c3aa74-b017-440f-9de2-5da33fc46141"
                                             ],
                                             "columns": {
-                                                "29d49763-3a1b-448a-8b55-9996919ae438": {
+                                                "18c3aa74-b017-440f-9de2-5da33fc46141": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Policy Update Count",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -1644,22 +1639,34 @@
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
-                                                "42ed6cab-bfb9-48bf-98a3-e42ed6a00693": {
+                                                "a8bf040a-b146-4ccf-9907-7d02bd008547": {
                                                     "customLabel": true,
-                                                    "dataType": "date",
+                                                    "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Update Time",
-                                                    "operationType": "date_histogram",
+                                                    "label": "OS Platform",
+                                                    "operationType": "terms",
                                                     "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "18c3aa74-b017-440f-9de2-5da33fc46141",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
                                                     },
-                                                    "scale": "interval",
-                                                    "sourceField": "island_browser.device.policy_update_time"
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.os.platform"
                                                 }
                                             },
-                                            "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
                                             "sampling": 1
                                         }
@@ -1681,9 +1688,7 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "29d49763-3a1b-448a-8b55-9996919ae438"
-                                        ],
+                                        "categoryDisplay": "default",
                                         "colorMapping": {
                                             "assignments": [],
                                             "colorMode": {
@@ -1702,26 +1707,26 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "8e85fca7-8bea-480b-8e83-811d8d380ab4",
+                                        "layerId": "1612f3ee-fa28-497e-8fa4-a56faf8735ba",
                                         "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "42ed6cab-bfb9-48bf-98a3-e42ed6a00693"
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "18c3aa74-b017-440f-9de2-5da33fc46141"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "a8bf040a-b146-4ccf-9907-7d02bd008547"
+                                        ],
+                                        "truncateLegend": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "line",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
+                                "shape": "pie"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsPie"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -1738,24 +1743,24 @@
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 17,
-                    "i": "58145684-d40e-4559-ab50-63abc06701bd",
-                    "w": 36,
-                    "x": 12,
-                    "y": 9
+                    "h": 13,
+                    "i": "7c08591c-3e87-43b9-ba10-b03497aa929c",
+                    "w": 18,
+                    "x": 30,
+                    "y": 15
                 },
-                "panelIndex": "58145684-d40e-4559-ab50-63abc06701bd",
-                "title": "Policy Update over Time",
+                "panelIndex": "7c08591c-3e87-43b9-ba10-b03497aa929c",
+                "title": "Audit Events by OS Platform",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Island Browser] Device",
+        "title": "[Logs Island Browser] Audit",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-09-16T13:02:34.634Z",
-    "id": "island_browser-86a8fe6b-5da7-4584-a376-ac52a9d4d7a2",
+    "created_at": "2025-09-16T13:02:34.192Z",
+    "id": "island_browser-de262ab3-5ed3-4735-baef-72cfb0a50d1d",
     "references": [
         {
             "id": "logs-*",
@@ -1763,113 +1768,88 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "island_browser-84eb0548-660b-42af-9af1-a762aaa6bb84",
-            "name": "78fc8a76-efc2-4166-a1da-5f118c827c32:panel_78fc8a76-efc2-4166-a1da-5f118c827c32",
+            "id": "island_browser-6483b021-105e-40ce-8e13-8afb91123326",
+            "name": "e95fb80d-1400-4f50-bf6b-1aea0146fdaf:panel_e95fb80d-1400-4f50-bf6b-1aea0146fdaf",
             "type": "search"
         },
         {
             "id": "logs-*",
-            "name": "df320821-b5f8-41da-8848-7e08c015e2ed:indexpattern-datasource-layer-c0f80539-c811-4653-bae1-01b7d5a2ec9d",
+            "name": "39b181d1-3268-4673-b219-2f7dbf255d6f:indexpattern-datasource-layer-c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "726624c0-6440-4777-8932-539d5cafd38d:indexpattern-datasource-layer-393fe063-57f3-4090-a789-ca7d4ae58c8e",
+            "name": "3e3b3f6c-7225-4bc8-81d6-2f56a1d4241f:indexpattern-datasource-layer-c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "8316634e-0c0c-491a-bacb-20d1a2edba34:indexpattern-datasource-layer-70d45923-2782-4a08-a599-68b853f2511b",
+            "name": "1ee198c6-ff48-44eb-9716-10e32ab08f62:indexpattern-datasource-layer-c0f8e0e8-ffca-4e54-992b-c830cd1f8447",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "ac18839d-175b-4694-80a9-03bcd0eb1fe2:indexpattern-datasource-layer-40b74149-4fbb-4196-b429-608fc7bf348e",
+            "name": "c2b73afc-f5a0-433d-ab33-2fbe281ae332:indexpattern-datasource-layer-4bd6b31f-db78-4f03-952f-f839644abb46",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "64353826-5d36-4975-a518-d2e8578a4c7b:indexpattern-datasource-layer-0ac04731-214d-4f6b-bf5b-7445e9c972fc",
+            "name": "399e54b9-d16b-4304-bebb-a1f25272e210:indexpattern-datasource-layer-b490b179-ffdd-48d7-9cb4-ce912d6ba4fe",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "26d27a7c-277d-4116-a2dd-6380b56681ea:indexpattern-datasource-layer-1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
+            "name": "fcc62d88-aae3-4f2d-8290-c91d06d97594:indexpattern-datasource-layer-5eb77bd9-a98a-4cf6-b200-0ad31701d5b9",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "26d27a7c-277d-4116-a2dd-6380b56681ea:aa2c0fc4-8dc4-4954-95ea-d076c8b8c3c2",
+            "name": "dbea97ab-0ff8-4346-bc33-d29ad28d9aeb:indexpattern-datasource-layer-9c548640-5ab1-414f-9d90-fe96ab9f295e",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "64fc7e8f-9a80-4dc7-91c0-86c1da42b0c7:indexpattern-datasource-layer-1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "aae514bd-5665-4631-aa7b-f9e0b160d48c:indexpattern-datasource-layer-1aebc86b-2968-4c98-bb56-e59a96fbd3e8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "aae514bd-5665-4631-aa7b-f9e0b160d48c:c1bd577e-89cb-4fd1-bd78-60680750e636",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "cd27ecb2-0736-49b1-b8c5-b395b7949e0d:indexpattern-datasource-layer-66c62dea-a8d0-490a-bd97-806d988c6300",
+            "name": "a4f9e1e6-7aa9-4135-9bae-cb9df2d6c661:indexpattern-datasource-layer-1a8490e9-2989-43c0-a128-7d9fce6e5744",
             "type": "index-pattern"
         },
         {
             "id": "island_browser-86a8fe6b-5da7-4584-a376-ac52a9d4d7a2",
-            "name": "fea6befa-f4aa-4a46-b72f-1ab75a2dfb75:link_454fa333-5434-472e-b811-3b0134abe407_dashboard",
+            "name": "af599e78-d0bb-4d5a-ad14-11079678dcbc:link_bfd287d8-b859-4992-bab5-8454c331e33f_dashboard",
             "type": "dashboard"
         },
         {
             "id": "island_browser-1bcda810-8ace-46ea-9a41-f9179ac63f36",
-            "name": "fea6befa-f4aa-4a46-b72f-1ab75a2dfb75:link_ef913524-bc73-44b3-8984-964645d565cb_dashboard",
+            "name": "af599e78-d0bb-4d5a-ad14-11079678dcbc:link_8b4237aa-ef17-4817-be72-0cf5d3582f77_dashboard",
             "type": "dashboard"
         },
         {
             "id": "island_browser-de262ab3-5ed3-4735-baef-72cfb0a50d1d",
-            "name": "fea6befa-f4aa-4a46-b72f-1ab75a2dfb75:link_6e5549b0-2297-46c2-b4dd-c9d433ef1749_dashboard",
+            "name": "af599e78-d0bb-4d5a-ad14-11079678dcbc:link_62af94bc-0096-497b-9368-33556f726857_dashboard",
             "type": "dashboard"
         },
         {
             "id": "logs-*",
-            "name": "58145684-d40e-4559-ab50-63abc06701bd:indexpattern-datasource-layer-8e85fca7-8bea-480b-8e83-811d8d380ab4",
+            "name": "311d75be-dcb3-4f70-9362-b8893768ab9a:indexpattern-datasource-layer-1612f3ee-fa28-497e-8fa4-a56faf8735ba",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_0fd7eadf-5f89-4b84-9c1d-9f8f1dab24b5:optionsListDataView",
+            "name": "7c08591c-3e87-43b9-ba10-b03497aa929c:indexpattern-datasource-layer-1612f3ee-fa28-497e-8fa4-a56faf8735ba",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_1ae09bdb-e75b-4ffc-83d9-9a3d978d850e:optionsListDataView",
+            "name": "controlGroup_894555fe-8740-4af2-b812-a0789826b169:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_e7c818d8-49e4-4d22-ba7c-eb3e6063fe29:optionsListDataView",
+            "name": "controlGroup_930d8596-6411-4860-9c00-1957171f46a0:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],

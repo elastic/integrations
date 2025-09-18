@@ -1,13 +1,20 @@
-title: Collect User logs from Island Browser.
+title: Collect Audit logs from Island Browser.
 type: logs
-ilm_policy: logs-island_browser.user-default_policy
 streams:
   - input: cel
-    title: Island Browser User Logs
-    description: Collect Island Browser User Logs.
+    title: Island Browser Audit Logs
+    description: Collect Island Browser Audit Logs.
     template_path: cel.yml.hbs
     enabled: false
     vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: How far back to pull the audit events from Island Browser API. Supported units for this parameter are h/m/s.
       - name: interval
         type: text
         title: Interval
@@ -15,15 +22,31 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 24h
+        default: 30m
       - name: batch_size
         type: integer
         title: Batch Size
-        description: Page size for the response of the Island Browser API.
+        description: Page size for the response of the Island Browser API. Maximum allowed value is 100.
         multi: false
         required: true
         show_user: false
-        default: 1000
+        default: 100
+      - name: resource_rate_limit_limit
+        type: text
+        title: Resource Rate Limit
+        default: "0.01"
+        description: In requests per second. This controls polling frequency.
+        show_user: false
+        multi: false
+        required: true
+      - name: resource_rate_limit_burst
+        type: integer
+        title: Resource Rate Limit Burst
+        default: 1
+        description: In requests. The maximum number of requests that can be immediately made following an idle period.
+        show_user: false
+        multi: false
+        required: true
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -54,7 +77,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - island_browser-user
+          - island_browser-audit
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -66,7 +89,7 @@ streams:
       - name: preserve_duplicate_custom_fields
         required: false
         title: Preserve duplicate custom fields
-        description: Preserve island_browser.user fields that were copied to Elastic Common Schema (ECS) fields.
+        description: Preserve island_browser.audit fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
         show_user: false
