@@ -17,8 +17,7 @@ To monitor a Kafka component (such as a broker, producer, or consumer) with Jolo
 1. Download the Agent
 First, download the Jolokia JVM-Agent from the [official website](https://jolokia.org/download.html).
 
-2. Attach the Agent via KAFKA_OPTS
-The easiest way to attach the agent is by setting the `KAFKA_OPTS` environment variable before starting your Kafka process.
+2. Attach the Agent via KAFKA_OPTS by setting the `KAFKA_OPTS` environment variable before starting your Kafka process.
 
 For example, to launch a console producer with the Jolokia agent enabled:
 
