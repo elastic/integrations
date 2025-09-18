@@ -18,46 +18,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ObjectData stores the raw data and its content type.
-type ObjectData struct {
-	Data        []byte
-	ContentType string
-}
-
-// The in-memory store to hold ObjectData structs.
-var inMemoryStore = make(map[string]map[string]ObjectData)
-
-// GCSListResponse mimics the structure of a real GCS object list response.
-type GCSListResponse struct {
-	Kind  string      `json:"kind"`
-	Items []GCSObject `json:"items"`
-}
-
-// GCSObject mimics the structure of a GCS object resource with ContentType.
-type GCSObject struct {
-	Kind        string `json:"kind"`
-	Name        string `json:"name"`
-	Bucket      string `json:"bucket"`
-	Size        string `json:"size"`
-	ContentType string `json:"contentType"`
-}
-
-// Manifest represents the top-level structure of the YAML file
-type Manifest struct {
-	Buckets map[string]Bucket `yaml:"buckets"`
-}
-
-// Bucket represents each bucket and its files
-type Bucket struct {
-	Files []File `yaml:"files"`
-}
-
-// File represents each file entry inside a bucket
-type File struct {
-	Path        string `yaml:"path"`
-	ContentType string `yaml:"content-type"`
-}
-
 func main() {
 	host := flag.String("host", "0.0.0.0", "host to listen on")
 	port := flag.String("port", "4443", "port to listen on")
@@ -79,13 +39,59 @@ func main() {
 		fmt.Println("Store is empty. Create buckets and objects via API calls.")
 	}
 
-	http.HandleFunc("/", handleRequests)
+	// setup HTTP handlers
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", healthHandler)
+	mux.HandleFunc("/storage/v1/b", handleCreateBucket)
+	mux.HandleFunc("/storage/v1/b/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Received request: %s %s", r.Method, r.URL.Path)
 
-	if err := http.ListenAndServe(addr, nil); err != nil {
+		if r.Method == "GET" {
+			if strings.HasSuffix(r.URL.Path, "/o") {
+				handleListObjects(w, r)
+				return
+			}
+			// route for getting an object (either path-style or API-style)
+			handleGetObject(w, r)
+			return
+		}
+		http.NotFound(w, r)
+	})
+	mux.HandleFunc("/upload/storage/v1/b/", handleUploadObject)
+
+	// fallback: path-style object access, e.g. /bucket/object
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Received request: %s %s", r.Method, r.URL.Path)
+
+		if r.Method == "GET" {
+			// route for getting an object (either path-style or API-style)
+			handleGetObject(w, r)
+			return
+		}
+		http.NotFound(w, r)
+	})
+
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
 }
 
+// readManifest reads and parses the YAML manifest file.
+func readManifest(path string) (*Manifest, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read manifest: %w", err)
+	}
+
+	var manifest Manifest
+	if err := yaml.Unmarshal(data, &manifest); err != nil {
+		return nil, fmt.Errorf("failed to parse manifest: %w", err)
+	}
+
+	return &manifest, nil
+}
+
+// processManifest creates buckets and uploads objects as specified in the manifest.
 func processManifest(manifest *Manifest) error {
 	for bucketName, bucket := range manifest.Buckets {
 		for _, file := range bucket.Files {
@@ -108,54 +114,13 @@ func processManifest(manifest *Manifest) error {
 	return nil
 }
 
-func readManifest(path string) (*Manifest, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read manifest: %w", err)
-	}
-
-	var manifest Manifest
-	if err := yaml.Unmarshal(data, &manifest); err != nil {
-		return nil, fmt.Errorf("failed to parse manifest: %w", err)
-	}
-
-	return &manifest, nil
-}
-
-func handleRequests(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	log.Printf("Received request: %s %s", r.Method, path)
-
-	switch r.Method {
-	case "GET":
-		if strings.HasPrefix(path, "/health") {
-			healthHandler(w, r)
-			return
-		}
-		if strings.HasPrefix(path, "/storage/v1/b/") && strings.HasSuffix(path, "/o") {
-			handleListObjects(w, r)
-			return
-		}
-		handleGetObject(w, r)
-	case "POST":
-		if path == "/storage/v1/b" {
-			handleCreateBucket(w, r)
-			return
-		}
-		if strings.HasPrefix(path, "/upload/storage/v1/b/") {
-			handleUploadObject(w, r)
-			return
-		}
-	default:
-		http.NotFound(w, r)
-	}
-}
-
+// healthHandler responds with a simple "OK" message for health checks.
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "OK")
 }
 
+// handleListObjects lists all objects in the specified bucket.
 func handleListObjects(w http.ResponseWriter, r *http.Request) {
 	bucketName := strings.Split(strings.Trim(r.URL.Path, "/"), "/")[3]
 
@@ -181,6 +146,7 @@ func handleListObjects(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "not found", http.StatusNotFound)
 }
 
+// handleGetObject retrieves a specific object from a bucket.
 func handleGetObject(w http.ResponseWriter, r *http.Request) {
 	var bucketName, objectName string
 	path := strings.Trim(r.URL.Path, "/")
@@ -211,7 +177,13 @@ func handleGetObject(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "not found", http.StatusNotFound)
 }
 
+// handleCreateBucket creates a new bucket.
 func handleCreateBucket(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.NotFound(w, r)
+		return
+	}
+
 	var bucketInfo struct {
 		Name string `json:"name"`
 	}
@@ -231,7 +203,13 @@ func handleCreateBucket(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(bucketInfo)
 }
 
+// handleUploadObject uploads an object to a specified bucket.
 func handleUploadObject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.NotFound(w, r)
+		return
+	}
+
 	pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(pathParts) < 5 {
 		http.Error(w, "invalid upload URL", http.StatusBadRequest)
@@ -294,4 +272,44 @@ func uploadObject(bucketName, objectName string, data []byte, contentType string
 		Size:        strconv.Itoa(len(data)),
 		ContentType: contentType,
 	}, nil
+}
+
+// The in-memory store to hold ObjectData structs.
+var inMemoryStore = make(map[string]map[string]ObjectData)
+
+// ObjectData stores the raw data and its content type.
+type ObjectData struct {
+	Data        []byte
+	ContentType string
+}
+
+// GCSListResponse mimics the structure of a real GCS object list response.
+type GCSListResponse struct {
+	Kind  string      `json:"kind"`
+	Items []GCSObject `json:"items"`
+}
+
+// GCSObject mimics the structure of a GCS object resource with ContentType.
+type GCSObject struct {
+	Kind        string `json:"kind"`
+	Name        string `json:"name"`
+	Bucket      string `json:"bucket"`
+	Size        string `json:"size"`
+	ContentType string `json:"contentType"`
+}
+
+// Manifest represents the top-level structure of the YAML file
+type Manifest struct {
+	Buckets map[string]Bucket `yaml:"buckets"`
+}
+
+// Bucket represents each bucket and its files
+type Bucket struct {
+	Files []File `yaml:"files"`
+}
+
+// File represents each file entry inside a bucket
+type File struct {
+	Path        string `yaml:"path"`
+	ContentType string `yaml:"content-type"`
 }
