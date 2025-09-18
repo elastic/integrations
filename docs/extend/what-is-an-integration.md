@@ -16,7 +16,7 @@ An Elastic integration is a collection of assets that defines how to observe a s
 
 Integrations have a strict, well-defined structure, and offer a number of benefits over other ingest options:
 
-* Structured around the service that is being observed—​not the monitoring agent
+* Structured around the service that is being observed— not the monitoring agent
 * Easy, less error-prone configuration
 * Fewer monitoring agents for users to install
 * Deploy in just a few clicks
