@@ -14,8 +14,7 @@ The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `produc
 
 To monitor a Kafka component (such as a broker, producer, or consumer) with Jolokia, you need to attach its JVM agent to the Java process.
 
-1. Download the Agent
-First, download the Jolokia JVM-Agent from the [official website](https://jolokia.org/download.html).
+1. Download the Jolokia JVM-Agent from the [official website](https://jolokia.org/download.html).
 
 2. Attach the Agent via KAFKA_OPTS by setting the `KAFKA_OPTS` environment variable before starting your Kafka process.
 
