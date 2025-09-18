@@ -8,17 +8,15 @@ The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
 
 The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 2.2.2, 3.6.0 and 4.0.0.
 
-The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `producer`, `raft`, `replica_manager`, `topic` metricsets require Jolokia to fetch JMX metrics. Refer to the `Jolokia usage` section below for more information.
+The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `producer`, `raft`, `replica_manager`, `topic` metricsets require Jolokia to fetch JMX metrics. Refer to the `How do I deploy this integration?` section below for more information.
 
-** Jolokia usage **
+## How do I deploy this integration?
 
 To monitor a Kafka component (such as a broker, producer, or consumer) with Jolokia, you need to attach its JVM agent to the Java process.
 
-1. Download the Agent
-First, download the Jolokia JVM-Agent from the [official website](https://jolokia.org/download.html).
+1. Download the Jolokia JVM-Agent from the [official website](https://jolokia.org/download.html).
 
-2. Attach the Agent via KAFKA_OPTS
-The easiest way to attach the agent is by setting the `KAFKA_OPTS` environment variable before starting your Kafka process.
+2. Attach the Agent via KAFKA_OPTS by setting the `KAFKA_OPTS` environment variable before starting your Kafka process.
 
 For example, to launch a console producer with the Jolokia agent enabled:
 
@@ -30,7 +28,7 @@ export KAFKA_OPTS="-javaagent:/path/to/jolokia-jvm-agent.jar=port=8778,host=loca
 ./bin/kafka-console-producer.sh --topic test --broker-list kafka_host:9092
 ```
 
-Make sure to replace /path/to/jolokia-jvm-agent.jar with the actual path to the agent you downloaded.
+Make sure to replace `/path/to/jolokia-jvm-agent.jar` with the actual path to the agent you downloaded.
 
 The port and host parameters specify where the Jolokia agent will be accessible.
 
