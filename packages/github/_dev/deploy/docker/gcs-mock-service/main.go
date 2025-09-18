@@ -58,33 +58,54 @@ type File struct {
 	ContentType string `yaml:"content-type"`
 }
 
-func createBucket(bucketName string) error {
-	if _, exists := inMemoryStore[bucketName]; exists {
-		return fmt.Errorf("bucket already exists")
+func main() {
+	host := flag.String("host", "0.0.0.0", "host to listen on")
+	port := flag.String("port", "4443", "port to listen on")
+	manifest := flag.String("manifest", "", "path to YAML manifest file for preloading buckets and objects")
+	flag.Parse()
+
+	addr := fmt.Sprintf("%s:%s", *host, *port)
+
+	fmt.Printf("Starting mock GCS server on http://%s\n", addr)
+	if *manifest != "" {
+		m, err := readManifest(*manifest)
+		if err != nil {
+			log.Fatalf("error reading manifest: %v", err)
+		}
+		if err := processManifest(m); err != nil {
+			log.Fatalf("error processing manifest: %v", err)
+		}
+	} else {
+		fmt.Println("Store is empty. Create buckets and objects via API calls.")
 	}
-	inMemoryStore[bucketName] = make(map[string]ObjectData)
-	log.Printf("created bucket: %s", bucketName)
-	return nil
+
+	http.HandleFunc("/", handleRequests)
+
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		log.Fatalf("failed to start server: %v", err)
+	}
 }
 
-func uploadObject(bucketName, objectName string, data []byte, contentType string) (*GCSObject, error) {
-	if _, ok := inMemoryStore[bucketName]; !ok {
-		return nil, fmt.Errorf("bucket not found")
-	}
+func processManifest(manifest *Manifest) error {
+	for bucketName, bucket := range manifest.Buckets {
+		for _, file := range bucket.Files {
+			fmt.Printf("preloading data for bucket: %s | path: %s | content-type: %s...\n",
+				bucketName, file.Path, file.ContentType)
 
-	inMemoryStore[bucketName][objectName] = ObjectData{
-		Data:        data,
-		ContentType: contentType,
+			if err := createBucket(bucketName); err != nil {
+				return fmt.Errorf("failed to create bucket '%s': %w", bucketName, err)
+			}
+			data, err := os.ReadFile(file.Path)
+			if err != nil {
+				return fmt.Errorf("failed to read bucket data file '%s': %w", file.Path, err)
+			}
+			pathParts := strings.Split(file.Path, "/")
+			if _, err := uploadObject(bucketName, pathParts[len(pathParts)-1], data, file.ContentType); err != nil {
+				return fmt.Errorf("failed to create object '%s' in bucket '%s': %w", file.Path, bucketName, err)
+			}
+		}
 	}
-	log.Printf("created object '%s' in bucket '%s' with Content-Type '%s'", objectName, bucketName, contentType)
-
-	return &GCSObject{
-		Kind:        "storage#object",
-		Name:        objectName,
-		Bucket:      bucketName,
-		Size:        strconv.Itoa(len(data)),
-		ContentType: contentType,
-	}, nil
+	return nil
 }
 
 func readManifest(path string) (*Manifest, error) {
@@ -101,13 +122,95 @@ func readManifest(path string) (*Manifest, error) {
 	return &manifest, nil
 }
 
-// healthHandler responds with a simple "OK" message.
+func handleRequests(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	log.Printf("Received request: %s %s", r.Method, path)
+
+	switch r.Method {
+	case "GET":
+		if strings.HasPrefix(path, "/health") {
+			healthHandler(w, r)
+			return
+		}
+		if strings.HasPrefix(path, "/storage/v1/b/") && strings.HasSuffix(path, "/o") {
+			handleListObjects(w, r)
+			return
+		}
+		handleGetObject(w, r)
+	case "POST":
+		if path == "/storage/v1/b" {
+			handleCreateBucket(w, r)
+			return
+		}
+		if strings.HasPrefix(path, "/upload/storage/v1/b/") {
+			handleUploadObject(w, r)
+			return
+		}
+	default:
+		http.NotFound(w, r)
+	}
+}
+
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "OK")
 }
 
-// handleCreateBucket creates a new, empty bucket.
+func handleListObjects(w http.ResponseWriter, r *http.Request) {
+	bucketName := strings.Split(strings.Trim(r.URL.Path, "/"), "/")[3]
+
+	if bucket, ok := inMemoryStore[bucketName]; ok {
+		response := GCSListResponse{
+			Kind:  "storage#objects",
+			Items: []GCSObject{},
+		}
+		for name, object := range bucket {
+			item := GCSObject{
+				Kind:        "storage#object",
+				Name:        name,
+				Bucket:      bucketName,
+				Size:        strconv.Itoa(len(object.Data)),
+				ContentType: object.ContentType,
+			}
+			response.Items = append(response.Items, item)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+	http.Error(w, "not found", http.StatusNotFound)
+}
+
+func handleGetObject(w http.ResponseWriter, r *http.Request) {
+	var bucketName, objectName string
+	path := strings.Trim(r.URL.Path, "/")
+	parts := strings.Split(path, "/")
+
+	if strings.HasPrefix(path, "storage/v1/b/") {
+		if len(parts) >= 6 {
+			bucketName, objectName = parts[3], parts[5]
+		}
+	} else {
+		if len(parts) >= 2 {
+			bucketName, objectName = parts[0], parts[1]
+		}
+	}
+
+	if bucketName == "" || objectName == "" {
+		http.Error(w, "not found: invalid URL format", http.StatusNotFound)
+		return
+	}
+
+	if bucket, ok := inMemoryStore[bucketName]; ok {
+		if object, ok := bucket[objectName]; ok {
+			w.Header().Set("Content-Type", object.ContentType)
+			w.Write(object.Data)
+			return
+		}
+	}
+	http.Error(w, "not found", http.StatusNotFound)
+}
+
 func handleCreateBucket(w http.ResponseWriter, r *http.Request) {
 	var bucketInfo struct {
 		Name string `json:"name"`
@@ -128,7 +231,6 @@ func handleCreateBucket(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(bucketInfo)
 }
 
-// handleUploadObject uploads a new file to a bucket.
 func handleUploadObject(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(pathParts) < 5 {
@@ -164,140 +266,32 @@ func handleUploadObject(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// handleGetObject retrieves an object from a bucket.
-func handleGetObject(w http.ResponseWriter, r *http.Request) {
-	var bucketName, objectName string
-	path := strings.Trim(r.URL.Path, "/")
-	parts := strings.Split(path, "/")
-
-	if strings.HasPrefix(path, "storage/v1/b/") {
-		// api style: /storage/v1/b/{bucket}/o/{object}
-		if len(parts) >= 6 {
-			bucketName, objectName = parts[3], parts[5]
-		}
-	} else {
-		// path style: /{bucket}/{object}
-		if len(parts) >= 2 {
-			bucketName, objectName = parts[0], parts[1]
-		}
+func createBucket(bucketName string) error {
+	if _, exists := inMemoryStore[bucketName]; exists {
+		return fmt.Errorf("bucket already exists")
 	}
-
-	if bucketName == "" || objectName == "" {
-		http.Error(w, "not found: invalid URL format", http.StatusNotFound)
-		return
-	}
-
-	if bucket, ok := inMemoryStore[bucketName]; ok {
-		if object, ok := bucket[objectName]; ok {
-			w.Header().Set("Content-Type", object.ContentType)
-			w.Write(object.Data)
-			return
-		}
-	}
-	http.Error(w, "not found", http.StatusNotFound)
-}
-
-// handleListObjects lists all objects in a bucket.
-func handleListObjects(w http.ResponseWriter, r *http.Request) {
-	bucketName := strings.Split(strings.Trim(r.URL.Path, "/"), "/")[3]
-
-	if bucket, ok := inMemoryStore[bucketName]; ok {
-		response := GCSListResponse{
-			Kind:  "storage#objects",
-			Items: []GCSObject{},
-		}
-		for name, object := range bucket {
-			item := GCSObject{
-				Kind:        "storage#object",
-				Name:        name,
-				Bucket:      bucketName,
-				Size:        strconv.Itoa(len(object.Data)),
-				ContentType: object.ContentType,
-			}
-			response.Items = append(response.Items, item)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-		return
-	}
-	http.Error(w, "not found", http.StatusNotFound)
-}
-
-// processManifest processes the manifest to create buckets and upload files.
-func processManifest(manifest *Manifest) error {
-	for bucketName, bucket := range manifest.Buckets {
-		for _, file := range bucket.Files {
-			fmt.Printf("preloading data for bucket: %s | path: %s | content-type: %s...\n", bucketName, file.Path, file.ContentType)
-			if err := createBucket(bucketName); err != nil {
-				return fmt.Errorf("failed to create bucket '%s': %w", bucketName, err)
-			}
-			data, err := os.ReadFile(file.Path)
-			if err != nil {
-				return fmt.Errorf("failed to read bucket data file '%s': %w", file.Path, err)
-			}
-			pathParts := strings.Split(file.Path, "/")
-			if _, err := uploadObject(bucketName, pathParts[len(pathParts)-1], data, file.ContentType); err != nil {
-				return fmt.Errorf("failed to create object '%s' in bucket '%s': %w", file.Path, bucketName, err)
-			}
-		}
-	}
+	inMemoryStore[bucketName] = make(map[string]ObjectData)
+	log.Printf("created bucket: %s", bucketName)
 	return nil
 }
 
-// handleRequests is the top-level router.
-func handleRequests(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	log.Printf("Received request: %s %s", r.Method, path)
-
-	switch r.Method {
-	case "GET":
-		if strings.HasPrefix(path, "/health") {
-			healthHandler(w, r)
-			return
-		}
-		if strings.HasPrefix(path, "/storage/v1/b/") && strings.HasSuffix(path, "/o") {
-			handleListObjects(w, r)
-			return
-		}
-		handleGetObject(w, r)
-	case "POST":
-		if path == "/storage/v1/b" {
-			handleCreateBucket(w, r)
-			return
-		}
-		if strings.HasPrefix(path, "/upload/storage/v1/b/") {
-			handleUploadObject(w, r)
-			return
-		}
-	default:
-		http.NotFound(w, r)
-	}
-}
-
-func main() {
-	host := flag.String("host", "0.0.0.0", "host to listen on")
-	port := flag.String("port", "4443", "port to listen on")
-	manifest := flag.String("manifest", "", "path to YAML manifest file for preloading buckets and objects")
-	flag.Parse()
-
-	addr := fmt.Sprintf("%s:%s", *host, *port)
-
-	fmt.Printf("Starting mock GCS server on http://%s\n", addr)
-	if *manifest != "" {
-		m, err := readManifest(*manifest)
-		if err != nil {
-			log.Fatalf("error reading manifest: %v", err)
-		}
-		if err := processManifest(m); err != nil {
-			log.Fatalf("error processing manifest: %v", err)
-		}
-	} else {
-		fmt.Println("Store is empty. Create buckets and objects via API calls.")
+func uploadObject(bucketName, objectName string, data []byte, contentType string) (*GCSObject, error) {
+	if _, ok := inMemoryStore[bucketName]; !ok {
+		return nil, fmt.Errorf("bucket not found")
 	}
 
-	http.HandleFunc("/", handleRequests)
-
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		log.Fatalf("failed to start server: %v", err)
+	inMemoryStore[bucketName][objectName] = ObjectData{
+		Data:        data,
+		ContentType: contentType,
 	}
+	log.Printf("created object '%s' in bucket '%s' with Content-Type '%s'",
+		objectName, bucketName, contentType)
+
+	return &GCSObject{
+		Kind:        "storage#object",
+		Name:        objectName,
+		Bucket:      bucketName,
+		Size:        strconv.Itoa(len(data)),
+		ContentType: contentType,
+	}, nil
 }
