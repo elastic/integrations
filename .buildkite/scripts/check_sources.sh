@@ -7,10 +7,13 @@ set -euo pipefail
 add_bin_path
 with_mage
 
+echo "--- Run mage check"
 mage -v check
 
+echo "--- Check if any files modified"
 check_git_diff
 
+echo "--- Run elastic-package links"
 run_links_command=false
 if less_than=$(mage isElasticPackageDependencyLessThan 0.113.0) ; then
     # links command require at least v0.113.0

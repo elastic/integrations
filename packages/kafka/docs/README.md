@@ -1551,3 +1551,216 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | kafka.topic.topic.name | The name of the Kafka topic. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
+
+### consumer
+
+The `consumer` dataset collects metrics specifically for monitoring the performance, throughput, and health of Kafka consumers. It provides key insights into how effectively consumers are processing data, their rate of interaction with brokers, and whether they are keeping up with message production.
+
+This dataset includes metrics such as:
+- Consumption Rates: Metrics like bytes_consumed, records_consumed, and in.bytes_per_sec track the throughput of the consumer in terms of both the number of messages and the volume of data processed per second.
+- Consumer Lag: The max_lag metric is a critical indicator of consumer health, showing the maximum delay between the producer writing a message and the consumer reading it.
+- Fetch Performance: The fetch_rate provides visibility into how frequently the consumer is requesting new messages from the broker.
+
+**Usage**
+
+The Consumer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
+
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
+
+```
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-consumer.sh --topic=test --bootstrap-server=<kafka_host>:<kafka_port>
+```
+
+An example event for `consumer` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-12T11:07:25.711Z",
+    "agent": {
+        "ephemeral_id": "326018cd-af13-47dc-8878-aa8c94563fd9",
+        "id": "8b71396e-713d-4903-9fab-bf8e337e0f21",
+        "name": "elastic-agent-55314",
+        "type": "metricbeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "kafka.consumer",
+        "namespace": "31101",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "8b71396e-713d-4903-9fab-bf8e337e0f21",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "kafka.consumer",
+        "duration": 190897139,
+        "ingested": "2025-09-12T11:07:28Z",
+        "kind": "metric",
+        "module": "jolokia",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-55314",
+        "ip": [
+            "172.19.0.4",
+            "172.22.0.2"
+        ],
+        "mac": [
+            "6E-33-D1-42-50-99",
+            "BA-62-17-83-57-BC"
+        ],
+        "name": "elastic-agent-55314",
+        "os": {
+            "family": "",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "kafka": {
+        "consumer": {
+            "client_id": "console-consumer",
+            "mbean": "kafka.consumer:type=consumer-fetch-manager-metrics,client-id=console-consumer",
+            "metric_fingerprint": "gkttPSbYlnXwXHsW2bmYbgRVYVs="
+        }
+    },
+    "metricset": {
+        "name": "jmx",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://svc-kafka:8774/jolokia",
+        "type": "kafka"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| kafka.broker.address | Broker advertised address | keyword |  |  |
+| kafka.broker.id | Broker id | long |  |  |
+| kafka.consumer.bytes_consumed | The average number of bytes consumed for a specific topic per second. | float | byte | gauge |
+| kafka.consumer.client_id |  | keyword |  |  |
+| kafka.consumer.fetch_rate | The minimum rate at which the consumer sends fetch requests to a broker. | float |  | gauge |
+| kafka.consumer.in.bytes_per_sec | The rate of bytes coming in to the consumer. | float | byte | gauge |
+| kafka.consumer.max_lag | The maximum consumer lag. | float |  | gauge |
+| kafka.consumer.mbean | Mbean that this event is related to. | keyword |  |  |
+| kafka.consumer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
+| kafka.consumer.records_consumed | The average number of records consumed per second for a specific topic. | float |  | gauge |
+| kafka.partition.id | Partition id. | long |  |  |
+| kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |  |  |
+| kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |  |  |
+| kafka.topic.error.code | Topic error code. | long |  |  |
+| kafka.topic.name | Topic name | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+
+
+### producer
+
+The `producer` dataset gathers metrics focused on the performance, efficiency, and health of Kafka producers. This data is crucial for understanding message production rates, identifying potential bottlenecks, and ensuring reliable data ingestion into Kafka topics.
+
+This dataset includes metrics such as:
+- Throughput and Rate Metrics: Fields like record_send_rate, out.bytes_per_sec, and request_rate measure the producer's output, providing a clear view of how much data is being sent per second.
+- Batching Performance: Metrics such as batch_size_avg, batch_size_max, and records_per_request offer insights into the effectiveness of batching, which is key for optimizing producer efficiency.
+- Health and Error Indicators: The record_error_rate and record_retry_rate are vital for monitoring the health of the producer, highlighting issues that could lead to data loss or delays.
+- Resource Utilization: Metrics like available_buffer_bytes and io_wait help track resource usage and identify performance constraints related to memory or I/O.
+- Data Characteristics: Fields such as record_size_avg and record_size_max provide information about the size of the records being sent.
+
+**Usage**
+
+The Producer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
+
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
+
+```
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-producer.sh --topic test --broker-list <kafka_host>:<kafka_port>
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| kafka.broker.address | Broker advertised address | keyword |  |  |
+| kafka.broker.id | Broker id | long |  |  |
+| kafka.partition.id | Partition id. | long |  |  |
+| kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |  |  |
+| kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |  |  |
+| kafka.producer.available_buffer_bytes | The total amount of buffer memory. | float | byte | gauge |
+| kafka.producer.batch_size_avg | The average number of bytes sent. | float | byte | gauge |
+| kafka.producer.batch_size_max | The maximum number of bytes sent. | long | byte | gauge |
+| kafka.producer.client_id |  | keyword |  |  |
+| kafka.producer.io_wait | The producer I/O wait time. | float | nanos | gauge |
+| kafka.producer.mbean | Mbean that this event is related to. | keyword |  |  |
+| kafka.producer.metric_fingerprint | A fingerprint of the metric path. | keyword |  |  |
+| kafka.producer.node_id |  | keyword |  |  |
+| kafka.producer.out.bytes_per_sec | The rate of bytes going out for the producer. | float | byte | gauge |
+| kafka.producer.record_error_rate | The average number of retried record sends per second. | float |  | gauge |
+| kafka.producer.record_retry_rate | The average number of retried record sends per second. | float |  | gauge |
+| kafka.producer.record_send_rate | The average number of records sent per second. | float |  | gauge |
+| kafka.producer.record_size_avg | The average record size. | float | byte | gauge |
+| kafka.producer.record_size_max | The maximum record size. | long | byte | gauge |
+| kafka.producer.records_per_request | The average number of records sent per second. | float |  | gauge |
+| kafka.producer.request_rate | The number of producer requests per second. | float |  | gauge |
+| kafka.producer.response_rate | The number of producer responses per second. | float |  | gauge |
+| kafka.topic.error.code | Topic error code. | long |  |  |
+| kafka.topic.name | Topic name | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+
