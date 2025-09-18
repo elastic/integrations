@@ -58,36 +58,47 @@ type File struct {
 	ContentType string `yaml:"content-type"`
 }
 
-func handleRequests(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	log.Printf("Received request: %s %s", r.Method, path)
-
-	switch r.Method {
-	case "GET":
-		if strings.HasPrefix(path, "/health") {
-			healthHandler(w, r)
-			return
-		}
-		if strings.HasPrefix(path, "/storage/v1/b/") && strings.HasSuffix(path, "/o") {
-			handleListObjects(w, r)
-			return
-		}
-		// route for getting an object (either path-style or API-style)
-		handleGetObject(w, r)
-	case "POST":
-		// route for creating a bucket: /storage/v1/b
-		if path == "/storage/v1/b" {
-			handleCreateBucket(w, r)
-			return
-		}
-		// route for uploading an object: /upload/storage/v1/b/{bucket}/o
-		if strings.HasPrefix(path, "/upload/storage/v1/b/") {
-			handleUploadObject(w, r)
-			return
-		}
-	default:
-		http.NotFound(w, r)
+func createBucket(bucketName string) error {
+	if _, exists := inMemoryStore[bucketName]; exists {
+		return fmt.Errorf("bucket already exists")
 	}
+	inMemoryStore[bucketName] = make(map[string]ObjectData)
+	log.Printf("created bucket: %s", bucketName)
+	return nil
+}
+
+func uploadObject(bucketName, objectName string, data []byte, contentType string) (*GCSObject, error) {
+	if _, ok := inMemoryStore[bucketName]; !ok {
+		return nil, fmt.Errorf("bucket not found")
+	}
+
+	inMemoryStore[bucketName][objectName] = ObjectData{
+		Data:        data,
+		ContentType: contentType,
+	}
+	log.Printf("created object '%s' in bucket '%s' with Content-Type '%s'", objectName, bucketName, contentType)
+
+	return &GCSObject{
+		Kind:        "storage#object",
+		Name:        objectName,
+		Bucket:      bucketName,
+		Size:        strconv.Itoa(len(data)),
+		ContentType: contentType,
+	}, nil
+}
+
+func readManifest(path string) (*Manifest, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read manifest: %w", err)
+	}
+
+	var manifest Manifest
+	if err := yaml.Unmarshal(data, &manifest); err != nil {
+		return nil, fmt.Errorf("failed to parse manifest: %w", err)
+	}
+
+	return &manifest, nil
 }
 
 // healthHandler responds with a simple "OK" message.
@@ -115,15 +126,6 @@ func handleCreateBucket(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(bucketInfo)
-}
-
-func createBucket(bucketName string) error {
-	if _, exists := inMemoryStore[bucketName]; exists {
-		return fmt.Errorf("bucket already exists")
-	}
-	inMemoryStore[bucketName] = make(map[string]ObjectData)
-	log.Printf("created bucket: %s", bucketName)
-	return nil
 }
 
 // handleUploadObject uploads a new file to a bucket.
@@ -162,27 +164,7 @@ func handleUploadObject(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func uploadObject(bucketName, objectName string, data []byte, contentType string) (*GCSObject, error) {
-	if _, ok := inMemoryStore[bucketName]; !ok {
-		return nil, fmt.Errorf("bucket not found")
-	}
-
-	inMemoryStore[bucketName][objectName] = ObjectData{
-		Data:        data,
-		ContentType: contentType,
-	}
-	log.Printf("created object '%s' in bucket '%s' with Content-Type '%s'", objectName, bucketName, contentType)
-
-	return &GCSObject{
-		Kind:        "storage#object",
-		Name:        objectName,
-		Bucket:      bucketName,
-		Size:        strconv.Itoa(len(data)),
-		ContentType: contentType,
-	}, nil
-}
-
-// handleGetObject is for retrieving an object from a bucket.
+// handleGetObject retrieves an object from a bucket.
 func handleGetObject(w http.ResponseWriter, r *http.Request) {
 	var bucketName, objectName string
 	path := strings.Trim(r.URL.Path, "/")
@@ -241,21 +223,6 @@ func handleListObjects(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "not found", http.StatusNotFound)
 }
 
-// readManifest reads and parses the YAML manifest file.
-func readManifest(path string) (*Manifest, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read manifest: %w", err)
-	}
-
-	var manifest Manifest
-	if err := yaml.Unmarshal(data, &manifest); err != nil {
-		return nil, fmt.Errorf("failed to parse manifest: %w", err)
-	}
-
-	return &manifest, nil
-}
-
 // processManifest processes the manifest to create buckets and upload files.
 func processManifest(manifest *Manifest) error {
 	for bucketName, bucket := range manifest.Buckets {
@@ -268,7 +235,6 @@ func processManifest(manifest *Manifest) error {
 			if err != nil {
 				return fmt.Errorf("failed to read bucket data file '%s': %w", file.Path, err)
 			}
-			// atm we use only the file name as the object name.
 			pathParts := strings.Split(file.Path, "/")
 			if _, err := uploadObject(bucketName, pathParts[len(pathParts)-1], data, file.ContentType); err != nil {
 				return fmt.Errorf("failed to create object '%s' in bucket '%s': %w", file.Path, bucketName, err)
@@ -276,6 +242,36 @@ func processManifest(manifest *Manifest) error {
 		}
 	}
 	return nil
+}
+
+// handleRequests is the top-level router.
+func handleRequests(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	log.Printf("Received request: %s %s", r.Method, path)
+
+	switch r.Method {
+	case "GET":
+		if strings.HasPrefix(path, "/health") {
+			healthHandler(w, r)
+			return
+		}
+		if strings.HasPrefix(path, "/storage/v1/b/") && strings.HasSuffix(path, "/o") {
+			handleListObjects(w, r)
+			return
+		}
+		handleGetObject(w, r)
+	case "POST":
+		if path == "/storage/v1/b" {
+			handleCreateBucket(w, r)
+			return
+		}
+		if strings.HasPrefix(path, "/upload/storage/v1/b/") {
+			handleUploadObject(w, r)
+			return
+		}
+	default:
+		http.NotFound(w, r)
+	}
 }
 
 func main() {
@@ -287,7 +283,6 @@ func main() {
 	addr := fmt.Sprintf("%s:%s", *host, *port)
 
 	fmt.Printf("Starting mock GCS server on http://%s\n", addr)
-	// if a manifest file is provided, read it and preload the buckets and objects.
 	if *manifest != "" {
 		m, err := readManifest(*manifest)
 		if err != nil {
