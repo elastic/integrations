@@ -75,7 +75,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect Microsoft Defender Cloud logs via API**, you'll need to:
 
         - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
-        - Adjust the integration configuration parameters if required, including the **Interval**, to enable data collection.
     * To **Collect logs from Azure Event Hub**, you'll need to:
 
         - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
@@ -135,4 +134,4 @@ This integration dataset uses the following APIs:
 
 #### ILM Policy
 
-To facilitate assessment data, source data stream-backed indices `.ds-logs-microsoft_defender_cloud.assessment-*` is allowed to contain duplicates from each polling interval. ILM policy `logs-microsoft_defender_cloud.assessment-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `7 days` from ingested date.
+To facilitate assessment data, source data stream-backed indices `.ds-logs-microsoft_defender_cloud.assessment-*` is allowed to contain duplicates from each polling interval (24 hours). ILM policy `logs-microsoft_defender_cloud.assessment-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `7 days` from ingested date.

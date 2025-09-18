@@ -75,7 +75,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect Microsoft Defender Cloud logs via API**, you'll need to:
 
         - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
-        - Adjust the integration configuration parameters if required, including the **Interval**, to enable data collection.
     * To **Collect logs from Azure Event Hub**, you'll need to:
 
         - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
@@ -557,11 +556,11 @@ An example event for `assessment` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-16T10:37:54.277Z",
+    "@timestamp": "2025-09-18T10:09:59.903Z",
     "agent": {
-        "ephemeral_id": "6082d85b-0f3b-41f4-bd3a-ff3fa234f725",
-        "id": "0fed4907-47d7-4a56-8083-2002e77c36ab",
-        "name": "elastic-agent-83525",
+        "ephemeral_id": "c4193e13-66e4-4dd8-9ab2-551ab726ae37",
+        "id": "9e17cadb-6a42-481f-bd75-3e84c91d6b7a",
+        "name": "elastic-agent-57167",
         "type": "filebeat",
         "version": "8.19.4"
     },
@@ -580,14 +579,14 @@ An example event for `assessment` looks as following:
     },
     "data_stream": {
         "dataset": "microsoft_defender_cloud.assessment",
-        "namespace": "20516",
+        "namespace": "72994",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0fed4907-47d7-4a56-8083-2002e77c36ab",
+        "id": "9e17cadb-6a42-481f-bd75-3e84c91d6b7a",
         "snapshot": true,
         "version": "8.19.4"
     },
@@ -598,7 +597,7 @@ An example event for `assessment` looks as following:
         ],
         "dataset": "microsoft_defender_cloud.assessment",
         "id": "/subscriptions/5abcdef6-1234-5678-8912-e1234abcdef1/resourceGroups/DEFENDER_CLOUD_GROUP/providers/Microsoft.Compute/virtualMachines/vm-for-defender-cloud-test/providers/Microsoft.Security/assessments/fabcdef2-5678-1234-8382-21234567890d",
-        "ingested": "2025-09-16T10:37:57Z",
+        "ingested": "2025-09-18T10:10:02Z",
         "kind": "state",
         "original": "{\"id\":\"/subscriptions/5abcdef6-1234-5678-8912-e1234abcdef1/resourceGroups/DEFENDER_CLOUD_GROUP/providers/Microsoft.Compute/virtualMachines/vm-for-defender-cloud-test/providers/Microsoft.Security/assessments/fabcdef2-5678-1234-8382-21234567890d\",\"name\":\"fabcdef2-5678-1234-8382-21234567890d\",\"properties\":{\"additionalData\":{\"Can onboard to BYOL\":\"true\"},\"displayName\":\"Machines should have a vulnerability assessment solution\",\"resourceDetails\":{\"Id\":\"/subscriptions/5abcdef6-1234-5678-8912-e1234abcdef1/resourceGroups/DEFENDER_CLOUD_GROUP/providers/Microsoft.Compute/virtualMachines/vm-for-defender-cloud-test\",\"NativeResourceId\":\"/subscriptions/5abcdef6-1234-5678-8912-e1234abcdef1/resourceGroups/DEFENDER_CLOUD_GROUP/providers/Microsoft.Compute/virtualMachines/vm-for-defender-cloud-test\",\"ResourceName\":\"vm-for-defender-cloud-test\",\"ResourceProvider\":\"Microsoft.Compute\",\"ResourceType\":\"virtualMachines\",\"Source\":\"Azure\"},\"status\":{\"cause\":\"mdeTvm\",\"code\":\"Healthy\",\"description\":\"The machine is onboarded to Microsoft defender vulnerability management\"}},\"type\":\"Microsoft.Security/assessments\"}",
         "outcome": "success",
@@ -685,4 +684,4 @@ This integration dataset uses the following APIs:
 
 #### ILM Policy
 
-To facilitate assessment data, source data stream-backed indices `.ds-logs-microsoft_defender_cloud.assessment-*` is allowed to contain duplicates from each polling interval. ILM policy `logs-microsoft_defender_cloud.assessment-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `7 days` from ingested date.
+To facilitate assessment data, source data stream-backed indices `.ds-logs-microsoft_defender_cloud.assessment-*` is allowed to contain duplicates from each polling interval (24 hours). ILM policy `logs-microsoft_defender_cloud.assessment-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `7 days` from ingested date.
