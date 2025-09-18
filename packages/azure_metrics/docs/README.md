@@ -1,4 +1,4 @@
-# Azure Resource Metrics Integration
+# Azure Resource Metrics integration for Elastic agent
 
 The [Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/data-platform-metrics) feature collects and aggregates logs and metrics from a variety of sources into a common data platform where it can be used for analysis, visualization, and alerting.
 
