@@ -7,7 +7,8 @@ processors:
         - '%{SOURCE}%{SPACE}peer%{SPACE}info:%{SPACE}%{GREEDYDATA:pfsense.openvpn.peer_info}'
         - '%{SOURCE}%{SPACE}\[%{USERNAME:user.name}\]%{SPACE}%{GREEDYDATA}'
         - "user%{SPACE}'%{USERNAME:user.name}'%{GREEDYDATA}"
-        - '%{USERNAME:user.name}/%{SOURCE}%{DATA}IPv4=(%{IP:source.nat.ip}|%{GREEDYDATA}),%{SPACE}IPv6=(%{IP:source.nat.ip}|%{GREEDYDATA})'
+        - '%{DATA:user.name}/%{SOURCE}%{DATA}IPv4=(%{IP:source.nat.ip}|%{GREEDYDATA}),%{SPACE}IPv6=(%{IP:source.nat.ip}|%{GREEDYDATA})'
+        - "%{DATA}'%{DATA:host.name}'%{DATA}'%{DATA:user.name}'%{DATA}'%{SOURCE}' - %{GREEDYDATA:message}"
         - '%{GREEDYDATA}%{SOURCE}'
         - '%{GREEDYDATA}'
       pattern_definitions:
@@ -31,7 +32,7 @@ processors:
       field: event.outcome
       value: failure
       allow_duplicates: false
-      if: ctx.message.toLowerCase().contains('error') || ctx.message.toLowerCase().contains('not auth') 
+      if: ctx.message.toLowerCase().contains('error') || ctx.message.toLowerCase().contains('not auth')
   - append:
       field: event.type
       value: start
