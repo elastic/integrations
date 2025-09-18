@@ -41,39 +41,31 @@ func main() {
 
 	// setup HTTP handlers
 	mux := http.NewServeMux()
+	// health check
 	mux.HandleFunc("/health", healthHandler)
-	mux.HandleFunc("/storage/v1/b", handleCreateBucket)
-	mux.HandleFunc("/storage/v1/b/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Received request: %s %s", r.Method, r.URL.Path)
+	// standard gcs api calls
+	mux.HandleFunc("GET /storage/v1/b/{bucket}/o", handleListObjects)
+	mux.HandleFunc("GET /storage/v1/b/{bucket}/o/{object...}", handleGetObject)
+	mux.HandleFunc("POST /storage/v1/b", handleCreateBucket)
+	mux.HandleFunc("POST /upload/storage/v1/b/{bucket}/o", handleUploadObject)
+	mux.HandleFunc("POST /upload/storage/v1/b/{bucket}/o/{object...}", handleUploadObject)
+	// direct path-style gcs sdk calls
+	mux.HandleFunc("GET /{bucket}/o/{object...}", handleGetObject)
+	mux.HandleFunc("GET /{bucket}/{object...}", handleGetObject)
+	// debug: log all requests
+	loggedMux := loggingMiddleware(mux)
 
-		if r.Method == "GET" {
-			if strings.HasSuffix(r.URL.Path, "/o") {
-				handleListObjects(w, r)
-				return
-			}
-			// route for getting an object (either path-style or API-style)
-			handleGetObject(w, r)
-			return
-		}
-		http.NotFound(w, r)
-	})
-	mux.HandleFunc("/upload/storage/v1/b/", handleUploadObject)
-
-	// fallback: path-style object access, e.g. /bucket/object
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Received request: %s %s", r.Method, r.URL.Path)
-
-		if r.Method == "GET" {
-			// route for getting an object (either path-style or API-style)
-			handleGetObject(w, r)
-			return
-		}
-		http.NotFound(w, r)
-	})
-
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, loggedMux); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
+}
+
+// loggingMiddleware logs incoming HTTP requests.
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("%s %s\n", r.Method, r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
 }
 
 // readManifest reads and parses the YAML manifest file.
@@ -122,7 +114,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 
 // handleListObjects lists all objects in the specified bucket.
 func handleListObjects(w http.ResponseWriter, r *http.Request) {
-	bucketName := strings.Split(strings.Trim(r.URL.Path, "/"), "/")[3]
+	bucketName := r.PathValue("bucket")
 
 	if bucket, ok := inMemoryStore[bucketName]; ok {
 		response := GCSListResponse{
@@ -148,19 +140,8 @@ func handleListObjects(w http.ResponseWriter, r *http.Request) {
 
 // handleGetObject retrieves a specific object from a bucket.
 func handleGetObject(w http.ResponseWriter, r *http.Request) {
-	var bucketName, objectName string
-	path := strings.Trim(r.URL.Path, "/")
-	parts := strings.Split(path, "/")
-
-	if strings.HasPrefix(path, "storage/v1/b/") {
-		if len(parts) >= 6 {
-			bucketName, objectName = parts[3], parts[5]
-		}
-	} else {
-		if len(parts) >= 2 {
-			bucketName, objectName = parts[0], parts[1]
-		}
-	}
+	bucketName := r.PathValue("bucket")
+	objectName := r.PathValue("object")
 
 	if bucketName == "" || objectName == "" {
 		http.Error(w, "not found: invalid URL format", http.StatusNotFound)
@@ -179,7 +160,7 @@ func handleGetObject(w http.ResponseWriter, r *http.Request) {
 
 // handleCreateBucket creates a new bucket.
 func handleCreateBucket(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.NotFound(w, r)
 		return
 	}
@@ -195,30 +176,31 @@ func handleCreateBucket(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bucket name is required", http.StatusBadRequest)
 		return
 	}
+
 	if err := createBucket(bucketInfo.Name); err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(bucketInfo)
 }
 
 // handleUploadObject uploads an object to a specified bucket.
 func handleUploadObject(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.NotFound(w, r)
 		return
 	}
 
-	pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-	if len(pathParts) < 5 {
-		http.Error(w, "invalid upload URL", http.StatusBadRequest)
-		return
-	}
-	bucketName := pathParts[4]
+	bucketName := r.PathValue("bucket")
 	objectName := r.URL.Query().Get("name")
 	if objectName == "" {
-		http.Error(w, "missing 'name' query parameter", http.StatusBadRequest)
+		objectName = r.PathValue("object")
+	}
+
+	if bucketName == "" || objectName == "" {
+		http.Error(w, "missing bucket or object name", http.StatusBadRequest)
 		return
 	}
 
