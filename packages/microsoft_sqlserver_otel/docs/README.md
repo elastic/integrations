@@ -6,7 +6,7 @@ With Elasticsearch and Kibana, you can store, search, and visualize these metric
 
 ### Compatibility
 
-The integration package has been tested with [SQLServer OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver0/sqlserverreceiver/README.md) and Microsoft SQL server version 15.0.2000.5.
+The integration package has been tested with [SQLServer OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/sqlserverreceiver/README.md) and Microsoft SQL server version 15.0.2000.5.
 
 ### How it works
 
