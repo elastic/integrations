@@ -30,7 +30,7 @@ export KAFKA_OPTS="-javaagent:/path/to/jolokia-jvm-agent.jar=port=8778,host=loca
 ./bin/kafka-console-producer.sh --topic test --broker-list kafka_host:9092
 ```
 
-Make sure to replace /path/to/jolokia-jvm-agent.jar with the actual path to the agent you downloaded.
+Make sure to replace `/path/to/jolokia-jvm-agent.jar` with the actual path to the agent you downloaded.
 
 The port and host parameters specify where the Jolokia agent will be accessible.
 
