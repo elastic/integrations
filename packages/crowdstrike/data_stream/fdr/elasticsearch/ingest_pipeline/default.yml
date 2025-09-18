@@ -449,6 +449,13 @@ processors:
       ignore_missing: true
 
   ## Categorization.
+  - set:
+      field: event.category
+      value: [ file ]
+      if: >-
+        ctx.crowdstrike?.event_simpleName != null &&
+        ctx.crowdstrike.event_simpleName != '' &&
+        ctx.crowdstrike.event_simpleName.endsWith('Written')
   - script:
       tag: script-categorize-events
       description: Categorize events.
@@ -1469,6 +1476,11 @@ processors:
           kind: alert
           outcome: success
         SuspiciousEseFileWritten:
+          category: [ malware, file ]
+          type: [ creation, info ]
+          kind: alert
+          outcome: success
+        SuspiciousPeFileWritten:
           category: [ malware, file ]
           type: [ creation, info ]
           kind: alert
