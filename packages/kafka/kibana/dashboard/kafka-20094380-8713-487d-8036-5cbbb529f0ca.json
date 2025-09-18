@@ -10,20 +10,34 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "f27ac43b-b126-4e7a-88f3-44decd4a4717": {
+                "aa887cf3-390b-4da6-8c02-43ec133b0971": {
                     "explicitInput": {
                         "enhancements": {},
-                        "fieldName": "service.address",
-                        "grow": false,
-                        "id": "f27ac43b-b126-4e7a-88f3-44decd4a4717",
-                        "searchTechnique": "prefix",
-                        "title": "Service address",
-                        "width": "large"
+                        "fieldName": "kafka.topic.name",
+                        "id": "aa887cf3-390b-4da6-8c02-43ec133b0971",
+                        "selectedOptions": [],
+                        "title": "Topic Name"
                     },
-                    "grow": false,
+                    "grow": true,
                     "order": 0,
                     "type": "optionsListControl",
-                    "width": "large"
+                    "width": "medium"
+                },
+                "bb5b4dfa-d433-48d7-8e16-7d2ad832565a": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "kafka.partition.id",
+                        "id": "bb5b4dfa-d433-48d7-8e16-7d2ad832565a",
+                        "title": "Partition",
+                        "value": [
+                            "",
+                            ""
+                        ]
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "rangeSliderControl",
+                    "width": "medium"
                 }
             }
         },
@@ -219,7 +233,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Log manager\n\nThis dashboard provides visibility into the log management layer of Kafka clusters.\n\n- Monitors log directory health, recovery progress, and offline directories.\n- Provides insight into log cleaner efficiency, buffer utilisation, and partition cleanliness.\n- Tracks cleaner manager activity, dead threads, and time since the last cleaning cycle.\n- Surfaces log flush behaviour, including flush rate, duration",
+                            "markdown": "### Log manager\n\nThis dashboard provides visibility into the log management layer of Kafka clusters.\n\n- Monitors log directory health, recovery progress, and offline directories.\n- Provides insight into log cleaner efficiency, buffer utilization, and partition cleanliness.\n- Tracks cleaner manager activity, dead threads, and time since the last cleaning cycle.\n- Surfaces log flush behaviour, including flush rate, duration",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -241,123 +255,56 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Shows if the log directories are offline.",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-a79899c8-67fe-43d4-843a-1ccb76b2ff3d",
-                                "type": "index-pattern"
-                            }
+                        "columns": [
+                            "Log_Directory",
+                            "Status"
                         ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "a79899c8-67fe-43d4-843a-1ccb76b2ff3d": {
-                                            "columnOrder": [
-                                                "1f02efac-3dd7-49cf-b823-d1af5e9b27cb",
-                                                "4b37f029-e547-4e5e-a8b2-c8f1cb5a3199"
-                                            ],
-                                            "columns": {
-                                                "1f02efac-3dd7-49cf-b823-d1af5e9b27cb": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Log directory",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "4b37f029-e547-4e5e-a8b2-c8f1cb5a3199",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 100
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "kafka.log_manager.directory_offline_count.log_directory"
-                                                },
-                                                "4b37f029-e547-4e5e-a8b2-c8f1cb5a3199": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"kafka.log_manager.directory_offline_count.value\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Status",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "kafka.log_manager.directory_offline_count.value"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        }
-                                    }
+                        "grid": {},
+                        "hideChart": false,
+                        "isTextBasedQuery": true,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": {
+                                "filter": [],
+                                "index": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d3b7e528216ce7ef65e68e07a803b7ab53e440cafdb52d9d7ee1ef4bbf5d8afa",
+                                    "name": "metrics-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-*",
+                                    "type": "esql"
                                 },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
+                                "query": {
+                                    "esql": "from metrics-*\n| where data_stream.dataset == \"kafka.log_manager\" and kafka.log_manager.directory_offline_count.log_directory is not null\n| stats offline_count = avg(kafka.log_manager.directory_offline_count.value) by kafka.log_manager.directory_offline_count.log_directory\n| eval status = case(offline_count == 0, \"Online\", \"Offline\")\n| rename kafka.log_manager.directory_offline_count.log_directory as Log_Directory, status  as Status\n| keep Log_Directory, Status\n"
                                 }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "colorMode": "none",
-                                        "columnId": "4b37f029-e547-4e5e-a8b2-c8f1cb5a3199"
-                                    },
-                                    {
-                                        "columnId": "1f02efac-3dd7-49cf-b823-d1af5e9b27cb",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "a79899c8-67fe-43d4-843a-1ccb76b2ff3d",
-                                "layerType": "data"
                             }
                         },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
+                        "references": [],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": true
                     },
-                    "description": "Shows the log directories and its status.",
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "description": "Log directories and their status.",
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 8,
-                    "i": "4435464d-a6e9-41e3-bb05-344ca7f95ecc",
+                    "h": 11,
+                    "i": "95c6d5e2-2eef-40f3-8f32-6a90b9d484aa",
                     "w": 34,
                     "x": 14,
                     "y": 4
                 },
-                "panelIndex": "4435464d-a6e9-41e3-bb05-344ca7f95ecc",
+                "panelIndex": "95c6d5e2-2eef-40f3-8f32-6a90b9d484aa",
                 "title": "Log directory status",
-                "type": "lens"
+                "type": "search"
             },
             {
                 "embeddableConfig": {
@@ -506,7 +453,7 @@
                     "i": "7bce1f86-4239-46b0-94f3-da8c7cee10b0",
                     "w": 34,
                     "x": 14,
-                    "y": 12
+                    "y": 15
                 },
                 "panelIndex": "7bce1f86-4239-46b0-94f3-da8c7cee10b0",
                 "title": "Log recovery status",
@@ -541,7 +488,7 @@
                                                         "query": "\"kafka.log_manager.directory_offline_count.value\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Log directory status",
+                                                    "label": "Offline log directories",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -581,7 +528,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Shows if the log directories are offline.",
+                    "description": "Shows the number of offline directories.",
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
@@ -593,7 +540,7 @@
                     "y": 18
                 },
                 "panelIndex": "f8c73d71-b2ee-4091-922b-25f9a7c8123b",
-                "title": "Log directory status",
+                "title": "Offline log directories",
                 "type": "lens"
             },
             {
@@ -628,7 +575,7 @@
                     "i": "df500ef3-1826-4e02-8bb5-e545e30fd5bc",
                     "w": 48,
                     "x": 0,
-                    "y": 25
+                    "y": 28
                 },
                 "panelIndex": "df500ef3-1826-4e02-8bb5-e545e30fd5bc",
                 "title": "",
@@ -714,7 +661,7 @@
                     "i": "5218954b-b5bb-4841-a19a-6782a87e8835",
                     "w": 7,
                     "x": 0,
-                    "y": 28
+                    "y": 31
                 },
                 "panelIndex": "5218954b-b5bb-4841-a19a-6782a87e8835",
                 "title": "Dirty logs percentage",
@@ -745,7 +692,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Dead cleaner threads",
+                                                    "label": "Dead log cleaner threads",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -800,7 +747,7 @@
                     "i": "369c604b-15ce-4957-aaa7-cfbf15924bdc",
                     "w": 7,
                     "x": 7,
-                    "y": 28
+                    "y": 31
                 },
                 "panelIndex": "369c604b-15ce-4957-aaa7-cfbf15924bdc",
                 "title": "Dead cleaner threads",
@@ -937,7 +884,7 @@
                     "i": "e0bd51cf-bfaa-4cc4-b53c-f28a080f43e3",
                     "w": 17,
                     "x": 14,
-                    "y": 28
+                    "y": 31
                 },
                 "panelIndex": "e0bd51cf-bfaa-4cc4-b53c-f28a080f43e3",
                 "title": "Recopy percentage",
@@ -1100,7 +1047,7 @@
                     "i": "ec809609-160b-470e-ad18-ac40ffa8e8f8",
                     "w": 17,
                     "x": 31,
-                    "y": 28
+                    "y": 31
                 },
                 "panelIndex": "ec809609-160b-470e-ad18-ac40ffa8e8f8",
                 "title": "Uncleanable partitions and bytes",
@@ -1187,7 +1134,7 @@
                     "i": "4a3b8d8d-0b55-40af-b959-fb1a7cd8c225",
                     "w": 7,
                     "x": 0,
-                    "y": 35
+                    "y": 38
                 },
                 "panelIndex": "4a3b8d8d-0b55-40af-b959-fb1a7cd8c225",
                 "title": "Time since last log cleaner run",
@@ -1218,7 +1165,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Cleaner buffer utilisation",
+                                                    "label": "Cleaner buffer utilization",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -1264,7 +1211,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Shows the maximum buffer utilisation percentage of the log cleaner",
+                    "description": "Shows the maximum buffer utilization percentage of the log cleaner",
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
@@ -1273,10 +1220,10 @@
                     "i": "054de19d-01fb-434b-ac78-caee5f2fa51a",
                     "w": 7,
                     "x": 7,
-                    "y": 35
+                    "y": 38
                 },
                 "panelIndex": "054de19d-01fb-434b-ac78-caee5f2fa51a",
-                "title": "Cleaner buffer utilisation",
+                "title": "Cleaner buffer utilization",
                 "type": "lens"
             },
             {
@@ -1310,7 +1257,7 @@
                     "i": "18f58635-cdd8-4544-8aad-5f3298978b64",
                     "w": 48,
                     "x": 0,
-                    "y": 42
+                    "y": 45
                 },
                 "panelIndex": "18f58635-cdd8-4544-8aad-5f3298978b64",
                 "type": "visualization"
@@ -1483,7 +1430,7 @@
                     "i": "db4a9b93-5c86-4f95-b877-4aa2a908b569",
                     "w": 23,
                     "x": 0,
-                    "y": 45
+                    "y": 48
                 },
                 "panelIndex": "db4a9b93-5c86-4f95-b877-4aa2a908b569",
                 "title": "Log flush rate",
@@ -1618,7 +1565,7 @@
                     "i": "7933bed6-6118-47f2-9388-e72fa3ae065c",
                     "w": 25,
                     "x": 23,
-                    "y": 45
+                    "y": 48
                 },
                 "panelIndex": "7933bed6-6118-47f2-9388-e72fa3ae065c",
                 "title": "Log flush time",
@@ -1630,9 +1577,9 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-09-15T14:31:31.654Z",
+    "created_at": "2025-09-18T13:53:15.390Z",
     "id": "kafka-20094380-8713-487d-8036-5cbbb529f0ca",
-    "managed": true,
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
@@ -1686,11 +1633,6 @@
         },
         {
             "id": "metrics-*",
-            "name": "4435464d-a6e9-41e3-bb05-344ca7f95ecc:indexpattern-datasource-layer-a79899c8-67fe-43d4-843a-1ccb76b2ff3d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "7bce1f86-4239-46b0-94f3-da8c7cee10b0:indexpattern-datasource-layer-6be65d26-cc93-4623-8e6a-716bda9862d2",
             "type": "index-pattern"
         },
@@ -1741,7 +1683,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_f27ac43b-b126-4e7a-88f3-44decd4a4717:optionsListDataView",
+            "name": "controlGroup_aa887cf3-390b-4da6-8c02-43ec133b0971:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_bb5b4dfa-d433-48d7-8e16-7d2ad832565a:rangeSliderDataView",
             "type": "index-pattern"
         }
     ],
