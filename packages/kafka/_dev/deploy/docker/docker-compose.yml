@@ -4,12 +4,20 @@ services:
       default:
         aliases:
           - svc-kafka
-    image: docker.elastic.co/observability-ci/kafka-with-jolokia:4.0.0
+    build: .
     ports:
       - "9092:9092"
       - "9093:9093"
       - "9999:9999"
       - "8780:8780"
+      - "8774:8774"
+      - "8775:8775"
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/healthcheck.sh" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
