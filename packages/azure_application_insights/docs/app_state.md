@@ -1,4 +1,4 @@
-# Configure Azure Application Insights Integration
+# Azure Application State Integration
 
 The Application State Integration allows users to retrieve application insights state related metrics from specified applications.
 

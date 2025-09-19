@@ -1,4 +1,4 @@
-# Azure Application Insights Integration
+# Overview of Azure Application Insights Integration
 
 The Application Insights Integration allows users to retrieve application insights metrics from specified applications.  
 
