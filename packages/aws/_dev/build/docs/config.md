@@ -60,6 +60,27 @@ Use this integration if you only need to collect data from the AWS Config servic
 1. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
 2. The AWS Config integration performs a full ingestion of all findings during each interval.
 
+## Troubleshooting
+
+### Breaking Changes
+
+#### Support for Elastic Misconfiguration Findings page.
+
+Version `4.0.0` of the AWS Config integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of the AWS Config integration to ingest misconfiguration findings from the AWS Config platform into Elastic and get insights directly from the [Misconfiguration Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page).
+Version `4.0.0` adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest findings from source indices matching the pattern `logs-aws.config-*` into new destination indices matching the pattern `security_solution-awsconfig.misconfiguration_latest-*`. The Elastic Findings pages will display findings based on the destination indices.
+
+For existing users of the AWS Config integration, before upgrading to version `4.0.0` please ensure the following requirements are met:
+
+1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
+2. To use transforms, users must have:
+   - at least one [transform node](https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles#transform-node-role),
+   - management features visible in the Kibana space, and
+   - security privileges that:
+     - grant use of transforms, and
+     - grant access to source and destination indices
+   For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
+3. Because the latest copy of findings is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
+
 ## Logs reference
 
 ### Config
