@@ -1,4 +1,4 @@
-# Azure Resource Metrics Integration
+# Azure Monitor Integration
 
 The Azure Monitor feature collects and aggregates logs and metrics from a variety of sources into a common data platform where it can be used for analysis, visualization, and alerting.
 
