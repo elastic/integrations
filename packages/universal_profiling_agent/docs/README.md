@@ -1,4 +1,4 @@
-# Overview
+# Universal profiling agent integration overview
 
 [Universal Profiling](https://www.elastic.co/observability/universal-profiling) provides fleet-wide, whole-system, continuous profiling with zero instrumentation.
 
