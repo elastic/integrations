@@ -1,12 +1,16 @@
 format_version: 3.3.2
 name: aws
 title: AWS
-version: 3.16.0
+version: 3.17.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
   - aws
   - cloud
+  # Added observability category as AWS integration collects metrics and logs from various AWS services, which are essential for monitoring and observability.
+  - observability
+  # Added security category as AWS integration collects security-relevant data like CloudTrail logs, GuardDuty findings, and other security monitoring data
+  - security
 conditions:
   elastic:
     subscription: basic
@@ -836,6 +840,14 @@ policy_templates:
   - name: guardduty
     title: Amazon GuardDuty
     description: Collect Amazon GuardDuty logs with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     data_streams:
       - guardduty
     categories:

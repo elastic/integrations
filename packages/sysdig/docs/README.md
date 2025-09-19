@@ -2,13 +2,15 @@
 This integration allows for the shipping of [Sysdig](https://sysdig.com/) logs to Elastic for security, observability and organizational awareness. Logs can then be analyzed by using either the dashboard included with the integration or via the creation of custom dashboards within Kibana.
 
 ## Data Streams
-The Sysdig integration collects three types of logs:
+The Sysdig integration collects four types of logs:
 
 **Alerts** The Alerts data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
-**Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/).
+**Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/). It uses Sysdig's Next Gen API (standardized). You can access your regional documentation through the links [here](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-next-gen-api-documentation-using-regional-endpoints).
 
-**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
+**CSPM** The CSPM data stream collected through the Sysdig integration consists of Sysdig compliance results. See more details about compliance results in [Sysdig's Compliance documentation](https://docs.sysdig.com/en/sysdig-secure/compliance/). It uses Sysdig's Current API (non-standardised). You can access your regional documentation through the links [here](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-current-api-documentation-using-regional-endpoints).
+
+**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/). It uses Sysdig's Next Gen API (standardized). You can access your regional documentation through the links [here](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-next-gen-api-documentation-using-regional-endpoints).
 
 For vulnerability data, Each interval fetches all available scan results from the configured stage. Currently, only one stage can be configured at a time. Users wishing to collect scan results from different stages must configure additional integrations for each desired stage.
 
@@ -36,9 +38,12 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 **Required:** To configure Sysdig to output JSON, you must set up as webhook notification channel as outlined in the [Sysdig Documentation](https://docs.sysdig.com/en/docs/administration/administration-settings/outbound-integrations/notifications-management/set-up-notification-channels/configure-a-webhook-channel/).
 
-### To collect data from the Sysdig Next Gen API:
+### To collect data from the Sysdig API:
 
-- Retrieve the API Token by following [Sysdig's API Token Guide](https://docs.sysdig.com/en/retrieve-the-sysdig-api-token).
+- Retrieve the API Token by following the [Sysdig API Token Guide](https://docs.sysdig.com/en/retrieve-the-sysdig-api-token).
+- The API URL varies by region. To determine the correct URL for your region, use the following guides:
+  - For Sysdig's Next Gen API, refer to the [regional endpoints guide](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints).
+  - For Sysdig's Current API, refer to the [SaaS regions and IP ranges guide](https://docs.sysdig.com/en/administration/saas-regions-and-ip-ranges/#overview).
 
 ### Enabling the integration in Elastic:
 
@@ -50,7 +55,6 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 6. Select "Save and continue" to save the integration.
 
 **Note**:
-  - The URL may vary depending on your region. Please refer to the [Documentation](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints) to find the correct URL for your region.
   - If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the `Maximum Pages Per Interval` setting in the configuration.
   - Users wishing to collect vulnerability scan results from multiple stages must configure individual integrations for each desired stage.
 
@@ -60,17 +64,15 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 Sysdig alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
-#### Example
-
 An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-07-08T13:19:59.855Z",
+    "@timestamp": "2025-09-05T09:52:47.801Z",
     "agent": {
-        "ephemeral_id": "06598217-2eda-4010-b398-c1fac40a3348",
+        "ephemeral_id": "d928cbd8-51c9-4c02-b62f-f8d90890d9a9",
         "id": "58014837",
-        "name": "elastic-agent-94970",
+        "name": "elastic-agent-29811",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -98,14 +100,14 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "64449",
+        "namespace": "25671",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "aaa022b5-44de-4090-a54a-a35ef821ccfc",
+        "id": "3f30e8c1-9a76-4e37-b8b8-aba6fc8ede5f",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -113,9 +115,8 @@ An example event for `alerts` looks as following:
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2025-07-08T13:20:00Z",
+        "ingested": "2025-09-05T09:52:48Z",
         "kind": "alert",
-        "module": "sysdig",
         "provider": "syscall",
         "severity": 7,
         "timezone": "+00:00"
@@ -167,23 +168,17 @@ An example event for `alerts` looks as following:
         "containerId": "6949e5f10829",
         "content": {
             "fields": {
-                "container": {
-                    "name": "threatgen"
-                },
-                "proc": {
-                    "cmdline": "userdel tmp_suid_user",
-                    "cwd": "/tmp/",
-                    "exepath": "/usr/sbin/userdel",
-                    "name": "userdel",
-                    "pcmdline": "pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC)",
-                    "pid": "2140169",
-                    "pname": "pwsh",
-                    "ppid": "2140088"
-                },
-                "user": {
-                    "name": "root",
-                    "uid": "0"
-                }
+                "container.name": "threatgen",
+                "proc.cmdline": "userdel tmp_suid_user",
+                "proc.cwd": "/tmp/",
+                "proc.exepath": "/usr/sbin/userdel",
+                "proc.name": "userdel",
+                "proc.pcmdline": "pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC)",
+                "proc.pid": "2140169",
+                "proc.pname": "pwsh",
+                "proc.ppid": "2140088",
+                "user.name": "root",
+                "user.uid": "0"
             },
             "output": "Users management command userdel tmp_suid_user launched by pwsh on threatgen under user root (proc.name=userdel proc.args=tmp_suid_user fd.name=<NA> proc.cmdline=pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC) proc.pname=pwsh gparent=containerd-shim ggparent=<NA> gggparent=<NA> container=container_id=6949e5f10829 container_name=threatgen evt.type=execve evt.arg.request=<NA> proc.pid=2140169 proc.cwd=/tmp/ proc.ppid=2140088 proc.pcmdline=pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC) proc.sid=1 proc.exepath=/usr/sbin/userdel user.uid=0 user.loginuid=-1 user.loginname=<NA> user.name=root group.gid=0 group.name=root container.id=6949e5f10829 container.name=threatgen image=docker.io/dockerbadboy/art)",
             "policyOrigin": "Sysdig",
@@ -251,7 +246,8 @@ An example event for `alerts` looks as following:
         "originator": "policy",
         "severity": 7,
         "source": "syscall",
-        "timestampRFC3339Nano": "2024-07-03T18:23:21.639Z",
+        "timestamp": 1720031001639981000,
+        "timestampRFC3339Nano": "2024-07-03T18:23:21.63998111Z",
         "type": "policy"
     },
     "tags": [
@@ -267,13 +263,9 @@ An example event for `alerts` looks as following:
         "MITRE_T1531_account_access_removal",
         "MITRE_T1098_account_manipulation"
     ],
-    "threat": {
-        "technique": {
-            "id": [
-                "T1136"
-            ]
-        }
-    }
+    "threat.technique.id": [
+        "T1136"
+    ]
 }
 ```
 
@@ -347,17 +339,15 @@ An example event for `alerts` looks as following:
 
 This is the `event` dataset.
 
-#### Example
-
 An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-05T03:00:01.115Z",
+    "@timestamp": "2025-04-05T03:00:01.1159286Z",
     "agent": {
-        "ephemeral_id": "630f5fe1-7126-4b08-86a9-6282e4fc2557",
-        "id": "449f372d-5932-43a5-8c0c-21b24174ce6c",
-        "name": "elastic-agent-42491",
+        "ephemeral_id": "08b527c7-851d-418e-a8a6-198aa959a63f",
+        "id": "3ae249b5-6efb-4c9c-9eac-11e0bb19de0b",
+        "name": "elastic-agent-49287",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -384,14 +374,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.event",
-        "namespace": "25778",
+        "namespace": "34680",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "449f372d-5932-43a5-8c0c-21b24174ce6c",
+        "id": "3ae249b5-6efb-4c9c-9eac-11e0bb19de0b",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -402,9 +392,8 @@ An example event for `event` looks as following:
         ],
         "dataset": "sysdig.event",
         "id": "1a334cdef0060123456789abcdef64a9",
-        "ingested": "2025-07-08T13:20:47Z",
+        "ingested": "2025-09-05T09:44:08Z",
         "kind": "event",
-        "module": "sysdig",
         "original": "{\"category\":\"runtime\",\"content\":{\"fields\":{\"container.image.repository\":\"docker.io/library/python\",\"container.name\":\"shell-scripting\",\"evt.res\":\"SUCCESS\",\"evt.type\":\"execve\",\"group.gid\":\"0\",\"group.name\":\"root\",\"proc.args\":\"\",\"proc.cmdline\":\"sh\",\"proc.cwd\":\"/\",\"proc.exepath\":\"/usr/bin/dash\",\"proc.hash.sha256\":\"f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6\",\"proc.name\":\"sh\",\"proc.pcmdline\":\"bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh\",\"proc.pid\":\"1372469\",\"proc.pid.ts\":\"1743822001115100312\",\"proc.pname\":\"bash\",\"proc.ppid\":\"1372453\",\"proc.ppid.ts\":\"1743822000952432134\",\"proc.sid\":\"1\",\"user.loginname\":\"\\u003cNA\\u003e\",\"user.loginuid\":\"-1\",\"user.name\":\"root\",\"user.uid\":\"0\"},\"origin\":\"Secure UI\",\"output\":\"Custom rule. The shell-scripting with image docker.io/library/python by parent bash under user root (proc.name=sh proc.exepath-custom=/usr/bin/dash proc.pname=bash gparent=runc ggparent=containerd-shim gggparent=systemd image=docker.io/library/python user.uid=0 proc.cmdline=sh proc.pcmdline=bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh user.name=root user.loginuid=-1 proc.args= container.name=shell-scripting evt.type=execve evt.res=SUCCESS proc.pid=1372469 proc.cwd=/ proc.ppid=1372453 proc.sid=1 proc.exepath=/usr/bin/dash user.loginname=\\u003cNA\\u003e group.gid=0 group.name=root proc.pid.ts=1743822001115100312 proc.ppid.ts=1743822000952432134 proc.hash.sha256=f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6)\",\"policyId\":10569534,\"ruleName\":\"My test rule custom\",\"ruleSubType\":0,\"ruleTags\":[\"My-tag-custom-1-hello-world\",\"MITTRE-WHATEVER\"],\"ruleType\":6,\"type\":\"workloadRuntimeDetection\"},\"description\":\"This is just a dumb policy to test custom policies\",\"engine\":\"falco\",\"id\":\"1a334cdef0060123456789abcdef64a9\",\"labels\":{\"cloudProvider.account.id\":\"012345678912\",\"cloudProvider.name\":\"gcp\",\"cloudProvider.region\":\"us-central1\",\"container.image.digest\":\"sha256:aa7b73608abcfb021247bbb4c111435234a0459298a6da610681097a54ca2c2a\",\"container.image.id\":\"ef0f72a55bd2\",\"container.image.repo\":\"docker.io/library/python\",\"container.image.tag\":\"3.9.18-slim\",\"container.label.io.kubernetes.container.name\":\"shell-scripting\",\"container.label.io.kubernetes.pod.name\":\"shell-scripting-29063700-123ab\",\"container.label.io.kubernetes.pod.namespace\":\"default\",\"container.name\":\"shell-scripting\",\"gcp.location\":\"us-central1\",\"gcp.projectId\":\"012345678912\",\"host.hostName\":\"gke-cluster-gcp-demo-san-default-pool-11234abc-abcd\",\"host.mac\":\"01:00:5e:90:10:00\",\"kubernetes.cluster.name\":\"gke-alliances-demo-6\",\"kubernetes.cronJob.name\":\"shell-scripting\",\"kubernetes.job.name\":\"shell-scripting-29063700\",\"kubernetes.namespace.name\":\"default\",\"kubernetes.node.name\":\"gke-cluster-gcp-demo-san-default-pool-12345678-abcd\",\"kubernetes.pod.name\":\"shell-scripting-12345678-123ab\",\"kubernetes.workload.name\":\"shell-scripting\",\"kubernetes.workload.type\":\"cronjob\"},\"name\":\"Manuel test policy\",\"originator\":\"policy\",\"rawEventCategory\":\"runtime\",\"rawEventOriginator\":\"linuxAgent\",\"severity\":4,\"source\":\"syscall\",\"sourceDetails\":{\"subType\":\"container\",\"type\":\"workload\"},\"timestamp\":1743822001115928600}",
         "outcome": "success",
         "provider": "syscall",
@@ -451,10 +440,10 @@ An example event for `event` looks as following:
             "command_line": "bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh",
             "name": "bash",
             "pid": 1372453,
-            "start": "2025-04-05T03:00:00.952Z"
+            "start": "2025-04-05T03:00:00.952432134Z"
         },
         "pid": 1372469,
-        "start": "2025-04-05T03:00:01.115Z",
+        "start": "2025-04-05T03:00:01.115100312Z",
         "working_directory": "/"
     },
     "related": {
@@ -761,11 +750,178 @@ An example event for `event` looks as following:
 | sysdig.event.timestamp | The event timestamp in nanoseconds. | date |
 
 
+### CSPM
+
+This is the `CSPM` dataset.
+
+An example event for `cspm` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-16T07:09:22.352Z",
+    "agent": {
+        "ephemeral_id": "44ca4103-4c73-4286-9a0c-4b20ac6bdb81",
+        "id": "af37b9a4-71dd-4ebb-964e-85832bb68218",
+        "name": "elastic-agent-32566",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "sysdig.cspm",
+        "namespace": "30841",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "af37b9a4-71dd-4ebb-964e-85832bb68218",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "sysdig.cspm",
+        "id": "21344",
+        "ingested": "2025-09-16T07:09:25Z",
+        "kind": "state",
+        "original": "{\"acceptedCount\":0,\"control\":{\"acceptedCount\":0,\"authors\":\"Sysdig\",\"description\":\"Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.\",\"id\":\"21344\",\"isManual\":false,\"lastUpdate\":\"1752149383\",\"name\":\"Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys\",\"objectsCount\":2879,\"pass\":false,\"passingCount\":0,\"platform\":\"\",\"remediationId\":\"21344\",\"resourceApiEndpoint\":\"/api/cspm/v1/cloud/resources?controlId=21344\\u0026providerType=AWS\\u0026resourceKind=AWS_LAMBDA_FUNCTION\\u0026filter=policyId=52 and zones.id=119\",\"resourceKind\":\"AWS_LAMBDA_FUNCTION\",\"severity\":\"High\",\"supportedDistributions\":[{\"maxVersion\":0,\"minVersion\":0,\"name\":\"AWS\"}],\"target\":\"AWS\",\"type\":8},\"description\":\"All Amazon Web Services Controls.\",\"failedControls\":136,\"highSeverityCount\":3147,\"lowSeverityCount\":2926,\"mediumSeverityCount\":20805,\"name\":\"AWS Controls\",\"pass\":false,\"passingCount\":23735,\"policyId\":\"52\",\"policyName\":\"All Posture Findings\",\"requirementId\":\"637489\",\"severity\":\"High\",\"zone\":{\"id\":\"119\",\"name\":\"Entire Infrastructure\"}}",
+        "outcome": "failure",
+        "severity": 73,
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "message": "AWS Controls",
+    "observer": {
+        "product": "Sysdig Secure",
+        "vendor": "Sysdig"
+    },
+    "result": {
+        "evaluation": "failed"
+    },
+    "rule": {
+        "benchmark": {
+            "name": "All Posture Findings",
+            "rule_number": "52"
+        },
+        "description": "Ensure that your Amazon Lambda environment variables are using customer-managed Customer Master Keys (CMKs) instead of AWS managed-keys (i.e. default keys used when there are no customer keys defined) in order to benefit from a more granular control over the data encryption and decryption process. The environment variables defined for your Amazon Lambda functions are key-value pairs that are used to store configuration settings without the need to change function code.",
+        "id": "21344",
+        "name": "Lambda - Enable Encryption at Rest for Environment Variables using Customer Master Keys",
+        "uuid": "oa/CQUKtlb6YkI7MHaPyXvYQoss="
+    },
+    "sysdig": {
+        "cspm": {
+            "accepted_count": 0,
+            "control": {
+                "accepted_count": 0,
+                "authors": "Sysdig",
+                "is_manual": false,
+                "last_update": "2025-07-10T12:09:43.000Z",
+                "objects_count": 2879,
+                "pass": false,
+                "passing_count": 0,
+                "remediation_id": "21344",
+                "resource_api_endpoint": "/api/cspm/v1/cloud/resources?controlId=21344&providerType=AWS&resourceKind=AWS_LAMBDA_FUNCTION&filter=policyId=52 and zones.id=119",
+                "resource_kind": "AWS_LAMBDA_FUNCTION",
+                "severity": "High",
+                "supported_distributions": [
+                    {
+                        "max_version": "0",
+                        "min_version": "0",
+                        "name": "AWS"
+                    }
+                ],
+                "target": "AWS",
+                "type": 8
+            },
+            "description": "All Amazon Web Services Controls.",
+            "failed_controls": 136,
+            "high_severity_count": 3147,
+            "low_severity_count": 2926,
+            "medium_severity_count": 20805,
+            "name": "AWS Controls",
+            "pass": false,
+            "passing_count": 23735,
+            "requirement_id": "637489",
+            "severity": "High",
+            "zone": {
+                "id": "119",
+                "name": "Entire Infrastructure"
+            }
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "sysdig-cspm"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| result.evaluation | The result of the evaluation. | keyword |
+| rule.benchmark.name | The pretty name of the benchmark. | keyword |
+| rule.benchmark.rule_number | The rule number in a given benchmark. | keyword |
+| sysdig.cspm.accepted_count | Number of accepted resources. | long |
+| sysdig.cspm.control.accepted_count | Number of accepted resources. | long |
+| sysdig.cspm.control.authors |  | keyword |
+| sysdig.cspm.control.description | Control description. | keyword |
+| sysdig.cspm.control.id | Control ID. | keyword |
+| sysdig.cspm.control.is_manual | Does control need to be checked manually. | boolean |
+| sysdig.cspm.control.last_update |  | date |
+| sysdig.cspm.control.name | Control name. | keyword |
+| sysdig.cspm.control.objects_count | Number of failing resources. | long |
+| sysdig.cspm.control.pass | Is control passing. | boolean |
+| sysdig.cspm.control.passing_count |  | long |
+| sysdig.cspm.control.platform |  | keyword |
+| sysdig.cspm.control.remediation_id |  | keyword |
+| sysdig.cspm.control.resource_api_endpoint | API endpoint for listing the evaluated resources for this control. | keyword |
+| sysdig.cspm.control.resource_kind | Kind of resource evaluated by the control. | keyword |
+| sysdig.cspm.control.severity | Control severity. | keyword |
+| sysdig.cspm.control.supported_distributions.max_version | Distribution max version. | keyword |
+| sysdig.cspm.control.supported_distributions.min_version | Distribution min version. | keyword |
+| sysdig.cspm.control.supported_distributions.name | Distribution name. | keyword |
+| sysdig.cspm.control.target |  | keyword |
+| sysdig.cspm.control.type |  | long |
+| sysdig.cspm.description | Requirement description. | keyword |
+| sysdig.cspm.failed_controls | Number of failing controls. | long |
+| sysdig.cspm.high_severity_count | Number of failing resources for high-severity controls. | long |
+| sysdig.cspm.low_severity_count | Number of failing resources for low-severity controls. | long |
+| sysdig.cspm.medium_severity_count | Number of failing resources for medium-severity controls. | long |
+| sysdig.cspm.name | Requirement name. | keyword |
+| sysdig.cspm.pass | Is requirement passing. | boolean |
+| sysdig.cspm.passing_count |  | long |
+| sysdig.cspm.policy_id | Policy ID. | keyword |
+| sysdig.cspm.policy_name | Policy name. | keyword |
+| sysdig.cspm.requirement_id | Requirement ID. | keyword |
+| sysdig.cspm.severity | Highest control severity. | keyword |
+| sysdig.cspm.zone.id | Zone ID. | keyword |
+| sysdig.cspm.zone.name | Zone name. | keyword |
+
+
 ### Vulnerability
 
 This is the `vulnerability` dataset.
-
-#### Example
 
 An example event for `vulnerability` looks as following:
 
