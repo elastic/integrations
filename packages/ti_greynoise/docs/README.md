@@ -4,18 +4,18 @@
 
 [GreyNoise](https://www.greynoise.io/) is a cybersecurity platform that helps security teams filter out "internet noise" — background internet scanning activity that's not necessarily targeted or malicious. It collects, analyzes, and labels massive amounts of data from internet-wide scans, typically originating from bots, security researchers, or compromised systems.
 
-## Prerequisites for GreyNoise
+## What do I need to use this integration?
 
 Customers must have access to the **Enterprise API** to fetch data from GreyNoise. You can verify your API key access [here](https://viz.greynoise.io/account/api-key).
 
-## Requirements
-
 ### Agentless-enabled integration
+
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based installation
+
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
@@ -25,7 +25,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. After logging in to GreyNoise, navigate to your [account page](https://viz.greynoise.io/account/api-key).
 2. Click "View API Key" to display and copy your unique API key.
 
-### Enabling the Integration in Elastic
+### Enable the integration in Elastic
 
 1. In Kibana, go to **Management > Integrations**.
 2. In the "Search for integrations" search bar, type **GreyNoise**.
@@ -39,7 +39,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 **Note:** The "last_seen" field should not be included in the query as it is predefined with a fixed value of "1d".
 
-## Transforming Data for Up-to-Date Insights
+## Transform data for up-to-date insights
 
 To keep the collected data up to date, **Transforms** are used.
 
@@ -65,13 +65,13 @@ A **retention policy** removes data older than the default retention period. For
 
 In this integration, the IP data stream has a default **retention period of 7 days**.
 
-## Enrichment with Detection Rules
+## Enrichment with detection rules
 
 Detection Rules match your Elastic environment data with GreyNoise data, generating an alert when a match is found.
 
 Follow **Steps to Create Detection Rule** below to create indicator match detection rule in Elastic.
 
-### Steps to Create Detection Rule
+### Steps to create detection rule
 
 1. Navigate to **Security > Rules > Detection Rules** and click **Create New Rule**.
 2. Select **Indicator Match** as the rule type and do following changes.
@@ -95,6 +95,12 @@ Follow **Steps to Create Detection Rule** below to create indicator match detect
 5. In **Schedule Rules** section:
     - **Set Runs Every** - Defines how frequently the rule runs.
     - **Additional Lookback Time** - Specifies how far back to check for matches.
+
+**Note :** To further restrict GreyNoise threat intelligence data used for matching, you can add KQL filters in **Indicator index query** section such as:
+```
+NOT greynoise.ip.internet_scanner_intelligence.classification : "benign"
+```
+You can also use the **plus (+) filter button** in Kibana to refine the GreyNoise threat intel dataset before matching it against your source index.
 
 Once the rule is saved and enabled, alerts will appear in the **Security > Alerts** section when matches are detected.
 
@@ -120,7 +126,10 @@ The following transform and its associated pipelines are used to filter relevant
    - Click **Update** to save the changes.
 5. Click the **three dots** again next to the transform and select **Start** to activate it.
 
-**Note:** After updating the integration, make sure to update the pipeline prefix accordingly.
+### Updating the Integration
+
+- When the integration is updated, the **rule transform will be stopped**.
+- After updating integration, you must reconfigure the rule transform by adding the pipeline with the updated integration version.
 
 ## Troubleshooting
 
@@ -134,8 +143,14 @@ The following transform and its associated pipelines are used to filter relevant
 6. If any transform is not in a **Healthy** state, try resetting it:
    - Click the **three dots** next to the transform, then select **Reset**.
    - After resetting, restart the transform.
+7. If dashboards are not updating after an integration upgrade, verify that the rule transform is running with the correct ingest pipeline.
+   - Reconfigure the rule transform to use the updated pipeline name, including the integration version.
+     For example:
+     ```
+     {updated_package_version}-ti_greynoise-correlation_detection_rule-pipeline
+     ```
 
-## Logs Reference
+## Logs reference
 
 ### IP
 
@@ -147,24 +162,24 @@ An example event for `ip` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-30T12:55:33.381Z",
+    "@timestamp": "2025-08-25T12:04:07.311Z",
     "agent": {
-        "ephemeral_id": "f00c4032-2cd5-4ba7-ac74-1eeaecf7b82b",
-        "id": "e02d601f-5175-4894-b432-6aec71fb67cf",
-        "name": "elastic-agent-83925",
+        "ephemeral_id": "df2440cf-2988-4c8e-a9d8-732bf683e75d",
+        "id": "4fa94654-7250-428e-af26-eb9bea157680",
+        "name": "elastic-agent-47174",
         "type": "filebeat",
         "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "ti_greynoise.ip",
-        "namespace": "37673",
+        "namespace": "68551",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e02d601f-5175-4894-b432-6aec71fb67cf",
+        "id": "4fa94654-7250-428e-af26-eb9bea157680",
         "snapshot": false,
         "version": "8.17.0"
     },
@@ -174,7 +189,7 @@ An example event for `ip` looks as following:
             "threat"
         ],
         "dataset": "ti_greynoise.ip",
-        "ingested": "2025-05-30T12:55:36Z",
+        "ingested": "2025-08-25T12:04:10Z",
         "kind": "enrichment",
         "original": "{\"business_service_intelligence\":{\"category\":\"public_dns\",\"description\":\"Google's global domain name system (DNS) resolution service.\",\"explanation\":\"Public DNS services are used as alternatives to ISP's name servers. You may see devices on your network communicating with Google Public DNS over port 53/TCP or 53/UDP to resolve DNS lookups.\",\"found\":true,\"last_updated\":\"2021-11-24T11:42:37Z\",\"name\":\"Google Public DNS\",\"reference\":\"https://developers.google.com/speed/public-dns/docs/isp#alternative\",\"trust_level\":\"1\"},\"internet_scanner_intelligence\":{\"actor\":\"unknown\",\"bot\":false,\"classification\":\"malicious\",\"cves\":[],\"first_seen\":\"\",\"found\":true,\"last_seen\":\"2025-04-22\",\"metadata\":{\"asn\":\"AS269415\",\"carrier\":\"\",\"category\":\"isp\",\"datacenter\":\"\",\"destination_asns\":[],\"destination_cities\":[],\"destination_countries\":[\"Iran\",\"Kazakhstan\"],\"destination_country_codes\":[\"IR\",\"KZ\"],\"domain\":\"clicknetfibra.net.br\",\"latitude\":0,\"longitude\":0,\"mobile\":false,\"organization\":\"CLICKNET FIBRA LTDA\",\"os\":\"\",\"rdns\":\"speedtest.clicknetfibra.net.br\",\"rdns_parent\":\"clicknetfibra.net.br\",\"rdns_validated\":false,\"region\":\"Mato Grosso do Sul\",\"sensor_count\":0,\"sensor_hits\":0,\"single_destination\":false,\"source_city\":\"Dourados\",\"source_country\":\"Brazil\",\"source_country_code\":\"BR\"},\"source\":{\"bytes\":0},\"spoofable\":true,\"ssh\":{\"key\":[]},\"tags\":[],\"tls\":{\"cipher\":[],\"ja4\":[]},\"tor\":false,\"vpn\":false,\"vpn_service\":\"\"},\"ip\":\"1.128.0.0\",\"last_seen_timestamp\":\"2025-04-22 00:26:29\"}",
         "type": [

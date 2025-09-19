@@ -1,0 +1,145 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: "metrics"
+period: {{period}}
+http_method: {{http_method}}
+
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+
+username: {{username}}
+password: {{password}}
+
+jmx.mappings:
+- mbean: 'java.lang:type=Memory'
+  attributes:
+    - attr: HeapMemoryUsage
+      field: memory.heap_usage
+    - attr: NonHeapMemoryUsage
+      field: memory.non_heap_usage
+    - attr: ObjectPendingFinalizationCount
+      field: memory.objects_pending_finalization
+
+- mbean: 'java.lang:type=Runtime'
+  attributes:
+    - attr: Uptime
+      field: runtime.uptime
+    - attr: Name
+      field: runtime.name
+    - attr: VmName
+      field: runtime.vm_name
+    - attr: VmVendor
+      field: runtime.vm_vendor
+    - attr: VmVersion
+      field: runtime.vm_version
+
+- mbean: 'java.lang:name=*,type=MemoryPool'
+  attributes:
+    - attr: Name
+      field: memory_pool.name
+    - attr: Type
+      field: memory_pool.type
+    - attr: Usage
+      field: memory_pool.usage
+    - attr: PeakUsage
+      field: memory_pool.peak_usage
+    - attr: CollectionUsage
+      field: memory_pool.collection_usage
+
+# Buffer Pool
+- mbean: 'java.nio:name=*,type=BufferPool'
+  attributes:
+    - attr: Name
+      field: buffer_pool.name
+    - attr: MemoryUsed
+      field: buffer_pool.used
+    - attr: TotalCapacity
+      field: buffer_pool.total_capacity
+    - attr: Count
+      field: buffer_pool.count
+
+# Class Loading
+- mbean: 'java.lang:type=ClassLoading'
+  attributes:
+    - attr: LoadedClassCount
+      field: classes.loaded_count
+    - attr: TotalLoadedClassCount
+      field: classes.total_loaded_count
+    - attr: UnloadedClassCount
+      field: classes.unloaded_count
+
+# Threads
+- mbean: 'java.lang:type=Threading'
+  attributes:
+    - attr: ThreadCount
+      field: threads.current_count
+    - attr: DaemonThreadCount
+      field: threads.daemon_count
+    - attr: PeakThreadCount
+      field: threads.peak_count
+    - attr: TotalStartedThreadCount
+      field: threads.total_started_count
+
+# Garbage Collection
+- mbean: 'java.lang:name=*,type=GarbageCollector'
+  attributes:
+    - attr: CollectionCount
+      field: gc.collection_count
+    - attr: CollectionTime
+      field: gc.collection_time_ms
+    - attr: Name
+      field: gc.name
+
+# JIT Compilation
+- mbean: 'java.lang:type=Compilation'
+  attributes:
+    - attr: TotalCompilationTime
+      field: compilation.time_ms
+    - attr: Name
+      field: compilation.name
+
+{{#if headers}}
+{{headers}}
+{{/if}}
+
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

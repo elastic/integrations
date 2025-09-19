@@ -125,14 +125,9 @@ with_mage() {
     create_bin_folder
     with_go
 
-    local install_packages=(
-            "github.com/magefile/mage"
-            "github.com/jstemmer/go-junit-report"
-            "gotest.tools/gotestsum"
-    )
-    for pkg in "${install_packages[@]}"; do
-        go install "${pkg}@latest"
-    done
+    # Install version from go.mod"
+    go install "github.com/magefile/mage"
+
     mage --version
 }
 
@@ -768,7 +763,7 @@ is_pr_affected() {
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)|CODE_OF_CONDUCT\.md|README\.md|docs/|catalog-info\.yaml|\.buildkite/(pull-requests\.json|pipeline\.schedule-daily\.yml|pipeline\.schedule-weekly\.yml|pipeline\.backport\.yml))' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
