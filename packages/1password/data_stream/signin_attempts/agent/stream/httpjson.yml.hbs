@@ -28,14 +28,21 @@ request.transforms:
       value: 'Bearer {{token}}'
   - set:
       target: body.cursor
-      value: '[[if not (eq (len .cursor) 0)]][[.cursor.last_cursor]][[end]]'
+      value: >-
+        [[if not (eq (len .cursor) 0)]]
+          [[.cursor.last_cursor]]
+        [[else]]
+          [[terminate "cursor is empty"]]
+        [[end]]
   - set:
       target: body.limit
       value_type: int
-      value: '[[if eq (len .cursor) 0]]{{limit}}[[end]]'
+      value: >-
+        [[if eq (len .cursor) 0]]{{limit}}[[else]][[terminate "cursor is not empty"]][[end]]
 cursor:
   last_cursor:
-    value: '[[.last_response.body.cursor]]'
+    value: '[[if index .last_response.body "cursor"]][[.last_response.body.cursor]][[end]]'
+    ignore_empty_value: true
 response.decode_as: application/json
 response.split:
   target: body.items
@@ -45,6 +52,7 @@ response.pagination:
       target: body.cursor
       value: '[[if eq .last_response.body.has_more true]][[.last_response.body.cursor]][[else]][[/*This is an empty value to stop pagination.*/]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - delete:
       target: body.limit
 tags:
