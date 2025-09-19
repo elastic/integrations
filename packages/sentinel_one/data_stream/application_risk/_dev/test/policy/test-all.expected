@@ -7,11 +7,8 @@ inputs:
       name: test-all-sentinel_one
       streams:
         - config_version: 2
-          cursor:
-            last_update_at:
-                value: '[[.last_event.updatedAt]]'
           data_stream:
-            dataset: sentinel_one.agent
+            dataset: sentinel_one.application_risk
           interval: 30s
           processors:
             - add_fields:
@@ -24,10 +21,53 @@ inputs:
                     - web
                     - production
                 target: environment
+          program: |
+            request("GET",
+              state.url.trim_right("/") + "/web/api/v2.1/application-management/risks?" + {
+                ?"cursor": state.?next.page.optMap(v, [v]),
+                ?"siteids": state.?site_ids.orValue(null) != null ? optional.of([string(state.site_ids)]) : optional.none(),
+                "limit": [string(state.batch_size)],
+              }.format_query()
+            ).with({
+              "Header":{
+                "Authorization": ["ApiToken " + state.api_token]
+              },
+            }).do_request().as(resp, resp.StatusCode == 200 ?
+              resp.Body.decode_json().as(body, {
+                "events": body.data.map(e, {
+                  "message": e.encode_json(),
+                }),
+                "api_token": state.api_token,
+                "batch_size": state.batch_size,
+                ?"site_ids": state.?site_ids.orValue(null) != null ? optional.of(state.site_ids) : optional.none(),
+                "next": {
+                  ?"page": body.?pagination.?nextCursor.orValue(null) != null ? optional.of(body.pagination.nextCursor) : optional.none(),
+                },
+                "want_more": body.?pagination.?nextCursor.orValue(null) != null,
+              })
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/risks: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+            )
           publisher_pipeline.disable_host: true
-          request.method: GET
-          request.proxy_url: https://user:P%40ssword%23@0.0.0.0:0000
-          request.ssl:
+          redact:
+            fields:
+                - api_token
+          resource.proxy_url: https://user:P%40ssword%23@0.0.0.0:0000
+          resource.ssl:
             certificate: |
                 -----BEGIN CERTIFICATE-----
                 MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
@@ -106,45 +146,23 @@ inputs:
                 -----END PRIVATE KEY-----
             supported_protocols:
                 - TLSv1.2
-          request.tracer:
+          resource.timeout: 10s
+          resource.tracer:
             enabled: true
-            filename: ../../logs/httpjson/http-request-trace-*.ndjson
+            filename: ../../logs/cel/http-request-trace-*.ndjson
             maxbackups: 5
-          request.transforms:
-            - set:
-                target: header.Authorization
-                value: ApiToken ${SECRET_0}
-            - set:
-                target: url.params.limit
-                value: "100"
-            - set:
-                target: url.params.sortBy
-                value: updatedAt
-            - set:
-                target: url.params.sortOrder
-                value: asc
-            - set:
-                default: '[[formatDate (now (parseDuration "-24h"))]]'
-                target: url.params.updatedAt__gte
-                value: '[[formatDate (parseDate .cursor.last_update_at)]]'
-            - set:
-                target: url.params.siteIds
-                value: "123"
-          request.url: http://host.tld/web/api/v2.1/agents
-          response.pagination:
-            - set:
-                fail_on_template_error: true
-                target: url.params.cursor
-                value: '[[if (ne .last_response.body.pagination.nextCursor nil)]][[.last_response.body.pagination.nextCursor]][[end]]'
-          response.split:
-            ignore_empty_value: true
-            target: body.data
+          resource.url: http://host.tld
+          state:
+            api_token: ${SECRET_0}
+            batch_size: 100
+            site_ids: null
           tags:
             - preserve_original_event
+            - preserve_duplicate_custom_fields
             - forwarded
-            - sentinel_one-agent
+            - sentinel_one-application_risk
             - test-policy
-      type: httpjson
+      type: cel
       use_output: default
 output_permissions:
     default:
@@ -156,7 +174,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - logs-sentinel_one.agent-ep
+                    - logs-sentinel_one.application_risk-ep
                   privileges:
                     - auto_configure
                     - create_doc
