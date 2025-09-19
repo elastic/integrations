@@ -913,6 +913,37 @@ processors:
       tag: set_dns_question_name
       copy_from: gigamon.ami.dns_query
       if: ctx.gigamon?.ami?.dns_query != null
+  - script:
+      lang: painless
+      description: Populates the dns.question.top_level_domain value
+      source: >-
+        int idx = ctx.dns.question.name.lastIndexOf('.');
+        if (idx < 0) {
+          return;
+        }
+        ctx.dns.question.top_level_domain = ctx.dns.question.name.substring(idx + 1);
+      if: ctx.dns?.question?.name != null
+  - script:
+      lang: painless
+      description: Populates the dns.question.subdomain value
+      source: >-
+        def subdomain(String s) {
+          int n;
+          for (int i = s.length()-1; i >= 0; i--) {
+            if (s.charAt(i) == (char)'.') {
+              n++;
+              if (n == 2) {
+                return s.substring(0, i);
+              }
+            }
+          }
+          return null;
+        }
+        def sub = subdomain(ctx.dns.question.name);
+        if (sub != null) {
+          ctx.dns.question.subdomain = sub;
+        }
+      if: ctx.dns?.question?.name != null
   - set:
       field: dns.question.registered_domain
       tag: set_dns_question_registered_domain
@@ -1113,8 +1144,8 @@ processors:
       copy_from: gigamon.ami.dst_port
       if: ctx.gigamon?.ami?.dst_port != null
   - set:
-      field: service.type
-      tag: set_service_type
+      field: network.protocol
+      tag: set_network_protocol
       copy_from: gigamon.ami.app_name
       if: ctx.gigamon?.ami?.app_name != null
   - set:
