@@ -6,7 +6,7 @@ This integration collects logs and metrics from [Kafka](https://kafka.apache.org
 
 The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
 
-The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 2.2.2, 3.6.0 and 4.0.0.
+The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2 and 3.6.0.
 
 The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `producer`, `raft`, `replica_manager`, `topic` metricsets require Jolokia to fetch JMX metrics. Refer to the `How do I deploy this integration?` section below for more information.
 
