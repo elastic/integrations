@@ -15,8 +15,8 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
 auth.oauth2:
-  client.id: '{{client_id}}'
-  client.secret: '{{client_secret}}'
+  client.id: {{escape_string client_id}}
+  client.secret: {{escape_string client_secret}}
   token_url: {{url}}/oauth2/token
 state:
   initial_interval: '{{initial_interval}}'
@@ -47,7 +47,7 @@ program: |-
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_xml("access_session_schema").as(body,
           // Check if the API returned an error in the XML response.
-          body.?doc.session_list.error.hasValue() ?
+          has(body.?doc.session_list.error) ?
             {
               "events": {
                 "error": {
@@ -56,7 +56,7 @@ program: |-
               },
               "want_more": false,
             }
-          : body.?doc.session_list.session.hasValue() ?
+          : has(body.?doc.session_list.session) ?
             {
               // Process sessions data when available.
               // Transform each session and its events into individual log events.
@@ -68,7 +68,7 @@ program: |-
                       {
                         // Include session metadata (excluding lists that will be used for enrichment).
                         "session": j.drop(["rep_list", "customer_list", "session_details"]),
-
+  
                         // Enrich the "performed_by" field with detailed user information
                         // Look up the user details from either rep_list or customer_list
                         ?"performed_by": e.?performed_by.optMap(performed_by,
@@ -81,15 +81,14 @@ program: |-
                               j.?customer_list.customer.optMap(reps, reps.filter(rep, rep.gsnumber == performed_by.gsnumber))[?0].orValue({})
                           )
                         ),
-
+  
                         // Enrich the "destination" field with detailed information
                         // If destination exists, look up details; otherwise use first customer.
                         ?"destination": e.?destination.optMap(destination,
                           destination.with(
                             (
                               (destination.type == "representative") ?
-                                (// Find representative destination details
-                                j.?rep_list.representative.optMap(reps, reps.filter(reps, reps.gsnumber == e.destination.gsnumber))[?0])
+                                (j.?rep_list.representative.optMap(reps, reps.filter(reps, reps.gsnumber == e.destination.gsnumber))[?0])
                               :
                                 // Find customer destination details
                                 j.?customer_list.customer.optMap(customers, customers.filter(customers, customers.gsnumber == e.destination.gsnumber))[?0]
@@ -102,8 +101,9 @@ program: |-
                 )
               ).flatten(),
               "cursor": {
-                ?"last_timestamp": (body.?doc.session_list.session.hasValue() &&
-                body.doc.session_list.session.size() > 0) ?
+                ?"last_timestamp": (
+                  has(body.?doc.session_list.session) && body.doc.session_list.session.size() > 0
+                ) ?
                   // Use the request initiation time as the cursor if sessions were found.
                   optional.of(filter.request_initiated_time)
                 :
