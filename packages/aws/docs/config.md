@@ -66,10 +66,10 @@ Use this integration if you only need to collect data from the AWS Config servic
 
 #### Support for Elastic Misconfiguration Findings page.
 
-Version `4.0.0` of the AWS Config integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of AWS Config integration to ingest misconfiguration findings from AWS Config platform into Elastic and get insights directly from [Misconfiguration Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page).
+Version `4.0.0` of the AWS Config integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of the AWS Config integration to ingest misconfiguration findings from the AWS Config platform into Elastic and get insights directly from the [Misconfiguration Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page).
 Version `4.0.0` adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest findings from source indices matching the pattern `logs-aws.config-*` into new destination indices matching the pattern `security_solution-awsconfig.misconfiguration_latest-*`. The Elastic Findings pages will display findings based on the destination indices.
 
-For existing users of AWS Config integration, before upgrading to version `4.0.0` please ensure following requirements are met:
+For existing users of the AWS Config integration, before upgrading to version `4.0.0` please ensure the following requirements are met:
 
 1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
 2. To use transforms, users must have:

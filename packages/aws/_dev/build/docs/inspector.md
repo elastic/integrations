@@ -34,10 +34,10 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 #### Support for Elastic Vulnerability Findings page.
 
-Version `4.0.0` of the AWS integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of AWS Inspector integration to ingest their enriched vulnerabilities from Amazon Inspector platform into Elastic and get insights directly from Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
+Version `4.0.0` of the AWS integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of the AWS Inspector integration to ingest their enriched vulnerabilities from the Amazon Inspector platform into Elastic and get insights directly from the Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
 This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-aws.inspector-*` into new destination indices matching the pattern `security_solution-aws.vulnerability_latest-*`. The Elastic Vulnerability Findings page will display vulnerabilities based on the destination indices.
 
-For existing users of AWS integration, before upgrading to `4.0.0` please ensure following requirements are met:
+For existing users of the AWS integration, before upgrading to `4.0.0` please ensure the following requirements are met:
 
 1. Users need [Elastic Security solution](https://www.elastic.co/docs/solutions/security) which has requirements documented [here](https://www.elastic.co/docs/solutions/security/get-started/elastic-security-requirements).
 2. To use transforms, users must have:
