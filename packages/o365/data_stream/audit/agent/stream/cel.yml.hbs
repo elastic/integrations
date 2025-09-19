@@ -152,7 +152,12 @@ program: |-
             :
               e.with(
                 {
-                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().endTime[0],
+                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().as(q,
+                    [
+                      ?q.?endTime[0],
+                      ?q.?endtime[0],
+                    ]
+                  )[?0].orValue(now),
                 }
               )
           ).as(list, (size(list) != 0) ?
@@ -456,8 +461,9 @@ program: |-
     (
       // Ensure that we bring the current type up to the current time,
       // even if we did not get any content for the query period.
-      timestamp(state.cursor.last_for[state.work.curr_type.to_lower()]) < now - duration("1h") &&
-      !state.work.todo_type.exists(t, t == state.work.curr_type)
+      has(state.?work.curr_type) && state.?cursor.last_for.optMap(l,
+        timestamp(l[state.work.curr_type.to_lower()]) < now - duration("1h")
+      ).orValue(false) && !state.work.todo_type.exists(t, t == state.work.curr_type)
     ) ?
       state.with(
         {
@@ -477,7 +483,10 @@ program: |-
   ).as(state,
     // Make sure we complete the remaining work if we got
     // no events but the work lists are not empty.
-    (state.want_more && type(state.events) == list && size(state.events) == 0) ?
+    // We do not need to put a dummy event in in the
+    // case that we have errored, since the error will
+    // be raised to an event by the input.
+    (state.want_more && !has(state.error) && type(state.events) == list && size(state.events) == 0) ?
       state.with(
         {
           "events": [{"retry": true}],
