@@ -10,7 +10,11 @@ Use the Apache Spark integration to:
 - Create visualizations to monitor, measure, and analyze usage trends and key data, deriving business insights.
 - Create alerts to reduce the MTTD and MTTR by referencing relevant logs when troubleshooting an issue.
 
-## Data streams
+### Compatibility
+
+This integration has been tested against `Apache Spark version 3.5.0`.
+
+## What data does this integration collect?
 
 The Apache Spark integration collects metrics data.
 
@@ -25,19 +29,15 @@ Data streams:
 Note:
 - Users can monitor and view the metrics inside the ingested documents for Apache Spark under the `metrics-*` index pattern in `Discover`.
 
-## Compatibility
-
-This integration has been tested against `Apache Spark version 3.5.0`.
-
-## Requirements
+## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-In order to ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
+To ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
 
 To proceed with the Jolokia setup, Apache Spark should be installed as a standalone setup. Make sure that the spark folder is installed in the `/usr/local` path. If not, then specify the path of spark folder in the further steps. You can install the standalone setup from the official download page of [Apache Spark](https://spark.apache.org/downloads.html).
 
-In order to gather Spark statistics, we need to download and enable Jolokia JVM Agent.
+To gather Spark statistics, we need to download and enable Jolokia JVM Agent.
 
 ```
 cd /usr/share/java/
@@ -90,7 +90,7 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, refer to the [Getting Started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html).
 
 ## Validation
 
@@ -110,7 +110,7 @@ The `application` data stream collects metrics related to the number of cores us
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "application"}}
 
@@ -122,7 +122,7 @@ The `driver` data stream collects metrics related to the driver details, job dur
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "driver"}}
 
@@ -134,7 +134,7 @@ The `executor` data stream collects metrics related to the operations, memory us
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "executor"}}
 
@@ -146,6 +146,6 @@ The `node` data stream collects metrics related to the application count, waitin
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "node"}}
