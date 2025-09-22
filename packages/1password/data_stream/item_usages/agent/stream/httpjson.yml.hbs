@@ -34,11 +34,13 @@ request.transforms:
         [[else]]
           [[terminate "cursor is empty"]]
         [[end]]
+      do_not_log_failure: true
   - set:
       target: body.limit
       value_type: int
       value: >-
         [[if eq (len .cursor) 0]]{{limit}}[[else]][[terminate "cursor is not empty"]][[end]]
+      do_not_log_failure: true
 cursor:
   last_cursor:
     value: '[[if index .last_response.body "cursor"]][[.last_response.body.cursor]][[end]]'
