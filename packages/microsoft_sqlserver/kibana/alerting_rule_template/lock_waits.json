@@ -1,0 +1,38 @@
+{
+  "id": "lock_waits",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "Lock Waits",
+    "tags": ["MicrosoftSQL Server",
+      "Microsoft SQL Server Lock Waits"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mssql.metrics-default\n| STATS lockwaits=avg(mssql.metrics.lock_waits_per_sec) by mssql.metrics.server_name\n| WHERE lockwaits > 100"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
