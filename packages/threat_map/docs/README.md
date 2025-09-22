@@ -2,13 +2,13 @@
 
 The **Threat Map** dashboard visualizes network traffic flow between regions using directed paths and animations. It includes arrows indicating direction and pulsing arcs at the destination.
 
-> **Note:** The animations may increase browser CPU usage.
+NOTE: The animations may increase browser CPU usage.
 
 ---
 
-## Prerequisites
+## What do I need to use this integration?
 
-To use the Threat Map dashboard, ensure the following:
+To use the Threat Map dashboard, make sure you have the following:
 
 - **Timestamp Field:** Documents must contain a `@timestamp` field for time-range filtering.
 - **GeoIP Processor:** Apply a [GeoIP](https://www.elastic.co/guide/en/elasticsearch/reference/current/geoip-processor.html) processor to the IP field. The resulting document should contain `source.geo` and `destination.geo` fields.
