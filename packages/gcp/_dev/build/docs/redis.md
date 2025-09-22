@@ -1,4 +1,4 @@
-# Redis
+# Redis integration for Google Cloud Platform (GCP)
 
 ## Metrics
 
