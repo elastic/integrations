@@ -1,5 +1,75 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "45305e47-e2b6-4c4a-9da8-8413a6c39f59": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "threat.indicator.type",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Indicator Type"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "d8fd3fd0-3807-4e09-89bc-7c75bd8ec216": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "threat.indicator.provider",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Threat Indicator Provider"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "e5f21ffa-4efa-4783-9576-4301da36c1a3": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "event.dataset",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Feed Name"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
         "description": "Dashboard providing statistics about indicators ingested from the abuse.ch integration",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -12,52 +82,6 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.dataset",
-                            "negate": false,
-                            "params": [
-                                "ti_abusech.malware",
-                                "ti_abusech.malwarebazaar",
-                                "ti_abusech.url",
-                                "ti_abusech.threatfox"
-                            ],
-                            "type": "phrases"
-                        },
-                        "query": {
-                            "bool": {
-                                "minimum_should_match": 1,
-                                "should": [
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.malware"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.malwarebazaar"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.url"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "event.dataset": "ti_abusech.threatfox"
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
                             "key": "event.kind",
                             "negate": false,
                             "params": {
@@ -79,7 +103,7 @@
                             "alias": null,
                             "disabled": false,
                             "field": "labels.is_ioc_transform_source",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
                             "key": "labels.is_ioc_transform_source",
                             "negate": true,
                             "params": {
@@ -90,6 +114,28 @@
                         "query": {
                             "match_phrase": {
                                 "labels.is_ioc_transform_source": "true"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.module",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "event.module",
+                            "negate": false,
+                            "params": {
+                                "query": "ti_abusech"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.module": "ti_abusech"
                             }
                         }
                     }
@@ -110,8 +156,12 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": true,
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": false,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -126,166 +176,23 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**abuse.ch Overview**  \n[abuse.ch Files](/app/dashboards#/view/ti_abusech-6a90c980-3b32-11ec-ae50-2fdf1e96c6a6)  \n[abuse.ch URLs](/app/dashboards#/view/ti_abusech-2457fb50-3bc3-11ec-ae8c-7d00429ad420)  \n\n[Integrations Page](/app/integrations/detail/ti_abusech/overview)\n\n\n**Overview**\n\nThis dashboard is a health overview related to the abuse.ch integration.\n\nThe dashboard is made to provide general statistics and show the health of the ingestion of indicators from abuse.ch.  \n\nIt shows how many parts has been enabled (URL, Malware and MalwareBazaar), the ingestion rates (by default it fetches new updates every 10 minutes) and provides a few filters for drilling down to specific indicator types retrieved from abuse.ch.",
+                            "markdown": "**Overview**\n\nThis dashboard is a health overview related to the abuse.ch integration.\n\nThe dashboard is made to provide general statistics and show the health of the ingestion of indicators from abuse.ch.  \n\nIt shows how many parts has been enabled (URL, Malware and MalwareBazaar), the ingestion rates (by default it fetches new updates every 10 minutes) and provides a few filters for drilling down to specific indicator types retrieved from abuse.ch.\n\n**[Integrations Page](/app/integrations/detail/ti_abusech/overview)**\n",
                             "openLinksInNewTab": false
                         },
                         "title": "Overview Textbox [Logs abuse.ch]",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "title": "Table of Contents"
                 },
                 "gridData": {
-                    "h": 39,
+                    "h": 24,
                     "i": "555e9e6c-04e9-4022-b6df-bda07dde30c4",
-                    "w": 7,
+                    "w": 9,
                     "x": 0,
-                    "y": 0
+                    "y": 9
                 },
                 "panelIndex": "555e9e6c-04e9-4022-b6df-bda07dde30c4",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": [
-                                                "ti_abusech.malware",
-                                                "ti_abusech.malwarebazaar",
-                                                "ti_abusech.url"
-                                            ],
-                                            "type": "phrases"
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "event.dataset": "ti_abusech.malware"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "event.dataset": "ti_abusech.malwarebazaar"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "event.dataset": "ti_abusech.url"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                                            "key": "event.kind",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "enrichment"
-                                            },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.kind": "enrichment"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "controls": [
-                                {
-                                    "fieldName": "event.dataset",
-                                    "id": "1635779550157",
-                                    "indexPatternRefName": "control_e971fedd-6afd-4d03-93ac-d0c751acc254_0_index_pattern",
-                                    "label": "Feed Name",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "threat.indicator.provider",
-                                    "id": "1635779603363",
-                                    "indexPatternRefName": "control_e971fedd-6afd-4d03-93ac-d0c751acc254_1_index_pattern",
-                                    "label": "Indicator Provider",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "threat.indicator.type",
-                                    "id": "1635779625911",
-                                    "indexPatternRefName": "control_e971fedd-6afd-4d03-93ac-d0c751acc254_2_index_pattern",
-                                    "label": "Indicator Type",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                }
-                            ],
-                            "pinFilters": false,
-                            "updateFiltersOnChange": false,
-                            "useTimeFilter": false
-                        },
-                        "title": "Feed and Indicator Selector [Logs abuse.ch]",
-                        "type": "input_control_vis",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "e971fedd-6afd-4d03-93ac-d0c751acc254",
-                    "w": 41,
-                    "x": 7,
-                    "y": 0
-                },
-                "panelIndex": "e971fedd-6afd-4d03-93ac-d0c751acc254",
                 "type": "visualization"
             },
             {
@@ -352,87 +259,13 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 8,
+                    "h": 9,
                     "i": "d37eb797-f273-43c2-9004-b947891cce55",
                     "w": 6,
-                    "x": 7,
-                    "y": 7
+                    "x": 9,
+                    "y": 0
                 },
                 "panelIndex": "d37eb797-f273-43c2-9004-b947891cce55",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-49830790-3b27-11ec-ae50-2fdf1e96c6a6"
-                        },
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "df8e3a91-700b-428a-a763-525076e4d3c8": {
-                                            "columnOrder": [
-                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326"
-                                            ],
-                                            "columns": {
-                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total Datastreams",
-                                                    "operationType": "unique_count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "event.dataset"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "accessor": "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326",
-                                "layerId": "df8e3a91-700b-428a-a763-525076e4d3c8",
-                                "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "bottom"
-                            }
-                        },
-                        "title": "Total Datastreams [Logs abuse.ch]",
-                        "visualizationType": "lnsLegacyMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
-                    "w": 6,
-                    "x": 7,
-                    "y": 15
-                },
-                "panelIndex": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
-                "title": "Total Datastreams [Logs abuse.ch]",
                 "type": "lens"
             },
             {
@@ -542,17 +375,17 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Total Indicators per Provider [Logs abuse.ch]"
                 },
                 "gridData": {
-                    "h": 16,
+                    "h": 17,
                     "i": "86d83606-4176-44b1-b3f3-011d5b5b4b58",
-                    "w": 23,
-                    "x": 13,
-                    "y": 7
+                    "w": 21,
+                    "x": 15,
+                    "y": 0
                 },
                 "panelIndex": "86d83606-4176-44b1-b3f3-011d5b5b4b58",
-                "title": "Total Indicators per Provider [Logs abuse.ch]",
                 "type": "lens"
             },
             {
@@ -653,13 +486,87 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 16,
+                    "h": 17,
                     "i": "f654c447-12d2-41a4-9091-06169af11ba5",
-                    "w": 12,
+                    "w": 11,
                     "x": 36,
-                    "y": 7
+                    "y": 0
                 },
                 "panelIndex": "f654c447-12d2-41a4-9091-06169af11ba5",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sharingSavedObjectProps": {
+                            "outcome": "exactMatch",
+                            "sourceId": "ti_abusech-49830790-3b27-11ec-ae50-2fdf1e96c6a6"
+                        },
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "df8e3a91-700b-428a-a763-525076e4d3c8": {
+                                            "columnOrder": [
+                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326"
+                                            ],
+                                            "columns": {
+                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Datastreams",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.dataset"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326",
+                                "layerId": "df8e3a91-700b-428a-a763-525076e4d3c8",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "title": "Total Datastreams [Logs abuse.ch]",
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "title": "Total Datastreams [Logs abuse.ch]"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
+                    "w": 6,
+                    "x": 9,
+                    "y": 9
+                },
+                "panelIndex": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
                 "type": "lens"
             },
             {
@@ -794,20 +701,74 @@
                 "gridData": {
                     "h": 16,
                     "i": "aab4fac0-d39c-4521-aa9b-0a49d5938e9e",
-                    "w": 41,
-                    "x": 7,
-                    "y": 23
+                    "w": 39,
+                    "x": 9,
+                    "y": 17
                 },
                 "panelIndex": "aab4fac0-d39c-4521-aa9b-0a49d5938e9e",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "vertical",
+                        "links": [
+                            {
+                                "destinationRefName": "link_247ab094-abfa-4bd2-ba44-c1c3b99cc0da_dashboard",
+                                "id": "247ab094-abfa-4bd2-ba44-c1c3b99cc0da",
+                                "label": "Domains and IP Addresses",
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_6083b3ef-a109-448d-b2ac-ae34ba3cc444_dashboard",
+                                "id": "6083b3ef-a109-448d-b2ac-ae34ba3cc444",
+                                "label": "Files",
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_7fbf8379-35ec-4dc0-88c1-58fa249d94c4_dashboard",
+                                "id": "7fbf8379-35ec-4dc0-88c1-58fa249d94c4",
+                                "label": "Overview",
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_01c5c807-9b47-4d2a-9c4d-16ffdab4023c_dashboard",
+                                "id": "01c5c807-9b47-4d2a-9c4d-16ffdab4023c",
+                                "label": "Software and X-509 Certificates",
+                                "order": 3,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_55e47a65-afc4-4963-b381-8d9915e70c13_dashboard",
+                                "id": "55e47a65-afc4-4963-b381-8d9915e70c13",
+                                "label": "URLs",
+                                "order": 4,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "title": "Navigation"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "31905cf3-9a7d-4559-a347-103096239574",
+                    "w": 9,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "31905cf3-9a7d-4559-a347-103096239574",
+                "type": "links"
             }
         ],
         "timeRestore": false,
         "title": "[Logs abuse.ch] Overview",
-        "version": 1
+        "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-08-07T08:51:41.875Z",
+    "created_at": "2025-09-19T10:51:07.301Z",
     "id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
     "references": [
         {
@@ -827,47 +788,12 @@
         },
         {
             "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:control_e971fedd-6afd-4d03-93ac-d0c751acc254_0_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:control_e971fedd-6afd-4d03-93ac-d0c751acc254_1_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:control_e971fedd-6afd-4d03-93ac-d0c751acc254_2_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "d37eb797-f273-43c2-9004-b947891cce55:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "d37eb797-f273-43c2-9004-b947891cce55:indexpattern-datasource-layer-070f5dbc-7687-4e97-9a57-5542b401c13f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "6509dcc9-bb9c-4c1f-80e9-612f67ada340:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "6509dcc9-bb9c-4c1f-80e9-612f67ada340:indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
             "type": "index-pattern"
         },
         {
@@ -892,12 +818,77 @@
         },
         {
             "id": "logs-*",
+            "name": "6509dcc9-bb9c-4c1f-80e9-612f67ada340:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6509dcc9-bb9c-4c1f-80e9-612f67ada340:indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "aab4fac0-d39c-4521-aa9b-0a49d5938e9e:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "aab4fac0-d39c-4521-aa9b-0a49d5938e9e:indexpattern-datasource-layer-c1cee622-e3dd-4d6b-a28a-0fb19dc2c7b7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "ti_abusech-d11a94be-9b9f-42f8-9fed-d5e89005f24d",
+            "name": "31905cf3-9a7d-4559-a347-103096239574:link_247ab094-abfa-4bd2-ba44-c1c3b99cc0da_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "ti_abusech-6a90c980-3b32-11ec-ae50-2fdf1e96c6a6",
+            "name": "31905cf3-9a7d-4559-a347-103096239574:link_6083b3ef-a109-448d-b2ac-ae34ba3cc444_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
+            "name": "31905cf3-9a7d-4559-a347-103096239574:link_7fbf8379-35ec-4dc0-88c1-58fa249d94c4_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "ti_abusech-68ac01ad-dddf-476c-9a54-8c33c1047e53",
+            "name": "31905cf3-9a7d-4559-a347-103096239574:link_01c5c807-9b47-4d2a-9c4d-16ffdab4023c_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "ti_abusech-2457fb50-3bc3-11ec-ae8c-7d00429ad420",
+            "name": "31905cf3-9a7d-4559-a347-103096239574:link_55e47a65-afc4-4963-b381-8d9915e70c13_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_e5f21ffa-4efa-4783-9576-4301da36c1a3:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_d8fd3fd0-3807-4e09-89bc-7c75bd8ec216:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_45305e47-e2b6-4c4a-9da8-8413a6c39f59:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
