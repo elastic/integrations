@@ -1,0 +1,38 @@
+{
+  "id": "latency_spike",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "Latency Spike",
+    "tags": ["PostgreSQL",
+      "PostgreSQL Latency"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresql.statement-default\n| STATS avg_query_time=avg(postgresql.statement.query.time.mean.ms) by host.name, postgresql.statement.user.id\n| WHERE avg_query_time >= 5000"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
