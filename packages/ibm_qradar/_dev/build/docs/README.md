@@ -16,9 +16,9 @@ This integration periodically queries the QRadar API to retrieve logs.
 
 ## What data does this integration collect?
 
-This integration collects the following log data from IBM QRadar:
+This integration collects log messages of the following type:
 
-- **Offenses**: Retrieves offense records from QRadar using the [Offense API endpoint](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--siem-offenses-GET.html).
+- `Offense`: collect offense records from the [Offenses](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--siem-offenses-GET.html) and [Rules](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--analytics-rules-GET.html) endpoints, with rule data enriched into the offenses to provide additional context.
 
 ### Supported use cases
 Integrating IBM QRadar with Elastic SIEM provides deep visibility into security offenses and their underlying context. Kibana dashboards track active and protected offenses, with metrics. Bar and pie charts highlight offense severity and status distribution, helping analysts quickly prioritize investigations.
@@ -127,3 +127,4 @@ These inputs can be used in this integration:
 This integration dataset uses the following API:
 
 - `Offense`: [QRadar Offense API](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--siem-offenses-GET.html).
+- `Rule`: [QRadar Rule API](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--analytics-rules-GET.html).

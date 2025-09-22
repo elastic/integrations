@@ -16,9 +16,9 @@ This integration periodically queries the QRadar API to retrieve logs.
 
 ## What data does this integration collect?
 
-This integration collects the following log data from IBM QRadar:
+This integration collects log messages of the following type:
 
-- **Offenses**: Retrieves offense records from QRadar using the [Offense API endpoint](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--siem-offenses-GET.html).
+- `Offense`: collect offense records from the [Offenses](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--siem-offenses-GET.html) and [Rules](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--analytics-rules-GET.html) endpoints, with rule data enriched into the offenses to provide additional context.
 
 ### Supported use cases
 Integrating IBM QRadar with Elastic SIEM provides deep visibility into security offenses and their underlying context. Kibana dashboards track active and protected offenses, with metrics. Bar and pie charts highlight offense severity and status distribution, helping analysts quickly prioritize investigations.
@@ -150,8 +150,21 @@ For more information on architectures that can be used for scaling this integrat
 | ibm_qradar.offense.protected | True if the offense is protected. | boolean |
 | ibm_qradar.offense.relevance | The relevance of the offense. | long |
 | ibm_qradar.offense.remote_destination_count | The number of remote destinations that are associated with the offense. | long |
+| ibm_qradar.offense.rules.average_capacity | The moving average capacity, in EPS, of the rule across all hosts. | long |
+| ibm_qradar.offense.rules.base_capacity | The base capacity of the rule in events per second. | long |
+| ibm_qradar.offense.rules.base_host_id | The ID of the host from which the rule's base capacity was determined. | keyword |
+| ibm_qradar.offense.rules.capacity_timestamp | The epoch timestamp, in milliseconds, since the rule's capacity values were last updated. | date |
+| ibm_qradar.offense.rules.creation_date | The number of milliseconds since epoch when the rule was created. | date |
+| ibm_qradar.offense.rules.enabled | True if the rule is enabled. | boolean |
 | ibm_qradar.offense.rules.id | The id of the rule. | keyword |
-| ibm_qradar.offense.rules.type | The type of rule. | keyword |
+| ibm_qradar.offense.rules.identifier | The unique ID of the rule. | keyword |
+| ibm_qradar.offense.rules.linked_rule_identifier | The linked ID of the rule. | keyword |
+| ibm_qradar.offense.rules.modification_date | The number of milliseconds since epoch when the rule was last modified. | date |
+| ibm_qradar.offense.rules.name | The name of the rule. | keyword |
+| ibm_qradar.offense.rules.origin | The origin of the rule. | keyword |
+| ibm_qradar.offense.rules.owner | The owner of the rule. | keyword |
+| ibm_qradar.offense.rules.rule_type | The type of rule, one of "EVENT", "FLOW", "COMMON", or "USER". | keyword |
+| ibm_qradar.offense.rules.type | The type of rule, one of "ADE_RULE", "BUILDING_BLOCK_RULE", or "CRE_RULE". | keyword |
 | ibm_qradar.offense.security_category_count | The number of security event categories that are associated with the offense. | long |
 | ibm_qradar.offense.severity | The severity of the offense. | long |
 | ibm_qradar.offense.source_address_ids | The source address IDs that are associated with the offense. | keyword |
@@ -177,40 +190,37 @@ An example event for `offense` looks as following:
 {
     "@timestamp": "2025-09-02T06:58:38.000Z",
     "agent": {
-        "ephemeral_id": "9b833d32-1958-4241-9f78-5424cc5d21bb",
-        "id": "1fe05837-336f-4a6f-a0cb-c3762a545800",
-        "name": "elastic-agent-73030",
+        "ephemeral_id": "2bbb47f4-1532-44c8-a62c-39304e4cb917",
+        "id": "e4a56ce0-ba15-47c7-b047-d6aca6f0b6bf",
+        "name": "elastic-agent-43805",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ibm_qradar.offense",
-        "namespace": "20278",
+        "namespace": "89821",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1fe05837-336f-4a6f-a0cb-c3762a545800",
+        "id": "e4a56ce0-ba15-47c7-b047-d6aca6f0b6bf",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": [
-            "threat"
-        ],
         "created": "2025-08-28T06:46:03.000Z",
         "dataset": "ibm_qradar.offense",
         "id": "12",
-        "ingested": "2025-09-10T10:06:14Z",
+        "ingested": "2025-09-18T06:37:16Z",
         "kind": "alert",
-        "original": "{\"assigned_to\":null,\"categories\":[\"SIM User Authentication\"],\"category_count\":1,\"close_time\":null,\"closing_reason_id\":null,\"closing_user\":null,\"credibility\":4,\"description\":\"User Login\\n\",\"destination_networks\":[\"Net-10-172-192.Net_10_0_0_0\"],\"device_count\":1,\"domain_id\":0,\"event_count\":2,\"first_persisted_time\":1756363563000,\"flow_count\":0,\"follow_up\":false,\"id\":12,\"inactive\":true,\"last_persisted_time\":1756796318000,\"last_updated_time\":1756363560775,\"local_destination_address_ids\":[2],\"local_destination_count\":1,\"log_sources\":[{\"id\":64,\"name\":\"SIM Audit-2 :: qradardev522\",\"type_id\":105,\"type_name\":\"SIMAudit\"}],\"magnitude\":2,\"offense_source\":\"67.43.156.0\",\"offense_type\":0,\"policy_category_count\":0,\"protected\":false,\"relevance\":0,\"remote_destination_count\":0,\"rules\":[{\"id\":100407,\"type\":\"CRE_RULE\"}],\"security_category_count\":1,\"severity\":5,\"source_address_ids\":[10],\"source_count\":1,\"source_network\":\"Net-10-172-192.Net_172_16_0_0\",\"start_time\":1756363560775,\"status\":\"OPEN\",\"username_count\":1}",
-        "severity": 5,
+        "original": "{\"assigned_to\":null,\"categories\":[\"SIM User Authentication\"],\"category_count\":1,\"close_time\":null,\"closing_reason_id\":null,\"closing_user\":null,\"credibility\":4,\"description\":\"User Login\\n\",\"destination_networks\":[\"Net-10-172-192.Net_10_0_0_0\"],\"device_count\":1,\"domain_id\":0,\"event_count\":2,\"first_persisted_time\":1756363563000,\"flow_count\":0,\"follow_up\":false,\"id\":12,\"inactive\":true,\"last_persisted_time\":1756796318000,\"last_updated_time\":1756363560775,\"local_destination_address_ids\":[2],\"local_destination_count\":1,\"log_sources\":[{\"id\":64,\"name\":\"SIM Audit-2 :: qradardev522\",\"type_id\":105,\"type_name\":\"SIMAudit\"}],\"magnitude\":2,\"offense_source\":\"67.43.156.0\",\"offense_type\":0,\"policy_category_count\":0,\"protected\":false,\"relevance\":0,\"remote_destination_count\":0,\"rules\":[{\"average_capacity\":0,\"base_capacity\":0,\"base_host_id\":0,\"capacity_timestamp\":0,\"creation_date\":1133309726396,\"enabled\":false,\"id\":100407,\"identifier\":\"SYSTEM-1219\",\"linked_rule_identifier\":null,\"modification_date\":1756983618804,\"name\":\"Anomaly: Excessive Firewall Accepts Across Multiple Hosts\",\"origin\":\"SYSTEM\",\"owner\":\"admin\",\"rule_type\":\"EVENT\",\"type\":\"CRE_RULE\"}],\"security_category_count\":1,\"severity\":5,\"source_address_ids\":[10],\"source_count\":1,\"source_network\":\"Net-10-172-192.Net_172_16_0_0\",\"start_time\":1756363560775,\"status\":\"OPEN\",\"username_count\":1}",
+        "severity": 47,
         "start": "2025-08-28T06:46:00.775Z",
         "type": [
-            "indicator"
+            "info"
         ]
     },
     "ibm_qradar": {
@@ -255,7 +265,19 @@ An example event for `offense` looks as following:
             "remote_destination_count": 0,
             "rules": [
                 {
+                    "average_capacity": 0,
+                    "base_capacity": 0,
+                    "base_host_id": "0",
+                    "capacity_timestamp": "1970-01-01T00:00:00.000Z",
+                    "creation_date": "2005-11-30T00:15:26.396Z",
+                    "enabled": false,
                     "id": "100407",
+                    "identifier": "SYSTEM-1219",
+                    "modification_date": "2025-09-04T11:00:18.804Z",
+                    "name": "Anomaly: Excessive Firewall Accepts Across Multiple Hosts",
+                    "origin": "SYSTEM",
+                    "owner": "admin",
+                    "rule_type": "EVENT",
                     "type": "CRE_RULE"
                 }
             ],
@@ -276,11 +298,17 @@ An example event for `offense` looks as following:
     },
     "message": "User Login\n",
     "rule": {
+        "author": [
+            "admin"
+        ],
         "category": [
             "CRE_RULE"
         ],
         "id": [
             "100407"
+        ],
+        "name": [
+            "Anomaly: Excessive Firewall Accepts Across Multiple Hosts"
         ]
     },
     "tags": [
@@ -288,17 +316,7 @@ An example event for `offense` looks as following:
         "preserve_duplicate_custom_fields",
         "forwarded",
         "ibm_qradar-offense"
-    ],
-    "threat": {
-        "indicator": {
-            "description": "User Login\n",
-            "first_seen": "2025-08-28T06:46:00.775Z",
-            "id": [
-                "12"
-            ],
-            "modified_at": "2025-09-02T06:58:38.000Z"
-        }
-    }
+    ]
 }
 ```
 
@@ -313,3 +331,4 @@ These inputs can be used in this integration:
 This integration dataset uses the following API:
 
 - `Offense`: [QRadar Offense API](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--siem-offenses-GET.html).
+- `Rule`: [QRadar Rule API](https://ibmsecuritydocs.github.io/qradar_api_20.0/20.0--analytics-rules-GET.html).

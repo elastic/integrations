@@ -61,12 +61,8 @@ processors:
       value: alert
   - append:
       field: event.type
-      tag: append_indicator_into_event_type
-      value: indicator
-  - append:
-      field: event.category
-      tag: append_threat_into_event_category
-      value: threat
+      tag: append_event_type
+      value: info
 
   # Convert values into appropriate type and do ECS mapping
   - set:
@@ -122,11 +118,6 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: threat.indicator.first_seen
-      tag: set_threat_indicator_first_seen_from_offense_start_time
-      copy_from: ibm_qradar.offense.start_time
-      ignore_empty_value: true
-  - set:
       field: event.start
       tag: set_event_start_from_offense_start_time
       copy_from: ibm_qradar.offense.start_time
@@ -144,11 +135,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: threat.indicator.last_seen
-      tag: set_threat_indicator_last_seen_from_offense_close_time
-      copy_from: ibm_qradar.offense.close_time
-      ignore_empty_value: true
   - set:
       field: event.end
       tag: set_event_end_from_offense_close_time
@@ -170,11 +156,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: threat.indicator.description
-      tag: set_threat_indicator_description_from_offense_description
-      copy_from: ibm_qradar.offense.description
-      ignore_empty_value: true
   - set:
       field: message
       tag: set_message_from_offense_description
@@ -252,12 +233,6 @@ processors:
       tag: convert_id_to_string
       type: string
       ignore_missing: true
-  - append:
-      field: threat.indicator.id
-      tag: append_ibm_qradar_offense_id_into_threat_indicator_id
-      value: '{{{ibm_qradar.offense.id}}}'
-      allow_duplicates: false
-      if: ctx.ibm_qradar?.offense?.id != null
   - set:
       field: event.id
       tag: set_event_id_from_offense_id
@@ -290,11 +265,6 @@ processors:
   - set:
       field: '@timestamp'
       tag: set_@timestamp_from_offense_last_persisted_time
-      copy_from: ibm_qradar.offense.last_persisted_time
-      ignore_empty_value: true
-  - set:
-      field: threat.indicator.modified_at
-      tag: set_threat_indicator_modified_at_from_offense_last_persisted_time
       copy_from: ibm_qradar.offense.last_persisted_time
       ignore_empty_value: true
   - date:
@@ -408,6 +378,122 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ibm_qradar.offense.rules
+      tag: foreach_rules_average_capacity
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        convert:
+          field: _ingest._value.average_capacity
+          tag: convert_rules_average_capacity_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.average_capacity
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_base_capacity
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        convert:
+          field: _ingest._value.base_capacity
+          tag: convert_rules_base_capacity_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.base_capacity
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_id
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        convert:
+          field: _ingest._value.base_host_id
+          tag: convert_rules_base_host_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_capacity_timestamp
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        date:
+          field: _ingest._value.capacity_timestamp
+          tag: date_rules_capacity_timestamp
+          target_field: _ingest._value.capacity_timestamp
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.capacity_timestamp
+                ignore_missing: true
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_creation_date
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        date:
+          field: _ingest._value.creation_date
+          tag: date_rules_creation_date
+          target_field: _ingest._value.creation_date
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.creation_date
+                ignore_missing: true
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_enabled
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        convert:
+          field: _ingest._value.enabled
+          tag: convert_rules_enabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.enabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_linked_rule_identifier
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        convert:
+          field: _ingest._value.linked_rule_identifier
+          tag: convert_rules_linked_rule_identifier_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_modification_date
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        date:
+          field: _ingest._value.modification_date
+          tag: date_rules_modification_date
+          target_field: _ingest._value.modification_date
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.modification_date
+                ignore_missing: true
+  - foreach:
+      field: ibm_qradar.offense.rules
       tag: foreach_rules_id
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
@@ -425,6 +511,26 @@ processors:
           field: rule.id
           tag: append_rules_id_into_rule_id
           value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_name
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        append:
+          field: rule.name
+          tag: append_rules_name_into_rule_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_rules_owner
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        append:
+          field: rule.author
+          tag: append_rules_owner_into_rule_author
+          value: '{{{_ingest._value.owner}}}'
           allow_duplicates: false
   - foreach:
       field: ibm_qradar.offense.rules
@@ -458,11 +564,26 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.severity
-      tag: set_event_severity_from_offense_severity
-      copy_from: ibm_qradar.offense.severity
-      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: script_to_set_event_severity
+      if: ctx.ibm_qradar?.offense?.severity != null
+      source: |-
+        def offenseSeverity = ctx.ibm_qradar.offense.severity;
+        if (offenseSeverity >= 0 && offenseSeverity <= 2) {
+          ctx.event.severity = 21;
+        } else if (offenseSeverity >= 3 && offenseSeverity <= 5) {
+          ctx.event.severity = 47;
+        } else if (offenseSeverity >= 6 && offenseSeverity <= 8) {
+          ctx.event.severity = 73;
+        } else if (offenseSeverity >= 9 && offenseSeverity <= 10) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.source_address_ids
       tag: convert_source_address_ids_to_string
@@ -492,17 +613,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Remove Duplicate Custom Field if preserve_duplicate_custom_fields are not enabled
+  - foreach:
+      field: ibm_qradar.offense.rules
+      tag: foreach_ibm_qradar_offense_rules_
+      if: ctx.ibm_qradar?.offense?.rules instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.name
+            - _ingest._value.owner
+            - _ingest._value.id
+            - _ingest._value.type
+          tag: remove_custom_duplicate_fields_from_ibm_qradar_offense_rules
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - ibm_qradar.offense.assigned_to
         - ibm_qradar.offense.close_time
-        - ibm_qradar.offense.description
         - ibm_qradar.offense.first_persisted_time
         - ibm_qradar.offense.id
         - ibm_qradar.offense.last_persisted_time
         - ibm_qradar.offense.severity
         - ibm_qradar.offense.start_time
-        - ibm_qradar.offense.rules
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
