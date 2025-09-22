@@ -12,7 +12,7 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve details for devices, users and compromised credentials, and audit events.
+This integration periodically queries the Island Browser API to retrieve details for devices, users and compromised credentials, and to log audit events.
 
 ## What data does this integration collect?
 
