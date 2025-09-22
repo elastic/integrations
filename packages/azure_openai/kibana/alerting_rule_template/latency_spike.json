@@ -1,0 +1,38 @@
+{
+  "id": "latency_spike",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "Latency Spike",
+    "tags": ["Azure AI Foundry",
+      "Azure AI Foundry Latency"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-azure.ai_foundry-default\n| STATS time_to_response = AVG(azure.ai_foundry.time_to_response.avg) by azure.dimensions.model_deployment_name\n| WHERE time_to_response > 5000 and event.dataset == \\\"azure.ai_foundry\\\""
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
