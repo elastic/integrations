@@ -4,7 +4,7 @@
 
 The AWS VPC Flow OpenTelemetry Assets allow you to monitor Amazon Virtual Private Cloud (Amazon VPC) flow logs. Flow logs capture information about the IP traffic going to and from network interfaces in a VPC.
 
-The EDOT Cloud Forwarder for AWS enables you to collect **VPC Flow Logs** from Amazon S3 and forward them directly into Elastic Observability. Use this integration to visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+The [EDOT Cloud Forwarder for AWS](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws) enables you to collect **VPC Flow Logs** from Amazon S3 and forward them directly into Elastic Observability. Use this integration to visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
 ## What do I need to use this integration?
 
