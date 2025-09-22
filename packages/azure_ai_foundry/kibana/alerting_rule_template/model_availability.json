@@ -1,0 +1,38 @@
+{
+  "id": "model_availability",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "Model Availability",
+    "tags": ["Azure AI Foundry",
+      "Azure AI Foundry Model Availability"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": "<",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-azure.ai_foundry-default\n| STATS model_availability = AVG(azure.ai_foundry.model_availability_rate.avg) by azure.dimensions.model_deployment_name\n| WHERE model_availability < 99 and event.dataset == \\\"azure.ai_foundry\\\""
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
