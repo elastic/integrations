@@ -5,7 +5,7 @@
         "version": 1,
         "description": "",
         "timeRestore": false,
-        "title": "[AWS] ELB Access Logs Overview",
+        "title": "[AWS ELB OTEL] Access Logs Overview",
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
@@ -29,10 +29,10 @@
                     "syncTooltips": false,
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() BY elb.status.code\n| WHERE elb.status.code IS NOT NULL"
+                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() BY aws.elb.status.code\n| WHERE aws.elb.status.code IS NOT NULL"
                     },
                     "attributes": {
-                        "title": "elb.status.code",
+                        "title": "aws.elb.status.code",
                         "references": [],
                         "state": {
                             "datasourceStates": {
@@ -41,13 +41,13 @@
                                         "aec8b0b7-d5ec-4fca-981f-8b9bc4583960": {
                                             "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() BY elb.status.code\n| WHERE elb.status.code IS NOT NULL"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() BY aws.elb.status.code\n| WHERE aws.elb.status.code IS NOT NULL"
                                             },
                                             "columns": [
                                                 {
-                                                    "columnId": "elb.status.code",
+                                                    "columnId": "aws.elb.status.code",
                                                     "fieldName": "total",
-                                                    "label": "elb.status.code",
+                                                    "label": "aws.elb.status.code",
                                                     "customLabel": false,
                                                     "meta": {
                                                         "type": "number",
@@ -61,16 +61,16 @@
                                                 },
                                                 {
                                                     "columnId": "c1075879-9297-4c28-bb67-355388bff6fe",
-                                                    "fieldName": "elb.status.code",
+                                                    "fieldName": "aws.elb.status.code",
                                                     "meta": {
                                                         "type": "number",
                                                         "esType": "long",
                                                         "sourceParams": {
                                                             "indexPattern": "logs-generic.otel-default",
-                                                            "sourceField": "elb.status.code"
+                                                            "sourceField": "aws.elb.status.code"
                                                         }
                                                     },
-                                                    "label": "elb.status.code"
+                                                    "label": "aws.elb.status.code"
                                                 }
                                             ],
                                             "timeField": "@timestamp"
@@ -87,7 +87,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() BY elb.status.code\n| WHERE elb.status.code IS NOT NULL"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() BY aws.elb.status.code\n| WHERE aws.elb.status.code IS NOT NULL"
                             },
                             "visualization": {
                                 "shape": "pie",
@@ -98,7 +98,7 @@
                                             "c1075879-9297-4c28-bb67-355388bff6fe"
                                         ],
                                         "metrics": [
-                                            "elb.status.code"
+                                            "aws.elb.status.code"
                                         ],
                                         "numberDisplay": "percent",
                                         "categoryDisplay": "default",
@@ -662,7 +662,7 @@
                     "syncTooltips": false,
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 200 and elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 200 and aws.elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                     },
                     "attributes": {
                         "title": "total over time_bucket",
@@ -674,7 +674,7 @@
                                         "881846f3-12db-45cd-aba8-f344d1d520e9": {
                                             "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 200 and elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 200 and aws.elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -723,7 +723,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 200 and elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 200 and aws.elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "legend": {
@@ -829,7 +829,7 @@
                     "syncTooltips": false,
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 400 and elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 400 and aws.elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                     },
                     "attributes": {
                         "title": "total over time_bucket",
@@ -841,7 +841,7 @@
                                         "aeab0dba-0f96-4ebc-97dc-fb3d0e59a343": {
                                             "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 400 and elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 400 and aws.elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -890,7 +890,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 400 and elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 400 and aws.elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "legend": {
@@ -996,7 +996,7 @@
                     "syncTooltips": false,
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 500 and elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 500 and aws.elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                     },
                     "attributes": {
                         "title": "total over time_bucket",
@@ -1008,7 +1008,7 @@
                                         "b2b37178-d353-4b2b-af5c-88585473beac": {
                                             "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 500 and elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 500 and aws.elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -1057,7 +1057,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE elb.status.code >= 500 and elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| WHERE aws.elb.status.code >= 500 and aws.elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 1 minute)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "legend": {
@@ -1358,7 +1358,7 @@
                     "syncTooltips": false,
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() by http.request.full, cloud.resource_id, client.address\n| SORT total DESC"
+                        "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() by url.full, cloud.resource_id, client.address\n| SORT total DESC"
                     },
                     "attributes": {
                         "title": "Bar vertical stacked",
@@ -1370,12 +1370,12 @@
                                         "a0241227-251c-4f55-b6d5-0667ccf3cc6e": {
                                             "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() by http.request.full, cloud.resource_id, client.address\n| SORT total DESC"
+                                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() by url.full, cloud.resource_id, client.address\n| SORT total DESC"
                                             },
                                             "columns": [
                                                 {
-                                                    "columnId": "http.request.full",
-                                                    "fieldName": "http.request.full",
+                                                    "columnId": "url.full",
+                                                    "fieldName": "url.full",
                                                     "label": "HTTP Request",
                                                     "customLabel": true,
                                                     "meta": {
@@ -1440,14 +1440,14 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() by http.request.full, cloud.resource_id, client.address\n| SORT total DESC"
+                                "esql": "FROM logs-*\n| WHERE data_stream.dataset : \"generic.otel\"\n| STATS total = count() by url.full, cloud.resource_id, client.address\n| SORT total DESC"
                             },
                             "visualization": {
                                 "layerId": "a0241227-251c-4f55-b6d5-0667ccf3cc6e",
                                 "layerType": "data",
                                 "columns": [
                                     {
-                                        "columnId": "http.request.full",
+                                        "columnId": "url.full",
                                         "alignment": "left",
                                         "colorMode": "none"
                                     },
