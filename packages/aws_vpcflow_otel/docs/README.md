@@ -10,6 +10,12 @@ The [EDOT Cloud Forwarder for AWS](https://www.elastic.co/docs/reference/opentel
 
 You need an Elastic Observability project (**Serverless only**) for storing, analyzing, and visualizing your ELB logs.
 
+From the AWS side, to collect VPC Flow logs, you need:
+
+- A Virtual Private Cloud (VPC)
+- An S3 bucket for storing flow logs
+- A flow log configured with the S3 bucket as the destination
+
 ## How do I deploy this integration?
 
 For step-by-step instructions on how to set up an EDOT Cloud Forwarder for AWS, see the
