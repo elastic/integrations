@@ -29,11 +29,169 @@
       type: keyword
       description: The API method called (e.g., generateContent, predict).
     - name: full_request
-      type: flattened
+      type: group
       description: Complete request object containing all request details in JSON format.
+      fields:
+        - name: contents
+          type: group
+          description: Array of content objects containing user prompts and inputs.
+          fields:
+            - name: role
+              type: keyword
+              description: Role of the content sender (e.g., user, model, assistant).
+            - name: parts
+              type: group
+              description: Array of content parts.
+              fields:
+                - name: text
+                  type: text
+                  description: Text content of the prompt or message.
+        - name: generationConfig
+          type: group
+          description: Configuration settings for content generation.
+          fields:
+            - name: maxOutputTokens
+              type: long
+              description: Maximum number of output tokens to generate.
+            - name: temperature
+              type: float
+              description: Temperature setting for response randomness (0.0 to 1.0).
+        - name: model
+          type: keyword
+          description: Full model path including project, location, and model name.
+        - name: endpoint
+          type: keyword
+          description: The Vertex AI API endpoint URL used for the request.
+        - name: safetySettings
+          type: group
+          description: Array of safety settings for content filtering.
+          fields:
+            - name: threshold
+              type: keyword
+              description: Safety threshold level (e.g., BLOCK_ONLY_HIGH).
+            - name: category
+              type: keyword
+              description: Safety category (e.g., HARM_CATEGORY_DANGEROUS_CONTENT).
+        - name: systemInstruction
+          type: group
+          description: System instruction configuration.
+          fields:
+            - name: parts
+              type: group
+              description: Array of system instruction parts.
+              fields:
+                - name: text
+                  type: text
+                  description: Text content of the system instruction.
     - name: full_response
-      type: flattened
+      type: group
       description: Complete response object containing all response details in JSON format.
+      fields:
+        - name: candidates
+          type: group
+          description: Array of response candidates from the AI model.
+          fields:
+            - name: score
+              type: float
+              description: Score assigned to the candidate response.
+            - name: avgLogprobs
+              type: float
+              description: Average log probabilities for the candidate.
+            - name: finishReason
+              type: keyword
+              description: Reason why the generation finished (e.g., STOP).
+            - name: content
+              type: group
+              description: Content of the candidate response.
+              fields:
+                - name: role
+                  type: keyword
+                  description: Role of the response sender (e.g., model).
+                - name: parts
+                  type: group
+                  description: Array of response content parts.
+                  fields:
+                    - name: text
+                      type: text
+                      description: Text content of the response.
+            - name: safetyRatings
+              type: group
+              description: Array of safety ratings for the response.
+              fields:
+                - name: severity
+                  type: keyword
+                  description: Severity level of potential harm (e.g., HARM_SEVERITY_NEGLIGIBLE).
+                - name: probabilityScore
+                  type: float
+                  description: Probability score for the safety rating.
+                - name: probability
+                  type: keyword
+                  description: Probability level (e.g., NEGLIGIBLE).
+                - name: category
+                  type: keyword
+                  description: Safety category (e.g., HARM_CATEGORY_HATE_SPEECH).
+                - name: severityScore
+                  type: float
+                  description: Numerical severity score.
+        - name: createTime
+          type: date
+          description: Timestamp when the response was created.
+        - name: modelVersion
+          type: keyword
+          description: Version of the model that generated the response.
+        - name: responseId
+          type: keyword
+          description: Unique identifier for the response.
+        - name: usageMetadata
+          type: group
+          description: Metadata about token usage in the request and response.
+          fields:
+            - name: billablePromptUsage
+              type: group
+              description: Billable usage information for the prompt.
+              fields:
+                - name: textCount
+                  type: long
+                  description: Count of text characters in billable prompt usage.
+            - name: candidatesTokenCount
+              type: long
+              description: Total number of tokens in response candidates.
+            - name: candidatesTokensDetails
+              type: group
+              description: Detailed breakdown of candidate tokens.
+              fields:
+                - name: modality
+                  type: keyword
+                  description: Type of content modality (e.g., TEXT).
+                - name: tokenCount
+                  type: long
+                  description: Number of tokens for this modality.
+            - name: promptTokenCount
+              type: long
+              description: Total number of tokens in the prompt.
+            - name: promptTokensDetails
+              type: group
+              description: Detailed breakdown of prompt tokens.
+              fields:
+                - name: modality
+                  type: keyword
+                  description: Type of content modality (e.g., TEXT).
+                - name: tokenCount
+                  type: long
+                  description: Number of tokens for this modality.
+            - name: thoughtsTokenCount
+              type: long
+              description: Number of tokens used for internal thoughts/reasoning.
+            - name: totalTokenCount
+              type: long
+              description: Total number of tokens used in the entire interaction.
+            - name: trafficType
+              type: keyword
+              description: Type of traffic (e.g., ON_DEMAND).
     - name: metadata
-      type: flattened
-      description: Additional metadata associated with the AI interaction in JSON format.
+      type: group
+      description: Additional metadata associated with the AI interaction.
+      fields:
+        - name: request_latency
+          type: float
+          description: Request latency in milliseconds.
