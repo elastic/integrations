@@ -1,0 +1,87 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{current_api_url}}
+state:
+  batch_size: {{batch_size}}
+  api_token: {{api_token}}
+redact:
+  fields:
+    - api_token
+program: |
+  request("GET",
+    state.url.trim_right("/") + "/api/cspm/v1/compliance/requirements?" + {
+      "pageNumber": [string(state.?page_number.orValue(1))],
+      "pageSize": [string(state.batch_size)],
+    }.format_query()
+  ).with({
+    "Header":{
+      "Authorization": ["Bearer " + state.api_token],
+    },
+  }).do_request().as(resp, resp.StatusCode == 200 ?
+    resp.Body.decode_json().as(body, {
+      "events": has(body.data) && size(body.data) > 0 ?
+        // Create an event for each control with its parent's field.
+        body.data.map(result,
+          result.controls.as(controls, result.drop("controls").as(result, controls.map(con, {
+            "message": result.with({"control": con}).encode_json()
+          })))
+        ).flatten()
+      :
+        [],
+      "page_number": int(state.?page_number.orValue(1)) + 1,
+      "batch_size": state.batch_size,
+      "api_token": state.api_token,
+      "want_more": has(body.data) && size(body.data) > 0,
+    })
+  :
+    {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET " + state.url.trim_right("/") + "/api/cspm/v1/compliance/requirements: " + (
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+          ),
+        },
+      },
+      "batch_size": state.batch_size,
+      "api_token": state.api_token,
+      "want_more": false
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

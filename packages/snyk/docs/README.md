@@ -109,33 +109,33 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2024-05-15T18:49:24.958Z",
     "agent": {
-        "ephemeral_id": "15edfc41-3c98-4358-b81a-457fe310ca39",
-        "id": "24936262-0cda-4934-aea3-82bed4844c98",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e960d9c1-a9b4-46fe-874a-f631574b22c4",
+        "id": "f1ccac17-bee9-4ba8-99e4-9f6f3ddeeecc",
+        "name": "elastic-agent-93033",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "snyk.issues",
-        "namespace": "ep",
+        "namespace": "82149",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "24936262-0cda-4934-aea3-82bed4844c98",
+        "id": "f1ccac17-bee9-4ba8-99e4-9f6f3ddeeecc",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "snyk.issues",
-        "ingested": "2024-05-23T23:49:52Z",
+        "ingested": "2025-09-17T16:16:33Z",
         "kind": [
             "alert"
         ],
-        "original": "{\"attributes\":{\"coordinates\":[{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git/git-man\",\"package_version\":\"1:2.30.2-1\"}}]},{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git\",\"package_version\":\"1:2.30.2-1\"}}]}],\"created_at\":\"2024-05-15T18:49:24.958Z\",\"effective_severity_level\":\"low\",\"ignored\":false,\"key\":\"SNYK-DEBIAN11-GIT-6846207\",\"problems\":[{\"id\":\"SNYK-DEBIAN11-GIT-6846207\",\"source\":\"SNYK\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454629Z\"},{\"id\":\"CVE-2024-32020\",\"source\":\"NVD\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454631Z\",\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2024-32020\"}],\"risk\":{\"factors\":[],\"score\":{\"model\":\"v1\",\"value\":221}},\"status\":\"open\",\"title\":\"CVE-2024-32020\",\"type\":\"package_vulnerability\",\"updated_at\":\"2024-05-15T18:49:24.958Z\"},\"id\":\"bdb0b182-440e-483f-8f42-d4f5477e8349\",\"relationships\":{\"organization\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"organization\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}},\"scan_item\":{\"data\":{\"id\":\"068c68be-4f21-4edd-9975-92dd051d16dc\",\"type\":\"project\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/projects/068c68be-4f21-4edd-9975-92dd051d16dc\"}}},\"type\":\"issue\"}",
+        "original": "{\"attributes\":{\"coordinates\":[{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git/git-man\",\"package_version\":\"1:2.30.2-1\"}}]},{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git\",\"package_version\":\"1:2.30.2-1\"}}]}],\"created_at\":\"2024-05-15T18:49:24.958Z\",\"effective_severity_level\":\"low\",\"ignored\":false,\"key\":\"SNYK-DEBIAN11-GIT-6846207\",\"problems\":[{\"id\":\"SNYK-DEBIAN11-GIT-6846207\",\"source\":\"SNYK\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454629Z\"},{\"id\":\"CVE-2024-32020\",\"source\":\"NVD\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454631Z\",\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2024-32020\"}],\"risk\":{\"factors\":[],\"score\":{\"model\":\"v1\",\"value\":221}},\"status\":\"open\",\"title\":\"CVE-2024-32020\",\"type\":\"package_vulnerability\",\"updated_at\":\"2024-05-15T18:49:24.958Z\"},\"id\":\"bdb0b182-440e-483f-8f42-d4f5477e8349\",\"relationships\":{\"organization\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"organization\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}},\"scan_item\":{\"data\":{\"attributes\":{\"build_args\":{\"root_workspace\":\"text\"},\"business_criticality\":[\"medium\"],\"created\":\"2021-05-29T09:50:54.014Z\",\"environment\":[\"external\",\"hosted\"],\"lifecycle\":[\"production\"],\"name\":\"snyk/goof\",\"origin\":\"github\",\"read_only\":true,\"settings\":{\"auto_dependency_upgrade\":{\"ignored_dependencies\":[\"typescript\"],\"is_enabled\":true,\"is_inherited\":true,\"is_major_upgrade_enabled\":true,\"limit\":10,\"minimum_age\":365},\"auto_remediation_prs\":{\"is_backlog_prs_enabled\":true,\"is_fresh_prs_enabled\":true,\"is_patch_remediation_enabled\":true},\"manual_remediation_prs\":{\"is_patch_remediation_enabled\":true},\"pull_request_assignment\":{\"assignees\":[\"my-github-username\"],\"is_enabled\":true,\"type\":\"auto\"},\"pull_requests\":{\"fail_only_for_issues_with_fix\":true,\"is_enabled\":true,\"policy\":\"all\",\"severity_threshold\":\"high\"},\"recurring_tests\":{\"frequency\":\"daily\"}},\"status\":\"active\",\"tags\":[{\"key\":\"tag-key\",\"value\":\"tag-value\"}],\"target_file\":\"package.json\",\"target_reference\":\"main\",\"target_runtime\":\"text\",\"type\":\"maven\"},\"id\":\"123e4567-e89b-12d3-a456-426614174000\",\"meta\":{\"cli_monitored_at\":\"2021-05-29T09:50:54.014Z\",\"latest_dependency_total\":{\"total\":1,\"updated_at\":\"2025-08-02T06:48:28.132Z\"},\"latest_issue_counts\":{\"critical\":1,\"high\":1,\"low\":1,\"medium\":1,\"updated_at\":\"2025-08-02T06:48:28.132Z\"}},\"relationships\":{\"importer\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"resource\"},\"links\":{\"related\":{\"href\":\"https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}}},\"organization\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"resource\"},\"links\":{\"related\":{\"href\":\"https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}}},\"owner\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"resource\"},\"links\":{\"related\":{\"href\":\"https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}}},\"target\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"resource\"},\"links\":{\"related\":{\"href\":\"https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}}}},\"type\":\"project\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/projects/123e4567-e89b-12d3-a456-426614174000\"}}},\"type\":\"issue\"}",
         "type": [
             "info"
         ]
@@ -228,11 +228,134 @@ An example event for `issues` looks as following:
                 },
                 "scan_item": {
                     "data": {
-                        "id": "068c68be-4f21-4edd-9975-92dd051d16dc",
+                        "attributes": {
+                            "build_args": {
+                                "root_workspace": "text"
+                            },
+                            "business_criticality": [
+                                "medium"
+                            ],
+                            "created": "2021-05-29T09:50:54.014Z",
+                            "environment": [
+                                "external",
+                                "hosted"
+                            ],
+                            "lifecycle": [
+                                "production"
+                            ],
+                            "name": "snyk/goof",
+                            "origin": "github",
+                            "read_only": true,
+                            "settings": {
+                                "auto_dependency_upgrade": {
+                                    "ignored_dependencies": [
+                                        "typescript"
+                                    ],
+                                    "is_enabled": true,
+                                    "is_inherited": true,
+                                    "is_major_upgrade_enabled": true,
+                                    "limit": 10,
+                                    "minimum_age": 365
+                                },
+                                "auto_remediation_prs": {
+                                    "is_backlog_prs_enabled": true,
+                                    "is_fresh_prs_enabled": true,
+                                    "is_patch_remediation_enabled": true
+                                },
+                                "manual_remediation_prs": {
+                                    "is_patch_remediation_enabled": true
+                                },
+                                "pull_request_assignment": {
+                                    "assignees": [
+                                        "my-github-username"
+                                    ],
+                                    "is_enabled": true,
+                                    "type": "auto"
+                                },
+                                "pull_requests": {
+                                    "fail_only_for_issues_with_fix": true,
+                                    "is_enabled": true,
+                                    "policy": "all",
+                                    "severity_threshold": "high"
+                                },
+                                "recurring_tests": {
+                                    "frequency": "daily"
+                                }
+                            },
+                            "status": "active",
+                            "tags": [
+                                "tag-key:tag-value"
+                            ],
+                            "target_file": "package.json",
+                            "target_reference": "main",
+                            "target_runtime": "text",
+                            "type": "maven"
+                        },
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "meta": {
+                            "cli_monitored_at": "2021-05-29T09:50:54.014Z",
+                            "latest_dependency_total": {
+                                "total": 1,
+                                "updated_at": "2025-08-02T06:48:28.132Z"
+                            },
+                            "latest_issue_counts": {
+                                "critical": 1,
+                                "high": 1,
+                                "low": 1,
+                                "medium": 1,
+                                "updated_at": "2025-08-02T06:48:28.132Z"
+                            }
+                        },
+                        "relationships": {
+                            "importer": {
+                                "data": {
+                                    "id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                                    "type": "resource"
+                                },
+                                "links": {
+                                    "related": {
+                                        "href": "https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4"
+                                    }
+                                }
+                            },
+                            "organization": {
+                                "data": {
+                                    "id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                                    "type": "resource"
+                                },
+                                "links": {
+                                    "related": {
+                                        "href": "https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4"
+                                    }
+                                }
+                            },
+                            "owner": {
+                                "data": {
+                                    "id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                                    "type": "resource"
+                                },
+                                "links": {
+                                    "related": {
+                                        "href": "https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4"
+                                    }
+                                }
+                            },
+                            "target": {
+                                "data": {
+                                    "id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                                    "type": "resource"
+                                },
+                                "links": {
+                                    "related": {
+                                        "href": "https://example.com/api/resource/0de7b2d6-c1da-46aa-887e-1886f96770d4"
+                                    }
+                                }
+                            }
+                        },
                         "type": "project"
                     },
                     "links": {
-                        "related": "/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/projects/068c68be-4f21-4edd-9975-92dd051d16dc"
+                        "related": "/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/projects/123e4567-e89b-12d3-a456-426614174000"
                     }
                 }
             }
@@ -277,6 +400,7 @@ An example event for `issues` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | snyk.issues.attributes.classes.id |  | keyword |
