@@ -105,6 +105,8 @@ With a properly configured Service Account and the integration setting in place,
 
 ### Requirements
 
+#### AuditLogs
+
 Before you start, you need to create the following Google Cloud resources:
 
 - Log Sink
@@ -125,6 +127,11 @@ At a high level, the steps required are:
 
 This is just an example to create your filter expression to select the Vertex AI audit logs  you want to export to the Pub/Sub topic.
 
+
+#### Prompt Response Logging
+
+TBD
+
 ## Troubleshooting
 
 Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/guide/en/integrations/current/gcp.html#_troubleshooting) for more information about troubleshooting.
@@ -142,6 +149,8 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 
 ## Logs reference
 
+### AuditLogs 
+
 {{event "auditlogs"}}
 
 **ECS Field Reference**
@@ -149,3 +158,13 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "auditlogs"}}
+
+### Prompt Response Logs 
+
+{{event "prompt_response_logs"}}
+
+**ECS Field Reference**
+
+Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "prompt_response_logs"}}

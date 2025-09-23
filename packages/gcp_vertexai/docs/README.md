@@ -105,6 +105,8 @@ With a properly configured Service Account and the integration setting in place,
 
 ### Requirements
 
+#### AuditLogs
+
 Before you start, you need to create the following Google Cloud resources:
 
 - Log Sink
@@ -124,6 +126,11 @@ At a high level, the steps required are:
 4. Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and `resource.type="audited_resource"` in the "Inclusion filter" to include all audit logs.
 
 This is just an example to create your filter expression to select the Vertex AI audit logs  you want to export to the Pub/Sub topic.
+
+
+#### Prompt Response Logging
+
+TBD
 
 ## Troubleshooting
 
@@ -258,6 +265,8 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 
 ## Logs reference
 
+### AuditLogs 
+
 An example event for `auditlogs` looks as following:
 
 ```json
@@ -373,4 +382,173 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.audit.status.details | A list of messages that carry the error details. | flattened |
 | gcp.vertexai.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
 | gcp.vertexai.audit.type | Type of the logs. | keyword |
+
+
+### Prompt Response Logs 
+
+An example event for `prompt_response` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-08T21:04:22.248Z",
+    "agent": {
+        "ephemeral_id": "c3546c8d-19b4-4c44-89b5-4978b94d7973",
+        "id": "34197d89-3b28-4bcf-9fe9-19336bab3a33",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "9.2.0"
+    },
+    "cloud": {
+        "project": {
+            "id": "elastic-sa"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "vertex-ai"
+        }
+    },
+    "data_stream": {
+        "dataset": "gcp_vertexai.prompt_response_logs",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "34197d89-3b28-4bcf-9fe9-19336bab3a33",
+        "snapshot": true,
+        "version": "9.2.0"
+    },
+    "event": {
+        "action": "GenerateContent",
+        "agent_id_status": "verified",
+        "dataset": "gcp_vertexai.prompt_response_logs",
+        "duration": 18983446299,
+        "ingested": "2025-09-21T12:59:23Z",
+        "kind": "event",
+        "module": "gcp",
+        "type": [
+            "info"
+        ]
+    },
+    "gcp": {
+        "vertexai": {
+            "prompt_response_logs": {
+                "api_method": "GenerateContent",
+                "full_request": {
+                    "contents": [
+                        {
+                            "role": "user",
+                            "parts": [
+                                {
+                                    "text": "Hello world!"
+                                }
+                            ]
+                        }
+                    ],
+                    "generationConfig": {
+                        "maxOutputTokens": 8192,
+                        "temperature": 0
+                    },
+                    "model": "projects/elastic-sa/locations/us-central1/publishers/google/models/gemini-2.5-pro"
+                },
+                "full_response": {
+                    "candidates": [
+                        {
+                            "score": -105.80919647216797,
+                            "avgLogprobs": -3.6485929817988954,
+                            "finishReason": "STOP",
+                            "content": {
+                                "role": "model",
+                                "parts": [
+                                    {
+                                        "text": "Hello there! The classic programmer's greeting.\n\nIt's a good sign that everything is working. How can I help you today?"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "createTime": "2025-09-08T21:04:11.034753Z",
+                    "modelVersion": "gemini-2.5-pro",
+                    "responseId": "y0S_aMGPArCYqsMPntGNyA4",
+                    "usageMetadata": {
+                        "billablePromptUsage": {
+                            "textCount": 11
+                        },
+                        "candidatesTokenCount": 29,
+                        "candidatesTokensDetails": [
+                            {
+                                "modality": "TEXT",
+                                "tokenCount": 29
+                            }
+                        ],
+                        "promptTokenCount": 3,
+                        "promptTokensDetails": [
+                            {
+                                "modality": "TEXT",
+                                "tokenCount": 3
+                            }
+                        ],
+                        "thoughtsTokenCount": 901,
+                        "totalTokenCount": 933,
+                        "trafficType": "ON_DEMAND"
+                    }
+                },
+                "logging_time": "2025-09-08T21:04:22.248Z",
+                "metadata": {
+                    "request_latency": 11225.994
+                },
+                "model": "publishers/google/models/gemini-2.5-pro",
+                "model_version": "default",
+                "request_id": "5374205265901353984"
+            }
+        }
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "5E-6B-5E-A6-7C-6E"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    }
+}
+```
+
+**ECS Field Reference**
+
+Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| gcp.vertexai.prompt_response_logs.api_method | The API method called (e.g., generateContent, predict). | keyword |
+| gcp.vertexai.prompt_response_logs.deployed_model_id | The ID of the deployed model that processed the request. | keyword |
+| gcp.vertexai.prompt_response_logs.endpoint | The Vertex AI API endpoint URL used for the request. | keyword |
+| gcp.vertexai.prompt_response_logs.full_request | Complete request object containing all request details in JSON format. | object |
+| gcp.vertexai.prompt_response_logs.full_response | Complete response object containing all response details in JSON format. | object |
+| gcp.vertexai.prompt_response_logs.logging_time | Timestamp when the AI interaction was logged. | date |
+| gcp.vertexai.prompt_response_logs.metadata | Additional metadata associated with the AI interaction in JSON format. | object |
+| gcp.vertexai.prompt_response_logs.model | Name of the AI model used (e.g., gemini-2.5-pro). | keyword |
+| gcp.vertexai.prompt_response_logs.model_version | Version of the AI model used. | keyword |
+| gcp.vertexai.prompt_response_logs.request_id | Unique identifier for the AI request. | keyword |
+| gcp.vertexai.prompt_response_logs.request_payload | Array of request payload strings containing user prompts and inputs. | text |
+| gcp.vertexai.prompt_response_logs.response_payload | Array of response payload strings containing AI model outputs. | text |
 
