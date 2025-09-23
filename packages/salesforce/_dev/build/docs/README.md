@@ -63,7 +63,7 @@ To determine your Salesforce instance version, use one of the following methods:
 
 The last entry in the list indicates the current version of your Salesforce instance. In this example, the current version is `Summer '22 (v55.0)`.
 
-## Prerequisites
+## What do I need to use this integration?
 
 - You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
@@ -85,7 +85,7 @@ NOTE: Real-Time Event Monitoring may require additional licensing. Check your su
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, check the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Configuration
 
@@ -211,7 +211,7 @@ If you encounter data ingestion errors, you might get the following error messag
 
 > 400 Bad Request
 
-**Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. Check the [Prerequisites](#prerequisites) section for more information.
+**Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. For more information, check the section What do I need to use this integration?
 
 If the error persists, follow these steps:
 
