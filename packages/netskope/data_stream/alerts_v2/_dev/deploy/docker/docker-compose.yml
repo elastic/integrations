@@ -17,5 +17,24 @@ services:
         gzip -c /sample_logs/test-alerts-v2.csv > /sample_logs/test-alerts-v2.csv.gz &&
         export AZURE_STORAGE_CONNECTION_STRING='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azure-blob-storage-emulator:10000/devstoreaccount1;' &&
         az storage container create --name test-container &&
-        az storage blob upload --container-name test-container --file /sample_logs/test-alerts-v2.csv.gz --name test-alerts-v2.csv.gz
+        az storage blob upload --container-name test-container --file /sample_logs/test-alerts-v2.csv.gz --name test-alerts-v2.csv.gz &&
+        sleep 5 &&
+        rm /sample_logs/test-alerts-v2.csv.gz
       "
+  gcs-mock-service:
+    image: golang:1.24.7-alpine
+    working_dir: /app
+    volumes:
+      - ./gcs-mock-service:/app
+      - ./files/manifest.yml:/files/manifest.yml:ro
+      - ./sample_logs/:/data
+    ports:
+      - "4443/tcp"
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:4443/health || exit 1"
+      interval: 10s
+      timeout: 5s
+    command: >
+      sh -c "gzip -k -f /data/test-alerts-v2.csv &&
+      go run main.go -manifest /files/manifest.yml" &&
+      rm ./data/test-alerts-v2.csv.gz
