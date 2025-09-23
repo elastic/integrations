@@ -622,15 +622,15 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2021-12-23T16:27:09.000Z",
     "agent": {
-        "ephemeral_id": "335cd551-eeac-4d4b-89f0-3b6367a57d99",
-        "id": "68f0750f-464e-4b17-860c-adabc185fb9b",
-        "name": "elastic-agent-72153",
+        "ephemeral_id": "275c19c7-0f2c-467b-850f-c153e4a77147",
+        "id": "7b99f48c-6c10-4dad-86c4-ee578beef412",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.17.8"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "netskope.alerts",
-        "namespace": "59173",
+        "namespace": "ep",
         "type": "logs"
     },
     "destination": {
@@ -653,15 +653,14 @@ An example event for `alerts` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "68f0750f-464e-4b17-860c-adabc185fb9b",
+        "id": "7b99f48c-6c10-4dad-86c4-ee578beef412",
         "snapshot": false,
-        "version": "8.17.8"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "id": "f621f259f5fbde850ad5593a",
-        "ingested": "2025-09-22T11:52:51Z",
-        "kind": "alert"
+        "ingested": "2024-03-29T07:17:15Z"
     },
     "file": {
         "hash": {
@@ -678,7 +677,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.251.3:52782"
+            "address": "192.168.224.6:60788"
         }
     },
     "netskope": {
@@ -755,6 +754,7 @@ An example event for `alerts` looks as following:
             },
             "type": "policy",
             "url": {
+                "extension": "com\\\\/open",
                 "original": "http:\\\\/\\\\/www.example.com\\\\/open?id=WLb5Mc7aPGx914gEyYNjJxTo32yjF8xKAcqIoN_klrGg",
                 "path": "\\\\/\\\\/www.example.com\\\\/open",
                 "query": "id=WLb5Mc7aPGx914gEyYNjJxTo32yjF8xKAcqIoN_klrGg",
@@ -765,9 +765,6 @@ An example event for `alerts` looks as following:
     "related": {
         "ip": [
             "81.2.69.143"
-        ],
-        "user": [
-            "test"
         ]
     },
     "source": {
@@ -793,8 +790,7 @@ An example event for `alerts` looks as following:
     "user": {
         "email": [
             "test@example.com"
-        ],
-        "name": "test"
+        ]
     },
     "user_agent": {
         "name": "unknown",
@@ -815,23 +811,11 @@ An example event for `alerts` looks as following:
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
-| azure.resource.group | Resource group. | keyword |
-| azure.resource.id | Resource ID. | keyword |
-| azure.resource.name | Name. | keyword |
-| azure.resource.provider | Resource type/namespace. | keyword |
-| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object. | keyword |
-| azure.storage.blob.name | The name of the Azure Blob Storage blob object. | keyword |
-| azure.storage.container.name | The name of the Azure Blob Storage container. | keyword |
-| azure.subscription_id | Azure subscription ID. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
-| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
-| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
-| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | netskope.alert_v2._id | Unique id - hexadecimal string. | keyword |
@@ -1070,18 +1054,29 @@ An example event for `alerts_v2` looks as following:
 {
     "@timestamp": "2025-05-13T11:02:02.000Z",
     "agent": {
-        "ephemeral_id": "2b6381cb-df79-4509-9f24-0bef84a1faac",
-        "id": "cf2d742b-2342-45f1-8e79-ecd7d27c0c6e",
-        "name": "elastic-agent-69172",
+        "ephemeral_id": "1caa7082-bf2e-4fc9-bdac-3673d20f986f",
+        "id": "d5fe41dd-4f7d-4b58-b383-eb8ba0a48f0c",
+        "name": "elastic-agent-55769",
         "type": "filebeat",
         "version": "8.17.8"
     },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-netskope-alert-v2-bucket-59128",
+                "name": "elastic-package-netskope-alert-v2-bucket-59128"
+            },
+            "object": {
+                "key": "test-alerts-v2.csv.gz"
+            }
+        }
+    },
     "cloud": {
-        "provider": "google cloud"
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "netskope.alerts_v2",
-        "namespace": "75909",
+        "namespace": "89449",
         "type": "logs"
     },
     "destination": {
@@ -1096,10 +1091,10 @@ An example event for `alerts_v2` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cf2d742b-2342-45f1-8e79-ecd7d27c0c6e",
+        "id": "d5fe41dd-4f7d-4b58-b383-eb8ba0a48f0c",
         "snapshot": false,
         "version": "8.17.8"
     },
@@ -1108,19 +1103,9 @@ An example event for `alerts_v2` looks as following:
         "agent_id_status": "verified",
         "dataset": "netskope.alerts_v2",
         "id": "eb8fc9903c2fbb6aa05537ff",
-        "ingested": "2025-09-22T11:57:58Z",
-        "kind": "alert"
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/x-gzip",
-                "name": "test-alerts-v2.csv.gz"
-            }
-        }
+        "ingested": "2025-07-17T11:04:37Z",
+        "kind": "alert",
+        "original": "{\"_id\":\"eb8fc9903c2fbb6aa05537ff\",\"access_method\":\"Client\",\"account_id\":\"-\",\"account_name\":\"-\",\"acked\":\"false\",\"act_user\":\"-\",\"acting_user\":\"-\",\"action\":\"alert\",\"activity\":\"Edit\",\"alert\":\"yes\",\"alert_id\":\"-\",\"alert_name\":\"Web Access Allow\",\"alert_source\":\"-\",\"alert_type\":\"policy\",\"app\":\"Amazon Systems Manager\",\"app-gdpr-level\":\"-\",\"app_session_id\":\"2241753685910532990\",\"appact\":\"-\",\"appcategory\":\"IT Service/Application Management\",\"appsuite\":\"Amazon\",\"assignee\":\"-\",\"audit_type\":\"-\",\"bcc\":\"-\",\"breach_date\":\"-\",\"breach_id\":\"-\",\"breach_score\":\"-\",\"browser\":\"Native\",\"browser_session_id\":\"4940241048203471891\",\"cc\":\"-\",\"cci\":\"92\",\"ccl\":\"excellent\",\"client_bytes\":\"-\",\"client_packets\":\"-\",\"cloud_provider\":\"-\",\"computer_name\":\"-\",\"conn_duration\":\"-\",\"conn_endtime\":\"-\",\"conn_starttime\":\"-\",\"connection_id\":\"2631086121425559188\",\"connection_type\":\"-\",\"custom_attr\":\"-\",\"destination_file_directory\":\"-\",\"destination_file_name\":\"-\",\"destination_file_path\":\"-\",\"detection_engine\":\"-\",\"device\":\"Windows Device\",\"device_classification\":\"unmanaged\",\"device_sn\":\"-\",\"device_type\":\"-\",\"dinsid\":\"-\",\"dlp_file\":\"-\",\"dlp_fingerprint_classification\":\"-\",\"dlp_fingerprint_match\":\"-\",\"dlp_fingerprint_score\":\"-\",\"dlp_incident_id\":\"-\",\"dlp_is_unique_count\":\"-\",\"dlp_match_info\":\"-\",\"dlp_parent_id\":\"-\",\"dlp_profile\":\"-\",\"dlp_profile_name\":\"-\",\"dlp_rule\":\"-\",\"dlp_rule_count\":\"-\",\"dlp_rule_score\":\"-\",\"dlp_rule_severity\":\"-\",\"dlp_unique_count\":\"-\",\"dns_profile\":\"-\",\"domain\":\"ssm.eu-north-1.amazonaws.com\",\"domain_ip\":\"-\",\"driver\":\"-\",\"dst_country\":\"SE\",\"dst_geoip_src\":\"-\",\"dst_latitude\":\"18.0717|59.328699999999998\",\"dst_location\":\"Stockholm\",\"dst_longitude\":\"18.0717|59.328699999999998\",\"dst_region\":\"Stockholm County\",\"dst_timezone\":\"Europe/Stockholm\",\"dst_zipcode\":\"100 04\",\"dsthost\":\"-\",\"dstip\":\"81.2.69.142\",\"dstport\":\"443\",\"eeml\":\"-\",\"email_from_user\":\"-\",\"email_modified\":\"-\",\"email_title\":\"-\",\"email_user\":\"-\",\"encryption_status\":\"-\",\"end_time\":\"-\",\"event_uuid\":\"-\",\"executable_hash\":\"-\",\"executable_signed\":\"-\",\"file_category\":\"-\",\"file_cls_encrypted\":\"-\",\"file_exposure\":\"-\",\"file_id\":\"-\",\"file_md5\":\"-\",\"file_origin\":\"-\",\"file_owner\":\"-\",\"file_path\":\"-\",\"file_pdl\":\"-\",\"file_size\":\"-\",\"file_type\":\"-\",\"filename\":\"-\",\"filepath\":\"-\",\"fllg\":\"-\",\"flpp\":\"-\",\"from_user\":\"-\",\"hostname\":\"Test-IDMHT6TII\",\"iaas_remediated\":\"-\",\"iaas_remediated_by\":\"-\",\"iaas_remediated_on\":\"-\",\"iaas_remediation_action\":\"-\",\"incident_id\":\"5254981775376249392\",\"inline_dlp_match_info\":\"-\",\"instance\":\"-\",\"instance_id\":\"202533540828\",\"instance_name\":\"-\",\"ip_protocol\":\"-\",\"latest_incident_id\":\"-\",\"loc\":\"-\",\"local_md5\":\"-\",\"local_sha1\":\"-\",\"local_sha256\":\"-\",\"local_source_time\":\"-\",\"location\":\"-\",\"mal_id\":\"-\",\"mal_sev\":\"-\",\"mal_type\":\"-\",\"malware_id\":\"-\",\"malware_severity\":\"-\",\"malware_type\":\"-\",\"managed_app\":\"no\",\"managementID\":\"-\",\"md5\":\"-\",\"message_id\":\"-\",\"mime_type\":\"-\",\"modified_date\":\"-\",\"netskope_pop\":\"SE-STO1\",\"network_session_id\":\"-\",\"nsdeviceuid\":\"-\",\"num_users\":\"-\",\"numbytes\":\"-\",\"oauth\":\"-\",\"object\":\"-\",\"object_id\":\"-\",\"object_type\":\"-\",\"org\":\"-\",\"organization_unit\":\"-\",\"os\":\"Windows 11\",\"os_details\":\"-\",\"os_family\":\"Windows\",\"os_user_name\":\"-\",\"os_version\":\"Windows NT 11.0\",\"owner\":\"-\",\"owner_pdl\":\"-\",\"page\":\"ssm.eu-north-1.amazonaws.com\",\"parent_id\":\"-\",\"pid\":\"-\",\"policy\":\"Web Access Allow\",\"policy_action\":\"-\",\"policy_name\":\"-\",\"policy_name_enforced\":\"-\",\"policy_version\":\"-\",\"pop_id\":\"-\",\"port\":\"443\",\"process_cert_subject\":\"-\",\"process_name\":\"-\",\"process_path\":\"-\",\"product_id\":\"-\",\"publisher_cn\":\"-\",\"record_type\":\"alert\",\"redirect_url\":\"-\",\"referer\":\"-\",\"region_id\":\"-\",\"region_name\":\"-\",\"req\":\"-\",\"req_cnt\":\"-\",\"request_id\":\"5254981775376249392\",\"resource_category\":\"-\",\"resource_group\":\"-\",\"resp\":\"-\",\"resp_cnt\":\"-\",\"response_time\":\"-\",\"risk_level_id\":\"-\",\"risk_score\":\"-\",\"sa_profile_name\":\"-\",\"sa_rule_compliance\":\"-\",\"sa_rule_name\":\"-\",\"sa_rule_severity\":\"-\",\"sanctioned_instance\":\"-\",\"sender\":\"-\",\"server_bytes\":\"-\",\"server_packets\":\"-\",\"serverity\":\"-\",\"session_duration\":\"-\",\"session_number_unique\":\"-\",\"severity\":\"-\",\"severity_id\":\"-\",\"severity_level\":\"-\",\"sha256\":\"-\",\"sharedType\":\"-\",\"shared_credential_user\":\"-\",\"shared_domains\":\"-\",\"shared_with\":\"-\",\"site\":\"Amazon Systems Manager\",\"smtp_status\":\"-\",\"smtp_to\":\"-\",\"spet\":\"-\",\"spst\":\"-\",\"src_country\":\"SE\",\"src_geoip_src\":\"-\",\"src_latitude\":\"18.0717|59.328699999999998\",\"src_location\":\"Stockholm\",\"src_longitude\":\"18.0717|59.328699999999998\",\"src_network\":\"-\",\"src_region\":\"Stockholm County\",\"src_timezone\":\"Europe/Stockholm\",\"src_zipcode\":\"100 04\",\"srcip\":\"81.2.69.142\",\"srcport\":\"-\",\"start_time\":\"-\",\"status\":\"-\",\"subject\":\"-\",\"subtype\":\"-\",\"suppression_count\":\"-\",\"tags\":\"-\",\"telemetry_app\":\"-\",\"thr\":\"-\",\"threat_type\":\"-\",\"timestamp\":\"1747134122\",\"to_user\":\"-\",\"total_packets\":\"-\",\"traffic_type\":\"CloudApp\",\"transaction_id\":\"5254981775376249392\",\"tss_license\":\"-\",\"tss_mode\":\"-\",\"tunnel_id\":\"-\",\"tur\":\"-\",\"two_factor_auth\":\"-\",\"type\":\"nspolicy\",\"unc_path\":\"-\",\"ur_normalized\":\"test@gmail.com\",\"url\":\"ssm.eu-north-1.amazonaws.com/\",\"user\":\"test@gmail.com\",\"user_confidence_index\":\"-\",\"user_confidence_level\":\"-\",\"user_id\":\"-\",\"useragent\":\"aws-sdk-go/1.55.5 (go1.23.7; windows; amd64) amazon-ssm-agent/3.3.2299.0\",\"usergroup\":\"-\",\"userip\":\"81.2.69.142\",\"userkey\":\"test@gmail.com\",\"vendor_id\":\"-\",\"violation\":\"-\",\"watchlist_name\":\"-\",\"web_url\":\"-\"}"
     },
     "host": {
         "domain": "ssm.eu-north-1.amazonaws.com",
@@ -1132,13 +1117,13 @@ An example event for `alerts_v2` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
+        "type": "aws-s3"
     },
     "log": {
         "file": {
-            "path": "gs://testbucket/test-alerts-v2.csv.gz"
+            "path": "https://elastic-package-netskope-alert-v2-bucket-59128.s3.us-east-1.amazonaws.com/test-alerts-v2.csv.gz"
         },
-        "offset": 0
+        "offset": 4504
     },
     "netskope": {
         "alert_v2": {
@@ -1208,6 +1193,8 @@ An example event for `alerts_v2` looks as following:
         "ip": "81.2.69.142"
     },
     "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
         "forwarded",
         "netskope-alerts"
     ],
@@ -1551,29 +1538,29 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2021-12-24T00:29:56.000Z",
     "agent": {
-        "ephemeral_id": "6125fc8c-2c72-4da8-a11b-372e2591f4ce",
-        "id": "438ea327-9694-4243-a308-cc947d786019",
-        "name": "elastic-agent-49734",
+        "ephemeral_id": "c286de6a-2b0b-406e-89e6-ee0d2b13bd2d",
+        "id": "7b99f48c-6c10-4dad-86c4-ee578beef412",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.17.8"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "netskope.events",
-        "namespace": "28175",
+        "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "438ea327-9694-4243-a308-cc947d786019",
+        "id": "7b99f48c-6c10-4dad-86c4-ee578beef412",
         "snapshot": false,
-        "version": "8.17.8"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "netskope.events",
-        "ingested": "2025-09-22T11:58:53Z"
+        "ingested": "2024-03-29T07:18:17Z"
     },
     "event.id": "613ee55ec9d868fc47654a73",
     "input": {
@@ -1581,7 +1568,7 @@ An example event for `events` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.244.3:60174"
+            "address": "192.168.224.6:57252"
         }
     },
     "netskope": {
@@ -1619,23 +1606,11 @@ An example event for `events` looks as following:
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
-| azure.resource.group | Resource group. | keyword |
-| azure.resource.id | Resource ID. | keyword |
-| azure.resource.name | Name. | keyword |
-| azure.resource.provider | Resource type/namespace. | keyword |
-| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object. | keyword |
-| azure.storage.blob.name | The name of the Azure Blob Storage blob object. | keyword |
-| azure.storage.container.name | The name of the Azure Blob Storage container. | keyword |
-| azure.subscription_id | Azure subscription ID. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
-| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
-| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
-| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | netskope.events_v2._id | Unique id - hexadecimal string. | keyword |
@@ -1812,21 +1787,32 @@ An example event for `events_v2` looks as following:
 {
     "@timestamp": "2025-05-13T10:43:50.000Z",
     "agent": {
-        "ephemeral_id": "eee985af-2d63-43dd-9008-d9ab5212df3e",
-        "id": "fba7b99e-3902-4da5-affb-974c963f8f30",
-        "name": "elastic-agent-25674",
+        "ephemeral_id": "04b261d7-d51e-485c-aed5-039119a22e80",
+        "id": "e8f06fce-767e-4024-bea3-813ec054f48d",
+        "name": "elastic-agent-69616",
         "type": "filebeat",
         "version": "8.17.8"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-netskope-bucket-91880",
+                "name": "elastic-package-netskope-bucket-91880"
+            },
+            "object": {
+                "key": "events.csv.gz"
+            }
+        }
     },
     "client": {
         "bytes": 961033
     },
     "cloud": {
-        "provider": "google cloud"
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "netskope.events_v2",
-        "namespace": "29786",
+        "namespace": "42670",
         "type": "logs"
     },
     "destination": {
@@ -1841,10 +1827,10 @@ An example event for `events_v2` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fba7b99e-3902-4da5-affb-974c963f8f30",
+        "id": "e8f06fce-767e-4024-bea3-813ec054f48d",
         "snapshot": false,
         "version": "8.17.8"
     },
@@ -1852,23 +1838,13 @@ An example event for `events_v2` looks as following:
         "agent_id_status": "verified",
         "dataset": "netskope.events_v2",
         "id": "c96659f7292a31d76576becd",
-        "ingested": "2025-09-22T12:03:58Z",
+        "ingested": "2025-07-18T10:39:59Z",
         "kind": "event",
+        "original": "{\"_id\":\"c96659f7292a31d76576becd\",\"access_method\":\"Client\",\"account_id\":\"-\",\"account_name\":\"-\",\"acked\":\"-\",\"act_user\":\"-\",\"acting_user\":\"-\",\"action\":\"-\",\"activity\":\"-\",\"alert\":\"-\",\"alert_id\":\"-\",\"alert_name\":\"-\",\"alert_source\":\"-\",\"alert_type\":\"-\",\"app\":\"Google Gmail\",\"app-gdpr-level\":\"-\",\"app_session_id\":\"438388819325815355\",\"appact\":\"-\",\"appcategory\":\"Webmail\",\"appsuite\":\"-\",\"assignee\":\"-\",\"audit_type\":\"-\",\"bcc\":\"-\",\"breach_date\":\"-\",\"breach_id\":\"-\",\"breach_score\":\"-\",\"browser\":\"Chrome\",\"browser_session_id\":\"5006467906912901882\",\"cc\":\"-\",\"cci\":\"86\",\"ccl\":\"high\",\"client_bytes\":\"961033\",\"client_packets\":\"-\",\"cloud_provider\":\"-\",\"computer_name\":\"-\",\"conn_duration\":\"986\",\"conn_endtime\":\"1747134016\",\"conn_starttime\":\"1747133030\",\"connection_id\":\"8335488044687090606\",\"connection_type\":\"-\",\"custom_attr\":\"-\",\"destination_file_directory\":\"-\",\"destination_file_name\":\"-\",\"destination_file_path\":\"-\",\"detection_engine\":\"-\",\"device\":\"Windows Device\",\"device_classification\":\"-\",\"device_sn\":\"-\",\"device_type\":\"-\",\"dinsid\":\"-\",\"dlp_file\":\"-\",\"dlp_fingerprint_classification\":\"-\",\"dlp_fingerprint_match\":\"-\",\"dlp_fingerprint_score\":\"-\",\"dlp_incident_id\":\"-\",\"dlp_is_unique_count\":\"-\",\"dlp_match_info\":\"-\",\"dlp_parent_id\":\"-\",\"dlp_profile\":\"-\",\"dlp_profile_name\":\"-\",\"dlp_rule\":\"-\",\"dlp_rule_count\":\"-\",\"dlp_rule_score\":\"-\",\"dlp_rule_severity\":\"-\",\"dlp_unique_count\":\"-\",\"dns_profile\":\"-\",\"domain\":\"mail.google.com\",\"domain_ip\":\"-\",\"driver\":\"-\",\"dst_country\":\"IN\",\"dst_geoip_src\":\"-\",\"dst_latitude\":\"80.278480529785156|13.087898254394531\",\"dst_location\":\"Chennai\",\"dst_longitude\":\"80.278480529785156|13.087898254394531\",\"dst_region\":\"Tamil Nadu\",\"dst_timezone\":\"Asia/Kolkata\",\"dst_zipcode\":\"N/A\",\"dsthost\":\"-\",\"dstip\":\"142.250.77.133\",\"dstport\":\"443\",\"eeml\":\"-\",\"email_from_user\":\"-\",\"email_modified\":\"-\",\"email_title\":\"-\",\"email_user\":\"-\",\"encryption_status\":\"-\",\"end_time\":\"-\",\"event_uuid\":\"-\",\"executable_hash\":\"-\",\"executable_signed\":\"-\",\"file_category\":\"-\",\"file_cls_encrypted\":\"-\",\"file_exposure\":\"-\",\"file_id\":\"-\",\"file_md5\":\"-\",\"file_origin\":\"-\",\"file_owner\":\"-\",\"file_path\":\"-\",\"file_pdl\":\"-\",\"file_size\":\"-\",\"file_type\":\"-\",\"filename\":\"-\",\"filepath\":\"-\",\"fllg\":\"-\",\"flpp\":\"-\",\"from_user\":\"-\",\"hostname\":\"Test\",\"iaas_remediated\":\"-\",\"iaas_remediated_by\":\"-\",\"iaas_remediated_on\":\"-\",\"iaas_remediation_action\":\"-\",\"incident_id\":\"-\",\"inline_dlp_match_info\":\"-\",\"instance\":\"-\",\"instance_id\":\"-\",\"instance_name\":\"-\",\"ip_protocol\":\"-\",\"latest_incident_id\":\"-\",\"loc\":\"-\",\"local_md5\":\"-\",\"local_sha1\":\"-\",\"local_sha256\":\"-\",\"local_source_time\":\"-\",\"location\":\"-\",\"mal_id\":\"-\",\"mal_sev\":\"-\",\"mal_type\":\"-\",\"malware_id\":\"-\",\"malware_severity\":\"-\",\"malware_type\":\"-\",\"managed_app\":\"-\",\"managementID\":\"-\",\"md5\":\"-\",\"message_id\":\"-\",\"mime_type\":\"-\",\"modified_date\":\"-\",\"netskope_pop\":\"IN-MAA2\",\"network_session_id\":\"-\",\"nsdeviceuid\":\"-\",\"num_users\":\"-\",\"numbytes\":\"1348230\",\"oauth\":\"-\",\"object\":\"-\",\"object_id\":\"-\",\"object_type\":\"-\",\"org\":\"-\",\"organization_unit\":\"-\",\"os\":\"Windows 11\",\"os_details\":\"-\",\"os_family\":\"Windows\",\"os_user_name\":\"-\",\"os_version\":\"Windows NT 11.0\",\"owner\":\"-\",\"owner_pdl\":\"-\",\"page\":\"mail.google.com\",\"parent_id\":\"-\",\"pid\":\"-\",\"policy\":\"-\",\"policy_action\":\"-\",\"policy_name\":\"-\",\"policy_name_enforced\":\"-\",\"policy_version\":\"-\",\"pop_id\":\"-\",\"port\":\"-\",\"process_cert_subject\":\"-\",\"process_name\":\"-\",\"process_path\":\"-\",\"product_id\":\"-\",\"publisher_cn\":\"-\",\"record_type\":\"page\",\"redirect_url\":\"-\",\"referer\":\"-\",\"region_id\":\"-\",\"region_name\":\"-\",\"req\":\"-\",\"req_cnt\":\"173\",\"request_id\":\"-\",\"resource_category\":\"-\",\"resource_group\":\"-\",\"resp\":\"-\",\"resp_cnt\":\"173\",\"response_time\":\"-\",\"risk_level_id\":\"-\",\"risk_score\":\"-\",\"sa_profile_name\":\"-\",\"sa_rule_compliance\":\"-\",\"sa_rule_name\":\"-\",\"sa_rule_severity\":\"-\",\"sanctioned_instance\":\"-\",\"sender\":\"-\",\"server_bytes\":\"387197\",\"server_packets\":\"-\",\"serverity\":\"-\",\"session_duration\":\"-\",\"session_number_unique\":\"-\",\"severity\":\"-\",\"severity_id\":\"-\",\"severity_level\":\"-\",\"sha256\":\"-\",\"sharedType\":\"-\",\"shared_credential_user\":\"-\",\"shared_domains\":\"-\",\"shared_with\":\"-\",\"site\":\"Google Gmail\",\"smtp_status\":\"-\",\"smtp_to\":\"-\",\"spet\":\"-\",\"spst\":\"-\",\"src_country\":\"IN\",\"src_geoip_src\":\"-\",\"src_latitude\":\"77.590999999999994|12.975300000000001\",\"src_location\":\"Bengaluru\",\"src_longitude\":\"77.590999999999994|12.975300000000001\",\"src_network\":\"-\",\"src_region\":\"Karnataka\",\"src_timezone\":\"Asia/Kolkata\",\"src_zipcode\":\"562130\",\"srcip\":\"175.16.199.0\",\"srcport\":\"-\",\"start_time\":\"-\",\"status\":\"-\",\"subject\":\"-\",\"subtype\":\"-\",\"suppression_count\":\"-\",\"tags\":\"-\",\"telemetry_app\":\"-\",\"thr\":\"-\",\"threat_type\":\"-\",\"timestamp\":\"1747133030\",\"to_user\":\"-\",\"total_packets\":\"-\",\"traffic_type\":\"CloudApp\",\"transaction_id\":\"-\",\"tss_license\":\"-\",\"tss_mode\":\"-\",\"tunnel_id\":\"-\",\"tur\":\"-\",\"two_factor_auth\":\"-\",\"type\":\"connection\",\"unc_path\":\"-\",\"ur_normalized\":\"test@gmail.com\",\"url\":\"mail.google.com\",\"user\":\"test@gmail.com\",\"user_confidence_index\":\"-\",\"user_confidence_level\":\"-\",\"user_id\":\"-\",\"useragent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\",\"usergroup\":\"-\",\"userip\":\"192.168.1.11\",\"userkey\":\"test@gmail.com\",\"vendor_id\":\"-\",\"violation\":\"-\",\"watchlist_name\":\"-\",\"web_url\":\"-\"}",
         "outcome": "unknown",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/x-gzip",
-                "name": "events.csv.gz"
-            }
-        }
     },
     "host": {
         "name": "Test",
@@ -1879,13 +1855,13 @@ An example event for `events_v2` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
+        "type": "aws-s3"
     },
     "log": {
         "file": {
-            "path": "gs://testbucket/events.csv.gz"
+            "path": "https://elastic-package-netskope-bucket-91880.s3.us-east-1.amazonaws.com/events.csv.gz"
         },
-        "offset": 0
+        "offset": 3962
     },
     "netskope": {
         "events_v2": {
@@ -1957,6 +1933,8 @@ An example event for `events_v2` looks as following:
         "ip": "175.16.199.0"
     },
     "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
         "forwarded",
         "netskope-event"
     ],
