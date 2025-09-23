@@ -1,0 +1,169 @@
+title: Alert
+type: logs
+streams:
+  - input: cel
+    title: Splunk Search
+    description: Collect Search Results from Splunk.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: url
+        title: URL
+        description: URL of Splunk instance.
+        required: true
+        show_user: true
+      - name: username
+        type: text
+        title: Username
+        description: The username of Splunk Instance to be used with Basic Auth headers.
+        multi: false
+        required: true
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: The password of Splunk Instance to be used with Basic Auth headers.
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: query
+        type: text
+        title: Query
+        description: Splunk Search Query
+        required: true
+        show_user: true
+      - name: field_mapping
+        type: yaml
+        title: Field mappings
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Field mappings is a YAML map for CIM field names to [ECS field](https://www.elastic.co/docs/reference/ecs/ecs-field-reference) names for the query.
+          Splunk field names may appear only once and ECS fields should not appear more than
+          once. The Splunk `_time` field is always used to set `@timestamp` and remapping
+          this field is ignored by the integration.
+        default: |
+          #splunk_field1: ecs_field1
+          #splunk_field2: ecs_field2
+      - name: default_fields
+        type: yaml
+        title: Default field values
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Default values for ECS fields. Field values will be set if not otherwise found in
+          the search results after applying field mappings.
+        default: |
+          #"event.module": splunk
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: How far back to pull the logs from Splunk API. Supported units for this parameter are h/m/s.
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Splunk API. Supported units for this parameter are h/m/s.
+        default: 5m
+        multi: false
+        required: true
+        show_user: true
+      - name: batch_size
+        type: text
+        title: Batch Size
+        multi: false
+        required: true
+        show_user: true
+        description: Batch size for the response of the Splunk API, with a default limit of 10,000.
+        default: 10000
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - splunk-search
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve splunk.alert fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL config for host. i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----

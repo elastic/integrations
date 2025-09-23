@@ -16,6 +16,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -37,14 +41,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - fingerprint:
-      fields:
-        - json.EvaluationResultIdentifier.EvaluationResultQualifier.ResourceId
-        - json.ConfigRuleInvokedTime
-        - json.ConfigRuleInfo.ConfigRuleId
-      tag: fingerprint_aws_config
-      target_field: _id
-      ignore_missing: true
   - set:
       field: cloud.provider
       tag: set_cloud_provider
@@ -90,6 +86,12 @@ processors:
       tag: set_rule_reference_from_config_config_rule_info_config_rule_arn
       copy_from: aws.config.rule_info.config_rule_arn
       ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - rule.reference
+      tag: fingerprint_rule_uuid
+      target_field: rule.uuid
+      ignore_missing: true
   - rename:
       field: json.ConfigRuleInfo.ConfigRuleId
       tag: rename_ConfigRuleInfo_ConfigRuleId

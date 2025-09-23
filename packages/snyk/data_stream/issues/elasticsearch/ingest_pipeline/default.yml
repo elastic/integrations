@@ -19,16 +19,22 @@ processors:
       field: event.kind
       value: [alert]
   - date:
-      field: snyk.issues.attributes.created_at
+      field: snyk.issues.attributes.updated_at
       target_field: "@timestamp"
       formats:
-        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-        - "yyyy-MM-dd'T'HH:mm:ss.SS'Z'"
-        - "yyyy-MM-dd'T'HH:mm:ss.S'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss[.SSS][.SS][.S]'Z'"
   - fingerprint:
+      description: >-
+        This fingerprint is making the primary key for documents be the
+        following set of fields. They are chosen to be the minimal set
+        of fields that uniquely identify documents.
       fields:
         - snyk.issues.id
+        - snyk.issues.attributes.ignored
+        - snyk.issues.attributes.status
+        - snyk.issues.attributes.updated_at
       target_field: _id
+      ignore_missing: true
   - set:
       field: vulnerability.scanner.vendor
       value: Snyk
@@ -105,11 +111,50 @@ processors:
           list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx);
+  - script:
+      lang: painless
+      description: Restructure scan item tags
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.attributes?.tags instanceof List
+      source: |
+        def result = [];
+        for (def tag : ctx.snyk.issues.relationships.scan_item.data.attributes.tags) {
+          if (tag instanceof Map) {
+            result.add([tag.key, tag.value].join(":"))
+          } else if (tag instanceof String) {
+            result.add(tag);
+          }
+        }
+        ctx.snyk.issues.relationships.scan_item.data.attributes.tags = result;
+  - append:
+      field: error.message
+      value: '{{{ snyk.issues.relationships.scan_item.data._enrich_error_message }}}'
+      if: ctx.snyk.issues.relationships.scan_item.data._enrich_error_message instanceof String
+      allow_duplicates: false
+
+  # Fixup mappings that do not match the published API spec.
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.importer?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.importer.links.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.organization?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.organization.links.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.owner?.links?.related?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.owner.links.related.related.href
+  - rename:
+      if: ctx.snyk?.issues?.relationships?.scan_item?.data?.relationships?.target?.links?.related instanceof String
+      field: snyk.issues.relationships.scan_item.data.relationships.target.links.related
+      target_field: snyk.issues.relationships.scan_item.data.relationships.target.links.related.href
+
   - remove:
       field:
         - message
         - snyk.issues.cvssScore
         - snyk.issues.type
+        - snyk.issues.relationships.scan_item.data._enrich_error_message
       ignore_missing: true
 on_failure:
   - set:
