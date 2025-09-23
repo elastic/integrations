@@ -266,6 +266,9 @@ use_elastic_package() {
 
 elastic_package_verbosity() {
     local opts="-v"
+    if [[ "${GITHUB_PR_TRIGGER_COMMENT:-""}" =~ ^/test[[:space:]]+verbose ]]; then
+        opts="${opts}v"
+    fi
     echo "${opts}"
 }
 
