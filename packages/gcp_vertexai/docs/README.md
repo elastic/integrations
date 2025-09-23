@@ -130,7 +130,37 @@ This is just an example to create your filter expression to select the Vertex AI
 
 #### Prompt Response Logging
 
-TBD
+The `prompt_response_logs` data stream is designed to collect Vertex AI prompt-response logs from GCP BigQuery. BigQuery is a fully-managed, serverless data warehouse that stores detailed logs of interactions with Vertex AI models.
+
+Vertex AI logs export to BigQuery enables you to export detailed Google Cloud Vertex AI interaction data (such as prompts, responses, model usage, and metadata) automatically to a BigQuery dataset that you specify. Then you can access your Vertex AI logs from BigQuery for detailed analysis and monitoring using this integration. This enables comprehensive tracking of AI model usage, performance monitoring, and cost analysis.
+
+The logs include detailed information about:
+- API endpoints and deployed models
+- Request and response payloads
+- Model versions and API methods used
+- Request metadata and timing information
+
+Before you start, you need to create the following Google Cloud resources:
+
+- BigQuery dataset to store Vertex AI logs
+- Log Sink to route logs to BigQuery
+- Proper IAM permissions for accessing BigQuery data
+
+Here's an example of setting up Vertex AI logs collection using BigQuery:
+
+On the Google Cloud Console follow these steps:
+
+1. **Create a BigQuery dataset**: Visit "BigQuery" > "Create Dataset" and provide a dataset name and location.
+2. **Set up log export**: Visit "Logging" > "Log Router" > "Create Sink" and provide a sink name and description.
+3. In "Sink destination", select "BigQuery dataset" as the sink service. Select the dataset you created in step 1.
+4. Under "Choose logs to include in sink", add a filter expression such as `resource.type="aiplatform.googleapis.com/Endpoint"` or `protoPayload.serviceName="aiplatform.googleapis.com"` to include Vertex AI logs.
+5. Note the table name that gets created in BigQuery, as it will be needed in the integration configuration.
+
+**Configuration**: When configuring the integration, you'll need to configure the following settings:
+
+1. **Table ID**: (Required) Full table identifier in the format `project_id.dataset_id.table_name` that contains the Vertex AI logs data. You can copy this from the "Details" tab when viewing your table in the BigQuery web console, under the "Table ID" field.
+
+2. **Time Lookback Hours**: (Optional) Specifies how many hours back from the current time to query for new log entries in the format `time_lookback_hours`. The default value for this is 1hr.
 
 ## Troubleshooting
 
