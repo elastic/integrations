@@ -1114,7 +1114,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Percentage of page requests served from memory instead of disk. Higher is better.",
+                    "description": "Percentage of requested pages found in the buffer cache. Higher is better.",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -1692,7 +1692,11 @@
                                                 "07c7e222-66b6-444d-b487-de6989a0d327",
                                                 "0801f28a-fa42-482c-becd-745e65d38ed3",
                                                 "e0d77cb6-cac4-41b7-9993-2fc3232ade17",
-                                                "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309"
+                                                "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309",
+                                                "e0d77cb6-cac4-41b7-9993-2fc3232ade17X0",
+                                                "e0d77cb6-cac4-41b7-9993-2fc3232ade17X1",
+                                                "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309X0",
+                                                "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309X1"
                                             ],
                                             "columns": {
                                                 "07c7e222-66b6-444d-b487-de6989a0d327": {
@@ -1742,38 +1746,120 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "CPU Time",
-                                                    "operationType": "average",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
-                                                                "suffix": "s"
+                                                                "suffix": "ms"
                                                             }
-                                                        }
+                                                        },
+                                                        "formula": "average(attributes.sqlserver.cpu_time) * 1000",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Time",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "attributes.sqlserver.cpu_time"
+                                                },
+                                                "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Time",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309X0",
+                                                                1000
+                                                            ],
+                                                            "location": {
+                                                                "max": 45,
+                                                                "min": 0
+                                                            },
+                                                            "name": "multiply",
+                                                            "text": "average(attributes.sqlserver.cpu_time) * 1000",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "473b23f9-e1b6-4d14-b2e0-c9f23c4e8309X0"
+                                                    ],
+                                                    "scale": "ratio"
                                                 },
                                                 "e0d77cb6-cac4-41b7-9993-2fc3232ade17": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Elapsed Time",
-                                                    "operationType": "average",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 2,
-                                                                "suffix": "s"
+                                                                "suffix": "ms"
                                                             }
-                                                        }
+                                                        },
+                                                        "formula": "average(attributes.sqlserver.total_elapsed_time) * 1000",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e0d77cb6-cac4-41b7-9993-2fc3232ade17X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e0d77cb6-cac4-41b7-9993-2fc3232ade17X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Elapsed Time",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "attributes.sqlserver.total_elapsed_time"
+                                                },
+                                                "e0d77cb6-cac4-41b7-9993-2fc3232ade17X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Elapsed Time",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "e0d77cb6-cac4-41b7-9993-2fc3232ade17X0",
+                                                                1000
+                                                            ],
+                                                            "location": {
+                                                                "max": 55,
+                                                                "min": 0
+                                                            },
+                                                            "name": "multiply",
+                                                            "text": "average(attributes.sqlserver.total_elapsed_time) * 1000",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "e0d77cb6-cac4-41b7-9993-2fc3232ade17X0"
+                                                    ],
+                                                    "scale": "ratio"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
