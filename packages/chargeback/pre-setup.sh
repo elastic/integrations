@@ -10,7 +10,7 @@ PUT chargeback_conf_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.8" }
+      "package": { "name": "chargeback", "version": "0.2.0" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
@@ -44,7 +44,7 @@ PUT billing_cluster_cost_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.8" }
+      "package": { "name": "chargeback", "version": "0.2.0" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
