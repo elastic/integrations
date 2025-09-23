@@ -1066,9 +1066,9 @@ An example event for `alerts_v2` looks as following:
 {
     "@timestamp": "2025-05-13T11:02:02.000Z",
     "agent": {
-        "ephemeral_id": "2b6381cb-df79-4509-9f24-0bef84a1faac",
-        "id": "cf2d742b-2342-45f1-8e79-ecd7d27c0c6e",
-        "name": "elastic-agent-69172",
+        "ephemeral_id": "a72b72ab-a3da-42ca-98fa-61359fb7eee5",
+        "id": "b5a8117b-a8b6-4c10-9851-c2e78f0811dc",
+        "name": "elastic-agent-77576",
         "type": "filebeat",
         "version": "8.17.8"
     },
@@ -1077,7 +1077,7 @@ An example event for `alerts_v2` looks as following:
     },
     "data_stream": {
         "dataset": "netskope.alerts_v2",
-        "namespace": "75909",
+        "namespace": "56172",
         "type": "logs"
     },
     "destination": {
@@ -1095,7 +1095,7 @@ An example event for `alerts_v2` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "cf2d742b-2342-45f1-8e79-ecd7d27c0c6e",
+        "id": "b5a8117b-a8b6-4c10-9851-c2e78f0811dc",
         "snapshot": false,
         "version": "8.17.8"
     },
@@ -1104,7 +1104,7 @@ An example event for `alerts_v2` looks as following:
         "agent_id_status": "verified",
         "dataset": "netskope.alerts_v2",
         "id": "eb8fc9903c2fbb6aa05537ff",
-        "ingested": "2025-09-22T11:57:58Z",
+        "ingested": "2025-09-23T09:58:33Z",
         "kind": "alert"
     },
     "gcs": {
@@ -1808,9 +1808,9 @@ An example event for `events_v2` looks as following:
 {
     "@timestamp": "2025-05-13T10:43:50.000Z",
     "agent": {
-        "ephemeral_id": "eee985af-2d63-43dd-9008-d9ab5212df3e",
-        "id": "fba7b99e-3902-4da5-affb-974c963f8f30",
-        "name": "elastic-agent-25674",
+        "ephemeral_id": "5c0fb0eb-b857-458d-9516-97c8da1880bf",
+        "id": "c8fbd043-b163-4ee2-9287-ef96a5ce1bfe",
+        "name": "elastic-agent-83393",
         "type": "filebeat",
         "version": "8.17.8"
     },
@@ -1822,7 +1822,7 @@ An example event for `events_v2` looks as following:
     },
     "data_stream": {
         "dataset": "netskope.events_v2",
-        "namespace": "29786",
+        "namespace": "33466",
         "type": "logs"
     },
     "destination": {
@@ -1840,7 +1840,7 @@ An example event for `events_v2` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "fba7b99e-3902-4da5-affb-974c963f8f30",
+        "id": "c8fbd043-b163-4ee2-9287-ef96a5ce1bfe",
         "snapshot": false,
         "version": "8.17.8"
     },
@@ -1848,7 +1848,7 @@ An example event for `events_v2` looks as following:
         "agent_id_status": "verified",
         "dataset": "netskope.events_v2",
         "id": "c96659f7292a31d76576becd",
-        "ingested": "2025-09-22T12:03:58Z",
+        "ingested": "2025-09-23T10:04:36Z",
         "kind": "event",
         "outcome": "unknown",
         "type": [
