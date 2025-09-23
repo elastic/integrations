@@ -26,7 +26,7 @@ This integrations supports the execution of
 queries, a SQL-like query language for retrieving information from WMI
 namespaces.
 
-Currently, the metricset supports queries with `SELECT`, `FROM` and
+Currently, this input package supports queries with `SELECT`, `FROM` and
 `WHERE` clauses.
 
 When working with WMI queries, it is the user’s responsibility to ensure
@@ -48,12 +48,12 @@ The Arbitrator is responsible for:
   and conditions
 
 There is no way to directly stop a query once it has started. To prevent
-Metricbeat from waiting indefinitely for a query to return a result or
-fail, Metricbeat has a timeout mechanism that stops waiting for query
+Elastic Agent from waiting indefinitely for a query to return a result or
+fail, Elastic Agent has a timeout mechanism that stops waiting for query
 results after a specified timeout. This is controlled by the
 `wmi.warning_threshold` setting.
 
-While Metricbeat stops waiting for the result, the underlying WMI query
+While Elastic Agent stops waiting for the result, the underlying WMI query
 may continue running until the WMI Arbitrator decides to stop execution.
 
 
@@ -66,7 +66,7 @@ does not provide direct type conversion for `uint64`, `sint64`, and `datetime`
 [Common Information Model](https://learn.microsoft.com/en-us/windows/win32/wmisdk/common-information-model) (CIM) types;
 instead, these values are returned as strings.
 
-To ensure the correct data type is reported, Elastic-Agent dynamically fetches the
+To ensure the correct data type is reported, Elastic Agent dynamically fetches the
 CIM type definitions for the properties of the WMI instance classes returned by the query,
 and then performs the necessary data type conversions.
 
@@ -87,62 +87,32 @@ The properties of type `CIM_Reference` (references) used in [WMI Association Cla
 
 ###  Date Fields Mapping
 
-Elastic-Agent converts WMI properties of type "datetime" to timestamps, but these are serialized as strings in the output. Since date detection is disabled by default, these fields will be stored as strings unless explicitly mapped as dates. To ensure proper mapping, we recommend explicitly setting the mapping in the `@custom` template.
+Elastic Agent converts WMI properties of type "datetime" to timestamps, but these are serialized as strings in the output. Since date detection is disabled by default, these fields will be stored as strings unless explicitly mapped as dates. To ensure proper mapping, we recommend explicitly setting the mapping in the `@custom` template.
 Refer to [this guide](https://www.elastic.co/docs/reference/fleet/data-streams#data-streams-index-templates-edit)
 and [this guide](https://www.elastic.co/docs/manage-data/data-store/index-basics#manage-component-templates) for additional
 details.
 
 ## Configuration
 
-
-**`wmi.namespace`**
-:   The default WMI namespace used for queries. This can be overridden per
-query. The default is `root\cimv2`.
-
-**`wmi.warning_threshold`**
-:   The time threshold after which Metricbeat will stop waiting for the
-query result and return control to the main flow of the program. A
-warning is logged indicating that the query execution has exceeded the
-threshold. The default is equal to the period. See [WMI Arbitrator and
-Query Execution](#wmi-arbitrator-and-query-execution) for more details.
-
-**`wmi.include_queries`**
-:   If set to `true` the metricset includes the query in the output
-document. The default value is `false`.
-
-**`wmi.include_null_properties`**
-:   If set to `true` the metricset includes the properties that have null
-value in the output document. properties that have a `null` value in the
-output document. The default value is `false`.
-
-**`wmi.include_empty_string_properties`**
-:   A boolean option that causes the metricset to include the properties
-that are empty string. The default value is `false`.
-
-**`wmi.queries`**
-:   The list of queries to execute. The list cannot be empty. See [Query
-Configuration](#query-configuration) for the format of the queries.
+| Option                           | Description                                                                                                                                                                                                                                                                                                                                                       | Default            |
+|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|
+| `wmi.namespace`                   | The default WMI namespace used for queries. This can be overridden per query.                                                                                                                                                                                                                                                                                     | `root\cimv2`       |
+| `wmi.warning_threshold`           | The time threshold after which Elastic Agent will stop waiting for the query result and return control to the main flow of the program. A warning is logged indicating that the query execution has exceeded the threshold. See [WMI Arbitrator and Query Execution](#wmi-arbitrator-and-query-execution) for more details. | Equal to `period`  |
+| `wmi.include_queries`             | If set to `true`, the documents the query is added in the output document                                                                                                                                                                                                                                                                     | `false`            |
+| `wmi.include_null_properties`     | If set to `true`, the output documents will include the properties that have a `null` value.                                                                                                                                                                                                                   | `false`            |
+| `wmi.include_empty_string_properties` | If set to `true`, the output documents will include the properties that are empty strings.                                                                                                                                                                                                                                                               | `false`            |
+| `wmi.queries`                     | The list of queries to execute. The list cannot be empty. See [Query Configuration](#query-configuration) for the format of the queries.                                                                                                                                                                                                                          | *(required)*       |
 
 ### Query Configuration
 
 Each item in the `queries` list specifies a wmi query to perform.
 
-**`class`**
-:    The wmi class. In the query it specifies the `FROM` clause. Required
-
-**`properties`**
-:    List of properties to return. In the query it specifies the `SELECT`
-clause. Set it to the empty list (default value) to retrieve all
-available properties.
-
-**`where`**
-:   The where clause. In the query it specifies the `WHERE` clause. Read
-more about the format [in the Windows
-Documentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/where-clause).
-
-**`namespace`**
-:   The WMI Namespace for this particular query (it overwrites the
-metricset’s `namespace` value)
+| Option      | Description                                                                                                                                                                                                                                   | Required/Default         |
+|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------|
+| `class`     | The WMI class. Specifies the `FROM` clause in the query.                                                                                                                                                | Required                |
+| `properties`| List of properties to return. Specifies the `SELECT` clause. Set to an empty list (default) to retrieve all available properties.                                                                      | Default: empty list     |
+| `where`     | The `WHERE` clause. Read more about the format [in the Windows Documentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/where-clause).                                                    | Optional                |
+| `namespace` | The WMI Namespace for this query (overrides the global `namespace` value for this query).                                                                                                                        | Optional                |
 
 ### Example
 
