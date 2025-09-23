@@ -34,40 +34,6 @@ POST chargeback_conf_lookup/_doc/config
   "conf_storage_weight": 40
 }
 
-# Create the lookup indices for billing and cluster contributions.
-PUT billing_cluster_cost_lookup
-{
-  "settings": {
-    "index.mode": "lookup",
-    "index.hidden": true
-  },
-  "mappings": {
-    "_meta": {
-      "managed": true,
-      "package": { "name": "chargeback", "version": "0.2.0" }
-    },
-    "properties": {
-      "@timestamp": { "type": "date" },
-      "billing_name": {
-        "type": "text",
-        "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-      },
-      "billing_type": {
-        "type": "text",
-        "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-      },
-      "composite_key": { "type": "keyword" },
-      "config_join_key": { "type": "keyword" },
-      "deployment_id": { "type": "keyword" },
-      "deployment_name": {
-        "type": "text",
-        "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-      },
-      "total_ecu": { "type": "float" }
-    }
-  }
-}
-
 # Create data view used for control.
 POST kbn:/api/data_views/data_view
 {
