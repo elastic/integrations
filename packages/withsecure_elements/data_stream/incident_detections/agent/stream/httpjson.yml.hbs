@@ -1,0 +1,54 @@
+- type: httpjson
+  name: {{config "name"}}
+  enabled: {{config "enabled"}}
+  {{#if config "url"}}
+  url: {{config "url"}}
+  {{/if}}
+  {{#if config "interval"}}
+  interval: {{config "interval"}}
+  {{/if}}
+  {{#if config "tags"}}
+  tags:
+    {{#each config "tags"}}
+    - {{this}}
+    {{/each}}
+  {{/if}}
+  {{#if config "processors"}}
+  processors:
+    {{config "processors"}}
+  {{/if}}
+  {{#if config "preserve_original_event"}}
+  preserve_original_event: {{config "preserve_original_event"}}
+  {{/if}}
+  {{#if config "preserve_duplicate_custom_fields"}}
+  preserve_duplicate_custom_fields: {{config "preserve_duplicate_custom_fields"}}
+  {{/if}}
+  {{#if config "client_id"}}
+  authentication:
+    oauth2:
+      client_id: {{config "client_id"}}
+      client_secret: {{config "client_secret"}}
+      token_url: {{config "url"}}/as/token.oauth2
+      request_params:
+        grant_type: client_credentials
+        scope: connect.api.read
+  {{/if}}
+  {{#if config "incident_id"}}
+  request:
+    url: {{config "url"}}/incidents/v1/incidents/{{config "incident_id"}}/detections
+    params:
+      limit: 200
+      order: desc
+    headers:
+      User-Agent: "Elastic-WithSecure-Elements-Connector/1.0.0"
+      Accept: "application/json"
+  {{/if}}
+  {{#if config "incident_id"}}
+  response:
+    split:
+      target: body.items
+      type: array
+  {{/if}}
+  {{#if config "tags"}}
+  fields_under_root: true
+  {{/if}}
