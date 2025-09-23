@@ -2390,6 +2390,11 @@ processors:
       value: '{{{crowdstrike.RegObjectName}}}\{{{crowdstrike.RegValueName}}}'
       if: ctx.crowdstrike?.RegObjectName != null && ctx.crowdstrike.RegObjectName != '' && ctx.crowdstrike?.RegValueName != null && ctx.crowdstrike.RegValueName != ''
   - set:
+      field: registry.path
+      copy_from: crowdstrike.RegObjectName
+      if: ctx.crowdstrike?.RegValueName == null || ctx.crowdstrike.RegValueName == ''
+      ignore_empty_value: true
+  - set:
       field: registry.value
       copy_from: crowdstrike.RegValueName
       ignore_empty_value: true
