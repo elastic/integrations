@@ -1,5 +1,5 @@
-# Create the lookup indices for chargeback configuration and billing metrics
-# These indices are used to store configuration and billing data for chargeback calculations.
+# Create the config lookup index for chargeback configuration.
+# This index will store a single document with the configuration settings.
 
 PUT chargeback_conf_lookup
 {
@@ -10,7 +10,7 @@ PUT chargeback_conf_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.7" }
+      "package": { "name": "chargeback", "version": "0.1.8" }
     },
     "properties": {
       "config_join_key": { "type": "keyword" },
@@ -44,7 +44,7 @@ PUT billing_cluster_cost_lookup
   "mappings": {
     "_meta": {
       "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.7" }
+      "package": { "name": "chargeback", "version": "0.1.8" }
     },
     "properties": {
       "@timestamp": { "type": "date" },
@@ -64,113 +64,6 @@ PUT billing_cluster_cost_lookup
         "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
       },
       "total_ecu": { "type": "float" }
-    }
-  }
-}
-
-PUT cluster_datastream_contribution_lookup
-{
-  "settings": {
-    "index.mode": "lookup",
-    "index.hidden": true
-  },
-  "mappings": {
-    "_meta": {
-      "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.7" }
-    },
-    "properties": {
-      "@timestamp": { "type": "date" },
-      "composite_key": { "type": "keyword" },
-      "composite_datastream_key": { "type": "keyword" },
-      "config_join_key": { "type": "keyword" },
-      "cluster_name": { "type": "keyword" },
-      "deployment_id": { "type": "keyword" },
-      "datastream": { "type": "keyword" },
-      "datastream_sum_indexing_time": { "type": "double" },
-      "datastream_sum_query_time": { "type": "double" },
-      "datastream_sum_store_size": { "type": "double" },
-      "datastream_sum_data_set_store_size": { "type": "double" }
-    }
-  }
-}
-
-PUT cluster_deployment_contribution_lookup
-{
-  "settings": {
-    "index.mode": "lookup",
-    "index.hidden": true
-  },
-  "mappings": {
-    "_meta": {
-      "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.7" }
-    },
-    "properties": {
-      "@timestamp": { "type": "date" },
-      "composite_key": { "type": "keyword" },
-      "config_join_key": { "type": "keyword" },
-      "cluster_name": { "type": "keyword" },
-      "deployment_id": { "type": "keyword" },
-      "deployment_sum_indexing_time": { "type": "double" },
-      "deployment_sum_query_time": { "type": "double" },
-      "deployment_sum_store_size": { "type": "double" },
-      "deployment_sum_data_set_store_size": { "type": "double" }
-    }
-  }
-}
-
-PUT cluster_tier_and_datastream_contribution_lookup
-{
-  "settings": {
-    "index.mode": "lookup",
-    "index.hidden": true
-  },
-  "mappings": {
-    "_meta": {
-      "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.7" }
-    },
-    "properties": {
-      "@timestamp": { "type": "date" },
-      "composite_key": { "type": "keyword" },
-      "composite_tier_key": { "type": "keyword" },
-      "config_join_key": { "type": "keyword" },
-      "cluster_name": { "type": "keyword" },
-      "deployment_id": { "type": "keyword" },
-      "tier": { "type": "keyword" },
-      "datastream": { "type": "keyword" },
-      "tier_and_datastream_sum_indexing_time": { "type": "double" },
-      "tier_and_datastream_sum_query_time": { "type": "double" },
-      "tier_and_datastream_sum_store_size": { "type": "double" },
-      "tier_and_datastream_sum_data_set_store_size": { "type": "double" }
-    }
-  }
-}
-
-PUT cluster_tier_contribution_lookup
-{
-  "settings": {
-    "index.mode": "lookup",
-    "index.hidden": true
-  },
-  "mappings": {
-    "_meta": {
-      "managed": true,
-      "package": { "name": "chargeback", "version": "0.1.7" }
-    },
-    "properties": {
-      "@timestamp": { "type": "date" },
-      "composite_key": { "type": "keyword" },
-      "composite_tier_key": { "type": "keyword" },
-      "config_join_key": { "type": "keyword" },
-      "cluster_name": { "type": "keyword" },
-      "deployment_id": { "type": "keyword" },
-      "tier": { "type": "keyword" },
-      "tier_sum_indexing_time": { "type": "double" },
-      "tier_sum_query_time": { "type": "double" },
-      "tier_sum_store_size": { "type": "double" },
-      "tier_sum_data_set_store_size": { "type": "double" }
     }
   }
 }
