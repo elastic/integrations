@@ -1,6 +1,9 @@
 ---
 description: Pipeline for Office 365 Audit logs
 processors:
+  - drop:
+      if: ctx.retry == true
+      tag: drop_retry_events
   - remove:
       field:
         - organization
@@ -1528,6 +1531,24 @@ processors:
       on_failure:
         - remove:
             field: o365audit.Data.sip
+            ignore_missing: true
+  - convert:
+      field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
+      type: long
+      ignore_missing: true
+      if: ctx.o365?.audit?.SensitivityLabelEventData?.ActionSourceDetail != ''
+      on_failure:
+        - remove:
+            field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
+            ignore_missing: true
+  - convert:
+      field: o365.audit.SensitivityLabelEventData.LabelEventType
+      type: long
+      ignore_missing: true
+      if: ctx.o365?.audit?.SensitivityLabelEventData?.LabelEventType != ''
+      on_failure:
+        - remove:
+            field: o365.audit.SensitivityLabelEventData.LabelEventType
             ignore_missing: true
   - date:
       field: o365audit.Data.at

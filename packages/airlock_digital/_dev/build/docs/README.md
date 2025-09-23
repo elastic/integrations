@@ -8,20 +8,21 @@ The Airlock Digital integration for Elastic allows you to collect logs from, [Ai
 
 ### Compatibility
 
-The Airlock Digital integration is compatible with version `v6.1.x` of Airlock Digital and `v1` of the REST API.
+The Airlock Digital integration is compatible with `v6.1.x` and `v1` version of Airlock Digital REST API.
 
 ### How it works
 
-This integration periodically queries the Airlock Digital REST API to retrieve Execution Histories.
+This integration periodically queries the Airlock Digital REST API to retrieve Agent and Execution Histories logs.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
+- `Agent`: Collects agent logs via [Airlock Digital REST API](https://api.airlockdigital.com/#35ef50c6-1df4-4330-a433-1915ccf380cf).
 - `Execution Histories`: Collects executions history logs via [Airlock Digital REST API](https://api.airlockdigital.com/#3634a82d-eb6b-44b7-b662-dddc37d4d9d6).
 
 ### Supported use cases
-Integrating Airlock Digital’s execution history logs into Elastic SIEM gives SOC teams deep visibility into endpoint activity, allowing seamless tracking of blocked or untrusted executions, policy violations, and execution patterns to accelerate investigations, strengthen compliance, and enhance endpoint security.
+Integrating Airlock Digital agent and execution history logs with Elastic SIEM provides SOC teams with deep visibility into endpoint activity and policy enforcement. Dashboards surface insights into agent health, host and user patterns, OS distribution, group and policy metrics, storage availability, trusted configurations, and execution behaviors such as blocked or untrusted runs and policy violations. This enables faster investigations, stronger compliance, proactive resource management, and improved overall endpoint security.
 
 ## What do I need to use this integration?
 
@@ -31,7 +32,7 @@ Integrating Airlock Digital’s execution history logs into Elastic SIEM gives S
 
 1. In order to make the API calls, the User Group to which a user belongs should contain required permissions. You can follow the below steps for that:
 2. Go to the **Settings** and navigate to **Users** tab.
-3. Under **User Group Management** for the respective user group provide **logging/exechistories** roles in the REST API Roles section and click on save.
+3. Under **User Group Management** for the respective user group provide **agent/find**, **group/policies** and **logging/exechistories** roles in the REST API Roles section and click on save.
 
 #### Generate Client API key for Authentication:
 
@@ -88,11 +89,19 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
+#### Agent
+
+{{fields "agent"}}
+
 #### Execution Histories
 
 {{fields "execution_histories"}}
 
 ### Example event
+
+#### Agent
+
+{{event "agent"}}
 
 #### Execution Histories
 
@@ -106,8 +115,9 @@ These inputs can be used in this integration:
 
 ### API usage
 
-These integration datasets use the following API:
+These integration datasets use the following APIs:
 
+- `Agent`: [Airlock Digital REST API](https://api.airlockdigital.com/#35ef50c6-1df4-4330-a433-1915ccf380cf).
 - `Execution Histories`: [Airlock Digital REST API](https://api.airlockdigital.com/#3634a82d-eb6b-44b7-b662-dddc37d4d9d6). Supported execution types are:
     - Trusted Execution
     - Blocked Execution
