@@ -27,18 +27,12 @@ request.transforms:
       value: 'Bearer {{token}}'
   - set:
       target: body.cursor
-      value: >-
-        [[if not (eq (len .cursor) 0)]]
-          [[.cursor.last_cursor]]
-        [[else]]
-          [[terminate "cursor is empty"]]
-        [[end]]
+      value: '[[if not (eq (len .cursor) 0)]][[.cursor.last_cursor]][[end]]'
       do_not_log_failure: true
   - set:
       target: body.limit
       value_type: int
-      value: >-
-        [[if eq (len .cursor) 0]]{{limit}}[[else]][[terminate "cursor is not empty"]][[end]]
+      value: '[[if eq (len .cursor) 0]]{{limit}}[[end]]'
       do_not_log_failure: true
 cursor:
   last_cursor:
