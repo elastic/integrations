@@ -88,15 +88,15 @@ An example event for `ai_security_mailbox` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "cafadbdd-dc09-45ac-aec4-49d7250ebd32",
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "98a082ab-3b27-490a-bc0b-2f506108d1e8",
+        "id": "a1449f89-b034-4d1a-9aa1-2ea2cf249f0a",
+        "name": "elastic-agent-97558",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.ai_security_mailbox",
-        "namespace": "38204",
+        "namespace": "42182",
         "type": "logs"
     },
     "destination": {
@@ -108,9 +108,9 @@ An example event for `ai_security_mailbox` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
+        "id": "a1449f89-b034-4d1a-9aa1-2ea2cf249f0a",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "email": {
         "from": {
@@ -129,7 +129,7 @@ An example event for `ai_security_mailbox` looks as following:
         "agent_id_status": "verified",
         "dataset": "abnormal_security.ai_security_mailbox",
         "id": "7063250485337877109",
-        "ingested": "2024-08-08T05:41:05Z",
+        "ingested": "2025-09-16T10:24:58Z",
         "kind": "event",
         "original": "{\"attackType\":\"Attack Type: Graymail\",\"campaignId\":\"fff51768-c446-34e1-97a8-9802c29c3ebd\",\"firstReported\":\"2024-07-26T10:30:06Z\",\"fromAddress\":\"bob@example.com\",\"fromName\":\"bob@example.com\",\"judgementStatus\":\"Safe\",\"lastReported\":\"2024-07-26T10:30:06Z\",\"messageId\":\"7063250485337877109\",\"overallStatus\":\"No Action Needed\",\"recipientAddress\":\"john@example.com\",\"recipientName\":\"john\",\"subject\":\"Days of Understanding 2024\"}"
     },
@@ -205,7 +205,7 @@ An example event for `ai_security_mailbox_not_analyzed` looks as following:
     "@timestamp": "2025-03-04T17:03:55.000Z",
     "abnormal_security": {
         "ai_security_mailbox_not_analyzed": {
-            "abx_message_id": "-1234567891234568000",
+            "abx_message_id": "-1234567891234567891",
             "reason": "PHISHING_SIMULATION",
             "recipient": {
                 "address": "phishing@test.com",
@@ -220,24 +220,24 @@ An example event for `ai_security_mailbox_not_analyzed` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "30574c81-fa18-4fa0-88fe-9a5402bf1562",
-        "id": "49766dbb-8c1b-41e5-ac89-e0a87c0d6249",
-        "name": "elastic-agent-94210",
+        "ephemeral_id": "835b49c2-b5f8-4cd3-9915-0257c60f59ad",
+        "id": "129fb3a1-34d7-4b0f-8248-d13d3a7d46f6",
+        "name": "elastic-agent-18300",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
-        "namespace": "17196",
+        "namespace": "26882",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "49766dbb-8c1b-41e5-ac89-e0a87c0d6249",
+        "id": "129fb3a1-34d7-4b0f-8248-d13d3a7d46f6",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.19.0"
     },
     "email": {
         "subject": "Fwd: Forwarded email",
@@ -253,10 +253,10 @@ An example event for `ai_security_mailbox_not_analyzed` looks as following:
             "email"
         ],
         "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
-        "id": "-1234567891234568000",
-        "ingested": "2025-04-08T00:08:23Z",
+        "id": "-1234567891234567891",
+        "ingested": "2025-09-16T10:25:44Z",
         "kind": "event",
-        "original": "{\"abx_message_id\":-1234567891234568000,\"not_analyzed_reason\":\"PHISHING_SIMULATION\",\"recipient\":{\"email\":\"phishing@test.com\",\"name\":\"Phishing Test\"},\"reported_datetime\":\"2025-03-04T17:03:55Z\",\"reporter\":{\"email\":\"info@test.com\",\"name\":\"Info Test\"},\"subject\":\"Fwd: Forwarded email\"}",
+        "original": "{\"abx_message_id\":-1234567891234567891,\"not_analyzed_reason\":\"PHISHING_SIMULATION\",\"recipient\":{\"email\":\"phishing@test.com\",\"name\":\"Phishing Test\"},\"reported_datetime\":\"2025-03-04T17:03:55Z\",\"reporter\":{\"email\":\"info@test.com\",\"name\":\"Info Test\"},\"subject\":\"Fwd: Forwarded email\"}",
         "reason": "PHISHING_SIMULATION",
         "type": [
             "info"
@@ -335,24 +335,24 @@ An example event for `audit` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "40cced4d-2587-4880-a6ad-3fe697d9ca7f",
-        "id": "7aaba523-565c-4597-bc42-59135436336b",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "77621e1d-a802-4348-b6f3-4b670e76da6f",
+        "id": "a3278404-2ee1-48b0-8662-03e2a5cc6f50",
+        "name": "elastic-agent-96880",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.audit",
-        "namespace": "19380",
+        "namespace": "19077",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7aaba523-565c-4597-bc42-59135436336b",
+        "id": "a3278404-2ee1-48b0-8662-03e2a5cc6f50",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "event": {
         "action": "update_remediation_status",
@@ -361,7 +361,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "abnormal_security.audit",
-        "ingested": "2024-08-06T09:41:39Z",
+        "ingested": "2025-09-16T10:26:32Z",
         "kind": "event",
         "original": "{\"action\":\"update_remediation_status\",\"actionDetails\":{\"providedReason\":\"null\",\"requestUrl\":\"/v1.0/search_v2/666/purge_messages/\"},\"category\":\"search-and-respond-notifications\",\"sourceIp\":\"81.2.69.142\",\"status\":\"SUCCESS\",\"tenantName\":\"\",\"timestamp\":\"2024-07-17 15:39:32.141000+00:00\",\"user\":{\"email\":\"bob@example.com\"}}",
         "outcome": "success",
@@ -407,7 +407,6 @@ An example event for `audit` looks as following:
         "abnormal_security-audit"
     ],
     "url": {
-        "extension": "0/search_v2/666/purge_messages/",
         "original": "/v1.0/search_v2/666/purge_messages/",
         "path": "/v1.0/search_v2/666/purge_messages/"
     },
@@ -451,7 +450,7 @@ An example event for `case` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-06T09:42:32.438Z",
+    "@timestamp": "2025-09-16T10:27:11.175Z",
     "abnormal_security": {
         "case": {
             "affected_employee": "john@example.com",
@@ -466,31 +465,31 @@ An example event for `case` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "d459a481-d0b8-4f26-afd1-ceed8531465a",
-        "id": "7aaba523-565c-4597-bc42-59135436336b",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "4cd31c83-7917-4ede-a402-76e83268a14c",
+        "id": "d8631705-0197-4ff8-94c6-0bffa12fb522",
+        "name": "elastic-agent-40476",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.case",
-        "namespace": "48573",
+        "namespace": "92366",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7aaba523-565c-4597-bc42-59135436336b",
+        "id": "d8631705-0197-4ff8-94c6-0bffa12fb522",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.0"
     },
     "event": {
         "action": "sign_in",
         "agent_id_status": "verified",
         "dataset": "abnormal_security.case",
         "id": "1234",
-        "ingested": "2024-08-06T09:42:44Z",
+        "ingested": "2025-09-16T10:27:14Z",
         "kind": "event",
         "original": "{\"affectedEmployee\":\"john@example.com\",\"analysis\":\"SIGN_IN\",\"caseId\":1234,\"case_status\":\"Acknowledged (Attack resolved)\",\"customerVisibleTime\":\"2024-01-05T12:33:25+00:00\",\"firstObserved\":\"2024-01-05T12:33:25+00:00\",\"remediation_status\":\"Not remediated\",\"severity\":\"Account Takeover\",\"severity_level\":\"LOW\",\"threatIds\":[]}",
         "severity": 1,
@@ -558,7 +557,7 @@ An example event for `vendor_case` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-04T13:15:26.820Z",
+    "@timestamp": "2025-09-16T10:28:43.492Z",
     "abnormal_security": {
         "vendor_case": {
             "domain": "domain1.com",
@@ -584,30 +583,30 @@ An example event for `vendor_case` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "6458e758-f9d1-4949-98bd-9efaae9e0b53",
-        "id": "3b24d5d3-6344-4f8a-81cd-29846dc47e1c",
-        "name": "elastic-agent-13136",
+        "ephemeral_id": "275f2eb6-e5af-4d09-9474-a35101db8163",
+        "id": "c6ffde09-9cb1-49f8-a212-541c027ec880",
+        "name": "elastic-agent-52145",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.vendor_case",
-        "namespace": "84924",
+        "namespace": "10092",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3b24d5d3-6344-4f8a-81cd-29846dc47e1c",
+        "id": "c6ffde09-9cb1-49f8-a212-541c027ec880",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "abnormal_security.vendor_case",
         "id": "1234",
-        "ingested": "2025-04-04T13:15:29Z",
+        "ingested": "2025-09-16T10:28:46Z",
         "kind": "event",
         "original": "{\"firstObservedTime\":\"2025-04-18T13:32:21.512848+05:30\",\"insights\":[{\"description\":\"The language contained in the email body is consistent with fraud.\",\"highlight\":\"Fraud Language\"}],\"lastModifiedTime\":\"2025-03-15T08:32:21.512849+05:30\",\"timeline\":[{\"eventTimestamp\":\"2025-03-30T08:32:21.512849+05:30\",\"markedAs\":\"Malicious\",\"recipientAddress\":\"recipient1@domain.com\",\"senderAddress\":\"sender1@domain.com\",\"subject\":\"Subject\",\"threatId\":\"threat1\"}],\"vendorCaseId\":1234,\"vendorDomain\":\"domain1.com\"}",
         "start": "2025-04-18T08:02:21.512Z",
@@ -733,24 +732,24 @@ An example event for `threat` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "021dbd0a-1980-4dce-b34a-e17fa36bd368",
-        "id": "4d67d2b3-ec2b-471b-bcb6-247a08f9ec92",
-        "name": "elastic-agent-17870",
+        "ephemeral_id": "14644945-ade1-4198-9182-53deae6e4893",
+        "id": "156b163f-4b7f-4cea-888b-29cad76e027c",
+        "name": "elastic-agent-73059",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.threat",
-        "namespace": "20873",
+        "namespace": "78643",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4d67d2b3-ec2b-471b-bcb6-247a08f9ec92",
+        "id": "156b163f-4b7f-4cea-888b-29cad76e027c",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.19.0"
     },
     "email": {
         "attachments": [
@@ -790,7 +789,7 @@ An example event for `threat` looks as following:
         ],
         "dataset": "abnormal_security.threat",
         "id": "2260288475997441028",
-        "ingested": "2025-05-20T06:55:26Z",
+        "ingested": "2025-09-16T10:27:57Z",
         "kind": "enrichment",
         "original": "{\"abxMessageId\":2260288475997441000,\"abxMessageIdStr\":\"2260288475997441028\",\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attachments\":[\"attachment1.txt\",\"attachment2.txt\"],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"links\":[{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba.com\"},{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba2.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba2.com\"}],\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
         "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",

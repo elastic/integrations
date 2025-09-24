@@ -845,6 +845,11 @@ processors:
       field: json.eventCategory
       target_field: aws.cloudtrail.event_category
       ignore_failure: true
+  - rename:
+      field: json.additionalEventData.UserName
+      tag: rename_additionalEventData_UserName_to_username
+      target_field: user.name
+      if: ctx.event?.action == 'UserAuthentication' && ctx.user?.name == null && ctx.json?.additionalEventData?.UserName != null 
   - set:
       field: cloud.region
       copy_from: json.awsRegion
@@ -1003,6 +1008,11 @@ processors:
       field: json.recipientAccountId
       target_field: aws.cloudtrail.recipient_account_id
       ignore_failure: true
+  - set:
+      field: cloud.account.id
+      copy_from: aws.cloudtrail.recipient_account_id
+      override: false
+      ignore_empty_value: true
   - rename:
       field: json.sharedEventId
       target_field: aws.cloudtrail.shared_event_id

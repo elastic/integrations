@@ -1,16 +1,20 @@
-format_version: 3.3.0
+format_version: 3.4.0
 name: beyondinsight_password_safe
 title: BeyondInsight and Password Safe
-version: "0.5.1"
+version: "0.12.0"
 source:
   license: "Elastic-2.0"
 description: Ingest privileged access management (PAM) data from BeyondTrust's BeyondInsight PAM Reporting Platform and Password Safe, using Elastic Agent.
 type: integration
 categories:
   - security
+  # Added credential_management category as Password Safe is a privileged password management solution
+  - credential_management
+  # Added iam category as this integration provides user audit data and privileged access management functionality
+  - iam
 conditions:
   kibana:
-    version: "^8.15.3 || ^9.0.0"
+    version: "^8.18.0 || ^9.0.0"
   elastic:
     subscription: "basic"
 screenshots:
@@ -24,7 +28,7 @@ screenshots:
     type: image/png
 icons:
   - src: /img/logo.svg
-    title: Sample logo
+    title: BeyondTrust logo
     size: 32x32
     type: image/svg+xml
 policy_templates:
@@ -42,6 +46,9 @@ policy_templates:
             description: For example, `https://the-server/BeyondTrust/api/public/v3` or `https://the-cloud-instance-url/BeyondTrust/api/public/v3`
             show_user: true
             required: true
+            url_allowed_schemes:
+              - http
+              - https
           - name: username
             type: text
             title: Username
@@ -61,15 +68,6 @@ policy_templates:
             description: This is the user password you have created in BeyondInsight.
             show_user: true
             secret: true
-          - name: enable_request_tracer
-            type: bool
-            title: Enable request tracing
-            default: false
-            multi: false
-            required: false
-            show_user: false
-            description: >-
-              The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
           - name: http_client_timeout
             type: text
             title: HTTP Client Timeout
@@ -84,6 +82,9 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+            url_allowed_schemes:
+              - http
+              - https
           - name: ssl
             type: yaml
             title: SSL Configuration
