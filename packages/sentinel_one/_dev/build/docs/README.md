@@ -19,8 +19,11 @@ To collect data from SentinelOne APIs, you must have an API token. To create an 
   ![SentinelOne dashboards](../img/sentinel-one-dashboard.png)
   2. Navigate to **Logged User Account** from top right panel in the navigation bar.
   3. Click **My User**.
-  4. In the API token section, click **Generate**.  
+  4. In the API token section, navigate to **Actions** > **API Token Operators** > **Generate API Token**.  
   ![SentinelOne generate API token ](../img/sentinel-one-api-token-generate.png)
+  5. Enter the MFA code, if enabled.
+  ![SentinelOne generate MFA Code ](../img/sentinel-one-mfa-code.png)
+  6. You will see the API token on the screen.
 
 **Permissions Required for the Role Attached to the User**
 
