@@ -166,5 +166,3 @@ Note that the `routing_path` setting should correspond to fields with `time_seri
     ```
 
 3. If a data stream already existed, rollover the data stream to get the new mappings: `POST metrics-kubernetes.pod-default/_rollover`
-
-
