@@ -154,7 +154,7 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 - If you want to use RBAC for your account please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
 
 **Note**:
-- The Azure Blob Storage input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
+- The Azure Blob Storage input currently does not support fetching of containers using containers prefixes, so the containers names have to be configured manually for each data stream.
 - The Azure Blob Storage input currently accepts a service account key (shared credentials key), service account URI (connection string) and OAuth2 credentials for authentication.
 - The Azure Blob Storage input currently only supports JSON/NDJSON data.
 
