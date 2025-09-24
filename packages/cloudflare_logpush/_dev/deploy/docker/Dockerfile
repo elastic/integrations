@@ -1,4 +1,4 @@
-FROM node:20-bullseye-slim
+FROM node:current-bullseye-slim
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \

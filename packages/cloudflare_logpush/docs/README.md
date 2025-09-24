@@ -4,10 +4,12 @@
 
 The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, DNS Firewall, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Sinkhole HTTP, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
-The Cloudflare Logpush integration can be used in three different modes to collect data:
+The Cloudflare Logpush integration can be used in the following modes to collect data:
 - HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
 - AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode - Cloudflare writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
+- Azure Blob Storage polling mode - Cloudflare writes data to Azure Blob Storage and Elastic Agent polls the Azure Blob Storage containers by listing its contents and reading new files.
+- Google Cloud Storage polling mode - Cloudflare writes data to Google Cloud Storage and Elastic Agent polls the GCS buckets by listing its contents and reading new files.
 
 For example, you could use the data from this integration to know which websites have the highest traffic, which areas have the highest network traffic, or observe mitigation statistics.
 
@@ -136,13 +138,25 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 ### Collect data from GCS Buckets
 
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
-- Configure the GCS bucket names and credentials along with the required configs under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
+- Configure the GCS bucket names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
 - Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
 
 **Note**:
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
-- The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
-- The GCS input currently only supports json data.
+- The GCS input currently accepts a service account JSON key or a service account JSON file for authentication.
+- The GCS input currently supports JSON/NDJSON data.
+
+### Collect data from Azure Blob Storage
+
+- [Enable Microsoft Azure](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/azure/) to ingest data into Azure Blob Storage containers.
+- Configure Azure Blob Storage container names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Azure Blob Storage" section. 
+- Make sure the storage account and authentication being used, has proper levels of access to the Azure Blob Storage Container. Please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-data-operations-portal) for more details.
+- If you want to use RBAC for your account please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
+
+**Note**:
+- The Azure Blob Storage input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
+- The Azure Blob Storage input currently accepts a service account key (shared credentials key), service account URI (connection string) and OAuth2 credentials for authentication.
+- The Azure Blob Storage input currently only supports JSON/NDJSON data.
 
 ### Collect data from the Cloudflare HTTP Endpoint
 
