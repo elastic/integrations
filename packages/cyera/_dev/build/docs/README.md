@@ -101,6 +101,22 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
+### Classification
+
+{{fields "classification"}}
+
+#### Example event
+
+{{event "classification"}}
+
+### Issue
+
+{{fields "issue"}}
+
+#### Example event
+
+{{event "issue"}}
+
 ### Event
 
 {{fields "event"}}
@@ -117,4 +133,4 @@ These inputs can be used in this integration:
 
 #### ILM Policy
 
-To facilitate event data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate classification, issues and event data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
