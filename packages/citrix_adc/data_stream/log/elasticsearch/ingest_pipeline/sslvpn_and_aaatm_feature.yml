@@ -75,7 +75,7 @@ processors:
       field: citrix.extended.message
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"${DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
-        - '^Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - \[%{DATA}\] User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"${DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+        - '^(Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - )?(\[%{DATA}\] )?User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"${DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
 
   - grok:
       tag: grok_sslvpn_httprequest
@@ -91,7 +91,7 @@ processors:
        REQUEST_INFO: "%{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -"
        TIMESTAMP_TZ: "%{DATA:_tmp.timestamp} %{DATA:citrix_adc.log.timezone}"
       patterns:
-        - '^%{CONTEXT_INFO} %{TECH_SUPPORT}%{HOST_USER_GROUP} : %{VSERVER_INFO} - %{DATA:_tmp.timestamp}(?: %{WORD:citrix_adc.log.timezone})?(?: : SSO is %{WORD:citrix_adc.log.sso_status})? : %{REQUEST_INFO} ?$'
+        - '^(?:%{CONTEXT_INFO} )?%{TECH_SUPPORT}%{HOST_USER_GROUP} : %{VSERVER_INFO} - %{DATA:_tmp.timestamp}(?: %{WORD:citrix_adc.log.timezone})?(?: : (?:Message = )?SSO is %{WORD:citrix_adc.log.sso_status})? : %{REQUEST_INFO} ?$'
         - '^%{CONTEXT_INFO} %{TECH_SUPPORT}%{HOST_USER_GROUP} : %{VSERVER_INFO} - %{TIMESTAMP_TZ} %{REQUEST_INFO} ?$'
 
   - grok:
