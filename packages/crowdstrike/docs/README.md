@@ -1422,6 +1422,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AsepValueType |  | keyword |
 | crowdstrike.AsepWrittenCount |  | long |
 | crowdstrike.AssociatedFile |  | keyword |
+| crowdstrike.Attacks.Tactic |  | keyword |
+| crowdstrike.Attacks.Technique |  | keyword |
 | crowdstrike.AttemptNumber |  | long |
 | crowdstrike.AuthenticationActivityId |  | keyword |
 | crowdstrike.AuthenticationId |  | keyword |
@@ -1468,6 +1470,10 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.CallStackModuleNames |  | keyword |
 | crowdstrike.CallStackModuleNamesVersion |  | version |
 | crowdstrike.CapPrm |  | keyword |
+| crowdstrike.CertificateIssuer |  | keyword |
+| crowdstrike.CertificatePublisher |  | keyword |
+| crowdstrike.CertificateSignatureHash |  | keyword |
+| crowdstrike.CertificateSignatureHashAlgorithm |  | keyword |
 | crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
 | crowdstrike.ChannelId |  | keyword |
@@ -1648,6 +1654,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.GroupRid |  | keyword |
 | crowdstrike.HandleCreateAuthenticationId |  | keyword |
 | crowdstrike.HandleCreated |  | keyword |
+| crowdstrike.HashAlgorithm |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
 | crowdstrike.HostProcessType |  | keyword |
@@ -1667,6 +1674,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ImageCheckSum |  | keyword |
 | crowdstrike.ImageEntryPoint |  | keyword |
 | crowdstrike.ImageFileName |  | keyword |
+| crowdstrike.ImageSignatureLevel |  | keyword |
+| crowdstrike.ImageSignatureType |  | keyword |
 | crowdstrike.ImageSubsystem |  | keyword |
 | crowdstrike.ImageTimeStamp |  | keyword |
 | crowdstrike.ImpersonatedUserName |  | keyword |
@@ -1704,6 +1713,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.IrpFlags |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
+| crowdstrike.IsProcessInitializing |  | keyword |
 | crowdstrike.IsTransactedFile |  | keyword |
 | crowdstrike.IsUnique |  | keyword |
 | crowdstrike.KernelTime |  | long |
@@ -1770,6 +1780,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ModelPrediction |  | keyword |
 | crowdstrike.ModuleCharacteristics |  | keyword |
 | crowdstrike.ModuleLoadCount |  | long |
+| crowdstrike.ModuleLoadTelemetryClassification |  | keyword |
 | crowdstrike.ModuleSize |  | keyword |
 | crowdstrike.NDRoot |  | keyword |
 | crowdstrike.NegateInterface |  | keyword |
@@ -2204,6 +2215,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.__mv_LocalAddressIP4 |  | keyword |
 | crowdstrike.__mv_aip |  | keyword |
 | crowdstrike.__mv_discoverer_aid |  | keyword |
+| crowdstrike.aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
 | crowdstrike.assessments |  | flattened |
 | crowdstrike.cid |  | keyword |
@@ -2261,6 +2273,8 @@ If the severity name is not available from the original document, it is determin
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.Ext.original.name |  | keyword |
+| file.Ext.original.path |  | keyword |
 | file.device | Device that is the source of the file. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.drive_letter | Drive letter where the file is located. This field is only relevant on Windows. The value should be uppercase, and not include the colon. | keyword |
