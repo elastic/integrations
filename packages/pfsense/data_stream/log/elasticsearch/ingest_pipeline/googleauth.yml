@@ -1,0 +1,45 @@
+---
+description: Pipeline for PFsense googleauth logs
+processors:
+    - split:
+        field: "message"
+        target_field: "_tmp.ga_log"
+        separator: "-"
+
+    - grok:
+        field: "_tmp.ga_log.1"
+        pattern_definitions:
+            GA_OUTCOME: "^[^:]*"
+            USERNAME: "[a-zA-Z0-9._-]+"
+            GA_LOG: "%{GA_OUTCOME}: %{USERNAME:user.name},?%{SPACE}(Reason: )?%{GREEDYDATA:event.reason}?"
+        trace_match: true
+        patterns:
+            - "%{GA_LOG}"
+
+    - remove:
+        ignore_failure: true
+        field: "event.reason"
+        if: "ctx?.event?.reason == \"\""
+
+    - append:
+        field: "event.category"
+        value:
+            - "authentication"
+
+    - append:
+        field: "event.outcome"
+        value:
+            - "failure"
+        if: "ctx.message.contains('failed')  "
+
+    - append:
+        field: "event.outcome"
+        allow_duplicates: false
+        value:
+            - "success"
+        if: "ctx.message.contains('successful')"
+
+on_failure:
+    - set:
+          field: "error.message"
+          value: "{{{ _ingest.on_failure_message }}}"
