@@ -459,8 +459,8 @@ An example event for `prompt_response` looks as following:
                             ]
                         }
                     ],
-                    "generationConfig": {
-                        "maxOutputTokens": 8192,
+                    "generation_config": {
+                        "max_output_tokens": 8192,
                         "temperature": 0
                     },
                     "model": "projects/elastic-sa/locations/us-central1/publishers/google/models/gemini-2.5-pro"
@@ -469,8 +469,8 @@ An example event for `prompt_response` looks as following:
                     "candidates": [
                         {
                             "score": -105.80919647216797,
-                            "avgLogprobs": -3.6485929817988954,
-                            "finishReason": "STOP",
+                            "avg_logprobs": -3.6485929817988954,
+                            "finish_reason": "STOP",
                             "content": {
                                 "role": "model",
                                 "parts": [
@@ -481,30 +481,30 @@ An example event for `prompt_response` looks as following:
                             }
                         }
                     ],
-                    "createTime": "2025-09-08T21:04:11.034753Z",
-                    "modelVersion": "gemini-2.5-pro",
-                    "responseId": "y0S_aMGPArCYqsMPntGNyA4",
-                    "usageMetadata": {
-                        "billablePromptUsage": {
-                            "textCount": 11
+                    "create_time": "2025-09-08T21:04:11.034753Z",
+                    "model_version": "gemini-2.5-pro",
+                    "response_id": "y0S_aMGPArCYqsMPntGNyA4",
+                    "usage_metadata": {
+                        "billable_prompt_usage": {
+                            "text_count": 11
                         },
-                        "candidatesTokenCount": 29,
-                        "candidatesTokensDetails": [
+                        "candidates_token_count": 29,
+                        "candidates_tokens_details": [
                             {
                                 "modality": "TEXT",
-                                "tokenCount": 29
+                                "token_count": 29
                             }
                         ],
-                        "promptTokenCount": 3,
-                        "promptTokensDetails": [
+                        "prompt_token_count": 3,
+                        "prompt_tokens_details": [
                             {
                                 "modality": "TEXT",
-                                "tokenCount": 3
+                                "token_count": 3
                             }
                         ],
-                        "thoughtsTokenCount": 901,
-                        "totalTokenCount": 933,
-                        "trafficType": "ON_DEMAND"
+                        "thoughts_token_count": 901,
+                        "total_token_count": 933,
+                        "traffic_type": "ON_DEMAND"
                     }
                 },
                 "logging_time": "2025-09-08T21:04:22.248Z",
@@ -557,35 +557,35 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.prompt_response_logs.full_request.contents.parts.text | Text content of the prompt or message. | text |
 | gcp.vertexai.prompt_response_logs.full_request.contents.role | Role of the content sender (e.g., user, model, assistant). | keyword |
 | gcp.vertexai.prompt_response_logs.full_request.endpoint | The Vertex AI API endpoint URL used for the request. | keyword |
-| gcp.vertexai.prompt_response_logs.full_request.generationConfig.maxOutputTokens | Maximum number of output tokens to generate. | long |
-| gcp.vertexai.prompt_response_logs.full_request.generationConfig.temperature | Temperature setting for response randomness (0.0 to 1.0). | float |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.max_output_tokens | Maximum number of output tokens to generate. | long |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.temperature | Temperature setting for response randomness (0.0 to 1.0). | float |
 | gcp.vertexai.prompt_response_logs.full_request.model | Full model path including project, location, and model name. | keyword |
-| gcp.vertexai.prompt_response_logs.full_request.safetySettings.category | Safety category (e.g., HARM_CATEGORY_DANGEROUS_CONTENT). | keyword |
-| gcp.vertexai.prompt_response_logs.full_request.safetySettings.threshold | Safety threshold level (e.g., BLOCK_ONLY_HIGH). | keyword |
-| gcp.vertexai.prompt_response_logs.full_request.systemInstruction.parts.text | Text content of the system instruction. | text |
-| gcp.vertexai.prompt_response_logs.full_response.candidates.avgLogprobs | Average log probabilities for the candidate. | float |
+| gcp.vertexai.prompt_response_logs.full_request.safety_settings.category | Safety category (e.g., HARM_CATEGORY_DANGEROUS_CONTENT). | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold | Safety threshold level (e.g., BLOCK_ONLY_HIGH). | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.system_instruction.parts.text | Text content of the system instruction. | text |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.avg_logprobs | Average log probabilities for the candidate. | float |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text | Text content of the response. | text |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.content.role | Role of the response sender (e.g., model). | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.candidates.finishReason | Reason why the generation finished (e.g., STOP). | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.candidates.safetyRatings.category | Safety category (e.g., HARM_CATEGORY_HATE_SPEECH). | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.candidates.safetyRatings.probability | Probability level (e.g., NEGLIGIBLE). | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.candidates.safetyRatings.probabilityScore | Probability score for the safety rating. | float |
-| gcp.vertexai.prompt_response_logs.full_response.candidates.safetyRatings.severity | Severity level of potential harm (e.g., HARM_SEVERITY_NEGLIGIBLE). | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.candidates.safetyRatings.severityScore | Numerical severity score. | float |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason | Reason why the generation finished (e.g., STOP). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category | Safety category (e.g., HARM_CATEGORY_HATE_SPEECH). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability | Probability level (e.g., NEGLIGIBLE). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability_score | Probability score for the safety rating. | float |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity | Severity level of potential harm (e.g., HARM_SEVERITY_NEGLIGIBLE). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity_score | Numerical severity score. | float |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.score | Score assigned to the candidate response. | float |
-| gcp.vertexai.prompt_response_logs.full_response.createTime | Timestamp when the response was created. | date |
-| gcp.vertexai.prompt_response_logs.full_response.modelVersion | Version of the model that generated the response. | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.responseId | Unique identifier for the response. | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.billablePromptUsage.textCount | Count of text characters in billable prompt usage. | long |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.candidatesTokenCount | Total number of tokens in response candidates. | long |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.candidatesTokensDetails.modality | Type of content modality (e.g., TEXT). | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.candidatesTokensDetails.tokenCount | Number of tokens for this modality. | long |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.promptTokenCount | Total number of tokens in the prompt. | long |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.promptTokensDetails.modality | Type of content modality (e.g., TEXT). | keyword |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.promptTokensDetails.tokenCount | Number of tokens for this modality. | long |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.thoughtsTokenCount | Number of tokens used for internal thoughts/reasoning. | long |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.totalTokenCount | Total number of tokens used in the entire interaction. | long |
-| gcp.vertexai.prompt_response_logs.full_response.usageMetadata.trafficType | Type of traffic (e.g., ON_DEMAND). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.create_time | Timestamp when the response was created. | date |
+| gcp.vertexai.prompt_response_logs.full_response.model_version | Version of the model that generated the response. | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.response_id | Unique identifier for the response. | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.billable_prompt_usage.text_count | Count of text characters in billable prompt usage. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_token_count | Total number of tokens in response candidates. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_tokens_details.modality | Type of content modality (e.g., TEXT). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_tokens_details.token_count | Number of tokens for this modality. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count | Total number of tokens in the prompt. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_tokens_details.modality | Type of content modality (e.g., TEXT). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_tokens_details.token_count | Number of tokens for this modality. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.thoughts_token_count | Number of tokens used for internal thoughts/reasoning. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.total_token_count | Total number of tokens used in the entire interaction. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.traffic_type | Type of traffic (e.g., ON_DEMAND). | keyword |
 | gcp.vertexai.prompt_response_logs.logging_time | Timestamp when the AI interaction was logged. | date |
 | gcp.vertexai.prompt_response_logs.metadata.request_latency | Request latency in milliseconds. | float |
 | gcp.vertexai.prompt_response_logs.model | Name of the AI model used (e.g., gemini-2.5-pro). | keyword |
