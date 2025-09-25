@@ -143,8 +143,8 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 
 **Note**:
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
-- The GCS input currently accepts a service account JSON key or a service account JSON file for authentication.
-- The GCS input currently supports JSON/NDJSON data.
+- The GCS input accepts a service account JSON key or a service account JSON file for authentication.
+- The GCS input supports JSON/NDJSON data.
 
 ### Collect data from Azure Blob Storage
 
@@ -154,9 +154,9 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 - If you want to use RBAC for your account please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
 
 **Note**:
-- The Azure Blob Storage input currently does not support fetching of containers using containers prefixes, so the containers names have to be configured manually for each data stream.
-- The Azure Blob Storage input currently accepts a service account key (shared credentials key), service account URI (connection string) and OAuth2 credentials for authentication.
-- The Azure Blob Storage input currently only supports JSON/NDJSON data.
+- The Azure Blob Storage input does not support fetching from containers using container prefixes, so the containers' names must be configured manually for each data stream.
+- The Azure Blob Storage input accepts a service account key (shared credentials key), service account URI (connection string) and OAuth2 credentials for authentication.
+- The Azure Blob Storage input only supports JSON/NDJSON data.
 
 ### Collect data from the Cloudflare HTTP Endpoint
 
