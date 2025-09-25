@@ -2,6 +2,10 @@
 # data_stream/audit/elasticsearch/ingest_pipeline/default.yml (FIXED)
 description: "Agentless pipeline for processing Keeper Security audit events"
 processors:
+  # Set ECS version
+  - set:
+      field: ecs.version
+      value: "8.11"
   # Set data stream information
   - set:
       field: data_stream.type
@@ -50,8 +54,8 @@ processors:
             value: "Failed to parse timestamp: {{{keeper.timestamp}}}"
  
   - set:
-      field: '@timestamp'
-      value: "{{_ingest.timestamp}}"
+      field: "@timestamp"
+      copy_from: "_ingest.timestamp"
       if: ctx['@timestamp'] == null
       description: "If no keeper.timestamp, try to use existing @timestamp or set current time"
 
