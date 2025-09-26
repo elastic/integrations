@@ -1,0 +1,38 @@
+{
+  "id": "provisioned_utilization",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "Provisioned Utlization",
+    "tags": ["Azure AI Foundry",
+      "Azure AI Foundry Provisioned Utilization"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-azure.ai_foundry-default\\n| STATS provisioned_utilization = AVG(azure.ai_foundry.provisioned_utilization.avg) by azure.dimensions.model_deployment_name\\n| WHERE provisioned_utilization > 85 and event.dataset == \\\"azure.ai_foundry\\\""
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
