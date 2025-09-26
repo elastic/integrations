@@ -19,8 +19,10 @@ When upgrading RabbitMQ to version 4.1.3 or higher, the `/api/nodes` endpoint (f
 
 ### Application Logs
 
-Application logs collects standard RabbitMQ logs.
-It will only support RabbitMQ default i.e RFC 3339 timestamp format.
+Application logs collect standard RabbitMQ logs. As of recent RabbitMQ versions, both text-based and JSON log formats are supported. The integration will automatically detect and parse either format.
+
+- **Text logs**: Supported for all versions with standard log output (RFC 3339 timestamp format).
+- **JSON logs**: Supported for RabbitMQ versions that enable JSON logging (see RabbitMQ documentation for enabling JSON logs). The integration supports parsing of JSON logs with the default set of predefined field names as output by RabbitMQ. If you customize the field names in your RabbitMQ JSON log configuration (for example, renaming `msg` to `message`), parsing may not work as expected and some fields may not be extracted correctly.
 
 **ECS Field Reference**
 
@@ -40,6 +42,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| rabbitmq.log.domain | Domain | keyword |
 | rabbitmq.log.pid | The Erlang process id | keyword |
 
 
