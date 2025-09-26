@@ -135,7 +135,7 @@ The `prompt_response_logs` data stream is designed to collect Vertex AI prompt-r
 Vertex AI logs export to BigQuery enables you to export detailed Google Cloud Vertex AI interaction data (such as prompts, responses, model usage, and metadata) automatically to a BigQuery dataset that you specify. Then you can access your Vertex AI logs from BigQuery for detailed analysis and monitoring using this integration. This enables comprehensive tracking of AI model usage, performance monitoring, and cost analysis.
 
 
-Before you start, you need to push the Vertex AI Prompt response logs to the BigQuery Table. Please refer to this [official documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging_) for detailed steps. 
+Before configuring this integration, you must export Vertex AI logs to a BigQuery table. Follow the official guide here: [Exporting Vertex AI logs to BigQuery](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging_)
 
 
 **Configuration**: When configuring the integration, you'll need to configure the following settings:
