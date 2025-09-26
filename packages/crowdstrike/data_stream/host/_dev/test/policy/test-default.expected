@@ -13,101 +13,91 @@ inputs:
           config_version: 2
           data_stream:
             dataset: crowdstrike.host
-            type: logs
-          interval: 5m
-          program: |
-            (
-              state.want_more ?
-                state.?page.start
-              :
-                optional.of(state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)))
-            ).as(filter, state.with(
-              get_request(
-                state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
-                  "sort": ["modified_timestamp.asc"],
-                  "offset": [string(state.offset)],
-                  "limit": [string(state.batch_size)],
-                  ?"filter": filter.hasValue() || state.?query.orValue("") != "" ?
-                    optional.of([
+          interval: 24h
+          program: |-
+            state.with(
+              (
+                state.?want_more.orValue(false) ?
+                  state.start_time
+                :
+                  state.?cursor.last_timestamp.orValue(
+                    (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                  )
+              ).as(start_time,
+                request(
+                  "GET",
+                  state.url.trim_right("/") + "/devices/combined/devices/v1?" + {
+                    ?"offset": state.?next.page_token.optMap(v, [v]),
+                    "limit": [string(state.batch_size)],
+                    "sort": ["modified_timestamp|asc"],
+                    "filter": [
                       [
-                        ?filter.optMap(f, 'modified_timestamp:>"'+f+'"'),
-                        ?state.?query.optMap(q, "("+q+")"),
-                      ].join("+")
-                    ])
-                  :
-                    optional.none(),
-                }.format_query()
-              ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
-                bytes(get_resp.Body).decode_json().as(body,
-                  (
-                    (int(state.offset) + body.resources.size()) < body.meta.pagination.total
-                  ).as(want_more, {
-                    ?"resources": body.resources.size() > 0 ? optional.of(body.resources) : optional.none(),
-                    "events": [],
-                    "offset": want_more ? int(state.offset) + body.resources.size() : 0,
-                    "want_more": want_more,
-                  })
-                )
-              :
-                {
-                  "events": {
-                    "error": {
-                      "code": string(get_resp.StatusCode),
-                      "id": string(get_resp.Status),
-                      "message": "GET:"+(
-                        size(get_resp.Body) != 0 ?
-                          string(get_resp.Body)
+                        "modified_timestamp:>'" + start_time + "'",
+                        ?state.?query.optMap(q, "(" + q + ")"),
+                      ].join("+"),
+                    ],
+                    ?"fields": state.?select_fields.optMap(v, [v.trim_right(",")+",modified_timestamp"]),
+                  }.format_query()
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    (size(body.?errors.orValue([])) > 0) ?
+                      {
+                        "events": body.errors.map(error,
+                          {
+                            "error": {
+                              "code": string(error.code),
+                              "message": string(error.message),
+                            },
+                          }
+                        ),
+                        "next": {},
+                        "want_more": false,
+                      }
+                    :
+                      {
+                        "events": has(body.resources) ?
+                          body.resources.map(e,
+                            {
+                              "message": e.encode_json(),
+                            }
+                          )
                         :
-                          string(get_resp.Status) + ' (' + string(get_resp.StatusCode) + ')'
-                      ),
-                    },
-                  },
-                  "want_more": false,
-                }
-              )
-            ).as(state, state.with(
-              !has(state.resources) ? state : // Exit early due to GET failure or no resources to collect.
-                post_request(
-                  state.url + "/devices/entities/devices/v2",
-                  "application/json",
-                  {"ids": state.resources }.encode_json()
-                ).do_request().as(post_resp, post_resp.StatusCode == 200 ?
-                  bytes(post_resp.Body).decode_json().as(inner_body, {
-                    "events": inner_body.resources.map(e, {
-                      "message": e.encode_json(),
-                    }),
-                    "cursor": {
-                      ?"last_timestamp": has(inner_body.resources) && inner_body.resources.size() > 0 ?
-                        optional.of(inner_body.resources.map(e, timestamp(e.modified_timestamp)).max().format(time_layout.RFC3339))
-                      :
-                        state.?cursor.last_timestamp
-                    },
-                    "page": {
-                      "start": has(state.?page.start) ?
-                        (state.want_more ? state.page.start : state.cursor.last_timestamp)
-                      :
-                        now.format(time_layout.RFC3339)
-                    },
-                  })
+                          [],
+                        "start_time": start_time,
+                        "next": {
+                          ?"page_token": body.?meta.pagination.next,
+                        },
+                        "cursor": {
+                          // The records are sorted in ascending order, based on value of modified_timestamp.
+                          // In the next interval we start from the last event (newest) time.
+                          ?"last_timestamp": (has(body.resources) && body.resources.size() > 0) ?
+                            optional.of(timestamp(body.resources[size(body.resources) - 1].modified_timestamp).format(time_layout.RFC3339))
+                          :
+                            state.?cursor.last_timestamp,
+                        },
+                        "want_more": has(body.?meta.pagination.next),
+                      }
+                  )
                 :
                   {
                     "events": {
                       "error": {
-                        "code": string(post_resp.StatusCode),
-                        "id": string(post_resp.Status),
-                        "message": "POST:"+(
-                          size(post_resp.Body) != 0 ?
-                            string(post_resp.Body)
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.trim_right("/") + "/devices/combined/devices/v1:" + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
                           :
-                            string(post_resp.Status) + ' (' + string(post_resp.StatusCode) + ')'
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                         ),
                       },
                     },
+                    "next": {},
                     "want_more": false,
                   }
                 )
               )
-            ))
+            )
           publisher_pipeline.disable_host: true
           redact:
             fields: null
@@ -119,10 +109,9 @@ inputs:
             maxbackups: 5
           resource.url: http://host.tld
           state:
-            batch_size: 5000
+            batch_size: 10000
             initial_interval: 24h
-            offset: 0
-            want_more: false
+            select_fields: null
           tags:
             - preserve_original_event
             - preserve_duplicate_custom_fields
