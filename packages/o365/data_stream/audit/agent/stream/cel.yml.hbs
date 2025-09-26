@@ -152,7 +152,12 @@ program: |-
             :
               e.with(
                 {
-                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().endTime[0],
+                  "endTime": state.work.next_list.parse_url().RawQuery.parse_query().as(q,
+                    [
+                      ?q.?endTime[0],
+                      ?q.?endtime[0],
+                    ]
+                  )[?0].orValue(now),
                 }
               )
           ).as(list, (size(list) != 0) ?
@@ -229,15 +234,17 @@ program: |-
         )
       :
         {
-          "error": {
-            "code": string(list_resp.StatusCode),
-            "id": string(list_resp.Status),
-            "message": "GET " + state.work.next_list + ": " + (
-              (size(list_resp.Body) != 0) ?
-                string(list_resp.Body)
-              :
-                string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
-            ),
+          "events": {
+            "error": {
+              "code": string(list_resp.StatusCode),
+              "id": string(list_resp.Status),
+              "message": "GET " + state.work.next_list + ": " + (
+                (size(list_resp.Body) != 0) ?
+                  string(list_resp.Body)
+                :
+                  string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
+              ),
+            },
           },
         }
       )
@@ -309,9 +316,9 @@ program: |-
       ).as(state, !has(state.base) ?
         // No current work item above, so finish.
         {}
-      : has(state.error) ?
+      : has(state.?work.sub.error) ?
         // Getting subscription detail failed.
-        state
+        state.work.sub.as(err, state.drop("work.sub").with({"events": err}))
       :
         (
           // This exists purely to rewrite the cursor from the original
@@ -350,7 +357,7 @@ program: |-
                   ).as(created_at,
                     {
                       "start": created_at,
-                      "end": created_at + batch_interval,
+                      "end": min(now(), created_at + batch_interval),
                     }
                   )
                 :
@@ -369,8 +376,8 @@ program: |-
                       {
                         "contentType": [state.work.curr_type],
                         "PublisherIdentifier": [state.base.tenant_id],
-                        "startTime": [string(min(now() - duration("1ms"), time_range.start))],
-                        "endTime": [string(min(now(), time_range.end))],
+                        "startTime": [string(min(time_range.end - duration("1ms"), time_range.start))],
+                        "endTime": [string(time_range.end)],
                       }.format_query(),
                     ]
                   )
@@ -435,15 +442,17 @@ program: |-
                   )
                 :
                   {
-                    "error": {
-                      "code": string(list_resp.StatusCode),
-                      "id": string(list_resp.Status),
-                      "message": "GET /activity/feed/subscriptions/content?contentType=" + state.work.curr_type + ": " + (
-                        (size(list_resp.Body) != 0) ?
-                          string(list_resp.Body)
-                        :
-                          string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
-                      ),
+                    "events": {
+                      "error": {
+                        "code": string(list_resp.StatusCode),
+                        "id": string(list_resp.Status),
+                        "message": "GET /activity/feed/subscriptions/content?contentType=" + state.work.curr_type + ": " + (
+                          (size(list_resp.Body) != 0) ?
+                            string(list_resp.Body)
+                          :
+                            string(list_resp.Status) + " (" + string(list_resp.StatusCode) + ")"
+                        ),
+                      },
                     },
                   }
                 )
@@ -456,8 +465,13 @@ program: |-
     (
       // Ensure that we bring the current type up to the current time,
       // even if we did not get any content for the query period.
-      timestamp(state.cursor.last_for[state.work.curr_type.to_lower()]) < now - duration("1h") &&
-      !state.work.todo_type.exists(t, t == state.work.curr_type)
+      has(state.?work.curr_type) && state.?cursor.last_for.optMap(last_for,
+        state.work.curr_type.to_lower().as(curr_type, curr_type in last_for ?
+            timestamp(last_for[curr_type]) < now - duration("1h")
+          :
+            false
+        )
+      ).orValue(false) && !state.work.todo_type.exists(t, t == state.work.curr_type)
     ) ?
       state.with(
         {
@@ -470,7 +484,7 @@ program: |-
     state.with(
       {
         "want_more": state.work.as(w,
-          size(w.todo_type) != 0 || size(w.todo_content) != 0 || w.?next_list.orValue("") != ""
+          size(w.?todo_type.orValue([])) != 0 || size(w.?todo_content.orValue([])) != 0 || w.?next_list.orValue("") != ""
         ),
       }
     )

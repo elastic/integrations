@@ -8,21 +8,22 @@ The Airlock Digital integration for Elastic allows you to collect logs from, [Ai
 
 ### Compatibility
 
-The Airlock Digital integration is compatible with `v6.1.x` and `v1` version of Airlock Digital REST API.
+The Airlock Digital integration is compatible with version `v6.1.x` of Airlock Digital and `v1` of the REST API.
 
 ### How it works
 
-This integration periodically queries the Airlock Digital REST API to retrieve Server Activities logs.
+This integration periodically queries the Airlock Digital REST API to retrieve Agent, Execution Histories and Server Activities logs.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
+- `Agent`: Collects agent logs via [Airlock Digital REST API](https://api.airlockdigital.com/#35ef50c6-1df4-4330-a433-1915ccf380cf).
+- `Execution Histories`: Collects executions history logs via [Airlock Digital REST API](https://api.airlockdigital.com/#3634a82d-eb6b-44b7-b662-dddc37d4d9d6).
 - `Server Activities`: Collects server activity logs via [Airlock Digital REST API](https://api.airlockdigital.com/#290b4657-17d4-4048-982e-43df95200624).
 
-
 ### Supported use cases
-Integrating Airlock Digital server activity logs into Elastic SIEM gives deep visibility into critical system and user-level operations. By monitoring activities across tasks, users, and root-level actions, analysts can quickly identify unauthorized changes, detect policy misuse, and trace suspicious behavior. Purpose-built dashboards provide clear visibility into activity trends, user behaviors, and essential details to support faster investigations and stronger system oversight.
+Integrating Airlock Digital agent, execution history, and server activity logs with Elastic SIEM delivers comprehensive visibility into endpoint and system operations. Dashboards highlight agent health, user and host activity, OS distribution, policy enforcement, storage status, trusted configurations, and execution behaviors such as blocked or untrusted runs and policy violations. At the same time, monitoring server-side activities across tasks, users, and root actions enables quick identification of unauthorized changes, policy misuse, and suspicious behavior. Together, these insights empower SOC teams to accelerate investigations, strengthen compliance, optimize resource management, and maintain stronger endpoint and system security.
 
 ## What do I need to use this integration?
 
@@ -32,7 +33,7 @@ Integrating Airlock Digital server activity logs into Elastic SIEM gives deep vi
 
 1. In order to make the API calls, the User Group to which a user belongs should contain required permissions. You can follow the below steps for that:
 2. Go to the **Settings** and navigate to **Users** tab.
-3. Under **User Group Management** for the respective user group provide **logging/svractivities** roles in the REST API Roles section and click on save.
+3. Under **User Group Management** for the respective user group provide **agent/find**, **group/policies**, **logging/exechistories** and **logging/svractivities** roles in the REST API Roles section and click on save.
 
 #### Generate Client API key for Authentication:
 
@@ -89,11 +90,27 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
+#### Agent
+
+{{fields "agent"}}
+
+#### Execution Histories
+
+{{fields "execution_histories"}}
+
 #### Server Activities
 
 {{fields "server_activities"}}
 
 ### Example event
+
+#### Agent
+
+{{event "agent"}}
+
+#### Execution Histories
+
+{{event "execution_histories"}}
 
 #### Server Activities
 
@@ -107,6 +124,27 @@ These inputs can be used in this integration:
 
 ### API usage
 
-These integration datasets use the following API:
+These integration datasets use the following APIs:
 
+- `Agent`: [Airlock Digital REST API](https://api.airlockdigital.com/#35ef50c6-1df4-4330-a433-1915ccf380cf).
+- `Execution Histories`: [Airlock Digital REST API](https://api.airlockdigital.com/#3634a82d-eb6b-44b7-b662-dddc37d4d9d6). Supported execution types are:
+    - Trusted Execution
+    - Blocked Execution
+    - Untrusted Execution [Audit]
+    - Untrusted Execution [OTP]
+    - Trusted Path Execution
+    - Trusted Publisher Execution
+    - Blocklist Execution
+    - Blocklist Execution [Audit]
+    - Trusted Process Execution
+    - Constrained Execution
+    - Trusted Metadata Execution
+    - Trusted Browser Execution
+    - Blocked Browser Execution
+    - Untrusted Browser Execution [Audit]
+    - Untrusted Browser Execution [OTP]
+    - Blocklist Browser Execution [Audit]
+    - Blocklist Browser Execution
+    - Trusted Installer Execution
+    - Trusted Browser Metadata Execution
 - `Server Activities`: [Airlock Digital REST API](https://api.airlockdigital.com/#290b4657-17d4-4048-982e-43df95200624).

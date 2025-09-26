@@ -1,7 +1,7 @@
 format_version: "3.0.2"
 name: cloudflare_logpush
 title: Cloudflare Logpush
-version: "1.39.2"
+version: "1.40.0"
 description: Collect and parse logs from Cloudflare API with Elastic Agent.
 type: integration
 categories:
@@ -10,7 +10,7 @@ categories:
   - cdn_security
 conditions:
   kibana:
-    version: "^8.16.5 || ^9.0.0"
+    version: "^8.17.1 || ^9.0.0"
 screenshots:
   - src: /img/cloudflare_logpush-overview1.png
     title: Cloudflare Logpush - Zero Trust Overview
@@ -235,6 +235,69 @@ policy_templates:
             title: "JSON Credentials file path"
             description: Path to a file containing the service account key text to authenticate to the data store.
             multi: false
+            required: false
+            show_user: false
+      - type: azure-blob-storage
+        title: Collect Cloudflare Logpush logs via Azure Blob Storage
+        description: Collecting Logpush logs from Cloudflare via Azure Blob Storage.
+        vars:
+          - name: account_name
+            type: text
+            title: Account Name
+            description: |
+              This attribute is required for various internal operations with respect to authentication, creating service clients and blob clients which are used internally for various processing purposes.
+            required: true
+            show_user: true
+          - name: storage_url
+            type: text
+            title: Storage URL
+            description: |
+              Use this attribute to specify a custom storage URL if required. By default it points to azure cloud storage. Only use this if there is a specific need to connect to a different environment where blob storage is available.
+              URL format : {{protocol}}://{{account_name}}.{{storage_uri}}.
+            required: false
+            show_user: false
+          - name: oauth2
+            required: true
+            show_user: true
+            title: Collect logs using OAuth2 authentication
+            description: To collect logs using OAuth2 authentication enable the toggle switch. By default, it will collect logs using service account key or URI.
+            type: bool
+            multi: false
+            default: false
+          - name: client_id
+            type: text
+            title: Client ID (OAuth2)
+            description: Client ID of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+            required: false
+            show_user: true
+            secret: true
+          - name: client_secret
+            type: password
+            title: Client Secret (OAuth2)
+            description: Client Secret of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+            required: false
+            show_user: true
+            secret: true
+          - name: tenant_id
+            type: text
+            title: Tenant ID (OAuth2)
+            description: Tenant ID of Azure Account. This is required if 'Collect logs using OAuth2 authentication' is enabled.
+            multi: false
+            required: false
+            show_user: true
+          - name: service_account_key
+            type: password
+            title: Service Account Key
+            description: |
+              This attribute contains the access key, found under the Access keys section on Azure Cloud, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common access key.
+            required: false
+            show_user: true
+            secret: true
+          - name: service_account_uri
+            type: text
+            title: Service Account URI
+            description: |
+              This attribute contains the connection string, found under the Access keys section on Azure Cloud, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common connection string.
             required: false
             show_user: false
 owner:
