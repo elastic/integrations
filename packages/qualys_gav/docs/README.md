@@ -57,20 +57,20 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-17T14:45:12.347Z",
+    "@timestamp": "2025-09-26T13:07:03.724Z",
     "agent": {
-        "ephemeral_id": "5e6c4dcb-0e9b-4a96-a7db-5c28ca94e54a",
-        "id": "5fb2cbae-ad12-4086-9ed7-8813ced52421",
-        "name": "elastic-agent-60654",
+        "ephemeral_id": "3729163b-132c-437f-b8a8-d4200aef9b6b",
+        "id": "0ef8fd67-1afe-4495-99f1-bae4e45a64b7",
+        "name": "elastic-agent-83075",
         "type": "filebeat",
-        "version": "9.1.0"
+        "version": "9.1.4"
     },
     "cloud": {
         "provider": "aws"
     },
     "data_stream": {
         "dataset": "qualys_gav.asset",
-        "namespace": "53352",
+        "namespace": "72894",
         "type": "logs"
     },
     "device": {
@@ -83,9 +83,9 @@ An example event for `asset` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "5fb2cbae-ad12-4086-9ed7-8813ced52421",
+        "id": "0ef8fd67-1afe-4495-99f1-bae4e45a64b7",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.1.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -94,7 +94,7 @@ An example event for `asset` looks as following:
         ],
         "created": "2025-07-09T14:21:12.000Z",
         "dataset": "qualys_gav.asset",
-        "ingested": "2025-09-17T14:45:15Z",
+        "ingested": "2025-09-26T13:07:06Z",
         "kind": "event",
         "module": "qualys_gav",
         "risk_score": 0,
@@ -690,16 +690,16 @@ An example event for `asset` looks as following:
 | qualys_gav.asset.cloud_provider.gcp.tags.value |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.tags.name |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.tags.value |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.datacenter_id |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.device_name |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.domain |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.ibm_id |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.location |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.private_ip |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.private_vlan |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.public_ip |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.public_vlan |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.state |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.datacenter_id |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.device_name |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.domain |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.ibm_id |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.location |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.private_ip |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.private_vlan |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.public_ip |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.public_vlan |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.state |  | keyword |
 | qualys_gav.asset.container.has_sensor |  | keyword |
 | qualys_gav.asset.container.no_of_containers |  | long |
 | qualys_gav.asset.container.no_of_images |  | long |
