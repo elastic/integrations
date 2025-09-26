@@ -96,147 +96,116 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
                                     "layers": {
-                                        "ef1587f3-3a48-4aba-99a4-d68dce19ea06": {
+                                        "1fa3fe7c-5607-469e-a6a1-306c46e71081": {
                                             "columns": [
                                                 {
-                                                    "columnId": "04193af0-cec5-45cb-b486-cdaf08dd0dd4",
-                                                    "customLabel": true,
-                                                    "fieldName": "total",
-                                                    "label": "IP Address",
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "@timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source.address",
+                                                    "customLabel": false,
+                                                    "fieldName": "source.address",
+                                                    "label": "source.address",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "b847e79e-3175-45ac-956c-ee7952c475ae",
+                                                    "fieldName": "source.port",
+                                                    "label": "source.port",
                                                     "meta": {
                                                         "esType": "long",
                                                         "sourceParams": {
                                                             "indexPattern": "logs-*",
-                                                            "sourceField": "total"
+                                                            "sourceField": "source.port"
                                                         },
                                                         "type": "number"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "8913a68b-e3a3-4b35-b3b8-78792d65b84b",
-                                                    "customLabel": true,
-                                                    "fieldName": "source.address",
-                                                    "label": "IP Address",
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "sourceParams": {
-                                                            "indexPattern": "logs-*",
-                                                            "sourceField": "source.address"
-                                                        },
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
-                                            "query": {
-                                                "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
-                                            },
-                                            "timeField": "@timestamp"
-                                        },
-                                        "f8ebcb6d-294d-4504-8adf-8999dc754cf0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "63d4169f-cc81-4206-8a39-b3a96d36448c",
-                                                    "fieldName": "total",
-                                                    "label": "total",
+                                                    "columnId": "f993f4ea-c066-49b0-96e2-24090483e10c",
+                                                    "fieldName": "aws.vpc.flow.bytes",
+                                                    "label": "aws.vpc.flow.bytes",
                                                     "meta": {
                                                         "esType": "long",
                                                         "sourceParams": {
                                                             "indexPattern": "logs-*",
-                                                            "sourceField": "total"
+                                                            "sourceField": "aws.vpc.flow.bytes"
                                                         },
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             ],
                                             "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
-                                            }
+                                                "esql": "FROM logs-*\n| WHERE aws.vpc.flow.action == \"REJECT\"\n| KEEP @timestamp, source.address, source.port, aws.vpc.flow.bytes\n| SORT @timestamp DESC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "needsRefresh": false,
+                            "internalReferences": [
+                                {
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "textBasedLanguages-datasource-layer-1fa3fe7c-5607-469e-a6a1-306c46e71081",
+                                    "type": "index-pattern"
+                                }
+                            ],
                             "query": {
-                                "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
+                                "esql": "FROM logs-*\n| WHERE aws.vpc.flow.action == \"REJECT\"\n| KEEP @timestamp, source.address, source.port, aws.vpc.flow.bytes\n| SORT @timestamp DESC"
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
+                                "columns": [
                                     {
-                                        "accessors": [
-                                            "04193af0-cec5-45cb-b486-cdaf08dd0dd4"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "default",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "ef1587f3-3a48-4aba-99a4-d68dce19ea06",
-                                        "layerType": "data",
-                                        "seriesType": "bar_horizontal",
-                                        "xAccessor": "8913a68b-e3a3-4b35-b3b8-78792d65b84b"
+                                        "columnId": "@timestamp"
+                                    },
+                                    {
+                                        "columnId": "source.address"
+                                    },
+                                    {
+                                        "columnId": "b847e79e-3175-45ac-956c-ee7952c475ae",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "f993f4ea-c066-49b0-96e2-24090483e10c",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": false,
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "bar",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "valueLabels": "show",
-                                "yTitle": "Count"
+                                "density": "normal",
+                                "layerId": "1fa3fe7c-5607-469e-a6a1-306c46e71081",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
-                        "title": "Bar vertical stacked",
+                        "title": "source.port over @timestamp",
+                        "type": "lens",
                         "version": 1,
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -245,21 +214,21 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
+                        "esql": "FROM logs-*\n| WHERE aws.vpc.flow.action == \"REJECT\"\n| KEEP @timestamp, source.address, source.port, aws.vpc.flow.bytes\n| SORT @timestamp DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Top 10 IP Source Addresses"
+                    "title": "VPC Flow Reject Logs"
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "bc6fbdd1-1e85-468b-b4e4-8814ac0a9f7f",
-                    "w": 24,
+                    "i": "ffbb1e6c-cab7-4cbe-835c-ca77c815fd19",
+                    "w": 48,
                     "x": 0,
-                    "y": 0
+                    "y": 26
                 },
-                "panelIndex": "bc6fbdd1-1e85-468b-b4e4-8814ac0a9f7f",
+                "panelIndex": "ffbb1e6c-cab7-4cbe-835c-ca77c815fd19",
                 "type": "lens"
             },
             {
@@ -400,7 +369,7 @@
                                 },
                                 "valueLabels": "hide",
                                 "xTitle": "@timestamp",
-                                "yTitle": "Count"
+                                "yTitle": "Flow logs records"
                             }
                         },
                         "title": "total over time_bucket",
@@ -422,13 +391,13 @@
                     "title": "VPC Flow Total Requests"
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "f1940cbe-5fce-4620-ac2a-fd99ceb583ed",
-                    "w": 24,
-                    "x": 24,
-                    "y": 0
+                    "h": 14,
+                    "i": "adf2d7e5-d751-4c54-bf90-e0edfb1156d0",
+                    "w": 48,
+                    "x": 0,
+                    "y": 12
                 },
-                "panelIndex": "f1940cbe-5fce-4620-ac2a-fd99ceb583ed",
+                "panelIndex": "adf2d7e5-d751-4c54-bf90-e0edfb1156d0",
                 "type": "lens"
             },
             {
@@ -452,116 +421,147 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {
-                                        "1fa3fe7c-5607-469e-a6a1-306c46e71081": {
+                                        "ef1587f3-3a48-4aba-99a4-d68dce19ea06": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
-                                                    "customLabel": false,
-                                                    "fieldName": "@timestamp",
-                                                    "label": "@timestamp",
+                                                    "columnId": "04193af0-cec5-45cb-b486-cdaf08dd0dd4",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "label": "IP Address",
                                                     "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
+                                                        "esType": "long",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-*",
+                                                            "sourceField": "total"
+                                                        },
+                                                        "type": "number"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "source.address",
-                                                    "customLabel": false,
+                                                    "columnId": "8913a68b-e3a3-4b35-b3b8-78792d65b84b",
+                                                    "customLabel": true,
                                                     "fieldName": "source.address",
-                                                    "label": "source.address",
+                                                    "label": "IP Address",
                                                     "meta": {
                                                         "esType": "keyword",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-*",
+                                                            "sourceField": "source.address"
+                                                        },
                                                         "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "b847e79e-3175-45ac-956c-ee7952c475ae",
-                                                    "fieldName": "source.port",
-                                                    "label": "source.port",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "sourceParams": {
-                                                            "indexPattern": "logs-*",
-                                                            "sourceField": "source.port"
-                                                        },
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "f993f4ea-c066-49b0-96e2-24090483e10c",
-                                                    "fieldName": "aws.vpc.flow.bytes",
-                                                    "label": "aws.vpc.flow.bytes",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "sourceParams": {
-                                                            "indexPattern": "logs-*",
-                                                            "sourceField": "aws.vpc.flow.bytes"
-                                                        },
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
                                                     }
                                                 }
                                             ],
                                             "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
                                             "query": {
-                                                "esql": "FROM logs-*\n| WHERE aws.vpc.flow.action == \"REJECT\"\n| KEEP @timestamp, source.address, source.port, aws.vpc.flow.bytes\n| SORT @timestamp DESC"
+                                                "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
+                                        },
+                                        "f8ebcb6d-294d-4504-8adf-8999dc754cf0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "63d4169f-cc81-4206-8a39-b3a96d36448c",
+                                                    "fieldName": "total",
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-*",
+                                                            "sourceField": "total"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
+                                            }
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
-                                    "name": "textBasedLanguages-datasource-layer-1fa3fe7c-5607-469e-a6a1-306c46e71081",
-                                    "type": "index-pattern"
-                                }
-                            ],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM logs-*\n| WHERE aws.vpc.flow.action == \"REJECT\"\n| KEEP @timestamp, source.address, source.port, aws.vpc.flow.bytes\n| SORT @timestamp DESC"
+                                "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
                             },
                             "visualization": {
-                                "columns": [
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
                                     {
-                                        "columnId": "@timestamp"
-                                    },
-                                    {
-                                        "columnId": "source.address"
-                                    },
-                                    {
-                                        "columnId": "b847e79e-3175-45ac-956c-ee7952c475ae",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "f993f4ea-c066-49b0-96e2-24090483e10c",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "accessors": [
+                                            "04193af0-cec5-45cb-b486-cdaf08dd0dd4"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "ef1587f3-3a48-4aba-99a4-d68dce19ea06",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "8913a68b-e3a3-4b35-b3b8-78792d65b84b"
                                     }
                                 ],
-                                "density": "normal",
-                                "layerId": "1fa3fe7c-5607-469e-a6a1-306c46e71081",
-                                "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                }
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "bar",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show",
+                                "yTitle": "Flow logs records"
                             }
                         },
-                        "title": "source.port over @timestamp",
-                        "type": "lens",
+                        "title": "Bar vertical stacked",
                         "version": 1,
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsXY"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -570,22 +570,36 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*\n| WHERE aws.vpc.flow.action == \"REJECT\"\n| KEEP @timestamp, source.address, source.port, aws.vpc.flow.bytes\n| SORT @timestamp DESC"
+                        "esql": "FROM logs-*\n| STATS total = count() BY source.address\n| WHERE source.address IS NOT NULL\n| KEEP total, source.address\n| SORT total DESC\n| LIMIT 10"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "VPC Flow Reject Logs"
+                    "title": "Top 10 IP Source Addresses"
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "4e1f5890-f242-407b-af10-b64c2ab5b440",
-                    "w": 48,
-                    "x": 0,
-                    "y": 15
+                    "h": 12,
+                    "i": "4604d2fc-5b4e-4384-8130-475d2abd2576",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
                 },
-                "panelIndex": "4e1f5890-f242-407b-af10-b64c2ab5b440",
+                "panelIndex": "4604d2fc-5b4e-4384-8130-475d2abd2576",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## AWS VPC Flow Logs Overview\n\nUse this dashboard to visualize VPC Flow Logs collected via [EDOT Cloud Forwarder for AWS](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws).\n\nYou could use this data to:\n- Diagnose overly restrictive security group rules\n- Monitor the traffic that is reaching (or not reaching) your instance"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "f598e8f5-bd54-4dfb-8100-129f962ff16b",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "f598e8f5-bd54-4dfb-8100-129f962ff16b",
+                "type": "DASHBOARD_MARKDOWN"
             }
         ],
         "timeRestore": false,
@@ -593,9 +607,9 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-09-22T08:06:47.874Z",
+    "created_at": "2025-09-26T05:23:24.603Z",
     "created_by": "u_ZYj7dGTEOgapsGLTf8GS1lTKCU-wzK795nZmlm714so_0",
-    "id": "aws_vpcflow_otel-b3619475-5a8f-476c-a0de-7173a0717e0b",
+    "id": "aws_vpcflow_otel-ef16a22e-304a-4afa-a8d9-edcd504f15ae",
     "references": [
         {
             "id": "77dd912b-c766-4941-ad21-3f87867c3964",
