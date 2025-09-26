@@ -135,10 +135,10 @@ The `prompt_response_logs` data stream is designed to collect Vertex AI prompt-r
 Vertex AI logs export to BigQuery enables you to export detailed Google Cloud Vertex AI interaction data (such as prompts, responses, model usage, and metadata) automatically to a BigQuery dataset that you specify. Then you can access your Vertex AI logs from BigQuery for detailed analysis and monitoring using this integration. This enables comprehensive tracking of AI model usage, performance monitoring, and cost analysis.
 
 
-Before you start, you need to push the Vertex AI Prompt response logs to the BigQuery Table. Please refer to this [official documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging_) for detailed steps. 
+Before configuring this integration, you must export Vertex AI logs to a BigQuery table. Follow the official guide here: [Exporting Vertex AI logs to BigQuery](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging_)
 
 
-**Configuration**: When configuring the integration, you'll need to configure the following settings:
+**Configuration**: When setting up the `prompt_response_logs` data stream, configure the following parameters:
 
 1. **Table ID**: (Required) Full table identifier in the format `project_id.dataset_id.table_name` that contains the Vertex AI logs data. You can copy this from the "Details" tab when viewing your table in the BigQuery web console, under the "Table ID" field.
 
@@ -429,7 +429,6 @@ An example event for `prompt_response` looks as following:
     },
     "elastic_agent": {
         "id": "34197d89-3b28-4bcf-9fe9-19336bab3a33",
-        "snapshot": true,
         "version": "9.2.0"
     },
     "event": {
@@ -588,7 +587,7 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.prompt_response_logs.full_response.usage_metadata.traffic_type | Type of traffic (e.g., ON_DEMAND). | keyword |
 | gcp.vertexai.prompt_response_logs.logging_time | Timestamp when the AI interaction was logged. | date |
 | gcp.vertexai.prompt_response_logs.metadata.request_latency | Request latency in milliseconds. | float |
-| gcp.vertexai.prompt_response_logs.model | Name of the AI model used (e.g., gemini-2.5-pro). | keyword |
+| gcp.vertexai.prompt_response_logs.model | Name of the AI model used. | keyword |
 | gcp.vertexai.prompt_response_logs.model_version | Version of the AI model used. | keyword |
 | gcp.vertexai.prompt_response_logs.request_id | Unique identifier for the AI request. | keyword |
 | gcp.vertexai.prompt_response_logs.request_payload | Array of request payload strings containing user prompts and inputs. | text |
