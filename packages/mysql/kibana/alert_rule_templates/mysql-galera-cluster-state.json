@@ -1,0 +1,37 @@
+{
+  "id": "mysql-galera-cluster-state",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "MySQL Galera Cluster State",
+    "tags": [],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mysql.galera_status-default\n| STATS statuses = VALUES(mysql.galera_status.connected) BY host.name\n| WHERE \"ON\" != statuses"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "event.ingested",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

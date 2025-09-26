@@ -1,0 +1,37 @@
+{
+  "id": "mysql-replication-lag",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "MySQL Replication Lag",
+    "tags": [],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mysql.replica_status-default\n| STATS secondsbehind=max(mysql.replica_status.seconds_behind_source) by host.name, mysql.replica_status.channel.name\n| WHERE secondsbehind > 10"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "event.ingested",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
