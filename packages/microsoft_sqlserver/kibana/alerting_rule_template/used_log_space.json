@@ -1,0 +1,38 @@
+{
+  "id": "used_log_space",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "Used Log Space",
+    "tags": ["MicrosoftSQL Server",
+      "MicrosoftSQL Server Used Log Space"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mssql.metrics-default\n| STATS used_logspace=avg(mssql.metrics.used_log_space_pct) by mssql.metrics.server_name\n| WHERE used_logspace > 90"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

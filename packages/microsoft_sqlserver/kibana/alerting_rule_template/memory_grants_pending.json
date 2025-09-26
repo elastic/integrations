@@ -1,0 +1,38 @@
+{
+  "id": "memory_grants_pending",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "Memory Grants Pending",
+    "tags": ["MicrosoftSQL Server",
+      "MicrosoftSQL Server Memory Grants Pending"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": "<",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mssql.metrics-default\n| STATS memory_grants_pending=avg(mssql.metrics.memory_grants_pending) by mssql.metrics.server_name\n| WHERE memory_grants_pending > 0"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
