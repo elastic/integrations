@@ -328,7 +328,7 @@ processors:
       field: "message"
       description: "106023"
       patterns:
-        - "^Deny ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{DATA:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\\s*(\\(%{CISCO_USER_OR_SGT_SRC}\\) )?dst %{DATA:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[(\\s]+%{DATA}by access-group \"%{NOTSPACE:_temp_.cisco.list_id}\""
+        - "^Deny ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{DATA:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\\s*(\\(%{CISCO_USER_OR_SGT_SRC}\\) )?dst %{DATA:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[(\\s]+%{DATA}by access-group \"%{NOTSPACE:_temp_.cisco.list_id}?\""
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -669,8 +669,8 @@ processors:
       field: "message"
       description: "315011"
       patterns:
-        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
-        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
+        - 'SSH session from %{IP:source.ip} on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
+        - 'SSH session from %{IP:source.ip} on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
       pattern_definitions:
         CISCO_USER: '\"?(?:\*{5}|%{USERNAME:source.user.name})\"?'
   - dissect:

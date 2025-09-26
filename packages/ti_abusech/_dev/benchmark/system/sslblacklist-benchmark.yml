@@ -1,0 +1,24 @@
+---
+description: Benchmark 100000 sslblacklist events ingested
+input: cel
+vars:
+  enable_request_tracer: true
+  auth_key: test_auth_key
+data_stream:
+  name: sslblacklist
+  vars:
+    url: "http://svc-abusech:8080/blacklist/sslblacklist.csv"
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: abusech
+  generator:
+    total_events: 100000
+    template:
+      path: ./sslblacklist-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./sslblacklist-benchmark/config.yml
+    fields:
+      path: ./sslblacklist-benchmark/fields.yml

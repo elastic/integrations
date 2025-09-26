@@ -1,0 +1,31 @@
+input: azure-blob-storage
+vars:
+  account_name: devstoreaccount1
+  oauth2: true
+  client_id: devstoreaccount1
+  tenant_id: 12345
+  client_secret: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+  service_account_key: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+  service_account_uri: DefaultEndpointsProtocol=https;AccountName=dummystorageacct;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;EndpointSuffix=core.windows.net
+data_stream:
+  vars:
+    number_of_workers: 3
+    poll: true
+    poll_interval: 15s
+    containers: |
+      - name: test-container
+    file_selectors: |
+      - regex: access-logs/
+    timestamp_epoch: 10000000000
+    expand_event_list_from_field: records
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+    processors: |
+      - decode_json_fields:
+          fields: ["message"]
+          process_array: true
+          max_depth: 10
+          target: ""
+          overwrite_keys: true
+    tags: 
+      - forwarded

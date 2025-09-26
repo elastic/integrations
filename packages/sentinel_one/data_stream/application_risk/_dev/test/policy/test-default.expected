@@ -1,0 +1,89 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: sentinel_one
+      name: test-default-sentinel_one
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: sentinel_one.application_risk
+          interval: 24h
+          program: |
+            request("GET",
+              state.url.trim_right("/") + "/web/api/v2.1/application-management/risks?" + {
+                ?"cursor": state.?next.page.optMap(v, [v]),
+                ?"siteids": state.?site_ids.orValue(null) != null ? optional.of([string(state.site_ids)]) : optional.none(),
+                "limit": [string(state.batch_size)],
+              }.format_query()
+            ).with({
+              "Header":{
+                "Authorization": ["ApiToken " + state.api_token]
+              },
+            }).do_request().as(resp, resp.StatusCode == 200 ?
+              resp.Body.decode_json().as(body, {
+                "events": body.data.map(e, {
+                  "message": e.encode_json(),
+                }),
+                "api_token": state.api_token,
+                "batch_size": state.batch_size,
+                ?"site_ids": state.?site_ids.orValue(null) != null ? optional.of(state.site_ids) : optional.none(),
+                "next": {
+                  ?"page": body.?pagination.?nextCursor.orValue(null) != null ? optional.of(body.pagination.nextCursor) : optional.none(),
+                },
+                "want_more": body.?pagination.?nextCursor.orValue(null) != null,
+              })
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/risks: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_token
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: http://host.tld
+          state:
+            api_token: ${SECRET_0}
+            batch_size: 1000
+            site_ids: null
+          tags:
+            - forwarded
+            - sentinel_one-application_risk
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-sentinel_one.application_risk-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
