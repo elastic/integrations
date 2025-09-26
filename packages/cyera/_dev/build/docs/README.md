@@ -30,6 +30,8 @@ This integration collects log messages of the following types:
 
 - `Event`: Collects all events from the Cyera system.
 
+>**Note:** Classification and Issue data streams currently do not have an ILM policy applied. A policy will be introduced in an upcoming release. Until then, full sync will be performed, which may result in higher storage costs.
+
 ### Supported use cases
 Integrating Cyera Classification, Issues, and Events data streams with Elastic SIEM provides visibility into sensitive data, the risks tied to that data, and the security events triggered across cloud and SaaS environments. By correlating Cyera’s classification intelligence with issue context and event activity in Elastic analytics, security teams can strengthen data security posture, accelerate incident response, and simplify compliance. Dashboards in Kibana present breakdowns by sensitivity, category, severity, status, risk status, event type, and trends over time — enabling faster investigations, better prioritization, and improved accountability.
 
@@ -130,7 +132,3 @@ For more information on architectures that can be used for scaling this integrat
 These inputs can be used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
-
-#### ILM Policy
-
-To facilitate classification, issues and event data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
