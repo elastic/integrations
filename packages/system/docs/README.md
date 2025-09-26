@@ -1465,6 +1465,39 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.network.out.packets | The number of packets sent. | long |  | counter |
 
 
+### NTP
+
+The System `ntp` data stream provides Network Time Protocol metrics (offsets) collected from the
+NTP servers. One event is created for NTP server.
+
+#### Supported operating systems
+
+- FreeBSD
+- Linux
+- macOS
+- OpenBSD
+- Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| system.ntp.host | The remote NTP server address. | keyword |
+| system.ntp.offset | The estimated offset of the local host's system clock relative to the server's clock (in ns). | long |
+
+
 ### Process
 
 The System `process` data stream provides process statistics. One document is
