@@ -690,10 +690,10 @@ An example event for `asset` looks as following:
 | qualys_gav.asset.cloud_provider.gcp.tags.value |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.tags.name |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.tags.value |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.datacenter_id |  | long |
+| qualys_gav.asset.cloud_provider.ibm.virtualServer.datacenter_id |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.virtualServer.device_name |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.virtualServer.domain |  | keyword |
-| qualys_gav.asset.cloud_provider.ibm.virtualServer.ibm_id |  | long |
+| qualys_gav.asset.cloud_provider.ibm.virtualServer.ibm_id |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.virtualServer.location |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.virtualServer.private_ip |  | keyword |
 | qualys_gav.asset.cloud_provider.ibm.virtualServer.private_vlan |  | keyword |

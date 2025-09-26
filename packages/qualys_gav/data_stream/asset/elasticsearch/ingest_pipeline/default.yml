@@ -1057,6 +1057,56 @@ processors:
       tag: lowercase_cloud_provider_from_asset_provider
       ignore_missing: true
   - convert:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_has_agent_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
+      tag: date_qualys_gav_asset_cloud_provider_aws_ec2_launchdate
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.qualys_gav?.asset?.cloud_provider?.aws?.ec2?.launchdate != null && ctx.qualys_gav.asset.cloud_provider.aws.ec2.launchdate != ''
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_qualys_scanner_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
+      tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_spot_instance_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: qualys_gav.asset.risk_score
       tag: convert_qualys_gav_asset_risk_score_to_float
       type: float
