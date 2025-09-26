@@ -138,7 +138,7 @@ Vertex AI logs export to BigQuery enables you to export detailed Google Cloud Ve
 Before configuring this integration, you must export Vertex AI logs to a BigQuery table. Follow the official guide here: [Exporting Vertex AI logs to BigQuery](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging_)
 
 
-**Configuration**: When configuring the integration, you'll need to configure the following settings:
+**Configuration**: When setting up the `prompt_response_logs` data stream, configure the following parameters:
 
 1. **Table ID**: (Required) Full table identifier in the format `project_id.dataset_id.table_name` that contains the Vertex AI logs data. You can copy this from the "Details" tab when viewing your table in the BigQuery web console, under the "Table ID" field.
 
