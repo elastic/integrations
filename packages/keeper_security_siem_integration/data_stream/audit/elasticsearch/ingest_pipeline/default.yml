@@ -51,24 +51,24 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "Failed to parse timestamp: {{{keeper.timestamp}}}"
+            value: "Failed to parse timestamp: {{{timestamp}}}"
  
   - set:
       field: user.name
-      value: "{{{username}}}"
-      if: ctx.username != null
+      copy_from: username
+      ignore_empty_value: true
       description: "Set user name from username"
 
   - set:
       field: user.email  
-      value: "{{{username}}}"
+      copy_from: username
       if: ctx.username != null && ctx.username.contains("@")
       description: "If username looks like email, set user.email"
 
   - set:
       field: source.ip
-      value: "{{{remote_address}}}"
-      if: ctx.remote_address != null
+      copy_from: remote_address
+      ignore_empty_value: true
       description: "Set source IP from remote_address"
 
   - geoip:
@@ -82,8 +82,8 @@ processors:
 
   - set:
       field: event.action
-      value: "{{{audit_event}}}"
-      if: ctx.audit_event != null
+      copy_from: audit_event
+      ignore_empty_value: true
       description: "Set event action from audit_event"
 
   - convert:
@@ -97,7 +97,7 @@ processors:
   - set:
       field: user_agent.original
       value: "Keeper/{{{client_version}}}"
-      if: ctx.client_version != null
+      ignore_empty_value: true
       description: "Set user agent from client_version"
 
       
@@ -110,7 +110,7 @@ processors:
       
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"  
+      value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
 
