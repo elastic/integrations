@@ -189,3 +189,14 @@ services:
       - STREAM_WEBHOOK_PROBE=false
       - STREAM_ADDR=http://elastic-agent:9560/cloudflare_logpush/dns_firewall
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/dns_firewall.log
+  
+  azure-blob-storage-emulator:
+    build: .
+    volumes:
+      - ./sample_logs:/sample_logs
+    ports:
+      - "10000/tcp"
+    healthcheck:
+      test: "curl --fail --silent --output /dev/null http://localhost:4443 || exit 1"
+      interval: 10s
+      timeout: 5s
