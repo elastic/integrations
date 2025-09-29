@@ -122,37 +122,37 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-07-30T10:45:24.425Z",
+    "@timestamp": "2025-09-22T06:42:04.366Z",
     "agent": {
-        "ephemeral_id": "f9c21eae-c360-427b-afdf-3662d2d99c30",
-        "id": "89379132-64b3-4465-ae5e-8d179096ac1b",
-        "name": "elastic-agent-69527",
+        "ephemeral_id": "19ae287b-9df1-4ad2-aefc-3e4b7ed5f4cb",
+        "id": "f328e75d-699a-4ce4-a43e-384f9708872d",
+        "name": "elastic-agent-37206",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_scc.asset",
-        "namespace": "56937",
+        "namespace": "31892",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "89379132-64b3-4465-ae5e-8d179096ac1b",
+        "id": "f328e75d-699a-4ce4-a43e-384f9708872d",
         "snapshot": true,
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2025-07-30T10:45:24.425Z",
+        "created": "2025-09-22T06:42:11.546Z",
         "dataset": "google_scc.asset",
-        "ingested": "2025-07-30T10:45:27Z",
+        "id": "f14c38ac40-5",
+        "ingested": "2025-09-22T06:42:14Z",
         "kind": "event",
-        "original": "{\"ancestors\":[\"organizations/523456987520\"],\"assetType\":\"cloudbilling.googleapis.com/BillingAccount\",\"name\":\"//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD\",\"resource\":{\"data\":{\"displayName\":\"New\",\"name\":\"billingAccounts/012345-A08098-1Ab2CD\"},\"discoveryDocumentUri\":\"https://cloudbilling.googleapis.com/$discovery/rest\",\"discoveryName\":\"BillingAccount\",\"location\":\"global\",\"version\":\"v1\"},\"updateTime\":\"2022-11-17T12:20:17.601902Z\"}",
         "type": [
             "info"
         ]
@@ -160,40 +160,71 @@ An example event for `asset` looks as following:
     "google_scc": {
         "asset": {
             "ancestors": [
+                "projects/123456987522",
+                "folders/123456987520",
                 "organizations/523456987520"
             ],
-            "name": "//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD",
+            "prior": {
+                "ancestors": [
+                    "projects/123456987522",
+                    "folders/123456987520",
+                    "organizations/523456987520"
+                ],
+                "name": "//logging.googleapis.com/projects/123456987522/locations/global/buckets/_Default",
+                "resource": {
+                    "data": {
+                        "analyticsEnabled": true,
+                        "description": "Default bucket",
+                        "lifecycleState": "ACTIVE",
+                        "name": "projects/123456987522/locations/global/buckets/_Default",
+                        "retentionDays": 30
+                    },
+                    "discovery": {
+                        "document_uri": "https://logging.googleapis.com/$discovery/rest",
+                        "name": "LogBucket"
+                    },
+                    "location": "global",
+                    "parent": "//cloudresourcemanager.googleapis.com/projects/123456987522",
+                    "version": "v2"
+                },
+                "type": "logging.googleapis.com/LogBucket",
+                "update_time": "2023-05-27T18:53:48.843Z"
+            },
+            "prior_asset_state": "PRESENT",
             "resource": {
                 "data": {
-                    "displayName": "New",
-                    "name": "billingAccounts/012345-A08098-1Ab2CD"
+                    "description": "Default bucket",
+                    "lifecycleState": "ACTIVE",
+                    "name": "projects/123456987522/locations/global/buckets/_Default",
+                    "retentionDays": 30
                 },
                 "discovery": {
-                    "document_uri": "https://cloudbilling.googleapis.com/$discovery/rest",
-                    "name": "BillingAccount"
+                    "document_uri": "https://logging.googleapis.com/$discovery/rest",
+                    "name": "LogBucket"
                 },
                 "location": "global",
-                "version": "v1"
+                "parent": "//cloudresourcemanager.googleapis.com/projects/123456987522",
+                "version": "v2"
             },
-            "type": "cloudbilling.googleapis.com/BillingAccount",
-            "update_time": "2022-11-17T12:20:17.601Z"
+            "update_time": "2023-05-28T06:59:48.052Z",
+            "window": {
+                "start_time": "2023-05-28T06:59:48.052Z"
+            }
         }
     },
     "host": {
-        "name": "//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD",
-        "type": "cloudbilling.googleapis.com/BillingAccount"
+        "name": "//logging.googleapis.com/projects/123456987522/locations/global/buckets/_Default",
+        "type": "logging.googleapis.com/LogBucket"
     },
     "input": {
-        "type": "httpjson"
+        "type": "gcp-pubsub"
     },
     "related": {
         "hosts": [
-            "//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD"
+            "//logging.googleapis.com/projects/123456987522/locations/global/buckets/_Default"
         ]
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_scc-asset"
     ]
@@ -484,31 +515,31 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "5b983585-396a-46bd-b191-76846a049001",
-        "id": "7d2d3f11-f85a-4d15-8fb6-265d24df4fe0",
-        "name": "elastic-agent-43169",
+        "ephemeral_id": "323af201-445a-4faa-baba-4afa4def86fd",
+        "id": "57175b7e-cbdc-44ca-838b-ddc894cbc7f4",
+        "name": "elastic-agent-33670",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_scc.finding",
-        "namespace": "19542",
+        "namespace": "34124",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7d2d3f11-f85a-4d15-8fb6-265d24df4fe0",
-        "snapshot": false,
-        "version": "8.19.0"
+        "id": "57175b7e-cbdc-44ca-838b-ddc894cbc7f4",
+        "snapshot": true,
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
         "id": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
-        "ingested": "2025-08-06T06:07:27Z",
+        "ingested": "2025-09-22T06:45:47Z",
         "kind": "event",
         "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}",
         "severity": 99,
@@ -836,32 +867,32 @@ An example event for `source` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-07-30T10:54:09.056Z",
+    "@timestamp": "2025-09-22T06:48:41.936Z",
     "agent": {
-        "ephemeral_id": "f320ea70-f568-4580-b5d1-1506d5d21315",
-        "id": "dd9aaf80-4c32-43a7-8c17-db68a5292aa7",
-        "name": "elastic-agent-51444",
+        "ephemeral_id": "a83fcd20-b12b-4129-b286-793cf79fed2a",
+        "id": "9beabdd4-a44e-44e0-ab12-194f9d4643e1",
+        "name": "elastic-agent-25436",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "google_scc.source",
-        "namespace": "72115",
+        "namespace": "70533",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dd9aaf80-4c32-43a7-8c17-db68a5292aa7",
+        "id": "9beabdd4-a44e-44e0-ab12-194f9d4643e1",
         "snapshot": true,
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-07-30T10:54:09.056Z",
+        "created": "2025-09-22T06:48:41.936Z",
         "dataset": "google_scc.source",
-        "ingested": "2025-07-30T10:54:12Z",
+        "ingested": "2025-09-22T06:48:44Z",
         "kind": "event",
         "original": "{\"canonicalName\":\"organizations/595779152576/sources/10134421585261057824\",\"description\":\"Extend your security view from the edge.\",\"displayName\":\"Cloudflare Security Events\",\"name\":\"organizations/595779152576/sources/10134421585261057824\"}"
     },
@@ -921,11 +952,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-09-24T16:16:57.183Z",
     "agent": {
-        "ephemeral_id": "1d64ed9e-03f2-4eea-9e8a-b9a630236e12",
-        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b4678a8a-3cc3-4bac-88cd-b26cf499b5e1",
+        "id": "c69f8959-96cf-4d7f-9eb1-e5db8539b868",
+        "name": "elastic-agent-22848",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.19.4"
     },
     "cloud": {
         "service": {
@@ -934,24 +965,24 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "google_scc.audit",
-        "namespace": "ep",
+        "namespace": "32444",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
-        "snapshot": false,
-        "version": "8.8.0"
+        "id": "c69f8959-96cf-4d7f-9eb1-e5db8539b868",
+        "snapshot": true,
+        "version": "8.19.4"
     },
     "event": {
         "action": "google.login.LoginService.loginFailure",
         "agent_id_status": "verified",
-        "created": "2023-07-03T06:26:31.858Z",
+        "created": "2025-09-22T06:43:22.724Z",
         "dataset": "google_scc.audit",
         "id": "-nahbepd4l1x",
-        "ingested": "2023-07-03T06:26:35Z",
+        "ingested": "2025-09-22T06:43:25Z",
         "kind": "event",
         "severity": 300
     },
