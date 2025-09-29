@@ -46,7 +46,7 @@ program: |
           "Header": {
             "SEC": [state.auth_token],
             "Range": [
-              "items=" + string(state.?next.rule_offset.orValue(0)) + "-" + string(int(state.rule_batch_size) + int(state.?next.rule_offset.orValue(0)) - 1)
+              "items=" + string(int(state.?next.rule_offset.orValue(0))) + "-" + string(int(state.rule_batch_size) + int(state.?next.rule_offset.orValue(0)) - 1)
             ]
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
@@ -57,10 +57,7 @@ program: |
 
             // Build rules dictionary
             "rules_dict": state.?rules_dict.orValue({}).with(
-              body.size() > 0 ?
-                zip(body.collate("id").map(id,string(id)),body)
-              :
-                {}
+              zip(body.collate("id").map(id,string(id)),body)
             ),
             "next":{
               ?"rule_offset": (body.size() > 0 ?
@@ -108,7 +105,7 @@ program: |
           "Header": {
             "SEC": [state.auth_token],
             "Range": [
-              "items=" + string(state.?next.offense_offset.orValue(0)) + "-" + string(int(state.offense_batch_size) + int(state.?next.offense_offset.orValue(0)) - 1)
+              "items=" + string(int(state.?next.offense_offset.orValue(0))) + "-" + string(int(state.offense_batch_size) + int(state.?next.offense_offset.orValue(0)) - 1)
             ]
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
@@ -118,15 +115,15 @@ program: |
             "events": (body.size() > 0 ?
               dyn(body.map(offense, {
                 "message": offense.with({
-                  "rules": (has(offense.rules) && offense.rules != null) ?
-                    dyn(offense.rules.map(rule,
+                  ?"rules": (has(offense.rules) && offense.rules != null) ?
+                    optional.of(offense.rules.map(rule,
                       state.rules_dict[string(rule.id)].with({
                         "rule_type": state.rules_dict[string(rule.id)].type,
                         "type": rule.type
                       })
                     ))
                   :
-                    dyn(null)
+                    optional.none()
                 }).encode_json()
               }))
             :
