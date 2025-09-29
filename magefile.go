@@ -30,6 +30,8 @@ const (
 	defaultPreviousLinksNumber   = 5
 	defaultMaximumTestsReported  = 20
 	defaultServerlessProjectType = "observability"
+
+	elasticPackageModulePath = "github.com/elastic/elastic-package"
 )
 
 var (
@@ -114,11 +116,10 @@ func goImports() error {
 }
 
 func goTest() error {
-	args := []string{"test"}
+	args := []string{"run", "gotest.tools/gotestsum", "--format", "testname", "--junitfile", "tests-report.xml"}
 	stdout := io.Discard
 	stderr := io.Discard
 	if mg.Verbose() {
-		args = append(args, "-v")
 		stdout = os.Stdout
 		stderr = os.Stderr
 	}
@@ -295,5 +296,27 @@ func IsVersionLessThanLogsDBGA(version string) error {
 		return nil
 	}
 	fmt.Println("false")
+	return nil
+}
+
+// IsElasticPackageDependencyLessThan checks whether or not the elastic-package version set in go.mod is less than the given version
+func IsElasticPackageDependencyLessThan(version string) error {
+	foundVersion, err := citools.PackageVersionGoMod("go.mod", elasticPackageModulePath)
+	if err != nil {
+		return fmt.Errorf("failed to get elastic-package version from go.mod: %w", err)
+	}
+	fmt.Fprintf(os.Stderr, "Found elastic-package %s\n", foundVersion)
+
+	desiredVersion, err := semver.NewVersion(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version %q: %w", version, err)
+	}
+
+	value := "false"
+	if foundVersion.LessThan(desiredVersion) {
+		value = "true"
+	}
+
+	fmt.Println(value)
 	return nil
 }

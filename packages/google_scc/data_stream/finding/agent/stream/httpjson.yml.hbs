@@ -19,7 +19,11 @@ request.ssl: {{ssl}}
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
-request.url: {{url}}/v1/{{parent_type}}/{{id}}/sources/-/findings
+{{#if location_id}}
+request.url: {{url}}/{{api_version}}/{{parent_type}}/{{id}}/sources/-/locations/{{location_id}}/findings
+{{else}}
+request.url: {{url}}/{{api_version}}/{{parent_type}}/{{id}}/sources/-/findings
+{{/if}}
 request.transforms:
   - set:
       target: url.params.pageSize
@@ -40,6 +44,7 @@ response.pagination:
       target: url.params.pageToken
       value: '[[if index .last_response.body "nextPageToken"]][[.last_response.body.nextPageToken]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   last_event_time:
     value: '[[.last_event.finding.eventTime]]'

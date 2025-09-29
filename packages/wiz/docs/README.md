@@ -98,6 +98,17 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - Vulnerability data is fetched for the previous day.
   - Custom headers are not supported in this integration. Only the standard Authorization header (for example, Bearer token) is used for API requests.
 
+### Troubleshooting
+
+The transforms used in the Wiz integration depend on the presence of the `event.ingested` field to function correctly.
+
+When using Fleet-managed Elastic Agents, the `.fleet_final_pipeline-1` is automatically executed and ensures that the `event.ingested` field is added to all events.
+
+However, when using standalone Elastic Agents, this pipeline is not applied, and the `event.ingested` field is not automatically added.
+
+📌 Action Required (for standalone agents):
+You must manually add the `event.ingested` field, preferably via a custom ingest pipeline (e.g., using the @custom pipeline).
+
 ## Logs reference
 
 ### Audit
@@ -1322,7 +1333,8 @@ An example event for `vulnerability` looks as following:
         "score": {
             "base": 5.5
         },
-        "severity": "MEDIUM"
+        "severity": "MEDIUM",
+        "title": "Vulnerability found - CVE-2020-3333"
     },
     "wiz": {
         "vulnerability": {
@@ -1452,6 +1464,7 @@ An example event for `vulnerability` looks as following:
 | vulnerability.package.fixed_version |  | keyword |
 | vulnerability.package.name |  | keyword |
 | vulnerability.package.version |  | keyword |
+| vulnerability.title |  | keyword |
 | wiz.vulnerability.cve_description |  | keyword |
 | wiz.vulnerability.cvss_severity |  | keyword |
 | wiz.vulnerability.data_source_name |  | keyword |

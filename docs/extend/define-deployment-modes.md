@@ -5,14 +5,22 @@ mapped_pages:
 
 # Define deployment modes [define-deployment-modes]
 
-Some integrations can be deployed on fully managed agents. These integrations are known as "agentless" integrations. Define the deployment mode of an integration with the [`deployment_modes`](#deployment_modes) property and display/hide variables in different deployment modes with the [`hide_in_deployment_modes`](#hide_in_deployment_modes) property.
+
+## What are deployment modes [what-are-deployment-modes]
+
+Deployment modes let you choose how an integration is installed and managed.
+
+* Default mode: Your install and manage {{agent}} yourself (for example using {{fleet}}).
+* Agentless mode: {{stack}} manages the agents for you, no need to install anything yourself.
+
+Some integrations can support both modes, while others may only support one.
 
 
-## `deployment_modes` [deployment_modes]
+## How to set deployment modes [set-deployment-modes]
 
-Policy templates can indicate which deployment modes they support. Use the `deployment_modes` property in the policy template schema to define the supported deployment modes. Options are `default` and `agentless`. A policy template can support both modes.
+When you create a policy template for your integration, you can specify which modes it supports using the `deployment_modes` property.
 
-Example policy template declaration:
+Example:
 
 ```yaml
 format_version: 3.2.0
@@ -38,13 +46,14 @@ policy_templates:
 2. Disables agent deployment support
 3. Enables agentless deployment support
 
+Here, only agentless mode is enable for the "billing" template.
 
 
-## `hide_in_deployment_modes` [hide_in_deployment_modes]
+## Hiding variables based on deployment mode [hide-in-deployment-modes]
 
-Variables can be hidden in certain deployment modes. Use the `hide_in_deployment_modes` property to opt variables in or out of being displayed in default or agentless mode. This property works at any manifest level.
+Sometimes, you want certain configuration options to show up only in specific modes. Use the `hide_in_deployment_modes` property for this.
 
-Example variable declaration:
+Example:
 
 ```yaml
 streams:
@@ -76,14 +85,14 @@ streams:
          - agentless
 ```
 
-1. Disables visibility of the variable in agent deployment mode
+1. Disables visibility of the variable in default deployment mode
 2. Disables visibility of the variable in agentless deployment mode
 
-
+This helps keep the UI clean and relevant for each deployment type.
 For more information on variable property definitions, refer to [Define variable properties](/extend/finishing-touches.md#define-variable-properties).
-
 
 ## Agentless capabilities [agentless-capabilities]
 
-The capabilities feature protects agentless deployments from allowing undesired inputs to run. A static `capabilities.yml` file defines these allowed and disallowed inputs and is passed to deployed agents. To determine which capabilities are currently allowed on Agentless, refer to [`capabilities.yml`](https://github.com/elastic/agentless-controller/blob/main/controllers/config/capabilities.yml).
+Agentless deployments are protected by a capabilities file (capabilities.yml). This file lists what inputs and features are allowed or blocked in agentless mode, making sure only safe and supported features run.
 
+You can see the current allowed capabilities in the [`capabilities.yml`](https://github.com/elastic/agentless-controller/blob/main/controllers/config/capabilities.yml).

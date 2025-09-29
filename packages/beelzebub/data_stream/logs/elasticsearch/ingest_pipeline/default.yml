@@ -170,52 +170,72 @@ processors:
       extract_device_type: true
       ignore_missing: true
 
-  - gsub:
-      if: ctx.json?.event?.Headers != null && ctx.json?.event?.Headers != ""
-      description: "Replace leading and trailing garbage to support KVP extraction"
+### NOTE: Beelzebub now produces logs with two fields for headers, one is a
+#   string and the other is an object. The following 7 processors are used to
+#   support both log formats/situations and to avoid creating a type conflict
+#   with existing indices while still ensuring we have usable headers and
+#   header values to search with.
+
+  - remove:
+      if: ctx.json?.event?.Headers == ""
+      description: "Remove json.event.Headers if it an empty string so that we can skip some of processors"
       field: json.event.Headers
+
+  - rename:
+      if: ctx.json?.event?.Headers instanceof String
+      description: "Rename json.event.Headers to json.event.HeadersText to maintain backwards compatibility with indexed data"
+      field: json.event.Headers
+      target_field: json.event.HeadersText
+      ignore_missing: true
+
+  - rename:
+      if: ctx.json?.event?.Headers == null && ctx.json?.event?.HeadersMap instanceof Map
+      description: "Rename json.event.HeadersMap to json.event.Headers as this is a pre-made object so we can skip gsub/kv based extractions"
+      field: json.event.HeadersMap
+      target_field: json.event.Headers
+      override: true
+      ignore_missing: true
+
+  - gsub:
+      if: ctx.json?.event?.Headers == null
+      description: "Replace leading and trailing syntax to support KVP extraction, put result in _tmp.HeadersText so additional processors will apply if it exists"
+      field: json.event.HeadersText
+      target_field: _tmp.HeadersText
       ignore_missing: true
       pattern: '(^\[Key: |],$)'
       replacement: ''
 
   - gsub:
-      if: ctx.json?.event?.Headers != null && ctx.json?.event?.Headers != ""
+      if: ctx.json?.event?.Headers == null
       description: "Fix field separator to support KVP extraction"
-      field: json.event.Headers
+      field: _tmp.HeadersText
       ignore_missing: true
       pattern: '],\[Key: '
       replacement: ',##'
 
   - kv:
-      if: ctx.json?.event?.Headers != null && ctx.json?.event?.Headers != ""
-      description: "Extract headers as key value pairs. Should this not go to http.request.headers ?"
-      field: json.event.Headers
+      if: ctx.json?.event?.Headers == null
+      description: "Extract headers as key value pairs."
+      field: _tmp.HeadersText
       ignore_missing: true
       ignore_failure: true
       field_split: ',##'
       value_split: ', values: '
-      target_field: _tmp.headers
+      target_field: json.event.Headers
       trim_key: ' '
       trim_value: ' '
       strip_brackets: true
 
   - script:
-      if: ctx._tmp?.headers != null
-      description: "Lowercase HTTP header names"
+      if: ctx.json?.event?.Headers instanceof Map
+      description: "Lowercase HTTP header names, which should in fact always be case irrelevant and so have no conflicting values, so that we can reliably refer to a field name"
       source: |
         def lowercaseMap = [:];
-        for(def entry : ctx._tmp.headers.entrySet()){
+        for(def entry : ctx.json.event.Headers.entrySet()){
           lowercaseMap.put(entry.getKey().toLowerCase(), entry.getValue());
         }
-        ctx._tmp.headers = lowercaseMap;
+        ctx.json.event.Headers = lowercaseMap;
       tag: lowercase_http_header_names
-
-  - rename:
-      description: "Replace original field with KVP extracted pairs"
-      field: _tmp.headers
-      ignore_missing: true
-      target_field: json.event.Headers
-      override: true
 
   - set:
       if: ctx.http?.request?.referrer == null
@@ -353,6 +373,8 @@ processors:
         - beelzebub.event.Msg
         - beelzebub.event.SourceIp
         - beelzebub.event.SourcePort
+        - beelzebub.event.HeadersMap
+        - beelzebub.event.HeadersText
         - beelzebub.event.HTTPMethod
         - beelzebub.event.Body
         - beelzebub.event.RequestURI

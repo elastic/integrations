@@ -49,6 +49,26 @@ processors:
           tag: append_tls_sans_name_into_tls_client_x509_alternative_names
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
+  - script:
+      lang: painless
+      description: Drops '-' values recursively.
+      tag: drop_empty_json_tls_sans_name_ips
+      if: ctx.json?.tls?.sans instanceof List
+      source: |-
+        boolean dropDash(Object object) {
+          if (object == '-') {
+            // We do not need to handle null or ' ' since they were done in default.
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> dropDash(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> dropDash(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropDash(ctx.ocsf);
   - foreach:
       field: json.tls.sans
       if: ctx.json?.tls?.sans instanceof List
@@ -96,6 +116,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.tls?.certificate?.expiration_time_dt != null && ctx.ocsf.tls.certificate.expiration_time_dt != ''
       on_failure:
         - remove:
@@ -176,6 +197,7 @@ processors:
       formats:
         - ISO8601
         - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]X
       if: ctx.ocsf?.tls?.certificate?.created_time_dt != null && ctx.ocsf.tls.certificate.created_time_dt != ''
       on_failure:
         - remove:
