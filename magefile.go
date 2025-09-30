@@ -116,11 +116,10 @@ func goImports() error {
 }
 
 func goTest() error {
-	args := []string{"test"}
+	args := []string{"run", "gotest.tools/gotestsum", "--format", "testname", "--junitfile", "tests-report.xml"}
 	stdout := io.Discard
 	stderr := io.Discard
 	if mg.Verbose() {
-		args = append(args, "-v")
 		stdout = os.Stdout
 		stderr = os.Stderr
 	}
