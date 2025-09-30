@@ -1,0 +1,35 @@
+{
+  "id": "elastic-agent-excessive-memory-usage-rule",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Elastic Agent] Excessive memory usage",
+    "tags": ["Elastic Agent", "Resource Consumption"],
+    "ruleTypeId": "metrics.alert.threshold",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "criteria": [
+        {
+          "aggType": "avg",
+          "comparator": ">",
+          "threshold": [0.9],
+          "timeSize": 5,
+          "timeUnit": "m",
+          "metric": "system.process.memory.total.pct"
+        }
+      ],
+      "sourceId": "default",
+      "alertOnNoData": false,
+      "alertOnGroupDisappear": false,
+      "filterQueryText": "process.executable.text : \"*elastic-agent*\"",
+      "filterQuery": "{\"bool\":{\"should\":[{\"match_phrase\":{\"process.executable.text\":\"*elastic-agent*\"}}],\"minimum_should_match\":1}}",
+      "groupBy": ["agent.id", "process.name"]
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
