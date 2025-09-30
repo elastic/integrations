@@ -13,16 +13,16 @@ stack: beta 9.2.0
 ```
 
 ::::{warning}
-**Potential Data Duplication**: When you first add a path, the integration reads all existing files in that directory from the beginning. This action causes a one-time re-ingestion of all previously rotated logs, which results in duplicate data.
+**Potential Data Duplication**: When you add a path to an existing integration, the integration reads all existing files in that directory from the beginning. This action causes a one-time re-ingestion of all previously rotated logs, which results in duplicate data.
 ::::
 
 The integration can monitor and ingest rotated Kubernetes container logs, including on-the-fly decompression of GZIP archives.
 
 To enable this, use the following configurations:
 * **Include rotated log files**: Set to `true`.
-* **Kubernetes container rotated log path**: Specify the path where rotated log files are stored.
+* **Kubernetes container rotated log path**: in case of a custom (non-default) logging configuration in Kubernetes, use this parameter to specify your custom path where rotated log files are stored.
 
-After this initial scan, the integration tracks its state and will only ingest new log data. Subsequent file rotations are handled correctly without further duplication.
+After this initial scan, the integration tracks files normally and will only ingest new log data. Subsequent file rotations are handled correctly without further data duplication.
 
 ## Rerouting and preserve original event based on pod annotations
 
