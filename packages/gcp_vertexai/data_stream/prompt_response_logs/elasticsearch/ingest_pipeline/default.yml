@@ -1,0 +1,74 @@
+---
+description: Pipeline for Google Cloud Vertex AI Prompt Response logs
+
+processors:
+  # Rename fields from gcp.metrics.vertexai_logs.* to gcp.vertexai.prompt_response_logs.*
+  - rename:
+      field: gcp.vertexai_logs
+      target_field: gcp.vertexai.prompt_response_logs
+      ignore_missing: true
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: cloud.provider
+      value: gcp
+  - set:
+      field: cloud.service.name
+      value: vertex-ai
+      
+  # Set service information
+  - set:
+      field: service.name
+      value: vertex-ai
+      
+  - set:
+      field: service.type
+      value: ai-platform
+
+  # Process API method for better categorization
+  - set:
+      field: event.action
+      copy_from: gcp.vertexai.prompt_response_logs.api_method
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.api_method != null
+      
+
+  # Remove null and empty values recursively
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      ignore_failure: true
+
+  # Remove the original gcp.metrics field after processing
+  - remove:
+      field: gcp.vertexai_logs
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
