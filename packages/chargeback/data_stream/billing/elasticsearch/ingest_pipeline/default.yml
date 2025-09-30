@@ -1,0 +1,11 @@
+---
+description: "Chargeback: Set composite_key from @timestamp and deployment_id."
+processors:
+  - script:
+      lang: painless
+      source: >
+        if (ctx['@timestamp'] != null) {
+            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+        }
+      ignore_failure: true
+      tag: ess_billing
