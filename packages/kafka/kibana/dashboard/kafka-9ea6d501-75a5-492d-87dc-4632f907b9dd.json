@@ -37,6 +37,130 @@
                                 "event.dataset": "kafka.consumer"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Dataset filter",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "kafka.raft"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "kafka.raft"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "event.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "kafka.producer"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.dataset": "kafka.producer"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+                            "key": "kafka.producer.client_id",
+                            "negate": false,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "kafka.producer.client_id"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Dataset filter",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "kafka.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "kafka.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Dataset filter",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "kafka.broker",
+                                "kafka.consumergroup",
+                                "kafka.partition"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "kafka.broker"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "kafka.consumergroup"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "kafka.partition"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -53,6 +177,274 @@
             "useMargins": true
         },
         "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-34d46879-463e-4279-87b7-540197122696",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "34d46879-463e-4279-87b7-540197122696": {
+                                            "columnOrder": [
+                                                "48ae366c-3714-49ec-8b6d-8f2451ca489d"
+                                            ],
+                                            "columns": {
+                                                "48ae366c-3714-49ec-8b6d-8f2451ca489d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Consumers",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "kafka.consumer.client_id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "34d46879-463e-4279-87b7-540197122696",
+                                "layerType": "data",
+                                "metricAccessor": "48ae366c-3714-49ec-8b6d-8f2451ca489d",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "e520e16b-e8fb-4617-82b1-6c9576622fd8",
+                    "w": 24,
+                    "x": 0,
+                    "y": 4
+                },
+                "panelIndex": "e520e16b-e8fb-4617-82b1-6c9576622fd8",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-b6e255cd-f61f-4fbd-b9c5-14845aa78faf",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "b6e255cd-f61f-4fbd-b9c5-14845aa78faf": {
+                                            "columnOrder": [
+                                                "7d9128f7-d9e8-431a-988e-c9c9c08e61f6",
+                                                "5e39d623-76ed-4b69-ab07-fde41f4622b2",
+                                                "a5f6faf2-da15-4680-b2db-b1b544079071"
+                                            ],
+                                            "columns": {
+                                                "5e39d623-76ed-4b69-ab07-fde41f4622b2": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "7d9128f7-d9e8-431a-988e-c9c9c08e61f6": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 3 values of kafka.consumer.client_id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a5f6faf2-da15-4680-b2db-b1b544079071",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "sourceField": "kafka.consumer.client_id"
+                                                },
+                                                "a5f6faf2-da15-4680-b2db-b1b544079071": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Bytes consumed per consumer",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "kafka.consumer.bytes_consumed"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a5f6faf2-da15-4680-b2db-b1b544079071"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "b6e255cd-f61f-4fbd-b9c5-14845aa78faf",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "7d9128f7-d9e8-431a-988e-c9c9c08e61f6",
+                                        "xAccessor": "5e39d623-76ed-4b69-ab07-fde41f4622b2"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "c8cae375-1d50-40fd-969c-8468e68b243a",
+                    "w": 24,
+                    "x": 24,
+                    "y": 4
+                },
+                "panelIndex": "c8cae375-1d50-40fd-969c-8468e68b243a",
+                "type": "lens"
+            },
             {
                 "embeddableConfig": {
                     "attributes": {
@@ -239,277 +631,9 @@
                     "i": "3aa63fb2-746d-4264-a705-21ebeb274177",
                     "w": 24,
                     "x": 0,
-                    "y": 15
+                    "y": 19
                 },
                 "panelIndex": "3aa63fb2-746d-4264-a705-21ebeb274177",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-b6e255cd-f61f-4fbd-b9c5-14845aa78faf",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "b6e255cd-f61f-4fbd-b9c5-14845aa78faf": {
-                                            "columnOrder": [
-                                                "7d9128f7-d9e8-431a-988e-c9c9c08e61f6",
-                                                "5e39d623-76ed-4b69-ab07-fde41f4622b2",
-                                                "a5f6faf2-da15-4680-b2db-b1b544079071"
-                                            ],
-                                            "columns": {
-                                                "5e39d623-76ed-4b69-ab07-fde41f4622b2": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "7d9128f7-d9e8-431a-988e-c9c9c08e61f6": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 3 values of kafka.consumer.client_id",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "a5f6faf2-da15-4680-b2db-b1b544079071",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 3
-                                                    },
-                                                    "sourceField": "kafka.consumer.client_id"
-                                                },
-                                                "a5f6faf2-da15-4680-b2db-b1b544079071": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Bytes consumed per consumer",
-                                                    "operationType": "median",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "sourceField": "kafka.consumer.bytes_consumed"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "a5f6faf2-da15-4680-b2db-b1b544079071"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "default",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "b6e255cd-f61f-4fbd-b9c5-14845aa78faf",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "7d9128f7-d9e8-431a-988e-c9c9c08e61f6",
-                                        "xAccessor": "5e39d623-76ed-4b69-ab07-fde41f4622b2"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "c8cae375-1d50-40fd-969c-8468e68b243a",
-                    "w": 24,
-                    "x": 24,
-                    "y": 0
-                },
-                "panelIndex": "c8cae375-1d50-40fd-969c-8468e68b243a",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-34d46879-463e-4279-87b7-540197122696",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "34d46879-463e-4279-87b7-540197122696": {
-                                            "columnOrder": [
-                                                "48ae366c-3714-49ec-8b6d-8f2451ca489d"
-                                            ],
-                                            "columns": {
-                                                "48ae366c-3714-49ec-8b6d-8f2451ca489d": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Consumers",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "sourceField": "kafka.consumer.client_id"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "34d46879-463e-4279-87b7-540197122696",
-                                "layerType": "data",
-                                "metricAccessor": "48ae366c-3714-49ec-8b6d-8f2451ca489d",
-                                "secondaryTrend": {
-                                    "type": "none"
-                                }
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "e520e16b-e8fb-4617-82b1-6c9576622fd8",
-                    "w": 24,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "e520e16b-e8fb-4617-82b1-6c9576622fd8",
                 "type": "lens"
             },
             {
@@ -687,7 +811,7 @@
                     "i": "d0070402-8905-4de6-bd95-6e1ec576dc6e",
                     "w": 24,
                     "x": 24,
-                    "y": 15
+                    "y": 19
                 },
                 "panelIndex": "d0070402-8905-4de6-bd95-6e1ec576dc6e",
                 "type": "lens"
@@ -867,7 +991,7 @@
                     "i": "d0d5db4d-593a-4a77-a3ca-cae6c8700ab6",
                     "w": 24,
                     "x": 0,
-                    "y": 30
+                    "y": 34
                 },
                 "panelIndex": "d0d5db4d-593a-4a77-a3ca-cae6c8700ab6",
                 "type": "lens"
@@ -1047,10 +1171,152 @@
                     "i": "bd577ec5-8064-4713-94a4-fa11acb5a3df",
                     "w": 24,
                     "x": 24,
-                    "y": 30
+                    "y": 34
                 },
                 "panelIndex": "bd577ec5-8064-4713-94a4-fa11acb5a3df",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_79418e9b-e16c-4c97-8856-ff46d373d9aa_dashboard",
+                                "id": "79418e9b-e16c-4c97-8856-ff46d373d9aa",
+                                "label": "Overview",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_ac9e04f7-a4a7-4b0e-a087-06c31e92c115_dashboard",
+                                "id": "ac9e04f7-a4a7-4b0e-a087-06c31e92c115",
+                                "label": "Topic",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_a2d3a889-1de9-4990-aad9-b1ce51d46bee_dashboard",
+                                "id": "a2d3a889-1de9-4990-aad9-b1ce51d46bee",
+                                "label": "Controller",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_16974010-7ce5-4a1d-9c39-9030fcdfb1d4_dashboard",
+                                "id": "16974010-7ce5-4a1d-9c39-9030fcdfb1d4",
+                                "label": "JVM",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_f0804121-c076-46cf-b5ea-9f195a02a178_dashboard",
+                                "id": "f0804121-c076-46cf-b5ea-9f195a02a178",
+                                "label": "Network",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 4,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_057dc0de-52ad-4e3e-be84-bea4922ae595_dashboard",
+                                "id": "057dc0de-52ad-4e3e-be84-bea4922ae595",
+                                "label": "Replica manager",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 5,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_1d342b7a-cb2e-466c-9771-ae0b9c9f0182_dashboard",
+                                "id": "1d342b7a-cb2e-466c-9771-ae0b9c9f0182",
+                                "label": "Log manager",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 6,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_98c32618-91a3-4318-a1da-c09834f6b78a_dashboard",
+                                "id": "98c32618-91a3-4318-a1da-c09834f6b78a",
+                                "label": "Raft",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 7,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_1792076b-b692-4b71-9382-d8d58f8deb9f_dashboard",
+                                "id": "1792076b-b692-4b71-9382-d8d58f8deb9f",
+                                "label": "Consumer",
+                                "order": 8,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_ae314faa-91e1-4472-b442-89b76bbdd6a8_dashboard",
+                                "id": "ae314faa-91e1-4472-b442-89b76bbdd6a8",
+                                "label": "Producer",
+                                "order": 9,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_1f72283e-f334-4eb2-bea6-1faadc788bcd_dashboard",
+                                "id": "1f72283e-f334-4eb2-bea6-1faadc788bcd",
+                                "label": "Logs",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 10,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "hidePanelTitles": true,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd",
+                "type": "links"
             }
         ],
         "timeRestore": false,
@@ -1058,8 +1324,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-09-05T09:12:26.322Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "created_at": "2025-09-30T12:49:51.133Z",
     "id": "kafka-9ea6d501-75a5-492d-87dc-4632f907b9dd",
     "managed": false,
     "references": [
@@ -1070,7 +1335,32 @@
         },
         {
             "id": "metrics-*",
-            "name": "3aa63fb2-746d-4264-a705-21ebeb274177:indexpattern-datasource-layer-46dc5f75-b3e7-448d-b97b-5985c3fc3238",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e520e16b-e8fb-4617-82b1-6c9576622fd8:indexpattern-datasource-layer-34d46879-463e-4279-87b7-540197122696",
             "type": "index-pattern"
         },
         {
@@ -1080,7 +1370,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "e520e16b-e8fb-4617-82b1-6c9576622fd8:indexpattern-datasource-layer-34d46879-463e-4279-87b7-540197122696",
+            "name": "3aa63fb2-746d-4264-a705-21ebeb274177:indexpattern-datasource-layer-46dc5f75-b3e7-448d-b97b-5985c3fc3238",
             "type": "index-pattern"
         },
         {
@@ -1099,8 +1389,88 @@
             "type": "index-pattern"
         },
         {
+            "id": "kafka-ea488d90-8e63-11e8-8fa2-3d5f811fbd0f",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_79418e9b-e16c-4c97-8856-ff46d373d9aa_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-ff622b8a-bbe2-4903-add2-ba3ad50806d2",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_ac9e04f7-a4a7-4b0e-a087-06c31e92c115_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-c2cb8091-e812-4a23-9b59-3d461c4898ce",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_a2d3a889-1de9-4990-aad9-b1ce51d46bee_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-894682fd-555e-49c6-b469-f8fbb3f0b9dc",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_16974010-7ce5-4a1d-9c39-9030fcdfb1d4_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-28d2bf78-a638-4a1f-a46f-1a794c99166b",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_f0804121-c076-46cf-b5ea-9f195a02a178_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-32a191b0-c8ac-4ea1-812d-0e3d406f9a41",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_057dc0de-52ad-4e3e-be84-bea4922ae595_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-20094380-8713-487d-8036-5cbbb529f0ca",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_1d342b7a-cb2e-466c-9771-ae0b9c9f0182_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-e3be4fe8-c7b4-4cea-bb2e-953032cc322a",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_98c32618-91a3-4318-a1da-c09834f6b78a_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-9ea6d501-75a5-492d-87dc-4632f907b9dd",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_1792076b-b692-4b71-9382-d8d58f8deb9f_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-8d886d57-c8a2-4fce-869a-f9107235c054",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_ae314faa-91e1-4472-b442-89b76bbdd6a8_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka-943caca0-87ee-11e7-ad9c-db80de0bf8d3",
+            "name": "e5d10ccf-f9e1-4dad-88e2-973793eefbbd:link_1f72283e-f334-4eb2-bea6-1faadc788bcd_dashboard",
+            "type": "dashboard"
+        },
+        {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
             "type": "index-pattern"
         }
     ],
