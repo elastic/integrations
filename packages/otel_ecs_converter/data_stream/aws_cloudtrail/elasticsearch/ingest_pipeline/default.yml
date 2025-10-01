@@ -1,0 +1,144 @@
+---
+description: Pipeline for processing sample logs
+processors:
+    - dot_expander:
+          field: "*"
+          path: attributes
+    - dot_expander:
+          field: "*"
+          path: resource.attributes
+    - set:
+        field: aws.cloudtrail.event_version
+        copy_from: attributes.aws.cloudtrail.event_version
+    - set:
+        field: aws.cloudtrail.user_identity.type
+        copy_from: attributes.aws.principal.type
+    - set:
+        field: user.name
+        copy_from: attributes.user.name
+        ignore_empty_value: true
+    - set:
+        field: user.id
+        copy_from: attributes.aws.principal.id
+        ignore_empty_value: true
+    - set:
+        field: aws.cloudtrail.user_identity.arn
+        copy_from: attributes.aws.principal.arn
+        ignore_empty_value: true
+    - set:
+        field: aws.cloudtrail.user_identity.access_key_id
+        copy_from: attributes.aws.access_key.id
+        ignore_empty_value: true
+    - set:
+        field: event.provider
+        copy_from: attributes.rpc.service
+    - set:
+        field: event.action
+        copy_from: attributes.rpc.method
+    - set:
+        field: aws.cloudtrail.event_type
+        copy_from: attributes.rpc.system
+    - set:
+        field: aws.cloudtrail.event_category
+        copy_from: attributes.aws.event.category
+        ignore_empty_value: true
+    - set:
+        field: cloud.region
+        copy_from: resource.attributes.cloud.region
+    - set:
+        field: json.sourceIPAddress
+        copy_from: attributes.source.address
+    - user_agent:
+        field: attributes.user_agent.original
+        target_field: user_agent
+        on_failure:
+          - rename:
+              field: attributes.user_agent.original
+              target_field: user_agent.original
+              ignore_failure: true
+    - set:
+        field: aws.cloudtrail.error_code
+        copy_from: attributes.aws.error.code
+        ignore_empty_value: true
+    - set:
+        field: aws.cloudtrail.error_message
+        copy_from: attributes.aws.error.message
+        ignore_empty_value: true
+    - set:
+        field: aws.cloudtrail.request_id
+        copy_from: attributes.aws.request_id
+    - set:
+        field: event.id
+        copy_from: attributes.aws.cloudtrail.event_id
+    - set:
+        field: aws.cloudtrail.management_event
+        copy_from: attributes.aws.event.management
+    - set:
+        field: aws.cloudtrail.read_only
+        copy_from: attributes.aws.event.read_only
+    - set:
+        field: aws.cloudtrail.resources
+        copy_from: attributes.aws.resources
+    - set:
+        field: cloud.account.id
+        copy_from: resource.attributes.cloud.account.id
+    - set:
+        field: aws.cloudtrail.recipient_account_id
+        copy_from: resource.attributes.cloud.account.id
+    - set:
+        field: aws.cloudtrail.shared_event_id
+        copy_from: attributes.aws.shared_event_id
+    - append:
+        field: related.user
+        value: '{{{attributes.aws.request.parameters.userName}}}'
+        if: ctx.attributes.aws?.request?.parameters?.userName != null
+    - append:
+        field: related.user
+        value: '{{{attributes.aws.request.parameters.newUserName}}}'
+        if: ctx.attributes.aws?.request?.parameters?.newUserName != null
+    # todo: need additionalEventData populated and extracted for mfa, mobile & needs digest file support
+    # will be addressed once OTel encoding extension support added through
+    # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/43403 
+    - set:
+        field: user.changes.name
+        copy_from: attributes.aws.request.parameters.newUserName
+        if: ctx.attributes.aws?.request?.parameters?.newUserName != null
+    - set:
+        field: group.name
+        copy_from: attributes.aws.request.parameters.groupName
+        if: ctx.attributes.aws?.request?.parameters?.groupName != null
+    - set:
+        field: user.target.name
+        copy_from: attributes.aws.request.parameters.userName
+        if: ctx.attributes.aws?.request?.parameters?.userName != null
+    - set:
+        field: tls.version
+        copy_from: attributes.tls.protocol.version
+        if: ctx.attributes?.tls?.protocol?.version != null
+    - set:
+        field: tls.cipher
+        copy_from: attributes.tls.cipher
+        if: ctx.attributes?.tls?.cipher!= null
+    - set:
+        field: tls.client.server_name
+        copy_from: attributes.server.address
+        if: ctx.attributes?.server?.address!= null
+    - remove:
+        field:
+          - attributes
+          - resource.attributes
+        ignore_missing: true
+    - set:
+        field: pre_extracted
+        value: true
+on_failure:
+    - set:
+        field: event.kind
+        value: pipeline_error
+        tag: set_pipeline_error_into_event_kind
+    - append:
+        field: error.message
+        value: >-
+            Processor '{{{ _ingest.on_failure_processor_type }}}'
+            {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+            {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
