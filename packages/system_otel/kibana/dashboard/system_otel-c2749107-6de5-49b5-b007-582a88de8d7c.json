@@ -12,7 +12,7 @@
             "panelsJSON": {
                 "7f983ba8-fdea-404a-bb1b-3f2bcc8daad6": {
                     "explicitInput": {
-                        "dataViewId": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                        "dataViewId": "metrics-hostmetricsreceiver.otel-*",
                         "exclude": false,
                         "existsSelected": false,
                         "fieldName": "resource.attributes.host.name",
@@ -140,25 +140,12 @@
                     "attributes": {
                         "references": [],
                         "state": {
-                            "adHocDataViews": {
-                                "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
-                                    "name": "metrics-hostmetricsreceiver.otel-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "metrics-hostmetricsreceiver.otel-*",
-                                    "type": "esql"
-                                }
-                            },
+                            
                             "datasourceStates": {
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "id": "metrics-hostmetricsreceiver.otel-*",
                                             "timeField": "@timestamp",
                                             "title": "metrics-hostmetricsreceiver.otel-*"
                                         }
@@ -213,7 +200,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "index": "metrics-hostmetricsreceiver.otel-*",
                                             "query": {
                                                 "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \narch = resource.attributes.host.arch,\nip = resource.attributes.host.ip,\nmac = resource.attributes.host.mac,\nname = resource.attributes.host.name\n| EVAL ip_str = TO_STRING(ip)\n| EVAL str = CONCAT(\"host.arch$\",arch, \"|\",\n\"host.ip$\", ip_str, \"|\",\n\"host.mac$\",mac, \"|\",\n\"host.name$\", name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), value = MV_LAST(pairs)\n| keep `Resource Attribute`, value\n| STATS `Value` = MV_DEDUPE(TOP(value, 400, \"asc\")) BY `Resource Attribute`"
                                             },
@@ -276,25 +263,12 @@
                     "attributes": {
                         "references": [],
                         "state": {
-                            "adHocDataViews": {
-                                "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
-                                    "name": "metrics-hostmetricsreceiver.otel-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "metrics-hostmetricsreceiver.otel-*",
-                                    "type": "esql"
-                                }
-                            },
+                            
                             "datasourceStates": {
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "id": "metrics-hostmetricsreceiver.otel-*",
                                             "timeField": "@timestamp",
                                             "title": "metrics-hostmetricsreceiver.otel-*"
                                         }
@@ -325,7 +299,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "index": "metrics-hostmetricsreceiver.otel-*",
                                             "query": {
                                                 "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \ncache_size = TO_STRING(resource.attributes.host.cpu.cache.l2.size),\nfamily = resource.attributes.host.cpu.family,\nmodel_id = resource.attributes.host.cpu.model.id,\nmodel_name = resource.attributes.host.cpu.model.name,\nstepping = resource.attributes.host.cpu.stepping,\nvendor_id = resource.attributes.host.cpu.vendor.id\n| EVAL str = CONCAT(\"host.cpu.cache.l2.size:\", cache_size, \"|\",\n\"host.cpu.family:\",family, \"|\",\n\"host.cpu.model.id:\",model_id, \"|\",\n\"host.cpu.model.name:\",model_name, \"|\",\n\"host.cpu.stepping:\",stepping, \"|\",\n\"host.cpu.vendor.id:\",vendor_id)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
                                             },
@@ -387,11 +361,11 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd": {
+                                "metrics-hostmetricsreceiver.otel-*": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                    "id": "metrics-hostmetricsreceiver.otel-*",
                                     "name": "metrics-hostmetricsreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
@@ -404,7 +378,7 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "id": "metrics-hostmetricsreceiver.otel-*",
                                             "timeField": "@timestamp",
                                             "title": "metrics-hostmetricsreceiver.otel-*"
                                         }
@@ -435,7 +409,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "index": "metrics-hostmetricsreceiver.otel-*",
                                             "query": {
                                                 "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \ndescription = resource.attributes.os.description,\ntype = resource.attributes.os.type\n| EVAL str = CONCAT(\"os.description$\", description, \"|\",\n\"os.type$\",type)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
                                             },
@@ -497,11 +471,11 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd": {
+                                "metrics-hostmetricsreceiver.otel-*": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                    "id": "metrics-hostmetricsreceiver.otel-*",
                                     "name": "metrics-hostmetricsreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
@@ -514,7 +488,7 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "id": "metrics-hostmetricsreceiver.otel-*",
                                             "timeField": "@timestamp",
                                             "title": "metrics-hostmetricsreceiver.otel-*"
                                         }
@@ -545,7 +519,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "index": "metrics-hostmetricsreceiver.otel-*",
                                             "query": {
                                                 "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.cloud.account.id,\nresource.attributes.cloud.instance.id,\nresource.attributes.cloud.platform,\nresource.attributes.cloud.provider\n| EVAL str = CONCAT(\"cloud.account.id:\",resource.attributes.cloud.account.id, \"|\",\n\"cloud.instance.id:\",resource.attributes.cloud.instance.id, \"|\",\n\"cloud.platform:\",resource.attributes.cloud.platform, \"|\",\n\"cloud.provider:\",resource.attributes.cloud.provider)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
                                             },
@@ -607,11 +581,11 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd": {
+                                "metrics-hostmetricsreceiver.otel-*": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                    "id": "metrics-hostmetricsreceiver.otel-*",
                                     "name": "metrics-hostmetricsreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
@@ -624,7 +598,7 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "id": "metrics-hostmetricsreceiver.otel-*",
                                             "timeField": "@timestamp",
                                             "title": "metrics-hostmetricsreceiver.otel-*"
                                         }
@@ -655,7 +629,7 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+                                            "index": "metrics-hostmetricsreceiver.otel-*",
                                             "query": {
                                                 "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.k8s.cluster.name\n| EVAL str = CONCAT(\"k8s.cluster.name:\", resource.attributes.k8s.cluster.name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
                                             },
@@ -790,7 +764,7 @@
             "type": "dashboard"
         },
         {
-            "id": "f493c0368d76bffe6d98faa5e7d71a3b8413e3de36de8bd8632431950f1d00fd",
+            "id": "metrics-hostmetricsreceiver.otel-*",
             "name": "controlGroup_497c9e53-8919-47b7-9cea-14ac8f067f05:optionsListDataView",
             "type": "index-pattern"
         },
