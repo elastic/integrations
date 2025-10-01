@@ -227,10 +227,6 @@ processors:
     target_field: cisco_meraki.site_to_site_vpn.connectivity_change
     strip_brackets: true
     if: ctx?._temp?.rest != null && ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change'
-- set:
-    field: user.name
-    copy_from: cisco_meraki.{{{cisco_meraki.event_subtype}}}.identity
-    if: "['association', 'disassociation', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021X_client_deauth', '8021x_eap_success'].contains(ctx.cisco_meraki.event_subtype)"
 
 ####################################################
 # Move values from event subtypes to ECS fields
@@ -250,6 +246,11 @@ processors:
     target_field: source.ip
     if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
     ignore_missing: true
+- rename:
+    field: cisco_meraki.{{{cisco_meraki.event_subtype}}}.identity
+    target_field: user.name
+    ignore_missing: true
+    if: "['association', 'disassociation', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_client_deauth', '8021x_eap_success'].contains(ctx.cisco_meraki.event_subtype)"
 - rename:
     field: cisco_meraki.multiple_dhcp_servers_detected.original_server_mac
     target_field: server.mac
