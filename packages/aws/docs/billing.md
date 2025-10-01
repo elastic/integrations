@@ -14,15 +14,15 @@ When you want to group by a combination of several tags and dimensions, like `SE
 
 To avoid data duplication, it's recommended to aggregate data using a combination of two attributes, which can be either: one tag and one dimension, two tags or two dimensions.
 
-## Data streams
+## What data does this integration collect?
 
 The AWS Billing integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of your AWS spending, including the estimated costs for various AWS services. Metrics are gathered with the AWS [Cost Explorer API](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-api.html)).
 
-See more details in the [Metrics reference](#metrics-reference).
+Refer to the [Metrics reference](#metrics-reference) for more details.
 
-## Requirements
+## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -32,7 +32,7 @@ Before using any AWS integration you will need:
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, please take a look at the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
+For more details about these requirements, refer to the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Setup
 
@@ -116,7 +116,7 @@ An example event for `billing` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
