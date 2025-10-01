@@ -490,6 +490,12 @@ processors:
     ignore_missing: true
     ignore_failure: true
     if: ctx.user?.name == null
+- dissect:
+    field: user.name
+    pattern: '%{user.domain}\%{user.name}'
+    tag: dissect_windows_user_name
+    ignore_missing: true
+    if: ctx.user?.name != null && ctx.user.name.contains('\\')
 - append:
     field: related.user
     value: "{{{user.name}}}"
