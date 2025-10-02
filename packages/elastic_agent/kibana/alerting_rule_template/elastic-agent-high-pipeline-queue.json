@@ -1,0 +1,33 @@
+{
+  "id": "elastic-agent-high-pipeline-queue",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Elastic Agent] High pipeline queue",
+    "tags": ["Elastic Agent", "Pipeline and Queues"],
+    "ruleTypeId": "metrics.alert.threshold",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "criteria": [
+        {
+          "aggType": "max",
+          "comparator": ">",
+          "threshold": [0.9],
+          "timeSize": 1,
+          "timeUnit": "m",
+          "metric": "beat.stats.libbeat.pipeline.queue.filled.pct"
+        }
+      ],
+      "sourceId": "default",
+      "alertOnNoData": true,
+      "alertOnGroupDisappear": false,
+      "groupBy": ["elastic_agent.id", "component.id"]
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

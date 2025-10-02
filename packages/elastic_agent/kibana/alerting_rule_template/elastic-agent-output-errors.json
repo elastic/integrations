@@ -1,0 +1,34 @@
+{
+  "id": "elastic-agent-output-errors",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Elastic Agent] Output errors",
+    "tags": ["Elastic Agent", "Pipeline and Queues"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "TS metrics-*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS errors_rate = SUM(RATE(beat.stats.libbeat.output.write.errors)) BY time_bucket = BUCKET(@timestamp,5minute), elastic_agent.id, component.id\n| EVAL errors_per_min = errors_rate * 60\n| WHERE errors_per_min > 5"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

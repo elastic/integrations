@@ -1,0 +1,34 @@
+{
+  "id": "elastic-agent-dropped-events",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Elastic Agent] Dropped events",
+    "tags": ["Elastic Agent", "Pipeline and Queues"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "TS metrics-*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS events_dropped_rate = max(rate(beat.stats.libbeat.pipeline.events.dropped)), pipeline_acked_rate = max(rate(beat.stats.libbeat.pipeline.queue.acked)) BY time_bucket = bucket(@timestamp,5minute), elastic_agent.id, component.id\n| EVAL percent_drop_rate = (events_dropped_rate / pipeline_acked_rate)\n| WHERE percent_drop_rate >= 0.05\n\n"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
