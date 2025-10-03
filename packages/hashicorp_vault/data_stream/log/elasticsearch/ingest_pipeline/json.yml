@@ -4,6 +4,7 @@ processors:
   - json:
       field: event.original
       target_field: hashicorp_vault.log
+      tag: json_5f9af198
 
   #
   # @timestamp
@@ -12,10 +13,12 @@ processors:
       field: hashicorp_vault.log.@timestamp
       formats:
         - ISO8601
+      tag: date_23c74f3b
   - remove:
       field:
         - hashicorp_vault.log.@timestamp
       ignore_missing: true
+      tag: remove_77ba3bd8
 
   #
   # Rename standard fields to ECS.
@@ -24,14 +27,17 @@ processors:
       field: hashicorp_vault.log.@level
       target_field: log.level
       ignore_missing: true
+      tag: rename_db9c59ae
   - rename:
       field: hashicorp_vault.log.@message
       target_field: message
       ignore_missing: true
+      tag: rename_15c25a34
   - rename:
       field: hashicorp_vault.log.@module
       target_field: log.logger
       ignore_missing: true
+      tag: rename_2657cf6c
   - script:
       description: Drop hashicorp_vault.log if empty.
       tag: drop-empty-hashicorp_vault.log
@@ -50,10 +56,14 @@ processors:
       field: file.path
       copy_from: hashicorp_vault.log.file_path
       ignore_failure: true
+      tag: set_e43bb141
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

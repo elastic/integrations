@@ -9,31 +9,41 @@ processors:
         - service.address
         - service.type
       ignore_missing: true
+      tag: remove_0f1df825
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - set:
       field: service.type
       value: hashicorp_vault
+      tag: set_6ed233ed
   - set:
       field: event.kind
       value: metric
+      tag: set_495d69f0
   - rename:
       field: prometheus.labels
       target_field: labels
       ignore_missing: true
+      tag: rename_01ec3db0
   - set:
       field: labels.job
       value: hashicorp_vault
       override: true
+      tag: set_8e615894
   - rename:
       field: prometheus
       target_field: hashicorp_vault.metrics
       ignore_missing: true
+      tag: rename_6ac57ed1
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
