@@ -50,7 +50,7 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 
 ### Collect logs via syslog
 
-To configure syslog monitoring, follow the steps described in the [Configure Syslog Monitoring](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/configure-syslog-monitoring) documentation.
+To configure syslog monitoring, follow the steps described in the [Configure Syslog Monitoring](https://docs.paloaltonetworks.com/ngfw/administration/monitoring/use-syslog-for-monitoring/configure-syslog-monitoring) documentation.
 
 ### Collect logs via log file
 
