@@ -14,10 +14,11 @@ This integration is compatible with different versions of Cyera APIs for respect
 |----------------|---------|
 | Classification | v1      |
 | Issue          | v3      |
+| Event          | v1      |
 
 ### How it works
 
-This integration periodically queries the Cyera API to retrieve classifications and issues.
+This integration periodically queries the Cyera API to retrieve classifications, issues and events.
 
 ## What data does this integration collect?
 
@@ -27,8 +28,12 @@ This integration collects log messages of the following types:
 
 - `Issue`: Collects issues that have been identified by the Cyera system.
 
+- `Event`: Collects all events from the Cyera system.
+
+>**Note:** Classification and Issue data streams currently do not have an ILM policy applied. A policy will be introduced in an upcoming release. Until then, full sync will be performed, which may result in higher storage costs.
+
 ### Supported use cases
-Integrating Cyera Classification and Issues data streams with Elastic SIEM provides visibility into both sensitive data classification and the risks associated with that data across cloud and SaaS environments. By correlating Cyera’s classification intelligence with issue context in Elastic analytics, security teams can strengthen data security posture, accelerate incident response, and simplify compliance. Dashboards in Kibana present breakdowns by sensitivity, category, severity, status, risk status, and trends over time, enabling faster investigations, better prioritization, and improved accountability.
+Integrating Cyera Classification, Issues, and Events data streams with Elastic SIEM provides visibility into sensitive data, the risks tied to that data, and the security events triggered across cloud and SaaS environments. By correlating Cyera’s classification intelligence with issue context and event activity in Elastic analytics, security teams can strengthen data security posture, accelerate incident response, and simplify compliance. Dashboards in Kibana present breakdowns by sensitivity, category, severity, status, risk status, event type, and trends over time — enabling faster investigations, better prioritization, and improved accountability.
 
 ## What do I need to use this integration?
 
@@ -114,12 +119,16 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "issue"}}
 
+### Event
+
+{{fields "event"}}
+
+#### Example event
+
+{{event "event"}}
+
 ### Inputs used
 
 These inputs can be used in this integration:
 
 - [cel](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
-
-#### ILM Policy
-
-To facilitate classification and issues data, source data stream-backed indices `.ds-logs-cyera.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-cyera.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
