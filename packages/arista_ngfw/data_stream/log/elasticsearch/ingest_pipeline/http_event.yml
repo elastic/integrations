@@ -8,14 +8,16 @@ processors:
       if: ctx.arista?.httpRequestEvent?.timeStamp != null
       field: arista.httpRequestEvent.timeStamp
       ignore_missing: true
+      tag: remove_d03be2c1
   - remove:
       if: ctx.arista?.httpRequestEvent?.sessionEvent?.timeStamp != null
       field: arista.httpRequestEvent.sessionEvent.timeStamp
       ignore_missing: true
+      tag: remove_4607f4e6
   - foreach:
       if: ctx.arista?.httpRequestEvent?.sessionEvent != null
       field: arista.httpRequestEvent.sessionEvent
-      processor: 
+      processor:
         rename:
           field: _ingest._value
           target_field: arista.{{{_ingest._key}}}
@@ -26,68 +28,84 @@ processors:
                 field: error.message
                 value: "{{{ _ingest.on_failure_message }}}"
       ignore_failure: true
+      tag: foreach_8d4549d3
   - remove:
       field: arista.httpRequestEvent.contentLength
       ignore_missing: true
+      tag: remove_09c83ac2
   - rename:
       field: arista.httpRequestEvent.domain
       target_field: destination.domain
       ignore_missing: true
+      tag: rename_0f063721
   - rename:
       field: arista.httpRequestEvent.method
       target_field: http.request.method
       ignore_missing: true
+      tag: rename_6d68afee
   - rename:
       field: arista.httpRequestEvent.requestId
       target_field: arista.requestId
       ignore_missing: true
+      tag: rename_2cbb226d
   - rename:
       field: arista.httpRequestEvent.requestUri
       target_field: arista.requestUri
       ignore_missing: true
+      tag: rename_f782d291
   - rename:
       field: arista.httpRequestEvent.timeStamp
       target_field: arista.timeStamp
       ignore_missing: true
+      tag: rename_b8bbc525
   - rename:
       field: arista.domain
       target_field: destination.domain
       ignore_missing: true
+      tag: rename_41a9e66a
   - rename:
       field: arista.method
       target_field: http.request.method
       ignore_missing: true
+      tag: rename_8bec64d7
   - rename:
       if: ctx.arista?.class == 'class com.untangle.app.http.HttpRequestEvent'
       field: arista.contentLength
       target_field: http.request.bytes
       ignore_missing: true
+      tag: rename_58db7ed7
   - rename:
       if: ctx.arista?.class == 'class com.untangle.app.http.HttpResponseEvent'
       field: arista.contentLength
       target_field: http.response.bytes
       ignore_missing: true
+      tag: rename_5c9b0795
   - rename:
       field: arista.requestUri
       target_field: url.path
       ignore_missing: true
+      tag: rename_e4123169
   - rename:
       field: arista.contentFilename
       target_field: file.name
       ignore_failure: true
+      tag: rename_bb6867d5
   - dissect:
       description: Parse HTTP request method and full URL from requestLine
       if: ctx.arista?.requestLine != null && ctx.arista.requestLine.contains(' ')
       field: arista.requestLine
       pattern: '%{http.request.method} %{_temp.url_full}'
+      tag: dissect_29153989
   - uri_parts:
       if: ctx._temp?.url_full != null
       field: _temp.url_full
       ignore_failure: true
+      tag: uri_parts_4359ea69
   - rename:
       field: _temp.url_full
       target_field: url.full
       ignore_missing: true
+      tag: rename_893448c8
 
   ##############
   ## Clean Up ##
@@ -100,10 +118,17 @@ processors:
         - arista.httpRequestEvent.host
         - arista.requestId
       ignore_missing: true
+      tag: remove_8dacd0e4
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+      tag: on_failure-set-event-kind
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      tag: on_failure-set-error-message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+

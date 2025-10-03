@@ -8,33 +8,41 @@ processors:
       field: arista.msg
       target_field: rule.name
       ignore_missing: true
+      tag: rename_0fbf74de
   - rename:
       field: arista.ipDestination
       target_field: destination.ip
       ignore_missing: true
+      tag: rename_e4c6e226
   - rename:
       field: arista.ipSource
       target_field: source.ip
       ignore_missing: true
+      tag: rename_d50f6c9c
   - rename:
       field: arista.classtype
       target_field: rule.ruleset
       ignore_missing: true
+      tag: rename_f35733f8
   - rename:
       field: arista.category
       target_field: rule.category
       ignore_missing: true
+      tag: rename_13be3a14
   - remove:
       field: rule.id
       ignore_missing: true
+      tag: remove_12b67e3b
   - rename:
       field: arista.signatureId
       target_field: rule.id
       ignore_missing: true
+      tag: rename_d801d8ba
   - convert:
       field: rule.id
       type: string
       ignore_missing: true
+      tag: convert_652b2ac1
 
   ##############
   ## Clean Up ##
@@ -49,10 +57,17 @@ processors:
         - arista.sportItype
         - arista.timestamp
       ignore_missing: true
+      tag: remove_1c213dec
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+      tag: on_failure-set-event-kind
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      tag: on_failure-set-error-message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+
