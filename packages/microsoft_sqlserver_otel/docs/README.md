@@ -1,6 +1,6 @@
 ## Overview
 
-The Microsoft SQL Server OpenTelemetry integration tracks the performance and health of your SQL Server instances. It collects key system and database metrics such as user connections, buffer pool usage, SQL compilations and recompilations, transaction rates, blocking activity, I/O performance etc.  
+The Microsoft SQL Server OpenTelemetry integration tracks the performance and health of your SQL Server instances. It collects key system and database metrics such as user connections, buffer pool usage, SQL compilations and recompilations, transaction rates, blocking activity, I/O performance, and so on.  
 
 With Elasticsearch and Kibana, you can store, search, and visualize these metrics, enabling proactive monitoring, alerting, and capacity planning for your SQL Server deployments.
 
@@ -12,9 +12,9 @@ The integration package has been tested with [SQLServer OpenTelemetry Receiver v
 
 The Microsoft SQL Server OpenTelemetry Receiver collects metrics from a SQL Server instance using two primary methods:
 
-- **Windows Performance Counters** – Used for system-level metrics. These counters are only available when the receiver is running on Windows. See [sys.dm_os_performance_counters (Transact-SQL)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql) for more details.
+- **Windows Performance Counters** – Used for system-level metrics. These counters are only available when the receiver is running on Windows. Refer to [sys.dm_os_performance_counters (Transact-SQL)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql) for more details.
 
-- **SQL Queries (DMVs and system views)** – The receiver executes lightweight queries against SQL Server Dynamic Management Views (DMVs) and system views, such as `sys.dm_exec_requests`, and `sys.databases`. These queries provide data related to database and query performance, memory usage and database states. See [Dynamic Management Views and Functions (Transact-SQL)](https://learn.microsoft.com/sql/relational-databases/system-dynamic-management-views/system-dynamic-management-views) for more details.
+- **SQL Queries (DMVs and system views)** – The receiver executes lightweight queries against SQL Server Dynamic Management Views (DMVs) and system views, such as `sys.dm_exec_requests`, and `sys.databases`. These queries provide data related to database and query performance, memory usage and database states. Refer to [Dynamic Management Views and Functions (Transact-SQL)](https://learn.microsoft.com/sql/relational-databases/system-dynamic-management-views/system-dynamic-management-views) for more details.
 
 > **Note:** Make sure to run the collector as administrator in order to collect all performance counters for metrics.
 
@@ -29,7 +29,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 To use the Microsoft SQL Server OpenTelemetry integration, the collector must connect with a SQL Server login that has sufficient privileges to query system views and dynamic management views (DMVs).
 
-If using a `sysadmin` login (e.g., sa), no additional configuration is required. `sysadmin` already has access to all DMVs and system views used by the receiver.
+If using a `sysadmin` login (for example, sa), no additional configuration is required. `sysadmin` already has access to all DMVs and system views used by the receiver.
 
 For non-sysadmin login, specific permissions must be granted explicitly. For example:
 
@@ -110,10 +110,10 @@ For the full list of settings exposed for the receiver, refer to the [configurat
 To verify that the Microsoft SQL Server OpenTelemetry integration is working:
 
 1. Check Collector Logs
-Ensure the OpenTelemetry Collector is running and the `sqlserverreceiver` is enabled. You should see logs confirming metric collection from your SQL Server instance.
+Ensure the OpenTelemetry Collector is running and the `sqlserverreceiver` is enabled. You should get logs confirming metric collection from your SQL Server instance.
 
 2. Check Dashboards
-Open **Kibana → Dashboards** and confirm that the Microsoft SQL Server OpenTelemetry Metrics dashboard populates with the collected data.
+Open **Kibana** → **Dashboards** and confirm that the Microsoft SQL Server OpenTelemetry Metrics dashboard populates with the collected data.
 
 ## Reference
 
