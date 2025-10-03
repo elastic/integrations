@@ -3,28 +3,34 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - grok:
       field: message
       patterns:
         - '%{TIMEONLYSTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:_tmp.timezone} %{DATA:event.sequence:long} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},'
       pattern_definitions:
-        TIMEONLYSTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[ ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?' 
+        TIMEONLYSTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[ ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
+      tag: grok_996a6ea5
   - trim:
       field: cisco_ise.log.log_details_raw
       ignore_failure: true
+      tag: trim_692efbe3
   - grok:
       field: cisco_ise.log.message.description
       if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
       patterns:
         - "^%{DATA:event.action}:"
       ignore_failure: true
+      tag: grok_859375fa
   - lowercase:
       field: event.action
       ignore_missing: true
+      tag: lowercase_9334b869
   - gsub:
       field: cisco_ise.log.log_details_raw
       pattern: \\,
       replacement: ''
+      tag: gsub_a9150fd7
   - script:
       tag: cisco_ise_log_log_details_raw_split
       source: |-
@@ -52,6 +58,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_9ef85c6a
   - date:
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
@@ -67,10 +74,15 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_1d2a12b9
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+

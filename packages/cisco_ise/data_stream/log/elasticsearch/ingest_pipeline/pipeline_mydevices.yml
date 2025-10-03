@@ -3,22 +3,27 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value: [configuration]
+      tag: append_c8ab9fa2
   - append:
       field: event.type
       value: [info]
+      tag: append_8b66b73a
   - grok:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
+      tag: grok_7466a657
   - grok:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
+      tag: grok_c232cfac
   - date:
       field: _tmp.timestamp
       formats:
@@ -32,6 +37,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_9ef85c6a
   - date:
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
@@ -47,28 +53,32 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_1d2a12b9
   - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
+      tag: kv_dd59a8ac
   - script:
       lang: painless
       if: ctx.cisco_ise?.log?.message?.description != null
-      source:
-        ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+      source: ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+      tag: script_09cdb1bd
   - rename:
       field: cisco_ise.log.log_details.UserName
       target_field: user.name
       ignore_failure: true
       ignore_missing: true
+      tag: rename_e8c2288b
   - append:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_3b423052
   - convert:
       field: cisco_ise.log.log_details.IpAddress
       target_field: source.ip
@@ -78,58 +88,70 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_e43c3b18
   - remove:
       field: cisco_ise.log.log_details.IpAddress
       ignore_missing: true
+      tag: remove_a60579bd
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_30d15214
   - rename:
       field: cisco_ise.log.log_details.AuthenticationIdentityStore
       target_field: cisco_ise.log.authentication.identity_store
       ignore_failure: true
       ignore_missing: true
+      tag: rename_b1af2593
   - rename:
       field: cisco_ise.log.log_details.PortalName
       target_field: cisco_ise.log.portal.name
       ignore_failure: true
       ignore_missing: true
+      tag: rename_78f7f9ec
   - rename:
       field: cisco_ise.log.log_details.IdentityGroup
       target_field: cisco_ise.log.identity.group
       ignore_failure: true
       ignore_missing: true
+      tag: rename_82b479a0
   - rename:
       field: cisco_ise.log.log_details.PsnHostName
       target_field: cisco_ise.log.psn.hostname
       ignore_failure: true
       ignore_missing: true
+      tag: rename_20673e92
   - rename:
       field: cisco_ise.log.log_details.EPMacAddress
       target_field: cisco_ise.log.ep.mac.address
       ignore_failure: true
       ignore_missing: true
+      tag: rename_801928ca
   - gsub:
       field: cisco_ise.log.ep.mac.address
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
+      tag: gsub_347e5564
   - uppercase:
       field: cisco_ise.log.ep.mac.address
       ignore_missing: true
+      tag: uppercase_78371bb9
   - set:
       field: client.mac
       copy_from: cisco_ise.log.ep.mac.address
       ignore_failure: true
       ignore_empty_value: true
+      tag: set_fd30af31
   - rename:
       field: cisco_ise.log.log_details.EPIdentityGroup
       target_field: cisco_ise.log.ep.identity_group
       ignore_failure: true
       ignore_missing: true
+      tag: rename_46df5259
   - convert:
       field: cisco_ise.log.log_details.Staticassignment
       target_field: cisco_ise.log.static.assignment
@@ -139,29 +161,35 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_0a5c5e91
   - remove:
       field: cisco_ise.log.log_details.Staticassignment
       ignore_missing: true
+      tag: remove_0bd718a3
   - rename:
       field: cisco_ise.log.log_details.EndPointProfiler
       target_field: cisco_ise.log.endpoint.profiler
       ignore_failure: true
       ignore_missing: true
+      tag: rename_c4330770
   - rename:
       field: cisco_ise.log.log_details.EndPointPolicy
       target_field: cisco_ise.log.endpoint.policy
       ignore_failure: true
       ignore_missing: true
+      tag: rename_ee013c56
   - rename:
       field: cisco_ise.log.log_details.DeviceName
       target_field: cisco_ise.log.device.name
       ignore_failure: true
       ignore_missing: true
+      tag: rename_c09076c4
   - rename:
       field: cisco_ise.log.log_details.DeviceRegistrationStatus
       target_field: cisco_ise.log.device.registration_status
       ignore_failure: true
       ignore_missing: true
+      tag: rename_79165faf
   - convert:
       field: cisco_ise.log.log_details.ResponseTime
       target_field: cisco_ise.log.response.time
@@ -171,18 +199,25 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_182a36ad
   - remove:
       field: cisco_ise.log.log_details.ResponseTime
       ignore_missing: true
+      tag: remove_21ada6ac
   - rename:
       field: cisco_ise.log.log_details.EndpointCoA
       target_field: cisco_ise.log.endpoint.coa
       ignore_failure: true
       ignore_missing: true
+      tag: rename_95e214a2
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+

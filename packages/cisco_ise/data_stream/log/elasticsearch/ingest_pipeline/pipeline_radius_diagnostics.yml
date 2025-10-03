@@ -3,21 +3,25 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - grok:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} RADIUS: An Access-Request MUST contain at least a NAS-IP-Address, NAS-IPv6-Address, or a NAS-Identifier; Continue processing, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
+      tag: grok_22979285
   - grok:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
+      tag: grok_c232cfac
   - set:
       field: cisco_ise.log.message.description
       value: 'RADIUS: An Access-Request MUST contain at least a NAS-IP-Address NAS-IPv6-Address, or a NAS-Identifier; Continue processing'
       if: ctx.cisco_ise?.log?.message?.code == '11015'
+      tag: set_973cdaa0
   - date:
       field: _tmp.timestamp
       formats:
@@ -31,6 +35,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_9ef85c6a
   - date:
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
@@ -46,93 +51,112 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_1d2a12b9
   - grok:
       field: cisco_ise.log.message.description
       if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
       patterns:
         - "^%{DATA:event.action}:"
       ignore_failure: true
+      tag: grok_859375fa
   - lowercase:
       field: event.action
       ignore_missing: true
+      tag: lowercase_9334b869
   - append:
       field: event.category
       value: iam
       if: ctx.cisco_ise?.log?.message?.code != null && ['11001','11002','11004','11005','11006','11015'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+      tag: append_84a88e85
   - append:
       field: event.category
       value: authentication
       if: ctx.cisco_ise?.log?.message?.code != null && ['11036','11038','11507','11823','12300','12301','12302','12305','12307','12309','12318','12500','12814','12817'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+      tag: append_03bf20af
   - append:
       field: event.category
       value: network
       if: ctx.cisco_ise?.log?.message?.code != null && ['11027','12500','12800','12805','12814','12817'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+      tag: append_b779af53
   - append:
       field: event.category
       value: session
       if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '11117'
       ignore_failure: true
+      tag: append_38bf71fd
   - append:
       field: event.category
       value: configuration
       if: ctx.cisco_ise?.log?.message?.code != null && ['11017','11018'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+      tag: append_cfa2c577
   - append:
       field: event.type
       value: info
       if: ctx.cisco_ise?.log?.message?.code != null && ['11001','11002','11004','11005','11006','11015','11017','11018','11027','11036','11038','11117','11507','11823','12300','12301','12302','12305','12307','12309','12318','12500','12800','12805','12814','12817'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+      tag: append_87e14493
   - append:
       field: event.type
       value: end
       if: ctx.cisco_ise?.log?.message?.code != null && ['11823','12307','12309','12817'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+      tag: append_3b7552e1
   - append:
       field: event.type
       value: start
       if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '11117'
       ignore_failure: true
+      tag: append_69b22e79
   - gsub:
       field: cisco_ise.log.log_details_raw
       pattern: \\,
       replacement: ''
+      tag: gsub_a9150fd7
   - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
+      tag: kv_dd59a8ac
   - dissect:
       field: cisco_ise.log.log_details.Response
       pattern: "{%{_tmp.response}}"
       ignore_failure: true
+      tag: dissect_11e7d12e
   - remove:
       field: cisco_ise.log.log_details.Response
       ignore_missing: true
+      tag: remove_494bb287
   - kv:
       field: _tmp.response
       target_field: cisco_ise.log.response
       field_split: '; '
       value_split: =
       ignore_failure: true
+      tag: kv_1371fa85
   - rename:
       field: cisco_ise.log.log_details.Acct-Session-Id
       target_field: cisco_ise.log.acct.session.id
       ignore_failure: true
       ignore_missing: true
+      tag: rename_0561a0e6
   - rename:
       field: cisco_ise.log.log_details.Acct-Status-Type
       target_field: cisco_ise.log.acct.status.type
       ignore_failure: true
       ignore_missing: true
+      tag: rename_4c65522a
   - rename:
       field: cisco_ise.log.log_details.AcsSessionID
       target_field: cisco_ise.log.acs.session.id
       ignore_failure: true
       ignore_missing: true
+      tag: rename_995f2fac
   - convert:
       field: cisco_ise.log.log_details.Airespace-Wlan-Id
       target_field: cisco_ise.log.airespace.wlan.id
@@ -142,9 +166,11 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_86981e05
   - remove:
       field: cisco_ise.log.log_details.Airespace-Wlan-Id
       ignore_missing: true
+      tag: remove_524e3e40
   - rename:
       field: cisco_ise.log.log_details.Calling-Station-ID
       target_field: cisco_ise.log.calling_station.id
@@ -156,26 +182,31 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: rename_489d65cf
   - rename:
       field: cisco_ise.log.log_details.CPMSessionID
       target_field: cisco_ise.log.cpm.session.id
       ignore_failure: true
       ignore_missing: true
+      tag: rename_e0452680
   - rename:
       field: cisco_ise.log.log_details.DetailedInfo
       target_field: cisco_ise.log.detailed_info
       ignore_failure: true
       ignore_missing: true
+      tag: rename_6e87c0c3
   - rename:
       field: cisco_ise.log.log_details.EapAuthentication
       target_field: cisco_ise.log.eap.authentication
       ignore_failure: true
       ignore_missing: true
+      tag: rename_c8b65bec
   - rename:
       field: cisco_ise.log.log_details.EapTunnel
       target_field: cisco_ise.log.eap.tunnel
       ignore_failure: true
       ignore_missing: true
+      tag: rename_93e479d0
   - convert:
       field: cisco_ise.log.log_details.NAS-IP-Address
       target_field: cisco_ise.log.nas.ip
@@ -185,15 +216,18 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_ae27d25e
   - remove:
       field: cisco_ise.log.log_details.NAS-IP-Address
       ignore_missing: true
+      tag: remove_755aedf5
   - append:
       field: related.ip
       value: '{{{cisco_ise.log.nas.ip}}}'
       if: ctx.cisco_ise?.log?.nas?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_e4fdf92c
   - convert:
       field: cisco_ise.log.log_details.NAS-Port
       target_field: cisco_ise.log.nas.port.number
@@ -203,24 +237,29 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_8385ddaf
   - remove:
       field: cisco_ise.log.log_details.NAS-Port
       ignore_missing: true
+      tag: remove_67c2c408
   - rename:
       field: cisco_ise.log.log_details.OpenSSLErrorMessage
       target_field: cisco_ise.log.openssl.error.message
       ignore_failure: true
       ignore_missing: true
+      tag: rename_1f0f2d38
   - rename:
       field: cisco_ise.log.log_details.OpenSSLErrorStack
       target_field: cisco_ise.log.openssl.error.stack
       ignore_failure: true
       ignore_missing: true
+      tag: rename_e524125e
   - rename:
       field: cisco_ise.log.log_details.NAS-Port-Type
       target_field: cisco_ise.log.nas.port.type
       ignore_failure: true
       ignore_missing: true
+      tag: rename_9672d236
   - convert:
       field: cisco_ise.log.log_details.RadiusIdentifier
       target_field: cisco_ise.log.radius_identifier
@@ -230,19 +269,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_2c79dc58
   - remove:
       field: cisco_ise.log.log_details.RadiusIdentifier
       ignore_missing: true
+      tag: remove_3a9d4ec5
   - rename:
       field: cisco_ise.log.log_details.RadiusPacketType
       target_field: cisco_ise.log.radius.packet.type
       ignore_failure: true
       ignore_missing: true
+      tag: rename_c4b59058
   - rename:
       field: cisco_ise.log.log_details.SelectedAccessService
       target_field: cisco_ise.log.selected.access.service
       ignore_failure: true
       ignore_missing: true
+      tag: rename_b11189d2
   - convert:
       field: cisco_ise.log.log_details.Session-Timeout
       target_field: cisco_ise.log.session.timeout
@@ -252,19 +295,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_9f86aa72
   - remove:
       field: cisco_ise.log.log_details.Session-Timeout
       ignore_missing: true
+      tag: remove_4113c292
   - rename:
       field: cisco_ise.log.log_details.State
       target_field: cisco_ise.log.state
       ignore_failure: true
       ignore_missing: true
+      tag: rename_9b991528
   - rename:
       field: cisco_ise.log.log_details.UseCase
       target_field: cisco_ise.log.usecase
       ignore_failure: true
       ignore_missing: true
+      tag: rename_fec4c488
   - convert:
       field: cisco_ise.log.log_details.DestinationIPAddress
       target_field: destination.ip
@@ -274,15 +321,18 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_a431dedf
   - remove:
       field: cisco_ise.log.log_details.DestinationIPAddress
       ignore_missing: true
+      tag: remove_96e9d137
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_51dd17d0
   - convert:
       field: cisco_ise.log.log_details.DestinationPort
       target_field: destination.port
@@ -292,9 +342,11 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_ad144c54
   - remove:
       field: cisco_ise.log.log_details.DestinationPort
       ignore_missing: true
+      tag: remove_ad220e45
   - convert:
       field: cisco_ise.log.log_details.Device IP Address
       target_field: client.ip
@@ -304,15 +356,18 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_b34586ce
   - remove:
       field: cisco_ise.log.log_details.Device IP Address
       ignore_missing: true
+      tag: remove_ed1bebc1
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_c5270880
   - convert:
       field: cisco_ise.log.log_details.Device Port
       target_field: client.port
@@ -322,28 +377,37 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_cf795c9b
   - remove:
       field: cisco_ise.log.log_details.Device Port
       ignore_missing: true
+      tag: remove_9ddb56cb
   - rename:
       field: cisco_ise.log.log_details.Service-Type
       target_field: service.type
       ignore_failure: true
       ignore_missing: true
+      tag: rename_0a32bb1e
   - rename:
       field: cisco_ise.log.log_details.User-Name
       target_field: user.name
       ignore_failure: true
       ignore_missing: true
+      tag: rename_2e0fb4e0
   - append:
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       ignore_failure: true
+      tag: append_b129db5a
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+
