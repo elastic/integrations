@@ -17,27 +17,33 @@ processors:
       value: '{{{fortinet_fortimail.log.client.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.client?.ip != null
+      tag: append_5387e179
   - set:
       field: source.ip
       copy_from: fortinet_fortimail.log.client.ip
       ignore_empty_value: true
+      tag: set_f6f51834
   - geoip:
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
+      tag: geoip_bace2435
   - rename:
       field: temp.client_name
       target_field: fortinet_fortimail.log.client.name
       ignore_missing: true
+      tag: rename_629e2e1e
   - append:
       field: related.user
       value: '{{{fortinet_fortimail.log.client.name}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.client?.name != null
+      tag: append_5d80ed0f
   - set:
       field: source.user.name
       copy_from: fortinet_fortimail.log.client.name
       ignore_empty_value: true
+      tag: set_818409d3
   - convert:
       field: temp.dst_ip
       target_field: fortinet_fortimail.log.destination_ip
@@ -54,58 +60,73 @@ processors:
       value: '{{{fortinet_fortimail.log.destination_ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.destination_ip != null
+      tag: append_bb6cbf32
   - set:
       field: destination.ip
       copy_from: fortinet_fortimail.log.destination_ip
       ignore_empty_value: true
+      tag: set_7ada744f
   - rename:
       field: temp.from
       target_field: fortinet_fortimail.log.from
       ignore_missing: true
+      tag: rename_5b70ec4b
   - append:
       field: related.user
       value: '{{{fortinet_fortimail.log.from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
+      tag: append_d0753b7c
   - append:
       field: email.from.address
       value: '{{{fortinet_fortimail.log.from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
+      tag: append_7f1e9688
   - rename:
       field: temp.subject
       target_field: fortinet_fortimail.log.subject
       ignore_missing: true
+      tag: rename_798cf6cf
   - set:
       field: email.subject
       copy_from: fortinet_fortimail.log.subject
       ignore_empty_value: true
+      tag: set_a26859b4
   - rename:
       field: temp.to
       target_field: fortinet_fortimail.log.to
       ignore_missing: true
+      tag: rename_45dc2e79
   - append:
       field: related.user
       value: '{{{fortinet_fortimail.log.to}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.to != null
+      tag: append_b1d2b872
   - append:
       field: email.to.address
       value: '{{{fortinet_fortimail.log.to}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.to != null
+      tag: append_3c4f03db
   - rename:
       field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
+      tag: rename_c4b20db7
   - rename:
       field: temp.endpoint
       target_field: fortinet_fortimail.log.endpoint
       ignore_missing: true
+      tag: rename_dbd671e1
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

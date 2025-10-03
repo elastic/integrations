@@ -4,80 +4,97 @@ processors:
   - set:
       field: event.outcome
       value: unknown
+      tag: set_82c7155e
   - set:
       field: event.outcome
       value: success
       if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && ctx.temp?.status.toLowerCase() == 'success'
+      tag: set_a02366c2
   - set:
       field: event.outcome
       value: failure
       if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && ctx.temp?.status.toLowerCase() == 'failure'
+      tag: set_ab2ec938
   - set:
       field: event.category
       value: [authentication]
       if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && (ctx.fortinet_fortimail.log.message.toLowerCase().contains('login') || ctx.fortinet_fortimail.log.message.toLowerCase().contains('logged'))
+      tag: set_08028495
   - append:
       field: event.type
       value: end
       if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && (ctx.fortinet_fortimail.log.message.toLowerCase().contains('login successfully') || ctx.fortinet_fortimail.log.message.toLowerCase().contains('logged in') || ctx.fortinet_fortimail.log.message.toLowerCase().contains('login'))
       allow_duplicates: false
+      tag: append_88871742
   - append:
       field: event.type
       value: info
       if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && ctx.event?.category != null
       allow_duplicates: false
+      tag: append_e03135e5
   - append:
       field: event.category
       value: configuration
       if: ctx.fortinet_fortimail?.log?.sub_type == 'config'
       allow_duplicates: false
+      tag: append_37b01657
   - set:
       field: event.type
       value: [change]
       if: ctx.fortinet_fortimail?.log?.sub_type == 'config'
+      tag: set_63c98742
   - set:
       field: event.type
       value: [deletion]
       if: ctx.fortinet_fortimail?.log?.sub_type == 'config' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('delet')
       override: true
+      tag: set_3d393468
   - set:
       field: event.category
       value: [host]
       if: ctx.fortinet_fortimail?.log?.sub_type == 'system' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('system')
+      tag: set_139ba01e
   - set:
       field: event.category
       value: [configuration]
       if: (ctx.fortinet_fortimail?.log?.sub_type == 'system' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('change')) || (ctx.fortinet_fortimail?.log?.sub_type == 'update' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('update'))
       override: true
+      tag: set_e21a3544
   - set:
       field: event.type
       value: [info]
       if: ctx.fortinet_fortimail?.log?.sub_type == 'system'
+      tag: set_0f6f6e93
   - set:
       field: event.type
       value: [end]
       if: ctx.fortinet_fortimail?.log?.sub_type == 'system' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('shutdown')
       override: true
+      tag: set_e33a537c
   - set:
       field: event.type
       value: [change]
       if: (ctx.fortinet_fortimail?.log?.sub_type == 'system' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('change')) || (ctx.fortinet_fortimail?.log?.sub_type == 'update' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('update'))
       override: true
+      tag: set_c5fda874
   - append:
       field: fortinet_fortimail.log.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_2f9ddf13
   - append:
       field: user.name
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_9b60aa7f
   - append:
       field: related.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_4554486f
   - grok:
       field: message
       ignore_missing: true
@@ -93,73 +110,89 @@ processors:
         PREFIX: '%{DATA}(?i)interface %{NUMBER:fortinet_fortimail.log.port:long}%{DATA} %{USER}'
         USER: '(?i)user %{NOTSPACE:temp.user}'
         BLOCK_ACTION: '(?:added|removed)'
+      tag: grok_0070248e
   - set:
       field: source.port
       copy_from: fortinet_fortimail.log.port
       ignore_empty_value: true
+      tag: set_2d5659fd
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.ip != null
+      tag: append_bf78f00c
   - append:
       field: related.ip
       value: '{{{temp.block_ip}}}'
       allow_duplicates: false
       if: ctx.temp?.block_ip != null
+      tag: append_c9493339
   - append:
       field: client.ip
       value: '{{{temp.block_ip}}}'
       allow_duplicates: false
       if: ctx.temp?.block_ip != null
+      tag: append_e1408be5
   - set:
       field: event.action
       value: '{{{temp.block_action}}}_block_rule'
       if: ctx.temp?.block_ip != null
+      tag: set_bd6b62e4
   - append:
       field: fortinet_fortimail.log.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_2f9ddf13
   - append:
       field: user.name
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_9b60aa7f
   - append:
       field: related.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_4554486f
   - rename:
       field: temp.action
       target_field: fortinet_fortimail.log.action
       ignore_missing: true
+      tag: rename_d1d0a68f
   - set:
       field: event.action
       copy_from: fortinet_fortimail.log.action
       ignore_empty_value: true
       override: false
+      tag: set_6c0a2415
   - rename:
       field: temp.module
       target_field: fortinet_fortimail.log.module
       ignore_missing: true
+      tag: rename_fb389af3
   - rename:
       field: temp.submodule
       target_field: fortinet_fortimail.log.sub_module
       ignore_missing: true
+      tag: rename_b2295dde
   - rename:
       field: temp.ui
       target_field: fortinet_fortimail.log.ui
       ignore_missing: true
+      tag: rename_ecc5d28f
   - rename:
       field: temp.reason
       target_field: fortinet_fortimail.log.reason
       ignore_missing: true
+      tag: rename_a448343f
   - rename:
       field: temp.status
       target_field: fortinet_fortimail.log.status
       ignore_missing: true
+      tag: rename_b34786cf
   - grok:
       field: fortinet_fortimail.log.ui
       ignore_missing: true
@@ -170,30 +203,39 @@ processors:
       pattern_definitions:
         PROTOCOL: '(?i)(?:telnet|ssh|http)'
       ignore_failure: true
+      tag: grok_1434bd57
   - set:
       field: source.ip
       copy_from: fortinet_fortimail.log.ui_ip
       ignore_empty_value: true
+      tag: set_a1237bd8
   - geoip:
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
+      tag: geoip_bace2435
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.ui_ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.ui_ip != null
+      tag: append_f8ea089a
   - set:
       field: network.protocol
       copy_from: fortinet_fortimail.log.network
       ignore_empty_value: true
+      tag: set_5da2dd0c
   - lowercase:
       field: network.protocol
       ignore_missing: true
+      tag: lowercase_49872259
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
