@@ -24,7 +24,7 @@ redact:
   fields:
     - auth_token
 program: |
-  (
+  state.with_update({"rules_dict": dyn({})}).as(state, (
     state.?want_more.orValue(false) ?
       state.start_time
     :
@@ -56,10 +56,10 @@ program: |
             "events": [{"message": "empty_events_placeholder"}],
 
             // Build rules dictionary
-            "rules_dict": state.?rules_dict.orValue({}).with(
+            "rules_dict": state.rules_dict.with(
               zip(body.collate("id").map(id,string(id)),body)
             ),
-            "next":{
+            "next": {
               ?"rule_offset": (body.size() > 0 ?
                 optional.of(int(state.?next.rule_offset.orValue(0)) + int(state.rule_batch_size))
               :
@@ -131,7 +131,7 @@ program: |
             // This will be dropped later in the pipeline
               dyn([{"message": "empty_events_placeholder"}])
             ),
-            "next":{
+            "next": {
               ?"offense_offset": (body.size() > 0 ?
                 optional.of(int(state.?next.offense_offset.orValue(0)) + int(state.offense_batch_size))
               :
@@ -185,7 +185,7 @@ program: |
           }
         )
       )
-  )
+  ))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
