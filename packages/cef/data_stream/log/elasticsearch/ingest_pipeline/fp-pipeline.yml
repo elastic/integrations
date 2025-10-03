@@ -6,26 +6,32 @@ processors:
       field: rule.id
       ignore_empty_value: true
       value: '{{{cef.extensions.deviceCustomString1}}}'
+      tag: set_7a577460
   # cs2 is natRuleID
   - set:
       field: rule.id
       ignore_empty_value: true
       value: '{{{cef.extensions.deviceCustomString2}}}'
+      tag: set_c76c7491
   # cs3 is VulnerabilityReference
   - set:
       field: vulnerability.reference
       ignore_empty_value: true
       value: '{{{cef.extensions.deviceCustomString3}}}'
+      tag: set_0b703e9a
   # cs4 is virusID
   - set:
       field: cef.forcepoint.virus_id
       ignore_empty_value: true
       value: '{{{cef.extensions.deviceCustomString4}}}'
+      tag: set_ce0473c6
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
