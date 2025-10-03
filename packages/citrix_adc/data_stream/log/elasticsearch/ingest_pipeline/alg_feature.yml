@@ -1,5 +1,5 @@
 ---
-description:  Pipeline for Citrix Native messages of ALG feature.
+description: Pipeline for Citrix Native messages of ALG feature.
 processors:
   - grok:
       description: Extract fields from message of ALG feature.
@@ -183,5 +183,8 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+
