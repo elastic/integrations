@@ -4,40 +4,49 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.type
       value: denied
       if: "['block', 'blocked'].contains(ctx.fortinet?.firewall?.action)"
+      tag: append_b5f2b289
   - append:
       field: event.type
       value: info
       if: ctx.fortinet?.firewall?.subtype == 'dns'
+      tag: append_45c048ea
   - append:
       field: event.type
       value: allowed
       if: "['pass', 'passthrough'].contains(ctx.fortinet?.firewall?.action)"
+      tag: append_c8b37b6a
   - set:
       field: event.outcome
       value: success
       if: ctx.fortinet?.firewall?.action != null
+      tag: set_e219d8f1
   - append:
       field: event.category
       value: network
+      tag: append_7afdca3c
   - rename:
       field: fortinet.firewall.dstip
       target_field: destination.ip
       ignore_missing: true
+      tag: rename_72bf25a6
   - rename:
       field: fortinet.firewall.remip
       target_field: destination.ip
       ignore_missing: true
       if: ctx.destination?.ip == null
+      tag: rename_971a6fc2
   - convert:
       field: fortinet.firewall.dst_port
       target_field: destination.port
       type: long
       ignore_failure: true
       ignore_missing: true
+      tag: convert_5c36a431
   - convert:
       field: fortinet.firewall.remport
       target_field: destination.port
@@ -45,6 +54,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx.destination?.port == null
+      tag: convert_763b849e
   - convert:
       field: fortinet.firewall.dstport
       target_field: destination.port
@@ -52,34 +62,41 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx.destination?.port == null
+      tag: convert_1215c57d
   - convert:
       field: fortinet.firewall.rcvdbyte
       target_field: destination.bytes
       type: long
       ignore_failure: true
       ignore_missing: true
+      tag: convert_65439a41
   - rename:
       field: fortinet.firewall.recipient
       target_field: email.to.address
       ignore_missing: true
+      tag: rename_e1ed6c6b
   - append:
       field: email.to.address
       value: "{{{fortinet.firewall.recipient}}}"
       if: ctx.fortinet?.firewall?.recipient != null
+      tag: append_78c2982a
   - rename:
       field: fortinet.firewall.group
       target_field: source.user.group.name
       ignore_missing: true
+      tag: rename_8ef934c4
   - rename:
       field: fortinet.firewall.locip
       target_field: source.ip
       ignore_missing: true
+      tag: rename_51dcb848
   - convert:
       field: fortinet.firewall.locport
       target_field: source.port
       type: long
       ignore_failure: true
       ignore_missing: true
+      tag: convert_6bc2e2d4
   - convert:
       field: fortinet.firewall.src_port
       target_field: source.port
@@ -87,6 +104,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx.source?.port == null
+      tag: convert_bf031661
   - convert:
       field: fortinet.firewall.srcport
       target_field: source.port
@@ -94,192 +112,235 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx.source?.port == null
+      tag: convert_21df2082
   - convert:
       field: fortinet.firewall.sentbyte
       target_field: source.bytes
       type: long
       ignore_failure: true
       ignore_missing: true
+      tag: convert_fe52ad03
   - rename:
       field: fortinet.firewall.srcdomain
       target_field: source.domain
       ignore_missing: true
+      tag: rename_0f9ec89a
   - rename:
       field: fortinet.firewall.srcip
       target_field: source.ip
       ignore_missing: true
       if: ctx.source?.ip == null
+      tag: rename_3df192ac
   - rename:
       field: fortinet.firewall.httpmethod
       target_field: http.request.method
       ignore_missing: true
+      tag: rename_e47a5424
   - rename:
       field: fortinet.firewall.referralurl
       target_field: http.request.referrer
       ignore_missing: true
+      tag: rename_7efe6725
   - rename:
       field: fortinet.firewall.srcmac
       target_field: source.mac
       ignore_missing: true
+      tag: rename_bfde8f82
   - rename:
       field: fortinet.firewall.unauthuser
       target_field: source.user.name
       ignore_missing: true
+      tag: rename_45077c3a
   - rename:
       field: fortinet.firewall.user
       target_field: source.user.name
       ignore_missing: true
       if: ctx.source?.user?.name == null
+      tag: rename_5bbf0229
   - append:
       field: email.sender.address
       value: "{{{fortinet.firewall.sender}}}"
       if: ctx.fortinet?.firewall?.sender != null
+      tag: append_37ff254c
   - append:
       field: email.from.address
       value: "{{{fortinet.firewall.from}}}"
       if: ctx.fortinet?.firewall?.from != null
+      tag: append_868613c1
   - rename:
       field: fortinet.firewall.agent
       target_field: user_agent.original
       ignore_missing: true
+      tag: rename_c612b9cc
   - rename:
       field: fortinet.firewall.app
       target_field: network.application
       ignore_missing: true
+      tag: rename_352bb492
   - rename:
       field: fortinet.firewall.appcat
       target_field: rule.category
       ignore_missing: true
+      tag: rename_89544502
   - rename:
       field: fortinet.firewall.applist
       target_field: rule.ruleset
       ignore_missing: true
+      tag: rename_8752d1ee
   - rename:
       field: fortinet.firewall.catdesc
       target_field: rule.category
       ignore_missing: true
       if: ctx.rule?.category == null
+      tag: rename_863824c0
   - gsub:
       field: rule.category
       pattern: "\\."
       replacement: "-"
       ignore_missing: true
       if: ctx.rule?.category != null
+      tag: gsub_ea9c0116
   - rename:
       field: fortinet.firewall.error
       target_field: event.message
       ignore_missing: true
+      tag: rename_1eb40e8e
   - rename:
       field: fortinet.firewall.errorcode
       target_field: event.code
       ignore_missing: true
+      tag: rename_0c462b81
   - rename:
       field: fortinet.firewall.event_id
       target_field: event.id
       ignore_missing: true
+      tag: rename_ad65b8d8
   - rename:
       field: fortinet.firewall.eventid
       target_field: event.id
       ignore_missing: true
       if: ctx.event?.id == null
+      tag: rename_91348166
   - rename:
       field: fortinet.firewall.filename
       target_field: file.name
       ignore_missing: true
+      tag: rename_d7a6e0d3
   - convert:
       field: fortinet.firewall.filesize
       target_field: file.size
       type: long
       ignore_failure: true
       ignore_missing: true
+      tag: convert_2e69dd69
   - rename:
       field: fortinet.firewall.filetype
       target_field: file.extension
       ignore_missing: true
+      tag: rename_0d6978f4
   - rename:
       field: fortinet.firewall.infectedfilename
       target_field: file.name
       ignore_missing: true
       if: ctx.file?.name == null
+      tag: rename_470a39d2
   - rename:
       field: fortinet.firewall.infectedfilesize
       target_field: file.size
       ignore_missing: true
       if: ctx.file?.size == null
+      tag: rename_6190f68c
   - rename:
       field: fortinet.firewall.infectedfiletype
       target_field: file.extension
       ignore_missing: true
       if: ctx.file?.extension == null
+      tag: rename_c1ee548f
   - rename:
       field: fortinet.firewall.matchedfilename
       target_field: file.name
       ignore_missing: true
       if: ctx.file?.name == null
+      tag: rename_f9cea46a
   - rename:
       field: fortinet.firewall.matchedfiletype
       target_field: file.extension
       ignore_missing: true
       if: ctx.file?.extension == null
+      tag: rename_56d8df57
   - rename:
       field: fortinet.firewall.ipaddr
       target_field: dns.resolved_ip
       ignore_missing: true
+      tag: rename_3e7ee47e
   - split:
       field: dns.resolved_ip
       separator: ", "
       ignore_missing: true
+      tag: split_61a17abc
   - rename:
       field: fortinet.firewall.level
       target_field: log.level
       ignore_missing: true
+      tag: rename_0e7843bb
   - rename:
       field: fortinet.firewall.logid
       target_field: event.code
       ignore_missing: true
       if: ctx.event?.code == null
+      tag: rename_d1ce9848
   - rename:
       field: fortinet.firewall.msg
       target_field: message
       ignore_missing: true
+      tag: rename_18251f47
   - rename:
       field: fortinet.firewall.policy_id
       target_field: rule.id
       ignore_missing: true
       if: ctx.rule?.id == null
+      tag: rename_4b286d2d
   - rename:
       field: fortinet.firewall.policyid
       target_field: rule.id
       ignore_missing: true
       if: ctx.rule?.id == null
+      tag: rename_220b73f8
   - rename:
       field: fortinet.firewall.profile
       target_field: rule.ruleset
       ignore_missing: true
       if: ctx.rule?.ruleset == null
+      tag: rename_0715e7bc
   - rename:
       field: fortinet.firewall.proto
       target_field: network.iana_number
       ignore_missing: true
+      tag: rename_930125ae
   - rename:
       field: fortinet.firewall.qclass
       target_field: dns.question.class
       ignore_missing: true
+      tag: rename_dd343cd1
   - rename:
       field: fortinet.firewall.qname
       target_field: dns.question.name
       ignore_missing: true
+      tag: rename_ada7e477
   - rename:
       field: fortinet.firewall.qtype
       target_field: dns.question.type
       ignore_missing: true
+      tag: rename_3bfd2a8d
   - rename:
       field: fortinet.firewall.service
       target_field: network.protocol
       ignore_missing: true
+      tag: rename_c028ec88
   - lowercase:
       field: network.protocol
       ignore_missing: true
+      tag: lowercase_49872259
   - uri_parts:
       field: fortinet.firewall.url
       target_field: url
@@ -290,6 +351,7 @@ processors:
             tag: utm_set_url_original_on_fail
             field: url.original
             copy_from: fortinet.firewall.url
+      tag: uri_parts_bdb5970a
   # Need to do a set, then remove since rename w/ override
   # is not supported in 8.3.0
   - set:
@@ -297,131 +359,161 @@ processors:
       copy_from: fortinet.firewall.hostname
       ignore_empty_value: true
       override: true
+      tag: set_e4ace8d8
   - remove:
       field: fortinet.firewall.hostname
       ignore_missing: true
+      tag: remove_161ef624
   - remove:
       field: fortinet.firewall.url
       ignore_missing: true
+      tag: remove_5d47c5fc
   - rename:
       field: fortinet.firewall.xid
       target_field: dns.id
       ignore_missing: true
+      tag: rename_7c6ef4f8
   - append:
       field: tls.server.x509.subject.common_name
       value: "{{{fortinet.firewall.scertcname}}}"
       if: ctx.fortinet?.firewall?.scertcname != null
+      tag: append_822f6daa
   - rename:
       field: fortinet.firewall.scertissuer
       target_field: tls.server.issuer
       ignore_missing: true
+      tag: rename_65a8bad6
   - append:
       field: tls.server.x509.issuer.common_name
       value: "{{{tls.server.issuer}}}"
       if: ctx.tls?.server?.issuer != null
+      tag: append_e1391a8d
   - rename:
       field: fortinet.firewall.ccertissuer
       target_field: tls.client.issuer
       ignore_missing: true
+      tag: rename_5d819a7a
   - append:
       field: tls.client.x509.issuer.common_name
       value: "{{{tls.client.issuer}}}"
       if: ctx.tls?.client?.issuer != null
+      tag: append_3908abd9
   - rename:
       field: fortinet.firewall.sender
       target_field: tls.server.issuer
       ignore_missing: true
+      tag: rename_53552963
   - rename:
       field: fortinet.firewall.issuer
       target_field: tls.server.issuer
       ignore_missing: true
       if: ctx.tls?.server?.issuer == null
+      tag: rename_81110cbf
   - rename:
       field: fortinet.firewall.authalgo
       target_field: tls.server.x509.public_key_algorithm
       ignore_missing: true
+      tag: rename_a19bd0ed
   - rename:
       field: fortinet.firewall.keyalgo
       target_field: tls.server.x509.public_key_algorithm
       ignore_missing: true
       if: ctx.tls?.server?.x509?.public_key_algorithm == null
+      tag: rename_b7b7c24d
   - rename:
       field: fortinet.firewall.notbefore
       target_field: tls.server.not_before
       ignore_missing: true
       if: ctx.tls?.server?.not_before == null
+      tag: rename_e72d5bec
   - rename:
       field: fortinet.firewall.notafter
       target_field: tls.server.not_after
       ignore_missing: true
       if: ctx.tls?.server?.not_after == null
+      tag: rename_243506eb
   - rename:
       field: fortinet.firewall.keysize
       target_field: tls.server.x509.public_key_size
       ignore_missing: true
       if: ctx.tls?.server?.x509?.public_key_size == null
+      tag: rename_eb70b1c1
   - convert:
       field: tls.server.x509.public_key_size
       type: long
       ignore_missing: true
+      tag: convert_6513b5d4
   - rename:
       field: fortinet.firewall.sn
       target_field: tls.server.x509.serial_number
       ignore_missing: true
       if: ctx.tls?.server?.x509?.serial_number == null
+      tag: rename_74ef21d8
   - rename:
       field: fortinet.firewall.certhash
       target_field: tls.server.hash.sha1
       ignore_missing: true
       if: ctx.tls?.server?.hash?.sha1 == null
+      tag: rename_9490fc6f
   - append:
       field: related.hash
       value: "{{{tls.server.hash.sha1}}}"
       allow_duplicates: false
       if: ctx.tls?.server?.hash?.sha1 != null
+      tag: append_6b51007e
   - set:
       field: tls.server.x509.not_after
       copy_from: tls.server.not_after
       ignore_empty_value: true
+      tag: set_99449ca7
   - set:
       field: tls.server.x509.not_before
       copy_from: tls.server.not_before
       ignore_empty_value: true
+      tag: set_639ff489
   - split:
       field: fortinet.firewall.san
       separator: ";"
       target_field: tls.server.x509.alternative_names
       ignore_missing: true
+      tag: split_33c817cd
   - append:
       field: tls.server.x509.alternative_names
       value: "{{{fortinet.firewall.cn}}}"
       allow_duplicates: false
       if: ctx.fortinet?.firewall?.cn != null
+      tag: append_cb12c914
   - set:
       field: tls.client.x509.public_key_algorithm
       copy_from: tls.server.x509.public_key_algorithm
       ignore_empty_value: true
+      tag: set_c8e4b429
   - rename:
       field: fortinet.firewall.kxcurve
       target_field: tls.curve
       ignore_missing: true
+      tag: rename_4ba43a3d
   - rename:
       field: fortinet.firewall.cipher
       target_field: tls.cipher
       ignore_missing: true
+      tag: rename_2440d05e
   - rename:
       field: fortinet.firewall.sni
       target_field: tls.client.server_name
       ignore_missing: true
+      tag: rename_640d85d0
   - set:
       field: destination.domain
       copy_from: tls.client.server_name
       ignore_empty_value: true
       if: ctx.destination?.domain == null
+      tag: set_1ee4539a
   - set:
       field: tls.established
       value: true
       if: ctx.fortinet?.firewall?.handshake == "full"
+      tag: set_6ae896b6
   - script:
       lang: painless
       if: ctx.fortinet?.firewall?.tlsver instanceof String
@@ -440,32 +532,39 @@ processors:
         if (!ctx.tls.version.contains(".")) {
             ctx.tls.version += ".0";
         }
+      tag: script_55eb70c0
   - append:
       field: vulnerability.category
       value: "{{{fortinet.firewall.dtype}}}"
       allow_duplicates: false
       if: ctx.fortinet?.firewall?.dtype instanceof String
+      tag: append_e516aea2
   - rename:
       field: fortinet.firewall.ref
       target_field: event.reference
       ignore_missing: true
+      tag: rename_ac3e7de7
   - rename:
       field: fortinet.firewall.filehash
       target_field: fortinet.file.hash.crc32
       ignore_missing: true
+      tag: rename_b8cdcb97
   - append:
       field: related.hash
       value: "{{{fortinet.file.hash.crc32}}}"
       if: ctx.fortinet?.file?.hash?.crc32 != null
+      tag: append_af3ee53d
   # Populate ECS dns
   - registered_domain:
       field: dns.question.name
       target_field: dns.question
       ignore_missing: true
       ignore_failure: true
+      tag: registered_domain_24868ff9
   - remove:
       field: dns.question.domain
       ignore_missing: true
+      tag: remove_3403bb7d
   - remove:
       field:
         - fortinet.firewall.cn
@@ -483,10 +582,15 @@ processors:
         - fortinet.firewall.dtype
         - fortinet.firewall.tlsver
       ignore_missing: true
+      tag: remove_54bd5916
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+
