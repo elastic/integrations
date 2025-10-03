@@ -4,21 +4,25 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - set:
       field: _tmp.filepath
       value: '{{{log.file.path}}}'
       if: ctx.log?.file?.path != null
+      tag: set_bc60fe22
   - grok:
       field: _tmp.filepath
       if: ctx.log?.file?.path != null
       ignore_failure: true
       patterns:
         - '^%{DATA}[\\/]%{WORD:cisco_secure_email_gateway.log.category.name}(?:\.%{HOSTNAME:cisco_secure_email_gateway.log.host})?\.@%{GREEDYDATA}\.s$'
+      tag: grok_3fc3092e
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+      tag: rename_56a77271
   - grok:
       field: event.original
       patterns:
@@ -26,29 +30,36 @@ processors:
         - '^(?:<%{NUMBER:log.syslog.priority:long}>)?%{SYSLOGTIMESTAMP:_tmp.timestamp} (?:%{HOSTNAME:cisco_secure_email_gateway.log.host} )?%{NOTSPACE:cisco_secure_email_gateway.log.category.name}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
         - '^%{DATA:_tmp.timestamp} %{WORD:log.level}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
+      tag: grok_0ef2f0a7
   - trim:
       field: cisco_secure_email_gateway.log.message
       ignore_failure: true
+      tag: trim_610465ba
   - lowercase:
       field: log.level
       ignore_failure: true
+      tag: lowercase_e59b6b49
   # Time zone can come from two sources, choose in order: config, locale, default to UTC.
   - set:
       field: _tmp.tz
       copy_from: _conf.tz_offset
       if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+      tag: set_5079f7eb
   - set:
       field: _tmp.tz
       copy_from: event.timezone
       override: false
       if: ctx.event?.timezone != null
+      tag: set_43d96fc2
   - set:
       field: _tmp.tz
       value: UTC
       override: false
+      tag: set_b8df3735
   - set:
       field: event.timezone
       copy_from: _tmp.tz
+      tag: set_ba6cb968
   - date:
       field: _tmp.timestamp
       timezone: "{{{ event.timezone }}}"
@@ -75,59 +86,76 @@ processors:
               - MMM  d HH:mm:ss
               - MMM dd HH:mm:ss
               - MMM d HH:mm:ss
+      tag: date_11c130e5
   - pipeline:
       name: '{{ IngestPipeline "pipeline_authentication" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'authentication'
+      tag: pipeline_e1b0fc56
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gui_logs" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'gui_logs'
+      tag: pipeline_ad806cb2
   - pipeline:
       name: '{{ IngestPipeline "pipeline_anti_spam" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'antispam'
+      tag: pipeline_9b0b8b89
   - pipeline:
       name: '{{ IngestPipeline "pipeline_error_logs" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'error_logs'
+      tag: pipeline_928f3e7a
   - pipeline:
       name: '{{ IngestPipeline "pipeline_text_mail_logs" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'mail_logs'
+      tag: pipeline_5281e984
   - pipeline:
       name: '{{ IngestPipeline "pipeline_content_scanner" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'content_scanner'
+      tag: pipeline_d6dcedc4
   - pipeline:
       name: '{{ IngestPipeline "pipeline_system" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'system'
+      tag: pipeline_580b3b8e
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bounce" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'bounces'
+      tag: pipeline_1f40bd85
   - pipeline:
       name: '{{ IngestPipeline "pipeline_status" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'status'
+      tag: pipeline_181277ba
   - pipeline:
       name: '{{ IngestPipeline "pipeline_amp" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'amp'
+      tag: pipeline_34c6b064
   - pipeline:
       name: '{{ IngestPipeline "pipeline_consolidated_event" }}'
       if: '["consolidated_event", "SplunkGIS"].contains(ctx.cisco_secure_email_gateway?.log?.category?.name)'
+      tag: pipeline_7d301c2a
   - pipeline:
       name: '{{ IngestPipeline "pipeline_antivirus" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'antivirus'
+      tag: pipeline_80b3dc7a
   - set:
       field: email.from.address
       value: ['{{{email.from.address}}}']
       if: ctx.email?.from?.address instanceof String
+      tag: set_fff7c0a5
   - set:
       field: email.to.address
       value: ['{{{email.to.address}}}']
       if: ctx.email?.to?.address instanceof String
+      tag: set_52631338
   - set:
       field: event.category
       value: vulnerability
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'antivirus'
+      tag: set_d7f508d2
   - remove:
       field:
         - _tmp
         - _conf
       ignore_missing: true
+      tag: remove_3f586893
   - script:
       lang: painless
       source: |
@@ -144,11 +172,15 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+      tag: script_b274a7df
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+

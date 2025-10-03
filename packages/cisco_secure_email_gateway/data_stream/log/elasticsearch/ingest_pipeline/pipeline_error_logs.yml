@@ -3,9 +3,11 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - set:
       field: event.type
       value: [error]
+      tag: set_bf076d66
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
@@ -15,13 +17,19 @@ processors:
         - '^Internal %{DATA:network.protocol} system attempting to send a message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}\.$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
       ignore_failure: true
+      tag: grok_d14e38b7
   - lowercase:
       field: network.protocol
       ignore_failure: true
+      tag: lowercase_d249a697
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+

@@ -3,6 +3,7 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
@@ -45,13 +46,16 @@ processors:
         - '^MID %{NUMBER:email.message_id} SHA %{BASE16NUM:file.hash.sha256} filename %{DATA:file.name} %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
         - '^MID %{NUMBER:email.message_id} %{DATA:file.extension} file %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
+      tag: grok_cef715af
   - lowercase:
       field: network.protocol
       ignore_failure: true
+      tag: lowercase_d249a697
   - set:
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.type == 'changed'
       value: change
+      tag: set_82891cd5
   - lowercase:
       field: cisco_secure_email_gateway.log.spf_aligned
       tag: 'lowercase_spf_aligned'
@@ -96,22 +100,29 @@ processors:
       if: ctx.cisco_secure_email_gateway?.log?.interface != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_e39e3bad
   - append:
       field: related.ip
       value: '{{{cisco_secure_email_gateway.log.address}}}'
       if: ctx.cisco_secure_email_gateway?.log?.address != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_429cda39
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_51dd17d0
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+
