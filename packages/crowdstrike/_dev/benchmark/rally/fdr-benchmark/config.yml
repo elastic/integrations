@@ -1,0 +1,182 @@
+# Falcon Data Replicator (FDR):
+#
+# FDR has two kinds of events:
+#
+# 1. Primary events:
+#    This includes every actions taking place on the hosts.
+#    For example - ActiveDirectoryInteractiveDomain, Event_EppDetectionSummaryEvent, etc...
+#
+# 2. Secondary events:
+#    This includes metadata information about the environment.
+#    For example - aid_master, appinfo, userinfo, etc..
+
+fields:
+  - name: timestamp
+    period: -24h
+  # This covers partial set of events having different event.category values. such as, file, library, driver, etc...
+  - name: event_simpleName
+    enum:
+      - PngFileWritten
+      - NewExecutableRenamed
+      - ClassifiedModuleLoad
+      - DriverLoad
+      - ProcessRollup2
+      - AsepValueUpdate
+      - LocalIpAddressIP6
+      - SuspiciousDnsRequest
+      - NetworkListenIP6
+      - ActiveDirectoryInteractiveDomain
+      - Event_EppDetectionSummaryEvent
+      - userinfo
+  - name: event_platform
+    enum:
+      - Win
+      - Lin
+      - Mac
+      - iOS
+
+# file
+  - name: DownloadServer
+    value: elastic.com
+  - name: DownloadPort
+    enum:
+      - '443' # https
+      - '9000'
+
+# Active Directory
+  - name: ActiveDirectoryAuthenticationMethod
+    range:
+      min: 0
+      max: 5
+  - name: SourceEndpointNetworkType
+    range:
+      min: 0
+      max: 20
+
+# library
+  - name: ImageSignatureLevel
+    enum:
+      - '0'
+      - '1'
+      - '2'
+  - name: ImageSignatureType
+    enum:
+      - '0'
+      - '1'
+      - '2'
+
+# process
+  - name: IntegrityLevel
+    enum:
+      - '0'
+      - '4096'
+      - '8192'
+      - '8448'
+      - '12288'
+      - '16384'
+      - '20480'
+
+# registry
+  - name: RegType
+    range:
+      min: 0
+      max: 11
+  - name: RegOperationType
+    range:
+      min: 1
+      max: 9
+
+# network
+  - name: ConnectionDirection
+    enum:
+      - '0'
+      - '1'
+  - name: RequestType
+    range:
+      min: 1
+      max: 32769
+  - name: LocalPort
+    range:
+      min: 1024
+      max: 49151
+  - name: RemotePort
+    range:
+      min: 1024
+      max: 49151
+  - name: Protocol
+    enum:
+      - '0'
+      - '1'
+      - '2'
+      - '6'
+      - '8'
+      - '17'
+      - '47'
+      - '50'
+      - '58'
+      - '112'
+      - '132'
+
+# EppDetectionSummaryEvent
+  - name: AgentId
+    cardinality: 100000
+  - name: AggregateId
+    value: xxxxxx:529fb8e5xxxxxxxx5d577e3f:38655211725
+  - name: CompositeId
+    value: xxxxxxxx:ind:529fb8e5xxxxxxxx5d577e3f:41104
+  - name: DataDomains
+    enum:
+      - Identity
+      - Web
+      - Network
+      - Email
+      - Endpoint
+      - Cloud
+      - IoT
+  - name: FileName
+    cardinality: 100000
+  - name: HostGroups
+    cardinality: 10000
+  - name: Hostname
+    cardinality: 100000
+  - name: MACAddress
+    value: ba-xx-00-xx-d0-00
+  - name: MD5String
+    cardinality: 100000
+  - name: PlatformName
+    enum:
+      - Windows
+      - Linux
+      - Mac
+  - name: Severity
+    range:
+      min: 0
+      max: 100
+  - name: DetectionSeverity
+    range:
+      min: 0
+      max: 5
+  - name: SeverityName
+    enum:
+      - Informational
+      - Low
+      - Medium
+      - High
+      - Critical
+  - name: Type
+    enum:
+      - ldt
+      - ofp
+  - name: UserName
+    cardinality: 10000
+
+# userinfo
+  - name: UserIsAdmin
+    range:
+      min: 0
+      max: 1
+  - name: info.user.LogonType
+    enum:
+      - Interactive
+      - Network
+      - Terminal Server
