@@ -146,22 +146,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "de0debc2-3cfb-4be1-8b81-c1fe8a026ab0",
-        "id": "5a329f48-2713-4203-aec2-558f251939b3",
-        "name": "elastic-agent-95037",
+        "ephemeral_id": "97137cae-c0cc-4eac-a32f-c8d619879c2b",
+        "id": "ab2b36ad-4b51-4414-bd9c-ce44b5f1d63a",
+        "name": "elastic-agent-43699",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "81832",
+        "namespace": "44014",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5a329f48-2713-4203-aec2-558f251939b3",
+        "id": "ab2b36ad-4b51-4414-bd9c-ce44b5f1d63a",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -172,10 +172,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2025-10-05T04:23:11.063Z",
+        "created": "2025-10-05T12:56:42.239Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-10-05T04:23:12Z",
+        "ingested": "2025-10-05T12:56:43Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [

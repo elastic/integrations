@@ -135,9 +135,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-02-22T09:00:21.728Z",
     "agent": {
-        "ephemeral_id": "b2171150-d9c7-4e92-9161-cabd85bb1933",
-        "id": "b8b5dc0a-4713-433a-a0f3-234ec1427950",
-        "name": "elastic-agent-57084",
+        "ephemeral_id": "4466e396-c65d-4ddb-9842-2b53b0db36f9",
+        "id": "e79405d2-bd78-4a96-8f88-7885865a7f02",
+        "name": "elastic-agent-12265",
         "type": "filebeat",
         "version": "8.19.4"
     },
@@ -176,14 +176,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "bitwarden.event",
-        "namespace": "68894",
+        "namespace": "88035",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b8b5dc0a-4713-433a-a0f3-234ec1427950",
+        "id": "e79405d2-bd78-4a96-8f88-7885865a7f02",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -193,9 +193,9 @@ An example event for `event` looks as following:
             "iam",
             "authentication"
         ],
-        "created": "2025-10-03T10:03:14.144Z",
+        "created": "2025-10-05T12:33:06.798Z",
         "dataset": "bitwarden.event",
-        "ingested": "2025-10-03T10:03:17Z",
+        "ingested": "2025-10-05T12:33:09Z",
         "kind": "event",
         "original": "{\"actingUserId\":\"a2549f79-a71f-4eb9-9234-eb7247333f94\",\"collectionId\":\"bce212a4-25f3-4888-8a0a-4c5736d851e0\",\"date\":\"2023-02-22T09:00:21.728Z\",\"device\":0,\"groupId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"ipAddress\":\"172.16.254.1\",\"itemId\":\"3767a302-8208-4dc6-b842-030428a1cfad\",\"memberId\":\"e68b8629-85eb-4929-92c0-b84464976ba4\",\"object\":\"event\",\"policyId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"type\":1000}",
         "outcome": "success",

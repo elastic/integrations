@@ -51,7 +51,7 @@ response.pagination:
       do_not_log_failure: true
 cursor:
   last_update_at:
-    value: '[[if (eq .last_response.body.continuationToken nil)]][[.first_event.date]][[end]]'
+    value: '[[if index .last_response.body "continuationToken"]][[if (eq .last_response.body.continuationToken nil)]][[.first_event.date]][[end]][[else]][[.first_event.date]][[end]]'
     ignore_empty_value: true
 response.split:
   target: body.data
