@@ -16,11 +16,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-01-13T10:13:08.000Z",
     "agent": {
-        "ephemeral_id": "5402117c-8965-4c2d-9404-2a1fb6c47431",
-        "id": "49007565-f0ac-4df0-9672-50a3e25920e8",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3d139a93-4520-4886-9010-47b1548c5c40",
+        "id": "36b20385-0a3f-40ba-85ff-0e1eaf4b204e",
+        "name": "elastic-agent-66979",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.19.4"
     },
     "cisco": {
         "secure_endpoint": {
@@ -30,7 +30,6 @@ An example event for `event` looks as following:
             },
             "computer": {
                 "active": true,
-                "connector_guid": "test_connector_guid",
                 "external_ip": "8.8.8.8",
                 "network_addresses": [
                     {
@@ -47,9 +46,6 @@ An example event for `event` looks as following:
                     "disposition": "Clean"
                 }
             },
-            "group_guids": [
-                "test_group_guid"
-            ],
             "related": {
                 "mac": [
                     "38-1E-EB-BA-2C-15"
@@ -59,16 +55,16 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_secure_endpoint.event",
-        "namespace": "ep",
+        "namespace": "89159",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "49007565-f0ac-4df0-9672-50a3e25920e8",
+        "id": "36b20385-0a3f-40ba-85ff-0e1eaf4b204e",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "Cloud IOC",
@@ -77,12 +73,12 @@ An example event for `event` looks as following:
             "file"
         ],
         "code": "1107296274",
-        "created": "2023-06-01T09:45:22.836Z",
+        "created": "2025-10-05T06:36:56.502Z",
         "dataset": "cisco_secure_endpoint.event",
         "id": "1515298355162029000",
-        "ingested": "2023-06-01T09:45:23Z",
+        "ingested": "2025-10-05T06:36:59Z",
         "kind": "alert",
-        "original": "{\"data\":{\"cloud_ioc\":{\"description\":\"Microsoft Word launched PowerShell. This is indicative of multiple dropper variants that make use of Visual Basic Application macros to perform nefarious activities, such as downloading and executing malicious executables.\",\"short_description\":\"W32.WinWord.Powershell\"},\"computer\":{\"active\":true,\"connector_guid\":\"test_connector_guid\",\"external_ip\":\"8.8.8.8\",\"hostname\":\"Demo_AMP\",\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\"},\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"38:1e:eb:ba:2c:15\"}]},\"connector_guid\":\"test_connector_guid\",\"date\":\"2021-01-13T10:13:08+00:00\",\"event_type\":\"Cloud IOC\",\"event_type_id\":1107296274,\"file\":{\"disposition\":\"Clean\",\"file_name\":\"PowerShell.exe\",\"file_path\":\"/C:/Windows/SysWOW64/WindowsPowerShell/v1.0/PowerShell.exe\",\"identity\":{\"sha256\":\"6c05e11399b7e3c8ed31bae72014cf249c144a8f4a2c54a758eb2e6fad47aec7\"},\"parent\":{\"disposition\":\"Clean\",\"identity\":{\"sha256\":\"3d46e95284f93bbb76b3b7e1bf0e1b2d51e8a9411c2b6e649112f22f92de63c2\"}}},\"group_guids\":[\"test_group_guid\"],\"id\":1515298355162029000,\"severity\":\"Medium\",\"start_date\":\"2021-01-13T10:13:08+00:00\",\"start_timestamp\":1610532788,\"timestamp\":1610532788,\"timestamp_nanoseconds\":162019000},\"metadata\":{\"links\":{\"next\":\"http://47c9519daa08:8080/v1/events?start_date=2023-05-31T09:45:22+00:00\\u0026limit=1\\u0026offset=1\",\"self\":\"http://47c9519daa08:8080/v1/events?start_date=2023-05-31T09:45:22+00:00\\u0026limit=1\"},\"results\":{\"current_item_count\":1,\"index\":0,\"items_per_page\":1,\"total\":2}},\"version\":\"v1.2.0\"}",
+        "original": "{\"data\":{\"cloud_ioc\":{\"description\":\"Microsoft Word launched PowerShell. This is indicative of multiple dropper variants that make use of Visual Basic Application macros to perform nefarious activities, such as downloading and executing malicious executables.\",\"short_description\":\"W32.WinWord.Powershell\"},\"computer\":{\"active\":true,\"connector_guid\":\"test_connector_guid\",\"external_ip\":\"8.8.8.8\",\"hostname\":\"Demo_AMP\",\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\"},\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"38:1e:eb:ba:2c:15\"}]},\"connector_guid\":\"test_connector_guid\",\"date\":\"2021-01-13T10:13:08+00:00\",\"event_type\":\"Cloud IOC\",\"event_type_id\":1107296274,\"file\":{\"disposition\":\"Clean\",\"file_name\":\"PowerShell.exe\",\"file_path\":\"/C:/Windows/SysWOW64/WindowsPowerShell/v1.0/PowerShell.exe\",\"identity\":{\"sha256\":\"6c05e11399b7e3c8ed31bae72014cf249c144a8f4a2c54a758eb2e6fad47aec7\"},\"parent\":{\"disposition\":\"Clean\",\"identity\":{\"sha256\":\"3d46e95284f93bbb76b3b7e1bf0e1b2d51e8a9411c2b6e649112f22f92de63c2\"}}},\"group_guids\":[\"test_group_guid\"],\"id\":1515298355162029000,\"severity\":\"Medium\",\"start_date\":\"2021-01-13T10:13:08+00:00\",\"start_timestamp\":1610532788,\"timestamp\":1610532788,\"timestamp_nanoseconds\":162019000},\"metadata\":{\"links\":{\"next\":\"http://5c8d305914e0:8080/v1/events?start_date=2025-10-04T06:36:56+00:00\\u0026limit=1\\u0026offset=1\",\"self\":\"http://5c8d305914e0:8080/v1/events?start_date=2025-10-04T06:36:56+00:00\\u0026limit=1\"},\"results\":{\"current_item_count\":1,\"index\":0,\"items_per_page\":1,\"total\":2}},\"version\":\"v1.2.0\"}",
         "severity": 2,
         "start": "2021-01-13T10:13:08.000Z"
     },
@@ -93,8 +89,20 @@ An example event for `event` looks as following:
         "name": "PowerShell.exe",
         "path": "/C:/Windows/SysWOW64/WindowsPowerShell/v1.0/PowerShell.exe"
     },
+    "group": {
+        "id": [
+            "test_group_guid"
+        ]
+    },
     "host": {
         "hostname": "Demo_AMP",
+        "id": "test_connector_guid",
+        "ip": [
+            "10.10.10.10"
+        ],
+        "mac": [
+            "38-1E-EB-BA-2C-15"
+        ],
         "name": "demo_amp"
     },
     "input": {

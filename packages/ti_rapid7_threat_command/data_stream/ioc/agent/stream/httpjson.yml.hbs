@@ -41,20 +41,24 @@ request.transforms:
 response.pagination:
   - set:
       target: url.params.offset
-      value: '[[.last_response.body.nextOffset]]'
+      value: '[[if index .last_response.body "nextOffset"]][[.last_response.body.nextOffset]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.lastUpdatedTo
       value: '[[.last_response.url.params.Get "lastUpdatedTo"]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.lastUpdatedFrom
       value: '[[.last_response.url.params.Get "lastUpdatedFrom"]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 
 cursor:
   lastUpdateDate:
     value: '[[.last_event.lastUpdateDate]]'
+    ignore_empty_value: true
   uuid:
     value: '[[.last_response.url.params.Get "syncId"]]'
 

@@ -37,15 +37,15 @@ An example event for `clicks_blocked` looks as following:
 {
     "@timestamp": "2022-03-30T10:11:12.000Z",
     "agent": {
-        "ephemeral_id": "ae779a95-f06b-4c4b-b5ef-85bd0374ec45",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3c2248b7-b696-4e34-8f3f-82a36c169f2b",
+        "id": "e8068652-8e83-48d7-b6eb-9b40cc8bce47",
+        "name": "elastic-agent-15881",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "proofpoint_tap.clicks_blocked",
-        "namespace": "ep",
+        "namespace": "68700",
         "type": "logs"
     },
     "destination": {
@@ -73,9 +73,9 @@ An example event for `clicks_blocked` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "e8068652-8e83-48d7-b6eb-9b40cc8bce47",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "email": {
         "from": {
@@ -98,10 +98,10 @@ An example event for `clicks_blocked` looks as following:
         "category": [
             "email"
         ],
-        "created": "2023-09-22T17:31:59.691Z",
+        "created": "2025-10-05T05:50:34.717Z",
         "dataset": "proofpoint_tap.clicks_blocked",
         "id": "a5c9f8bb-1234-1234-1234-dx9xxx2xx9xxx",
-        "ingested": "2023-09-22T17:32:02Z",
+        "ingested": "2025-10-05T05:50:37Z",
         "kind": "event",
         "original": "{\"GUID\":\"ZcxxxxVxyxFxyxLxxxDxVxx4xxxxx\",\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"malware\",\"clickIP\":\"89.160.20.112\",\"clickTime\":\"2022-03-30T10:11:12.000Z\",\"id\":\"a5c9f8bb-1234-1234-1234-dx9xxx2xx9xxx\",\"messageID\":\"12345678912345.12345.mail@example.com\",\"recipient\":\"9c52aa64228824247c48df69b066e5a7@example.com\",\"sender\":\"abc123@example.com\",\"senderIP\":\"81.2.69.143\",\"threatID\":\"502b7xxxx0x5x1x3xb6xcxexbxxxxxxxcxxexc6xbxxxxxxdx7fxcx6x9xxxx9xdxxxxxxxx5f\",\"threatStatus\":\"active\",\"threatTime\":\"2022-03-21T14:40:31.000Z\",\"threatURL\":\"https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/502xxxxxxxxxcebxxxxxxxxxxa04277xxxxx5dxc6xxxxxxxxx5f\",\"url\":\"https://www.example.com/abcdabcd123?query=0\",\"userAgent\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/199.0.427504638 Mobile/15E148 Safari/604.1\"}",
         "type": [
@@ -115,6 +115,7 @@ An example event for `clicks_blocked` looks as following:
         "clicks_blocked": {
             "campaign_id": "46x01x8x-x899-404x-xxx9-111xx393d1x7",
             "classification": "malware",
+            "click_time": "2022-03-30T10:11:12.000Z",
             "threat": {
                 "id": "502b7xxxx0x5x1x3xb6xcxexbxxxxxxxcxxexc6xbxxxxxxdx7fxcx6x9xxxx9xdxxxxxxxx5f",
                 "status": "active",
@@ -198,17 +199,17 @@ An example event for `clicks_permitted` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-21T20:39:37.000Z",
+    "@timestamp": "2022-03-30T10:05:57.000Z",
     "agent": {
-        "ephemeral_id": "9ed6d678-8adf-4976-bd88-2df7b0511246",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "796d5e20-3f4e-447e-9e58-fc9644cc3dce",
+        "id": "6684df32-72e8-4009-a16c-28195be221bf",
+        "name": "elastic-agent-22967",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "proofpoint_tap.clicks_permitted",
-        "namespace": "ep",
+        "namespace": "89672",
         "type": "logs"
     },
     "destination": {
@@ -236,9 +237,9 @@ An example event for `clicks_permitted` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "6684df32-72e8-4009-a16c-28195be221bf",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "email": {
         "from": {
@@ -261,10 +262,10 @@ An example event for `clicks_permitted` looks as following:
         "category": [
             "email"
         ],
-        "created": "2023-09-22T17:32:59.985Z",
+        "created": "2025-10-05T05:51:35.999Z",
         "dataset": "proofpoint_tap.clicks_permitted",
         "id": "de7eef56-1234-1234-1234-5xxfx7xxxdxxxx",
-        "ingested": "2023-09-22T17:33:02Z",
+        "ingested": "2025-10-05T05:51:38Z",
         "kind": "event",
         "original": "{\"GUID\":\"cTxxxxxxzx7xxxxxxxxxx8x4xwxx\",\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"phish\",\"clickIP\":\"89.160.20.112\",\"clickTime\":\"2022-03-21T20:39:37.000Z\",\"id\":\"de7eef56-1234-1234-1234-5xxfx7xxxdxxxx\",\"messageID\":\"12345678912345.12345.mail@example.com\",\"recipient\":\"abc@example.com\",\"sender\":\"abc123@example.com\",\"senderIP\":\"81.2.69.143\",\"threatID\":\"92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx\",\"threatStatus\":\"active\",\"threatTime\":\"2022-03-30T10:05:57.000Z\",\"threatURL\":\"https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx\",\"url\":\"https://example.com/collab/?id=x4x3x6xsx1xxxx8xEdxexnxxxaxX\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36 Edg/99.0.1150.46\"}",
         "type": [
@@ -278,6 +279,7 @@ An example event for `clicks_permitted` looks as following:
         "clicks_permitted": {
             "campaign_id": "46x01x8x-x899-404x-xxx9-111xx393d1x7",
             "classification": "phish",
+            "click_time": "2022-03-21T20:39:37.000Z",
             "threat": {
                 "id": "92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx",
                 "status": "active",
@@ -361,24 +363,24 @@ An example event for `message_blocked` looks as following:
 {
     "@timestamp": "2021-11-25T09:10:00.050Z",
     "agent": {
-        "ephemeral_id": "2738078c-875f-4284-984f-5858cbba75c9",
-        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "04818a50-6b3c-4b06-9401-2d8effb662c4",
+        "id": "10a540d3-1a7e-460d-ba0c-6108d3968b96",
+        "name": "elastic-agent-85971",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "proofpoint_tap.message_blocked",
-        "namespace": "ep",
+        "namespace": "47955",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
+        "id": "10a540d3-1a7e-460d-ba0c-6108d3968b96",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "email": {
         "attachments": [
@@ -435,9 +437,9 @@ An example event for `message_blocked` looks as following:
         "category": [
             "email"
         ],
-        "created": "2024-04-03T23:27:42.516Z",
+        "created": "2025-10-05T05:52:25.487Z",
         "dataset": "proofpoint_tap.message_blocked",
-        "ingested": "2024-04-03T23:27:46Z",
+        "ingested": "2025-10-05T05:52:28Z",
         "kind": "event",
         "original": "{\"GUID\":\"x11xxxx1-12f9-111x-x12x-1x1x123456xx\",\"QID\":\"x2XXxXXX111111\",\"ccAddresses\":[\"abc@example.com\"],\"clusterId\":\"pharmtech_hosted\",\"completelyRewritten\":\"true\",\"fromAddress\":\"abc@example.com\",\"headerCC\":\"\\\"Example Abc\\\" \\u003cabc@example.com\\u003e\",\"headerFrom\":\"\\\"A. Bc\\\" \\u003cabc@example.com\\u003e\",\"headerReplyTo\":null,\"headerTo\":\"\\\"Aa Bb\\\" \\u003caa.bb@example.com\\u003e; \\\"Hey Hello\\\" \\u003chey.hello@example.com\\u003e\",\"impostorScore\":0,\"malwareScore\":100,\"messageID\":\"12345678912345.12345.mail@example.com\",\"messageParts\":[{\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"filename\":\"text.txt\",\"md5\":\"b10a8db164e0754105b7a99be72e3fe5\",\"oContentType\":\"text/plain\",\"sandboxStatus\":\"unsupported\",\"sha256\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\"},{\"contentType\":\"application/pdf\",\"disposition\":\"attached\",\"filename\":\"text.pdf\",\"md5\":\"b10a8db164e0754105b7a99be72e3fe5\",\"oContentType\":\"application/pdf\",\"sandboxStatus\":\"threat\",\"sha256\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\"}],\"messageTime\":\"2021-11-25T09:10:00.050Z\",\"modulesRun\":[\"pdr\",\"sandbox\",\"spam\",\"urldefense\"],\"phishScore\":46,\"policyRoutes\":[\"default_inbound\",\"executives\"],\"quarantineFolder\":\"Attachment Defense\",\"quarantineRule\":\"module.sandbox.threat\",\"recipient\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"replyToAddress\":null,\"sender\":\"x99x7x5580193x6x51x597xx2x0210@example.com\",\"senderIP\":\"175.16.199.1\",\"spamScore\":4,\"subject\":\"Please find a totally safe invoice attached.\",\"threatsInfoMap\":[{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\",\"threatId\":\"2xxx740f143fc1aa4c1cd0146d334x5593b1428x6x062b2c406e5efe8xxx95xx\",\"threatStatus\":\"active\",\"threatTime\":\"2021-11-25T09:10:00.050Z\",\"threatType\":\"ATTACHMENT\",\"threatUrl\":\"https://www.example.com/?name=john\"},{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"example.com\",\"threatId\":\"3xx97xx852c66a7xx761450xxxxxx9f4ffab74715b591294f78b5e37a76481xx\",\"threatTime\":\"2021-07-20T05:00:00.050Z\",\"threatType\":\"URL\",\"threatUrl\":\"https://www.example.com/?name=john\"}],\"toAddresses\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"xmailer\":\"Spambot v2.5\"}",
         "type": [
@@ -612,24 +614,24 @@ An example event for `message_delivered` looks as following:
 {
     "@timestamp": "2022-01-01T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "f01ebff4-ea3a-4827-ac33-e7af925ed197",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "66b80ebf-478e-47bd-9e2c-20db420f82f4",
+        "id": "af7e2615-7dec-409d-8f21-219badc2d5eb",
+        "name": "elastic-agent-71618",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "proofpoint_tap.message_delivered",
-        "namespace": "ep",
+        "namespace": "25442",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "af7e2615-7dec-409d-8f21-219badc2d5eb",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.19.4"
     },
     "email": {
         "delivery_timestamp": "2022-01-01T00:00:00.000Z",
@@ -644,10 +646,10 @@ An example event for `message_delivered` looks as following:
         "category": [
             "email"
         ],
-        "created": "2023-09-22T17:35:00.037Z",
+        "created": "2025-10-05T05:53:26.074Z",
         "dataset": "proofpoint_tap.message_delivered",
         "id": "2hsvbU-i8abc123-12345-xxxxx12",
-        "ingested": "2023-09-22T17:35:03Z",
+        "ingested": "2025-10-05T05:53:29Z",
         "kind": "event",
         "original": "{\"GUID\":\"NxxxsxvxbxUxixcx2xxxxx5x6xWxBxOxxxxxjxx\",\"QID\":null,\"ccAddresses\":null,\"cluster\":\"pharmtech_hosted\",\"completelyRewritten\":true,\"fromAddress\":null,\"headerFrom\":null,\"headerReplyTo\":null,\"id\":\"2hsvbU-i8abc123-12345-xxxxx12\",\"impostorScore\":0,\"malwareScore\":0,\"messageID\":\"\",\"messageParts\":null,\"messageSize\":0,\"messageTime\":\"2022-01-01T00:00:00.000Z\",\"modulesRun\":null,\"phishScore\":0,\"policyRoutes\":null,\"quarantineFolder\":null,\"quarantineRule\":null,\"recipient\":[\"fxxxxhxsxxvxbcx2xx5xxx6x3xx26@example.com\"],\"replyToAddress\":null,\"sender\":\"\",\"senderIP\":\"89.160.20.112\",\"spamScore\":0,\"subject\":null,\"threatsInfoMap\":[{\"campaignID\":null,\"classification\":\"spam\",\"threat\":\"http://zbcd123456x0.example.com\",\"threatID\":\"b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\",\"threatStatus\":\"active\",\"threatTime\":\"2021-11-25T13:02:58.640Z\",\"threatType\":\"url\",\"threatUrl\":\"https://threatinsight.proofpoint.com/aaabcdef-1234-b1abcdefghe/threat/email/b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\"},{\"campaignID\":null,\"classification\":\"phish\",\"threat\":\"http://zbcd123456x0.example.com\",\"threatID\":\"aaabcdefg123456f009971a9c193abcdefg123456bf5abcdefg1234566\",\"threatStatus\":\"active\",\"threatTime\":\"2021-07-19T10:28:15.100Z\",\"threatType\":\"url\",\"threatUrl\":\"https://threatinsight.proofpoint.com/aaabcdef-1234-b1abcdefghe/threat/email/b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\"}],\"toAddresses\":null,\"xmailer\":null}",
         "type": [
