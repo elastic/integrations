@@ -3119,7 +3119,20 @@ processors:
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.
-      source: boolean dropEmptyFields(Object object) { if (object == null || object == '') { return true; } else if (object instanceof Map) { ((Map) object).values().removeIf(value -> dropEmptyFields(value)); return (((Map) object).size() == 0); } else if (object instanceof List) { ((List) object).removeIf(value -> dropEmptyFields(value)); return (((List) object).length == 0); } return false; } dropEmptyFields(ctx);
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
       tag: script_63456991
   - community_id:
       ignore_missing: true
@@ -3147,4 +3160,3 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
-
