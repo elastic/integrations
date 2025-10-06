@@ -84,7 +84,7 @@ processors:
       tag: set_3a851ed4
   - date:
       field: temp.timestamp
-      tag: 'date_set_timestamp'
+      tag: 'date_set_timestamp_tz'
       timezone: '{{{event.timezone}}}'
       if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null
       formats:
@@ -175,7 +175,7 @@ processors:
       tag: 'script_for_set_log.syslog.severity.code_log.syslog.facility.code'
       if: ctx.log?.level != null && ctx.log.level != '' && ctx.log.syslog?.priority != null && ctx.log.syslog.priority != ''
       lang: painless
-      source: |-
+      source: |
         ArrayList severities = new ArrayList(['emergency','alert','critical','error','warning','notice','information','debug']);
         HashMap sevrityMap = new HashMap();
         HashMap facilityMap = new HashMap();
@@ -267,7 +267,7 @@ processors:
       tag: remove_779d3744
   - script:
       lang: painless
-      source: |-
+      source: |
         boolean drop(Object o) {
           if (o == null || o == '') {
             return true;

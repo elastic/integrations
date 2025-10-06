@@ -77,24 +77,6 @@ processors:
       if: (ctx.fortinet_fortimail?.log?.sub_type == 'system' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('change')) || (ctx.fortinet_fortimail?.log?.sub_type == 'update' && ctx.fortinet_fortimail.log.message.toLowerCase().contains('update'))
       override: true
       tag: set_c5fda874
-  - append:
-      field: fortinet_fortimail.log.user
-      value: '{{{temp.user}}}'
-      allow_duplicates: false
-      if: ctx.temp?.user != null
-      tag: append_2f9ddf13
-  - append:
-      field: user.name
-      value: '{{{temp.user}}}'
-      allow_duplicates: false
-      if: ctx.temp?.user != null
-      tag: append_9b60aa7f
-  - append:
-      field: related.user
-      value: '{{{temp.user}}}'
-      allow_duplicates: false
-      if: ctx.temp?.user != null
-      tag: append_4554486f
   - grok:
       field: message
       ignore_missing: true
