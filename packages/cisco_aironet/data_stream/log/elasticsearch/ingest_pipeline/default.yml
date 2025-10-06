@@ -129,7 +129,11 @@ processors:
   - grok:
       description: SISF-6-ENTRY_CREATED, SISF-6-ENTRY_DELETED, SISF-6-ENTRY_CHANGED, LOG-6-Q_IND
       field: message
-      if: ctx._temp_?.reason == 'SISF-6-ENTRY_CREATED' || ctx._temp_?.reason == 'SISF-6-ENTRY_DELETED' || ctx._temp_?.reason == 'SISF-6-ENTRY_CHANGED'|| ctx._temp_?.reason == 'LOG-6-Q_IND'
+      if: >-
+        ctx._temp_?.reason == 'SISF-6-ENTRY_CREATED' ||
+        ctx._temp_?.reason == 'SISF-6-ENTRY_DELETED' ||
+        ctx._temp_?.reason == 'SISF-6-ENTRY_CHANGED' ||
+        ctx._temp_?.reason == 'LOG-6-Q_IND'
       patterns:
         - "A=%{IP:client.ip} V=%{INT} I=%{DATA:cisco.interface.type}:%{INT} P=%{INT} M=((%{MAC:client.mac})|$)"
         - "Username entry \\(%{DATA:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
@@ -173,7 +177,10 @@ processors:
   - set:
       description: WPS-4-SIG_ALARM_OFF
       field: event.kind
-      if: ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF' || ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF_CONT' || ctx._temp_?.reason == 'LWAPP-4-SIG_INFO1'
+      if: >-
+        ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF' ||
+        ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF_CONT' ||
+        ctx._temp_?.reason == 'LWAPP-4-SIG_INFO1'
       value: alert
       ignore_failure: true
       tag: set_bb72e5a7
@@ -227,7 +234,9 @@ processors:
   - grok:
       description: LOG-3-Q_IND, INVALID_WPA_KEY_STATE
       field: message
-      if: ctx._temp_?.reason == 'LOG-3-Q_IND' || ctx._temp_?.reason == 'DOT1X-3-INVALID_WPA_KEY_STATE'
+      if: >-
+        ctx._temp_?.reason == 'LOG-3-Q_IND' ||
+        ctx._temp_?.reason == 'DOT1X-3-INVALID_WPA_KEY_STATE'
       patterns:
         - "version %{INT:cisco.eapol.version:int}, type %{INT:cisco.eapol.type:int}, descriptor %{INT:cisco.eapol.descriptor:int}, client %{MAC:client.mac}"
         - "client %{MAC:client.mac}"
@@ -237,7 +246,9 @@ processors:
   - grok:
       description: APF-6-USER_NAME_CREATED, APF-6-USER_NAME_DELETED
       field: message
-      if: ctx._temp_?.reason == 'APF-6-USER_NAME_CREATED' || ctx._temp_?.reason == 'APF-6-USER_NAME_DELETED'
+      if: >-
+        ctx._temp_?.reason == 'APF-6-USER_NAME_CREATED' ||
+        ctx._temp_?.reason == 'APF-6-USER_NAME_DELETED'
       patterns:
         - "Username entry \\(%{DATA:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
       ignore_failure: false
@@ -246,7 +257,9 @@ processors:
   - grok:
       description: DTL-4-ARP_ORPHANPKT_DETECTED, Dot1x_NW_MsgTask_4
       field: message
-      if: ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' || ctx._temp_?.reason == 'LOG-4-Q_IND'
+      if: >-
+        ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
+        ctx._temp_?.reason == 'LOG-4-Q_IND'
       patterns:
         - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
       ignore_failure: false
@@ -379,4 +392,3 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
-
