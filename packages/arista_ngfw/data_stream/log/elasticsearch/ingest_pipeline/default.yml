@@ -60,7 +60,7 @@ processors:
         "21": "Local 5"
         "22": "Local 6"
         "23": "Local 7"
-      source: |-
+      source: |
         if (ctx.log?.syslog?.facility?.code == null || !params.containsKey((ctx.log.syslog.facility.code).toString())) {
           return;
         }
@@ -78,7 +78,7 @@ processors:
         "5": Notice
         "6": Informational
         "7": Debug
-      source: |-
+      source: |
         if (ctx.log?.syslog?.severity?.code == null || !params.containsKey((ctx.log.syslog.severity.code).toString())) {
           return;
         }
@@ -276,11 +276,6 @@ processors:
       target_field: source.ip
       ignore_missing: true
       tag: rename_61b62357
-  - convert:
-      field: source.ip
-      type: ip
-      ignore_missing: true
-      tag: convert_b57304ca
   - rename:
       field: arista.CClientPort
       target_field: source.port
@@ -306,37 +301,6 @@ processors:
       target_field: source.bytes
       ignore_missing: true
       tag: rename_61292f1a
-  - convert:
-      field: source.bytes
-      type: integer
-      ignore_missing: true
-      tag: convert_0c5a9349
-  # Geolocation for source IP
-  - geoip:
-      field: "source.ip"
-      target_field: "source.geo"
-      ignore_missing: true
-      tag: geoip_da2e41b2
-  # IP Autonomous System (AS) Lookup
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-      tag: geoip_28d69883
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-      tag: rename_a917047d
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-      tag: rename_f1362d0b
   #############################
   ## ECS Destination Mapping ##
   #############################
@@ -515,7 +479,7 @@ processors:
   - script:
       lang: painless
       if: ctx.event?.start != null && ctx.event?.end != null
-      source: >-
+      source: |
         Instant eventstart = ZonedDateTime.parse(ctx.event?.start).toInstant();
         Instant eventend = ZonedDateTime.parse(ctx.event?.end).toInstant();
         ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
@@ -618,7 +582,7 @@ processors:
           type:
             - info
           provider: system_stats
-      source: >-
+      source: |
         if (ctx?.arista?.class == null || !params.containsKey(ctx.arista.class)) {
           return;
         }
@@ -775,7 +739,7 @@ processors:
   - script:
       description: Set interface aliases and names if provided in config
       lang: painless
-      source: |-
+      source: |
         if (ctx.observer?.egress?.interface?.id == "1") {
           if (ctx._conf?.interface_id_1_alias != null) {
             ctx.observer.egress.interface.alias = ctx._conf.interface_id_1_alias;

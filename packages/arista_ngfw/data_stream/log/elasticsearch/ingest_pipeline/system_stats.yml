@@ -51,7 +51,7 @@ processors:
       description: Adds the system and user CPU usage for a total
       if: ctx.arista?.cpu?.system?.pct != null && ctx.arista?.cpu?.user?.pct != null
       lang: painless
-      source: |-
+      source: |
         if (ctx.arista?.cpu?.total == null) {
           Map map = new HashMap();
           ctx.arista.cpu.put('total', map);
@@ -141,12 +141,9 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: on_failure-set-event-kind
   - append:
       field: error.message
-      tag: on_failure-set-error-message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
-

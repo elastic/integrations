@@ -42,7 +42,7 @@ processors:
           type:
             - allowed
           provider: admin_login
-      source: >-
+      source: |
         if (ctx?.event == null) {
           Map map = new HashMap();
           ctx.put('event', map);
@@ -57,6 +57,7 @@ processors:
         ctx.event.provider = params.get((ctx.arista.succeeded).toString()).get('provider');
         ctx.arista.remove('succeeded');
       tag: script_cef61fad
+
   ##############
   ## Clean Up ##
   ##############
@@ -70,12 +71,9 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: on_failure-set-event-kind
   - append:
       field: error.message
-      tag: on_failure-set-error-message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
-
