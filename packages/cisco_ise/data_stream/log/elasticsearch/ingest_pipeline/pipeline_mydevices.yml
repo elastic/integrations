@@ -64,7 +64,7 @@ processors:
   - script:
       lang: painless
       if: ctx.cisco_ise?.log?.message?.description != null
-      source: |-
+      source: |
         ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
       tag: script_09cdb1bd
   - rename:
@@ -221,4 +221,3 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
-
