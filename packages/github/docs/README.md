@@ -146,22 +146,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "97137cae-c0cc-4eac-a32f-c8d619879c2b",
-        "id": "ab2b36ad-4b51-4414-bd9c-ce44b5f1d63a",
-        "name": "elastic-agent-43699",
+        "ephemeral_id": "2e165cf6-655f-4b8d-a2e8-6656007887a3",
+        "id": "3bc579f7-16b3-4e2d-92f9-75eca7416392",
+        "name": "elastic-agent-96914",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "44014",
+        "namespace": "87476",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ab2b36ad-4b51-4414-bd9c-ce44b5f1d63a",
+        "id": "3bc579f7-16b3-4e2d-92f9-75eca7416392",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -172,10 +172,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2025-10-05T12:56:42.239Z",
+        "created": "2025-10-06T09:23:48.664Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-10-05T12:56:43Z",
+        "ingested": "2025-10-06T09:23:49Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -297,22 +297,22 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "2d072a89-7677-491b-aade-a600708ebd24",
-        "id": "0bf18600-5661-433a-ba46-b5bb22fcf38f",
-        "name": "elastic-agent-55786",
+        "ephemeral_id": "153df5d7-f266-4bb8-aead-76c7b61be0f6",
+        "id": "038ca3ea-08f8-48ec-88d1-24c98b27ffdd",
+        "name": "elastic-agent-76608",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.code_scanning",
-        "namespace": "75795",
+        "namespace": "89866",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0bf18600-5661-433a-ba46-b5bb22fcf38f",
+        "id": "038ca3ea-08f8-48ec-88d1-24c98b27ffdd",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -320,7 +320,7 @@ An example event for `code_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2025-10-05T04:30:33Z",
+        "ingested": "2025-10-06T09:24:45Z",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}",
         "type": [
             "creation"
@@ -468,22 +468,22 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "0f16c539-57a8-46dc-bc40-17f270182958",
-        "id": "6b243983-91bc-4aee-81bb-6440ae728097",
-        "name": "elastic-agent-13496",
+        "ephemeral_id": "3cb76d38-a541-4006-8434-fb476d019a7a",
+        "id": "52656504-1aa4-40d8-b8ad-2ba392340024",
+        "name": "elastic-agent-27803",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.secret_scanning",
-        "namespace": "55143",
+        "namespace": "97753",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6b243983-91bc-4aee-81bb-6440ae728097",
+        "id": "52656504-1aa4-40d8-b8ad-2ba392340024",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -491,7 +491,7 @@ An example event for `secret_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2025-10-05T05:10:34Z",
+        "ingested": "2025-10-06T09:26:47Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}",
         "type": [
             "creation"
@@ -872,22 +872,22 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "2a6a1beb-ac5f-426e-84c6-4ab52ef93eae",
-        "id": "f2d0ec99-f193-4107-bdd1-95a32939e807",
-        "name": "elastic-agent-86616",
+        "ephemeral_id": "4009e7b6-1e67-47b6-8db9-57afb1c2ac18",
+        "id": "864ef531-f0f3-4afa-808f-8c26fa6672f7",
+        "name": "elastic-agent-72716",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "github.issues",
-        "namespace": "71832",
+        "namespace": "91171",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f2d0ec99-f193-4107-bdd1-95a32939e807",
+        "id": "864ef531-f0f3-4afa-808f-8c26fa6672f7",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -895,7 +895,7 @@ An example event for `issues` looks as following:
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2025-10-05T05:06:49Z",
+        "ingested": "2025-10-06T09:25:47Z",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}",
         "type": [
             "creation"
