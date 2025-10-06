@@ -1,0 +1,60 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: o365
+      name: test-o365-all-o365
+      streams:
+        - api:
+            - setting:
+                example: true
+          api.preserve_original_event: true
+          application_id: application-id
+          client_secret: ${SECRET_0}
+          content_type:
+            - Audit.AzureActiveDirectory
+            - Audit.Exchange
+            - Audit.SharePoint
+            - Audit.General
+            - DLP.All
+          data_stream:
+            dataset: o365.audit
+          key: /tmp/path_to/key
+          key_passphrase: ${SECRET_1}
+          processors:
+            - add_fields:
+                fields:
+                    tenants:
+                        tenant-id: domain-name
+                target: _conf
+            - add_fields:
+                fields:
+                    bar: baz
+                target: foo
+          publisher_pipeline.disable_host: true
+          tags:
+            - forwarded
+            - o365-audit
+            - preserve_original_event
+          tenant_id:
+            - tenant-id
+      type: o365audit
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-o365.audit-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}
