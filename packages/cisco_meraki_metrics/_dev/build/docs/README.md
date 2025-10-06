@@ -1,21 +1,20 @@
 # Cisco Meraki Metrics Integration
 
-This integration periodically fetches metrics from [Cisco Meraki](https://meraki.cisco.com/) networks. It collects a wide range of metrics including device details and status, network performance measurements, switch port information, wireless channel utilization, and uplink performance.
+This integration periodically fetches metrics from [Cisco Meraki](https://meraki.cisco.com/) networks. It collects device details and status, network performance measurements, switch port information, wireless channel utilization, and uplink performance.
 
-These metrics help you understand how well your Meraki network is working and make it easier to monitor and manage your network setup.
+These metrics help you assess Meraki network health and simplify ongoing monitoring and management.
 
 ## Compatibility
 
-The integration uses the [Meraki Dashboard RESTFul APIs](https://github.com/meraki/dashboard-api-go/) library to collect metrics from Cisco Meraki networks.
+The integration uses the [Meraki Dashboard RESTful APIs](https://github.com/meraki/dashboard-api-go/) library to collect metrics from Cisco Meraki networks.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud (recommended) or self-manage the Elastic Stack on your own hardware.
 
 ## Configuration
 
-To configure this integration in Elastic, you need the following information from `Cisco Meraki`:
+To configure this integration in Elastic, you need the following information from Cisco Meraki:
 
 - API Key
 - Organization IDs
@@ -27,8 +26,8 @@ For more details on these settings, refer to the [Meraki Dashboard API documenta
 
 1. In Kibana, navigate to **Management > Integrations**
 2. In the "Search for integrations" search bar, type **Meraki**
-3. Click on "Cisco Meraki Metrics" integration from the search results
-4. Click on the **Add Cisco Meraki Metrics Integration** button to add the integration
+3. Click "Cisco Meraki Metrics" in the results
+4. Click **Add Cisco Meraki Metrics Integration** to add the integration
 
 ## Metrics
 
