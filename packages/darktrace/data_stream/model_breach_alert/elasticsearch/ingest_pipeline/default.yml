@@ -669,7 +669,7 @@ processors:
         convert:
           field: _ingest._value.defeatID
           target_field: _ingest._value.id
-          type: long
+          type: string
           ignore_missing: true
           on_failure:
             - remove:
@@ -685,6 +685,39 @@ processors:
         remove:
           field: _ingest._value.defeatID
           ignore_missing: true
+  - foreach:
+      field: json.model.defeats
+      if: ctx.json?.model?.defeats instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.defeatID
+              target_field: _ingest._value.id
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.defeatID
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.model.defeats
+      if: ctx.json?.model?.defeats instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            remove:
+              field: _ingest._value.defeatID
+              ignore_missing: true
+
   - rename:
       field: json.model.defeats
       target_field: darktrace.model_breach_alert.model.defeats
