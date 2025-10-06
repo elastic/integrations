@@ -4,16 +4,19 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
 
   # These two fields are treated as immutable in the case reindexing.
   - set:
       field: event.original
       copy_from: message
       override: false
+      tag: set_49bb683a
   - set:
       field: event.created
       copy_from: '@timestamp'
       override: false
+      tag: set_bf7a2064
 
   # Journald input field cleanup.
   - remove:
@@ -23,18 +26,22 @@ processors:
         - journald.custom.seqnum
         - journald.custom.seqnum_id
       ignore_missing: true
+      tag: remove_342ed3bb
   - rename:
       field: syslog.pid
       target_field: log.syslog.procid
       ignore_missing: true
+      tag: rename_da944eb2
   - rename:
       field: syslog.identifier
       target_field: log.syslog.appname
       ignore_missing: true
+      tag: rename_5995bf31
   - remove:
       description: Cleanup an empty syslog object.
       if: ctx?.syslog != null && ctx.syslog instanceof Map && ctx.syslog.isEmpty()
       field: syslog
+      tag: remove_8212f7d5
 
   # Parse the header if it is syslog, otherwise treat the whole value as 'message'.
   - grok:
@@ -50,6 +57,7 @@ processors:
         - set:
             field: message
             copy_from: event.original
+      tag: grok_037fcb4e
 
   - grok:
       field: message
@@ -67,39 +75,33 @@ processors:
         ETHTYPE: (?:[A-Fa-f0-9]{2}):(?:[A-Fa-f0-9]{2})
         ETHTYPE_DISCARD: (?::[A-Fa-f0-9]{2})*
         NETFILTERMAC: (?:%{MAC:destination.mac}:%{MAC:source.mac}:%{ETHTYPE:iptables.ether_type}?%{ETHTYPE_DISCARD}|%{MAC:destination.mac}%{ETHTYPE_DISCARD}:%{ETHTYPE:iptables.ether_type}?)
-        IPTABLES_ETHERNET: 'IN=%{DATA:iptables.input_device} OUT=%{DATA:iptables.output_device}?(?:
-          MAC=%{NETFILTERMAC})?'
+        IPTABLES_ETHERNET: 'IN=%{DATA:iptables.input_device} OUT=%{DATA:iptables.output_device}?(?: MAC=%{NETFILTERMAC})?'
+
         IPTABLES_PORT_PAIR: SPT=%{UNSIGNED_INT:source.port:int} DPT=%{UNSIGNED_INT:destination.port:int}
         IPTABLES_TCP_FLAGS: (CWR |ECE |URG |ACK |PSH |RST |SYN |FIN )*
         IPTABLES_TCP_SEQ: SEQ=%{UNSIGNED_INT:iptables.tcp.seq:int} ACK=%{UNSIGNED_INT:iptables.tcp.ack:int}
-        IPTABLES_TCP_DETAILS: (?:%{IPTABLES_TCP_SEQ} )?WINDOW=%{UNSIGNED_INT:iptables.tcp.window:int}
-          RES=0x%{BASE16NUM:iptables.tcp_reserved_bits} %{IPTABLES_TCP_FLAGS:iptables.tcp.flags}
-        IPTABLES_INCOMPLETE_PACKET: INCOMPLETE \[%{UNSIGNED_INT:iptables.incomplete_bytes:int}
-          bytes\]
+        IPTABLES_TCP_DETAILS: (?:%{IPTABLES_TCP_SEQ} )?WINDOW=%{UNSIGNED_INT:iptables.tcp.window:int} RES=0x%{BASE16NUM:iptables.tcp_reserved_bits} %{IPTABLES_TCP_FLAGS:iptables.tcp.flags}
+        IPTABLES_INCOMPLETE_PACKET: INCOMPLETE \[%{UNSIGNED_INT:iptables.incomplete_bytes:int} bytes\]
         IPTABLES_UDP_DETAILS: LEN=%{UNSIGNED_INT:iptables.udp.length:int}
         IPTABLES_ICMP_EXTRA_ECHO: ID=%{UNSIGNED_INT:iptables.icmp.id:int} SEQ=%{UNSIGNED_INT:iptables.icmp.seq:int}
         IPTABLES_ICMP_EXTRA_PARAM: PARAMETER=%{UNSIGNED_INT:iptables.icmp.parameter:int}
         IPTABLES_ICMP_EXTRA_REDIRECT: GATEWAY=%{IP:iptables.icmp.redirect}
         IPTABLES_ICMP_EXTRA: ( (?:%{IPTABLES_ICMP_EXTRA_ECHO}|%{IPTABLES_ICMP_EXTRA_PARAM}|%{IPTABLES_ICMP_EXTRA_REDIRECT}))*
-        IPTABLES_ICMP_DETAILS: TYPE=%{UNSIGNED_INT:iptables.icmp.type:int} CODE=%{UNSIGNED_INT:iptables.icmp.code:int}((
-          %{IPTABLES_INCOMPLETE_PACKET})|%{IPTABLES_ICMP_EXTRA})
+        IPTABLES_ICMP_DETAILS: TYPE=%{UNSIGNED_INT:iptables.icmp.type:int} CODE=%{UNSIGNED_INT:iptables.icmp.code:int}(( %{IPTABLES_INCOMPLETE_PACKET})|%{IPTABLES_ICMP_EXTRA})
         IPTABLES_PROTOCOL: PROTO=(?<network.transport>[a-zA-Z0-9]+)
         IPTABLES_IP_PAYLOAD: '%{IPTABLES_PROTOCOL}( %{IPTABLES_PORT_PAIR})?( (%{IPTABLES_TCP_DETAILS}|%{IPTABLES_UDP_DETAILS}|%{IPTABLES_ICMP_DETAILS}|%{IPTABLES_INCOMPLETE_PACKET}))?'
         IPTABLES_IP_FRAGFLAG: ((?<= )(CE|DF|MF))*
-        IPTABLES_IP_START: 'SRC=%{IPV4:source.ip} DST=%{IPV4:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int}
-          TOS=(?:0x)?%{BASE16NUM:iptables.tos} PREC=0x%{BASE16NUM:iptables.precedence_bits}
-          TTL=%{UNSIGNED_INT:iptables.ttl:int} ID=%{UNSIGNED_INT:iptables.id:int}(?:
-          %{IPTABLES_IP_FRAGFLAG:iptables.fragment_flags})?(?: FRAG: %{UNSIGNED_INT:iptables.fragment_offset:int})?'
+        IPTABLES_IP_START: 'SRC=%{IPV4:source.ip} DST=%{IPV4:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int} TOS=(?:0x)?%{BASE16NUM:iptables.tos} PREC=0x%{BASE16NUM:iptables.precedence_bits} TTL=%{UNSIGNED_INT:iptables.ttl:int} ID=%{UNSIGNED_INT:iptables.id:int}(?: %{IPTABLES_IP_FRAGFLAG:iptables.fragment_flags})?(?: FRAG: %{UNSIGNED_INT:iptables.fragment_offset:int})?'
+
         IPTABLES_IP: '%{IPTABLES_IP_START} %{IPTABLES_IP_PAYLOAD}'
-        IPTABLES_IPV6_START: SRC=%{IPV6:source.ip} DST=%{IPV6:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int}
-          TC=%{UNSIGNED_INT:iptables.tos} HOPLIMIT=%{UNSIGNED_INT:iptables.ttl:int}
-          FLOWLBL=%{UNSIGNED_INT:iptables.flow_label:int}
+        IPTABLES_IPV6_START: SRC=%{IPV6:source.ip} DST=%{IPV6:destination.ip} LEN=%{UNSIGNED_INT:iptables.length:int} TC=%{UNSIGNED_INT:iptables.tos} HOPLIMIT=%{UNSIGNED_INT:iptables.ttl:int} FLOWLBL=%{UNSIGNED_INT:iptables.flow_label:int}
         IPTABLES_IPV6: '%{IPTABLES_IPV6_START} %{IPTABLES_IP_PAYLOAD}'
         IPTABLES: '%{IPTABLES_ETHERNET} (:?%{IPTABLES_IP}|%{IPTABLES_IPV6})'
         UBIQUITI_FIELD: '[^-\]]*'
         UBIQUITI_RULESET_NAME: '[^\]]*'
         UBIQUITI_LABEL: '%{UBIQUITI_RULESET_NAME:iptables.ubiquiti.rule_set}-%{UBIQUITI_FIELD:iptables.ubiquiti.rule_number}-%{UBIQUITI_FIELD:event.action}'
         UDM_LOGS: '(%{UNSIGNED_INT}%{SPACE})?(TTL|TL|L)=(%{UNSIGNED_INT:iptables.ttl:int})%{SPACE}(ID=(%{UNSIGNED_INT:iptables.id:int})%{SPACE})?(DF%{SPACE})?'
+      tag: grok_44b8bbb5
   - grok:
       field: iptables.ubiquiti.rule_set
       ignore_missing: true
@@ -108,11 +110,13 @@ processors:
       - '%{UBIQUITI_FIELD:iptables.ubiquiti.input_zone}-%{UBIQUITI_FIELD:iptables.ubiquiti.output_zone}'
       pattern_definitions:
         UBIQUITI_FIELD: '[^-]*'
+      tag: grok_bdd576eb
   - date:
       if: ctx?._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
       formats:
         - ISO8601
+      tag: date_c38c0806
   - date:
       if: ctx?.event?.timezone == null && ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
@@ -123,6 +127,7 @@ processors:
       - append:
           field: error.message
           value: 'date processor error: {{{ _ingest.on_failure_message }}}'
+      tag: date_8a0fd800
   - date:
       if: ctx?.event?.timezone != null && ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
@@ -134,36 +139,44 @@ processors:
       - append:
           field: error.message
           value: 'date processor error: {{{ _ingest.on_failure_message }}}'
+      tag: date_245edf42
   - set:
       field: observer.name
       copy_from: hostname
       if: ctx?.observer?.name == null && ctx?.hostname != null
+      tag: set_84b93363
   - set:
       field: observer.hostname
       copy_from: hostname
       if: ctx?.observer?.name == null && ctx?.hostname != null
+      tag: set_d71358b1
   - rename:
       description: Rename network.transport to network.iana_number if it is a number.
       if: ctx.network?.iana_number == null && ctx.network?.transport != null && ctx.network.transport.chars().allMatch(Character::isDigit)
       field: network.transport
       target_field: network.iana_number
       ignore_missing: true
+      tag: rename_8354ffc7
   - lowercase:
       field: network.transport
       ignore_missing: true
+      tag: lowercase_bc8c1c12
   - lowercase:
       field: event.action
       ignore_missing: true
+      tag: lowercase_9334b869
 
   # GeoIP and Autonomous System Enrichment
   - geoip:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      tag: geoip_da2e41b2
   - geoip:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+      tag: geoip_ab5e2968
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -172,6 +185,7 @@ processors:
       - asn
       - organization_name
       ignore_missing: true
+      tag: geoip_28d69883
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -180,22 +194,27 @@ processors:
       - asn
       - organization_name
       ignore_missing: true
+      tag: geoip_8a007787
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
+      tag: rename_a917047d
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+      tag: rename_f1362d0b
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
+      tag: rename_3b459fcd
   - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+      tag: rename_814bd459
   - script:
       description: Enrich event with ECS fields.
       lang: painless
@@ -255,11 +274,13 @@ processors:
             }
           }
         }
+      tag: script_5bfc0049
   - community_id:
       ignore_missing: true
       ignore_failure: true
       icmp_type: iptables.icmp.type
       icmp_code: iptables.icmp.code
+      tag: community_id_599d51a0
   - script:
       description: Convert bit fields to numbers.
       lang: painless
@@ -288,54 +309,67 @@ processors:
             }
           }
         }
+      tag: script_79f58598
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value: network
+      tag: append_7afdca3c
   - append:
       field: event.type
       value: connection
       if: ctx?.source?.ip != null && ctx?.destination?.ip != null
+      tag: append_e0ea7708
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
+      tag: append_549fa858
   - append:
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx?.destination?.ip != null
       allow_duplicates: false
+      tag: append_da872846
   - rename:
       field: iptables.tcp_reserved_bits
       target_field: iptables.tcp.reserved_bits
       ignore_missing: true
+      tag: rename_e463845f
   - split:
       field: iptables.tcp.flags
       separator: "\\s+"
       ignore_missing: true
+      tag: split_5321af29
   - split:
       field: iptables.fragment_flags
       separator: "\\s+"
       ignore_missing: true
+      tag: split_8aa979f5
   - set:
       if: ctx?.iptables?.ubiquiti?.output_zone != null
       field: observer.egress.zone
       copy_from: iptables.ubiquiti.output_zone
+      tag: set_22bfd566
   - set:
       if: ctx?.iptables?.ubiquiti?.input_zone != null
       field: observer.ingress.zone
       copy_from: iptables.ubiquiti.input_zone
+      tag: set_eff0b072
   - set:
       if: ctx?.iptables?.ubiquiti?.rule_number != null
       field: rule.id
       copy_from: iptables.ubiquiti.rule_number
+      tag: set_aa2709b8
   - set:
       if: ctx?.iptables?.ubiquiti?.rule_set != null
       field: rule.name
       copy_from: iptables.ubiquiti.rule_set
+      tag: set_c442e0f0
 
   # Format source.mac address.
   - gsub:
@@ -343,14 +377,17 @@ processors:
       pattern: '[-:.]'
       replacement: ''
       ignore_missing: true
+      tag: gsub_061bf27a
   - gsub:
       field: source.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
+      tag: gsub_a230b90b
   - uppercase:
       field: source.mac
       ignore_missing: true
+      tag: uppercase_5b4e7be2
 
   # Format destination.mac address.
   - gsub:
@@ -358,19 +395,23 @@ processors:
       pattern: '[-:.]'
       replacement: ''
       ignore_missing: true
+      tag: gsub_80c7dedb
   - gsub:
       field: destination.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
+      tag: gsub_1aa8a244
   - uppercase:
       field: destination.mac
       ignore_missing: true
+      tag: uppercase_04de3657
 
   - remove:
       field:
         - _tmp
       ignore_failure: true
+      tag: remove_a82e20f2
 on_failure:
   - remove:
       field:
@@ -382,6 +423,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}' in pipeline {{{_ingest.pipeline}}}
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'{{{/_ingest.on_failure_processor_tag}}}
-        failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
