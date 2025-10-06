@@ -4,20 +4,25 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+      tag: rename_56a77271
   - set:
       field: observer.vendor
       value: QNAP
+      tag: set_cad5939e
   - set:
       field: observer.product
       value: NAS
+      tag: set_dc526a3f
   - set:
       field: observer.type
       value: nas
+      tag: set_6bada260
   - grok:
       field: event.original
       patterns:
@@ -27,10 +32,12 @@ processors:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
         SYSLOGPROG: '%{PROG:process.name}(?:\[%{POSINT:process.pid:int}\])?'
         LOG_TYPE: '(event log|conn log)'
+      tag: grok_cad2ef7a
   - set:
       field: event.timezone
       value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
+      tag: set_4ca44cac
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -39,6 +46,7 @@ processors:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone != null
+      tag: date_e440143c
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -46,9 +54,11 @@ processors:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
       if: ctx.event?.timezone == null
+      tag: date_baf3310e
   - set:
       field: event.created
       copy_from: '@timestamp'
+      tag: set_e3f09e3b
   - grok:
       field: _tmp.message
       patterns:
@@ -58,6 +68,7 @@ processors:
         SHARED: 'Users: %{USER:user.name}, Source IP: (127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
         RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
         FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
+      tag: grok_c75b80dc
   - grok:
       field: message
       patterns:
@@ -69,16 +80,19 @@ processors:
         USER_EVENTS: (%{ACTION:event.action}|%{DATA:event.action} of user)
       ignore_failure: true
       ignore_missing: true
+      tag: grok_5c258068
   - convert:
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
+      tag: convert_48c76f83
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      tag: geoip_da2e41b2
   # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
@@ -88,14 +102,17 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: geoip_28d69883
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
+      tag: rename_a917047d
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+      tag: rename_f1362d0b
   - grok:
       field: qnap.nas.file.path
       patterns:
@@ -105,30 +122,36 @@ processors:
         FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)*'
       ignore_failure: true
       ignore_missing: true
+      tag: grok_d435d72e
   - grok:
       field: file.path
       patterns:
         - '\.%{DATA:file.extension}$'
       ignore_failure: true
       ignore_missing: true
+      tag: grok_e8a1e292
   - lowercase:
       field: event.action
       ignore_missing: true
+      tag: lowercase_9334b869
   - gsub:
       field: event.action
       pattern: 'the '
       replacement: ''
       ignore_missing: true
+      tag: gsub_bed81fc6
   - gsub:
       field: event.action
       pattern: \s
       replacement: '-'
       ignore_missing: true
+      tag: gsub_29f7c6e5
   - gsub:
       field: event.provider
       pattern: \s
       replacement: '-'
       ignore_missing: true
+      tag: gsub_8f8d0634
   - script:
       lang: painless
       description: Add ECS categorization
@@ -241,26 +264,32 @@ processors:
         }
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
+      tag: script_1d15b5b0
   - append:
       if: ctx.source?.ip != null
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
+      tag: append_8121c591
   - append:
       if: ctx.source?.domain != null
       field: related.hosts
       value: '{{{source.domain}}}'
       allow_duplicates: false
+      tag: append_b0d2e007
   - append:
       if: ctx.user?.name != null
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
+      tag: append_837e080f
   - remove:
       field:
         - _tmp
       ignore_missing: true
+      tag: remove_3f4f84fc
   - script:
+      tag: script_84e8ec8e
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -290,4 +319,7 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
