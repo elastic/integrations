@@ -4,24 +4,30 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - set:
       field: observer.vendor
       value: netgate
+      tag: set_ad9d35cc
   - set:
       field: observer.type
       value: firewall
+      tag: set_5dddf3ba
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+      tag: rename_56a77271
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - set:
       field: event.timezone
       value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
+      tag: set_4ca44cac
   - grok:
       description: Parse syslog header
       field: event.original
@@ -40,12 +46,14 @@ processors:
         PROCESS: '(\(%{DATA:process.name}\)|(?:%{UNIXPATH})%{BASEPATH:process.name})'
         BASEPATH: '[[[:alnum:]]_%!$@:.,+~-]+'
         META: '\[[^\]]*\]'
+      tag: grok_27d9c8c7
   - date:
       if: ctx._tmp.timestamp8601 != null
       field: _tmp.timestamp8601
       target_field: '@timestamp'
       formats:
         - ISO8601
+      tag: date_6ac9d3ce
   - date:
       if: ctx.event?.timezone != null && ctx._tmp?.timestamp != null
       field: _tmp.timestamp
@@ -55,6 +63,7 @@ processors:
         - MMM d HH:mm:ss
         - MMM dd HH:mm:ss
       timezone: '{{{ event.timezone }}}'
+      tag: date_f21e536e
   - grok:
       description: Set Event Provider
       field: process.name
@@ -62,67 +71,85 @@ processors:
         - '^%{HYPHENATED_WORDS:event.provider}'
       pattern_definitions:
         HYPHENATED_WORDS: '\b[A-Za-z0-9_]+(-[A-Za-z_]+)*\b'
+      tag: grok_cef3d489
   - pipeline:
       name: '{{ IngestPipeline "firewall" }}'
       if: ctx.event.provider == 'filterlog'
+      tag: pipeline_e16851a7
   - pipeline:
       name: '{{ IngestPipeline "openvpn" }}'
       if: ctx.event.provider == 'openvpn'
+      tag: pipeline_828590b5
   - pipeline:
       name: '{{ IngestPipeline "ipsec" }}'
       if: ctx.event.provider == 'charon'
+      tag: pipeline_9d37039c
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
       if: '["dhcpd", "dhclient", "dhcp6c"].contains(ctx.event.provider)'
+      tag: pipeline_ad56bbca
   - pipeline:
       name: '{{ IngestPipeline "unbound" }}'
       if: ctx.event.provider == 'unbound'
+      tag: pipeline_dd85553d
   - pipeline:
       name: '{{ IngestPipeline "haproxy" }}'
       if: ctx.event.provider == 'haproxy'
+      tag: pipeline_720ed255
   - pipeline:
       name: '{{ IngestPipeline "php-fpm" }}'
       if: ctx.event.provider == 'php-fpm'
+      tag: pipeline_456beba5
   - pipeline:
       name: '{{ IngestPipeline "squid" }}'
       if: ctx.event.provider == 'squid'
+      tag: pipeline_a0d89375
   - pipeline:
       name: '{{ IngestPipeline "snort" }}'
       if: ctx.event.provider == 'snort'
+      tag: pipeline_c2f1ed55
   - drop:
       if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort"].contains(ctx.event?.provider)'
+      tag: drop_9d7c46f8
   - append:
       field: event.category
       value: network
       if: "ctx.network != null"
+      tag: append_4780a983
   - convert:
       field: source.address
       target_field: source.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_f5632a20
   - convert:
       field: destination.address
       target_field: destination.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_f1388f0c
   - set:
       field: network.type
       value: ipv6
       if: 'ctx.source?.ip != null && ctx.source.ip.contains(":")'
+      tag: set_1f1d940a
   - set:
       field: network.type
       value: ipv4
       if: 'ctx.source?.ip != null && ctx.source.ip.contains(".")'
+      tag: set_69deca38
   - geoip:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      tag: geoip_da2e41b2
   - geoip:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+      tag: geoip_ab5e2968
   - geoip:
       ignore_missing: true
       database_file: GeoLite2-ASN.mmdb
@@ -131,6 +158,7 @@ processors:
       properties:
         - asn
         - organization_name
+      tag: geoip_28d69883
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -139,66 +167,81 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: geoip_8a007787
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
+      tag: rename_a917047d
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+      tag: rename_f1362d0b
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
+      tag: rename_3b459fcd
   - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+      tag: rename_814bd459
   - community_id:
       target_field: network.community_id
       ignore_failure: true
+      tag: community_id_d2308e7a
   - grok:
       field: observer.ingress.interface.name
       patterns:
         - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
       ignore_missing: true
       ignore_failure: true
+      tag: grok_968018d3
   - set:
       field: network.vlan.id
       copy_from: observer.ingress.vlan.id
       ignore_empty_value: true
+      tag: set_efd4d96a
   - append:
       field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
+      tag: append_c1a6356b
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
+      tag: append_8121c591
   - append:
       field: related.ip
       value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
+      tag: append_53b62ed8
   - append:
       field: related.hosts
       value: "{{{destination.domain}}}"
       if: "ctx.destination?.domain != null"
+      tag: append_6f162628
   - append:
       field: related.user
       value: "{{{user.name}}}"
       if: "ctx.user?.name != null"
+      tag: append_c036eec2
   - set:
       field: network.direction
       value: "{{{network.direction}}}bound"
       if: ctx.network?.direction != null && ctx.network?.direction =~ /^(in|out)$/
+      tag: set_cb1e3125
   - remove:
       field:
         - _tmp
       ignore_failure: true
+      tag: remove_a82e20f2
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -223,6 +266,7 @@ processors:
           }
         }
         handleMap(ctx);
+      tag: script_a7f2c062
 on_failure:
   - remove:
       field:
@@ -233,4 +277,7 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

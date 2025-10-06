@@ -5,10 +5,18 @@ processors:
             field: message
             patterns:
                 - '\[%{NUMBER:snort.generator_id}:%{NUMBER:snort.signature_id}:%{NUMBER:snort.signature_revision}\] \(%{DATA:snort.preprocessor}\) %{GREEDYDATA:snort.alert_message} \[Classification: %{DATA:snort.classification}\] \[Priority: %{NONNEGINT:snort.priority:long}\] \{%{WORD:network.protocol}\} %{IP:source.address}:%{NUMBER:source.port:long} -> %{IP:destination.address}:%{NUMBER:destination.port:long}'
+            tag: grok_26af318e
     - lowercase:
         field: network.protocol
         ignore_missing: true
+        tag: lowercase_49872259
 on_failure:
     - set:
-          field: error.message
-          value: "{{{ _ingest.on_failure_message }}}"
+        field: error.message
+        value: >-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+    - set:
+        field: event.kind
+        value: pipeline_error

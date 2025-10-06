@@ -31,60 +31,75 @@ processors:
             PF_ICMP_TSTAMP_REPLY: "%{INT:pfsense.icmp.id},%{INT:pfsense.icmp.seq},%{INT:pfsense.icmp.otime},%{INT:pfsense.icmp.rtime},%{INT:pfsense.icmp.ttime}"
             PF_SPEC: "[+]"
             PF_TRANSPORT: "[0-9a-zA-Z-]+"
+        tag: grok_518a3bd8
     - set:
         field: event.kind
         value: event
+        tag: set_de80643c
     - append:
         field: event.type
         value: connection
         allow_duplicates: false
         if: ctx.source?.address != null && ctx.destination?.address != null
+        tag: append_6c6f283d
     - append:
         field: event.type
         value: denied
         allow_duplicates: false
         if: ctx.event.action == 'block'
+        tag: append_fcaacaaf
     - append:
         field: event.type
         value: allowed
         allow_duplicates: false
         if: ctx.event.action == 'pass'
+        tag: append_77f1e2f8
     - lowercase:
         field: network.transport
         ignore_missing: true
+        tag: lowercase_bc8c1c12
     - remove:
         field: ack_number
         ignore_missing: true
         if: ctx.ack_number == null || ctx.ack_number == ''
+        tag: remove_9a55d0f3
     - network_direction:
         internal_networks_field: _tmp.internal_networks
+        tag: network_direction_6d15af04
     - split:
         field: pfsense.tcp.options
         separator: ';'
         ignore_missing: true
         ignore_failure: true
+        tag: split_a6459ab2
     - date:
         field: pfsense.icmp.otime
         ignore_failure: true
         formats:
             - UNIX
             - UNIX_MS
+        tag: date_a8122a08
     - date:
         field: pfsense.icmp.rtime
         ignore_failure: true
         formats:
             - UNIX
             - UNIX_MS
+        tag: date_6f2f5bb7
     - date:
         field: pfsense.icmp.ttime
         ignore_failure: true
         formats:
             - UNIX
             - UNIX_MS
+        tag: date_c5011051
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
