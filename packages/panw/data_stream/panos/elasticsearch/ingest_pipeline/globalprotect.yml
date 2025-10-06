@@ -47,90 +47,111 @@ processors:
         - panw.panos.vsys_name
         - panw.panos.device_name
         - panw.panos.vsys_id
+      tag: csv_c6eb8780
 
   - set:
       field: source.ip
       copy_from: panw.panos.private.ip
       ignore_failure: true
+      tag: set_62fc14d1
   - set:
       field: source.ip
       value: '{{{_temp_.private_ipv6}}}'
       if: (ctx.source?.ip == null || ctx.source.ip == '0.0.0.0') && ctx._temp_?.private_ipv6 != null && ctx._temp_.private_ipv6 != '0.0.0.0'
+      tag: set_f89f108f
   - set:
       field: host.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
+      tag: set_0a8e1297
   - set:
       field: source.nat.ip
       copy_from: panw.panos.public.ip
       ignore_failure: true
+      tag: set_f2b74a0a
   - set:
       field: source.nat.ip
       value: '{{{_temp_.public_ipv6}}}'
       if: (ctx.source?.nat?.ip == null || ctx.source.nat.ip == '0.0.0.0') && ctx._temp_?.public_ipv6 != null && ctx._temp_.public_ipv6 != '0.0.0.0'
+      tag: set_4d5bd0a3
 
-# Set event.category.
+  # Set event.category.
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value:
         - network
+      tag: append_38e4ac56
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
       field: event.code
       copy_from: panw.panos.event.id
       ignore_failure: true
+      tag: set_00870669
   - set:
       field: event.duration
       copy_from: panw.panos.login_duration
       ignore_failure: true
+      tag: set_40774077
   - set:
       field: event.outcome
       copy_from: panw.panos.event.status
       ignore_failure: true
+      tag: set_930621d5
   - set:
       field: event.reason
       copy_from: panw.panos.event.reason
       ignore_failure: true
+      tag: set_cd62497b
   - set:
       field: host.id
       copy_from: panw.panos.host.id
       ignore_failure: true
+      tag: set_bb582a1b
   - lowercase:
       target_field: host.name
       field: panw.panos.machine.name
       if: ctx.panw?.panos?.machine?.name != null
+      tag: lowercase_e063c1d9
   - set:
       field: host.os.family
       copy_from: panw.panos.client.os
       ignore_failure: true
+      tag: set_6cb24086
   - set:
       field: host.os.full
       copy_from: panw.panos.client.os_version
       ignore_failure: true
+      tag: set_c1e7781e
   - set:
       field: observer.geo.name
       copy_from: panw.panos.location
       ignore_failure: true
+      tag: set_e16ad250
   - set:
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
+      tag: set_5bc96c94
   - set:
       field: panw.panos.source.region
       copy_from: source.geo.name
       ignore_failure: true
+      tag: set_d6a9349f
   - set:
       field: panw.panos.public.ipv6
       copy_from: _temp_.public_ipv6
       ignore_failure: true
+      tag: set_d01c618c
   - set:
       field: panw.panos.private.ipv6
       copy_from: _temp_.private_ipv6
       ignore_failure: true
+      tag: set_29215ffc
 
 on_failure:
   - set:
@@ -139,7 +160,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Global Protect pipeline:
-        error in [{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{ _ingest.on_failure_message }}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

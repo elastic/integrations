@@ -11,27 +11,33 @@ processors:
         - user.name
         - panw.panos.cmd
         - event.outcome
+      tag: csv_4cf41818
   - uppercase:
       field: panw.panos.type
       ignore_missing: true
-# Set event.kind & event.category field.
+      tag: uppercase_ec638369
+  # Set event.kind & event.category field.
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value:
         - configuration
+      tag: append_c8ab9fa2
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
+      tag: set_5bc96c94
   - set:
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
+      tag: set_c1b0f423
 
 on_failure:
   - set:
@@ -40,7 +46,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Audit pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

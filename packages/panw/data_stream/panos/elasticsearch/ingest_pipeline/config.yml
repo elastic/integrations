@@ -13,11 +13,13 @@ processors:
         - panw.panos.result
         - panw.panos.path
         - _temp_.check_field
+      tag: csv_e2e3e7de
   - convert:
       field: _temp_.check_field
       type: long
       ignore_missing: true
       ignore_failure: true
+      tag: convert_5a04d649
   - csv:
       field: message
       trim: true
@@ -84,56 +86,66 @@ processors:
         move: cmd-move
         rename: cmd-rename
         set: cmd-set
-      source:
-        ctx.event.action = params.get(ctx.panw.panos.cmd);
+      source: ctx.event.action = params.get(ctx.panw.panos.cmd);
+      tag: script_edc601fd
   - set:
       field: event.outcome
       value: success
       ignore_failure: true
       if: ctx.panw?.panos?.result == 'Succeeded'
+      tag: set_a8d719f3
   - set:
       field: event.outcome
       value: failure
       ignore_failure: true
       if: ctx.panw?.panos?.result == 'Failed'
+      tag: set_98bc1180
   - set:
       field: event.outcome
       value: unknown
       ignore_failure: true
       if: '!["Succeeded", "Failed"].contains(ctx.panw.panos.action)'
+      tag: set_332ce513
 
-# Set event.kind & event.category field.
+  # Set event.kind & event.category field.
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value:
         - configuration
+      tag: append_c8ab9fa2
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
       field: host.ip
       copy_from: panw.panos.host.ip
       ignore_failure: true
+      tag: set_ae377e8b
   - set:
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
+      tag: set_5bc96c94
 
-# Set event.outcome from panw.panos.result: documented allowed values are Submitted, Succeeded, Failed, and Unauthorized
+  # Set event.outcome from panw.panos.result: documented allowed values are Submitted, Succeeded, Failed, and Unauthorized
   - set:
       if: ctx.panw?.panos?.result == "Succeeded"
       field: event.outcome
       value: success
+      tag: set_057c7750
   - set:
       if: ctx.panw?.panos?.result == "Failed"
       field: event.outcome
       value: failure
+      tag: set_777b32fd
   - set:
       if: ctx.event?.outcome == null || ctx.event.outcome == ""
       field: event.outcome
       value: unknown
+      tag: set_bcf074fb
 
 on_failure:
   - set:
@@ -142,7 +154,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Config pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

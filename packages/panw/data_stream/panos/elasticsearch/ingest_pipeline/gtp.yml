@@ -93,86 +93,106 @@ processors:
         - panw.panos.application.container
         - panw.panos.application.is_saas
         - panw.panos.application.is_sanctioned
+      tag: csv_3e75d57f
 
-# Set event.kind & event.category field.
+  # Set event.kind & event.category field.
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value:
         - network
         - malware
+      tag: append_d281b781
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
       field: panw.panos.destination.location
       copy_from: _temp_.dstloc
       ignore_failure: true
+      tag: set_b4a8aa0b
   - set:
       field: destination.ip
       copy_from: panw.panos.destination.ip
       ignore_failure: true
+      tag: set_07b53525
   - set:
       field: destination.port
       copy_from: panw.panos.destination.port
       ignore_failure: true
+      tag: set_f95b8fc9
   - set:
       field: event.duration
       copy_from: panw.panos.elapsed_time
       ignore_failure: true
+      tag: set_417f5ac1
   - set:
       field: event.start
       copy_from: panw.panos.start_time
       ignore_failure: true
+      tag: set_d60e9301
   - set:
       field: log.level
       copy_from: panw.panos.severity
       ignore_failure: true
+      tag: set_ed3c9f74
   - set:
       field: network.application
       copy_from: panw.panos.network.application
       ignore_failure: true
+      tag: set_5ae7266b
   - set:
       field: network.transport
       copy_from: panw.panos.protocol
       ignore_failure: true
+      tag: set_860fbbd0
   - set:
       field: observer.egress.interface.name
       copy_from: panw.panos.outbound_interface
       ignore_failure: true
+      tag: set_a7cd428a
   - set:
       field: observer.egress.zone
       copy_from: panw.panos.destination.zone
       ignore_failure: true
+      tag: set_1c62484c
   - set:
       field: observer.ingress.interface.name
       copy_from: panw.panos.inbound_interface
       ignore_failure: true
+      tag: set_0cf960b9
   - set:
       field: observer.ingress.zone
       copy_from: panw.panos.source.zone
       ignore_failure: true
+      tag: set_99ce4399
   - set:
       field: rule.name
       copy_from: panw.panos.tunnel_inspection_rule
       ignore_failure: true
+      tag: set_e606f7b2
   - set:
       field: rule.uuid
       copy_from: panw.panos.rule_uuid
       ignore_failure: true
+      tag: set_5478ecb2
   - set:
       field: panw.panos.source.location
       copy_from: _temp_.srcloc
       ignore_failure: true
+      tag: set_3344cd6f
   - set:
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
+      tag: set_c1b0f423
   - set:
       field: source.port
       copy_from: panw.panos.source.port
       ignore_failure: true
+      tag: set_ed14489b
 
 on_failure:
   - set:
@@ -181,7 +201,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in GTP pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
