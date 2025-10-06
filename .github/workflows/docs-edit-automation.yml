@@ -14,6 +14,9 @@ jobs:
       github.actor != 'github-actions[bot]' &&
       (startsWith(github.head_ref, 'docs-enhancement/') || startsWith(github.head_ref, 'docs-bugfix/'))
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     
     steps:
       - name: Checkout repository
@@ -103,8 +106,8 @@ jobs:
           echo "packages_needing_update=$PACKAGES_NEEDING_UPDATE" >> $GITHUB_OUTPUT
           echo "packages_already_done=$PACKAGES_ALREADY_DONE" >> $GITHUB_OUTPUT
 
-      - name: Comment with exact commands
-        if: steps.analyze.outputs.packages_needing_update
+      - name: Comment with exact commands (same-repo PRs)
+        if: steps.analyze.outputs.packages_needing_update && github.event.pull_request.head.repo.fork == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -140,11 +143,38 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Show commands in summary (fork PRs)
+        if: steps.analyze.outputs.packages_needing_update && github.event.pull_request.head.repo.fork == true
+        run: |
+          PACKAGES="${{ steps.analyze.outputs.packages_needing_update }}"
+          CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
+          VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
+          CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
+          PR_NUMBER=${{ github.event.pull_request.number }}
+
+          PACKAGE_LIST=$(echo $PACKAGES | xargs)
+
+          if [ -z "$PACKAGE_LIST" ]; then
+            exit 0
+          fi
+
+          COMMENT="Please run these commands to update changelogs and build docs:\n\nfor pkg in ${PACKAGE_LIST}; do\n  cd packages/\$pkg\n  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP\n  elastic-package build\n  cd ../..\ndone\ngit add -u\ngit commit -m \"docs: update changelogs and build documentation\"\ngit push\n\nPrerequisite: \`go install github.com/elastic/elastic-package\`"
+
+          if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
+            COMMENT="$COMMENT\n\nNote: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
+          fi
+
+          {
+            echo "## 📋 Documentation follow-up"
+            echo
+            echo "$COMMENT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Add labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Please add the following labels — ${{ steps.analyze.outputs.label }},documentation"
+          echo "Please add the following labels — '${{ steps.analyze.outputs.label }}' and 'documentation'"
 
       - name: Handle edge cases
         if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '')
