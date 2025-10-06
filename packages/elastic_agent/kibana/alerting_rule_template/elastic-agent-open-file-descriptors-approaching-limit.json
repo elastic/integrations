@@ -1,22 +1,22 @@
 {
-  "id": "elastic-agent-excessive-memory-usage-rule",
+  "id": "elastic-agent-open-file-descriptors-approaching-limit",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[Elastic Agent] Excessive memory usage",
-    "tags": ["Elastic Agent", "Resource Consumption"],
+    "name": "[Elastic Agent] Open file descriptors approaching limit",
+    "tags": ["Elastic Agent", "Storage Pressure"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 5,
+      "timeWindowSize": 1,
       "timeWindowUnit": "m",
       "threshold": [0],
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-*\n| WHERE process.executable LIKE \"*elastic*agent*\"\n| STATS max_memory_per_process = MAX(system.process.memory.rss.pct * 100) BY agent.id, process.name\n| STATS total_memory_usage = SUM(max_memory_per_process) BY agent.id\n| WHERE total_memory_usage > 50"
+        "esql": "TS metrics-* \n| WHERE process.executable LIKE \"*elastic*agent*\"\n| STATS open_fds = MAX(system.process.fd.open), soft_limit_fds = MAX(system.process.fd.limit.soft) BY elastic_agent.id, process.name\n| EVAL pct_open_fds = (open_fds / soft_limit_fds) * 100\n| WHERE pct_open_fds > 80"
       },
       "aggType": "count",
       "groupBy": "row",

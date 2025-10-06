@@ -1,9 +1,9 @@
 {
-  "id": "elastic-agent-excessive-memory-usage-rule",
+  "id": "elastic-agent-unhealthy-status",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[Elastic Agent] Excessive memory usage",
-    "tags": ["Elastic Agent", "Resource Consumption"],
+    "name": "[Elastic Agent] Unhealthy status",
+    "tags": ["Elastic Agent"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -16,7 +16,7 @@
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-*\n| WHERE process.executable LIKE \"*elastic*agent*\"\n| STATS max_memory_per_process = MAX(system.process.memory.rss.pct * 100) BY agent.id, process.name\n| STATS total_memory_usage = SUM(max_memory_per_process) BY agent.id\n| WHERE total_memory_usage > 50"
+        "esql": "FROM logs-* \n| WHERE data_stream.dataset == \"elastic_agent.status_change\" and agentless == false and status == \"error\""
       },
       "aggType": "count",
       "groupBy": "row",
