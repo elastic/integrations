@@ -14,6 +14,65 @@ processors:
       field: message
       if: ctx.event?.original != null
       ignore_missing: true
+  # For Azure AKS logs
+  - rename:
+      field: kubernetes.audit
+      target_field: tmp.aks_audit
+      ignore_missing: true
+      if: >
+        ctx.kubernetes?.audit.category != null &&
+        ctx.kubernetes?.audit.operationName != null &&
+        ctx.kubernetes?.audit.resourceId != null &&
+        ctx.kubernetes?.audit.time != null
+      tag: rename_azure_aks_audit
+  - rename:
+      field: tmp.aks_audit.properties.log
+      target_field: kubernetes.audit
+      ignore_missing: true
+      tag: rename_azure_aks_audit_log
+  - rename:
+      field: tmp.aks_audit
+      target_field: kubernetes.audit.aks_metadata
+      ignore_missing: true
+      tag: rename_azure_aks_metadata
+  - date:
+      field: kubernetes.audit.aks_metadata.time
+      if: ctx.kubernetes?.audit?.aks_metadata?.time != null
+      tag: date_azure_aks_time
+      formats:
+        - ISO8601
+  - rename:
+      field: kubernetes.audit.aks_metadata.operationName
+      target_field: kubernetes.audit.aks_metadata.operation_name
+      ignore_missing: true
+      tag: rename_aks_metadata_operation_name
+  - rename:
+      field: kubernetes.audit.aks_metadata.resourceId
+      target_field: kubernetes.audit.aks_metadata.resource_id
+      ignore_missing: true
+      tag: rename_aks_metadata_resource_id
+  - rename:
+      field: kubernetes.audit.aks_metadata.serviceBuild
+      target_field: kubernetes.audit.aks_metadata.service_build
+      ignore_missing: true
+      tag: rename_aks_metadata_service_build
+  - rename:
+      field: kubernetes.audit.aks_metadata.properties.containerID
+      target_field: kubernetes.audit.aks_metadata.container_id
+      ignore_missing: true
+      tag: rename_aks_metadata_container_id
+  - rename:
+      field: kubernetes.audit.aks_metadata.properties.pod
+      target_field: kubernetes.audit.aks_metadata.pod
+      ignore_missing: true
+      tag: rename_aks_metadata_pod
+  - rename:
+      field: kubernetes.audit.aks_metadata.properties.stream
+      target_field: kubernetes.audit.aks_metadata.stream
+      ignore_missing: true
+      tag: rename_aks_metadata_stream
+
+  # General processors
   - remove:
       if: "ctx.kubernetes?.audit?.responseObject != null"
       field: ["kubernetes.audit.responseObject.metadata"]
