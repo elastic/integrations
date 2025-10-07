@@ -50,34 +50,34 @@ An example event for `activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-06T12:56:34.262Z",
+    "@timestamp": "2025-10-07T10:29:39.283Z",
     "agent": {
-        "ephemeral_id": "6047f303-57eb-4717-806b-d2c762c99d61",
-        "id": "93c5b387-e7b8-4b36-8a86-b73a6af3421d",
-        "name": "elastic-agent-43134",
+        "ephemeral_id": "2899cf43-154c-43bf-8e38-6dd8fcdddeb8",
+        "id": "ec7a2ba3-4ffe-4b9d-98cf-dce8eccd9455",
+        "name": "elastic-agent-76548",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "lumos.activity_logs",
-        "namespace": "62513",
+        "namespace": "18028",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "93c5b387-e7b8-4b36-8a86-b73a6af3421d",
+        "id": "ec7a2ba3-4ffe-4b9d-98cf-dce8eccd9455",
         "snapshot": false,
         "version": "8.19.4"
     },
     "event": {
         "action": "SOD_POLICY_DELETED",
         "agent_id_status": "verified",
-        "created": "2025-10-06T12:56:34.262Z",
+        "created": "2025-10-07T10:29:39.283Z",
         "dataset": "lumos.activity_logs",
         "id": "630b90cedc35a8a5f43361534099bee51e032f42dd442085fc76ef094d228f543c78fbe59c132df992cf71a6b8496504e8ebbc6020fbae1f34206676985412e7",
-        "ingested": "2025-10-06T12:56:37Z",
+        "ingested": "2025-10-07T10:29:42Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -87,16 +87,16 @@ An example event for `activity` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-43134",
+        "hostname": "elastic-agent-76548",
         "ip": [
-            "192.168.245.2",
-            "192.168.240.9"
+            "192.168.241.2",
+            "192.168.240.4"
         ],
         "mac": [
-            "C2-43-40-C2-6F-32",
-            "FA-AB-AF-C9-3E-FA"
+            "12-2A-F7-F2-2C-D7",
+            "DE-BF-74-CA-85-68"
         ],
-        "name": "elastic-agent-43134",
+        "name": "elastic-agent-76548",
         "os": {
             "kernel": "5.15.0-156-generic",
             "name": "Wolfi",
