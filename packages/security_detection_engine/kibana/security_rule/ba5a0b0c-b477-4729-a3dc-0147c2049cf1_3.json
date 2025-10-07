@@ -1,0 +1,154 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies role chaining activity. Role chaining is when you use one assumed role to assume a second role through the AWS CLI or API. While this a recognized functionality in AWS, role chaining can be abused for privilege escalation if the subsequent assumed role provides additional privileges. Role chaining can also be used as a persistence mechanism as each AssumeRole action results in a refreshed session token with a 1 hour maximum duration. This is a new terms rule that looks for the first occurance of one role (aws.cloudtrail.user_identity.session_context.session_issuer.arn) assuming another (aws.cloudtrail.resources.arn).",
+        "false_positives": [
+            "Role chaining can be used as an access control. Ensure that this behavior is not part of a legitimate operation before taking action."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-10d",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user_agent.original",
+                "source.ip",
+                "user.name",
+                "aws.cloudtrail.user_identity.session_context.session_issuer.arn",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "event.action",
+                "event.outcome",
+                "aws.cloudtrail.recipient_account_id",
+                "aws.cloudtrail.resources.account_id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS STS Role Chaining",
+        "new_terms_fields": [
+            "aws.cloudtrail.user_identity.session_context.session_issuer.arn",
+            "aws.cloudtrail.resources.arn"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS STS Role Chaining\n\nRole chaining occurs when a role assumed with temporary credentials (`AssumeRole`) is used to assume another role. While supported by AWS, chaining can increase risk of Privilege escalation, if the second role grants broader permissions; and Persistence, since each chained AssumeRole refreshes the session with up to 1-hour duration. This new terms rule triggers on the first observed combination of one role (`aws.cloudtrail.user_identity.session_context.session_issuer.arn`) assuming another (`aws.cloudtrail.resources.arn`). \n\n### Possible investigation steps\n\n- **Review Alert Context**: Investigate the alert, focusing on `aws.cloudtrail.user_identity.session_context.session_issuer.arn` (the calling role) and `aws.cloudtrail.resources.arn` (the target role).  \n- **Determine scope and intent.** Check `aws.cloudtrail.recipient_account_id` and `aws.cloudtrail.resources.account_id` fields to identify whether the chaining is Intra-account (within the same AWS account) or Cross-account (from another AWS account).  \n- **Check role privileges.** Compare policies of the calling and target roles. Determine if chaining increases permissions (for example, access to S3 data, IAM modifications, or admin privileges).  \n- **Correlate with other activity.** Look for related alerts or CloudTrail activity within \u00b130 minutes: policy changes, unusual S3 access, or use of sensitive APIs. Use `aws.cloudtrail.user_identity.arn` to track behavior from the same role session, use `aws.cloudtrail.user_identity.session_context.session_issuer.arn` to track broader behavior from the role itself.\n- **Validate legitimacy.** Contact the account or service owner to confirm if the chaining was expected (for example, automation pipelines or federated access flows).  \n- **Geography & source.** Review `cloud.region`, `source.address`, and other `geo` fields to assess if the activity originates from expected regions or network ranges.  \n\n### False positive analysis\n\n- **Expected role chaining.** Some organizations use role chaining as part of multi-account access strategies. Maintain an allowlist of known `issuer.arn` - `target.arn` pairs.  \n- **Automation and scheduled tasks.** CI/CD systems or monitoring tools may assume roles frequently. Validate by `userAgent` and historical behavior.  \n- **Test/dev environments.** Development accounts may generate experimental chaining patterns. Tune rules or exceptions to exclude low-risk accounts.  \n\n### Response and remediation\n\n**1. Immediate steps**\n- **Preserve evidence.** Export triggering CloudTrail events (\u00b130 minutes) into a restricted evidence bucket. Include session context, source IP, and user agent.  \n- **Notify owners.** Contact the owners of both roles to validate intent.  \n\n**2. Containment (if suspicious)**\n- **Revoke temporary credentials.** [Revoke Session Permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_revoke-sessions.html) if possible, or attach [AWSDenyALL policy](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWSDenyAll.html) to the originating role.  \n- **Restrict risky roles.** Apply least-privilege policies or temporarily deny `sts:AssumeRole` for suspicious principals.  \n- **Enable monitoring.** Ensure CloudTrail and GuardDuty are active in all regions to detect further chaining.  \n\n**3. Scope and hunt**\n- Search for additional AssumeRole activity by the same `issuer.arn` or `resources.arn` across other accounts and regions.  \n- Look for privilege escalation attempts (for example, IAM `AttachRolePolicy`, `UpdateAssumeRolePolicy`) or sensitive data access following the chain.  \n\n**4. Recovery & hardening**\n- Apply least privilege to all roles, limiting trust policies to only required principals.  \n- Enforce MFA where possible on AssumeRole operations.  \n- Periodically review role chaining patterns to validate necessity; remove unused or risky trust relationships.  \n- Document and tune new terms exceptions for known, legitimate chains.  \n\n### Additional information\n \n- [AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/): NIST-aligned templates for evidence, containment, eradication, recovery, post-incident. \n- [AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/): Practical response steps for account and IAM misuse scenarios\n- AWS IAM Best Practices: [AWS docs](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) for reducing risk from temporary credentials.",
+        "query": "    event.dataset : \"aws.cloudtrail\" and \n    event.provider : \"sts.amazonaws.com\" and \n    event.action : \"AssumeRole\" and \n    aws.cloudtrail.user_identity.type : \"AssumedRole\" and \n    event.outcome : \"success\" \n",
+        "references": [
+            "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html#id_roles_terms-and-concepts",
+            "https://www.uptycs.com/blog/detecting-anomalous-aws-sessions-temporary-credentials",
+            "https://hackingthe.cloud/aws/post_exploitation/role-chain-juggling/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ba5a0b0c-b477-4729-a3dc-0147c2049cf1",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS STS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 3
+    },
+    "id": "ba5a0b0c-b477-4729-a3dc-0147c2049cf1_3",
+    "type": "security-rule"
+}
