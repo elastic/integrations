@@ -126,20 +126,35 @@ jobs:
             exit 0
           fi
           
-          COMMENT="Please run these commands to update changelogs and build docs:\n\nfor pkg in ${PACKAGE_LIST}; do\n  cd packages/\$pkg\n  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP\n  elastic-package build\n  cd ../..\ndone\ngit add -u\ngit commit -m \"docs: update changelogs and build documentation\"\ngit push\n\nPrerequisite: \`go install github.com/elastic/elastic-package\`"
+          COMMENT_FILE=$(mktemp)
+          {
+            echo "Please run these commands to update changelogs and build docs:"
+            echo ""
+            echo '```bash'
+            echo "for pkg in ${PACKAGE_LIST}; do"
+            echo '  cd packages/$pkg'
+            echo "  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
+            echo "  elastic-package build"
+            echo "  cd ../.."
+            echo "done"
+            echo "git add -u"
+            echo "git commit -m \"docs: update changelogs and build documentation\""
+            echo "git push"
+            echo '```'
+            echo ""
+            echo "Prerequisite: \`go install github.com/elastic/elastic-package\`"
+          } > "$COMMENT_FILE"
 
-          # Add info about packages already updated
           if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
-            COMMENT="$COMMENT\n\nNote: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
+            echo "" >> "$COMMENT_FILE"
+            echo "Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`" >> "$COMMENT_FILE"
           fi
-          
-          if ! gh pr comment $PR_NUMBER --body "$COMMENT"; then
+
+          if ! gh pr comment "$PR_NUMBER" --body-file "$COMMENT_FILE"; then
             {
               echo "## 📋 Documentation follow-up"
               echo
-              echo "Unable to post a PR comment (likely due to fork permissions)."
-              echo
-              echo "$COMMENT"
+              cat "$COMMENT_FILE"
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -158,27 +173,39 @@ jobs:
             exit 0
           fi
 
-          COMMENT="Please run these commands to update changelogs and build docs:\n\nfor pkg in ${PACKAGE_LIST}; do\n  cd packages/\$pkg\n  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP\n  elastic-package build\n  cd ../..\ndone\ngit add -u\ngit commit -m \"docs: update changelogs and build documentation\"\ngit push\n\nPrerequisite: \`go install github.com/elastic/elastic-package\`"
-
-          if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
-            COMMENT="$COMMENT\n\nNote: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
-          fi
-
           {
             echo "## 📋 Documentation follow-up"
-            echo
-            echo "$COMMENT"
+            echo ""
+            echo "Please run these commands to update changelogs and build docs:"
+            echo ""
+            echo '```bash'
+            echo "for pkg in ${PACKAGE_LIST}; do"
+            echo '  cd packages/$pkg'
+            echo "  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
+            echo "  elastic-package build"
+            echo "  cd ../.."
+            echo "done"
+            echo "git add -u"
+            echo "git commit -m \"docs: update changelogs and build documentation\""
+            echo "git push"
+            echo '```'
+            echo ""
+            echo "Prerequisite: \`go install github.com/elastic/elastic-package\`"
+            if [ -n "${{ steps.analyze.outputs.packages_already_done }}" ]; then
+              echo ""
+              echo "Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Add labels
         run: |
-          echo "Please add the following labels — '${{ steps.analyze.outputs.label }}' and 'documentation'"
+          echo "Please add the following labels — '${{ steps.analyze.outputs.label }}' and 'documentation'" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Handle edge cases
         if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '')
         run: |
           if [ "${{ steps.analyze.outputs.no_docs_changes }}" = "true" ]; then
-            MESSAGE="No documentation files (\`packages/*/_dev/build/docs/README.md\`) were changed in this PR."
+            MESSAGE="No documentation files (packages/*/_dev/build/docs/README.md) were changed in this PR."
           else
             MESSAGE="All packages with documentation changes already have updated changelogs and manifests."
           fi
@@ -187,4 +214,4 @@ jobs:
 
           $MESSAGE
 
-          Your PR is ready for review! 🎉"
+          Your PR is ready for review! 🎉" >> "$GITHUB_STEP_SUMMARY"
