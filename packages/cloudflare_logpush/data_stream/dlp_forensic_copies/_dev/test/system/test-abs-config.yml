@@ -1,0 +1,18 @@
+deployer: docker
+service: azure-blob-storage-emulator
+input: azure-blob-storage
+vars:
+  account_name: devstoreaccount1
+  service_account_key: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+  storage_url: "http://{{Hostname}}:{{Port}}/devstoreaccount1/"
+data_stream:
+  vars:
+    number_of_workers: 1
+    poll: true
+    poll_interval: 15s
+    containers: |
+      - name: test-container
+    file_selectors: |
+      - regex: "dlp_forensic_copies"
+assert:
+  hit_count: 1
