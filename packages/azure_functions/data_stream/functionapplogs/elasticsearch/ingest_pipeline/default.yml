@@ -50,19 +50,20 @@ processors:
       if: "ctx.json?.properties instanceof String"
       ignore_failure: true
       description: 'Temporarily store the properties string.'
+  - script:
+      lang: painless
+      source: >
+        if (ctx?.json?.properties instanceof String) {
+          String fixed = ctx.json.properties.replace("'", "\"");
+          ctx.temp_properties = fixed;
+        }
+      ignore_failure: true
+      description: 'Replace single quotes with double quotes.'
   - remove:
       field: json.properties
       if: "ctx.temp_properties != null"
       ignore_missing: true
       description: 'Remove the properties string field.'
-  - script:
-      lang: painless
-      source: >-
-        if (ctx?.temp_properties != null) {
-            ctx.temp_properties = ctx.temp_properties.replace("'", "\"");
-        }
-      ignore_failure: true
-      description: 'Convert single quotes to double quotes in the properties string to make it valid JSON.'
   - json:
       field: temp_properties
       target_field: json.properties
@@ -141,6 +142,18 @@ processors:
   - rename:
       field: json.properties.exceptionMessage
       target_field: azure.function.exception_message
+      ignore_missing: true
+  - rename:
+      field: json.EventStampType
+      target_field: azure.EventStampType
+      ignore_missing: true
+  - rename:
+      field: json.EventPrimaryStampName
+      target_field: azure.EventPrimaryStampName
+      ignore_missing: true
+  - rename:
+      field: json.EventStampName
+      target_field: azure.EventStampName
       ignore_missing: true
   - rename:
       field: json.properties.exceptionType
