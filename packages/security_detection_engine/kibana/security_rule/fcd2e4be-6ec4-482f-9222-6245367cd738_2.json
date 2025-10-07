@@ -1,0 +1,139 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to register a new device in Microsoft Entra ID after OAuth authentication with authorization code grant. Adversaries may use OAuth phishing techniques to obtain an OAuth authorization code, which can then be exchanged for access and refresh tokens. This rule detects a sequence of events where a user principal authenticates via OAuth, followed by a device registration event, indicating potential misuse of the OAuth flow to establish persistence or access resources.",
+        "from": "now-30m",
+        "index": [
+            "filebeat-*",
+            "logs-o365.audit-*"
+        ],
+        "interval": "15m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Microsoft 365 OAuth Redirect to Device Registration for User Principal",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft 365 OAuth Redirect to Device Registration for User Principal\n\n### Possible investigation steps\n- Review the two UserLoggedIn logs to confirm that they come from different source.ip values and are associated to the same account.\n- Verify all events associated to the source.ip of the the second event in the sequence.\n- Investiguate the details of the new device that was added by reviewing the o365.audit.ModifiedProperties.Device_DisplayName.NewValue attribute.\n- Investigate the user account associated with the successful sign-in to determine if this activity aligns with expected behavior or if it appears suspicious.\n- Review the history of sign-ins for the user to identify any patterns or unusual access times that could suggest unauthorized access.\n- Assess the device from which the sign-in was attempted to ensure it is a recognized and authorized device for the user.\n\n### False positive analysis\n- Both authentcation events of the sequence are originatng from the same source.ip.\n- User using multiple devices and attempted to add a new device post an OAuth code authentication.\n\n### Response and remediation\n- Immediately revoke the compromised Primary Refresh Tokens (PRTs) to prevent further unauthorized access. This can be done through the Azure portal by navigating to the user's account and invalidating all active sessions.\n- Enforce a password reset for the affected user accounts to ensure that any credentials potentially compromised during the attack are no longer valid.\n- Implement additional Conditional Access policies that require device compliance checks and restrict access to trusted locations or devices only, to mitigate the risk of future PRT abuse.\n- Conduct a thorough review of the affected accounts' recent activity logs to identify any unauthorized actions or data access that may have occurred during the compromise.\n- Escalate the incident to the security operations team for further investigation and to determine if there are any broader implications or additional compromised accounts.\n- Enhance monitoring by configuring alerts for unusual sign-in patterns or device code authentication attempts from unexpected locations or devices, to improve early detection of similar threats.\n- Coordinate with the incident response team to perform a post-incident analysis and update the incident response plan with lessons learned from this event.",
+        "query": "sequence by related.user with maxspan=30m\n[authentication where event.action == \"UserLoggedIn\" and\n o365.audit.ExtendedProperties.RequestType == \"OAuth2:Authorize\" and o365.audit.ExtendedProperties.ResultStatusDetail == \"Redirect\" and\n o365.audit.UserType: (\"0\", \"2\", \"3\", \"10\")] // victim source.ip\n[authentication where event.action == \"UserLoggedIn\" and\n o365.audit.ExtendedProperties.RequestType == \"OAuth2:Token\" and o365.audit.ExtendedProperties.ResultStatusDetail == \"Success\"] // attacker source.ip to convert oauth code to token\n[web where event.dataset == \"o365.audit\" and event.action == \"Add registered users to device.\"] // user.name is captured in related.user\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow",
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ExtendedProperties.RequestType",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ExtendedProperties.ResultStatusDetail",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.UserType",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "related.user",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "fcd2e4be-6ec4-482f-9222-6245367cd738",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "fcd2e4be-6ec4-482f-9222-6245367cd738_2",
+    "type": "security-rule"
+}
