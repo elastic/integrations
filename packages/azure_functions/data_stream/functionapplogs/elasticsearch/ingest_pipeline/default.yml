@@ -44,6 +44,35 @@ processors:
       field: json.operationName
       target_field: azure.operation_name
       ignore_missing: true
+  - set:
+      field: temp_properties
+      value: '{{json.properties}}'
+      if: "ctx.json?.properties instanceof String"
+      ignore_failure: true
+      description: 'Temporarily store the properties string.'
+  - remove:
+      field: json.properties
+      if: "ctx.temp_properties != null"
+      ignore_missing: true
+      description: 'Remove the properties string field.'
+  - script:
+      lang: painless
+      source: >-
+        if (ctx?.temp_properties != null) {
+            ctx.temp_properties = ctx.temp_properties.replace("'", "\"");
+        }
+      ignore_failure: true
+      description: 'Convert single quotes to double quotes in the properties string to make it valid JSON.'
+  - json:
+      field: temp_properties
+      target_field: json.properties
+      if: "ctx.temp_properties != null"
+      ignore_failure: true
+      description: 'Parse the stringified JSON properties field into a nested object.'
+  - remove:
+      field: temp_properties
+      ignore_missing: true
+      description: 'Remove the temporary field after successful parsing.'
   - rename:
       field: json.properties.level
       target_field: azure.function.level
