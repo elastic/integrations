@@ -171,15 +171,11 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Add labels
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Please add the following labels — '${{ steps.analyze.outputs.label }}' and 'documentation'"
 
       - name: Handle edge cases
         if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ steps.analyze.outputs.no_docs_changes }}" = "true" ]; then
             MESSAGE="No documentation files (\`packages/*/_dev/build/docs/README.md\`) were changed in this PR."
