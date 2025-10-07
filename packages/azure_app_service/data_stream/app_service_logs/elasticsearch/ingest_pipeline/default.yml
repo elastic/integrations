@@ -28,14 +28,6 @@ processors:
       field: event.original
       target_field: azure.app_service
       ignore_failure: true
-  - set:
-      field: azure.app_service.properties_raw
-      value: "{{{azure.app_service.properties}}}"
-  - json:
-      field: azure.app_service.properties
-      target_field: azure.app_service.properties
-      if: 'ctx?.azure?.app_service?.properties instanceof String && ctx?.azure?.app_service?.properties?.startsWith("{")'
-      ignore_failure: true
   - date:
       field: azure.app_service.time
       target_field: '@timestamp'
@@ -65,9 +57,6 @@ processors:
       name: '{{ IngestPipeline "appservice-applogs-inner-pipeline" }}'
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
-  - remove:
-      field: azure.app_service.properties_raw
-      ignore_missing: true
 on_failure:
   - append:
       field: "error.message"
