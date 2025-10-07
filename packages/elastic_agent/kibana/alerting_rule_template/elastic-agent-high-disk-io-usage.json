@@ -16,7 +16,7 @@
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"system.diskio\"\n| STATS diskio_rate = SUM(RATE(system.diskio.io.time)) BY time_bucket = bucket(@timestamp,1min), elastic_agent.id, system.diskio.name\n| EVAL pct_diskio_per_min = (diskio_rate / 60000) * 100\n| WHERE pct_diskio_per_min > 80"
+        "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"system.diskio\"\n| STATS diskio_rate = MAX(RATE(system.diskio.io.time)) BY time_bucket = bucket(@timestamp,1min), elastic_agent.id, system.diskio.name\n| EVAL pct_diskio_per_min = (diskio_rate / 60000) * 100\n| WHERE pct_diskio_per_min > 80"
       },
       "aggType": "count",
       "groupBy": "row",
