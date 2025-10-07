@@ -4,25 +4,26 @@
   "attributes": {
     "name": "[Elastic Agent] High pipeline queue",
     "tags": ["Elastic Agent", "Pipeline and Queues"],
-    "ruleTypeId": "metrics.alert.threshold",
+    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
     },
     "params": {
-      "criteria": [
-        {
-          "aggType": "max",
-          "comparator": ">",
-          "threshold": [0.9],
-          "timeSize": 1,
-          "timeUnit": "m",
-          "metric": "beat.stats.libbeat.pipeline.queue.filled.pct"
-        }
-      ],
-      "sourceId": "default",
-      "alertOnNoData": true,
-      "alertOnGroupDisappear": false,
-      "groupBy": ["elastic_agent.id", "component.id"]
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"elastic_agent.*beat\"\n| STATS pipeline_queue_pct = MAX(beat.stats.libbeat.pipeline.queue.filled.pct) * 100 BY elastic_agent.id, process.name\n| WHERE pipeline_queue_pct >= 90"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
     },
     "alertDelay": {
       "active": 1

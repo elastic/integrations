@@ -4,27 +4,26 @@
   "attributes": {
     "name": "[Elastic Agent] CPU usage spike",
     "tags": ["Elastic Agent", "Resource Consumption"],
-    "ruleTypeId": "metrics.alert.threshold",
+    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
     },
     "params": {
-      "criteria": [
-        {
-          "aggType": "max",
-          "comparator": ">",
-          "threshold": [0.8],
-          "timeSize": 5,
-          "timeUnit": "m",
-          "metric": "system.process.cpu.total.pct"
-        }
-      ],
-      "sourceId": "default",
-      "alertOnNoData": false,
-      "alertOnGroupDisappear": false,
-      "filterQueryText": "process.executable.text : \"*elastic*agent*\"",
-      "filterQuery": "{\"bool\":{\"should\":[{\"match_phrase\":{\"process.executable.text\":\"*elastic-agent*\"}}],\"minimum_should_match\":1}}",
-      "groupBy": ["agent.id", "process.name"]
+      "searchType": "esqlQuery",
+      "timeWindowSize": 7,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-*\n  | WHERE process.executable LIKE \"*elastic*agent*\"\n  | STATS cpu_process_pct = MAX(system.process.cpu.total.pct) * 100\n        BY elastic_agent.id, process.name,\n          time_bucket = BUCKET(@timestamp, 1 minute)\n  // Count the 1 minute timebuckets that are above 80% by process and agent\n  | WHERE cpu_process_pct >= 80\n  | STATS count_above_threshold = COUNT(*)\n        BY elastic_agent.id, process.name\n  // Alert if there are 5 or more occurences\n  | WHERE count_above_threshold >= 5"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
     },
     "alertDelay": {
       "active": 1
