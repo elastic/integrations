@@ -17,6 +17,7 @@ inputs:
             token_url: https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token
           data_stream:
             dataset: o365.audit
+            type: logs
           interval: 3m
           program: |-
             state.with(
@@ -219,40 +220,47 @@ inputs:
                         "base": state.base,
                         "work": work.with(
                           {
-                            "sub": request(
-                              "POST",
-                              sprintf(
-                                "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
-                                [
-                                  state.url.trim_right("/"),
-                                  state.base.tenant_id,
-                                  {
-                                    "contentType": [work.curr_type],
-                                    "PublisherIdentifier": [state.base.tenant_id],
-                                  }.format_query(),
-                                ]
-                              )
-                            ).do_request().as(sub_resp, (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
-                              sub_resp.Body.decode_json().as(sub,
-                                {
-                                  "type": work.curr_type, // If we get an AF20024, sub.contentType will be absent.
-                                  "enabled": sub.?status == optional.of("enabled") || sub.?error.code == optional.of("AF20024"),
-                                }
-                              )
-                            :
+                            "sub": (has(state.?cursor.last_for) && work.curr_type.to_lower() in state.cursor.last_for) ?
+                              // We have started this content type before, so set "enabled: true".
                               {
-                                "error": {
-                                  "code": string(sub_resp.StatusCode),
-                                  "id": string(sub_resp.Status),
-                                  "message": "POST /activity/feed/subscriptions/start?contentType=" + work.curr_type + ": " + (
-                                    (size(sub_resp.Body) != 0) ?
-                                      string(sub_resp.Body)
-                                    :
-                                      string(sub_resp.Status) + " (" + string(sub_resp.StatusCode) + ")"
-                                  ),
-                                },
+                                "type": work.curr_type,
+                                "enabled": true,
                               }
-                            ),
+                            :
+                              request(
+                                "POST",
+                                sprintf(
+                                  "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
+                                  [
+                                    state.url.trim_right("/"),
+                                    state.base.tenant_id,
+                                    {
+                                      "contentType": [work.curr_type],
+                                      "PublisherIdentifier": [state.base.tenant_id],
+                                    }.format_query(),
+                                  ]
+                                )
+                              ).do_request().as(sub_resp, (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
+                                sub_resp.Body.decode_json().as(sub,
+                                  {
+                                    "type": work.curr_type, // If we get an AF20024, sub.contentType will be absent.
+                                    "enabled": sub.?status == optional.of("enabled") || sub.?error.code == optional.of("AF20024"),
+                                  }
+                                )
+                              :
+                                {
+                                  "error": {
+                                    "code": string(sub_resp.StatusCode),
+                                    "id": string(sub_resp.Status),
+                                    "message": "POST /activity/feed/subscriptions/start?contentType=" + work.curr_type + ": " + (
+                                      (size(sub_resp.Body) != 0) ?
+                                        string(sub_resp.Body)
+                                      :
+                                        string(sub_resp.Status) + " (" + string(sub_resp.StatusCode) + ")"
+                                    ),
+                                  },
+                                }
+                              ),
                           }
                         ),
                       }
