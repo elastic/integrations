@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a high number of failed S3 operations against a single bucket from a single source address within a short timeframe. This activity can indicate attempts to collect bucket objects or cause an increase in billing to an account via internal \"AccessDenied\" errors.",
+        "false_positives": [
+            "External account IDs or broken automation may trigger this rule. For AccessDenied (HTTP 403 Forbidden), S3 doesn't charge the bucket owner when the request is initiated outside of the bucket owner's individual AWS account or the bucket owner's AWS organization."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "source.address",
+                "aws.cloudtrail.user_identity.type",
+                "tls.client.server_name"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Bucket Enumeration or Brute Force",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS S3 Bucket Enumeration or Brute Force\n\nThis rule detects when many failed S3 operations (HTTP 403 AccessDenied) hit a single bucket from a single source address in a short window. This can indicate bucket name enumeration, object/key guessing, or brute-force style traffic intended to drive cost or probe for misconfigurations. 403 requests from outside the bucket owner\u2019s account/organization are not billed, but 4XX from inside the owner\u2019s account/org can still incur charges. Prioritize confirming who is making the calls and where they originate.\n\n#### Possible investigation steps\n\n- **Investigate in Timeline.** Investigate the alert in timeline (Take action -> Investigate in timeline) to retrieve and review all of the raw CloudTrail events that contributed to the threshold alert. Threshold alerts only display the grouped fields; Timeline provides a way to see individual event details such as request parameters, full error messages, and additional user context.  \n- **Confirm entity & target.** Note the rule\u2019s threshold and window. Identify the target bucket (`tls.client.server_name`) and the source (`source.address`). Verify the caller identity details via any available `aws.cloudtrail.user_identity` fields.  \n- **Actor & session context.** In CloudTrail events, pivot 15\u201330 minutes around the spike for the same `source.address` or principal. Determine if the source is:\n  - **External** to your account/organization (recon/cost DDoS risk is lower for you due to 2024 billing change).  \n  - **Internal** (same account/org)\u2014higher cost risk and possible misuse of internal automation.  \n- **Bucket posture snapshot.** Record S3 Block Public Access, Bucket Policy, ACLs, and whether Versioning/Object Lock are enabled. Capture any recent `PutBucketPolicy`, `PutPublicAccessBlock`, `PutBucketVersioning`, or lifecycle changes.  \n- **Blast radius.** Check for similar spikes to other buckets/regions, or parallel spikes from the same source. Review any GuardDuty S3 findings and AWS Config drift related to the bucket or principal.  \n- **Business context.** Contact the bucket/app owner. Validate whether a migration, scanner, or broken job could legitimately cause bursts.  \n\n### False positive analysis\n\n- **Expected jobs / broken automation.** Data movers, posture scanners, or failed credentials can generate 403 storms. Validate with `userAgent`, ARNs, change windows, and environment (dev/stage vs prod).  \n- **External probing.** Internet-origin enumeration often looks like uniform 403s from transient or cloud-provider IPs and typically has no business impact and no billing if outside your account/org. Tune thresholds or allowlist known scanners if appropriate.  \n\n### Response and remediation\n\n**1. Immediate, low-risk actions**\n- **Preserve evidence.** Export CloudTrail records (\u00b130 minutes) for the bucket and source address into an evidence bucket with restricted access.  \n- **Notify owners.** Inform the bucket/application owner and security lead; confirm any maintenance windows.  \n\n**2. Containment options**\n- **External-origin spikes:** Verify Block Public Access is enforced and bucket policies are locked down. Optionally apply a temporary deny-all bucket policy allowing only IR/admin roles while scoping.  \n- **Internal-origin spikes:** Identify the principal. Rotate access keys for IAM users, or restrict involved roles (temporary deny/SCP, remove risky policies). Pause broken jobs/pipelines until validated.  \n\n**3. Scope & hunting**\n- Review Timeline and CloudTrail for related events: `PutBucketPolicy`, `PutPublicAccessBlock`, `PutBucketVersioning`, lifecycle changes, unusual `PutObject`/`DeleteObject` volumes, or cross-account access.  \n- Check GuardDuty S3 and Config drift findings for signs of tampering or lateral movement.  \n\n**4. Recovery & hardening**\n- If data impact suspected: with Versioning, restore known-good versions; otherwise, recover from backups/replicas.  \n- Enable Versioning on critical buckets going forward; evaluate Object Lock legal hold if enabled.  \n- Ensure Block Public Access, least-privilege IAM policies, CloudTrail data events for S3, and GuardDuty protections are consistently enforced.  \n\n### Additional information\n\n- [AWS S3 billing for error responses](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ErrorCodeBilling.html): see latest AWS docs on which error codes are billed.  \n- [AWS announcement (Aug 2024)](https://aws.amazon.com/about-aws/whats-new/2024/05/amazon-s3-no-charge-http-error-codes/): 403s from outside the account/org are not billed.  \n- [AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/): NIST-aligned template for evidence, containment, eradication, recovery, post-incident. \n- [AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/): Practical response steps for account and bucket-level abuse.  \n",
+        "query": "  event.dataset: \"aws.cloudtrail\" and \n  event.provider : \"s3.amazonaws.com\" and \n  aws.cloudtrail.error_code : \"AccessDenied\" and \n  tls.client.server_name : * \n",
+        "references": [
+            "https://medium.com/@maciej.pocwierz/how-an-empty-s3-bucket-can-make-your-aws-bill-explode-934a383cb8b1",
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ErrorCodeBilling.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.error_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "tls.client.server_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "5f0234fd-7f21-42af-8391-511d5fd11d5c",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS S3",
+            "Resources: Investigation Guide",
+            "Use Case: Log Auditing",
+            "Tactic: Impact",
+            "Tactic: Discovery",
+            "Tactic: Collection"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1657",
+                        "name": "Financial Theft",
+                        "reference": "https://attack.mitre.org/techniques/T1657/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1619",
+                        "name": "Cloud Storage Object Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1619/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "event.id",
+                    "value": 40
+                }
+            ],
+            "field": [
+                "tls.client.server_name",
+                "source.address",
+                "aws.cloudtrail.user_identity.type"
+            ],
+            "value": 1
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 6
+    },
+    "id": "5f0234fd-7f21-42af-8391-511d5fd11d5c_6",
+    "type": "security-rule"
+}
