@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempt to perform session hijack via COM object registry modification by setting the RunAs value to Interactive User.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential RemoteMonologue Attack",
+        "note": "## Triage and analysis\n\n### Investigating Potential RemoteMonologue Attack\n\n\n### Possible investigation steps\n\n- Review the registry event logs to confirm the modification of the RunAs value in the specified registry paths, ensuring the change was not part of a legitimate administrative action.\n- Identify the user account and process responsible for the registry modification by examining the event logs for associated user and process information.\n- Check for any recent remote authentication attempts or sessions on the affected host to determine if this activity is associated with lateral movement or not.\n- Investigate the timeline of the registry change to correlate with any other suspicious activities or alerts on the host, such as the execution of unusual processes or network connections.\n\n### False positive analysis\n\n- Software updates or installations that modify COM settings.\n- Automated scripts or management tools that adjust COM configurations.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Modify the registry value back to its secure state, ensuring that \"RunAs\" value is not set to \"Interactive User\".\n- Conduct a thorough review of recent user activity and system logs to identify any unauthorized access or changes made during the period NLA was disabled.\n- Reset passwords for all accounts that have accessed the affected system to mitigate potential credential compromise.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring on the affected system and similar endpoints to detect any further attempts to disable NLA or other suspicious activities.\n",
+        "query": "registry where host.os.type == \"windows\" and event.action != \"deletion\" and\n  registry.value == \"RunAs\" and registry.data.strings : \"Interactive User\" and\n\n  not \n  (\n    (\n      process.executable : (\n        \"C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\Platform\\\\4.*\\\\MsMpEng.exe\",\n        \"C:\\\\Program Files\\\\Windows Defender\\\\MsMpEng.exe\"\n      ) and\n      registry.path : \"*\\\\SOFTWARE\\\\Classes\\\\AppID\\\\{1111A26D-EF95-4A45-9F55-21E52ADF9887}\\\\RunAs\"\n    ) or\n    (\n      process.executable : (\n        \"C:\\\\Program Files\\\\TeamViewer\\\\TeamViewer.exe\",\n        \"C:\\\\Program Files (x86)\\\\TeamViewer\\\\TeamViewer.exe\"\n      ) and\n      registry.path : \"*\\\\SOFTWARE\\\\Classes\\\\AppID\\\\{850A928D-5456-4865-BBE5-42635F1EBCA1}\\\\RunAs\"\n    ) or\n    (\n      process.executable : \"C:\\\\Windows\\\\System32\\\\svchost.exe\" and\n      registry.path : \"*\\\\S-1-*Classes\\\\AppID\\\\{D3E34B21-9D75-101A-8C3D-00AA001A1652}\\\\RunAs\"\n    ) or\n    (\n      process.executable : \"C:\\\\Windows\\\\System32\\\\SecurityHealthService.exe\" and\n      registry.path : (\n        \"*\\\\SOFTWARE\\\\Classes\\\\AppID\\\\{1D278EEF-5C38-4F2A-8C7D-D5C13B662567}\\\\RunAs\",\n        \"*\\\\SOFTWARE\\\\Classes\\\\AppID\\\\{7E55A26D-EF95-4A45-9F55-21E52ADF9878}\\\\RunAs\"\n      )\n    ) or\n    (\n      process.executable : \"C:\\\\Windows\\\\System32\\\\SecurityHealthService.exe\" and\n      registry.path : (\n        \"*\\\\SOFTWARE\\\\Classes\\\\AppID\\\\{1D278EEF-5C38-4F2A-8C7D-D5C13B662567}\\\\RunAs\",\n        \"*\\\\SOFTWARE\\\\Classes\\\\AppID\\\\{7E55A26D-EF95-4A45-9F55-21E52ADF9878}\\\\RunAs\"\n      )\n    ) or\n    registry.path : (\n      \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Office\\\\ClickToRun\\\\VREGISTRY_*\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Office\\\\ClickToRun\\\\VREGISTRY_*\"\n    ) or\n    (process.executable : \"C:\\\\windows\\\\System32\\\\msiexec.exe\" and ?user.id : \"S-1-5-18\")\n  )\n",
+        "references": [
+            "https://www.ibm.com/think/x-force/remotemonologue-weaponizing-dcom-ntlm-authentication-coercions#1",
+            "https://github.com/xforcered/RemoteMonologue"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c18975f5-676c-4091-b626-81e8938aa2ee",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    },
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 4
+    },
+    "id": "c18975f5-676c-4091-b626-81e8938aa2ee_4",
+    "type": "security-rule"
+}
