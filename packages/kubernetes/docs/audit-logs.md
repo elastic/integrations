@@ -134,6 +134,14 @@ An example event for `audit` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of input. | keyword |
+| kubernetes.audit.aks_metadata.category | The log category of the event being logged. Only for Azure AKS logs. | keyword |
+| kubernetes.audit.aks_metadata.container_id | The ID of the container that the event is logging. Only for Azure AKS logs. | keyword |
+| kubernetes.audit.aks_metadata.operation_name | The name of the operation that the event is logging. Only for Azure AKS logs. | keyword |
+| kubernetes.audit.aks_metadata.pod | The name of the pod that emitted the event. Only for Azure AKS logs. | keyword |
+| kubernetes.audit.aks_metadata.resource_id | The resource ID of the resource that emitted the event. Only for Azure AKS logs. | keyword |
+| kubernetes.audit.aks_metadata.service_build | The build of the service that the event is logging. Only for Azure AKS logs. | keyword |
+| kubernetes.audit.aks_metadata.stream |  | keyword |
+| kubernetes.audit.aks_metadata.time | The timestamp (UTC) of the event being logged. Only for Azure AKS logs. | date |
 | kubernetes.audit.annotations.authorization_k8s_io/decision |  | keyword |
 | kubernetes.audit.annotations.authorization_k8s_io/reason |  | text |
 | kubernetes.audit.annotations.pod-security_kubernetes_io/audit-violations |  | text |
