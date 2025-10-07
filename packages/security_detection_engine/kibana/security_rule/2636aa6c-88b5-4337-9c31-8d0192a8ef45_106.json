@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies changes to container access levels in Azure. Anonymous public read access to containers and blobs in Azure is a way to share data broadly, but can present a security risk if access to sensitive data is not managed judiciously.",
+        "false_positives": [
+            "Access level modifications may be done by a system or network administrator. Verify whether the username, hostname, and/or resource name should be making changes in your environment. Access level modifications from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.activitylogs-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure Blob Container Access Level Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Azure Blob Container Access Level Modification\n\nAzure Blob Storage is a service for storing large amounts of unstructured data, where access levels can be configured to control data visibility. Adversaries may exploit misconfigured access levels to gain unauthorized access to sensitive data. The detection rule monitors changes in container access settings, focusing on successful modifications, to identify potential security risks associated with unauthorized access level changes.\n\n### Possible investigation steps\n\n- Review the Azure activity logs to identify the specific storage account and container where the access level modification occurred, using the operation name \"MICROSOFT.STORAGE/STORAGEACCOUNTS/BLOBSERVICES/CONTAINERS/WRITE\".\n- Verify the identity of the user or service principal that performed the modification by examining the associated user information in the activity logs.\n- Check the timestamp of the modification to determine if it aligns with any known maintenance windows or authorized changes.\n- Investigate the previous access level settings of the container to assess the potential impact of the change, especially if it involved enabling anonymous public read access.\n- Correlate the event with any other recent suspicious activities or alerts in the Azure environment to identify potential patterns or coordinated actions.\n- Contact the owner of the storage account or relevant stakeholders to confirm whether the change was authorized and aligns with organizational policies.\n\n### False positive analysis\n\n- Routine administrative changes to container access levels by authorized personnel can trigger alerts. To manage this, create exceptions for specific user accounts or roles that regularly perform these tasks.\n- Automated scripts or tools used for managing storage configurations may cause false positives. Identify and exclude these scripts or tools from monitoring if they are verified as non-threatening.\n- Scheduled updates or maintenance activities that involve access level modifications can be mistaken for unauthorized changes. Document and schedule these activities to align with monitoring rules, allowing for temporary exclusions during these periods.\n- Changes made by trusted third-party services integrated with Azure Blob Storage might be flagged. Verify these services and exclude their operations from triggering alerts if they are deemed secure and necessary for business operations.\n\n### Response and remediation\n\n- Immediately revoke public read access to the affected Azure Blob container to prevent unauthorized data exposure.\n- Review the access logs to identify any unauthorized access or data exfiltration attempts during the period when the access level was modified.\n- Notify the security team and relevant stakeholders about the incident, providing details of the unauthorized access level change and any potential data exposure.\n- Conduct a thorough audit of all Azure Blob containers to ensure that access levels are configured according to the organization's security policies and that no other containers are misconfigured.\n- Implement additional monitoring and alerting for changes to access levels on Azure Blob containers to ensure rapid detection of any future unauthorized modifications.\n- If sensitive data was exposed, initiate a data breach response plan, including notifying affected parties and regulatory bodies as required by law.\n- Review and update access management policies and procedures to prevent recurrence, ensuring that only authorized personnel can modify container access levels.",
+        "query": "event.dataset:azure.activitylogs and azure.activitylogs.operation_name:\"MICROSOFT.STORAGE/STORAGEACCOUNTS/BLOBSERVICES/CONTAINERS/WRITE\" and event.outcome:(Success or success)\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-prevent"
+        ],
+        "related_integrations": [
+            {
+                "integration": "activitylogs",
+                "package": "azure",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "2636aa6c-88b5-4337-9c31-8d0192a8ef45",
+        "setup": "The Azure Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Azure",
+            "Use Case: Asset Visibility",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1619",
+                        "name": "Cloud Storage Object Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1619/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1222",
+                        "name": "File and Directory Permissions Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1222/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1537",
+                        "name": "Transfer Data to Cloud Account",
+                        "reference": "https://attack.mitre.org/techniques/T1537/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 106
+    },
+    "id": "2636aa6c-88b5-4337-9c31-8d0192a8ef45_106",
+    "type": "security-rule"
+}
