@@ -142,17 +142,17 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-21T17:25:30.600Z",
+    "@timestamp": "2022-10-21T17:25:36.969Z",
     "agent": {
-        "ephemeral_id": "1928ec83-7c3a-4ad0-9066-63dae084a2e1",
-        "id": "bd32c689-9c8b-44ea-ae34-b04c1bf3fd7d",
-        "name": "elastic-agent-75168",
+        "ephemeral_id": "11edfb81-b112-45ba-8f01-6e7483e450fa",
+        "id": "1c0788e9-492a-441e-acab-fc8c56281cf1",
+        "name": "elastic-agent-22259",
         "type": "filebeat",
-        "version": "8.15.3"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "namespace": "89156",
+        "namespace": "71098",
         "type": "logs"
     },
     "destination": {
@@ -170,25 +170,25 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bd32c689-9c8b-44ea-ae34-b04c1bf3fd7d",
+        "id": "1c0788e9-492a-441e-acab-fc8c56281cf1",
         "snapshot": false,
-        "version": "8.15.3"
+        "version": "8.19.4"
     },
     "email": {
         "attachments": {
             "file": {
-                "size": 22704
+                "size": 22761
             }
         },
-        "delivery_timestamp": "2022-10-21T17:25:30.6006882Z",
+        "delivery_timestamp": "2022-10-21T17:25:36.969376Z",
         "from": {
             "address": [
                 "noreply@azure.microsoft.com"
             ]
         },
-        "local_id": "a6f62809-5cda-4454-0962-08dab38940d6",
-        "message_id": "<GVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
-        "subject": "testmail 1",
+        "local_id": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
+        "message_id": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
+        "subject": "testmail 2",
         "to": {
             "address": [
                 "linus@contoso.com"
@@ -200,33 +200,38 @@ An example event for `log` looks as following:
         "category": [
             "email"
         ],
-        "created": "2024-11-04T20:39:54.654Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "ingested": "2024-11-04T20:39:57Z",
-        "original": "{\"EndDate\":\"2022-10-22T09:40:10Z\",\"FromIP\":\"40.107.23.81\",\"Index\":1,\"MessageId\":\"\\u003cGVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"MessageTraceId\":\"a6f62809-5cda-4454-0962-08dab38940d6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-10-21T17:25:30.6006882Z\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"Size\":22704,\"StartDate\":\"2022-10-21T09:40:10Z\",\"Status\":\"Delivered\",\"Subject\":\"testmail 1\",\"ToIP\":null}",
+        "ingested": "2025-10-06T13:13:06Z",
+        "original": "{\"Organization\":\"contoso.com\",\"MessageId\":\"\\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"Received\":\"2022-10-21T17:25:36.969376Z\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"RecipientAddress\":\"linus@contoso.com\",\"Subject\":\"testmail 2\",\"Status\":\"Delivered\",\"ToIP\":null,\"FromIP\":\"40.107.23.54\",\"Size\":22761,\"MessageTraceId\":\"a5e6dc0f-23df-4b20-d240-08dab38944a1\",\"StartDate\":\"2022-10-21T09:40:10Z\",\"EndDate\":\"2022-10-22T09:40:10Z\",\"Index\":0}",
         "outcome": "success",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/microsoft_exchange_online_message_trace_test.ndjson.log"
+        },
+        "offset": 0
     },
     "microsoft": {
         "online_message_trace": {
             "EndDate": "2022-10-22T09:40:10Z",
-            "FromIP": "40.107.23.81",
-            "Index": 1,
-            "MessageId": "<GVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
-            "MessageTraceId": "a6f62809-5cda-4454-0962-08dab38940d6",
+            "FromIP": "40.107.23.54",
+            "Index": 0,
+            "MessageId": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
+            "MessageTraceId": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
             "Organization": "contoso.com",
-            "Received": "2022-10-21T17:25:30.6006882Z",
+            "Received": "2022-10-21T17:25:36.969376Z",
             "RecipientAddress": "linus@contoso.com",
             "SenderAddress": "noreply@azure.microsoft.com",
-            "Size": 22704,
+            "Size": 22761,
             "StartDate": "2022-10-21T09:40:10Z",
             "Status": "Delivered",
-            "Subject": "testmail 1"
+            "Subject": "testmail 2"
         }
     },
     "related": {
@@ -239,7 +244,7 @@ An example event for `log` looks as following:
     },
     "source": {
         "domain": "azure.microsoft.com",
-        "ip": "40.107.23.81",
+        "ip": "40.107.23.54",
         "registered_domain": "microsoft.com",
         "subdomain": "azure",
         "top_level_domain": "com",
@@ -252,6 +257,7 @@ An example event for `log` looks as following:
     },
     "tags": [
         "preserve_original_event",
+        "microsoft-defender-endpoint",
         "forwarded"
     ]
 }

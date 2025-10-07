@@ -15,8 +15,9 @@ request.transforms:
 response.pagination:
   - set:
       target: url.value
-      value: '{{api_url}}[[.last_response.body.links.next]]'
+      value: '[[if index .last_response.body.links "next"]]{{api_url}}[[.last_response.body.links.next]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 
 response.split:
   target: body.items

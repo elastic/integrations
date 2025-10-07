@@ -73,8 +73,9 @@ response.pagination:
       fail_on_template_error: true
   - set:
       target: url.params.$skiptoken
-      value: '[[if (lt (len .last_response.body.value) (toInt {{batch_size}}))]][[.last_response.terminate_pagination]][[else]][[(add (toInt (.last_response.url.params.Get "$skiptoken")) (toInt {{batch_size}}))]][[end]]'
+      value: '[[if (ge (len .last_response.body.value) (toInt {{batch_size}}))]][[(add (toInt (.last_response.url.params.Get "$skiptoken")) (toInt {{batch_size}}))]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   last_execution_datetime:
     # Expects `$filter` param to be in the format of:
