@@ -1,0 +1,205 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  initial_interval: {{initial_interval}}
+  offense_batch_size: {{batch_size}}
+  rule_batch_size: 10000
+  auth_token: {{auth_token}}
+redact:
+  fields:
+    - auth_token
+program: |
+  state.with_update({"rules_dict": dyn({})}).as(state, (
+    state.?want_more.orValue(false) ?
+      state.start_time
+    :
+      state.?cursor.last_timestamp.orValue(string(int(now - duration(state.initial_interval))*1000))
+  ).as(start_time,
+    state.?is_rules_fetched.orValue(false) ?
+      {
+        "rules_dict": state.rules_dict,
+        "next": state.next,
+        "is_rules_fetched": state.is_rules_fetched,
+        "start_time": start_time
+      }
+    :
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/api/analytics/rules"
+        ).with({
+          "Header": {
+            "SEC": [state.auth_token],
+            "Range": [
+              "items=" + string(int(state.?next.rule_offset.orValue(0))) + "-" + string(int(state.rule_batch_size) + int(state.?next.rule_offset.orValue(0)) - 1)
+            ]
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+
+            // Empty event placeholder to ensure next rules fetch
+            "events": [{"message": "empty_events_placeholder"}],
+
+            // Build rules dictionary
+            "rules_dict": state.rules_dict.with(
+              zip(body.collate("id").map(id,string(id)),body)
+            ),
+            "next": {
+              ?"rule_offset": (body.size() > 0 ?
+                optional.of(int(state.?next.rule_offset.orValue(0)) + int(state.rule_batch_size))
+              :
+                optional.none()
+              )
+            },
+            "start_time": start_time,
+            "is_rules_fetched": body.size() == 0,
+            "want_more": true
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/api/analytics/rules: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "next": {},
+            "rules_dict": {},
+            "is_rules_fetched": false,
+            "want_more": false,
+          }
+        )
+      )
+  ).as(rules_data,
+    !rules_data.?is_rules_fetched.orValue(false) ?
+      rules_data
+    :
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/api/siem/offenses?" + {
+            "filter": ["last_persisted_time>=" + rules_data.start_time]
+          }.format_query()
+        ).with({
+          "Header": {
+            "SEC": [state.auth_token],
+            "Range": [
+              "items=" + string(int(state.?next.offense_offset.orValue(0))) + "-" + string(int(state.offense_batch_size) + int(state.?next.offense_offset.orValue(0)) - 1)
+            ]
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body, {
+
+            // Enrich offenses with rule details
+            "events": (body.size() > 0 ?
+              dyn(body.map(offense, {
+                "message": offense.with({
+                  ?"rules": (has(offense.rules) && offense.rules != null) ?
+                    optional.of(offense.rules.map(rule,
+                      state.rules_dict[string(rule.id)].with({
+                        "rule_type": state.rules_dict[string(rule.id)].type,
+                        "type": rule.type
+                      })
+                    ))
+                  :
+                    optional.none()
+                }).encode_json()
+              }))
+            :
+            // Added placeholder to ensure cursor gets stored
+            // This will be dropped later in the pipeline
+              dyn([{"message": "empty_events_placeholder"}])
+            ),
+            "next": {
+              ?"offense_offset": (body.size() > 0 ?
+                optional.of(int(state.?next.offense_offset.orValue(0)) + int(state.offense_batch_size))
+              :
+                optional.none()
+              ),
+              ?"max_offense_time": (body.size() > 0 ?
+                (has(state.?next.max_offense_time) ?
+                  optional.of(
+                    max([
+                      state.next.max_offense_time,
+                      string(int(body.map(e, e.last_persisted_time).max()))
+                    ])
+                  )
+                :
+                  optional.of(string(int(body.map(e, e.last_persisted_time).max())))
+                )
+              :
+                state.?next.max_offense_time
+              )
+            },
+            "cursor": {
+              // Updating cursor on the last page because data is not returned in sorted order
+              ?"last_timestamp": (body.size() == 0 && has(state.?next.max_offense_time) ?
+                state.?next.max_offense_time
+              :
+                state.?cursor.last_timestamp
+              )
+            },
+            "start_time": rules_data.start_time,
+            "is_rules_fetched": body.size() > 0,
+            "want_more": body.size() > 0,
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/api/siem/offenses: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "next": {},
+            "rules_dict": {},
+            "is_rules_fetched": false,
+            "want_more": false
+          }
+        )
+      )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
