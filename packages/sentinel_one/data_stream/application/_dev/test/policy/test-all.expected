@@ -32,6 +32,7 @@ inputs:
                     state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory?" + {
                       "skipCount": ["true"],
                       "limit": [string(state.batch_size)],
+                      ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
                       ?"cursor": state.?next_page.token.optMap(v, [v]),
                     }.format_query()
                   ).with(
@@ -56,7 +57,7 @@ inputs:
                         "error": {
                           "code": string(resp.StatusCode),
                           "id": string(resp.Status),
-                          "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory" + (
+                          "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory: " + (
                             (size(resp.Body) != 0) ?
                               string(resp.Body)
                             :
@@ -81,6 +82,7 @@ inputs:
                       "applicationName": [string(state.worklist.data[0].applicationName)],
                       "applicationVendor": [string(state.worklist.data[0].applicationVendor)],
                       "limit": [string(state.batch_size)],
+                      ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
                       ?"cursor": state.?next_chain.token.optMap(v, [v]),
                     }.format_query()
                   ).with(
@@ -115,7 +117,7 @@ inputs:
                         "error": {
                           "code": string(resp.StatusCode),
                           "id": string(resp.Status),
-                          "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints" + (
+                          "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints: " + (
                             (size(resp.Body) != 0) ?
                               string(resp.Body)
                             :
@@ -226,6 +228,7 @@ inputs:
           state:
             api_token: ${SECRET_0}
             batch_size: 100
+            site_ids: "123"
           tags:
             - preserve_original_event
             - preserve_duplicate_custom_fields
