@@ -19,7 +19,7 @@
         "esql": "TS metrics-*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS events_dropped_rate = max(rate(beat.stats.libbeat.pipeline.events.dropped)), pipeline_acked_rate = max(rate(beat.stats.libbeat.pipeline.queue.acked)) BY time_bucket = bucket(@timestamp,5minute), elastic_agent.id, component.id\n| EVAL percent_drop_rate = (events_dropped_rate / pipeline_acked_rate)\n| WHERE percent_drop_rate >= 0.05\n\n"
       },
       "aggType": "count",
-      "groupBy": "all",
+      "groupBy": "row",
       "termSize": 5,
       "sourceFields": [],
       "timeField": "@timestamp",
