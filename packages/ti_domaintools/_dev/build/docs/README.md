@@ -8,6 +8,8 @@ Summary of Available Feeds:
 - `Newly Observed Domains (NOD)`: Apex-level domains (e.g. example.com but not <www.example.com>) that we observe for the first time, and have not observed previously with our global DNS sensor network.
 - `Domain Discovery`: New domains as they are either discovered in domain registration information, observed by our global sensor network, or reported by trusted third parties.
 - `Domain RDAP`: Changes to global domain registration information, populated by the Registration Data Access Protocol (RDAP). Compliments the 5-Minute WHOIS Feed as registries and registrars switch from Whois to RDAP.
+- `Domain Risk`: Real-time updates to Domain Risk Scores for apex domains, regardless of observed traffic.
+- `Domain Hotlist`: Domains with high Domain Risk Scores that have also been active within 24 hours.
 
 With over 300,000 new domains observed daily, the feed empowers security teams to identify and block potentially malicious domains before they can be weaponized.
 Ideal for threat hunting, phishing prevention, and brand protection.
@@ -25,6 +27,8 @@ Log data streams collected by the DomainTools integration include the following 
 - `Newly Active Domains (NAD)`
 - `Domain Discovery`
 - `Domain RDAP`
+- `Domain Risk`
+- `Domain Hotlist`
 
 ## Requirements
 
@@ -54,7 +58,7 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 
 ### Newly Active Domains (NAD) Feed
 
-The `nod_feed` data stream provides events from [DomainTools Newly Active Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
+The `nad_feed` data stream provides events from [DomainTools Newly Active Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
@@ -84,3 +88,25 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 {{event "domainrdap_feed"}}
 
 {{fields "domainrdap_feed"}}
+
+### Domain Risk Feed
+
+The `domainrisk_feed` data stream provides events from [DomainTools Domain Risk](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
+
+#### Example
+
+{{event "domainrisk_feed"}}
+
+{{fields "domainrisk_feed"}}
+
+### Domain Hotlist Feed
+
+The `domainhotlist_feed` data stream provides events from [DomainTools Domain Hotlist](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
+
+#### Example
+
+{{event "domainhotlist_feed"}}
+
+{{fields "domainhotlist_feed"}}
