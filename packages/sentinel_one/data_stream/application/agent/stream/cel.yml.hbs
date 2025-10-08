@@ -17,6 +17,9 @@ resource.url: {{url}}
 state:
   api_token: {{api_token}}
   batch_size: {{batch_size}}
+{{#if site_ids }}
+  site_ids: !!str {{site_ids}}
+{{/if}}
 redact:
   fields:
     - api_token
@@ -31,6 +34,7 @@ program: |-
           state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory?" + {
             "skipCount": ["true"],
             "limit": [string(state.batch_size)],
+            ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
             ?"cursor": state.?next_page.token.optMap(v, [v]),
           }.format_query()
         ).with(
@@ -55,7 +59,7 @@ program: |-
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory" + (
+                "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory: " + (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
@@ -80,6 +84,7 @@ program: |-
             "applicationName": [string(state.worklist.data[0].applicationName)],
             "applicationVendor": [string(state.worklist.data[0].applicationVendor)],
             "limit": [string(state.batch_size)],
+            ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
             ?"cursor": state.?next_chain.token.optMap(v, [v]),
           }.format_query()
         ).with(
@@ -114,7 +119,7 @@ program: |-
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints" + (
+                "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints: " + (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
