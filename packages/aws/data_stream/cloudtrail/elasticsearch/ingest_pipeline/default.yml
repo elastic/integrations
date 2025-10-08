@@ -776,15 +776,20 @@ processors:
   - rename:
       field: json.userIdentity.type
       target_field: aws.cloudtrail.user_identity.type
-      ignore_failure: true
+      ignore_missing: true
+      tag: rename_user_identity_type
   - rename:
       field: json.userIdentity.userName
       target_field: user.name
-      ignore_failure: true
+      ignore_missing: true
+      if: ctx.aws?.cloudtrail?.user_identity?.type == 'IAMUser'
+      tag: rename_user_identity_user_name_iam_user
   - rename:
       field: json.userIdentity.principalId
       target_field: user.id
-      ignore_failure: true
+      ignore_missing: true
+      if: ctx.aws?.cloudtrail?.user_identity?.type == 'IAMUser'
+      tag: rename_user_identity_principal_id
   - rename:
       field: json.userIdentity.arn
       target_field: aws.cloudtrail.user_identity.arn
@@ -814,12 +819,29 @@ processors:
   # userIdentity.sessionIssuer.userName is only set with assumed roles.
   - rename:
       field: json.userIdentity.sessionContext.sessionIssuer.userName
-      target_field: user.name
-      ignore_failure: true
+      target_field: user.effective.name
+      ignore_missing: true
+      if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole'
+      tag: rename_user_effective_name_assumed_role
   - rename:
       field: json.userIdentity.sessionContext.sessionIssuer.principalId
-      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.principal_id
-      ignore_failure: true
+      target_field: user.effective.id
+      ignore_missing: true
+      if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole'
+      tag: rename_user_effective_id_assumed_role
+  - grok:
+      field: aws.cloudtrail.user_identity.arn
+      patterns:
+        - "arn:aws:sts:.*/%{GREEDYDATA:user.name}$"
+      ignore_missing: true
+      if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' && ctx.aws?.cloudtrail?.user_identity?.arn != null
+      tag: extract_user_name_from_arn
+  - rename:
+      field: json.userIdentity.onBehalfOf.userId
+      target_field: user.id
+      ignore_missing: true
+      if: ctx.aws?.cloudtrail?.user_identity?.type == 'IdentityCenterUser' && ctx.user?.id == null
+      tag: rename_user_id_identity_center_user
   - rename:
       field: json.userIdentity.sessionContext.sessionIssuer.arn
       target_field: aws.cloudtrail.user_identity.session_context.session_issuer.arn
@@ -1731,6 +1753,19 @@ processors:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+
+  - append:
+      field: related.user
+      value: '{{{user.effective.id}}}'
+      if: ctx.user?.effective?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.effective.name}}}'
+      if: ctx.user?.effective?.name != null
       allow_duplicates: false
       ignore_failure: true
 
