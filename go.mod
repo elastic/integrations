@@ -253,4 +253,4 @@ require (
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
-replace github.com/elastic/package-spec/v3 => github.com/teresaromero/package-spec/v3 v3.0.0-20251007133136-7b474a78858c
+replace github.com/elastic/package-spec/v3 => github.com/teresaromero/package-spec/v3 v3.0.0-20251008083639-818eff5c1a81
