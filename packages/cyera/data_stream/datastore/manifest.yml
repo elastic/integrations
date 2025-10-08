@@ -1,25 +1,33 @@
-title: Classification
+title: Datastore
 type: logs
-ilm_policy: logs-cyera.classification-default_policy
+ilm_policy: logs-cyera.datastore-default_policy
 streams:
   - input: cel
-    title: Classification logs
-    description: Collect Classification logs from Cyera.
+    title: Datastore logs
+    description: Collect Datastore logs from Cyera.
     template_path: cel.yml.hbs
     vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the Datastore logs from Cyera API. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
       - name: interval
         type: text
         title: Interval
         description: Duration between requests to the Cyera API. Supported units for this parameter are h/m/s.
-        default: 24h
+        default: 5m
         multi: false
         required: true
         show_user: true
       - name: batch_size
         type: integer
         title: Batch Size
-        description: Batch size for the response of the Cyera API. The batch size can range from a minimum of 1 to a maximum of 100.
-        default: 100
+        description: Batch size for the response of the Cyera API. The batch size can range from a minimum of 1 to a maximum of 1000.
+        default: 1000
         multi: false
         required: true
         show_user: true
@@ -52,7 +60,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - cyera-classification
+          - cyera-datastore
       - name: preserve_original_event
         required: true
         show_user: true
@@ -65,7 +73,7 @@ streams:
         required: true
         show_user: false
         title: Preserve duplicate custom fields
-        description: Preserve cyera.classification fields that were copied to Elastic Common Schema (ECS) fields.
+        description: Preserve cyera.datastore fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
         default: false
