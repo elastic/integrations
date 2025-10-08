@@ -17,16 +17,12 @@ request.transforms:
   - set:
       target: header.Authorization
       value: 'Basic [[base64EncodeNoPad "{{account_id}}" ":" "{{api_key}}"]]'
-{{#if severities}}
   - set:
       target: url.params.severity
       value: '[[join "{{severities}}" ","]]'
-{{/if}}
-{{#if types}}
   - set:
       target: url.params.alertType
       value: '[[join "{{types}}" ","]]'
-{{/if}}
   - set:
       target: url.params.isClosed
       value: '{{fetch_closed_alerts}}'
@@ -55,8 +51,7 @@ chain:
       replace: $[:]
 cursor:
   alert_lastUpdateDate:
-    value: '[[if index .last_response.body "UpdateDate"]][[.last_response.body.UpdateDate]][[end]]'
-    ignore_empty_value: true
+    value: '[[.last_response.body.UpdateDate]]'
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
