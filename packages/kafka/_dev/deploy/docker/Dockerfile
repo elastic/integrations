@@ -1,15 +1,38 @@
-FROM apache/kafka:4.0.0
+FROM debian:bookworm
 
 USER root
 
-# Copy jolokia agent jar from host into container
-COPY jolokia/jolokia-jvm-agent.jar /opt/jolokia/jolokia-jvm.jar
+ARG KAFKA_VERSION
 
-# Copy startup script
-COPY startup.sh /opt/startup.sh
-COPY healthcheck.sh /opt/healthcheck.sh
-RUN chmod +x /opt/startup.sh /opt/healthcheck.sh && chown -R 1001:0 /opt
+ENV KAFKA_HOME=/kafka
+
+ENV KAFKA_LOGS_DIR="/kafka-logs"
+ENV _JAVA_OPTIONS="-Djava.net.preferIPv4Stack=true"
+ENV TERM=linux
+
+RUN apt-get update && apt-get upgrade -y && apt-get install -y curl openjdk-17-jre-headless netcat-openbsd dnsutils uuid-runtime procps
+
+RUN mkdir -p ${KAFKA_LOGS_DIR} && mkdir -p ${KAFKA_HOME} && \
+    curl -J -L -s -f -o - https://github.com/kadwanev/retry/releases/download/1.0.1/retry-1.0.1.tar.gz | tar xfz - -C /usr/local/bin && \
+    retry --min 1 --max 180 -- curl -J -L -s -f --show-error -o $INSTALL_DIR/kafka.tgz \
+        "https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz" && \
+    tar xzf ${INSTALL_DIR}/kafka.tgz -C ${KAFKA_HOME} --strip-components 1
+
+RUN retry --min 1 --max 180 -- curl -J -L -s -f --show-error -o /opt/jolokia-jvm-agent.jar \
+    http://search.maven.org/remotecontent\?filepath\=org/jolokia/jolokia-agent-jvm/2.3.0/jolokia-agent-jvm-2.3.0-javaagent.jar
+
+ADD startup.sh /startup.sh
+ADD healthcheck.sh /healthcheck.sh
+
+ADD server.properties ${KAFKA_HOME}/config/server_custom.properties
+
+RUN chmod +x /startup.sh /healthcheck.sh && chown -R 1001:0 /opt ${KAFKA_HOME} ${KAFKA_LOGS_DIR}
+
+EXPOSE 9092
+EXPOSE 8780
+EXPOSE 8775
+EXPOSE 8774
 
 USER 1001
 
-ENTRYPOINT ["/opt/startup.sh"]
+ENTRYPOINT ["/startup.sh"]

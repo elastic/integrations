@@ -4,37 +4,21 @@ services:
       default:
         aliases:
           - svc-kafka
-    build: .
+    build:
+      context: .
+      args:
+        KAFKA_VERSION: ${KAFKA_VERSION:-4.0.0}
     ports:
       - "9092:9092"
       - "9093:9093"
-      - "9999:9999"
       - "8780:8780"
       - "8774:8774"
       - "8775:8775"
     healthcheck:
-      test: [ "CMD-SHELL", "/opt/healthcheck.sh" ]
+      test: [ "CMD-SHELL", "/healthcheck.sh" ]
       interval: 15s
       timeout: 10s
       retries: 5
       start_period: 60s
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-      KAFKA_JMX_PORT: 9999
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_JMX_OPTS: >
-        -Dcom.sun.management.jmxremote
-        -Dcom.sun.management.jmxremote.local.only=false
-        -Dcom.sun.management.jmxremote.authenticate=false
-        -Dcom.sun.management.jmxremote.ssl=false
-        -Djava.rmi.server.hostname=localhost
-        -Dcom.sun.management.jmxremote.port=9999
-        -Dcom.sun.management.jmxremote.rmi.port=9999
     volumes:
-      - ./server.properties:/opt/kafka/config/kraft/server.properties
+      - ./server.properties:/kafka/config/server_custom.properties
