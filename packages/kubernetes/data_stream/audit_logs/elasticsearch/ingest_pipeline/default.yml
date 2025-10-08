@@ -25,10 +25,18 @@ processors:
         ctx.kubernetes?.audit.resourceId != null &&
         ctx.kubernetes?.audit.time != null
       tag: rename_azure_aks_audit
+  - json:
+      field: tmp.aks_audit.properties.log
+      target_field: kubernetes.audit
+      if: ctx.tmp?.aks_audit?.properties?.log instanceof String && ctx.kubernetes?.audit == null
+      tag: json_azure_aks_audit_log
+  - remove:
+      field: tmp.aks_audit.properties.log
+      ignore_missing: true
   - rename:
       field: tmp.aks_audit.properties.log
       target_field: kubernetes.audit
-      ignore_missing: true
+      if: ctx.tmp?.aks_audit?.properties?.log != null && ctx.kubernetes?.audit == null
       tag: rename_azure_aks_audit_log
   - rename:
       field: tmp.aks_audit
