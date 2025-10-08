@@ -12,25 +12,11 @@ You can use the Salesforce integration for:
 
 - **Proactive alerts**: Set up alerts to minimize Mean Time to Detection (MTTD) and Mean Time to Resolution (MTTR) by referencing relevant logs during troubleshooting.
 
-## Data streams
+### How it works
 
-The Salesforce integration collects the following data streams:
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real‑Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username‑Password flow. Collection is interval‑based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
 
-- `login`: Collects information related to users who log in to Salesforce.
-- `logout`: Collects information related to users who log out from Salesforce.
-- `apex`: Collects information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, and so on.
-- `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
-
-The Salesforce integration collects the following events using the Salesforce REST API:
-
-- [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm)
-- [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
-- [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm)
-- [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
-- [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm)
-- [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
-
-## Compatibility
+### Compatibility
 
 This integration has been tested against the Salesforce Winter '26 (v65.0). The minimum supported version is v46.0.
 
@@ -66,7 +52,23 @@ To determine your Salesforce instance version, use one of the following methods:
 
 The last entry in the list indicates the current version of your Salesforce instance. In this example, the current version is `Winter '26 (v65.0)`.
 
-## Requirements
+## What data does this integration collect?
+
+The Salesforce integration collects the following data streams:
+
+- `login`: Collects information related to users who log in to Salesforce.
+- `logout`: Collects information related to users who log out from Salesforce.
+- `apex`: Collects information about various Apex events such as `ApexCallout`, `ApexExecution`, `ApexRestApi`, `ApexSoap`, `ApexTrigger`, and `ExternalCustomApexCallout`.
+- `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
+
+The Salesforce integration collects the following events using the Salesforce REST API:
+
+- For `login` — [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm) and [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
+- For `logout` — [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) and [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
+- For `apex` — [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm)
+- For `setupaudittrail` — [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
+
+## What do I need to use this integration?
 
 - You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
@@ -86,11 +88,28 @@ The last entry in the list indicates the current version of your Salesforce inst
 
 NOTE: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
 
-## Setup
+## How do I deploy this integration?
 
-For step-by-step instructions on how to set up an integration, check the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see {{ url "getting-started-observability" "Getting started" }}.
 
-## Configuration
+### Onboard and configure
+
+1. Install Elastic Agent and enroll it in Fleet.
+2. In Fleet, add the Salesforce integration and enable the `apex`, `login`, `logout`, and/or `setupaudittrail` data streams as needed.
+3. Enter your Salesforce instance URL and API version.
+4. Choose an authentication method:
+   - JWT bearer flow: set Client ID, Username, Private key path (PEM), and JWT audience URL.
+   - Username‑Password flow: set Client ID, Client Secret, Username, Password (+ security token if required), and Token URL (base domain).
+5. For `login` and `logout`, choose which sources to collect:
+   - EventLogFile (batch logs)
+   - Platform Events (`LoginEvent`, `LogoutEvent`)
+6. Optional tuning:
+   - Set an initial interval to backfill historical data.
+   - Adjust the collection interval per source.
+   - Optionally filter EventLogFile by log file interval (for example, hourly).
+   - In Advanced options, adjust the request timeout if Salesforce responses are slow.
+
+### Configuration
 
 To configure the Salesforce integration, you need the following information:
 
@@ -100,17 +119,17 @@ To configure the Salesforce integration, you need the following information:
   - Username-Password flow: Client ID, Client Secret, Username, Password (+ security token if required), Token URL (base domain)
 - [API version](#api-version)
 
-### Authentication methods
+#### Authentication methods
 
 Choose one of the following OAuth 2.0 flows when configuring authentication:
 
-#### JWT bearer flow
+##### JWT bearer flow
 
 - Use a Salesforce Connected App with a certificate/private key.
 - Required settings include: Client ID, Username, JWT audience URL, and the path to the private key file.
 - In the integration settings, enable `Enable JWT Authentication`.
 
-#### Username-Password flow
+##### Username-Password flow
 
 - Uses a Connected App with client secret and a named integration user.
 - Required settings include: Client ID, Client Secret, Username, Password (append security token if required), and the Token URL (or your custom domain).
@@ -118,7 +137,7 @@ Choose one of the following OAuth 2.0 flows when configuring authentication:
   
 NOTE: Leave `Enable JWT Authentication` disabled to use the Username-Password flow.
 
-### Salesforce instance URL
+#### Salesforce instance URL
 
 This is the URL of your Salesforce organization.
 
@@ -126,7 +145,7 @@ This is the URL of your Salesforce organization.
 
 - **Salesforce Lightning**: The instance URL is available under your user name in the `View Profile` tab. Use the correct instance URL in case of Salesforce Lightning because it uses *.lightning.force.com but the instance URL is *.salesforce.com.
 
-### Create a Connected App
+#### Create a Connected App
 
 Create a Salesforce Connected App (supports both JWT Bearer and Username-Password flows):
 
@@ -160,17 +179,17 @@ IMPORTANT: For security reasons, Salesforce blocks the OAuth 2.0 Username-Passwo
 
 For official steps, see Salesforce docs: [Create a Connected App (Basics)](https://help.salesforce.com/s/articleView?id=xcloud.connected_app_create_basics.htm&type=5), [OAuth 2.0 JWT Bearer Flow](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5), and [OAuth 2.0 Username-Password Flow](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_username_password_flow.htm&type=5)
 
-### Username
+#### Username
 
 The email address or username associated with your Salesforce account used for authentication.
 
-### Password
+#### Password
 
 The password used to authenticate the user with your Salesforce instance.
 
 When using a Salesforce instance with a security token, append the token directly to your password without spaces or special characters. For example, if your password is `password` and your security token is `12345`, enter: `password12345`.
 
-### Token URL
+#### Token URL
 
 1. Use the token URL to obtain authentication tokens for API access.
 2. For most Salesforce instances, the token URL follows this format: https://login.salesforce.com/services/oauth2/token.
@@ -180,7 +199,7 @@ When using a Salesforce instance with a security token, append the token directl
 
 NOTE: Salesforce Lightning users must use a URL with the `*.salesforce.com` domain (the same as the instance URL) instead of `*.lightning.force.com` because the Salesforce API does not work with `*.lightning.force.com`.
 
-### API version
+#### API version
 
 To find the API version:
 
@@ -191,16 +210,7 @@ To find the API version:
 
 Alternatively, you can use the Salesforce instance API version as described in the "Compatibility" section.
 
-## Dashboards
-
-This integration ships curated Kibana dashboards for each data stream. After data starts flowing, open the Salesforce integration and go to the Assets tab to launch:
-
-- Apex dashboard
-- Login dashboard
-- Logout dashboard
-- SetupAuditTrail dashboard
-
-## Validation
+### Validation
 
 Once the Salesforce integration is successfully configured, follow these steps to validate the setup:
 
@@ -209,6 +219,15 @@ Once the Salesforce integration is successfully configured, follow these steps t
 3. Verify that the dashboard is populated with the expected data.
 
 If the dashboard displays the data correctly, your integration is successfully validated.
+
+## Dashboards
+
+This integration ships curated Kibana dashboards for each data stream. After data starts flowing, open the Salesforce integration and go to the Assets tab to launch:
+
+- Apex dashboard
+- Login dashboard
+- Logout dashboard
+- SetupAuditTrail dashboard
 
 ## Migration (v0.15.0+)
 
@@ -282,9 +301,26 @@ NOTE: The script has been tested on Unix-based systems (macOS, Linux). If you us
 
 This command is useful for debugging and troubleshooting OAuth 2.0 authentication with Salesforce Connected Apps. It is recommended to use a tool like `curl` for testing OAuth 2.0 authentication before setting up the full Salesforce integration. This approach allows you to verify the authentication process and identify any potential issues early when setting up the full Salesforce integration. If the request is successful, the response will contain an access token that can be used to authenticate subsequent requests to the Salesforce API. If the request fails, the response will contain an error message indicating the reason for the failure.
 
-## Logs reference
+## Performance and scaling
 
-### Apex
+- Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage.
+- Backfill: Use the initial interval to safely ingest historical data. Large backfills may consume significant Salesforce API quotas; consider staging by data stream.
+- Login/Logout sources: EventLogFile is efficient for batched reporting; Platform Events provide lower‑latency signals but may have throughput and retention limits in your org.
+- Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large result sets are expected.
+
+## Reference
+
+### Inputs used in this integration
+
+- Salesforce input: https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-salesforce.html
+
+### APIs used to collect data
+
+
+
+### Logs reference
+
+#### Apex
 
 The `apex` data stream captures events related to Apex operations, enabling developers to access the Salesforce platform back-end database and client-server interfaces to create third-party SaaS applications.
 
@@ -292,7 +328,7 @@ The `apex` data stream captures events related to Apex operations, enabling deve
 
 {{fields "apex"}}
 
-### Login
+#### Login
 
 The `login` data stream captures events that detail the login history of users within your Salesforce organization. This data stream provides insights into user authentication activities, helping you monitor and analyze login patterns, detect anomalies, and ensure security compliance.
 
@@ -300,7 +336,7 @@ The `login` data stream captures events that detail the login history of users w
 
 {{fields "login"}}
 
-### Logout
+#### Logout
 
 The `logout` data stream captures events that detail the logout history of users within your Salesforce organization. This data stream provides insights into user authentication activities, helping you monitor and analyze logout patterns, detect anomalies, and ensure security compliance.
 
@@ -308,7 +344,7 @@ The `logout` data stream captures events that detail the logout history of users
 
 {{fields "logout"}}
 
-### SetupAuditTrail
+#### SetupAuditTrail
 
 The `setupaudittrail` data stream captures and records changes made by users in the organization's Setup area. By default, it collects data from the last week, but users can configure it to collect data from up to the last 180 days by adjusting the initial interval in the configuration.
 
