@@ -37,7 +37,111 @@ processors:
       field: event.action
       copy_from: gcp.vertexai.prompt_response_logs.api_method
       if: ctx.gcp?.vertexai?.prompt_response_logs?.api_method != null
-      
+
+  # Rename camelCase fields to snake_case to match fields.yml
+
+  # full_request field renames
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_request.generationConfig
+      target_field: gcp.vertexai.prompt_response_logs.full_request.generation_config
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.maxOutputTokens
+      target_field: gcp.vertexai.prompt_response_logs.full_request.generation_config.max_output_tokens
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.topP
+      target_field: gcp.vertexai.prompt_response_logs.full_request.generation_config.top_p
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.thinkingConfig
+      target_field: gcp.vertexai.prompt_response_logs.full_request.generation_config.thinking_config
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.thinking_config.thinkingBudget
+      target_field: gcp.vertexai.prompt_response_logs.full_request.generation_config.thinking_config.thinking_budget
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_request.safetySettings
+      target_field: gcp.vertexai.prompt_response_logs.full_request.safety_settings
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_request.systemInstruction
+      target_field: gcp.vertexai.prompt_response_logs.full_request.system_instruction
+      ignore_missing: true
+
+  # full_response field renames
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.candidates.finishReason
+      target_field: gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.candidates.avgLogprobs
+      target_field: gcp.vertexai.prompt_response_logs.full_response.candidates.avg_logprobs
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.createTime
+      target_field: gcp.vertexai.prompt_response_logs.full_response.create_time
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.modelVersion
+      target_field: gcp.vertexai.prompt_response_logs.full_response.model_version
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.responseId
+      target_field: gcp.vertexai.prompt_response_logs.full_response.response_id
+      ignore_missing: true
+
+  # usageMetadata field renames
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usageMetadata
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.billablePromptUsage
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.billable_prompt_usage
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.billable_prompt_usage.textCount
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.billable_prompt_usage.text_count
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidatesTokenCount
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_token_count
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidatesTokensDetails
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_tokens_details
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_tokens_details.tokenCount
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_tokens_details.token_count
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.promptTokenCount
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.promptTokensDetails
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_tokens_details
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_tokens_details.tokenCount
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_tokens_details.token_count
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.thoughtsTokenCount
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.thoughts_token_count
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.totalTokenCount
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.total_token_count
+      ignore_missing: true
+  - rename:
+      field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.trafficType
+      target_field: gcp.vertexai.prompt_response_logs.full_response.usage_metadata.traffic_type
+      ignore_missing: true
+
 
   # Remove null and empty values recursively
   - script:
