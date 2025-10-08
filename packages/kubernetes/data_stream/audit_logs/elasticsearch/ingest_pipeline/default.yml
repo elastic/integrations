@@ -30,14 +30,14 @@ processors:
       target_field: kubernetes.audit
       if: ctx.tmp?.aks_audit?.properties?.log instanceof String && ctx.kubernetes?.audit == null
       tag: json_azure_aks_audit_log
-  - remove:
-      field: tmp.aks_audit.properties.log
-      ignore_missing: true
   - rename:
       field: tmp.aks_audit.properties.log
       target_field: kubernetes.audit
       if: ctx.tmp?.aks_audit?.properties?.log != null && ctx.kubernetes?.audit == null
       tag: rename_azure_aks_audit_log
+  - remove:
+      field: tmp.aks_audit.properties.log
+      ignore_missing: true
   - rename:
       field: tmp.aks_audit
       target_field: kubernetes.audit.aks_metadata
