@@ -314,10 +314,6 @@ This command is useful for debugging and troubleshooting OAuth 2.0 authenticatio
 
 - Salesforce input: https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-salesforce.html
 
-### APIs used to collect data
-
-
-
 ### Logs reference
 
 #### Apex
