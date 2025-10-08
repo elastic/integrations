@@ -566,6 +566,11 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text | Text content of the response. | text |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.content.role | Role of the response sender (e.g., model). | keyword |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason | Reason why the generation finished (e.g., STOP). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category | Safety category (e.g., HARM_CATEGORY_HATE_SPEECH). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability | Probability level (e.g., NEGLIGIBLE). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability_score | Probability score for the safety rating. | float |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity | Severity level of potential harm (e.g., HARM_SEVERITY_NEGLIGIBLE). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity_score | Numerical severity score. | float |
 | gcp.vertexai.prompt_response_logs.full_response.candidates.score | Score assigned to the candidate response. | float |
 | gcp.vertexai.prompt_response_logs.full_response.create_time | Timestamp when the response was created. | date |
 | gcp.vertexai.prompt_response_logs.full_response.model_version | Version of the model that generated the response. | keyword |
