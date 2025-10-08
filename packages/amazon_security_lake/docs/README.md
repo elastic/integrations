@@ -12,58 +12,55 @@ The Amazon Security Lake integration can be used in two different modes to colle
 
 This module follows the OCSF Schema Version **v1.1.0**.
 
-## Data streams
+## What data does this integration collect?
 
 The Amazon Security Lake integration collects logs from both [Third-party services](https://docs.aws.amazon.com/security-lake/latest/userguide/integrations-third-party.html) and [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/open-cybersecurity-schema-framework.html) in an event data stream.
 
-### **NOTE**:
+**NOTE**:
 - The Amazon Security Lake integration supports events collected from [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/internal-sources.html) and [third-party services](https://docs.aws.amazon.com/security-lake/latest/userguide/custom-sources.html).
 
 - Due to the nature and structure of the OCSF schema, this integration has limitations on how deep the mappings run. Some important objects like 'Actor', 'User' and 'Product' have more fleshed-out mappings compared to others which get flattened after the initial 2-3 levels of nesting to keep them maintainable and stay within field mapping [limits](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html). This will evolve as needed.
 
-## Requirements
+## What do I need to use this integration?
 
-- Elastic Agent must be installed.
-- Elastic Agent is required to stream data from Amazon Security Lake and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). Elastic Agent is required to stream data from Amazon Security Lake and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Setup
 
-### To collect data from Amazon Security Lake follow the below steps:
+### Collect data from Amazon Security Lake
 
-1. To enable and start Amazon Security Lake, follow the steps mentioned here: [`https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`](https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html).
-2. After creating the data lake, follow the steps below to create data subscribers to consume data.
-   - Open the [Security Lake console](https://console.aws.amazon.com/securitylake/).
-   - By using the AWS Region selector in the upper-right corner of the page, select the Region where you want to create the subscriber.
-   - In the navigation pane, choose **Subscribers**.
-   - On the Subscribers page, choose **Create subscriber**.
-   - For **Subscriber details**, enter **Subscriber name** and an optional Description.
-   - For **Log and event sources**, choose which sources the subscriber is authorized to consume.
-   - For **Data access method**, choose **S3** to set up data access for the subscriber.
-   - For **Subscriber credentials**, provide the subscriber's **AWS account ID** and **external ID**.
-   - For **Notification details**, select **SQS queue**.
-   - Choose Create.
-3. Above mentioned steps will create and provide the required details such as IAM roles/AWS role ID, external ID and queue URL to configure AWS Security Lake Integration.
+To enable and start Amazon Security Lake, refer to the [AWS getting started](https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html).
 
-### Enabling the integration in Elastic:
+To create and provide the required details such as IAM roles/AWS role ID, external ID and queue URL to configure AWS Security Lake Integration, follow these steps:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Amazon Security Lake.
-   ![Search](../img/search.png)
-3. Click on the "Amazon Security Lake" integration from the search results.
-4. Click on the Add Amazon Security Lake Integration button to add the integration.
-   ![Home Page](../img/home_page.png)
-5. By default collect logs via S3 Bucket toggle will be off and collect logs for AWS SQS.
+1. Open the [Security Lake console](https://console.aws.amazon.com/securitylake/).
+2. By using the AWS Region selector in the upper-right corner of the page, select the region where you want to create the subscriber.
+3. In the navigation pane, choose **Subscribers**.
+4. On the Subscribers page, choose **Create subscriber**.
+5. In **Subscriber details**, enter **Subscriber name** and an optional description.
+6. In **Log and event sources**, choose which sources the subscriber is authorized to consume.
+7. In **Data access method**, choose **S3** to set up data access for the subscriber.
+8. For **Subscriber credentials**, provide the subscriber's **AWS account ID** and **external ID**.
+9. For **Notification details**, select **SQS queue**.
+10. Click **Create**.
+
+### Enable the integration in Elastic
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Amazon Security Lake**.
+3. Select the **Amazon Security Lake** integration and add it.
+4. By default collect logs via S3 Bucket toggle will be off and collect logs for AWS SQS.
    - queue url
       ![Queue URL](../img/queue_url.png)
    - collect logs via S3 Bucket toggled off
    - role ARN
    - external id
       ![Role ARN and External ID](../img/role_arn_and_external_id.png)
-
-6. If you want to collect logs via AWS S3, then you have to put the following details:
+5. If you want to collect logs via AWS S3, then you have to put the following details:
     - bucket ARN or access point ARN
     - role ARN
     - external id
+5. Save the integration.
 
 **NOTE**:
 

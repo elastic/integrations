@@ -1,6 +1,6 @@
 # Elasticsearch Service Billing
 
-The Elasticsearch Service Billing integration allows you to monitor Elasticsearch Service usage and costs. It collects billing data from the [Elasticsearch Service billing API](https://www.elastic.co/guide/en/cloud/current/Billing_Costs_Analysis.html) and sends it to your target Elasticsearch cluster. Dashboards are provided out-of-the-box to help you visualize your Elasticsearch Service usage and costs.
+The Elasticsearch Service Billing integration allows you to monitor Elasticsearch Service usage and costs. It collects billing data from the [Elasticsearch Service billing API](https://www.elastic.co/docs/api/doc/cloud-billing/) and sends it to your target Elasticsearch cluster. Dashboards are provided out-of-the-box to help you visualize your Elasticsearch Service usage and costs.
 
 Using this integration, you could for instance create alerts whenever a new deployment is created, or when your baseline spending exceeds a certain threshold.
 
@@ -27,7 +27,7 @@ For private cloud, or admin users, the cloud endpoint can be altered to match yo
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/docs/solutions/observability/get-started/quickstart-monitor-hosts-with-elastic-agent) guide.
 
 If you run in the cloud (Cloud Hosted of Serverless), this integration is available [agentless](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) from cluster version 8.17 onward - if this criteria is met, you don't need to install an Elastic Agent to gather these metrics.
 
@@ -140,8 +140,10 @@ An example event for `billing` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ess.billing.cloud.machine.type | The machine type of the instance (e.g., n2.68x16x45). | keyword |
+| ess.billing.cloud.service.type | The service type of the serverless project. | keyword |
 | ess.billing.deployment_id | ID of the Elasticsearch Service deployment. | keyword |
 | ess.billing.deployment_name | Name of the Elasticsearch Service deployment. | keyword |
+| ess.billing.deployment_type | Type of the Elasticsearch Service deployment. | keyword |
 | ess.billing.display_quantity.formatted_value | Human-readable representation of the quantity used (e.g., "24 hours"). | keyword |
 | ess.billing.display_quantity.type | Type of quantity displayed (default or custom). | keyword |
 | ess.billing.display_quantity.value | Actual quantity used (e.g., 24). | float |

@@ -1,0 +1,17 @@
+vars:
+  url: http://example.com:9001
+  username: test
+  password: test
+  program: |-
+    get("https://api.ipify.org/?format=json").Body.as(body, {
+        "events": [body.decode_json().with({
+            ?"last_requested_at": state.?cursor.last_requested_at
+        })],
+        "cursor": {"last_requested_at": now}
+    })
+  resource_headers: |-
+    "Accept": ["application/json"]
+    "Accept-Encoding": ["gzip, deflate, br"]
+  interval: 5m
+  preserve_original_event: true
+  preserve_duplicate_custom_fields: true

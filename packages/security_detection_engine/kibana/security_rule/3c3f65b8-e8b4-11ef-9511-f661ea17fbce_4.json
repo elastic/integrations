@@ -1,0 +1,134 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when an SNS topic is created by a user who does not typically perform this action. Adversaries may create SNS topics to stage capabilities for data exfiltration or other malicious activities. This is a New Terms rule that only flags when this behavior is observed for the first time by a user or role.",
+        "false_positives": [
+            "Legitimate users may create SNS topics for legitimate purposes. Ensure that the creation is authorized before taking action."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-10d",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS SNS Topic Created by Rare User",
+        "new_terms_fields": [
+            "cloud.account.id",
+            "user.name"
+        ],
+        "note": "## Triage and Analysis\n\n### Investigating AWS SNS Topic Created by Rare User\n\nThis rule detects the creation of an AWS Simple Notification Service (SNS) topic by a user who does not typically perform this action. Adversaries may create SNS topics to facilitate data exfiltration or other malicious activities.\n\nThis is a [New Terms](https://www.elastic.co/guide/en/security/current/rules-ui-create.html#create-new-terms-rule) rule that only flags when this behavior is observed for the first time by a user or role.\n\n#### Possible Investigation Steps\n\n### Identify the Actor and Context\n- **User Identity and Role**:\n  - Examine `aws.cloudtrail.user_identity.arn` to determine **who** created the SNS topic.\n  - Identify whether the actor assumed a **privileged IAM role** (`aws.cloudtrail.user_identity.type: \"AssumedRole\"`) or used a long term access keys (`aws.cloudtrail.user_identity.access_key_id`).\n- **User Agent and Tooling**:\n  - Check `user_agent.original` to determine if this action was performed via the AWS CLI, SDK, or Console.\n  - If `aws-cli` was used, review whether it aligns with typical automation or administrative behavior.\n- **Source IP and Geographic Location**:\n  - Review `source.ip` and `source.geo` fields to confirm if the request originated from a **trusted** or **unexpected** location.\n\n### Evaluate the SNS Topic Creation\n- **Topic Name and Purpose**:\n  - Check `aws.cloudtrail.request_parameters` for the **SNS topic name** and determine whether it appears suspicious (e.g., random strings, unusual keywords).\n- **Target Region and Account**:\n  - Verify `cloud.region` and `cloud.account.id` to **ensure the SNS topic was created in an expected environment**.\n- **Associated API Calls**:\n  - Identify additional actions **before or after** this event using `event.action` values like:\n    - `Subscribe`\n    - `Publish`\n    - `SetTopicAttributes`\n  - These may indicate follow-up steps taken to misuse the SNS topic.\n\n### Analyze Potential Malicious Intent\n- **Is This an Isolated Action or a Pattern?**\n  - Check if this **user has previously created SNS topics** using historical CloudTrail logs.\n  - Look for **multiple topic creations in a short period**, which may suggest an automation script or malicious behavior.\n- **Unusual Role Usage**:\n  - If `aws.cloudtrail.user_identity.arn` references an **EC2 instance role**, verify whether that instance typically performs SNS operations.\n- **Potential Data Exfiltration or Persistence**:\n  - Review whether **new subscriptions** were added (`Subscribe` API action) to forward data externally.\n  - If an SNS topic was configured to trigger **Lambda functions or S3 events**, it may indicate an attempt to persist in the environment.\n\n## False Positive Analysis\n- **Legitimate Usage of SNS**:\n  - SNS is commonly used for **event-driven notifications** in AWS.\n  - Check whether the SNS topic creation aligns with known **DevOps, automation, or monitoring activities**.\n- **Routine IAM Role Activity**:\n  - If the user typically interacts with SNS, consider **allowlisting** expected IAM roles for this action.\n- **AWS Services Creating Topics Automatically**:\n  - Some AWS services may **auto-create SNS topics** for alerts and monitoring. Confirm whether the creation was system-generated.\n\n## Response and Remediation\n- **Confirm Authorization**:\n  - If the user was not expected to create SNS topics, verify whether their IAM permissions should be restricted.\n- **Revoke Unauthorized Access**:\n  - If unauthorized, disable the access keys or IAM role associated with the event.\n- **Monitor for Further SNS Modifications**:\n  - Set up additional monitoring for **SNS Publish or Subscription events** (`Publish`, `Subscribe`).\n- **Enhance IAM Policy Controls**:\n  - Consider enforcing **least privilege** IAM policies and enabling **multi-factor authentication (MFA)** where applicable.\n- **Investigate for Persistence**:\n  - Check whether the SNS topic is **being used as a notification channel for Lambda, S3, or other AWS services**.\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"sns.amazonaws.com\"\n    and event.action: \"CreateTopic\"\n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/sns/latest/api/API_CreateTopic.html",
+            "https://permiso.io/blog/s/smishing-attack-on-aws-sms-new-phone-who-dis/",
+            "https://www.sentinelone.com/labs/sns-sender-active-campaigns-unleash-messaging-spam-through-the-cloud/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "3c3f65b8-e8b4-11ef-9511-f661ea17fbce",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS SNS",
+            "Resources: Investigation Guide",
+            "Use Case: Threat Detection",
+            "Tactic: Resource Development",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0042",
+                    "name": "Resource Development",
+                    "reference": "https://attack.mitre.org/tactics/TA0042/"
+                },
+                "technique": [
+                    {
+                        "id": "T1608",
+                        "name": "Stage Capabilities",
+                        "reference": "https://attack.mitre.org/techniques/T1608/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/",
+                        "subtechnique": [
+                            {
+                                "id": "T1496.004",
+                                "name": "Cloud Service Hijacking",
+                                "reference": "https://attack.mitre.org/techniques/T1496/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 4
+    },
+    "id": "3c3f65b8-e8b4-11ef-9511-f661ea17fbce_4",
+    "type": "security-rule"
+}
