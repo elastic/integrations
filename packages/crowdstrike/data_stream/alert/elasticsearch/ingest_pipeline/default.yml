@@ -41,6 +41,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.category
+      tag: set_event_category_process
+      value: ['process']
+      if: ctx.json?.process_id != null || ctx.json?.triggering_process_graph_id != null
+  - set:
+      field: event.type
+      tag: set_event_type_start
+      value: ['start']
+      if: ctx.json?.process_start_time != null
   - convert:
       field: json.active_directory_authentication_method
       tag: convert_active_directory_authentication_method_to_long
