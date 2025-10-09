@@ -4,12 +4,15 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - set:
       field: observer.vendor
       value: Broadcom
+      tag: set_3a32ffc7
   - set:
       field: observer.product
       value: ProxySG
+      tag: set_a11dfe03
   - drop:
       tag: "drop_commented"
       description: "Drop commented lines"
@@ -52,6 +55,7 @@ processors:
   - remove:
       field: "_temp_"
       ignore_failure: true
+      tag: remove_8c7cbd54
 
   # ProxySG uses '-' to indicate unset fields; remove these.
   - script:
@@ -108,75 +112,92 @@ processors:
       field: client.ip
       copy_from: proxysg.client.ip
       ignore_failure: true
+      tag: set_2339ed7a
   - set:
       field: client.address
       copy_from: client.ip
       ignore_failure: true
+      tag: set_add34219
   - set:
       field: server.ip
       copy_from: proxysg.server.ip
       ignore_failure: true
+      tag: set_88ef57f2
   - set:
       field: server.address
       copy_from: server.ip
       ignore_failure: true
+      tag: set_61dc7df1
   - set:
       field: url.scheme
       copy_from: proxysg.client_to_server.uri_scheme
       ignore_failure: true
+      tag: set_246e4dcb
   - set:
       field: url.port
       copy_from: proxysg.client_to_server.uri_port
       ignore_failure: true
+      tag: set_a7dc2d6b
   - set:
       field: url.path
       copy_from: proxysg.client_to_server.uri_path
       ignore_failure: true
+      tag: set_b46e5283
   - set:
       field: url.query
       copy_from: proxysg.client_to_server.uri_query
       ignore_failure: true
+      tag: set_95d8ed0f
   - set:
       field: client.user.name
       copy_from: proxysg.client_to_server.username
       ignore_failure: true
+      tag: set_db83140a
   - set:
       field: http.request.referrer
       copy_from: proxysg.client_to_server.referer
       ignore_failure: true
+      tag: set_96eba2be
   - set:
       field: user_agent.original
       copy_from: proxysg.client_to_server.user_agent
       ignore_failure: true
+      tag: set_178279dc
   - set:
       field: http.request.method
       copy_from: proxysg.client_to_server.method
       ignore_failure: true
+      tag: set_d5f7f658
   - set:
       field: url.domain
       copy_from: proxysg.client_to_server.host
       ignore_failure: true
+      tag: set_dc1fdce0
   - script:
       lang: painless
       if: 'ctx.proxysg.time_taken != null'
       # proxysg.time_taken is ms, event.duration is ns
       source: |
         ctx.event.duration = ctx.proxysg.time_taken * 1000000
+      tag: script_eac0c719
 
   # Enrichment
   - registered_domain:
       field: url.domain
       target_field: url
       ignore_missing: true
+      tag: registered_domain_ca99c8cd
   - user_agent:
       field: user_agent.original
       ignore_missing: true
+      tag: user_agent_b5325863
 
   # Geo-location
   - geoip:
       field: server.ip
       target_field: server.geo
       if: ctx.server?.geo == null && ctx.server?.ip != null
+      tag: geoip_b48037fe
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: server.ip
@@ -185,18 +206,22 @@ processors:
       - asn
       - organization_name
       ignore_missing: true
+      tag: geoip_ed2798db
   - rename:
       field: server.as.asn
       target_field: server.as.number
       ignore_missing: true
+      tag: rename_f46ba339
   - rename:
       field: server.as.organization_name
       target_field: server.as.organization.name
       ignore_missing: true
+      tag: rename_a7e512d7
   - geoip:
       field: client.ip
       target_field: client.geo
       if: ctx.client?.geo == null && ctx.client?.ip != null
+      tag: geoip_0c48320e
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
@@ -205,14 +230,17 @@ processors:
       - asn
       - organization_name
       ignore_missing: true
+      tag: geoip_f17fb2b3
   - rename:
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
+      tag: rename_a6e30d01
   - rename:
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
+      tag: rename_817a526f
 
   # Add related fields
   - append:
@@ -220,38 +248,45 @@ processors:
       value: "{{{server.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
+      tag: append_0e5b7d1b
   - append:
       field: related.ip
       value: "{{{client.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
+      tag: append_cb745daf
   - append:
       field: related.ip
       value: "{{{proxysg.server.supplier_ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
+      tag: append_eb7f4518
   - append:
       field: related.ip
       value: "{{{remote.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
+      tag: append_de520f14
   - append:
       field: related.hosts
       value: "{{{url.domain}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
+      tag: append_8443ea84
   - append:
       field: related.user
       value: "{{{client.user.name}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
+      tag: append_69c2f49e
 
 on_failure:
   - append:
       field: error.message
-      value: |-
-          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline
-          "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
