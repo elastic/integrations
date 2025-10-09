@@ -1,15 +1,15 @@
 {
     "attributes": {
         "columns": [
-            "m365_defender.vulnerability.affected_machine.last_seen",
             "host.id",
-            "host.ip",
             "host.name",
-            "vulnerability.id",
             "host.os.name",
-            "host.risk.calculated_level",
-            "m365_defender.vulnerability.affected_machine.health_status",
-            "m365_defender.vulnerability.affected_machine.is_potential_duplication"
+            "vulnerability.id",
+            "m365_defender.vulnerability.exploitability_level",
+            "vulnerability.severity",
+            "m365_defender.vulnerability.software_vendor",
+            "package.name",
+            "package.version"
         ],
         "description": "",
         "grid": {},
@@ -25,16 +25,38 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "m365_defender.vulnerability.affected_machine.id",
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "m365_defender.vulnerability.affected_machine.id",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "m365_defender.vulnerability"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "m365_defender.vulnerability"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.id",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "event.id",
                             "negate": false,
                             "type": "exists",
                             "value": "exists"
                         },
                         "query": {
                             "exists": {
-                                "field": "m365_defender.vulnerability.affected_machine.id"
+                                "field": "event.id"
                             }
                         }
                     }
@@ -48,16 +70,17 @@
         },
         "sort": [
             [
-                "m365_defender.vulnerability.updated_on",
+                "@timestamp",
                 "desc"
             ]
         ],
         "timeRestore": false,
-        "title": "Affected Machines Essential Details [Logs Microsoft Defender XDR]"
+        "title": "Affected Machines Essential Details 2 [Logs Microsoft Defender XDR]"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-06-27T11:53:29.717Z",
-    "id": "m365_defender-4e5cb35c-7a18-4f29-bb69-7e30ab9bbdec",
+    "created_at": "2025-10-09T19:03:55.878Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "m365_defender-c35e286e-43e6-46f4-a449-ab8a1be7bcd9",
     "references": [
         {
             "id": "logs-*",
@@ -67,6 +90,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
@@ -81,5 +109,6 @@
         }
     ],
     "type": "search",
-    "typeMigrationVersion": "10.5.0"
+    "typeMigrationVersion": "10.5.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
