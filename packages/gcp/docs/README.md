@@ -231,6 +231,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gcp.audit.access.caller_ip_geo.region_code |  | keyword |
+| gcp.audit.access.method_name |  | keyword |
+| gcp.audit.access.principal_email |  | keyword |
+| gcp.audit.access.principal_subject |  | keyword |
+| gcp.audit.access.service_name |  | keyword |
+| gcp.audit.access.user_agent |  | keyword |
+| gcp.audit.action_time |  | date |
+| gcp.audit.action_type |  | keyword |
+| gcp.audit.affected_resources |  | keyword |
 | gcp.audit.authentication_info.authority_selector | The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority. | keyword |
 | gcp.audit.authentication_info.principal_email | The email address of the authenticated user making the request. | keyword |
 | gcp.audit.authentication_info.principal_subject | String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities. | keyword |
@@ -246,6 +255,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
 | gcp.audit.flattened | Contains the full audit document as sent by GCP. | flattened |
 | gcp.audit.labels | A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined. | flattened |
+| gcp.audit.learn_more_uri |  | keyword |
 | gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
 | gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
 | gcp.audit.logentry_operation.last | Optional. Set this to True if this is the last log entry in the operation. | boolean |
@@ -260,14 +270,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.policy_violation_info.violations.constraint | Constraint name. | keyword |
 | gcp.audit.policy_violation_info.violations.errorMessage | Error message that policy is indicating. | keyword |
 | gcp.audit.policy_violation_info.violations.policyType | Indicates the type of the policy. | keyword |
+| gcp.audit.receive_timestamp |  | date |
 | gcp.audit.request |  | flattened |
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
+| gcp.audit.resource.labels.resource_container |  | keyword |
+| gcp.audit.resource.type |  | keyword |
 | gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
+| gcp.audit.source_log_ids.insert_id |  | keyword |
+| gcp.audit.source_log_ids.log_time |  | date |
+| gcp.audit.source_log_ids.query_uri |  | keyword |
+| gcp.audit.source_log_ids.resource_container |  | keyword |
 | gcp.audit.status.code | The status code, which should be an enum value of google.rpc.Code. | integer |
 | gcp.audit.status.details | A list of messages that carry the error details. | flattened |
 | gcp.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
@@ -306,11 +323,11 @@ An example event for `audit` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "da325f64-9209-4ce8-b7b9-1a98fbcf04a5",
-        "id": "3ee263c0-32c5-4060-8539-ecdf1abde99a",
-        "name": "elastic-agent-67309",
+        "ephemeral_id": "c12ff10d-c028-4d1b-80b1-a8151b80a275",
+        "id": "5bce43a4-737b-4c53-9db0-a4bff79e32d1",
+        "name": "elastic-agent-10901",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.7"
     },
     "client": {
         "user": {
@@ -318,6 +335,7 @@ An example event for `audit` looks as following:
         }
     },
     "cloud": {
+        "availability_zone": "global",
         "project": {
             "id": "elastic-beats"
         },
@@ -325,16 +343,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.audit",
-        "namespace": "96942",
+        "namespace": "84187",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3ee263c0-32c5-4060-8539-ecdf1abde99a",
+        "id": "5bce43a4-737b-4c53-9db0-a4bff79e32d1",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.7"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -343,10 +361,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2025-04-22T05:28:14.956Z",
+        "created": "2025-10-09T12:32:26.254Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2025-04-22T05:28:17Z",
+        "ingested": "2025-10-09T12:32:29Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -369,8 +387,12 @@ An example event for `audit` looks as following:
                 }
             ],
             "num_response_items": 61,
+            "receive_timestamp": "2019-12-19T00:44:25.262Z",
             "request": {
                 "@type": "type.googleapis.com/compute.instances.aggregatedList"
+            },
+            "resource": {
+                "type": "api"
             },
             "resource_location": {
                 "current_locations": [
@@ -440,7 +462,7 @@ An example event for `audit` looks as following:
             "name": "Mac OS X",
             "version": "10.15"
         },
-        "version": "71.0."
+        "version": "71.0"
     }
 }
 ```
