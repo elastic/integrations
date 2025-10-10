@@ -1,9 +1,9 @@
 # Custom WMI (Windows Management Instrumentation) Input Package
 
-The Custom WMI Input integration reads metrics via Windows Management Instrumentation  [(WMI)](https://learn.microsoft.com/en-us/windows/win32/wmisdk/about-wmi), a core management technology in the Windows Operating system.
+The Custom WMI Input integration reads metrics via [Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/about-wmi) (WMI), a core management technology in the Windows Operating system.
 By leveraging WMI Query Language (WQL), this integration allows you to extract detailed system information and metrics to monitor the health and performance of Windows Systems.
 
-This input leverages the [Microsoft WMI](https://github.com/microsoft/wmi) library, a convenient wrapper around the [GO-OLE](https://github.com/go-ole) library which allows to invoke the WMI Api.
+This input leverages the [Microsoft WMI](https://github.com/microsoft/wmi) library, a convenient wrapper around the [GO-OLE](https://github.com/go-ole) library which allows to invoke the WMI API.
 
 ## Requirements
 
@@ -29,11 +29,11 @@ namespaces.
 Currently, this input package supports queries with `SELECT`, `FROM` and
 `WHERE` clauses.
 
-**WARNING**:
+**Warning**:
 When working with WMI queries, it is the user’s responsibility to ensure
 that queries are safe, efficient, and do not cause unintended side
 effects. A notorious example of a problematic WMI class is
-Win32\_Product. Read more in [Windows
+`Win32_Product`. Read more in the related [Windows
 Documentation](https://learn.microsoft.com/en-us/troubleshoot/windows-server/admin-development/windows-installer-reconfigured-all-applications#more-information_).
 
 ###  WMI Arbitrator and Query Execution
@@ -54,7 +54,7 @@ fail, Elastic Agent has a timeout mechanism that stops waiting for query
 results after a specified timeout. This is controlled by the
 `wmi.warning_threshold` setting.
 
-While Elastic Agent stops waiting for the result, the underlying WMI query
+**Note**: While Elastic Agent stops waiting for the result, the underlying WMI query
 may continue running until the WMI Arbitrator decides to stop execution.
 
 
@@ -73,7 +73,7 @@ and then performs the necessary data type conversions.
 
 To optimize performance and avoid repeatedly fetching these schema definitions
 for every row and every request, an LRU cache is utilized. This cache stores
-the schema definition for each WMI class, property pair encountered. For queries involving
+the schema definition for each WMI class-property pair encountered. For queries involving
 superclasses, such as `CIM_LogicalDevice`, the cache will populate with individual entries
 for each specific derived class (leaf of the class hierarchy) whose instances are returned by the query (for example, `Win32_DiskDrive` or `Win32_NetworkAdapter`).
 
@@ -97,12 +97,17 @@ details.
 
 | Option                           | Description                                                                                                                                                                                                                                                                                                                                                       | Default            |
 |-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|
-| `wmi.namespace`                   | The default WMI namespace used for queries. This can be overridden per query.                                                                                                                                                                                                                                                                                     | `root\cimv2`       |
+| `wmi.namespace`                   | The default WMI namespace used for queries. This can be overridden per query.                                                                                                                                                                                                                                                                                     | `"root\\cimv2"`       |
 | `wmi.warning_threshold`           | The time threshold after which Elastic Agent will stop waiting for the query result and return control to the main flow of the program. A warning is logged indicating that the query execution has exceeded the threshold. See [WMI Arbitrator and Query Execution](#wmi-arbitrator-and-query-execution) for more details. | Equal to `period`  |
 | `wmi.include_queries`             | If set to `true`, the documents the query is added in the output document                                                                                                                                                                                                                                                                     | `false`            |
+| `wmi.include_query_class`         |  If set to `true` the metricset includes the queried class. This is useful if superclasses are queried. The default value is `false`. | `false`   |
 | `wmi.include_null_properties`     | If set to `true`, the output documents will include the properties that have a `null` value.                                                                                                                                                                                                                   | `false`            |
 | `wmi.include_empty_string_properties` | If set to `true`, the output documents will include the properties that are empty strings.                                                                                                                                                                                                                                                               | `false`            |
+| `wmi.max_rows_per_query`   | Limits the number of rows returned by a single WMI query. The default value is `0`, which is a special value indicating that all fetched
+results should be returned without a row limit.| `0` |
+| `wmi.schema_cache_size`    | The maximum number of WMI class-property pairs that can be cached per single query. Every query keeps its own separate cache. This cache helps improve performance when dealing with queries that involve inheritance hierarchies. Read more in [WMI Type Support](#wmi-type-support).<br>For example, if a superclass is queried, the cache stores entries for each WMI concrete instance class (the leaves of the class hierarchy) and their associated properties. Therefore, querying a superclass that returns a result set containing instances of `10` different classes, each with `50` properties, will result in a cache size of `500` entries (`10×50`). | `1000` |
 | `wmi.queries`                     | The list of queries to execute. The list cannot be empty. See [Query Configuration](#query-configuration) for the format of the queries.                                                                                                                                                                                                                          | *(required)*       |
+
 
 ### Query Configuration
 
