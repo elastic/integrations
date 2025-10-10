@@ -29,6 +29,7 @@ namespaces.
 Currently, this input package supports queries with `SELECT`, `FROM` and
 `WHERE` clauses.
 
+**WARNING**:
 When working with WMI queries, it is the user’s responsibility to ensure
 that queries are safe, efficient, and do not cause unintended side
 effects. A notorious example of a problematic WMI class is
@@ -76,13 +77,13 @@ the schema definition for each WMI class, property pair encountered. For queries
 superclasses, such as `CIM_LogicalDevice`, the cache will populate with individual entries
 for each specific derived class (leaf of the class hierarchy) whose instances are returned by the query (for example, `Win32_DiskDrive` or `Win32_NetworkAdapter`).
 
-::::{note}
+**Note**:
 The properties of type `CIM_Object` (embedded objects) are not yet supported and are ignored.
-::::
 
-::::{note}
+
+**Note**:
 The properties of type `CIM_Reference` (references) used in [WMI Association Classes](https://learn.microsoft.com/en-us/windows/win32/wmisdk/declaring-an-association-class) are currently returned as strings as reported by the microsoft/wmi library.
-::::
+
 
 
 ###  Date Fields Mapping
