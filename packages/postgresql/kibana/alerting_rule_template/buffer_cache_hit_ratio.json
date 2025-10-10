@@ -19,7 +19,7 @@
       "thresholdComparator": "<",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-postgresql.statement-default\n| STATS SUM(postgresql.database.blocks.hit) AS total_hits, SUM(postgresql.database.blocks.read) AS total_reads BY postgresql.database.name, host.name\n| EVAL total_blocks = total_hits + total_reads\n| EVAL cache_hit_ratio = CASE(total_blocks > 0, (total_hits / total_blocks) * 100, 0)\n| WHERE cache_hit_ratio < 90"
+        "esql": "FROM metrics-postgresql.statement-default\n| STATS total_hits=SUM(postgresql.database.blocks.hit), total_reads=SUM(postgresql.database.blocks.read) BY postgresql.database.name, host.name\n| EVAL total_blocks = total_hits + total_reads\n| EVAL cache_hit_ratio = CASE(total_blocks > 0, (total_hits / total_blocks) * 100, 0)\n| WHERE cache_hit_ratio < 90"
       },
       "aggType": "count",
       "groupBy": "all",
