@@ -18,6 +18,29 @@ processors:
         - '^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}@%{DATA:user.domain}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{GREEDYDATA:message}'
         - '^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.domain}\s%{DATA}:%{IP:client.ip}%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{GREEDYDATA:message}'
         - '^%{GREEDYDATA:message}$'
+  - grok:
+      field: message
+      ignore_failure: true
+      ignore_missing: true
+      patterns:
+      - ^%{DATA:event.reason}\s-\s%{DATA:message}$
+  - grok:
+      field: message
+      ignore_failure: true
+      ignore_missing: true
+      patterns:
+      - backing\sup\sdatabase\sto\s<%{DATA:pps.entry.path}>
+      - '[created|updated]\sentry\s<%{DATA:pps.entry.path}>'
+      - fetched\sthe\spassword\sfor\s<%{DATA:pps.entry.path}>$
+      - fetched\sthe\spassword\sfor\s<%{DATA:pps.entry.path}>\s-\s%{DATA:pps.entry.reason}$
+      - on\sentry\s<%{DATA:pps.entry.path}>\sfor\suser
+      - moved\sentry\s<%{DATA:pps.entry.path}>\sto\s<%{DATA:pps.entry.target.path}>
+      - created\sfolder\s<%{DATA:pps.entry.path}>$
+      - comment\srequirement\s<.*>\s[from|to]\s<%{DATA:pps.entry.path}>$
+      - notification\s.*>\s[from|to]\s<%{DATA:pps.entry.path}>$
+      - updated\sentry\s<%{DATA:pps.entry.path}>\schanging\sthe\sname\sfrom\s<%{DATA:pps.entry.name}>\sto\s<%{DATA:pps.entry.target.name}>\schanging\sthe\susername\sfrom\s<%{DATA:pps.entry.username}>\sto\s<%{DATA:pps.entry.target.username}>$
+      - updated\sentry\s<%{DATA:pps.entry.path}>\schanging\sthe\sname\sfrom\s<%{DATA:pps.entry.name}>\sto\s<%{DATA:pps.entry.target.name}>$
+
   # Set the Event Outcome to Lower Case to be ECS Compliant
   - lowercase:
       field: event.outcome
