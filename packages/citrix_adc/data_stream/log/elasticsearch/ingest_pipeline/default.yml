@@ -55,32 +55,35 @@ processors:
       type: long
       ignore_missing: true
 
-# Time zone (in order: log, config, locale, default to UTC).
-
+  # Time zone (in order: log, config, locale, default to UTC).
   - set:
       field: _tmp.tz
       value: UTC
       if: ctx._tmp?.tz == 'Z'
+      tag: set_a03f7947
   - set:
       field: _tmp.tz
       copy_from: _conf.tz_offset
       override: false
       ignore_empty_value: true
+      tag: set_c84a08f7
   - set:
       field: _tmp.tz
       copy_from: event.timezone
       override: false
       if: ctx.event?.timezone != null
+      tag: set_43d96fc2
   - set:
       field: _tmp.tz
       value: UTC
       override: false
+      tag: set_b8df3735
   - set:
       field: event.timezone
       copy_from: _tmp.tz
+      tag: set_ba6cb968
 
-# Syslog timestamp
-
+  # Syslog timestamp
   - date:
       if: ctx._tmp?.timestamp8601 != null
       tag: date_syslog_timestamp8601
@@ -174,8 +177,7 @@ processors:
           }
         });
 
-# Native-format timestamp
-
+  # Native-format timestamp
   - date:
       tag: date_timestamp_native
       field: _tmp.timestamp_native
@@ -257,8 +259,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-# Move vendor time fields to ECS.
-
+  # Move vendor time fields to ECS.
   - set:
       tag: set_@timestamp_from_citrix_native
       field: '@timestamp'
@@ -459,9 +460,11 @@ on_failure:
       ignore_missing: true
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+

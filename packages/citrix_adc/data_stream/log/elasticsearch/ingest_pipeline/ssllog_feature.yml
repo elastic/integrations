@@ -197,7 +197,7 @@ processors:
       ignore_failure: true
   - grok:
       if: ctx.citrix_adc?.log?.client_version != null && ctx.citrix_adc.log.client_version != ''
-      tag: grok_protocol_version
+      tag: grok_client_version
       field: citrix_adc.log.client_version
       patterns:
         - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
@@ -213,5 +213,8 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+
