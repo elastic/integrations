@@ -17,6 +17,10 @@ wait_for_port() {
     nc -z localhost $port
 }
 
+echo "Starting ZooKeeper"
+${KAFKA_HOME}/bin/zookeeper-server-start.sh ${KAFKA_HOME}/config/zookeeper.properties &
+wait_for_port 2181
+
 # --- Kafka Setup ---
 
 KAFKA_CLUSTER_ID="_ABcDEf1gHiJkLmNoPqRsT"
@@ -27,8 +31,7 @@ echo "Formatting storage directory..."
 ${KAFKA_HOME}/bin/kafka-storage.sh format \
     --config ${KAFKA_HOME}/config/server_custom.properties \
     --cluster-id $KAFKA_CLUSTER_ID \
-    --ignore-formatted \
-    --standalone
+    --ignore-formatted
 
 echo "Starting Kafka broker..."
 
