@@ -2,9 +2,9 @@
   "id": "buffer_cache_hit_ratio",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "Buffer Cache Hit Ratio",
-    "tags": ["PostgreSQL Alerts",
-      "PostgreSQL Buffer Cache Hit Ratio"],
+    "name": "[PostgreSQL] Buffer Cache Hit Ratio",
+    "tags": ["PostgreSQL",
+      "Buffer Cache Hit Ratio"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -19,7 +19,7 @@
       "thresholdComparator": "<",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-postgresql.statement-default\n| STATS SUM(postgresql.database.blocks.hit) AS total_hits, SUM(postgresql.database.blocks.read) AS total_reads BY postgresql.database.name, host.name\n| EVAL total_blocks = total_hits + total_reads\n| EVAL cache_hit_ratio = CASE(total_blocks > 0, (total_hits / total_blocks) * 100, 0)\n| EVAL is_warning = cache_hit_ratio < 90\n| WHERE is_warning == true"
+        "esql": "FROM metrics-postgresql.statement-default\n| STATS SUM(postgresql.database.blocks.hit) AS total_hits, SUM(postgresql.database.blocks.read) AS total_reads BY postgresql.database.name, host.name\n| EVAL total_blocks = total_hits + total_reads\n| EVAL cache_hit_ratio = CASE(total_blocks > 0, (total_hits / total_blocks) * 100, 0)\n| WHERE cache_hit_ratio < 90"
       },
       "aggType": "count",
       "groupBy": "all",
