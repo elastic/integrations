@@ -35,7 +35,7 @@ ${KAFKA_HOME}/bin/kafka-storage.sh format \
 
 echo "Starting Kafka broker..."
 
-export KAFKA_OPTS="-javaagent:/opt/jolokia-jvm-agent.jar=port=8780,host=0.0.0.0"
+export KAFKA_OPTS="-javaagent:/opt/jolokia/jolokia-jvm.jar=port=8780,host=0.0.0.0"
 
 ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server_custom.properties &
 # Store the Process ID (PID) of the Kafka server
@@ -53,14 +53,14 @@ KAFKA_OPTS="" ${KAFKA_HOME}/bin/kafka-topics.sh --bootstrap-server localhost:909
 # --- Start Producer and Consumer ---
 
 echo "Starting producer with Jolokia on port 8775..."
-export KAFKA_OPTS="-javaagent:/opt/jolokia-jvm-agent.jar=port=8775,host=0.0.0.0"
+export KAFKA_OPTS="-javaagent:/opt/jolokia/jolokia-jvm.jar=port=8775,host=0.0.0.0"
 (while true; do echo "Test msg"; sleep 5; done) | \
 ${KAFKA_HOME}/bin/kafka-console-producer.sh \
   --bootstrap-server localhost:9092 \
   --topic my-topic &
 
 echo "Starting consumer with Jolokia on port 8774..."
-export KAFKA_OPTS="-javaagent:/opt/jolokia-jvm-agent.jar=port=8774,host=0.0.0.0"
+export KAFKA_OPTS="-javaagent:/opt/jolokia/jolokia-jvm.jar=port=8774,host=0.0.0.0"
 ${KAFKA_HOME}/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic my-topic \

@@ -18,8 +18,8 @@ RUN mkdir -p ${KAFKA_LOGS_DIR} && mkdir -p ${KAFKA_HOME} && \
         "https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz" && \
     tar xzf ${INSTALL_DIR}/kafka.tgz -C ${KAFKA_HOME} --strip-components 1
 
-RUN retry --min 1 --max 180 -- curl -J -L -s -f --show-error -o /opt/jolokia-jvm-agent.jar \
-    http://search.maven.org/remotecontent\?filepath\=org/jolokia/jolokia-agent-jvm/2.3.0/jolokia-agent-jvm-2.3.0-javaagent.jar
+# Copy jolokia agent jar from host into container
+ADD jolokia/jolokia-jvm.jar /opt/jolokia/jolokia-jvm.jar
 
 ADD zookeeper/startup.sh /startup.sh
 ADD zookeeper/healthcheck.sh /healthcheck.sh
