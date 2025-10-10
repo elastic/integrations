@@ -2,9 +2,9 @@
   "id": "memory_grants_pending",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "Memory Grants Pending",
+    "name": "[MicrosoftSQL Server] Memory Grants Pending",
     "tags": ["MicrosoftSQL Server",
-      "MicrosoftSQL Server Memory Grants Pending"],
+      "Memory Grants Pending"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -19,7 +19,7 @@
       "thresholdComparator": "<",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-microsoft_sqlserver.performance-default\n| STATS memory_grants_pending=avg(mssql.metrics.memory_grants_pending) by mssql.metrics.server_name\n| WHERE memory_grants_pending > 0"
+        "esql": "FROM metrics-microsoft_sqlserver.performance-default\n| STATS memory_grants_pending=MAX(mssql.metrics.memory_grants_pending) by mssql.metrics.server_name\n| WHERE memory_grants_pending > 0"
       },
       "aggType": "count",
       "groupBy": "all",

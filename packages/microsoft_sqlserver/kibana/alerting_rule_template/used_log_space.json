@@ -2,9 +2,9 @@
   "id": "used_log_space",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "Used Log Space",
+    "name": "[MicrosoftSQL Server] Used Log Space",
     "tags": ["MicrosoftSQL Server",
-      "MicrosoftSQL Server Used Log Space"],
+      "Used Log Space"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -19,7 +19,7 @@
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-microsoft_sqlserver.transaction_log-default\n| STATS used_logspace=avg(mssql.metrics.used_log_space_pct) by mssql.metrics.server_name\n| WHERE used_logspace > 90"
+        "esql": "FROM metrics-microsoft_sqlserver.transaction_log-default\n| STATS used_logspace=MAX(mssql.metrics.used_log_space_pct) * 100\n by mssql.metrics.server_name\n| WHERE used_logspace > 90"
       },
       "aggType": "count",
       "groupBy": "all",
