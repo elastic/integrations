@@ -36,7 +36,7 @@ effects. A notorious example of a problematic WMI class is
 `Win32_Product`. Read more in the related [Windows
 Documentation](https://learn.microsoft.com/en-us/troubleshoot/windows-server/admin-development/windows-installer-reconfigured-all-applications#more-information_).
 
-###  WMI Arbitrator and Query Execution
+##  WMI arbitrator and query execution
 
 Query execution is managed by the underlying WMI Framework, specifically
 the [WMI
