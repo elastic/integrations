@@ -1,18 +1,20 @@
 {
     "attributes": {
         "columns": [
-            "microsoft_defender_endpoint.vulnerability.affected_machine.last_seen",
             "host.id",
-            "host.ip",
             "host.name",
+            "microsoft_defender_endpoint.vulnerability.last_seen_timestamp",
             "vulnerability.id",
-            "host.os.name",
-            "host.risk.calculated_level",
-            "microsoft_defender_endpoint.vulnerability.affected_machine.health_status",
-            "microsoft_defender_endpoint.vulnerability.affected_machine.is_potential_duplication"
+            "vulnerability.severity",
+            "microsoft_defender_endpoint.vulnerability.exploitability_level",
+            "package.name",
+            "package.version",
+            "message"
         ],
         "description": "",
-        "grid": {},
+        "grid": {
+            "columns": {}
+        },
         "hideChart": false,
         "isTextBasedQuery": false,
         "kibanaSavedObjectMeta": {
@@ -25,16 +27,38 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "microsoft_defender_endpoint.vulnerability.affected_machine.id",
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "microsoft_defender_endpoint.vulnerability.affected_machine.id",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "microsoft_defender_endpoint.vulnerability"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "microsoft_defender_endpoint.vulnerability"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "host.id",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "host.id",
                             "negate": false,
                             "type": "exists",
                             "value": "exists"
                         },
                         "query": {
                             "exists": {
-                                "field": "microsoft_defender_endpoint.vulnerability.affected_machine.id"
+                                "field": "host.id"
                             }
                         }
                     }
@@ -56,9 +80,8 @@
         "title": "Affected Machines Essential Details [Logs Microsoft Defender Endpoint]"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-05-08T08:59:15.497Z",
-    "id": "microsoft_defender_endpoint-4e5cb35c-7a18-4f29-bb69-7e30ab9bbdec",
-    "managed": true,
+    "created_at": "2025-10-09T16:15:52.727Z",
+    "id": "microsoft_defender_endpoint-89e2c263-f9c2-4f34-85d2-86b1d1b9106b",
     "references": [
         {
             "id": "logs-*",
@@ -68,6 +91,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
