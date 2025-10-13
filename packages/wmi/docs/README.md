@@ -21,7 +21,7 @@ This integration has been tested on the following platforms:
 
 ## WMI Query Language (WQL) support
 
-This integrations supports the execution of
+This integration supports the execution of
 [WQL](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi)
 queries, a SQL-like query language for retrieving information from WMI
 namespaces.
