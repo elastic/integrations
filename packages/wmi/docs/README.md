@@ -1,4 +1,4 @@
-# Custom WMI (Windows Management Instrumentation) Input Package
+# Custom WMI (Windows Management Instrumentation) input package
 
 The Custom WMI Input integration reads metrics via [Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/about-wmi) (WMI), a core management technology in the Windows Operating system.
 By leveraging WMI Query Language (WQL), this integration allows you to extract detailed system information and metrics to monitor the health and performance of Windows Systems.
