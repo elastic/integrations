@@ -3,58 +3,72 @@ description: Pipeline for PFsense Unbound DNS logs
 processors:
   - grok:
       field: message
-      patterns:        
+      patterns:
         - '%{LOGLEVEL:log.level}: %{IP:source.address} %{HOSTNAME:_tmp.question.name}(\.) %{WORD:_tmp.question.type} %{WORD:_tmp.question.class}'
       on_failure:
         - drop:
             description: Drop if not a query log
+      tag: grok_88ceaee5
   - append:
       field: event.type
       value: connection
       allow_duplicates: false
       if: ctx.source?.address != null
+      tag: append_ac4d9a80
   - append:
       field: event.type
       value: end
       allow_duplicates: false
       if: ctx.message.toLowerCase().contains('disconnected')
+      tag: append_6887ab9d
   - set:
       field: network.protocol
       value: dns
+      tag: set_96a840d1
   - set:
       field: dns.type
       value: question
       if: ctx._tmp?.question?.name != null
+      tag: set_4812efdb
   - registered_domain:
       field: _tmp.question.name
       target_field: dns.question
       ignore_missing: true
+      tag: registered_domain_a89b448b
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
+      tag: rename_88a92ba9
   - rename:
       field: _tmp.question.type
       target_field: dns.question.type
       ignore_missing: true
+      tag: rename_e2286aa7
   - rename:
       field: _tmp.question.class
       target_field: dns.question.class
       ignore_missing: true
+      tag: rename_e864f0db
   - convert:
       field: source.address
       target_field: source.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_f5632a20
   - set:
       field: client
       copy_from: source
       ignore_empty_value: true
+      tag: set_721030b3
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

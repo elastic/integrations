@@ -6,29 +6,38 @@ processors:
       patterns:
       - '%{IPORHOST:source.address} %{NOTSPACE:squid.request_status}/%{NUMBER:http.response.status_code:long} %{NUMBER:http.response.bytes:long} %{NOTSPACE:http.request.method} (?:%{URI:url.original}|(%{IPORHOST:url.domain}(?::%{DATA:url.port})?))?%{SPACE}%{NOTSPACE:http.request.referrer}%{SPACE}%{NOTSPACE:squid.hierarchy_status}/(?:%{IPORHOST:destination.address}|-)%{SPACE}%{NOTSPACE:http.response.mime_type}'
       ignore_missing: false
+      tag: grok_55f0c6b7
   - uri_parts:
       field: url.original
       ignore_failure: true
       if: ctx.url?.original != null
+      tag: uri_parts_c5d45689
   - convert:
       field: url.port
       type: long
       ignore_missing: true
+      tag: convert_537f953d
   - append:
       field: event.category
       value: web
+      tag: append_4595ee28
   - set:
       field: event.outcome
       value: success
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+      tag: set_b50e8224
   - set:
       field: event.outcome
       value: failure
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+      tag: set_75086854
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -20,77 +20,96 @@ processors:
         FOR: 'for %{IP:client.address} \(%{IP:server.address}\)? from %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
         MIDDLE: '(?:%{FROM}|%{ON}|%{FOR})'
         DUID: '(?i)[0-9a-f]{2}(:[0-9a-f]{2})+'
+      tag: grok_efb70afb
   - append:
       field: event.type
-      value: 
+      value:
         - connection
         - protocol
         - info
       allow_duplicates: false
+      tag: append_c741503d
   - set:
       field: network.protocol
       value: dhcp
+      tag: set_ea539779
   - set:
       field: network.protocol
       value: dhcpv6
       if: ctx.event.provider == 'dhcp6c' || (ctx.server?.address != null && ctx.server.address.contains(':')) || (ctx.client?.address != null && ctx.client.address.contains(':'))
+      tag: set_98d42096
   - set:
       field: network.transport
       value: udp
+      tag: set_a6cfd568
   - convert:
       field: client.address
       target_field: client.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_c718a334
   - convert:
       field: server.address
       target_field: server.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_940441bc
   - uppercase:
       field: client.mac
       ignore_missing: true
+      tag: uppercase_230df574
   - gsub:
       field: client.mac
       pattern: '[:]'
       replacement: '-'
       ignore_missing: true
+      tag: gsub_3eb17338
   - uppercase:
       field: server.mac
       ignore_missing: true
+      tag: uppercase_12d7a2a0
   - gsub:
       field: server.mac
       pattern: '[:]'
       replacement: '-'
       ignore_missing: true
+      tag: gsub_5d413db4
   - lowercase:
       field: _tmp.action
       ignore_missing: true
+      tag: lowercase_5d4e19c7
   - gsub:
       field: _tmp.action
       target_field: event.action
       pattern: ' '
       replacement: '-'
       ignore_missing: true
+      tag: gsub_2c25be60
   - set:
       field: source
       copy_from: client
       ignore_empty_value: true
+      tag: set_a194c11b
   - set:
       field: destination
       copy_from: server
       ignore_empty_value: true
+      tag: set_bb802684
   - append:
       field: related.hosts
       value: "{{{pfsense.dhcp.hostname}}}"
       allow_duplicates: false
       if: "ctx.pfsense?.log?.dhcp?.hostname != null"
+      tag: append_8bba1f0b
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
