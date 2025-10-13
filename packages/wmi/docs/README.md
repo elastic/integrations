@@ -130,7 +130,7 @@ FROM Win32_Process
 WHERE Name = 'lsass.exe' AND WorkingSetSize > 104857600
 ```
 
-Equivalent YAML Configuration:
+Equivalent YAML configuration:
 
 ```yaml
 - class: Win32_Process
