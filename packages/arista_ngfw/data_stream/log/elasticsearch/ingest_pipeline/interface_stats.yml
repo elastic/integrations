@@ -8,34 +8,44 @@ processors:
       field: arista.interfaceId
       target_field: arista.interface.id
       ignore_missing: true
+      tag: rename_a68659d0
   - rename:
       field: arista.rxBytes
       target_field: arista.received.bytes
       ignore_missing: true
+      tag: rename_8eb16853
   - rename:
       field: arista.rxRate
       target_field: arista.received.rate
       ignore_missing: true
+      tag: rename_6f05e75d
   - convert:
       field: arista.received.rate
       type: float
       ignore_missing: true
+      tag: convert_5d66c616
   - rename:
       field: arista.txBytes
       target_field: arista.transmitted.bytes
       ignore_missing: true
+      tag: rename_b83ca26d
   - rename:
       field: arista.txRate
       target_field: arista.transmitted.rate
       ignore_missing: true
+      tag: rename_81423df9
   - convert:
       field: arista.transmitted.rate
       type: float
       ignore_missing: true
+      tag: convert_4400e2fc
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
