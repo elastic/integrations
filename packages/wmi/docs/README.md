@@ -41,7 +41,7 @@ documentation](https://learn.microsoft.com/en-us/troubleshoot/windows-server/adm
 Query execution is managed by the underlying WMI framework, specifically
 by the [WMI
 arbitrator](https://learn.microsoft.com/en-us/troubleshoot/windows-server/system-management-components/new-wmi-arbitrator-behavior-in-windows-server).
-The Arbitrator is responsible for:
+The arbitrator is responsible for:
 
 - Scheduling and controlling query execution
 
