@@ -13,6 +13,7 @@ processors:
         - '^(?:%{GREEDYDATA}%{SPACE}(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name}, operational Transmit Flow Control state changed to %{DATA:cisco_nexus.log.operational.transmit_flow_control_state}$'
         - '^(?:%{GREEDYDATA}%{SPACE}(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name}, %{GREEDYDATA}$'
       ignore_failure: true
+      tag: grok_229845cb
   - grok:
       description: Extract VSHD_SYSLOG_CONFIG_I, DETECT_MULTIPLE_PEERS, UPDOWN, CFGWRITE_STARTED, LINEPROTO MNEMONIC.
       field: message
@@ -24,6 +25,7 @@ processors:
         - '^Interface %{DATA:cisco_nexus.log.interface.name}, changed state to %{DATA:cisco_nexus.log.state}$'
         - '^%{DATA}(PID %{NUMBER:process.pid:long})%{GREEDYDATA}$'
       ignore_failure: true
+      tag: grok_2528203a
   - grok:
       description: Extract SYSTEM_MSG MNEMONIC.
       field: message
@@ -35,6 +37,7 @@ processors:
         - '^Login failed for user %{USERNAME:user.name} - %{WORD:network.protocol}\[%{NUMBER:process.pid:long}\]%{GREEDYDATA}$'
         - '^%{DATA} : %{GREEDYDATA:temp.message2}$'
       ignore_failure: true
+      tag: grok_3172da53
   - grok:
       description: Extract INVAL_IP, L2FM_MAC_MOVE2, DUPLEX_MISMATCH, NATIVE_VLAN_MISMATCH, THRESHOLD_VIOLATION MNEMONIC.
       field: message
@@ -45,6 +48,7 @@ processors:
         - '^%{DATA} mismatch discovered on %{DATA:cisco_nexus.log.network.ingress_interface}(?:\(%{DATA}\))?, with %{DATA:cisco_nexus.log.network.egress_interface}(?:\(%{DATA}\))?$'
         - '^%{DATA:cisco_nexus.log.interface.name}: Rx power high warning; Operating value: %{DATA:cisco_nexus.log.operating_value}, Threshold value: %{DATA:cisco_nexus.log.threshold_value}.$'
       ignore_failure: true
+      tag: grok_f92a0857
   - grok:
       description: Extract LOGIN_SUCCESS, LOGOUT,LOGOUT_C6K MNEMONIC.
       field: message
@@ -53,6 +57,7 @@ processors:
         - '^Login Success \[user: %{USERNAME:user.name}\] \[Source: %{IP:source.ip}\] \[localport: %{NUMBER:source.port:long}\] at %{GREEDYDATA}$'
         - '^User %{USERNAME:user.name} %{GREEDYDATA}\(%{IP:source.ip}\)$'
       ignore_failure: true
+      tag: grok_a1e9a4a1
   - gsub:
       field: source.mac
       tag: 'gsub_sourcemac_remove_dot'
@@ -84,6 +89,7 @@ processors:
       value_split: '='
       ignore_missing: true
       ignore_failure: true
+      tag: kv_af9c5b5f
   - kv:
       field: temp.message2
       target_field: temp
@@ -91,6 +97,7 @@ processors:
       value_split: =
       ignore_missing: true
       ignore_failure: true
+      tag: kv_d53f7654
   - rename:
       field: temp.logname
       target_field: cisco_nexus.log.logname
@@ -208,4 +215,7 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
