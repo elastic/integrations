@@ -90,7 +90,7 @@ The properties of type `CIM_Reference` (references) used in [WMI Association Cla
 
 Elastic Agent converts WMI properties of type "datetime" to timestamps, but these are serialized as strings in the output. Since date detection is disabled by default, these fields will be stored as strings unless explicitly mapped as dates. To ensure proper mapping, we recommend explicitly setting the mapping in the `@custom` template.
 Refer to [this guide](https://www.elastic.co/docs/reference/fleet/data-streams#data-streams-index-templates-edit)
-and [this guide](https://www.elastic.co/docs/manage-data/data-store/index-basics#manage-component-templates) for additional
+and [Manage component templates](https://www.elastic.co/docs/manage-data/data-store/index-basics#index-management-manage-component-templates) for additional
 details.
 
 ## Configuration
