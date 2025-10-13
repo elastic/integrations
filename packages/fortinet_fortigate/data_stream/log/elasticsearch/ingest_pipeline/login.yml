@@ -4,26 +4,32 @@ processors:
 - set:
     field: "event.kind"
     value: "event"
+    tag: set_de80643c
 - set:
     field: "event.action"
     value: "login"
     override: false
+    tag: set_9396d084
 - append:
     field: "event.category"
     value:
     - "authentication"
+    tag: append_c182a53a
 - set:
     field: "user.name"
     value: "{{{ source.user.name }}}"
     if: ctx.source?.user?.name != null
+    tag: set_7ff007fb
 - append:
     field: "user.roles"
     value: "{{{ fortinet.firewall.adminprof }}}"
     if: ctx.fortinet?.firewall?.adminprof != null
+    tag: append_9f4ec36b
 - append:
     field: "source.user.roles"
     value: "{{{ fortinet.firewall.adminprof }}}"
     if: ctx.fortinet?.firewall?.adminprof != null
+    tag: append_fa50adf0
 - dissect:
     field: "fortinet.firewall.userfrom"
     tag: "userfrom"
@@ -79,32 +85,39 @@ processors:
     field: "event.outcome"
     value: "failure"
     if: "ctx.event?.outcome != null && ctx.event?.outcome.toLowerCase().startsWith('fail')"
+    tag: set_4b7c0079
 - set:
     field: "event.outcome"
     value: "success"
     if: "ctx.event?.outcome != null && ctx.event?.outcome.toLowerCase().startsWith('success')"
+    tag: set_bd391e8b
 - rename:
     field: "fortinet.firewall.log_id"
     target_field: "event.id"
     ignore_missing: true
+    tag: rename_14d08806
 - rename:
     field: "fortinet.firewall.pri"
     target_field: "log.level"
     ignore_missing: true
+    tag: rename_c2c890f0
 - rename:
     field: "fortinet.firewall.device_id"
     target_field: "observer.serial_number"
     ignore_missing: true
+    tag: rename_f8ed8afb
 - append:
     field: user.roles
     value: "{{{ _tmp.user.roles }}}"
     if: ctx._tmp?.user?.roles != null
     allow_duplicates: false
+    tag: append_217fc576
 - append:
     field: source.user.roles
     value: "{{{ _tmp.user.roles }}}"
     if: ctx._tmp?.user?.roles != null
     allow_duplicates: false
+    tag: append_a2c82efb
 - convert:
     field: source.port
     type: long
@@ -134,10 +147,14 @@ processors:
     - "_tmp.user.roles"
     ignore_missing: true
     ignore_failure: true
+    tag: remove_723f70cc
 on_failure:
 - set:
     field: "event.kind"
     value: "pipeline_error"
 - append:
-    field: "error.message"
-    value: "{{{ _ingest.on_failure_message }}}"
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
