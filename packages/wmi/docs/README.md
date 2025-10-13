@@ -122,7 +122,7 @@ Each item in the `queries` list specifies a wmi query to perform.
 
 ### Example
 
-Example WQL Query:
+Example WQL query:
 
 ```sql
 SELECT Name, ProcessId, WorkingSetSize
