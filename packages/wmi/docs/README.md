@@ -19,7 +19,7 @@ This integration has been tested on the following platforms:
 | Microsoft Windows 11 Pro                    | x64          |
 
 
-### WMI Query Language (WQL) Support
+## WMI Query Language (WQL) support
 
 This integrations supports the execution of
 [WQL](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi)
