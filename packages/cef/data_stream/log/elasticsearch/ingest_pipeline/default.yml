@@ -4,6 +4,7 @@ processors:
   - set:
       field: ecs.version
       value: 8.17.0
+      tag: set_f5923549
   - convert:
       field: event.id
       ignore_missing: true
@@ -29,6 +30,7 @@ processors:
       - asn
       - organization_name
       target_field: source.as
+      tag: geoip_28d69883
   - geoip:
       field: destination.ip
       database_file: GeoLite2-ASN.mmdb
@@ -37,66 +39,80 @@ processors:
       - asn
       - organization_name
       target_field: destination.as
+      tag: geoip_8a007787
   - rename:
       field: source.as.asn
       ignore_missing: true
       target_field: source.as.number
+      tag: rename_a917047d
   - rename:
       field: source.as.organization_name
       ignore_missing: true
       target_field: source.as.organization.name
+      tag: rename_f1362d0b
   - rename:
       field: destination.as.asn
       ignore_missing: true
       target_field: destination.as.number
+      tag: rename_3b459fcd
   - rename:
       field: destination.as.organization_name
       ignore_missing: true
       target_field: destination.as.organization.name
+      tag: rename_814bd459
   - append:
       if: ctx?.cef?.extensions?.fileHash != null && ctx?.cef?.extensions?.fileHash != ''
       field: related.hash
       allow_duplicates: false
       value: '{{{cef.extensions.fileHash}}}'
+      tag: append_592251e0
   - append:
       if: ctx?.cef?.extensions?.oldFileHash != null && ctx?.cef?.extensions?.oldFileHash != ''
       field: related.hash
       allow_duplicates: false
       value: '{{{cef.extensions.oldFileHash}}}'
+      tag: append_be4900bb
   - append:
       if: ctx?.destination?.ip != null && ctx?.destination?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{destination.ip}}}'
+      tag: append_73d5506a
   - append:
       if: ctx?.destination?.nat?.ip != null && ctx?.destination?.nat?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{destination.nat.ip}}}'
+      tag: append_3da81053
   - append:
       if: ctx?.source?.ip != null && ctx?.source?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{source.ip}}}'
+      tag: append_74a1d0ad
   - append:
       if: ctx?.source?.nat?.ip != null && ctx?.source?.nat?.ip != ''
       field: related.ip
       allow_duplicates: false
       value: '{{{source.nat.ip}}}'
+      tag: append_78428a7e
   - append:
       if: ctx?.destination?.user?.name != null
       field: related.user
       value: '{{{destination.user.name}}}'
+      tag: append_75c0abfc
   - append:
       if: ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''
       field: related.user
       allow_duplicates: false
       value: '{{{source.user.name}}}'
+      tag: append_afcddc50
   - append:
       if: ctx?.observer?.hostname != null && ctx?.observer?.hostname != ''
       field: related.hosts
       allow_duplicates: false
       value: '{{{observer.hostname}}}'
+      tag: append_c0e4bbd6
   - pipeline:
       if: ctx.cef?.device?.vendor == 'FORCEPOINT'
       name: '{{ IngestPipeline "fp-pipeline" }}'
@@ -115,19 +131,21 @@ processors:
       ignore_missing: true
       pattern: '[:.]'
       replacement: '-'
-      tag: gsub mac
+      tag: gsub_destination_mac
   - gsub:
       field: source.mac
       ignore_missing: true
       pattern: '[:.]'
       replacement: '-'
-      tag: gsub mac
+      tag: gsub_source_mac
   - uppercase:
       field: destination.mac
       ignore_missing: true
+      tag: uppercase_04de3657
   - uppercase:
       field: source.mac
       ignore_missing: true
+      tag: uppercase_5b4e7be2
   #
   # Timestamp parsing.
   #
@@ -150,17 +168,20 @@ processors:
       field: _tmp.timestamp8601
       formats:
         - ISO8601
+      tag: date_c38c0806
   - date:
       if: ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
+      tag: date_771f472e
   - remove:
       if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
       field: event.original
       ignore_failure: true
       ignore_missing: true
+      tag: remove_9f895a30
   # Converting the observer.ip to an array if its not, to provide correct ECS mapping with backwards compatibility.
   # Later this should be changed in the decode_cef processor as well.
   - rename:
@@ -179,16 +200,19 @@ processors:
       if: ctx.cef?.extensions?.categoryOutcome == "/Success"
       field: event.outcome
       value: success
+      tag: set_da09bb71
   - set:
       if: ctx.cef?.extensions?.categoryOutcome == "/Failure"
       field: event.outcome
       value: failure
+      tag: set_cb9ede45
   # Cleanup
   - remove:
       field:
         - cef.extensions._cefVer
         - _tmp
       ignore_missing: true
+      tag: remove_8c701636
 on_failure:
   - remove:
       field:
@@ -196,8 +220,10 @@ on_failure:
       ignore_missing: true
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
