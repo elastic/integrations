@@ -59,7 +59,7 @@ may continue running until the WMI arbitrator decides to stop execution.
 
 
 
-## WMI Type support
+## WMI type support
 
 The `microsoft/wmi` library internally uses the WMI Scripting API. This API, as per the
 [official WMI Documentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/querying-wmi),
