@@ -3,18 +3,13 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
-        - "^(?:%{DATA:_tmp.timestamp} )?\
-          CEF:%{NUMBER:cisco_secure_email_gateway.log.cef_format_version}\
-          \\|%{WORD:cisco_secure_email_gateway.log.appliance.vendor}\
-          \\|%{DATA:cisco_secure_email_gateway.log.appliance.product}\
-          \\|%{DATA:cisco_secure_email_gateway.log.appliance.version}\
-          \\|%{DATA:cisco_secure_email_gateway.log.event_class_id}\
-          \\|%{DATA:cisco_secure_email_gateway.log.event.name}\
-          \\|%{WORD:event.severity}\
-          \\|%{GREEDYDATA:_tmp.details}$"
+        - "^(?:%{DATA:_tmp.timestamp} )?CEF:%{NUMBER:cisco_secure_email_gateway.log.cef_format_version}\\|%{WORD:cisco_secure_email_gateway.log.appliance.vendor}\\|%{DATA:cisco_secure_email_gateway.log.appliance.product}\\|%{DATA:cisco_secure_email_gateway.log.appliance.version}\\|%{DATA:cisco_secure_email_gateway.log.event_class_id}\\|%{DATA:cisco_secure_email_gateway.log.event.name}\\|%{WORD:event.severity}\\|%{GREEDYDATA:_tmp.details}$"
+      tag: grok_be30f38e
+
   - kv:
       field: _tmp.details
       target_field: _tmp.fields
@@ -23,11 +18,13 @@ processors:
       value_split: '='
       ignore_failure: true
       ignore_missing: true
+      tag: kv_339a6c84
   - rename:
       field: _tmp.fields.ESAAttachmentDetails
       target_field: cisco_secure_email_gateway.log.esa.attachment_details
       ignore_missing: true
       ignore_failure: true
+      tag: rename_b865b7da
   - convert:
       field: _tmp.fields.ESADHASource
       target_field: cisco_secure_email_gateway.log.esa.dha_source
@@ -35,51 +32,61 @@ processors:
       type: ip
       ignore_missing: true
       ignore_failure: true
+      tag: convert_f834b2af
   - rename:
       field: _tmp.fields.ESADKIMVerdict
       target_field: cisco_secure_email_gateway.log.esa.dkim_verdict
       ignore_missing: true
       ignore_failure: true
+      tag: rename_b8dc12ac
   - rename:
       field: _tmp.fields.ESADLPVerdict
       target_field: cisco_secure_email_gateway.log.esa.dlp_verdict
       ignore_missing: true
       ignore_failure: true
+      tag: rename_19ca1ac2
   - rename:
       field: _tmp.fields.ESADMARCVerdict
       target_field: cisco_secure_email_gateway.log.esa.dmarc_verdict
       ignore_missing: true
       ignore_failure: true
+      tag: rename_260c1cf4
   - rename:
       field: _tmp.fields.ESADaneHost
       target_field: cisco_secure_email_gateway.log.esa.dane.host
       ignore_missing: true
       ignore_failure: true
+      tag: rename_662300e1
   - rename:
       field: _tmp.fields.ESADaneStatus
       target_field: cisco_secure_email_gateway.log.esa.dane.status
       ignore_missing: true
       ignore_failure: true
+      tag: rename_49782e89
   - rename:
       field: _tmp.fields.ESAFinalActionDetails
       target_field: cisco_secure_email_gateway.log.esa.final_action_details
       ignore_missing: true
       ignore_failure: true
+      tag: rename_20d86327
   - rename:
       field: _tmp.fields.ESAFriendlyFrom
       target_field: cisco_secure_email_gateway.log.esa.friendly_from
       ignore_missing: true
       ignore_failure: true
+      tag: rename_d741ea82
   - rename:
       field: _tmp.fields.ESAGMVerdict
       target_field: cisco_secure_email_gateway.log.esa.graymail_verdict
       ignore_missing: true
       ignore_failure: true
+      tag: rename_9b1cedac
   - urldecode:
       field: _tmp.fields.ESAHeloDomain
       target_field: cisco_secure_email_gateway.log.esa.helo.domain
       ignore_missing: true
       ignore_failure: true
+      tag: urldecode_f5714038
   - convert:
       field: _tmp.fields.ESAHeloIP
       target_field: cisco_secure_email_gateway.log.esa.helo.ip
@@ -87,107 +94,128 @@ processors:
       type: ip
       ignore_missing: true
       ignore_failure: true
+      tag: convert_de396e4b
   - rename:
       field: _tmp.fields.ESAMARAction
       target_field: cisco_secure_email_gateway.log.esa.mail_auto_remediation_action
       ignore_missing: true
       ignore_failure: true
+      tag: rename_3e3d2f51
   - rename:
       field: _tmp.fields.ESAMFVerdict
       target_field: cisco_secure_email_gateway.log.esa.mf_verdict
       ignore_missing: true
       ignore_failure: true
+      tag: rename_d157e054
   - rename:
       field: _tmp.fields.ESAMailFlowPolicy
       target_field: cisco_secure_email_gateway.log.esa.mail_flow_policy
       ignore_missing: true
       ignore_failure: true
+      tag: rename_77b2b3d5
   - convert:
       field: _tmp.fields.ESAMsgSize
       target_field: cisco_secure_email_gateway.log.esa.msg_size
       type: long
       ignore_missing: true
       ignore_failure: true
+      tag: convert_e41eb8c3
   - rename:
       field: _tmp.fields.ESAMsgTooBigFromSender
       target_field: cisco_secure_email_gateway.log.esa.msg_too_big_from_sender
       ignore_missing: true
       ignore_failure: true
+      tag: rename_31ba1597
   - rename:
       field: _tmp.fields.ESAOFVerdict
       target_field: cisco_secure_email_gateway.log.esa.outbreak_filter_verdict
       ignore_missing: true
       ignore_failure: true
+      tag: rename_51980557
   - rename:
       field: _tmp.fields.ESARateLimitedIP
       target_field: cisco_secure_email_gateway.log.esa.rate_limited_ip
       ignore_missing: true
       ignore_failure: true
+      tag: rename_86edc53d
   - rename:
       field: _tmp.fields.ESAReplyTo
       target_field: cisco_secure_email_gateway.log.esa.reply_to
       ignore_missing: true
       ignore_failure: true
+      tag: rename_f9ced062
   - rename:
       field: _tmp.fields.ESASDRDomainAge
       target_field: cisco_secure_email_gateway.log.esa.sdr_consolidated_domain_age
       ignore_missing: true
       ignore_failure: true
+      tag: rename_36de951d
   - rename:
       field: _tmp.fields.ESASPFVerdict
       target_field: cisco_secure_email_gateway.log.esa.spf_verdict
       ignore_missing: true
       ignore_failure: true
+      tag: rename_a280ccb4
   - rename:
       field: _tmp.fields.ESASenderGroup
       target_field: cisco_secure_email_gateway.log.esa.sender_group
       ignore_missing: true
       ignore_failure: true
+      tag: rename_803fdc38
   - rename:
       field: _tmp.fields.ESATLSInCipher
       target_field: cisco_secure_email_gateway.log.esa.tls.in.cipher
       ignore_missing: true
       ignore_failure: true
+      tag: rename_6ac4e12f
   - rename:
       field: _tmp.fields.ESATLSInConnStatus
       target_field: cisco_secure_email_gateway.log.esa.tls.in.connection_status
       ignore_missing: true
       ignore_failure: true
+      tag: rename_beeccd9c
   - rename:
       field: _tmp.fields.ESATLSInProtocol
       target_field: cisco_secure_email_gateway.log.esa.tls.in.protocol
       ignore_missing: true
       ignore_failure: true
+      tag: rename_6e2ef3bb
   - rename:
       field: _tmp.fields.ESATLSOutCipher
       target_field: cisco_secure_email_gateway.log.esa.tls.out.cipher
       ignore_missing: true
       ignore_failure: true
+      tag: rename_df933599
   - rename:
       field: _tmp.fields.ESATLSOutConnStatus
       target_field: cisco_secure_email_gateway.log.esa.tls.out.connection_status
       ignore_missing: true
       ignore_failure: true
+      tag: rename_0aeae238
   - rename:
       field: _tmp.fields.ESATLSOutProtocol
       target_field: cisco_secure_email_gateway.log.esa.tls.out.protocol
       ignore_missing: true
       ignore_failure: true
+      tag: rename_60732d0b
   - rename:
       field: _tmp.fields.ESAURLDetails
       target_field: cisco_secure_email_gateway.log.esa.url_details
       ignore_missing: true
       ignore_failure: true
+      tag: rename_8e84e814
   - rename:
       field: _tmp.fields.act
       target_field: cisco_secure_email_gateway.log.act
       ignore_missing: true
       ignore_failure: true
+      tag: rename_ca7c9dd9
   - rename:
       field: _tmp.fields.cfp1Label
       target_field: cisco_secure_email_gateway.log.cfp1_label
       ignore_missing: true
       ignore_failure: true
+      tag: rename_f8d28722
   - convert:
       field: _tmp.fields.cfp1
       target_field: cisco_secure_email_gateway.log.cfp1
@@ -200,41 +228,49 @@ processors:
         - append:
             field: error.message
             value: 'Failed to convert cfp1 field: {{{_ingest.on_failure_message}}}'
+      tag: convert_736a7f37
   - rename:
       field: _tmp.fields.cs1Label
       target_field: cisco_secure_email_gateway.log.cs1_label
       ignore_missing: true
       ignore_failure: true
+      tag: rename_6d0aaaaa
   - rename:
       field: _tmp.fields.cs1
       target_field: cisco_secure_email_gateway.log.cs1
       ignore_missing: true
       ignore_failure: true
+      tag: rename_1ac89bc9
   - rename:
       field: _tmp.fields.cs2Label
       target_field: cisco_secure_email_gateway.log.cs2_label
       ignore_missing: true
       ignore_failure: true
+      tag: rename_45d24818
   - rename:
       field: _tmp.fields.cs2
       target_field: cisco_secure_email_gateway.log.cs2
       ignore_missing: true
       ignore_failure: true
+      tag: rename_4e139c59
   - rename:
       field: _tmp.fields.cs3Label
       target_field: cisco_secure_email_gateway.log.cs3_label
       ignore_missing: true
       ignore_failure: true
+      tag: rename_7c17533a
   - rename:
       field: _tmp.fields.cs3
       target_field: cisco_secure_email_gateway.log.cs3
       ignore_missing: true
       ignore_failure: true
+      tag: rename_7aad6649
   - rename:
       field: _tmp.fields.cs4Label
       target_field: cisco_secure_email_gateway.log.cs4_label
       ignore_missing: true
       ignore_failure: true
+      tag: rename_8b5796b4
   - gsub:
       field: _tmp.fields.cs4
       target_field: cisco_secure_email_gateway.log.cs4
@@ -243,73 +279,87 @@ processors:
       replacement: ""
       ignore_missing: true
       ignore_failure: true
+      tag: gsub_2d2fa18e
   - rename:
       field: _tmp.fields.cs5Label
       target_field: cisco_secure_email_gateway.log.cs5_label
       ignore_missing: true
       ignore_failure: true
+      tag: rename_1dd7dd12
   - rename:
       field: _tmp.fields.cs5
       target_field: cisco_secure_email_gateway.log.cs5
       ignore_missing: true
       ignore_failure: true
+      tag: rename_a907d321
   - rename:
       field: _tmp.fields.cs6Label
       target_field: cisco_secure_email_gateway.log.cs6_label
       ignore_missing: true
       ignore_failure: true
+      tag: rename_40b37270
   - rename:
       field: _tmp.fields.cs6
       target_field: cisco_secure_email_gateway.log.cs6
       ignore_missing: true
       ignore_failure: true
+      tag: rename_ea1144e1
   - rename:
       field: _tmp.fields.deviceDirection
       target_field: cisco_secure_email_gateway.log.device_direction
       ignore_missing: true
       ignore_failure: true
+      tag: rename_99f40d54
   - rename:
       field: _tmp.fields.deviceInboundInterface
       target_field: cisco_secure_email_gateway.log.listener.name
       ignore_missing: true
       ignore_failure: true
+      tag: rename_65a5f024
   - rename:
       field: _tmp.fields.deviceOutboundInterface
       target_field: cisco_secure_email_gateway.log.listener.name
       ignore_missing: true
       ignore_failure: true
+      tag: rename_9e1fea71
   - rename:
       field: _tmp.fields.duser
       target_field: email.to.address
       ignore_missing: true
       ignore_failure: true
+      tag: rename_5a8e3250
   - convert:
       field: _tmp.fields.dvc
-      target_field : cisco_secure_email_gateway.log.data.ip
+      target_field: cisco_secure_email_gateway.log.data.ip
       type: ip
       if: ctx._tmp?.fields?.dvc != null
       ignore_missing: true
       ignore_failure: true
+      tag: convert_f5d06a0c
   - rename:
       field: _tmp.fields.endTime
       target_field: event.end
       ignore_missing: true
       ignore_failure: true
+      tag: rename_e9a28733
   - rename:
       field: _tmp.fields.end
       target_field: event.end
       ignore_missing: true
       ignore_failure: true
+      tag: rename_2b4e4bde
   - urldecode:
       field: _tmp.fields.sourceHostName
       target_field: source.domain
       ignore_missing: true
       ignore_failure: true
+      tag: urldecode_d5d59450
   - urldecode:
       field: _tmp.fields.shost
       target_field: source.domain
       ignore_missing: true
       ignore_failure: true
+      tag: urldecode_c2ede7b9
   - convert:
       field: _tmp.fields.sourceAddress
       target_field: source.ip
@@ -317,6 +367,7 @@ processors:
       type: ip
       ignore_missing: true
       ignore_failure: true
+      tag: convert_1b793f18
   - convert:
       field: _tmp.fields.src
       target_field: source.ip
@@ -324,6 +375,7 @@ processors:
       type: ip
       ignore_missing: true
       ignore_failure: true
+      tag: convert_23710162
   - gsub:
       field: _tmp.fields.msg
       target_field: email.subject
@@ -332,92 +384,111 @@ processors:
       replacement: ""
       ignore_missing: true
       ignore_failure: true
+      tag: gsub_e8ec69e9
   - rename:
       field: _tmp.fields.suser
       target_field: email.from.address
       ignore_missing: true
       ignore_failure: true
+      tag: rename_ac7b8970
   - rename:
       field: _tmp.fields.startTime
       target_field: event.start
       ignore_missing: true
       ignore_failure: true
+      tag: rename_eae476f9
   - rename:
       field: _tmp.fields.start
       target_field: event.start
       ignore_missing: true
       ignore_failure: true
+      tag: rename_c33ffcfc
   - append:
       field: related.ip
       value: '{{{cisco_secure_email_gateway.log.esa.helo.ip}}}'
       if: ctx.cisco_secure_email_gateway?.log?.esa?.helo?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_877f33fd
   - append:
       field: related.ip
       value: '{{{cisco_secure_email_gateway.log.data.ip}}}'
       if: ctx.cisco_secure_email_gateway?.log?.data?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_5f7e3ad4
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_30d15214
   - set:
       field: email.direction
       value: inbound
       if: ctx.cisco_secure_email_gateway?.log?.listener?.name == 'Incomingmail'
       ignore_failure: true
+      tag: set_54f99bb9
   - set:
       field: email.direction
       value: outbound
       if: ctx.cisco_secure_email_gateway?.log?.listener?.name == 'Outcomingmail'
       ignore_failure: true
+      tag: set_72651277
   - set:
       field: cisco_secure_email_gateway.log.device_direction
       value: incoming
       if: ctx.cisco_secure_email_gateway?.log?.device_direction == '0'
       ignore_failure: true
+      tag: set_e5b323c5
   - set:
       field: cisco_secure_email_gateway.log.device_direction
       value: outgoing
       if: ctx.cisco_secure_email_gateway?.log?.device_direction == '1'
       ignore_failure: true
+      tag: set_9084e6aa
   - rename:
       field: _tmp.fields.deviceExternalId
       target_field: host.id
       ignore_missing: true
+      tag: rename_9d8b2f6e
   - rename:
       field: _tmp.fields.ESAMID
       target_field: email.message_id
       ignore_missing: true
       ignore_failure: true
+      tag: rename_bffc36ae
   - rename:
       field: _tmp.fields.ESAICID
       target_field: cisco_secure_email_gateway.log.esa.injection_connection_id
       ignore_missing: true
+      tag: rename_6e97f4cb
   - rename:
       field: _tmp.fields.ESADCID
       target_field: cisco_secure_email_gateway.log.esa.delivery_connection_id
       ignore_missing: true
+      tag: rename_b8bd073b
   - rename:
       field: _tmp.fields.ESAAMPVerdict
       target_field: cisco_secure_email_gateway.log.esa.amp_verdict
       ignore_missing: true
+      tag: rename_a9ea2f93
   - rename:
       field: _tmp.fields.ESAASVerdict
       target_field: cisco_secure_email_gateway.log.esa.as_verdict
       ignore_missing: true
+      tag: rename_05045433
   - rename:
       field: _tmp.fields.ESAAVVerdict
       target_field: cisco_secure_email_gateway.log.esa.av_verdict
       ignore_missing: true
+      tag: rename_75e19d87
   - rename:
       field: _tmp.fields.ESACFVerdict
       target_field: cisco_secure_email_gateway.log.esa.content_filter_verdict
       ignore_missing: true
+      tag: rename_80268008
   - date:
       field: _tmp.timestamp
       timezone: '{{{event.timezone}}}'
@@ -448,6 +519,7 @@ processors:
               - append:
                   field: error.message
                   value: '{{{_ingest.on_failure_message}}}'
+      tag: date_d7741cfc
   - date:
       field: event.start
       target_field: event.start
@@ -527,11 +599,14 @@ processors:
         - _tmp
       ignore_failure: true
       ignore_missing: true
+      tag: remove_fdefcf3d
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

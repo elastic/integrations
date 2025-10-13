@@ -3,6 +3,7 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
@@ -14,20 +15,24 @@ processors:
         - '^SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256},Timestamp\[%{GREEDYDATA:_tmp.submit.timestamp}\] details\[%{GREEDYDATA:cisco_secure_email_gateway.log.server_error_details}\]$'
         - '^Retrospective verdict received. %{GREEDYDATA:_tmp.new_message}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
+      tag: grok_4f15232d
   - kv:
       field: _tmp.new_message
       if: ctx._tmp.new_message != null
       field_split: ",\\s*(?=[^',]*[=:][^',]*)"
       value_split: '\s*=\s*|:\s*'
+      tag: kv_0bb63133
   - grok:
       field: _tmp.cisco_secure_email_gateway.log.remaining_details
       if: ctx._tmp?.cisco_secure_email_gateway?.log?.remaining_details != null
       patterns:
         - '^File SHA256\[%{GREEDYDATA:email.attachments.file.hash.sha256}\] file mime\[%{GREEDYDATA:email.attachments.file.mime_type}\], upload priority\[%{GREEDYDATA:cisco_secure_email_gateway.log.upload.priority}\] not uploaded, re-tries\[%{GREEDYDATA:cisco_secure_email_gateway.log.retries:long}\], backoff\[%{GREEDYDATA:cisco_secure_email_gateway.log.backoff:long}\] %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
+      tag: grok_7273cf72
   - rename:
       field: Timestamp
       target_field: _tmp.submit.timestamp
       ignore_missing: true
+      tag: rename_1031a728
   - date:
       field: _tmp.submit.timestamp
       target_field: cisco_secure_email_gateway.log.submit.timestamp
@@ -38,6 +43,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_dd83046a
   - date:
       field: _tmp.update.timestamp
       target_field: cisco_secure_email_gateway.log.update.timestamp
@@ -48,19 +54,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_5d6d9d79
   - rename:
       field: File Name
       target_field: email.attachments.file.name
       ignore_missing: true
+      tag: rename_b9cd094c
   - rename:
       field: MID
       target_field: email.message_id
       ignore_missing: true
+      tag: rename_a1506dc1
   - gsub:
       field: 'File Size'
       pattern: '\ bytes'
       replacement: ''
       ignore_failure: true
+      tag: gsub_07980b8f
   - convert:
       field: 'File Size'
       target_field: email.attachments.file.size
@@ -72,78 +82,98 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_1e170071
   - rename:
       field: 'File Type'
       target_field: email.content_type
       ignore_missing: true
+      tag: rename_16c2f40c
   - rename:
       field: FileName
       target_field: email.attachments.file.name
       ignore_missing: true
+      tag: rename_0ccba13e
   - rename:
       field: Malware
       target_field: cisco_secure_email_gateway.log.malware
       ignore_missing: true
+      tag: rename_c3847855
   - rename:
       field: Disposition
       target_field: cisco_secure_email_gateway.log.disposition
       ignore_missing: true
+      tag: rename_855f2689
   - convert:
       field: 'Analysis Score'
       type: long
       ignore_missing: true
+      tag: convert_cccaa177
   - rename:
       field: 'Analysis Score'
       target_field: cisco_secure_email_gateway.log.score
       ignore_missing: true
+      tag: rename_2aaa7d11
   - rename:
       field: sha256
       target_field: email.attachments.file.hash.sha256
       ignore_missing: true
+      tag: rename_d9ce7f1c
   - rename:
       field: upload_action
       target_field: cisco_secure_email_gateway.log.upload.action
       ignore_missing: true
+      tag: rename_08c9aeac
   - rename:
       field: 'Reputation Score'
       target_field: cisco_secure_email_gateway.log.reputation_score
       ignore_missing: true
+      tag: rename_f7e1261a
   - rename:
       field: SHA256
       target_field: email.attachments.file.hash.sha256
       ignore_missing: true
+      tag: rename_a100e0fc
   - rename:
       field: Spyname
       target_field: cisco_secure_email_gateway.log.spy_name
       ignore_missing: true
+      tag: rename_53fe4fbe
   - rename:
       field: Verdict
       target_field: cisco_secure_email_gateway.log.verdict
       ignore_missing: true
+      tag: rename_094b3001
   - rename:
       field: verdict_source
       target_field: cisco_secure_email_gateway.log.verdict_source
       ignore_missing: true
+      tag: rename_869c1997
   - gsub:
       field: email.attachments.file.name
       pattern: \'
       replacement: ''
       ignore_failure: true
+      tag: gsub_e3527757
   - append:
       field: related.hash
       value: '{{{email.attachments.file.hash.sha256}}}'
       if: ctx.email?.attachments?.file?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_227eb64c
   - remove:
       field:
         - _tmp
         - 'File Size'
       ignore_missing: true
+      tag: remove_fe577437
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -3,9 +3,11 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - set:
       field: event.category
       value: [authentication]
+      tag: set_e43d8992
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
@@ -18,41 +20,52 @@ processors:
         - '^User %{USERNAME:user.name} was %{WORD:cisco_secure_email_gateway.log.action} %{WORD:cisco_secure_email_gateway.log.outcome}\.$'
         - '^User %{USERNAME:user.name} %{WORD:cisco_secure_email_gateway.log.outcome} %{WORD:cisco_secure_email_gateway.log.action}$'
         - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
+      tag: grok_1cb51085
   - lowercase:
       field: network.protocol
       ignore_failure: true
+      tag: lowercase_d249a697
   - set:
       field: event.outcome
       if: ctx.cisco_secure_email_gateway?.log?.outcome == 'failed'
       value: failure
+      tag: set_13a82488
   - set:
       field: event.outcome
       if: ctx.cisco_secure_email_gateway?.log?.outcome == 'successfully'
       value: success
+      tag: set_030e8543
   - set:
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.action == 'logged on' || ctx.cisco_secure_email_gateway?.log?.action == 'authenticated'
       value: [start]
+      tag: set_53390e65
   - set:
       field: event.type
       if: ctx.cisco_secure_email_gateway?.log?.action == 'logged out' || ctx.cisco_secure_email_gateway?.log?.action == 'logout'
       value: [end]
+      tag: set_6729c164
   - append:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_3b423052
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
       if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_3c5161f0
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
