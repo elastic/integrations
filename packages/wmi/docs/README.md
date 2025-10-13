@@ -62,7 +62,7 @@ may continue running until the WMI arbitrator decides to stop execution.
 ## WMI type support
 
 The `microsoft/wmi` library internally uses the WMI Scripting API. This API, as per the
-[official WMI Documentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/querying-wmi),
+[official WMI documentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/querying-wmi),
 does not provide direct type conversion for `uint64`, `sint64`, and `datetime`
 [Common Information Model](https://learn.microsoft.com/en-us/windows/win32/wmisdk/common-information-model) (CIM) types;
 instead, these values are returned as strings.
