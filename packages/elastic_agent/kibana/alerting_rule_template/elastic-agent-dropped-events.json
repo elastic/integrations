@@ -10,13 +10,13 @@
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 5,
+      "timeWindowSize": 3,
       "timeWindowUnit": "m",
       "threshold": [0],
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "TS metrics-*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS events_dropped_rate = max(rate(beat.stats.libbeat.pipeline.events.dropped)), pipeline_acked_rate = max(rate(beat.stats.libbeat.pipeline.queue.acked)) BY time_bucket = bucket(@timestamp,5minute), elastic_agent.id, component.id\n| EVAL percent_drop_rate = (events_dropped_rate / pipeline_acked_rate)\n| WHERE percent_drop_rate >= 0.05\n\n"
+        "esql": "FROM metrics-elastic_agent.*beat-default\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS \n  events_dropped_max = max(to_long(beat.stats.libbeat.pipeline.events.dropped)),\n  events_dropped_min = min(to_long(beat.stats.libbeat.pipeline.events.dropped)), \n  pipeline_acked_max = max(to_long(beat.stats.libbeat.pipeline.queue.acked)), \n  pipeline_acked_min = min(to_long(beat.stats.libbeat.pipeline.queue.acked)) \n  BY time_bucket = DATE_TRUNC(1 minute, @timestamp), elastic_agent.id, component.id\n| EVAL \n  events_dropped = events_dropped_max - events_dropped_min, \n  events_acked = pipeline_acked_max - pipeline_acked_min\n| EVAL drop_pct = CASE(\n  events_acked > 0, events_dropped / events_acked, \n  0\n)\n| WHERE drop_pct >= 0.05\n| KEEP drop_pct, elastic_agent.id, component.id\n"
       },
       "aggType": "count",
       "groupBy": "row",

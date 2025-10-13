@@ -10,13 +10,13 @@
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 5,
+      "timeWindowSize": 1,
       "timeWindowUnit": "m",
       "threshold": [0],
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "TS metrics-*\n| WHERE data_stream.dataset == \"elastic_agent.*beat\"\n| STATS pipeline_queue_pct = MAX(beat.stats.libbeat.pipeline.queue.filled.pct) * 100 BY elastic_agent.id, process.name\n| WHERE pipeline_queue_pct >= 90"
+        "esql": "FROM metrics-elastic_agent.*beat-default\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS pipeline_queue_pct = MAX(beat.stats.libbeat.pipeline.queue.filled.pct) * 100 BY elastic_agent.id, component.id\n| WHERE pipeline_queue_pct >= 90"
       },
       "aggType": "count",
       "groupBy": "row",

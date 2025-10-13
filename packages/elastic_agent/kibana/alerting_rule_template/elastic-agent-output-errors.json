@@ -10,13 +10,13 @@
     },
     "params": {
       "searchType": "esqlQuery",
-      "timeWindowSize": 10,
+      "timeWindowSize": 3,
       "timeWindowUnit": "m",
       "threshold": [0],
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "TS metrics-*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS errors_rate = MAX(RATE(beat.stats.libbeat.output.write.errors)) BY time_bucket = BUCKET(@timestamp,5minute), elastic_agent.id, component.id\n| EVAL errors_per_min = errors_rate * 60\n| WHERE errors_per_min > 5"
+        "esql": "FROM metrics-elastic_agent.*beat-default*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\"\n| STATS \n    max_errors = MAX(TO_LONG(beat.stats.libbeat.output.write.errors)),\n    min_errors = MIN(TO_LONG(beat.stats.libbeat.output.write.errors))  \n    BY time_bucket = DATE_TRUNC(1 minute, @timestamp), elastic_agent.id, component.id\n| EVAL errors_count = max_errors - min_errors\n| WHERE errors_count > 5\n| KEEP errors_count, elastic_agent.id, component.id"
       },
       "aggType": "count",
       "groupBy": "row",
