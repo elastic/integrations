@@ -118,7 +118,7 @@ Each item in the `queries` list specifies a WMI query to perform.
 | `class`     | The WMI class. Specifies the `FROM` clause in the query.                                                                                                                                                | Required                |
 | `properties`| List of properties to return. Specifies the `SELECT` clause. Set to an empty list (default) to retrieve all available properties.                                                                      | Default: empty list     |
 | `where`     | The `WHERE` clause. Read more about the format in the related [Windows documentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/where-clause).                                                    | Optional                |
-| `namespace` | The WMI Namespace for this query (overrides the global `namespace` value for this query).                                                                                                                        | Optional                |
+| `namespace` | The WMI namespace for this query (overrides the global `namespace` value for this query).                                                                                                                        | Optional                |
 
 ### Example
 
