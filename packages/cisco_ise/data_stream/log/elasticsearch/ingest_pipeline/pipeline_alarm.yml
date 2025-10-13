@@ -3,6 +3,7 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
 
   - kv:
       tag: kv_alarm_message_details
@@ -43,17 +44,20 @@ processors:
       target_field: server.address
       ignore_failure: true
       ignore_missing: true
+      tag: rename_e0c15b7e
   - convert:
       field: cisco_ise.log.log_details_raw.nad_address
       type: ip
       target_field: _tmp.nad_ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_b1d90281
   - append:
       field: related.ip
       value: '{{{_tmp.nad_ip}}}'
       allow_duplicates: false
       if: ctx._tmp?.nad_ip != null
+      tag: append_0a52dd75
   - rename:
       tag: dissect_alarm_profiler_snmp_request_failure_cause
       field: cisco_ise.log.log_details_raw.error_message
@@ -65,82 +69,108 @@ processors:
       value: '{{{source.address}}}'
       allow_duplicates: false
       if: ctx.source?.address != null && ctx.source.address != ''
+      tag: append_cabe814d
   - append:
       field: related.hosts
       value: '{{{destination.address}}}'
       allow_duplicates: false
       if: ctx.destination?.address != null && ctx.destination.address != ''
+      tag: append_38bebbb6
   - append:
       field: related.hosts
       value: '{{{server.address}}}'
       allow_duplicates: false
       if: ctx.server?.address != null && ctx.server.address != ''
+      tag: append_5b8aefa3
 
   - rename:
       field: cisco_ise.log.log_details_raw.nas_ip_address
       target_field: cisco_ise.log.nas_ip_address
       ignore_failure: true
       ignore_missing: true
+      tag: rename_53b4f915
   - convert:
       field: cisco_ise.log.nas_ip_address
       type: ip
       target_field: _tmp.nas_ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_ba4d7c57
   - append:
       field: related.ip
       value: '{{{_tmp.nas_ip}}}'
       allow_duplicates: false
       if: ctx._tmp?.nas_ip != null
+      tag: append_c5bd077f
   - rename:
       field: cisco_ise.log.log_details_raw.nas_identifier
       target_field: cisco_ise.log.nas_identifier
       ignore_failure: true
       ignore_missing: true
+      tag: rename_3ca1ca01
 
   - rename:
       field: cisco_ise.log.log_details_raw.failure_reason
       target_field: cisco_ise.log.failure_reason
       ignore_failure: true
       ignore_missing: true
+      tag: rename_69760021
   - rename:
       field: cisco_ise.log.log_details_raw.network_device_name
       target_field: cisco_ise.log.network_device_name
       ignore_failure: true
       ignore_missing: true
+      tag: rename_7a98e725
   - rename:
       field: cisco_ise.log.log_details_raw.calling_station_id
       target_field: cisco_ise.log.calling_station_id
       ignore_failure: true
       ignore_missing: true
+      tag: rename_acd40ccd
   - gsub:
       field: cisco_ise.log.calling_station_id
       pattern: '[-:.]'
       replacement: '-'
       ignore_failure: true
       ignore_missing: true
+      tag: gsub_6e43bc28
   - uppercase:
       field: cisco_ise.log.calling_station_id
       ignore_failure: true
       ignore_missing: true
+      tag: uppercase_30b565fd
   - append:
       field: server.mac
       value: '{{{cisco_ise.log.calling_station_id}}}'
       allow_duplicates: false
       if: ctx.cisco_ise?.log?.calling_station_id != null
+      tag: append_641065b2
   - convert:
       field: cisco_ise.log.log_details_raw.network_device_ip
       type: ip
       target_field: _tmp.dev_ip
       ignore_failure: true
       ignore_missing: true
+      tag: convert_72ff5e8e
   - rename:
       field: _tmp.dev_ip
       target_field: cisco_ise.log.network_device_ip
       ignore_failure: true
       ignore_missing: true
+      tag: rename_569d5d0e
   - append:
       field: related.ip
       value: '{{{cisco_ise.log.network_device_ip}}}'
       allow_duplicates: false
       if: ctx.cisco_ise?.log?.network_device_ip != null
+      tag: append_3edb4ce4
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

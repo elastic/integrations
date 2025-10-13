@@ -3,19 +3,23 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.type
       value: [info]
+      tag: append_8b66b73a
   - grok:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
+      tag: grok_7466a657
   - grok:
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
+      tag: grok_c232cfac
   - date:
       field: _tmp.timestamp
       formats:
@@ -29,6 +33,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_9ef85c6a
   - date:
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
@@ -44,25 +49,30 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_1d2a12b9
   - grok:
       field: cisco_ise.log.message.description
       if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
       patterns:
         - "^%{DATA:event.action}:"
       ignore_failure: true
+      tag: grok_859375fa
   - lowercase:
       field: event.action
       ignore_missing: true
+      tag: lowercase_9334b869
   - append:
       field: event.category
       value: authentication
       if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '91110'
       ignore_failure: true
+      tag: append_e301c1e4
   - append:
       field: event.category
       value: configuration
       if: ctx.cisco_ise?.log?.message?.code != null && ['91004','91018'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+      tag: append_cb1fd003
   - script:
       lang: painless
       if: ctx.cisco_ise?.log?.message?.code != null
@@ -79,41 +89,51 @@ processors:
         }
         ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
         ctx.event.category = eventCategory;
+      tag: script_ab7e569e
   - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
+      tag: kv_dd59a8ac
   - rename:
       field: cisco_ise.log.log_details.Details
       target_field: cisco_ise.log.details
       ignore_failure: true
       ignore_missing: true
+      tag: rename_12b5fcbe
   - rename:
       field: cisco_ise.log.log_details.AdapterInstanceName
       target_field: cisco_ise.log.adapter_instance.name
       ignore_failure: true
       ignore_missing: true
+      tag: rename_f39970d5
   - rename:
       field: cisco_ise.log.log_details.AdapterInstanceUuid
       target_field: cisco_ise.log.adapter_instance.uuid
       ignore_failure: true
       ignore_missing: true
+      tag: rename_6da64e1d
   - rename:
       field: cisco_ise.log.log_details.Status
       target_field: cisco_ise.log.status
       ignore_failure: true
       ignore_missing: true
+      tag: rename_6b7f46e0
   - rename:
       field: cisco_ise.log.log_details.Connectivity
       target_field: cisco_ise.log.connectivity
       ignore_failure: true
       ignore_missing: true
+      tag: rename_b4ce70e0
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
