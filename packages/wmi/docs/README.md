@@ -55,7 +55,7 @@ results after a specified timeout. This is controlled by the
 `wmi.warning_threshold` setting.
 
 **Note**: While Elastic Agent stops waiting for the result, the underlying WMI query
-may continue running until the WMI Arbitrator decides to stop execution.
+may continue running until the WMI arbitrator decides to stop execution.
 
 
 
