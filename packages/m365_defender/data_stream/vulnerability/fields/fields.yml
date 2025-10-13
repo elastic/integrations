@@ -4,181 +4,77 @@
     - name: vulnerability
       type: group
       fields:
-        - name: affected_machine
-          type: group
-          fields:
-            - name: aad_device_id
-              type: keyword
-              description: Microsoft Entra Device ID (when machine is Microsoft Entra joined).
-            - name: agent_version
-              type: keyword
-            - name: computer_dns_name
-              type: keyword
-              description: Machine fully qualified name.
-            - name: device_value
-              type: keyword
-              description: 'The value of the device. Possible values are: Normal, Low, and High.'
-            - name: exclusion_reason
-              type: keyword
-            - name: exposure_level
-              type: keyword
-              description: 'Exposure level as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Low, Medium, and High.'
-            - name: first_seen
-              type: date
-              description: First date and time where the machine was observed by Microsoft Defender for Endpoint.
-            - name: fixing_kb_id
-              type: keyword
-            - name: health_status
-              type: keyword
-              description: 'machine health status. Possible values are: Active, Inactive, ImpairedCommunication, NoSensorData, NoSensorDataImpairedCommunication, and Unknown.'
-            - name: id
-              type: keyword
-            - name: ip_addresses
-              type: group
-              fields:
-                - name: ip_address
-                  type: ip
-                - name: mac_address
-                  type: keyword
-                - name: operational_status
-                  type: keyword
-                - name: type
-                  type: keyword
-            - name: is_aad_joined
-              type: boolean
-            - name: is_excluded
-              type: boolean
-            - name: is_potential_duplication
-              type: boolean
-            - name: last_external_ip_address
-              type: ip
-              description: Last IP through which the machine accessed the internet.
-            - name: last_ip_address
-              type: ip
-              description: Last IP on local NIC on the machine.
-            - name: last_seen
-              type: date
-              description: 'Time and date of the last received full device report. A device typically sends a full report every 24 hours. NOTE: This property doesn''t correspond to the last seen value in the UI. It pertains to the last device update.'
-            - name: machine_id
-              type: keyword
-              description: Machine identity.
-            - name: machine_tags
-              type: keyword
-              description: Set of machine tags.
-            - name: managed_by
-              type: keyword
-            - name: managed_by_status
-              type: keyword
-            - name: merged_into_machine_id
-              type: keyword
-            - name: onboarding_status
-              type: keyword
-              description: 'Status of machine onboarding. Possible values are: onboarded, CanBeOnboarded, Unsupported, and InsufficientInfo.'
-            - name: os_architecture
-              type: keyword
-              description: 'Operating system architecture. Possible values are: 32-bit, 64-bit. Use this property instead of osProcessor.'
-            - name: os_build
-              type: long
-              description: Operating system build number.
-            - name: os_platform
-              type: keyword
-              description: Operating system platform.
-            - name: os_processor
-              type: keyword
-              description: Operating system processor. Use osArchitecture property instead.
-            - name: os_version
-              type: keyword
-            - name: product_name
-              type: keyword
-            - name: product_vendor
-              type: keyword
-            - name: product_version
-              type: keyword
-            - name: rbac_group_id
-              type: keyword
-              description: Machine group ID.
-            - name: rbac_group_name
-              type: keyword
-              description: Machine group Name.
-            - name: risk_score
-              type: keyword
-              description: 'Risk score as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Informational, Low, Medium, and High.'
-            - name: severity
-              type: keyword
-            - name: version
-              type: keyword
-              description: Operating system version.
-            - name: vmMetadata
-              type: group
-              fields:
-                - name: cloud_provider
-                  type: keyword
-                - name: resource_id
-                  type: keyword
-                - name: subscription_id
-                  type: keyword
-                - name: vm_id
-                  type: keyword
-        - name: cve_supportability
+        - name: cve_batch_title
           type: keyword
-          description: 'Possible values are: Supported, Not Supported, or SupportedInPremium.'
-        - name: cvss_v3
-          type: double
-          description: CVSS v3 score.
-        - name: cvss_vector
+        - name: cve_batch_url
           type: keyword
-          description: A compressed textual representation that reflects the values used to derive the score.
-        - name: description
+        - name: cve_id
           type: keyword
-          description: Vulnerability description.
-        - name: epss
-          type: double
-          description: Represents the probability that a vulnerability will be exploited. This probability is expressed as a number between 0 and 1 (0%-100%) according to the EPSS model.
-        - name: exploit_in_kit
-          type: boolean
-          description: Exploit is part of an exploit kit.
-        - name: exploit_types
+          description: Unique identifier assigned to the security vulnerability under the Common Vulnerabilities and Exposures (CVE) system.
+        - name: cvss_score
+          type: float
+          description: The CVSS score of the CVE.
+        - name: device_id
           type: keyword
-          description: 'Exploit affect. Possible values are: Local privilege escalation, Denial of service, or Local.'
-        - name: exploit_uris
+          description: Unique identifier for the device in the service.
+        - name: device_name
           type: keyword
-          description: Exploit source URLs.
-        - name: exploit_verified
-          type: boolean
-          description: Exploit is verified to work.
-        - name: exposed_machines
-          type: long
-          description: Number of exposed devices.
-        - name: first_detected
+          description: Fully qualified domain name (FQDN) of the device.
+        - name: disk_paths
+          type: keyword
+          description: Disk evidence that the product is installed on the device.
+        - name: exploitability_level
+          type: keyword
+          description: The exploitability level of this vulnerability (NoExploit, ExploitIsPublic, ExploitIsVerified, ExploitIsInKit)
+        - name: first_seen_timestamp
           type: date
+          description: First time this product CVE was seen on the device.
         - name: id
           type: keyword
-          description: Vulnerability ID.
-        - name: impact
-          type: keyword
-          description: Impact of vulnerability.
-        - name: name
-          type: keyword
-          description: Vulnerability title.
-        - name: patch_first_available
-          type: date
-        - name: public_exploit
+          description: Unique identifier for the record.
+        - name: is_onboarded
           type: boolean
-          description: Public exploit exists.
-        - name: published_on
+        - name: last_seen_timestamp
           type: date
-          description: Date when vulnerability was published.
-        - name: remediation
+          description: Last time the software was reported on the device.
+        - name: os_architecture
           type: keyword
-          description: Remediation fix for vulnerability to mitigate the problem.
-        - name: summary
+          description: Architecture of the operating system running on the device.
+        - name: os_platform
           type: keyword
-          description: Summary of vulnerability.
-        - name: severity
+          description: Platform of the operating system running on the device.
+        - name: os_version
           type: keyword
-          description: 'Vulnerability Severity. Possible values are: Low, Medium, High, or Critical.'
-        - name: tags
+          description: Version of the operating system running on the device.
+        - name: rbac_group_id
           type: keyword
-        - name: updated_on
-          type: date
-          description: Date when vulnerability was updated.
+        - name: rbac_group_name
+          type: keyword
+          description: The role-based access control (RBAC) group.
+        - name: recommendation_reference
+          type: keyword
+          description: A reference to the recommendation ID related to this software.
+        - name: recommended_security_update
+          type: keyword
+          description: Name or description of the security update provided by the software vendor to address the vulnerability.
+        - name: recommended_security_update_id
+          type: keyword
+          description: Identifier of the applicable security updates or identifier for the corresponding guidance or knowledge base (KB) articles.
+        - name: registry_paths
+          type: keyword
+          description: Registry evidence that the product is installed in the device.
+        - name: security_update_available
+          type: boolean
+          description: Indicates whether a security update is available for the software.
+        - name: severity_level
+          type: keyword
+          description: Severity level assigned to the security vulnerability based on the CVSS score.
+        - name: software_name
+          type: keyword
+          description: Name of the software product.
+        - name: software_vendor
+          type: keyword
+          description: Name of the software vendor.
+        - name: software_version
+          type: keyword
+          description: Version number of the software product.

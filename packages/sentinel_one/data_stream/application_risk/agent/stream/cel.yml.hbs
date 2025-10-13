@@ -17,7 +17,9 @@ resource.url: {{url}}
 state:
   batch_size: {{batch_size}}
   api_token: {{api_token}}
-  site_ids: {{site_ids}}
+{{#if site_ids }}
+  site_ids: !!str {{site_ids}}
+{{/if}}
 redact:
   fields:
     - api_token
@@ -25,7 +27,7 @@ program: |
   request("GET",
     state.url.trim_right("/") + "/web/api/v2.1/application-management/risks?" + {
       ?"cursor": state.?next.page.optMap(v, [v]),
-      ?"siteids": state.?site_ids.orValue(null) != null ? optional.of([string(state.site_ids)]) : optional.none(),
+      ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
       "limit": [string(state.batch_size)],
     }.format_query()
   ).with({
@@ -39,7 +41,7 @@ program: |
       }),
       "api_token": state.api_token,
       "batch_size": state.batch_size,
-      ?"site_ids": state.?site_ids.orValue(null) != null ? optional.of(state.site_ids) : optional.none(),
+      ?"site_ids": state.?site_ids,
       "next": {
         ?"page": body.?pagination.?nextCursor.orValue(null) != null ? optional.of(body.pagination.nextCursor) : optional.none(),
       },
@@ -60,6 +62,9 @@ program: |
         },
       },
       "want_more": false,
+      "api_token": state.api_token,
+      "batch_size": state.batch_size,
+      ?"site_ids": state.?site_ids,
     }
   )
 tags:
