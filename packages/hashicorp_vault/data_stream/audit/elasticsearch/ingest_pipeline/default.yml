@@ -4,16 +4,19 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
       if: ctx.event?.original == null
+      tag: rename_86cdcc50
   - json:
       field: event.original
       target_field: hashicorp_vault.audit
       ignore_failure: true
+      tag: json_6c38e128
 
   #
   # @timestamp
@@ -22,10 +25,12 @@ processors:
       field: hashicorp_vault.audit.time
       formats:
         - ISO8601
+      tag: date_f9f1cd6d
   - remove:
       field:
         - hashicorp_vault.audit.time
       ignore_missing: true
+      tag: remove_c4735a36
 
   #
   # event categorization.
@@ -33,39 +38,47 @@ processors:
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value: authentication
+      tag: append_109b4d72
   # Request operation can be: create, delete, list, read, update.
   - append:
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'delete'
       field: event.type
       value: [info, end]
       allow_duplicates: false
+      tag: append_c9285984
   - append:
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'update'
       field: event.type
       value: info
       allow_duplicates: false
+      tag: append_ed937003
   - append:
       if: >
         ['read', 'list', 'create'].contains(ctx.hashicorp_vault?.audit?.request?.operation)
       field: event.type
       value: [info, start]
       allow_duplicates: false
+      tag: append_d608774b
   - append:
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.type
       value: info
       allow_duplicates: false
+      tag: append_ba367678
   - append:
       if: ctx?.hashicorp_vault?.audit?.error != null && ctx.hashicorp_vault.audit.error.contains("denied")
       field: event.type
       value: info
       allow_duplicates: false
+      tag: append_edf811d3
   - set:
       field: event.action
       copy_from: hashicorp_vault.audit.request.operation
+      tag: set_aa76e088
 
   #
   # event.outcome
@@ -74,39 +87,47 @@ processors:
       if: ctx?.hashicorp_vault?.audit?.error == null
       field: event.outcome
       value: success
+      tag: set_18a79512
   - set:
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.outcome
       value: failure
+      tag: set_eaa01289
 
   - set:
       field: event.id
       copy_from: hashicorp_vault.audit.request.id
       ignore_failure: true
+      tag: set_5845187a
   - set:
       field: message
       copy_from: hashicorp_vault.audit.error
       ignore_failure: true
+      tag: set_933e1844
   - convert:
       field: hashicorp_vault.audit.request.remote_address
       target_field: source.ip
       type: ip
       ignore_missing: true
+      tag: convert_98cf868d
   - convert:
       field: hashicorp_vault.audit.request.remote_port
       target_field: source.port
       type: long
       ignore_missing: true
+      tag: convert_1efe5263
 
   # OIDC auth metadata.
   - set:
       field: user.email
       copy_from: hashicorp_vault.audit.auth.metadata.email
       ignore_failure: true
+      tag: set_44dc7cff
   - set:
       field: user.id
       copy_from: hashicorp_vault.audit.auth.metadata.account_id
       ignore_failure: true
+      tag: set_11ea468d
 
   # Nomad auth metadata. (Recognize it by the presence of all four fields.)
   - set:
@@ -118,6 +139,7 @@ processors:
       field: nomad.allocation.id
       copy_from: hashicorp_vault.audit.auth.metadata.AllocationID
       ignore_failure: true
+      tag: set_7d186f74
   - set:
       if: >
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
@@ -127,6 +149,7 @@ processors:
       field: nomad.namespace
       copy_from: hashicorp_vault.audit.auth.metadata.Namespace
       ignore_failure: true
+      tag: set_e9a67c6c
   - set:
       if: >
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
@@ -136,6 +159,7 @@ processors:
       field: nomad.node.id
       copy_from: hashicorp_vault.audit.auth.metadata.NodeID
       ignore_failure: true
+      tag: set_dd6c1680
   - set:
       if: >
         ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
@@ -145,12 +169,14 @@ processors:
       field: nomad.task.name
       copy_from: hashicorp_vault.audit.auth.metadata.Task
       ignore_failure: true
+      tag: set_d3c4aba5
 
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      tag: geoip_da2e41b2
   # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
@@ -160,24 +186,31 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: geoip_28d69883
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
+      tag: rename_a917047d
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+      tag: rename_f1362d0b
 
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx?.source?.ip != null
+      tag: append_549fa858
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
