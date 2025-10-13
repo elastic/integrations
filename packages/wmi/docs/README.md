@@ -111,7 +111,7 @@ results should be returned without a row limit. | `0` |
 
 ### Query Configuration
 
-Each item in the `queries` list specifies a wmi query to perform.
+Each item in the `queries` list specifies a WMI query to perform.
 
 | Option      | Description                                                                                                                                                                                                                                   | Required/Default         |
 |-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------|
