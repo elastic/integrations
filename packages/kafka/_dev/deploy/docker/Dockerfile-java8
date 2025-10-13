@@ -15,21 +15,21 @@ RUN sed -i s/deb.debian.org/archive.debian.org/g /etc/apt/sources.list \
     && sed -i 's|security.debian.org|archive.debian.org/|g' /etc/apt/sources.list \
     && sed -i '/stretch-updates/d' /etc/apt/sources.list
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y curl openjdk-8-jre-headless netcat-openbsd dnsutils procps
+RUN apt-get update && apt-get install -y curl openjdk-8-jre-headless netcat-openbsd dnsutils procps
 
 RUN mkdir -p ${KAFKA_LOGS_DIR} && mkdir -p ${KAFKA_HOME} && \
     curl -J -L -s -f -o - https://github.com/kadwanev/retry/releases/download/1.0.1/retry-1.0.1.tar.gz | tar xfz - -C /usr/local/bin && \
-    retry --min 1 --max 180 -- curl -J -L -s -f --show-error \
-        "https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz" | \
-    tar xzf - -C ${KAFKA_HOME} --strip-components 1
+    retry --min 1 --max 180 -- curl -J -L -s -f --show-error -o $INSTALL_DIR/kafka.tgz \
+        "https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz" && \
+    tar xzf ${INSTALL_DIR}/kafka.tgz -C ${KAFKA_HOME} --strip-components 1
 
 # Copy jolokia agent jar from host into container
 ADD jolokia/jolokia-jvm-1.5.0.jar /opt/jolokia/jolokia-jvm.jar
 
-ADD zookeeper/startup.sh /startup.sh
-ADD zookeeper/healthcheck.sh /healthcheck.sh
+ADD java8/startup.sh /startup.sh
+ADD java8/healthcheck.sh /healthcheck.sh
 
-ADD zookeeper/server.properties ${KAFKA_HOME}/config/server_custom.properties
+ADD java8/server.properties ${KAFKA_HOME}/config/server_custom.properties
 
 RUN chmod +x /startup.sh /healthcheck.sh && chown -R 1001:0 /opt ${KAFKA_HOME} ${KAFKA_LOGS_DIR}
 
