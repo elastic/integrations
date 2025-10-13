@@ -109,7 +109,7 @@ results should be returned without a row limit. | `0` |
 | `wmi.queries`                     | The list of queries to execute. The list cannot be empty. Refer to [Query configuration](#query-configuration) for the format of the queries.                                                                                                                                                                                                                          | *(required)*       |
 
 
-### Query Configuration
+### Query configuration
 
 Each item in the `queries` list specifies a WMI query to perform.
 
