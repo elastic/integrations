@@ -1,17 +1,21 @@
 format_version: 3.3.2
 name: aws
 title: AWS
-version: 3.15.0
+version: "4.3.0"
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
   - aws
   - cloud
+  # Added observability category as AWS integration collects metrics and logs from various AWS services, which are essential for monitoring and observability.
+  - observability
+  # Added security category as AWS integration collects security-relevant data like CloudTrail logs, GuardDuty findings, and other security monitoring data
+  - security
 conditions:
   elastic:
     subscription: basic
   kibana:
-    version: "~8.16.6 || ~8.17.4 || ^8.18.0 || ^9.0.0"
+    version: "^8.19.0 || ^9.1.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -195,6 +199,7 @@ policy_templates:
     categories:
       - security
       - cloudsecurity_cdr
+      - misconfiguration_workflow
     inputs:
       - type: cel
         title: Collect AWS Config logs via API
@@ -773,6 +778,7 @@ policy_templates:
     categories:
       - security
       - cloudsecurity_cdr
+      - misconfiguration_workflow
     inputs:
       - type: httpjson
         title: Collect AWS Security Hub logs via API
@@ -807,6 +813,7 @@ policy_templates:
     categories:
       - security
       - cloudsecurity_cdr
+      - vulnerability_workflow
     inputs:
       - type: httpjson
         title: Collect Amazon Inspector logs via API
@@ -836,6 +843,14 @@ policy_templates:
   - name: guardduty
     title: Amazon GuardDuty
     description: Collect Amazon GuardDuty logs with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     data_streams:
       - guardduty
     categories:
