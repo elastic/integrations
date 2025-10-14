@@ -76,7 +76,6 @@ processors:
     - set:
         field: aws.cloudtrail.read_only
         copy_from: attributes.aws.event.read_only
-    # todo check the need for pruning. Check ECS pipelines.
     - set:
         field: aws.cloudtrail.resources
         copy_from: attributes.aws.resources
@@ -97,8 +96,9 @@ processors:
         field: related.user
         value: '{{attributes.aws.request.parameters.newUserName}}'
         if: ctx.attributes.aws?.request?.parameters?.newUserName != null
-    # todo: need additionalEventData populated and extracted for mfa & mobile
-    # todo: needs digest file support
+    # todo: need additionalEventData populated and extracted for mfa, mobile & needs digest file support
+    # will be addressed once OTel encoding extension support added through
+    # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/43403 
     - set:
         field: user.changes.name
         copy_from: attributes.aws.request.parameters.newUserName
