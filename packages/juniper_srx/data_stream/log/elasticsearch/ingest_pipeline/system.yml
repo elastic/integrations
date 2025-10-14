@@ -18,7 +18,7 @@ processors:
     if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx._temp_.unparsed.system_structured_brief != ''"
     tag: "grok_system_structured_brief"
     field: "_temp_.unparsed.system_structured_brief"
-    patterns: 
+    patterns:
     # 1. Has word 'negotiation'
     - '^%{WORD:_temp_.negotiation.type} negotiation %{GREEDYDATA:_temp_.negotiation.message}$'
     # 2. Optionally contain hostname, tag, pid, and rest of message is parsed into _temp_.message_brief
@@ -38,10 +38,12 @@ processors:
     field: juniper.srx.process
     value: "{{{syslog_program}}}"
     if: 'ctx.syslog_program != null && (ctx.juniper?.srx?.process == null || ctx.juniper?.srx?.process == "-")'
+    tag: set_55c21159
 - set:
     field: juniper.srx.tag
     value: "{{{_temp_.tag_brief}}}"
     if: 'ctx._temp_?.tag_brief != null && (ctx.juniper?.srx?.tag == null || ctx.juniper.srx.tag == "-")'
+    tag: set_63d77c9b
 
 # Handle negotiation messages
 # 1. if: negotiation.message ~ /^failed.*/
@@ -68,13 +70,14 @@ processors:
     field: _temp_.negotiation
     target_field: juniper.srx.negotiation
     if: ctx._temp_?.negotiation != null
+    tag: rename_3871463e
 
 # Handle Firewall messages (message_brief ~ /^FW:/)
-- grok: 
+- grok:
     if: "ctx._temp_?.message_brief != null && ctx._temp_.message_brief.startsWith('FW:')"
     tag: "grok_message_brief"
     field: "_temp_.message_brief"
-    patterns: 
+    patterns:
     - '^FW:\s%{NOTSPACE:_temp_.fw.interface_name}\s%{NOTSPACE:_temp_.fw.filter_action}\s%{NOTSPACE:_temp_.fw.packet_protocol}\s%{NOTSPACE:_temp_.fw.src_addr}\s%{NOTSPACE:_temp_.fw.dst_addr}\s%{NOTSPACE:_temp_.fw.src_port}\s%{NOTSPACE:_temp_.fw.dst_port}\s(\(%{NOTSPACE:_temp_.fw.packets_num} packets\))?\s?$'
     on_failure:
     - append:
@@ -84,10 +87,12 @@ processors:
     field: _temp_.fw
     target_field: juniper.srx.firewall
     if: ctx._temp_?.fw != null
+    tag: rename_a9b5f3db
 - rename:
     field: juniper.srx.firewall.interface_name
     target_field: juniper.srx.interface_name
     if: "ctx.juniper?.srx?.firewall?.interface_name != null"
+    tag: rename_f08d77fa
 
 # Handle rtslib_dfwsm_get_async_cb messages (message_brief ~ /^rtslib_dfwsm_get_async_cb:/)
 - dissect:
@@ -103,6 +108,7 @@ processors:
     field: _temp_.rtslib_dfwsm
     target_field: juniper.srx.rtslib_dfwsm
     if: ctx._temp_?.rtslib_dfwsm != null
+    tag: rename_8fe658d1
 
 # Handle ip_mon_reth_scan messages (tag_brief == ip_mon_reth_scan)
 - dissect:
@@ -118,17 +124,19 @@ processors:
     field: _temp_.ip_mon_reth_scan
     target_field: juniper.srx.ip_mon_reth_scan
     if: ctx._temp_?.ip_mon_reth_scan != null
+    tag: rename_3461c41b
 - rename:
     field: juniper.srx.ip_mon_reth_scan.interface_name
     target_field: juniper.srx.interface_name
     if: "ctx.juniper?.srx?.ip_mon_reth_scan?.interface_name != null"
+    tag: rename_8b8ddf8e
 
 # Handle dpdk_eth_devstart messages (tag_brief == dpdk_eth_devstart)
 - grok:
     if: "ctx._temp_?.tag_brief != null && ctx._temp_.tag_brief == 'dpdk_eth_devstart'"
     tag: "grok_dpdk_eth_devstart"
     field: "_temp_.message_brief"
-    patterns: 
+    patterns:
     - '^port %{POSINT:_temp_.dpdk.port_number} (has already been started|ifd %{DATA:_temp_.dpdk.interface_name}), (new\s)?dpdk_port_state=%{POSINT:_temp_.dpdk.port_state} dpdk_swt_port_state %{POSINT:_temp_.dpdk.swt_port_state}$'
     on_failure:
     - append:
@@ -168,11 +176,12 @@ processors:
     field: _temp_.dpdk
     target_field: juniper.srx.dpdk
     if: ctx._temp_?.dpdk != null
+    tag: rename_86ff0378
 - rename:
     field: juniper.srx.dpdk.interface_name
     target_field: juniper.srx.interface_name
     if: "ctx.juniper?.srx?.dpdk?.interface_name != null"
-
+    tag: rename_aa3aa714
 
 ### RTLOG_CONN_ERROR (tag = RTLOG_CONN_ERROR)
 - dissect:
@@ -188,12 +197,14 @@ processors:
     field: _temp_.rtlog_conn_error
     target_field: juniper.srx.rtlog_conn_error
     if: "ctx._temp_?.rtlog_conn_error != null && ctx.juniper?.srx?.tag == 'RTLOG_CONN_ERROR' "
-- grok: 
+    tag: rename_355ff71c
+- grok:
     field: juniper.srx.rtlog_conn_error.err_msg
     patterns:
     - '^(status: %{DATA:juniper.srx.rtlog_conn_error.status}, )?Error code: major %{NUMBER:juniper.srx.rtlog_conn_error.major} minor %{NUMBER:juniper.srx.rtlog_conn_error.minor} code %{NUMBER:juniper.srx.rtlog_conn_error.code}, description:%{DATA:juniper.srx.rtlog_conn_error.description}$'
     ignore_failure: true
     ignore_missing: true
+    tag: grok_073e56b1
 - convert:
     field: juniper.srx.rtlog_conn_error.status
     type: long
@@ -250,6 +261,7 @@ processors:
     field: _temp_.ping_test
     target_field: juniper.srx.ping_test
     if: "ctx._temp_?.ping_test != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED' "
+    tag: rename_9eccf20a
 
 # KERN_ARP_ADDR_CHANGE
 # if: tag = KERN_ARP_ADDR_CHANGE
@@ -266,6 +278,7 @@ processors:
     field: _temp_.kern_arp_addr_change
     target_field: juniper.srx.kern_arp_addr_change
     if: "ctx._temp_?.kern_arp_addr_change != null && ctx.juniper?.srx?.tag == 'KERN_ARP_ADDR_CHANGE' "
+    tag: rename_8023c96c
 - convert:
     field: juniper.srx.kern_arp_addr_change.ip
     type: ip
@@ -276,7 +289,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
 
 # After System Structured, Structured-Brief, and Unstructured messages: there are optional key-value pairs seperated by ", ". These should now be in `message` field
 # split k-v fields inside message field.
@@ -356,13 +368,14 @@ processors:
             - "Not-Available"
     source: >-
         ctx?.juniper?.srx?.system.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
+    tag: script_2749e627
 
 # Copy `message_brief` into `message` if not already exists. This ensures unpased/unstructured data to be present in `message`.
 - set:
     field: message
     copy_from: _temp_.message_brief
     if: "ctx._temp_?.message_brief != null && ctx.message == null"
-
+    tag: set_415ddb59
 
 #######################
 ## ECS Event Mapping ##
@@ -370,54 +383,67 @@ processors:
 - set:
     field: juniper.srx.log_type
     value: "system"
+    tag: set_1cb3906c
 - set:
     field: event.kind
     value: event
+    tag: set_de80643c
 - append:
     field: event.category
     value: network
+    tag: append_7afdca3c
 - append:
     field: event.category
     value: authentication
     if: ctx.juniper?.srx?.tag == "SSHD_LOGIN_FAILED"
+    tag: append_e2e02f3e
 - append:
     field: event.type
     value: allowed
     if: ctx.juniper?.srx?.firewall?.filter_action == 'A'
+    tag: append_3720ee03
 - append:
     field: event.type
     value: deletion
     if: ctx.juniper?.srx?.firewall?.filter_action == 'D'
+    tag: append_0f3aa57a
 - append:
     field: event.type
     value: denied
     if: ctx.juniper?.srx?.firewall?.filter_action == 'R'
+    tag: append_cb46419f
 - append:
     field: event.type
     value: error
     if: ctx.juniper?.srx?.ike_negotiation != null
+    tag: append_f933b202
 - append:
     field: event.type
     value: info
     if: ctx.juniper?.srx?.rtslib_dfwsm != null
+    tag: append_c4197965
 - append:
     field: event.type
-    value: 
+    value:
       - error
       - connection
     if: ctx.juniper?.srx?.rtlog_conn_error != null
+    tag: append_2d9dc6cb
 - append:
     field: event.type
     value: info
     if: ctx.juniper?.srx?.ping_test != null
+    tag: append_6c61c9a4
 - append:
     field: event.outcome
     value: success
     if: ctx.juniper?.srx?.ping_test != null
+    tag: append_931e8947
 - set:
     field: event.outcome
     value: failure
     if: ctx.juniper?.srx?.tag == "SSHD_LOGIN_FAILED"
+    tag: set_47a3c1b2
 
 ####################################
 ## ECS Server/Destination Mapping ##
@@ -427,30 +453,36 @@ processors:
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.remote_address != null"
+    tag: rename_7e95eb06
 - rename:
     field: juniper.srx.destination_address
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.destination?.ip == null && ctx.juniper?.srx?.destination_address != null"
+    tag: rename_8a896d92
 - rename:
     field: juniper.srx.firewall.dst_addr
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.destination?.ip == null && ctx.juniper?.srx?.firewall?.dst_addr != null"
+    tag: rename_a7ccaf77
 - set:
     field: server.ip
     value: '{{{destination.ip}}}'
     if: "ctx.destination?.ip != null"
+    tag: set_b30dc0d0
 - rename:
     field: juniper.srx.nat_remote_address
     target_field: destination.nat.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_remote_address != null"
+    tag: rename_74e7fe4b
 - rename:
     field: juniper.srx.nat_destination_address
     target_field: destination.nat.ip
     ignore_missing: true
     if: "ctx.destination?.nat?.ip == null && ctx.juniper?.srx?.nat_destination_address != null"
+    tag: rename_91ac0687
 - convert:
     field: juniper.srx.destination_port
     target_field: destination.port
@@ -477,6 +509,7 @@ processors:
     field: server.port
     value: '{{{destination.port}}}'
     if: "ctx.destination?.port != null"
+    tag: set_105062fe
 - convert:
     field: server.port
     target_field: server.port
@@ -503,6 +536,7 @@ processors:
     field: server.nat.port
     value: '{{{destination.nat.port}}}'
     if: "ctx.destination?.nat?.port != null"
+    tag: set_6a96e9e4
 - convert:
     field: server.nat.port
     target_field: server.nat.port
@@ -529,6 +563,7 @@ processors:
     field: server.bytes
     value: '{{{destination.bytes}}}'
     if: "ctx.destination?.bytes != null"
+    tag: set_e8aa8006
 - convert:
     field: server.bytes
     target_field: server.bytes
@@ -555,6 +590,7 @@ processors:
     field: server.packets
     value: '{{{destination.packets}}}'
     if: "ctx.destination?.packets != null"
+    tag: set_fe2eeb78
 - convert:
     field: server.packets
     target_field: server.packets
@@ -575,35 +611,42 @@ processors:
     target_field: source.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.local_address != null"
+    tag: rename_2456b565
 - rename:
     field: juniper.srx.source_address
     target_field: source.ip
     ignore_missing: true
     if: "ctx.source?.ip == null && ctx.juniper?.srx?.source_address != null"
+    tag: rename_03d5bc3e
 - rename:
     field: juniper.srx.firewall.src_addr
     target_field: source.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.firewall?.src_addr != null"
+    tag: rename_61de8b30
 - set:
     field: client.ip
     value: '{{{source.ip}}}'
     if: "ctx.source?.ip != null"
+    tag: set_8ef1d10e
 - rename:
     field: juniper.srx.nat_local_address
     target_field: source.nat.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_local_address != null"
+    tag: rename_7dc406d0
 - rename:
     field: juniper.srx.nat_source_address
     target_field: source.nat.ip
     ignore_missing: true
     if: "ctx.source?.nat?.ip == null && ctx.juniper?.srx?.nat_source_address != null"
+    tag: rename_8d7fa5bb
 - rename:
     field: juniper.srx.sourceip
     target_field: source.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.sourceip != null"
+    tag: rename_003ae86d
 - convert:
     field: juniper.srx.source_port
     target_field: source.port
@@ -630,6 +673,7 @@ processors:
     field: client.port
     value: '{{{source.port}}}'
     if: "ctx.source?.port != null"
+    tag: set_5123faf0
 - convert:
     field: client.port
     target_field: client.port
@@ -656,6 +700,7 @@ processors:
     field: client.nat.port
     value: '{{{source.nat.port}}}'
     if: "ctx.source?.nat?.port != null"
+    tag: set_b9674a98
 - convert:
     field: client.nat.port
     target_field: client.nat.port
@@ -682,6 +727,7 @@ processors:
     field: client.bytes
     value: '{{{source.bytes}}}'
     if: "ctx.source?.bytes != null"
+    tag: set_56782c4e
 - convert:
     field: client.bytes
     target_field: client.bytes
@@ -719,6 +765,7 @@ processors:
     field: client.packets
     value: '{{{source.packets}}}'
     if: "ctx.source?.packets != null"
+    tag: set_837b4d14
 - convert:
     field: client.packets
     target_field: client.packets
@@ -735,6 +782,7 @@ processors:
     target_field: source.user.name
     ignore_missing: true
     if: "ctx.juniper?.srx?.username != null"
+    tag: rename_06dbdaea
 
 #########################
 ## ECS Related Mapping ##
@@ -744,11 +792,13 @@ processors:
     field: related.ip
     value: '{{{juniper.srx.system.local_gateway}}}'
     allow_duplicates: false
+    tag: append_a86c9643
 - append:
     if: 'ctx.juniper?.srx?.system?.remote_gateway != null'
     field: related.ip
     value: '{{{juniper.srx.system.remote_gateway}}}'
     allow_duplicates: false
+    tag: append_91096f21
 
 ######################
 ## ECS Observer Mapping ##
@@ -757,15 +807,18 @@ processors:
     field: juniper.srx.interface_name
     target_field: observer.ingress.interface.name
     ignore_missing: true
+    tag: rename_4023c7b6
 - rename:
     field: syslog_hostname
     target_field: observer.name
     ignore_missing: true
     if: "ctx.syslog_hostname != null && ctx.observer?.name == null"
+    tag: rename_8e306b20
 - set:
     copy_from: observer.name
     field: host.name
     ignore_empty_value: true
+    tag: set_06c63557
 
 ######################
 ## ECS Rule Mapping ##
@@ -775,11 +828,13 @@ processors:
     target_field: rule.name
     ignore_missing: true
     if: "ctx.juniper?.srx?.rulebase_name != null"
+    tag: rename_dec122ae
 - rename:
     field: juniper.srx.rule_name
     target_field: rule.id
     ignore_missing: true
     if: "ctx.juniper?.srx?.rule_name != null"
+    tag: rename_01d3ad86
 
 #########################
 ## ECS Network Mapping ##
@@ -789,11 +844,13 @@ processors:
     target_field: network.protocol
     ignore_missing: true
     if: "ctx.juniper?.srx?.protocol_name != null"
+    tag: rename_25237b93
 - rename:
     field: juniper.srx.firewall.packet_protocol
     target_field: network.transport
     ignore_missing: true
     if: "ctx.juniper?.srx?.firewall?.packet_protocol != null"
+    tag: rename_f28d4603
 
 #########################
 ## ECS message Mapping ##
@@ -803,10 +860,12 @@ processors:
     target_field: message
     ignore_missing: true
     if: "ctx.juniper?.srx?.message != null"
+    tag: rename_641f5b22
 
 - remove:
     field: juniper.srx.process
     if: "ctx.juniper?.srx?.process != null && ['-','N/A','UNKNOWN','None'].contains(ctx.juniper.srx.process)"
+    tag: remove_f8fae6df
 
 #############
 ## Cleanup ##
@@ -828,12 +887,15 @@ processors:
     - juniper.srx.inbound_packets
     - juniper.srx.firewall
     ignore_missing: true
+    tag: remove_4a560a95
 
 on_failure:
 - append:
     field: error.message
-    value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
 - set:
     field: event.kind
     value: pipeline_error
