@@ -112,10 +112,10 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'       
 
-  - set:
-      field: asset.name
-      copy_from: activedirectory.device.sam_account_name
-      ignore_empty_value: true
+  - lowercase:
+      field: activedirectory.device.dns_host_name
+      target_field: asset.name
+      ignore_missing: true
   - set:
       field: user.name
       copy_from: activedirectory.device.sam_account_name
