@@ -21,8 +21,7 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
 - The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input currently only supports JSON data.
-- The [Akamai SIEM Integration API](https://techdocs.akamai.com/siem-integration/reference/api) has a maximum look-back interval limit of 12 hours. Any value configured
-  beyond this will be automatically ignored in order to avoid API errors.
+- The [Akamai SIEM Integration API](https://techdocs.akamai.com/siem-integration/reference/api) has a maximum look-back interval limit of 12 hours. Any value configured beyond this will be automatically ignored in order to avoid API errors.
 
 {{fields "siem"}}
 
