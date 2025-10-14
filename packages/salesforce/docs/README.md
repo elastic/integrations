@@ -85,7 +85,7 @@ NOTE: Real-Time Event Monitoring may require additional licensing. Check your su
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, check the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, check the [Getting started](docs-content://solutions/observability/get-started/quickstart-monitor-hosts-with-elastic-agent.md).
 
 ## Configuration
 
