@@ -17,7 +17,7 @@ This integration has been tested against samples obtained from Citrix ADC 13.1 a
 
 ### Citrix WAF Dashboard Configuration
 
-It is recommended to configure the application firewall to enable CEF-formatted logs.
+It is recommended to configure the application firewall to enable CEF-formatted logs.  abc
 
 1. Navigate to Security the NetScaler GUI.
 2. Click Application Firewall node.

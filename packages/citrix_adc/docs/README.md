@@ -36,7 +36,7 @@ The minimum **Kibana version** required is **8.12.0**.
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-To ingest data from Citrix ADC, you must know the host(s) and the administrator credentials for the Citrix ADC instance.
+To ingest data from Citrix ADC, you must know the host(s) and the administrator credentials for the Citrix ADC instance.  abc
 
 Host Configuration Format: `http[s]://<hostname>:<port>`
 Example Host Configuration: `http://example.com:9090`
