@@ -45,6 +45,7 @@ processors:
         - _temp_.future_use3
         - _temp_.user_agent
         - panw.panos.flow_id
+      tag: csv_4c28b73f
 
   - append:
       field: source.user.name
@@ -52,48 +53,58 @@ processors:
       if: ctx._temp_?.user != null && ctx._temp_.user != ''
       allow_duplicates: false
       ignore_failure: true
+      tag: append_61f77e09
   - append:
       field: source.user.name
       value: '{{{panw.panos.normalize_user}}}'
       if: ctx.panw?.panos?.normalize_user != null && ctx.panw.panos.normalize_user != ''
       allow_duplicates: false
       ignore_failure: true
+      tag: append_7cf5bcf3
 
-# Set event.kind & event.category field.
+  # Set event.kind & event.category field.
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value:
         - authentication
+      tag: append_c182a53a
 
-# Set event.outcome
+  # Set event.outcome
   - set:
       field: event.outcome
       value: success
+      tag: set_1af271cd
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
+      tag: set_5bc96c94
   - set:
       field: rule.uuid
       copy_from: panw.panos.rule_uuid
       ignore_failure: true
+      tag: set_5478ecb2
   - set:
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
+      tag: set_c1b0f423
   - set:
       field: panw.panos.user
       copy_from: _temp_.user
       ignore_failure: true
+      tag: set_007bc289
   - set:
       field: panw.panos.user_agent
       copy_from: _temp_.user_agent
       ignore_failure: true
+      tag: set_f4b744c1
 on_failure:
   - set:
       field: event.kind
@@ -101,7 +112,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Authentication pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{_ingest.on_failure_message}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

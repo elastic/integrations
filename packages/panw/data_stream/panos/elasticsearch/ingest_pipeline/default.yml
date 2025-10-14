@@ -4,28 +4,35 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - set:
       field: observer.vendor
       value: Palo Alto Networks
+      tag: set_5402d103
   - set:
       field: observer.product
       value: PAN-OS
+      tag: set_1da6878b
   - set:
       field: observer.type
       value: firewall
+      tag: set_5dddf3ba
   - set:
       field: event.timezone
       value: '{{{_conf.tz_offset}}}'
       if: ctx._conf?.tz_offset instanceof String && !ctx._conf.tz_offset.equalsIgnoreCase('local')
+      tag: set_ab6989dd
 
-# Collects the first few parts of the message to be used for conditional parsing later
+  # Collects the first few parts of the message to be used for conditional parsing later
   - set:
       field: event.original
       copy_from: message
       if: ctx.event?.original == null
+      tag: set_8b93b81e
   - rename:
       field: message
       target_field: _temp_.message
+      tag: rename_ba89ec37
   - grok:
       field: _temp_.message
       patterns:
@@ -35,74 +42,91 @@ processors:
         TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
         FIELD: "[^,]*"
+      tag: grok_76115aa2
 
-## TRAFFIC
+  ## TRAFFIC
   - pipeline:
       if: ctx.panw?.panos?.type == 'TRAFFIC'
       name: '{{ IngestPipeline "traffic" }}'
-## THREAT
+      tag: pipeline_03aae50f
+  ## THREAT
   - pipeline:
       if: ctx.panw?.panos?.type == 'THREAT'
       name: '{{ IngestPipeline "threat" }}'
-## HIPMATCH
+      tag: pipeline_ee04a0cf
+  ## HIPMATCH
   - pipeline:
       if: ctx.panw?.panos?.type == 'HIPMATCH' || ctx.panw.panos.type == 'HIP-MATCH'
       name: '{{ IngestPipeline "hipmatch" }}'
-## USER ID
+      tag: pipeline_080adb82
+  ## USER ID
   - pipeline:
       if: ctx.panw?.panos?.type == 'USERID'
       name: '{{ IngestPipeline "userid" }}'
-## GLOBAL PROTECT
+      tag: pipeline_21f7bfdb
+  ## GLOBAL PROTECT
   - pipeline:
       if: ctx.panw?.panos?.type == 'GLOBALPROTECT'
       name: '{{ IngestPipeline "globalprotect" }}'
-## CONFIG
+      tag: pipeline_47556d9f
+  ## CONFIG
   - pipeline:
       if: ctx.panw?.panos?.type == 'CONFIG'
       name: '{{ IngestPipeline "config" }}'
-## DECRYPTION
+      tag: pipeline_6ad6b2f3
+  ## DECRYPTION
   - pipeline:
       if: ctx.panw?.panos?.type == 'DECRYPTION'
       name: '{{ IngestPipeline "decryption" }}'
-## SYSTEM
+      tag: pipeline_10393835
+  ## SYSTEM
   - pipeline:
       if: ctx.panw?.panos?.type == 'SYSTEM'
       name: '{{ IngestPipeline "system" }}'
-## AUTHENTICATION
+      tag: pipeline_5296319d
+  ## AUTHENTICATION
   - pipeline:
       if: ctx.panw?.panos?.type == 'AUTHENTICATION' || ctx.panw?.panos?.type == 'AUTH'
       name: '{{ IngestPipeline "authentication" }}'
-## CORRELATED EVENTS
+      tag: pipeline_b9cf6245
+  ## CORRELATED EVENTS
   - pipeline:
       if: ctx.panw?.panos?.type == 'CORRELATION'
       name: '{{ IngestPipeline "correlated_event" }}'
-## GTP
+      tag: pipeline_025b9789
+  ## GTP
   - pipeline:
       if: ctx.panw?.panos?.type == 'GTP'
       name: '{{ IngestPipeline "gtp" }}'
-## IP TAG
+      tag: pipeline_adc4745f
+  ## IP TAG
   - pipeline:
       if: ctx.panw?.panos?.type == 'IPTAG'
       name: '{{ IngestPipeline "ip_tag" }}'
-## SCTP
+      tag: pipeline_fad4e4fe
+  ## SCTP
   - pipeline:
       if: ctx.panw?.panos?.type == 'SCTP'
       name: '{{ IngestPipeline "sctp" }}'
-## TUNNEL INSPECTION
+      tag: pipeline_a860a17b
+  ## TUNNEL INSPECTION
   - pipeline:
       if: ctx.panw?.panos?.type == 'START' || ctx.panw.panos.type == 'END'
       name: '{{ IngestPipeline "tunnel_inspection" }}'
-## AUDIT
+      tag: pipeline_f3dd2c11
+  ## AUDIT
   - pipeline:
       if: ctx.panw?.panos?.type == 'AUDIT' || ctx.panw?.panos?.type == 'audit'
       name: '{{ IngestPipeline "audit" }}'
+      tag: pipeline_e69a9012
 
   - set:
       field: panw.panos.observer.serial_number
       copy_from: observer.serial_number
       ignore_failure: true
+      tag: set_c069b079
 
-# Set 'panw.panos.generated_time' to the time when the entry was generated at the data plane.
+  # Set 'panw.panos.generated_time' to the time when the entry was generated at the data plane.
   - date:
       if: ctx.event?.timezone == null
       field: '_temp_.generated_time'
@@ -111,6 +135,7 @@ processors:
         - 'yyyy/MM/dd HH:mm:ss'
         - 'strict_date_optional_time_nanos'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      tag: date_7759c4c7
   - date:
       if: ctx.event?.timezone != null
       field: _temp_.generated_time
@@ -120,8 +145,9 @@ processors:
         - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      tag: date_7b45f5a5
 
-# 'panw.panos.received_time' is the time the event was received at the management plane.
+  # 'panw.panos.received_time' is the time the event was received at the management plane.
   - date:
       if: ctx.event?.timezone == null && ctx._temp_?.received_time != null
       field: '_temp_.received_time'
@@ -130,6 +156,7 @@ processors:
         - 'yyyy/MM/dd HH:mm:ss'
         - 'strict_date_optional_time_nanos'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      tag: date_b4d2c73b
   - date:
       if: ctx.event?.timezone != null && ctx._temp_?.received_time  != null
       field: '_temp_.received_time'
@@ -139,8 +166,9 @@ processors:
         - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      tag: date_81c983b3
 
-# convert date fields as the output of the CSV processor is always a string.
+  # convert date fields as the output of the CSV processor is always a string.
   - date:
       if: ctx.event?.timezone == null && ctx._temp_?.logged_time != null
       field: _temp_.logged_time
@@ -155,6 +183,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_6a2e15d6
   - date:
       if: ctx.event?.timezone != null && ctx._temp_?.logged_time != null
       field: _temp_.logged_time
@@ -170,6 +199,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_31e0a874
   # Logs received from managed firewalls running PAN-OS 9.1 and earlier releases
   # display a 1969-12-31T16:00:00:000-8:00 timestamp regardless of when the log
   # was received. The panw.panos.high_resolution_timestamp field is removed if
@@ -178,6 +208,7 @@ processors:
       field: _temp_.high_res_timestamp
       ignore_missing: true
       if: ctx._temp_?.high_res_timestamp instanceof String && (ctx._temp_.high_res_timestamp.startsWith("1969") || ctx._temp_.high_res_timestamp.startsWith("1970"))
+      tag: remove_baec44b1
   - date:
       if: ctx.event?.timezone == null && ctx._temp_?.high_res_timestamp != null
       field: _temp_.high_res_timestamp
@@ -192,6 +223,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_1766e392
   - date:
       if: ctx.event?.timezone != null && ctx._temp_?.high_res_timestamp != null
       field: _temp_.high_res_timestamp
@@ -207,6 +239,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_46b86ff8
   - set:
       tag: highres_to_timestamp
       field: '@timestamp'
@@ -234,6 +267,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_1687c744
   - date:
       if: ctx.event?.timezone != null && ctx.event.start != null
       field: event.start
@@ -249,6 +283,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_047d728e
   - date:
       if: ctx.event?.timezone == null && ctx.panw?.panos?.start_time != null
       field: panw.panos.start_time
@@ -263,6 +298,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_d03e47cc
   - date:
       if: ctx.event?.timezone != null && ctx.panw?.panos?.start_time != null
       field: panw.panos.start_time
@@ -278,6 +314,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_96aa3ce6
   - date:
       if: ctx.event?.timezone == null && ctx.panw?.panos?.parent_session?.start_time != null
       field: panw.panos.parent_session.start_time
@@ -292,6 +329,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_7f88322d
   - date:
       if: ctx.event?.timezone != null && ctx.panw?.panos?.parent_session?.start_time != null
       field: panw.panos.parent_session.start_time
@@ -307,24 +345,28 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: date_b57b547f
   - set:
       if: ctx.panw?.panos?.parent_session?.start_time != null
       field: session.start_time
       value: '{{{panw.panos.parent_session.start_time}}}'
+      tag: set_ee5db372
 
-# Remove NAT fields when translation was not done.
+  # Remove NAT fields when translation was not done.
   - remove:
       field:
         - source.nat.ip
         - source.nat.port
       if: ctx.source?.nat?.ip == '0.0.0.0' && ctx.source.nat.port == '0'
+      tag: remove_002c3372
   - remove:
       field:
         - destination.nat.ip
         - destination.nat.port
       if: ctx.destination?.nat?.ip == '0.0.0.0' && ctx.destination.nat.port == '0'
+      tag: remove_a6ac7b7c
 
-# convert IP fields as the output of the CSV processor is always a string.
+  # convert IP fields as the output of the CSV processor is always a string.
   - convert:
       field: source.ip
       type: ip
@@ -335,6 +377,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_66e8d43f
   - convert:
       field: destination.ip
       type: ip
@@ -345,6 +388,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_bc8fdf9f
   - convert:
       field: source.nat.ip
       type: ip
@@ -355,6 +399,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_36181efd
   - convert:
       field: destination.nat.ip
       type: ip
@@ -365,6 +410,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_a1755483
   - convert:
       field: host.ip
       type: ip
@@ -375,10 +421,12 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_67e7c965
   - set:
       field: host.ip
       value: ['{{{host.ip}}}']
       if: ctx.host?.ip instanceof String
+      tag: set_1d72afcb
   - convert:
       field: network.forwarded_ip
       type: ip
@@ -389,6 +437,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_8bdee41f
   - convert:
       field: panw.panos.xff.ip
       type: ip
@@ -399,6 +448,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_29a861db
   - convert:
       field: panw.panos.source.ip
       type: ip
@@ -409,6 +459,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_ef8be7e7
   - convert:
       field: panw.panos.source.ipv6
       type: ip
@@ -419,6 +470,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_ba18a7b3
   - convert:
       field: panw.panos.source.nat.ip
       type: ip
@@ -429,6 +481,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_21a2745b
   - convert:
       field: panw.panos.destination.ip
       type: ip
@@ -439,6 +492,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_440f1cb3
   - convert:
       field: panw.panos.destination.nat.ip
       type: ip
@@ -449,6 +503,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_c69c8cc5
   - convert:
       field: panw.panos.forwarded_ip
       type: ip
@@ -459,6 +514,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_fd1736f5
   - convert:
       field: panw.panos.host.ip
       type: ip
@@ -469,6 +525,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_079468ff
   - convert:
       field: panw.panos.public.ip
       type: ip
@@ -479,6 +536,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_e622dfb3
   - convert:
       field: panw.panos.private.ip
       type: ip
@@ -489,6 +547,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_70bae4ad
   - convert:
       field: panw.panos.public.ipv6
       type: ip
@@ -499,6 +558,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_a4cf5eef
   - convert:
       field: panw.panos.private.ipv6
       type: ip
@@ -509,6 +569,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_51ac2039
   - convert:
       field: panw.panos.end_ip_address
       type: ip
@@ -519,6 +580,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_7b4803b9
   - convert:
       field: panw.panos.remote_user.ip
       type: ip
@@ -529,8 +591,9 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_538f2d3f
 
-# convert integer fields as the output of the CSV processor is always a string.
+  # convert integer fields as the output of the CSV processor is always a string.
   - convert:
       field: source.bytes
       type: long
@@ -541,6 +604,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_895571fa
   - convert:
       field: source.packets
       type: long
@@ -551,6 +615,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_d535b112
   - convert:
       field: source.port
       type: long
@@ -561,6 +626,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_5c60e782
   - convert:
       field: panw.panos.source.port
       type: long
@@ -571,6 +637,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_036f5c12
   - convert:
       field: panw.panos.source.nat.port
       type: long
@@ -581,6 +648,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_b2b9abd6
   - convert:
       field: destination.bytes
       type: long
@@ -591,6 +659,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_0a242610
   - convert:
       field: destination.packets
       type: long
@@ -601,6 +670,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_7d192c10
   - convert:
       field: destination.port
       type: long
@@ -611,6 +681,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_171174d6
   - convert:
       field: panw.panos.destination.port
       type: long
@@ -621,6 +692,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_aaa32012
   - convert:
       field: panw.panos.destination.nat.port
       type: long
@@ -631,6 +703,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_f49d8810
   - convert:
       field: network.bytes
       type: long
@@ -641,6 +714,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_137cfc8c
   - convert:
       field: network.packets
       type: long
@@ -651,6 +725,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_f604bedc
   - convert:
       field: event.duration
       type: long
@@ -661,6 +736,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_d0a307da
   - convert:
       field: _temp_.labels
       type: long
@@ -671,6 +747,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_e07bf37c
   - convert:
       field: source.nat.port
       type: long
@@ -681,6 +758,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_89a5f1c4
   - convert:
       field: destination.nat.port
       type: long
@@ -691,6 +769,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_2c88a98a
   - convert:
       field: panw.panos.repeat_count
       type: long
@@ -701,6 +780,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_2ee4705a
   - convert:
       field: panw.panos.sctp.chunks
       type: long
@@ -711,6 +791,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_fb742a1a
   - convert:
       field: panw.panos.sctp.chunks_sent
       type: long
@@ -721,6 +802,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_9407c142
   - convert:
       field: panw.panos.sctp.chunks_received
       type: long
@@ -731,6 +813,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_1072fedc
   - convert:
       field: panw.panos.network.bytes
       type: long
@@ -741,6 +824,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_230bf142
   - convert:
       field: panw.panos.network.packets
       type: long
@@ -751,6 +835,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_e69ffcf6
   - convert:
       field: panw.panos.bytes_sent
       type: long
@@ -761,6 +846,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_0d384bc0
   - convert:
       field: panw.panos.packets_sent
       type: long
@@ -771,6 +857,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_35a39ad0
   - convert:
       field: panw.panos.bytes_received
       type: long
@@ -781,6 +868,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_c5631a1e
   - convert:
       field: panw.panos.packets_received
       type: long
@@ -791,6 +879,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_36117ab2
   - convert:
       field: panw.panos.elapsed_time
       type: long
@@ -801,6 +890,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_4184f01c
   - convert:
       field: panw.panos.timeout
       type: integer
@@ -811,6 +901,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_ee1fbe26
   - convert:
       field: panw.panos.error_code
       type: integer
@@ -821,6 +912,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_2df2f9b4
   - convert:
       field: panw.panos.factorno
       type: integer
@@ -831,6 +923,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_2e801b20
   - convert:
       field: panw.panos.certificate.size
       type: long
@@ -839,6 +932,7 @@ processors:
         - rename:
             field: panw.panos.certificate.size
             target_field: panw.panos.certificate.raw_size
+      tag: convert_62afc8ad
   - convert:
       field: tls.client.x509.public_key_size
       type: long
@@ -846,6 +940,7 @@ processors:
       on_failure:
         - remove:
             field: tls.client.x509.public_key_size
+      tag: convert_99d5cab1
   - convert:
       field: panw.panos.issuer_common_name.length
       type: long
@@ -856,6 +951,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_dff31c66
   - convert:
       field: panw.panos.root_common_name.length
       type: long
@@ -866,6 +962,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_22db08f2
   - convert:
       field: panw.panos.subject_common_name.length
       type: long
@@ -876,6 +973,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_d4151838
   - convert:
       field: panw.panos.server_name_indication.length
       type: long
@@ -886,6 +984,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_c2866a8e
   - convert:
       field: panw.panos.link.change_count
       type: long
@@ -896,6 +995,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_af93a36e
   - convert:
       field: panw.panos.login_duration
       type: long
@@ -906,16 +1006,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: panw.panos.link.change_count
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: panw.panos.link.change_count
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_210eba48
   - convert:
       field: panw.panos.strict_check
       type: long
@@ -926,6 +1017,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_02f0ed04
   - convert:
       field: panw.panos.tunnel_fragment
       type: long
@@ -936,6 +1028,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_fdd66972
   - convert:
       field: panw.panos.unknown_protocol
       type: long
@@ -946,6 +1039,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_8ce8f526
   - convert:
       field: panw.panos.sessions.closed
       type: long
@@ -956,6 +1050,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_eacc3612
   - convert:
       field: panw.panos.sessions.created
       type: long
@@ -966,6 +1061,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_90c7e452
   - convert:
       field: panw.panos.max_encapsulation
       type: long
@@ -976,6 +1072,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_98d354ea
   - convert:
       field: panw.panos.application.risk_level
       type: long
@@ -986,6 +1083,7 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_efb5ad08
   - convert:
       field: panw.panos.response_time
       type: long
@@ -996,61 +1094,73 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+      tag: convert_4d887d4a
 
-# Add '-' in Mac Address and convert it into uppercase
+  # Add '-' in Mac Address and convert it into uppercase
   - gsub:
       field: panw.panos.src.mac
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
+      tag: gsub_d9073b3a
   - uppercase:
       field: panw.panos.src.mac
       ignore_missing: true
+      tag: uppercase_16c1905c
   - gsub:
       field: panw.panos.dst.mac
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
+      tag: gsub_28a0c7f3
   - uppercase:
       field: panw.panos.dst.mac
       ignore_missing: true
+      tag: uppercase_bd21834f
   - gsub:
       field: host.mac
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
+      tag: gsub_327602f7
   - uppercase:
       field: host.mac
       ignore_missing: true
+      tag: uppercase_73cd4413
   - gsub:
       field: panw.panos.machine.mac_address
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
+      tag: gsub_b19eac06
   - uppercase:
       field: panw.panos.machine.mac_address
       ignore_missing: true
+      tag: uppercase_026f1764
 
-
-# Convert Network fields into lowercase.
+  # Convert Network fields into lowercase.
   - lowercase:
       field: network.application
       ignore_missing: true
+      tag: lowercase_049e69b3
   - lowercase:
       field: network.transport
       ignore_missing: true
+      tag: lowercase_bc8c1c12
   - lowercase:
       field: network.protocol
       ignore_missing: true
+      tag: lowercase_49872259
 
-# Remove PCAP ID when zero (no packet capture).
+  # Remove PCAP ID when zero (no packet capture).
   - remove:
       if: ctx.panw?.panos?.network?.pcap_id == '0'
       field:
         - panw.panos.network.pcap_id
+      tag: remove_e769f482
 
-# Extract 'flags' bitfield into labels.
-# https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/decryption-log-fields
+  # Extract 'flags' bitfield into labels.
+  # https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/decryption-log-fields
   - script:
       lang: painless
       if: ctx._temp_?.labels != null && ctx._temp_.labels != 0
@@ -1093,8 +1203,8 @@ processors:
               labels[entry.getKey()] = true;
           }
         }
-
-# normalize event.duration and determine event.end.
+      tag: script_530ad554
+  # normalize event.duration and determine event.end.
   - script:
       lang: painless
       if: ctx.event?.duration != null
@@ -1107,25 +1217,23 @@ processors:
         if (start != null) {
           ctx.event['end'] = ZonedDateTime.parse(start).plusNanos(nanos);
         }
-
-# Move source user to x-forwarded-for if flag is set.
-
+      tag: script_ea451043
+  # Move source user to x-forwarded-for if flag is set.
   - rename:
       tag: check_x_forwarded_for
       field: _temp_.srcuser
       target_field: panw.panos.x_forwarded_for
       if: ctx._temp_?.srcuser != null && ctx._temp_?.labels != null && (ctx._temp_.labels & 0x00080000) != 0
 
-# Remove the "x-fwd-for: " string if it exists in the value of panw.panos.x_forwarded_for
-
+  # Remove the "x-fwd-for: " string if it exists in the value of panw.panos.x_forwarded_for
   - gsub:
       field: panw.panos.x_forwarded_for
       pattern: 'x-fwd-for: '
       replacement: ''
       ignore_missing: true
+      tag: gsub_61971b77
 
-# Extract user domain from source and destination user
-
+  # Extract user domain from source and destination user
   - grok:
       field: _temp_.srcuser
       tag: process_srcuser
@@ -1158,54 +1266,63 @@ processors:
       field: panw.panos.source.user
       copy_from: source.user.name
       if: ctx.source?.user?.name != null
+      tag: set_5fa72389
 
   - set:
       field: panw.panos.destination.user
       copy_from: destination.user.name
       if: ctx.destination?.user?.name != null
+      tag: set_818f25aa
 
-# Set user ECS field from source.user
+  # Set user ECS field from source.user
   - set:
       field: user
       copy_from: source.user
       if: ctx.source?.user != null
+      tag: set_c1c63bfc
 
-
-# Set event.category.
+  # Set event.category.
   - append:
       field: event.type
       value: allowed
       if: ctx.panw?.panos?.action != null && ['alert', 'allow', 'continue'].contains(ctx.panw.panos.action)
+      tag: append_db898368
   - append:
       field: event.type
       value: denied
       if: ctx.panw?.panos?.action != null && ['deny', 'drop', 'reset-client', 'reset-server', 'reset-both', 'block-url', 'block-ip', 'random-drop', 'sinkhole', 'block'].contains(ctx.panw.panos.action)
+      tag: append_8a07da7a
 
-# event.action for traffic, gtp and tunnel inspection logs.
+  # event.action for traffic, gtp and tunnel inspection logs.
   - set:
       field: event.action
       value: flow_started
       if: ctx.panw?.panos?.sub_type == 'start'
+      tag: set_ec717802
   - append:
       field: event.type
       value:
         - start
         - connection
       if: ctx.panw?.panos?.sub_type == 'start'
+      tag: append_56c0fa7e
   - set:
       field: event.action
       value: flow_terminated
       if: ctx.panw?.panos?.sub_type == 'end'
+      tag: set_b48049f1
   - append:
       field: event.type
       value:
         - end
         - connection
       if: ctx.panw?.panos?.sub_type == 'end'
+      tag: append_3880470a
   - set:
       field: event.action
       value: flow_dropped
       if: ctx.panw?.panos?.sub_type == 'drop'
+      tag: set_e877c40c
   - append:
       field: event.type
       allow_duplicates: false
@@ -1213,10 +1330,12 @@ processors:
         - denied
         - connection
       if: ctx.panw?.panos?.sub_type == 'drop'
+      tag: append_71c7f7c7
   - set:
       field: event.action
       value: flow_denied
       if: ctx.panw?.panos?.sub_type == 'deny'
+      tag: set_1367c4cc
   - append:
       field: event.type
       allow_duplicates: false
@@ -1224,138 +1343,167 @@ processors:
         - denied
         - connection
       if: ctx.panw?.panos?.sub_type == 'deny'
+      tag: append_9dfa3a90
 
-# event.action for threat and global-protect logs.
+  # event.action for threat and global-protect logs.
   - set:
       field: event.action
       value: data_match
       if: ctx.panw?.panos?.sub_type == 'data'
+      tag: set_db0cba22
   - set:
       field: event.action
       value: file_match
       if: ctx.panw?.panos?.sub_type == 'file'
+      tag: set_1e99bca2
   - set:
       field: event.action
       value: flood_detected
       if: ctx.panw?.panos?.sub_type == 'flood'
+      tag: set_c5c23cc5
   - set:
       field: event.action
       value: packet_attack
       if: ctx.panw?.panos?.sub_type == 'packet'
+      tag: set_7d67d107
   - set:
       field: event.action
       value: scan_detected
       if: ctx.panw?.panos?.sub_type == 'scan'
+      tag: set_3596ef1d
   - set:
       field: event.action
       value: spyware_detected
       if: ctx.panw?.panos?.sub_type == 'spyware'
+      tag: set_2c58a413
   - set:
       field: event.action
       value: url_filtering
       if: ctx.panw?.panos?.sub_type == 'url'
+      tag: set_99b157b9
   - set:
       field: event.action
       value: virus_detected
       if: ctx.panw?.panos?.sub_type == 'virus'
+      tag: set_7c18f6af
   - set:
       field: event.action
       value: exploit_detected
       if: ctx.panw?.panos?.sub_type == 'vulnerability'
+      tag: set_805e7280
   - set:
       field: event.action
       value: wildfire_verdict
       if: ctx.panw?.panos?.sub_type == 'wildfire'
+      tag: set_56f4e6f6
   - set:
       field: event.action
       value: wildfire_virus_detected
       if: ctx.panw?.panos?.sub_type == 'wildfire-virus'
+      tag: set_0fdbfc0f
 
-# Set numeric log.level from event.severity.
+  # Set numeric log.level from event.severity.
   - lowercase:
       field: log.level
       ignore_missing: true
+      tag: lowercase_67daca2b
   - set:
       field: event.severity
       if: ctx.log?.level == 'critical'
       value: 1
+      tag: set_78b4e486
   - set:
       field: event.severity
       if: ctx.log?.level == 'high'
       value: 2
+      tag: set_8cb8e3a2
   - set:
       field: event.severity
       if: ctx.log?.level == 'medium'
       value: 3
+      tag: set_bfd2318a
   - set:
       field: event.severity
       if: ctx.log?.level == 'low'
       value: 4
+      tag: set_a30c7c5a
   - set:
       field: event.severity
       if: ctx.log?.level == 'informational'
       value: 5
+      tag: set_ef6f3a0c
 
-# Normalize event.outcome.
-# These values appear in the TRAFFIC docs but look like a mistake.
+  # Normalize event.outcome.
+  # These values appear in the TRAFFIC docs but look like a mistake.
   - set:
       field: panw.panos.action
       value: 'drop-icmp'
       if: ctx.panw?.panos?.action == 'drop icmp' || ctx.panw.panos.action == 'drop ICMP'
+      tag: set_cc0321e7
   - set:
       field: panw.panos.action
       value: 'reset-both'
       if: ctx.panw?.panos?.action == 'reset both'
+      tag: set_7002ea8d
   - set:
       field: panw.panos.action
       value: 'reset-client'
       if: ctx.panw?.panos?.action == 'reset client'
+      tag: set_b2db15b1
   - set:
       field: panw.panos.action
       value: 'reset-server'
       if: ctx.panw?.panos?.action == 'reset server'
+      tag: set_a4e70bb9
 
-# set network.type from source.ip
+  # set network.type from source.ip
   - set:
       field: network.type
       value: 'ipv4'
       if: ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains('.')
+      tag: set_c17affcd
   - set:
       field: network.type
       value: 'ipv6'
       if: ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(':')
+      tag: set_80f338ef
 
-# Build related.ip array from src/dest/NAT IPs.
+  # Build related.ip array from src/dest/NAT IPs.
   - append:
       if: ctx.source?.ip != null
       field: related.ip
       allow_duplicates: false
       value:
         - '{{{source.ip}}}'
+      tag: append_ad877ddf
   - append:
       if: ctx.destination?.ip != null
       field: related.ip
       allow_duplicates: false
       value:
         - '{{{destination.ip}}}'
+      tag: append_27b47e1d
   - append:
       if: ctx.source?.nat?.ip != null
       field: related.ip
       allow_duplicates: false
       value:
         - '{{{source.nat.ip}}}'
+      tag: append_a2bce604
   - append:
       if: ctx.destination?.nat?.ip != null
       field: related.ip
       allow_duplicates: false
       value:
         - '{{{destination.nat.ip}}}'
+      tag: append_f870aa60
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
       if: ctx.host?.ip instanceof String
       allow_duplicates: false
       ignore_failure: true
+      tag: append_b5e4f4e8
   - foreach:
       field: host.ip
       if: ctx.host?.ip instanceof List
@@ -1365,57 +1513,67 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
           ignore_failure: true
+      tag: foreach_cdb7b310
   - append:
       field: related.ip
       value: '{{{panw.panos.xff.ip}}}'
       if: ctx.panw?.panos?.xff?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_a3243a74
   - append:
       field: related.ip
       value: '{{{network.forwarded_ip}}}'
       if: ctx.network?.forwarded_ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_35904c4c
   - append:
       field: related.ip
       value: '{{{panw.panos.remote_user.ip}}}'
       if: ctx.panw?.panos?.remote_user?.ip != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_439ef81c
   - append:
       field: related.ip
       value: '{{{panw.panos.end_ip_address}}}'
       if: ctx.panw?.panos?.end_ip_address != null
       allow_duplicates: false
       ignore_failure: true
+      tag: append_3da2e079
 
-# Geolocation for source.
+  # Geolocation for source.
   - geoip:
       if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
+      tag: geoip_bace2435
   - geoip:
       if: ctx.source?.nat?.ip != null && ctx.source.geo == null
       field: source.nat.ip
       target_field: source.geo
+      tag: geoip_eddcf44a
 
-# Geolocation for destination.
+  # Geolocation for destination.
   - geoip:
       if: ctx.destination?.ip != null
       field: destination.ip
       target_field: destination.geo
+      tag: geoip_942e2f6c
   - geoip:
       if: ctx.destination?.nat?.ip != null && ctx.destination.geo == null
       field: destination.nat.ip
       target_field: destination.geo
+      tag: geoip_0256c518
 
-# User Agent processor
+  # User Agent processor
   - user_agent:
       field: _temp_.user_agent
       ignore_missing: true
+      tag: user_agent_5901c0c4
 
-# IP Autonomous System (AS) Lookup
+  # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -1424,6 +1582,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: geoip_28d69883
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.nat.ip
@@ -1433,6 +1592,7 @@ processors:
         - organization_name
       ignore_missing: true
       if: ctx.source?.nat?.ip != null && ctx.source.as == null
+      tag: geoip_2080db8f
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -1441,6 +1601,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: geoip_8a007787
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.nat.ip
@@ -1450,54 +1611,66 @@ processors:
         - organization_name
       ignore_missing: true
       if: ctx.destination?.nat?.ip != null && ctx.destination.as == null
+      tag: geoip_e83d0651
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
+      tag: rename_a917047d
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+      tag: rename_f1362d0b
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
+      tag: rename_3b459fcd
   - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-# Set source|destination.geo.name from panw's srcloc|dstloc
+      tag: rename_814bd459
+  # Set source|destination.geo.name from panw's srcloc|dstloc
   - rename:
       if: ctx.source?.geo?.name == null
       field: _temp_.srcloc
       target_field: source.geo.name
       ignore_missing: true
+      tag: rename_62450ff5
   - rename:
       if: ctx.destination?.geo?.name == null
       field: _temp_.dstloc
       target_field: destination.geo.name
       ignore_missing: true
+      tag: rename_16d1cb26
   - convert:
       field: source.port
       type: integer
       if: ctx.source?.port != null
+      tag: convert_be94e8a8
   - convert:
       field: destination.port
       type: integer
       if: ctx.destination?.port != null
+      tag: convert_b536bd34
   - convert:
       field: source.nat.port
       type: integer
       if: ctx.source?.nat?.port != null
+      tag: convert_ea990c2b
   - convert:
       field: destination.nat.port
       type: integer
       if: ctx.destination?.nat?.port != null
+      tag: convert_542f9d41
 
-# Set community network ID's
+  # Set community network ID's
   - community_id:
       target_field: network.community_id
       if: ctx.source?.port != null && ctx.source.port != 0 && ctx.destination?.port != null && ctx.destination.port != 0
+      tag: community_id_d46cba7e
   - community_id:
       target_field: panw.panos.network.nat.community_id
       source_ip: source.nat.ip
@@ -1505,38 +1678,45 @@ processors:
       destination_ip: destination.nat.ip
       destination_port: destination.nat.port
       if: ctx.source?.nat?.port != null && ctx.source.nat.port != 0 && ctx.destination?.nat?.port != null && ctx.destination.nat.port != 0
+      tag: community_id_f7ca8490
 
-# Append NAT community_id to network.community_id
+  # Append NAT community_id to network.community_id
   - append:
       if: ctx.panw?.panos?.network?.nat?.community_id != null && ctx.panw.panos.network.nat.community_id != ctx.network?.community_id
       field: network.community_id
       value:
       - '{{{panw.panos.network.nat.community_id}}}'
+      tag: append_e4449439
   - grok:
       if: ctx.panw?.panos?.threat?.name != null
       field: panw.panos.threat.name
       ignore_failure: true
       patterns:
         - "^%{GREEDYDATA:panw.panos.threat.name}\\(\\s*%{NUMBER:panw.panos.threat.id}\\s*\\)$"
+      tag: grok_56e9304a
   - set:
       field: panw.panos.threat.name
       value: 'URL-filtering'
       if: ctx.panw?.panos?.threat?.id == '9999'
+      tag: set_eaf1c3eb
   - set:
       field: rule.name
       value: '{{{panw.panos.ruleset}}}'
       ignore_empty_value: true
       if: ctx.rule?.name == null
+      tag: set_809e7c7b
   - append:
       field: related.user
       allow_duplicates: false
       value: '{{{client.user.name}}}'
       if: ctx.client?.user?.name != null
+      tag: append_3eed7684
   - append:
       field: related.user
       allow_duplicates: false
       value: '{{{source.user.name}}}'
       if: ctx.source?.user?.name != null && !(ctx.source.user.name instanceof List)
+      tag: append_aaa30c64
   - foreach:
       if: ctx.source?.user?.name != null && ctx.source.user.name instanceof List
       field: source.user.name
@@ -1545,76 +1725,89 @@ processors:
           field: related.user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+      tag: foreach_89b6c35f
   - append:
       field: related.user
       allow_duplicates: false
       value: '{{{server.user.name}}}'
       if: ctx.server?.user?.name != null
+      tag: append_67245d7c
   - append:
       field: related.user
       allow_duplicates: false
       value: '{{{destination.user.name}}}'
       if: ctx.destination?.user?.name != null
+      tag: append_8f37bc82
   - append:
       field: related.user
       allow_duplicates: false
       value: '{{{panw.panos.admin}}}'
       if: ctx.panw?.panos?.admin != null
+      tag: append_de8d4c6e
   - append:
       field: related.hash
       allow_duplicates: false
       value: '{{{panw.panos.file.hash}}}'
       if: ctx.panw?.panos?.file?.hash != null
+      tag: append_1db93972
   - append:
       field: related.hash
       value: '{{{tls.client.hash.md5}}}'
       if: ctx.tls?.client?.hash?.md5 != null && ctx.tls.client.hash.md5 != ''
       allow_duplicates: false
       ignore_failure: true
+      tag: append_27ef2a78
   - append:
       field: related.hash
       value: '{{{tls.client.hash.sha1}}}'
       if: ctx.tls?.client?.hash?.sha1 != null && ctx.tls.client.hash.sha1 != ''
       allow_duplicates: false
       ignore_failure: true
+      tag: append_c09fffaf
   - append:
       field: related.hash
       value: '{{{tls.client.hash.sha256}}}'
       if: ctx.tls?.client?.hash?.sha256 != null && ctx.tls.client.hash.sha256 != ''
       allow_duplicates: false
       ignore_failure: true
+      tag: append_55615e75
   - append:
       field: related.hosts
       value: '{{{observer.hostname}}}'
       if: ctx.observer?.hostname != null && ctx.observer.hostname != ''
       allow_duplicates: false
+      tag: append_b31f7669
   - append:
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
+      tag: append_555b812b
   - append:
       field: related.hosts
       value: '{{{panw.panos.dst.host}}}'
       if: ctx.panw?.panos?.dst?.host != null && ctx.panw.panos.dst.host != ''
       allow_duplicates: false
       ignore_failure: true
+      tag: append_8feede29
   - append:
       field: related.hosts
       value: '{{{panw.panos.src.host}}}'
       if: ctx.panw?.panos?.src?.host != null && ctx.panw.panos.src.host != ''
       allow_duplicates: false
       ignore_failure: true
+      tag: append_8868b0f6
 
-# Remove temporary fields.
+  # Remove temporary fields.
   - remove:
       field:
         - _temp_
         - _conf
         - message
       ignore_missing: true
+      tag: remove_5b2846d6
 
-# Remove panw.panos fields that are copied into an ECS field.
+  # Remove panw.panos fields that are copied into an ECS field.
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
@@ -1694,12 +1887,12 @@ processors:
         - panw.panos.hash
       ignore_failure: true
       ignore_missing: true
-
+      tag: remove_5e27db21
 
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;
@@ -1713,14 +1906,18 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+      tag: script_009c1e23
 
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
-      field: 'error.message'
-      value: '{{{ _ingest.on_failure_message }}} {{{ _ingest.on_failure_processor_type }}}'
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
       field:
         - _temp_

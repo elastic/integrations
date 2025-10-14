@@ -32,42 +32,51 @@ processors:
         - panw.panos.user_by_source
         - panw.panos.tag.name
         - _temp_.high_res_timestamp
+      tag: csv_b6b283e5
 
-# Set event.category.
+  # Set event.category.
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - append:
       field: event.category
       value:
         - network
         - iam
+      tag: append_292aced3
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
       field: destination.port
       copy_from: panw.panos.destination.port
       ignore_failure: true
+      tag: set_f95b8fc9
   - set:
       field: event.code
       copy_from: panw.panos.event.id
       ignore_failure: true
+      tag: set_00870669
   - set:
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
+      tag: set_5bc96c94
   - set:
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
+      tag: set_c1b0f423
   - set:
       field: source.port
       copy_from: panw.panos.source.port
       ignore_failure: true
+      tag: set_ed14489b
   - set:
       field: source.user.name
       copy_from: panw.panos.user_by_source
       ignore_failure: true
+      tag: set_69d42ba9
 
   - date:
       if: ctx.panw?.panos?.factorcompletiontime != null && ctx.event?.timezone == null
@@ -76,6 +85,7 @@ processors:
       formats:
         - 'yyyy/MM/dd HH:mm:ss'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      tag: date_527c776e
   - date:
       if: ctx.panw?.panos?.factorcompletiontime != null && ctx.event?.timezone != null
       field: panw.panos.factorcompletiontime
@@ -84,6 +94,7 @@ processors:
         - 'yyyy/MM/dd HH:mm:ss'
       timezone: '{{{ event.timezone }}}'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
+      tag: date_02fdb26c
 
 on_failure:
   - set:
@@ -92,7 +103,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in User ID pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{ _ingest.on_failure_message }}}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

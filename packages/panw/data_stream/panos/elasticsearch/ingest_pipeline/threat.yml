@@ -20,6 +20,7 @@ processors:
           }
         }
         ctx.message = fixHttpHeadersEscaping(ctx.message);
+      tag: script_0f9eeb15
   - csv:
       field: message
       target_fields:
@@ -137,51 +138,60 @@ processors:
         - panw.panos.application.is_saas
         - panw.panos.application.is_sanctioned
         - panw.panos.cloud_report.id
+      tag: csv_61fc0089
 
   - set:
       field: http.version
       value: '2'
       if: ctx.panw?.panos?.http2_connection != null && ctx.panw.panos.http2_connection != 0 && ctx.panw.panos.http2_connection != '0'
+      tag: set_15060fdd
 
-# Set network.direction from threat direction (Threat logs).
+  # Set network.direction from threat direction (Threat logs).
   - set:
       field: network.direction
       value: inbound
       if: ctx._temp_?.direction == '0' || ctx._temp_.direction == 'client-to-server'
+      tag: set_09a28963
   - set:
       field: network.direction
       value: outbound
       if: ctx._temp_?.direction == '1' || ctx._temp_.direction == 'server-to-client'
+      tag: set_545e44a9
   - set:
       field: network.direction
       value: unknown
       if: ctx.network?.direction == null
+      tag: set_a298f1f4
 
-# Set event.category.
+  # Set event.category.
   - set:
       field: event.kind
       value: alert
+      tag: set_39295792
   - append:
       field: event.category
       value:
         - intrusion_detection
         - threat
         - network
+      tag: append_b3a3ba1f
 
-# Set event.outcome from panw.panos.action: allowable values:
-#  alert, allow, deny, drop, reset-client, reset-server, reset-both, block-url,
-#  block-ip, random-drop, sinkhole, syncookie-sent, block-continue, continue,
-#  block-override, override-lockout, override and block
+  # Set event.outcome from panw.panos.action: allowable values:
+  #  alert, allow, deny, drop, reset-client, reset-server, reset-both, block-url,
+  #  block-ip, random-drop, sinkhole, syncookie-sent, block-continue, continue,
+  #  block-override, override-lockout, override and block
   - set:
       if: ctx.panw?.panos?.action != null && ["alert", "allow", "continue"].contains(ctx.panw.panos.action)
       field: event.outcome
       value: success
+      tag: set_ce64da1d
   - set:
       if: ctx.event?.outcome == null || ctx.event.outcome == ""
       field: event.outcome
       value: failure
+      tag: set_bab27a63
 
-# Set network.forwarded_ip field
+  # Set network.forwarded_ip field
   - convert:
       field: _temp_.forwarded_ip
       target_field: network.forwarded_ip
@@ -191,112 +201,139 @@ processors:
             field: _temp_.forwarded_ip
             target_field: panw.panos.x_forwarded_for
             ignore_missing: true
+      tag: convert_e6722dcc
 
-# Set custom fields to ECS fields
+  # Set custom fields to ECS fields
   - set:
       field: panw.panos.destination.location
       copy_from: _temp_.dstloc
       ignore_failure: true
+      tag: set_b4a8aa0b
   - set:
       field: destination.ip
       copy_from: panw.panos.destination.ip
       ignore_failure: true
+      tag: set_07b53525
   - set:
       field: destination.nat.ip
       copy_from: panw.panos.destination.nat.ip
       ignore_failure: true
+      tag: set_3718bfe7
   - set:
       field: destination.nat.port
       copy_from: panw.panos.destination.nat.port
       ignore_failure: true
+      tag: set_ed3fbecb
   - set:
       field: destination.port
       copy_from: panw.panos.destination.port
       ignore_failure: true
+      tag: set_f95b8fc9
   - set:
       field: destination.user.email
       copy_from: panw.panos.recipient
       ignore_failure: true
+      tag: set_a9ced2d1
   - set:
       field: file.type
       copy_from: panw.panos.file.type
       ignore_failure: true
+      tag: set_3b47313f
   - set:
       field: http.request.method
       copy_from: panw.panos.http_method
       ignore_failure: true
+      tag: set_ee026d61
   - set:
       field: http.request.referrer
       copy_from: panw.panos.referrer
       ignore_failure: true
+      tag: set_d49699ae
   - set:
       field: log.level
       copy_from: panw.panos.severity
       ignore_failure: true
+      tag: set_ed3c9f74
   - set:
       field: network.application
       copy_from: panw.panos.network.application
       ignore_failure: true
+      tag: set_5ae7266b
   - set:
       field: panw.panos.network.direction
       copy_from: _temp_.direction
       ignore_failure: true
+      tag: set_7b1610d9
   - set:
       field: panw.panos.forwarded_ip
       copy_from: network.forwarded_ip
       ignore_failure: true
+      tag: set_869ae961
   - set:
       field: network.transport
       copy_from: panw.panos.protocol
       ignore_failure: true
+      tag: set_860fbbd0
   - set:
       field: observer.egress.interface.name
       copy_from: panw.panos.outbound_interface
       ignore_failure: true
+      tag: set_a7cd428a
   - set:
       field: observer.egress.zone
       copy_from: panw.panos.destination.zone
       ignore_failure: true
+      tag: set_1c62484c
   - set:
       field: observer.hostname
       copy_from: panw.panos.device_name
       ignore_failure: true
+      tag: set_5bc96c94
   - set:
       field: observer.ingress.interface.name
       copy_from: panw.panos.inbound_interface
       ignore_failure: true
+      tag: set_0cf960b9
   - set:
       field: observer.ingress.zone
       copy_from: panw.panos.source.zone
       ignore_failure: true
+      tag: set_99ce4399
   - set:
       field: rule.uuid
       copy_from: panw.panos.rule_uuid
       ignore_failure: true
+      tag: set_5478ecb2
   - set:
       field: panw.panos.source.location
       copy_from: _temp_.srcloc
       ignore_failure: true
+      tag: set_3344cd6f
   - set:
       field: source.ip
       copy_from: panw.panos.source.ip
       ignore_failure: true
+      tag: set_c1b0f423
   - set:
       field: source.nat.ip
       copy_from: panw.panos.source.nat.ip
       ignore_failure: true
+      tag: set_c6ea5d2f
   - set:
       field: source.port
       copy_from: panw.panos.source.port
       ignore_failure: true
+      tag: set_ed14489b
   - set:
       field: source.nat.port
       copy_from: panw.panos.source.nat.port
       ignore_failure: true
+      tag: set_dcfd151f
   - set:
       field: source.user.email
       copy_from: panw.panos.sender
       ignore_failure: true
+      tag: set_1f28b2dc
   - set:
       if: 'ctx.panw?.panos?.sub_type == "url" && ctx.panw?.panos?.misc instanceof String'
       tag: set_url
@@ -374,11 +411,14 @@ processors:
 
         ctx.url = url;
         
+      tag: script_fe76de17
+
   - set:
       if: ctx.panw?.panos?.sub_type == 'file' && (ctx.panw?.panos?.misc instanceof String) && (ctx.panw.panos.misc.contains('/') || ctx.panw.panos.misc.contains('\\'))
       field: file.path
       copy_from: panw.panos.misc
       ignore_failure: true
+      tag: set_7598b8ca
   - script:
       if: ctx.file?.path instanceof String
       lang: painless
@@ -389,11 +429,13 @@ processors:
           idx = ctx.file.path.lastIndexOf('\\');
         }
         ctx.file["name"] = ctx.file.path.substring(idx+1);
+      tag: script_b7379098
   - set:
       if: '["file", "virus", "vulnerability", "wildfire", "wildfire-virus"].contains(ctx.panw?.panos?.sub_type) && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains("/") || ctx.panw.panos.misc.contains("\\"))'
       field: file.name
       copy_from: panw.panos.misc
       ignore_failure: true
+      tag: set_341c6f34
 
   # vulnerability can be either file or url. If it's a file, remove all url fields it was parsed into
   - remove:
@@ -405,13 +447,16 @@ processors:
       field: panw.panos.user_agent
       copy_from: _temp_.user_agent
       ignore_failure: true
+      tag: set_f4b744c1
   - trim:
       if: ctx.panw?.panos?.url_category_list != null
       field: panw.panos.url_category_list
+      tag: trim_e818fc56
   - split:
-      if: ctx.panw?.panos?.url_category_list != null 
+      if: ctx.panw?.panos?.url_category_list != null
       field: panw.panos.url_category_list
       separator: ","
+      tag: split_3ab81de9
 
 on_failure:
   - set:
@@ -420,7 +465,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        error in Threat pipeline:
-        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
-        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
-        {{{ _ingest.on_failure_message }}}
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
