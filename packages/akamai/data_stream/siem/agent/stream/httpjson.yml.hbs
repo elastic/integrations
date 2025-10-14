@@ -19,7 +19,18 @@ request.transforms:
   - set:
       target: url.params.from
       value: >-
-        [[ if not (index .cursor "last_offset") ]][[ (now (parseDuration "-{{initial_interval}}")).Unix ]][[ end ]]
+        # On the initial request (no cursor), this calculates the start time.
+        # It takes the more recent of two values: the user-defined 'initial_interval'
+        # or the API's maximum 12-hour look-back, preventing API errors.
+        [[- if not (index .cursor "last_offset") -]]
+          [[- $initialTime := (now (parseDuration "-{{initial_interval}}")) -]]
+          [[- $maxLookbackTime := (now (parseDuration "-12h")) -]]
+          [[- if (gt $maxLookbackTime.Unix $initialTime.Unix) -]]
+            [[- $maxLookbackTime.Unix -]]
+          [[- else -]]
+            [[- $initialTime.Unix -]]
+          [[- end -]]
+        [[- end -]]
   - set:
       target: url.params.to
       value: >- 

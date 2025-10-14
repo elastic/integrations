@@ -17,10 +17,12 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 - Configure the GCS bucket names and credentials along with the required configs under the "Collect Akamai SIEM logs via Google Cloud Storage" section. 
 - Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
 
-**Note**:
+### **NOTE**:
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
 - The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input currently only supports JSON data.
+- The [Akamai SIEM Integration API](https://techdocs.akamai.com/siem-integration/reference/api) has a maximum look-back interval limit of 12 hours. Any value configured
+  beyond this will be automatically ignored in order to avoid API errors.
 
 **Exported fields**
 
