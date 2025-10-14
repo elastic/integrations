@@ -16,7 +16,7 @@
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-elastic_agent.*beat-default*, *:metrics-elastic_agent.*beat-default*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\" AND agent.name NOT LIKE \"*agentless*\"\n| STATS \n    max_errors = MAX(TO_LONG(beat.stats.libbeat.output.write.errors)),\n    min_errors = MIN(TO_LONG(beat.stats.libbeat.output.write.errors))  \n    BY time_bucket = DATE_TRUNC(1 minute, @timestamp), elastic_agent.id, component.id\n| EVAL errors_count = max_errors - min_errors \n| WHERE errors_count > 0 \n| STATS MAX(errors_count) BY elastic_agent.id, component.id"
+        "esql": "FROM metrics-elastic_agent.*beat-default*, *:metrics-elastic_agent.*beat-default*\n| WHERE data_stream.dataset LIKE \"elastic_agent.*beat\" AND agent.name NOT LIKE \"*agentless*\"\n| STATS \n    max_errors = MAX(TO_LONG(beat.stats.libbeat.output.write.errors)),\n    min_errors = MIN(TO_LONG(beat.stats.libbeat.output.write.errors))  \n    BY time_bucket = DATE_TRUNC(1 minute, @timestamp), elastic_agent.id, component.id\n| EVAL errors_count = max_errors - min_errors \n| WHERE errors_count > 5 \n| STATS MAX(errors_count) BY elastic_agent.id, component.id"
       },
       "aggType": "count",
       "groupBy": "row",
