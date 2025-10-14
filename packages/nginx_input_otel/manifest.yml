@@ -1,0 +1,54 @@
+format_version: 3.5.0
+name: nginx_otel_input
+title: "NGINX OpenTelemetry Input Package"
+version: 0.0.6
+source:
+  license: "Elastic-2.0"
+description: "NGINX OpenTelemetry Input Package"
+type: input
+categories:
+  - web
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: nginx_otel_input
+    type: metrics
+    title: NGINX OpenTelemetry Input
+    description: Collect NGINX metrics using OpenTelemetry
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: nginx_endpoint
+        type: text
+        title: NGINX Endpoint
+        description: The endpoint for NGINX status page to collect metrics
+        required: true
+        show_user: true
+        default: http://localhost:8080/status
+      - name: period
+        type: text
+        title: Collection Interval
+        description: How often to collect metrics
+        default: 10s
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
+owner:
+  github: elastic/integrations
+  type: elastic
