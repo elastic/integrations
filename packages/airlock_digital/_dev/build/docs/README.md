@@ -8,11 +8,11 @@ The Airlock Digital integration for Elastic allows you to collect logs from, [Ai
 
 ### Compatibility
 
-The Airlock Digital integration is compatible with `v6.1.x` and `v1` version of Airlock Digital REST API.
+The Airlock Digital integration is compatible with version `v6.1.x` of Airlock Digital and `v1` of the REST API.
 
 ### How it works
 
-This integration periodically queries the Airlock Digital REST API to retrieve Agent and Execution Histories logs.
+This integration periodically queries the Airlock Digital REST API to retrieve Agent, Execution Histories and Server Activities logs.
 
 ## What data does this integration collect?
 
@@ -20,9 +20,10 @@ This integration collects log messages of the following types:
 
 - `Agent`: Collects agent logs via [Airlock Digital REST API](https://api.airlockdigital.com/#35ef50c6-1df4-4330-a433-1915ccf380cf).
 - `Execution Histories`: Collects executions history logs via [Airlock Digital REST API](https://api.airlockdigital.com/#3634a82d-eb6b-44b7-b662-dddc37d4d9d6).
+- `Server Activities`: Collects server activity logs via [Airlock Digital REST API](https://api.airlockdigital.com/#290b4657-17d4-4048-982e-43df95200624).
 
 ### Supported use cases
-Integrating Airlock Digital agent and execution history logs with Elastic SIEM provides SOC teams with deep visibility into endpoint activity and policy enforcement. Dashboards surface insights into agent health, host and user patterns, OS distribution, group and policy metrics, storage availability, trusted configurations, and execution behaviors such as blocked or untrusted runs and policy violations. This enables faster investigations, stronger compliance, proactive resource management, and improved overall endpoint security.
+Integrating Airlock Digital agent, execution history, and server activity logs with Elastic SIEM delivers comprehensive visibility into endpoint and system operations. Dashboards highlight agent health, user and host activity, OS distribution, policy enforcement, storage status, trusted configurations, and execution behaviors such as blocked or untrusted runs and policy violations. At the same time, monitoring server-side activities across tasks, users, and root actions enables quick identification of unauthorized changes, policy misuse, and suspicious behavior. Together, these insights empower SOC teams to accelerate investigations, strengthen compliance, optimize resource management, and maintain stronger endpoint and system security.
 
 ## What do I need to use this integration?
 
@@ -32,7 +33,7 @@ Integrating Airlock Digital agent and execution history logs with Elastic SIEM p
 
 1. In order to make the API calls, the User Group to which a user belongs should contain required permissions. You can follow the below steps for that:
 2. Go to the **Settings** and navigate to **Users** tab.
-3. Under **User Group Management** for the respective user group provide **agent/find**, **group/policies** and **logging/exechistories** roles in the REST API Roles section and click on save.
+3. Under **User Group Management** for the respective user group provide **agent/find**, **group/policies**, **logging/exechistories** and **logging/svractivities** roles in the REST API Roles section and click on save.
 
 #### Generate Client API key for Authentication:
 
@@ -97,6 +98,10 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "execution_histories"}}
 
+#### Server Activities
+
+{{fields "server_activities"}}
+
 ### Example event
 
 #### Agent
@@ -106,6 +111,10 @@ For more information on architectures that can be used for scaling this integrat
 #### Execution Histories
 
 {{event "execution_histories"}}
+
+#### Server Activities
+
+{{event "server_activities"}}
 
 ### Inputs used
 
@@ -138,3 +147,4 @@ These integration datasets use the following APIs:
     - Blocklist Browser Execution
     - Trusted Installer Execution
     - Trusted Browser Metadata Execution
+- `Server Activities`: [Airlock Digital REST API](https://api.airlockdigital.com/#290b4657-17d4-4048-982e-43df95200624).
