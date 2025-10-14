@@ -16,7 +16,7 @@
       "thresholdComparator": ">",
       "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-* \n| WHERE process.executable LIKE \"*elastic*agent*\"\n| STATS restart_count = COUNT_DISTINCT(process.cpu.start_time) BY elastic_agent.id, process.name, bucket(@timestamp,5min) \n| WHERE restart_count > 10"
+        "esql": "FROM metrics-*, *:metrics-*\n| WHERE process.executable RLIKE \".*[Ee]lastic.*[Aa]gent.*\" AND agent.name NOT LIKE \"*agentless*\"\n| STATS restart_count = COUNT_DISTINCT(process.cpu.start_time) BY host.name, process.name, bucket(@timestamp,5 minute) \n| WHERE restart_count > 10\n| STATS MAX(restart_count) BY host.name, process.name"
       },
       "aggType": "count",
       "groupBy": "row",
