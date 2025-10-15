@@ -573,7 +573,7 @@ processors:
       field: "message"
       description: "302020"
       patterns:
-        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
+        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for faddr (?:%{ECSDESTIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSDESTIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{MAPPEDSRC}|%{NOTCOLON}:%{MAPPEDSRC})/%{NUMBER} laddr (?:%{ECSSOURCEIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSSOURCEIPORHOST})/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -1235,14 +1235,15 @@ processors:
         - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) \(%{CISCO_USER:_temp_.cisco.termination_user}\)
         - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason}
         - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes})
-        - ^Teardown %{NOTSPACE:network.transport} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\s*(?:\(%{CISCO_USER_OR_SGT_SRC}\))?(\s*type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?
+        - ^Teardown %{NOTSPACE:network.transport} connection for faddr (?:%{ECSDESTIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSDESTIPORHOST})/%{NUMBER}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?gaddr (?:%{MAPPEDSRC}|%{NOTCOLON:_temp_.cisco.gaddr_interface}:%{MAPPEDSRC})/%{NUMBER} laddr (?:%{ECSSOURCEIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSSOURCEIPORHOST})/%{NUMBER}\s*(?:\(%{CISCO_USER_OR_SGT_SRC}\))?(\s*type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?
+        - ^Teardown %{NOTSPACE:network.transport} connection %{NOTSPACE:_temp_.cisco.connection_id} from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address} to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int} duration %{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}(?:%{NUMBER} %{NUMBER})?
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
-        ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"
-        ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
-        MAPPEDSRC: "(?:%{IPORHOST:_temp_.natsrcip}|%{HOSTNAME})"
+        ECSSOURCEIPORHOST: "(?:%{IPV6:source.address}|%{IP:source.address}|%{HOSTNAME:source.domain})"
+        ECSDESTIPORHOST: "(?:%{IPV6:destination.address}|%{IP:destination.address}|%{HOSTNAME:destination.domain})"
+        MAPPEDSRC: "(?:%{IPV6:_temp_.natsrcip}|%{IPORHOST:_temp_.natsrcip})"
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
         USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
@@ -1832,7 +1833,7 @@ processors:
       tag: script_process_flow_duration
       lang: painless
       if: "ctx?._temp_?.duration_hms != null"
-      source: >
+      source: |
         long parse_hms(String s) {
             long cur = 0, total = 0;
             for (char c: s.toCharArray()) {
@@ -1841,8 +1842,6 @@ processors:
                 } else if (c == (char)':') {
                     total = (total + cur) * 60;
                     cur = 0;
-                } else if (c != (char)'h' && c == (char)'m' && c == (char)'s') {
-                    return 0;
                 }
             }
             return total + cur;
@@ -1850,13 +1849,19 @@ processors:
         if (ctx?.event == null) {
             ctx['event'] = new HashMap();
         }
-        String end = ctx['@timestamp'];
-        ctx.event['end'] = end;
         long nanos = parse_hms(ctx._temp_.duration_hms) * 1000000000L;
         ctx.event['duration'] = nanos;
-        ctx.event['start'] = ZonedDateTime.ofInstant(
-            Instant.parse(end).minusNanos(nanos),
-            ZoneOffset.UTC);
+        if (ctx['@timestamp'] != null) {
+            String end = ctx['@timestamp'];
+            ctx.event['end'] = end;
+            try {
+                ctx.event['start'] = ZonedDateTime.ofInstant(
+                    Instant.parse(end).minusNanos(nanos),
+                    ZoneOffset.UTC);
+            } catch (Exception e) {
+                // If timestamp parsing fails, just set duration
+            }
+        }
   #
   # Parse Source/Dest Username/Domain may contain SGT
   #
