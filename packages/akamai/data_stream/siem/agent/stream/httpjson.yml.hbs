@@ -25,11 +25,7 @@ request.transforms:
         [[- if not (index .cursor "last_offset") -]]
           [[- $initialTime := (now (parseDuration "-{{initial_interval}}")).Unix -]]
           [[- $maxLookbackTime := (now (parseDuration "-12h")).Unix -]]
-          [[- if (gt $maxLookbackTime $initialTime) -]]
-            [[- $maxLookbackTime -]]
-          [[- else -]]
-            [[- $initialTime -]]
-          [[- end -]]
+          [[- max $maxLookbackTime $initialTime -]]
         [[- end -]]
   - set:
       target: url.params.to
