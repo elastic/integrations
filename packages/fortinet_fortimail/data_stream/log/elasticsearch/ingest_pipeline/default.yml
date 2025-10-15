@@ -4,23 +4,29 @@ processors:
   - set:
       field: ecs.version
       value: '8.17.0'
+      tag: set_f5923549
   - set:
       field: observer.vendor
       value: Fortinet
+      tag: set_7e57c221
   - set:
       field: observer.product
       value: FortiMail
+      tag: set_7580a600
   - set:
       field: observer.type
       value: firewall
+      tag: set_5dddf3ba
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+      tag: rename_56a77271
   - set:
       field: event.kind
       value: event
+      tag: set_de80643c
   - grok:
       field: event.original
       tag: 'grok_syslog_line'
@@ -60,21 +66,25 @@ processors:
       copy_from: _conf.tz_offset
       if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
       ignore_empty_value: true
+      tag: set_656ca26d
   - rename:
       field: temp.date
       target_field: fortinet_fortimail.log.date
       ignore_missing: true
+      tag: rename_791b1e7f
   - rename:
       field: temp.time
       target_field: fortinet_fortimail.log.time
       ignore_missing: true
+      tag: rename_28b7e7b1
   - set:
       field: temp.timestamp
       value: '{{{fortinet_fortimail.log.date}}}T{{{fortinet_fortimail.log.time}}}'
       if: ctx.fortinet_fortimail?.log?.date != null && ctx.fortinet_fortimail.log.date != '' && ctx.fortinet_fortimail.log.time != null && ctx.fortinet_fortimail.log.time != ''
+      tag: set_3a851ed4
   - date:
       field: temp.timestamp
-      tag: 'date_set_timestamp'
+      tag: 'date_set_timestamp_tz'
       timezone: '{{{event.timezone}}}'
       if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null
       formats:
@@ -99,10 +109,12 @@ processors:
       field: temp.device_id
       target_field: fortinet_fortimail.log.device_id
       ignore_missing: true
+      tag: rename_ad7319b7
   - set:
       field: observer.serial_number
       copy_from: fortinet_fortimail.log.device_id
       ignore_empty_value: true
+      tag: set_af8a006c
   - convert:
       field: fortinet_fortimail.log.priority_number
       tag: 'convert_priority_number_to_long'
@@ -117,44 +129,53 @@ processors:
       field: log.syslog.priority
       copy_from: fortinet_fortimail.log.priority_number
       ignore_empty_value: true
+      tag: set_5bba7139
   - rename:
       field: temp.log_id
       target_field: fortinet_fortimail.log.id
       ignore_missing: true
+      tag: rename_c4838ad6
   - set:
       field: event.code
       copy_from: fortinet_fortimail.log.id
       ignore_empty_value: true
+      tag: set_fd86fb7a
   - rename:
       field: temp.type
       target_field: fortinet_fortimail.log.type
       ignore_missing: true
+      tag: rename_7498bbf7
   - rename:
       field: temp.subtype
       target_field: fortinet_fortimail.log.sub_type
       ignore_missing: true
+      tag: rename_50405a6e
   - rename:
       field: temp.pri
       target_field: fortinet_fortimail.log.priority
       ignore_missing: true
+      tag: rename_a6f312b4
   - set:
       field: log.level
       copy_from: fortinet_fortimail.log.priority
       ignore_empty_value: true
+      tag: set_e6bfdefc
   - rename:
       field: temp.subject
       target_field: fortinet_fortimail.log.subject
       ignore_missing: true
+      tag: rename_798cf6cf
   - set:
       field: email.subject
       copy_from: fortinet_fortimail.log.subject
       ignore_empty_value: true
+      tag: set_a26859b4
   - script:
       description: Sets log.syslog.severity.code and calculates log.syslog.facility.code.
       tag: 'script_for_set_log.syslog.severity.code_log.syslog.facility.code'
       if: ctx.log?.level != null && ctx.log.level != '' && ctx.log.syslog?.priority != null && ctx.log.syslog.priority != ''
       lang: painless
-      source: |-
+      source: |
         ArrayList severities = new ArrayList(['emergency','alert','critical','error','warning','notice','information','debug']);
         HashMap sevrityMap = new HashMap();
         HashMap facilityMap = new HashMap();
@@ -177,33 +198,42 @@ processors:
       field: temp.msg
       target_field: fortinet_fortimail.log.message
       ignore_missing: true
+      tag: rename_09e20425
   - set:
       field: message
       copy_from: fortinet_fortimail.log.message
       ignore_empty_value: true
+      tag: set_4828486a
   - pipeline:
       name: '{{ IngestPipeline "pipeline_history" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'statistics'
+      tag: pipeline_c9fec8bf
   - pipeline:
       name: '{{ IngestPipeline "pipeline_system" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'kevent'
+      tag: pipeline_eb9d81a8
   - pipeline:
       name: '{{ IngestPipeline "pipeline_mail" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'event'
+      tag: pipeline_fe700e77
   - pipeline:
       name: '{{ IngestPipeline "pipeline_antivirus" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'virus'
+      tag: pipeline_f4d2fc92
   - pipeline:
       name: '{{ IngestPipeline "pipeline_antispam" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'spam'
+      tag: pipeline_6b2edc66
   - pipeline:
       name: '{{ IngestPipeline "pipeline_encryption" }}'
       if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'encrypt'
+      tag: pipeline_70a3c98c
   - remove:
       field:
         - _conf
         - temp
       ignore_missing: true
+      tag: remove_c9ff360d
   - remove:
       field:
         - fortinet_fortimail.log.action
@@ -228,14 +258,16 @@ processors:
         - fortinet_fortimail.log.user
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      tag: remove_017c4e84
   - remove:
       field:
         - event.original
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      tag: remove_779d3744
   - script:
       lang: painless
-      source: |-
+      source: |
         boolean drop(Object o) {
           if (o == null || o == '') {
             return true;
@@ -250,14 +282,19 @@ processors:
         }
         drop(ctx);
       description: Drops null/empty values recursively.
+      tag: script_69e302b9
   - set:
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
+      tag: set_92954dfa
 on_failure:
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error

@@ -5,6 +5,7 @@ processors:
       field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
+      tag: rename_c4b20db7
   - grok:
       field: message
       patterns:
@@ -13,50 +14,62 @@ processors:
         - '^%{DATA}(?i)user %{NOTSPACE:temp.user} %{GREEDYDATA:temp.msg}$'
       ignore_missing: true
       ignore_failure: true
+      tag: grok_2eb49cca
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.ip}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.ip != null
+      tag: append_bf78f00c
   - append:
       field: fortinet_fortimail.log.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_2f9ddf13
   - append:
       field: user.name
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_9b60aa7f
   - append:
       field: related.user
       value: '{{{temp.user}}}'
       allow_duplicates: false
       if: ctx.temp?.user != null
+      tag: append_4554486f
   - append:
       field: related.user
       value: '{{{fortinet_fortimail.log.sent_from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.sent_from != null
+      tag: append_0e980ca0
   - append:
       field: email.from.address
       value: '{{{fortinet_fortimail.log.sent_from}}}'
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.sent_from != null
+      tag: append_d2cf608c
   - append:
       field: fortinet_fortimail.log.subject
       value: '{{{temp.subject}}}'
       allow_duplicates: false
       if: ctx.temp?.subject != null
+      tag: append_cc39b1e0
   - append:
       field: email.subject
       value: '{{{temp.subject}}}'
       allow_duplicates: false
       if: ctx.temp?.subject != null
+      tag: append_4ee59141
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
