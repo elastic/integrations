@@ -1,0 +1,38 @@
+---
+description: Pipeline for extracting custom STIX extension fields
+processors:
+  - script:
+      lang: painless
+      description: Extract fields from custom STIX extensions
+      tag: extract_luminar_extensions
+      if: ctx.luminar?.extensions != null
+      source: >
+        def ext = null;
+        for (entry in ctx.luminar.extensions.entrySet()) {
+          if (entry.value instanceof Map && entry.value.extension_type == 'property-extension') {
+            ext = entry.value;
+            break;
+          }
+        }
+
+        if (ext != null) {
+          if (ext.containsKey('score')) {
+            ctx.threat = ctx.threat != null ? ctx.threat : new HashMap();
+            ctx.threat.indicator = ctx.threat.indicator != null ? ctx.threat.indicator : new HashMap();
+            ctx.threat.indicator.score = ext.score;
+          }
+
+          if (ext.containsKey('asn')) {
+            ctx.threat.indicator.as = ['number': ext.asn];
+          }
+
+          if (ext.containsKey('resolving_domains')) {
+            ctx.related = ctx.related != null ? ctx.related : new HashMap();
+            ctx.related.hosts = ext.resolving_domains;
+          }
+
+          if (ext.containsKey('conviction_reasons')) {
+            ctx.threat.indicator.conviction_reasons = ext.conviction_reasons;
+          }
+
+        }
