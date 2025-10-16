@@ -43,3 +43,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "device_health"}}
 
 {{event "device_health"}}
+
+### Network Health
+
+The `network_health` dataset provides metrics related to the overall health and performance of Meraki networks.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "network_health"}}
+
+{{event "network_health"}}
