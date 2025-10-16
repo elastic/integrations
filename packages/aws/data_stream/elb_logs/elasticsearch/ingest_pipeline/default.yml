@@ -17,7 +17,7 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
-      if: ctx.event?.source != 'otel'
+      if: ctx.pre_extracted != true
       field: event.original
       # Classic ELB patterns documented in https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/access-log-collection.html
       # ELB v2 Application load balancers https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html
@@ -183,7 +183,7 @@ processors:
       separator: ' '
       ignore_missing: true
   - date:
-      if: ctx?.event?.source != 'otel'
+      if: ctx.pre_extracted != true
       field: _tmp.timestamp
       formats:
         - ISO8601
@@ -268,7 +268,7 @@ processors:
 
   - remove:
       field:
-        - event.source
+        - pre_extracted
       ignore_missing: true
 on_failure:
   - set:
