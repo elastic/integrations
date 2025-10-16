@@ -19,7 +19,7 @@ processors:
   - json:
       field: event.original
       target_field: json
-      if: ctx.event?.source != 'otel'
+      if: ctx.pre_extracted != true
   - pipeline:
       if: ctx.json?.preview != null
       name: '{{ IngestPipeline "third-party" }}'
@@ -30,13 +30,13 @@ processors:
       field: json.eventTime
       target_field: "@timestamp"
       ignore_failure: true
-      if: ctx.event?.source != 'otel'
+      if: ctx.pre_extracted != true
       formats:
         - ISO8601
   - script:
       description: Drops null/empty values recursively
       lang: painless
-      if: ctx.event?.source != 'otel'
+      if: ctx.pre_extracted != true
       source: |
         boolean drop(Object o) {
           if (o == null || o == "") {
@@ -1791,7 +1791,7 @@ processors:
       field:
         - json
         - _conf
-        - event.source
+        - pre_extracted
       ignore_missing: true
   - script:
       tag: remove_nulls
