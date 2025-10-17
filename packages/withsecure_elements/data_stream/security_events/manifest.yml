@@ -1,0 +1,78 @@
+type: logs
+title: WithSecure Elements Security Events
+streams:
+  - input: httpjson
+    title: WithSecure Elements Security Events
+    description: Collects security events from WithSecure Elements API
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: WithSecure Elements API URL
+        description: URL of the WithSecure Elements API
+        multi: false
+        required: true
+        show_user: true
+        default: https://api.connect.withsecure.com
+      - name: client_id
+        type: text
+        title: Client ID
+        description: WithSecure Elements API Client ID
+        multi: false
+        required: true
+        show_user: true
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: WithSecure Elements API Client Secret
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: organization_id
+        type: text
+        title: Organization ID
+        description: WithSecure Elements Organization ID
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Collection Interval
+        description: How often to collect data (e.g., 5m, 1h)
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve withsecure.security.event fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
