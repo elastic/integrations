@@ -26,14 +26,14 @@ chown -R 1001:0 "$LOG_DIR"
 # Initialize storage if not formatted yet
 if [ ! -f "$META_FILE" ]; then
   echo "Formatting KRaft storage with Cluster ID: $CLUSTER_ID"
-  /opt/kafka/bin/kafka-storage.sh format -t "$CLUSTER_ID" -c /opt/kafka/config/kraft/server.properties
+  /opt/kafka/bin/kafka-storage.sh format -t "$CLUSTER_ID" -c /opt/kafka/config/kraft/server_custom.properties
 else
   echo "KRaft storage already formatted."
 fi
 
 # Start the Kafka server in the background
 echo "Starting Kafka server..."
-/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server.properties &
+/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server_custom.properties &
 # Store the Process ID (PID) of the Kafka server
 kafka_pid=$!
 
