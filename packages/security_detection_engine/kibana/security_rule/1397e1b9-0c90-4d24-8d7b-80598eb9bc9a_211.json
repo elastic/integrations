@@ -1,0 +1,78 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule identifies the creation of multiple files with same name and over SMB by the same user. This behavior may indicate the successful remote execution of a ransomware dropping file notes to different folders.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Ransomware Behavior - Note Files by System",
+        "note": "## Triage and analysis\n\n#### Possible investigation steps\n\n- Investigate the content of the dropped files.\n- Investigate any file names with unusual extensions.\n- Investigate any incoming network connection to port 445 on this host.\n- Investigate any network logon events to this host.\n- Identify the total number and type of modified files by pid 4.\n- If the number of files is too high and source.ip connecting over SMB is unusual isolate the host and block the used credentials.\n- Investigate other alerts associated with the user/host during the past 48 hours.\n\n### False positive analysis\n\n- Local file modification from a Kernel mode driver.\n\n### Related rules\n\n- Third-party Backup Files Deleted via Unexpected Process - 11ea6bec-ebde-4d71-a8e9-784948f8e3e9\n- Volume Shadow Copy Deleted or Resized via VssAdmin - b5ea4bfe-a1b2-421f-9d47-22a75a6f2921\n- Volume Shadow Copy Deletion via PowerShell - d99a037b-c8e2-47a5-97b9-170d076827c4\n- Volume Shadow Copy Deletion via WMIC - dc9c1f74-dac3-48e3-b47f-eb79db358f57\n- Potential Ransomware Note File Dropped via SMB - 02bab13d-fb14-4d7c-b6fe-4a28874d37c5\n- Suspicious File Renamed via SMB - 78e9b5d5-7c07-40a7-a591-3dbbf464c386\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Consider isolating the involved host to prevent destructive behavior, which is commonly associated with this activity.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords for these accounts and other potentially compromised credentials, such as email, business systems, and web services.\n- If any other destructive action was identified on the host, it is recommended to prioritize the investigation and look for ransomware preparation and execution activities.\n- If any backups were affected:\n  - Perform data recovery locally or restore the backups from replicated copies (cloud, other servers, etc.).\n- Determine the initial vector abused by the attacker and take action to prevent reinfection through the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
+        "query": "from logs-endpoint.events.file-* metadata _id, _version, _index\n\n// filter for file creation event done remotely over SMB with common user readable file types used to place ransomware notes\n| where event.category == \"file\" and host.os.type == \"windows\" and event.action == \"creation\" and process.pid == 4 and user.id != \"S-1-5-18\" and \n  file.extension in (\"txt\", \"htm\", \"html\", \"hta\", \"pdf\", \"jpg\", \"bmp\", \"png\", \"pdf\")\n\n// truncate the timestamp to a 60-second window\n| eval Esql.time_window_date_trunc = date_trunc(60 seconds, @timestamp)\n\n| keep file.path, file.name, process.entity_id, Esql.time_window_date_trunc\n\n// filter for same file name dropped in at least 3 unique paths by the System virtual process\n| stats Esql.file_path_count_distinct = COUNT_DISTINCT(file.path),  Esql.file_path_values = VALUES(file.path)  by process.entity_id , file.name, Esql.time_window_date_trunc\n| where Esql.file_path_count_distinct >= 3\n",
+        "references": [
+            "https://news.sophos.com/en-us/2023/12/21/akira-again-the-ransomware-that-keeps-on-taking/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1397e1b9-0c90-4d24-8d7b-80598eb9bc9a",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.002",
+                                "name": "SMB/Windows Admin Shares",
+                                "reference": "https://attack.mitre.org/techniques/T1021/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 211
+    },
+    "id": "1397e1b9-0c90-4d24-8d7b-80598eb9bc9a_211",
+    "type": "security-rule"
+}

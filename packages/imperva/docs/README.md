@@ -1,4 +1,4 @@
-# Imperva
+# Imperva device log integration
 
 This integration is for Imperva device logs. It includes the
 datasets for receiving logs over syslog or read from a file:

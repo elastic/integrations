@@ -138,6 +138,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.category | The log category name. | keyword |
+| azure.event_primary_stamp_name | The primary stamp name for the event | keyword |
+| azure.event_stamp_name | The stamp name for the event | keyword |
+| azure.event_stamp_type | The stamp type for the event | keyword |
 | azure.function.app_name | The Function application name. | keyword |
 | azure.function.category | The category of the operation. | keyword |
 | azure.function.event_id | The event ID. | long |

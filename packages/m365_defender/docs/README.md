@@ -130,11 +130,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-10-20T09:54:07.503Z",
     "agent": {
-        "ephemeral_id": "f214adf4-5e56-416a-8a08-4d35ad512d04",
-        "id": "21b303ad-4653-420a-807c-5a753a969c24",
-        "name": "elastic-agent-45984",
+        "ephemeral_id": "a8ed3d5f-ae1b-4f52-84b2-26f3f004c8df",
+        "id": "a0b323a2-9355-4872-9045-d8ab8d179c5a",
+        "name": "elastic-agent-98629",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "cloud": {
         "account": {
@@ -143,7 +143,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.alert",
-        "namespace": "49448",
+        "namespace": "30110",
         "type": "logs"
     },
     "device": {
@@ -155,9 +155,9 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "21b303ad-4653-420a-807c-5a753a969c24",
-        "snapshot": false,
-        "version": "8.19.0"
+        "id": "a0b323a2-9355-4872-9045-d8ab8d179c5a",
+        "snapshot": true,
+        "version": "8.19.4"
     },
     "event": {
         "action": [
@@ -175,7 +175,7 @@ An example event for `alert` looks as following:
         "duration": 2478000000,
         "end": "2023-10-20T09:51:41.993Z",
         "id": "daefa1828b-dd4e-405c-8a3b-aa28596830dd_1",
-        "ingested": "2025-09-09T09:17:53Z",
+        "ingested": "2025-09-22T06:32:26Z",
         "kind": "alert",
         "original": "{\"actorDisplayName\":null,\"additionalData\":null,\"alertPolicyId\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/daefa1828b-dd4e-405c-8a3b-aa28596830dd_1?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"assignedTo\":null,\"category\":\"Execution\",\"classification\":null,\"comments\":[],\"createdDateTime\":\"2023-10-20T09:53:09.8839373Z\",\"description\":\"A suspicious PowerShell activity was observed on the machine. \\nThis behavior may indicate that PowerShell was used during installation, exploration, or in some cases in lateral movement activities which are used by attackers to invoke modules, download external payloads, or get more information about the system. Attackers usually use PowerShell to bypass security protection mechanisms by executing their payload in memory without touching the disk and leaving any trace.\",\"detectionSource\":\"microsoftDefenderForEndpoint\",\"detectorId\":\"7f1c3609-a3ff-40e2-995b-c01770161d68\",\"determination\":null,\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":\"f18bd540-d5e4-46e0-8ddd-3d03a59e4e14\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"defenderAvStatus\":\"notSupported\",\"detailedRoles\":[\"PrimaryDevice\"],\"deviceDnsName\":\"clw555test\",\"firstSeenDateTime\":\"2023-10-20T09:50:17.7383987Z\",\"healthStatus\":\"inactive\",\"ipInterfaces\":[\"192.168.5.65\",\"fe80::cfe4:80b:615c:38fb\",\"127.0.0.1\",\"::1\"],\"loggedOnUsers\":[{\"accountName\":\"CDPUserIS-38411\",\"domainName\":\"AzureAD\"}],\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22621,\"osPlatform\":\"Windows11\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"high\",\"roles\":[],\"tags\":[],\"verdict\":\"unknown\",\"version\":\"22H2\",\"vmMetadata\":null},{\"@odata.type\":\"#microsoft.graph.security.userEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"CDPUserIS-38411\",\"azureAdUserId\":null,\"displayName\":null,\"domainName\":\"AzureAD\",\"userPrincipalName\":null,\"userSid\":\"S-1-12-1-1485667349-1150190949-4065799612-2328216759\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.urlEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"url\":\"http://127.0.0.1/1.exe\",\"verdict\":\"suspicious\"},{\"@odata.type\":\"#microsoft.graph.security.ipEvidence\",\"countryLetterCode\":null,\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"ipAddress\":\"127.0.0.1\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"suspicious\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2023-10-20T09:53:10.1933333Z\",\"detailedRoles\":[],\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"powershell.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":491520,\"issuer\":null,\"sha1\":\"a72c41316307889e43fe8605a0dca4a72e72a011\",\"sha256\":\"d783ba6567faf10fdff2d0ea3864f6756862d6c733c7f4467283da81aedc3a80\",\"signer\":null},\"mdeDeviceId\":\"505d70d89cfa3428f7aac7d2eb3a64c60fd3d843\",\"parentProcessCreationDateTime\":\"2023-10-20T09:51:19.5064237Z\",\"parentProcessId\":5772,\"parentProcessImageFile\":{\"fileName\":\"cmd.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":323584,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"powershell.exe  -NoExit -ExecutionPolicy Bypass -WindowStyle Hidden $ErrorActionPreference= 'silentlycontinue';(New-Object System.Net.WebClient).DownloadFile('http://127.0.0.1/1.exe', 'C:\\\\\\\\test-WDATP-test\\\\\\\\invoice.exe');Start-Process 'C:\\\\\\\\test-WDATP-test\\\\\\\\invoice.exe'\",\"processCreationDateTime\":\"2023-10-20T09:51:39.4997961Z\",\"processId\":8224,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"CDPUserIS-38411\",\"azureAdUserId\":null,\"displayName\":null,\"domainName\":\"AzureAD\",\"userPrincipalName\":null,\"userSid\":\"S-1-12-1-1485667349-1150190949-4065799612-2328216759\"},\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2023-10-20T09:51:39.5154802Z\",\"id\":\"daefa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"incidentId\":\"23\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/23?tid=3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"lastActivityDateTime\":\"2023-10-20T09:51:41.9939003Z\",\"lastUpdateDateTime\":\"2023-10-20T09:54:07.5033333Z\",\"mitreTechniques\":[\"T1059.001\"],\"productName\":\"Microsoft Defender for Endpoint\",\"providerAlertId\":\"efa1828b-dd4e-405c-8a3b-aa28596830dd_1\",\"recommendedActions\":\"1. Examine the PowerShell command line to understand what commands were executed. Note: the content may need to be decoded if it is Base64-encoded.\\n2. Search the script for more indicators to investigate - for example IP addresses (potential C\\u0026C servers), target computers etc.\\n3. Explore the timeline of this and other related machines for additional suspect activities around the time of the alert.\\n4. Look for the process that invoked this PowerShell run and their origin. Consider submitting any suspect files in the chain for deep analysis for detailed behavior information.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"medium\",\"status\":\"new\",\"tenantId\":\"3adb963c-8e61-48e8-a06d-6dbb0dacea39\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious PowerShell command line\"}",
         "provider": "microsoftDefenderForEndpoint",
@@ -962,11 +962,11 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2021-09-30T09:35:45.113Z",
     "agent": {
-        "ephemeral_id": "eec3e509-cf59-4600-95b1-1cd4892f96d1",
-        "id": "dac1f4dd-74d9-4c7b-93b4-92ffb18563cf",
-        "name": "elastic-agent-60517",
+        "ephemeral_id": "72e9af22-781c-4fcf-8f35-f3323da05456",
+        "id": "4803b1f2-dfb1-42e4-a039-2b5903f9971c",
+        "name": "elastic-agent-22006",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "cloud": {
         "account": {
@@ -978,16 +978,16 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.incident",
-        "namespace": "73594",
+        "namespace": "57178",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dac1f4dd-74d9-4c7b-93b4-92ffb18563cf",
-        "snapshot": false,
-        "version": "8.19.0"
+        "id": "4803b1f2-dfb1-42e4-a039-2b5903f9971c",
+        "snapshot": true,
+        "version": "8.19.4"
     },
     "event": {
         "action": [
@@ -997,7 +997,7 @@ An example event for `incident` looks as following:
         "created": "2021-08-13T08:43:35.553Z",
         "dataset": "m365_defender.incident",
         "id": "2972395",
-        "ingested": "2025-09-09T09:21:23Z",
+        "ingested": "2025-09-22T06:33:14Z",
         "kind": "alert",
         "original": "{\"@odata.type\":\"#microsoft.graph.security.incident\",\"alerts\":{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}},{\"@odata.type\":\"#microsoft.graph.security.fileEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"fileDetails\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"parentProcessCreationDateTime\":\"2021-08-12T07:39:09.0909239Z\",\"parentProcessId\":668,\"parentProcessImageFile\":{\"fileName\":\"services.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":731744,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"\\\"MsSense.exe\\\"\",\"processCreationDateTime\":\"2021-08-12T12:43:19.0772577Z\",\"processId\":4780,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"SYSTEM\",\"azureAdUserId\":null,\"domainName\":\"NT AUTHORITY\",\"userPrincipalName\":null,\"userSid\":\"S-1-5-18\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.registryKeyEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"registryHive\":\"HKEY_LOCAL_MACHINE\",\"registryKey\":\"SYSTEM\\\\CONTROLSET001\\\\CONTROL\\\\WMI\\\\AUTOLOGGER\\\\SENSEAUDITLOGGER\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-961444813\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"},\"assignedTo\":\"KaiC@contoso.onmicrosoft.com\",\"classification\":\"truePositive\",\"comments\":[{\"comment\":\"Demo incident\",\"createdBy\":\"DavidS@contoso.onmicrosoft.com\",\"createdTime\":\"2021-09-30T12:07:37.2756993Z\"}],\"createdDateTime\":\"2021-08-13T08:43:35.5533333Z\",\"determination\":\"multiStagedAttack\",\"displayName\":\"Multi-stage incident involving Initial access \\u0026 Command and control on multiple endpoints reported by multiple sources\",\"id\":\"2972395\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47\",\"lastUpdateDateTime\":\"2021-09-30T09:35:45.1133333Z\",\"redirectIncidentId\":null,\"severity\":\"medium\",\"status\":\"active\",\"tags\":[\"Demo\"],\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\"}",
         "provider": "microsoftDefenderForEndpoint",
@@ -1516,26 +1516,26 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-05T14:19:24.608Z",
+    "@timestamp": "2025-10-09T19:10:22.692Z",
     "agent": {
-        "ephemeral_id": "8da1faf9-0f7e-4538-a243-427209a4a793",
-        "id": "e1a3ccef-c453-4802-90e3-23c1ebc7e7e9",
-        "name": "elastic-agent-97669",
+        "ephemeral_id": "9f70964b-0219-45a5-88a2-be94ab2bc4f8",
+        "id": "77997b14-cd08-4c4d-a99b-c05d0053d9e8",
+        "name": "elastic-agent-31393",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "m365_defender.vulnerability",
-        "namespace": "36442",
+        "namespace": "10793",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e1a3ccef-c453-4802-90e3-23c1ebc7e7e9",
+        "id": "77997b14-cd08-4c4d-a99b-c05d0053d9e8",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1543,33 +1543,28 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "m365_defender.vulnerability",
-        "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-",
-        "ingested": "2025-08-05T14:19:25Z",
+        "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
+        "ingested": "2025-10-09T19:10:23Z",
         "kind": "event",
-        "original": "{\"affectedMachine\":{\"aadDeviceId\":null,\"agentVersion\":\"30.124092.2.0\",\"computerDnsName\":\"bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01\",\"cveId\":\"CVE-2025-3074\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"Low\",\"firstSeen\":\"2025-01-08T13:05:05.3483549Z\",\"fixingKbId\":null,\"healthStatus\":\"Inactive\",\"id\":\"94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-\",\"ipAddresses\":[{\"ipAddress\":\"216.160.83.56\",\"macAddress\":\"000C2910F1DA\",\"operationalStatus\":\"Up\",\"type\":\"Other\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"175.16.199.0\",\"lastSeen\":\"2025-01-08T13:15:03.694371Z\",\"machineId\":\"94819846155826828d1603b913c67fe336d81295\",\"machineTags\":[\"test tag\"],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":6,\"osPlatform\":\"Ubuntu\",\"osProcessor\":\"x64\",\"osVersion\":null,\"productName\":\"edge_chromium-based\",\"productVendor\":\"microsoft\",\"productVersion\":\"134.0.3124.72\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"severity\":\"Medium\",\"version\":\"20.4\",\"vmMetadata\":null},\"cveSupportability\":\"Supported\",\"cvssV3\":6.5,\"cvssVector\":\"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C\",\"description\":\"Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]\",\"epss\":0.00111,\"exploitInKit\":false,\"exploitTypes\":[],\"exploitUris\":[],\"exploitVerified\":false,\"exposedMachines\":2,\"firstDetected\":\"2025-04-01T19:52:39Z\",\"id\":\"CVE-2025-3074\",\"name\":\"CVE-2025-3074\",\"patchFirstAvailable\":null,\"publicExploit\":false,\"publishedOn\":\"2025-04-01T00:00:00Z\",\"severity\":\"Medium\",\"tags\":[\"test\"],\"updatedOn\":\"2025-04-08T00:00:00Z\"}",
+        "original": "{\"CveBatchTitle\":\"Red_hat February 2025 Vulnerabilities\",\"CveBatchUrl\":\"https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2\",\"CveId\":\"CVE-2022-49226\",\"CvssScore\":5.5,\"DeviceId\":\"1212121212121212121212\",\"DeviceName\":\"sample-host-1\",\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-10-06 10:43:58\",\"Id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 22:45:00\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Linux\",\"OSVersion\":\"enterprise_linux_9.4\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-red_hat-_-kernel\",\"RecommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"RecommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"RecommendedSecurityUpdateUrl\":\"https://access.redhat.com/errata/RHSA-2024:9315\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"kernel\",\"SoftwareVendor\":\"red_hat\",\"SoftwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"VulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
             "info"
         ]
     },
     "group": {
-        "id": "0"
+        "id": "0",
+        "name": "Unassigned"
     },
     "host": {
         "architecture": "x64",
-        "hostname": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
-        "id": "94819846155826828d1603b913c67fe336d81295",
-        "ip": [
-            "1.128.0.0"
-        ],
-        "name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
+        "hostname": "sample-host-1",
+        "id": "1212121212121212121212",
+        "name": "sample-host-1",
         "os": {
-            "name": "Ubuntu 20.4",
-            "platform": "Ubuntu",
+            "name": "Linux enterprise_linux_9.4",
+            "platform": "Linux",
             "type": "linux",
-            "version": "20.4"
-        },
-        "risk": {
-            "calculated_level": "None"
+            "version": "enterprise_linux_9.4"
         }
     },
     "input": {
@@ -1577,93 +1572,50 @@ An example event for `vulnerability` looks as following:
     },
     "m365_defender": {
         "vulnerability": {
-            "affected_machine": {
-                "agent_version": "30.124092.2.0",
-                "computer_dns_name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
-                "device_value": "Normal",
-                "exposure_level": "Low",
-                "first_seen": "2025-01-08T13:05:05.348Z",
-                "health_status": "Inactive",
-                "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-",
-                "ip_addresses": [
-                    {
-                        "ip_address": "216.160.83.56",
-                        "mac_address": "00-0C-29-10-F1-DA",
-                        "operational_status": "Up",
-                        "type": "Other"
-                    }
-                ],
-                "is_aad_joined": false,
-                "is_excluded": false,
-                "is_potential_duplication": false,
-                "last_external_ip_address": "1.128.0.0",
-                "last_ip_address": "175.16.199.0",
-                "last_seen": "2025-01-08T13:15:03.694Z",
-                "machine_id": "94819846155826828d1603b913c67fe336d81295",
-                "machine_tags": [
-                    "test tag"
-                ],
-                "managed_by": "MicrosoftDefenderForEndpoint",
-                "managed_by_status": "Success",
-                "onboarding_status": "Onboarded",
-                "os_architecture": "64-bit",
-                "os_build": 6,
-                "os_platform": "Ubuntu",
-                "os_processor": "x64",
-                "product_name": "edge_chromium-based",
-                "product_vendor": "microsoft",
-                "product_version": "134.0.3124.72",
-                "rbac_group_id": "0",
-                "risk_score": "None",
-                "severity": "Medium",
-                "version": "20.4"
-            },
-            "cve_supportability": "Supported",
-            "cvss_v3": 6.5,
-            "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C",
-            "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
-            "epss": 0.00111,
-            "exploit_in_kit": false,
-            "exploit_verified": false,
-            "exposed_machines": 2,
-            "first_detected": "2025-04-01T19:52:39.000Z",
-            "id": "CVE-2025-3074",
-            "impact": "Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security.",
-            "name": "CVE-2025-3074",
-            "public_exploit": false,
-            "published_on": "2025-04-01T00:00:00.000Z",
-            "remediation": "Apply the latest patches and updates provided by the respective vendors.",
-            "severity": "Medium",
-            "summary": "An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website.",
-            "tags": [
-                "test"
-            ],
-            "updated_on": "2025-04-08T00:00:00.000Z"
+            "cve_batch_title": "Red_hat February 2025 Vulnerabilities",
+            "cve_batch_url": "https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2",
+            "cve_id": "CVE-2022-49226",
+            "cvss_score": 5.5,
+            "device_id": "1212121212121212121212",
+            "device_name": "sample-host-1",
+            "exploitability_level": "NoExploit",
+            "first_seen_timestamp": "2025-10-06T10:43:58.000Z",
+            "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
+            "is_onboarded": true,
+            "last_seen_timestamp": "2025-10-06T22:45:00.000Z",
+            "os_architecture": "x64",
+            "os_platform": "Linux",
+            "os_version": "enterprise_linux_9.4",
+            "rbac_group_id": "0",
+            "rbac_group_name": "Unassigned",
+            "recommendation_reference": "va-_-red_hat-_-kernel",
+            "recommended_security_update": "CVE-2022-49226_oval:com.redhat.rhsa:def:20249315",
+            "recommended_security_update_id": "RHSA-2024:9315",
+            "security_update_available": true,
+            "severity_level": "Medium",
+            "software_name": "kernel",
+            "software_vendor": "red_hat",
+            "software_version": "0:5.14.0-427.42.1.el9_4"
         }
     },
-    "message": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
+    "message": "Red_hat February 2025 Vulnerabilities",
     "observer": {
         "product": "Microsoft 365 Defender",
         "vendor": "Microsoft"
     },
     "package": {
-        "name": "edge_chromium-based",
-        "version": "134.0.3124.72"
+        "name": "kernel",
+        "version": "0:5.14.0-427.42.1.el9_4"
     },
     "related": {
         "hosts": [
-            "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
-            "94819846155826828d1603b913c67fe336d81295"
-        ],
-        "ip": [
-            "216.160.83.56",
-            "1.128.0.0",
-            "175.16.199.0"
+            "1212121212121212121212",
+            "sample-host-1"
         ]
     },
     "resource": {
-        "id": "94819846155826828d1603b913c67fe336d81295",
-        "name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01"
+        "id": "1212121212121212121212",
+        "name": "sample-host-1"
     },
     "tags": [
         "preserve_original_event",
@@ -1673,21 +1625,18 @@ An example event for `vulnerability` looks as following:
     ],
     "vulnerability": {
         "classification": "CVSS",
-        "cve": "CVE-2025-3074",
-        "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
+        "cve": "CVE-2022-49226",
         "enumeration": "CVE",
-        "id": "CVE-2025-3074",
-        "published_date": "2025-04-01T00:00:00.000Z",
-        "reference": "https://www.cve.org/CVERecord?id=CVE-2025-3074",
+        "id": "CVE-2022-49226",
+        "reference": "https://www.cve.org/CVERecord?id=CVE-2022-49226",
         "scanner": {
             "vendor": "Microsoft"
         },
         "score": {
-            "base": 6.5,
-            "version": "3.1"
+            "base": 5.5
         },
         "severity": "Medium",
-        "title": "Vulnerability found in edge_chromium-based 134.0.3124.72 - CVE-2025-3074"
+        "title": "Vulnerability found in kernel 0:5.14.0-427.42.1.el9_4 - CVE-2022-49226"
     }
 }
 ```
@@ -1697,7 +1646,6 @@ An example event for `vulnerability` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| cloud.resource_id | Cloud provider-specific native identifier of the monitored cloud resource. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -1707,71 +1655,32 @@ An example event for `vulnerability` looks as following:
 | log.file.device_id | Device Id of the log file this event came from. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Log offset. | long |
-| m365_defender.vulnerability.affected_machine.aad_device_id | Microsoft Entra Device ID (when machine is Microsoft Entra joined). | keyword |
-| m365_defender.vulnerability.affected_machine.agent_version |  | keyword |
-| m365_defender.vulnerability.affected_machine.computer_dns_name | Machine fully qualified name. | keyword |
-| m365_defender.vulnerability.affected_machine.device_value | The value of the device. Possible values are: Normal, Low, and High. | keyword |
-| m365_defender.vulnerability.affected_machine.exclusion_reason |  | keyword |
-| m365_defender.vulnerability.affected_machine.exposure_level | Exposure level as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Low, Medium, and High. | keyword |
-| m365_defender.vulnerability.affected_machine.first_seen | First date and time where the machine was observed by Microsoft Defender for Endpoint. | date |
-| m365_defender.vulnerability.affected_machine.fixing_kb_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.health_status | machine health status. Possible values are: Active, Inactive, ImpairedCommunication, NoSensorData, NoSensorDataImpairedCommunication, and Unknown. | keyword |
-| m365_defender.vulnerability.affected_machine.id |  | keyword |
-| m365_defender.vulnerability.affected_machine.ip_addresses.ip_address |  | ip |
-| m365_defender.vulnerability.affected_machine.ip_addresses.mac_address |  | keyword |
-| m365_defender.vulnerability.affected_machine.ip_addresses.operational_status |  | keyword |
-| m365_defender.vulnerability.affected_machine.ip_addresses.type |  | keyword |
-| m365_defender.vulnerability.affected_machine.is_aad_joined |  | boolean |
-| m365_defender.vulnerability.affected_machine.is_excluded |  | boolean |
-| m365_defender.vulnerability.affected_machine.is_potential_duplication |  | boolean |
-| m365_defender.vulnerability.affected_machine.last_external_ip_address | Last IP through which the machine accessed the internet. | ip |
-| m365_defender.vulnerability.affected_machine.last_ip_address | Last IP on local NIC on the machine. | ip |
-| m365_defender.vulnerability.affected_machine.last_seen | Time and date of the last received full device report. A device typically sends a full report every 24 hours. NOTE: This property doesn't correspond to the last seen value in the UI. It pertains to the last device update. | date |
-| m365_defender.vulnerability.affected_machine.machine_id | Machine identity. | keyword |
-| m365_defender.vulnerability.affected_machine.machine_tags | Set of machine tags. | keyword |
-| m365_defender.vulnerability.affected_machine.managed_by |  | keyword |
-| m365_defender.vulnerability.affected_machine.managed_by_status |  | keyword |
-| m365_defender.vulnerability.affected_machine.merged_into_machine_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.onboarding_status | Status of machine onboarding. Possible values are: onboarded, CanBeOnboarded, Unsupported, and InsufficientInfo. | keyword |
-| m365_defender.vulnerability.affected_machine.os_architecture | Operating system architecture. Possible values are: 32-bit, 64-bit. Use this property instead of osProcessor. | keyword |
-| m365_defender.vulnerability.affected_machine.os_build | Operating system build number. | long |
-| m365_defender.vulnerability.affected_machine.os_platform | Operating system platform. | keyword |
-| m365_defender.vulnerability.affected_machine.os_processor | Operating system processor. Use osArchitecture property instead. | keyword |
-| m365_defender.vulnerability.affected_machine.os_version |  | keyword |
-| m365_defender.vulnerability.affected_machine.product_name |  | keyword |
-| m365_defender.vulnerability.affected_machine.product_vendor |  | keyword |
-| m365_defender.vulnerability.affected_machine.product_version |  | keyword |
-| m365_defender.vulnerability.affected_machine.rbac_group_id | Machine group ID. | keyword |
-| m365_defender.vulnerability.affected_machine.rbac_group_name | Machine group Name. | keyword |
-| m365_defender.vulnerability.affected_machine.risk_score | Risk score as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Informational, Low, Medium, and High. | keyword |
-| m365_defender.vulnerability.affected_machine.severity |  | keyword |
-| m365_defender.vulnerability.affected_machine.version | Operating system version. | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.cloud_provider |  | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.resource_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.subscription_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.vmMetadata.vm_id |  | keyword |
-| m365_defender.vulnerability.cve_supportability | Possible values are: Supported, Not Supported, or SupportedInPremium. | keyword |
-| m365_defender.vulnerability.cvss_v3 | CVSS v3 score. | double |
-| m365_defender.vulnerability.cvss_vector | A compressed textual representation that reflects the values used to derive the score. | keyword |
-| m365_defender.vulnerability.description | Vulnerability description. | keyword |
-| m365_defender.vulnerability.epss | Represents the probability that a vulnerability will be exploited. This probability is expressed as a number between 0 and 1 (0%-100%) according to the EPSS model. | double |
-| m365_defender.vulnerability.exploit_in_kit | Exploit is part of an exploit kit. | boolean |
-| m365_defender.vulnerability.exploit_types | Exploit affect. Possible values are: Local privilege escalation, Denial of service, or Local. | keyword |
-| m365_defender.vulnerability.exploit_uris | Exploit source URLs. | keyword |
-| m365_defender.vulnerability.exploit_verified | Exploit is verified to work. | boolean |
-| m365_defender.vulnerability.exposed_machines | Number of exposed devices. | long |
-| m365_defender.vulnerability.first_detected |  | date |
-| m365_defender.vulnerability.id | Vulnerability ID. | keyword |
-| m365_defender.vulnerability.impact | Impact of vulnerability. | keyword |
-| m365_defender.vulnerability.name | Vulnerability title. | keyword |
-| m365_defender.vulnerability.patch_first_available |  | date |
-| m365_defender.vulnerability.public_exploit | Public exploit exists. | boolean |
-| m365_defender.vulnerability.published_on | Date when vulnerability was published. | date |
-| m365_defender.vulnerability.remediation | Remediation fix for vulnerability to mitigate the problem. | keyword |
-| m365_defender.vulnerability.severity | Vulnerability Severity. Possible values are: Low, Medium, High, or Critical. | keyword |
-| m365_defender.vulnerability.summary | Summary of vulnerability. | keyword |
-| m365_defender.vulnerability.tags |  | keyword |
-| m365_defender.vulnerability.updated_on | Date when vulnerability was updated. | date |
+| m365_defender.vulnerability.cve_batch_title |  | keyword |
+| m365_defender.vulnerability.cve_batch_url |  | keyword |
+| m365_defender.vulnerability.cve_id | Unique identifier assigned to the security vulnerability under the Common Vulnerabilities and Exposures (CVE) system. | keyword |
+| m365_defender.vulnerability.cvss_score | The CVSS score of the CVE. | float |
+| m365_defender.vulnerability.device_id | Unique identifier for the device in the service. | keyword |
+| m365_defender.vulnerability.device_name | Fully qualified domain name (FQDN) of the device. | keyword |
+| m365_defender.vulnerability.disk_paths | Disk evidence that the product is installed on the device. | keyword |
+| m365_defender.vulnerability.exploitability_level | The exploitability level of this vulnerability (NoExploit, ExploitIsPublic, ExploitIsVerified, ExploitIsInKit) | keyword |
+| m365_defender.vulnerability.first_seen_timestamp | First time this product CVE was seen on the device. | date |
+| m365_defender.vulnerability.id | Unique identifier for the record. | keyword |
+| m365_defender.vulnerability.is_onboarded |  | boolean |
+| m365_defender.vulnerability.last_seen_timestamp | Last time the software was reported on the device. | date |
+| m365_defender.vulnerability.os_architecture | Architecture of the operating system running on the device. | keyword |
+| m365_defender.vulnerability.os_platform | Platform of the operating system running on the device. | keyword |
+| m365_defender.vulnerability.os_version | Version of the operating system running on the device. | keyword |
+| m365_defender.vulnerability.rbac_group_id |  | keyword |
+| m365_defender.vulnerability.rbac_group_name | The role-based access control (RBAC) group. | keyword |
+| m365_defender.vulnerability.recommendation_reference | A reference to the recommendation ID related to this software. | keyword |
+| m365_defender.vulnerability.recommended_security_update | Name or description of the security update provided by the software vendor to address the vulnerability. | keyword |
+| m365_defender.vulnerability.recommended_security_update_id | Identifier of the applicable security updates or identifier for the corresponding guidance or knowledge base (KB) articles. | keyword |
+| m365_defender.vulnerability.registry_paths | Registry evidence that the product is installed in the device. | keyword |
+| m365_defender.vulnerability.security_update_available | Indicates whether a security update is available for the software. | boolean |
+| m365_defender.vulnerability.severity_level | Severity level assigned to the security vulnerability based on the CVSS score. | keyword |
+| m365_defender.vulnerability.software_name | Name of the software product. | keyword |
+| m365_defender.vulnerability.software_vendor | Name of the software vendor. | keyword |
+| m365_defender.vulnerability.software_version | Version number of the software product. | keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version |  | keyword |
 | package.name | Package name | keyword |

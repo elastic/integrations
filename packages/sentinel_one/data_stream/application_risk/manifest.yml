@@ -1,0 +1,82 @@
+title: "Application Risk"
+type: logs
+ilm_policy: logs-sentinel_one.application_risk-default_policy
+streams:
+  - input: cel
+    title: Application Risk
+    description: Collecting application risk via API.
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Sentinel One API. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        multi: false
+        required: true
+        show_user: false
+        description: Batch size for the response of the Sentinel One API. The maximum supported page size value is 1000.
+        default: 1000
+      - name: site_ids
+        type: text
+        title: Site IDs
+        multi: false
+        required: false
+        show_user: false
+        description: Comma separated list of Site IDs to filter by. Example - "225494730938493804,225494730938493915".
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - sentinel_one-application_risk
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve sentinel_one.application_risk fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.

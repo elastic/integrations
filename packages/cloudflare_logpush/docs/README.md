@@ -4,10 +4,12 @@
 
 The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, DNS Firewall, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Sinkhole HTTP, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
-The Cloudflare Logpush integration can be used in three different modes to collect data:
+The Cloudflare Logpush integration can be used in the following modes to collect data:
 - HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
 - AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode - Cloudflare writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
+- Azure Blob Storage polling mode - Cloudflare writes data to Azure Blob Storage and Elastic Agent polls the Azure Blob Storage containers by listing its contents and reading new files.
+- Google Cloud Storage polling mode - Cloudflare writes data to Google Cloud Storage and Elastic Agent polls the GCS buckets by listing its contents and reading new files.
 
 For example, you could use the data from this integration to know which websites have the highest traffic, which areas have the highest network traffic, or observe mitigation statistics.
 
@@ -136,13 +138,25 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 ### Collect data from GCS Buckets
 
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
-- Configure the GCS bucket names and credentials along with the required configs under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
+- Configure the GCS bucket names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
 - Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
 
 **Note**:
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
-- The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
-- The GCS input currently only supports json data.
+- The GCS input accepts a service account JSON key or a service account JSON file for authentication.
+- The GCS input supports JSON/NDJSON data.
+
+### Collect data from Azure Blob Storage
+
+- [Enable Microsoft Azure](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/azure/) to ingest data into Azure Blob Storage containers.
+- Configure Azure Blob Storage container names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Azure Blob Storage" section. 
+- Make sure the storage account and authentication being used, has proper levels of access to the Azure Blob Storage Container. Please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-data-operations-portal) for more details.
+- If you want to use RBAC for your account please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
+
+**Note**:
+- The Azure Blob Storage input does not support fetching from containers using container prefixes, so the containers' names must be configured manually for each data stream.
+- The Azure Blob Storage input accepts a service account key (shared credentials key), service account URI (connection string) and OAuth2 credentials for authentication.
+- The Azure Blob Storage input only supports JSON/NDJSON data.
 
 ### Collect data from the Cloudflare HTTP Endpoint
 
@@ -312,6 +326,9 @@ An example event for `access_request` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.access_request.action | What type of record is this. login | logout. | keyword |
 | cloudflare_logpush.access_request.allowed | If request was allowed or denied. | boolean |
@@ -458,6 +475,9 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.audit.action.result | Whether the action was successful. | keyword |
 | cloudflare_logpush.audit.action.type | Type of action taken. | keyword |
@@ -628,6 +648,9 @@ An example event for `casb` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.casb.asset.id | Unique identifier for an asset of this type. Format will vary by policy vendor. | keyword |
 | cloudflare_logpush.casb.asset.metadata | Metadata associated with the asset. Structure will vary by policy vendor. | flattened |
@@ -787,6 +810,9 @@ An example event for `device_posture` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.device_posture.eval.expected | JSON object of what the posture check expects from the Zero Trust client. | flattened |
 | cloudflare_logpush.device_posture.eval.received | JSON object of what the Zero Trust client actually uploads. | flattened |
@@ -894,6 +920,9 @@ An example event for `dlp_forensic_copies` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.dlp_forensic_copies.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.dlp_forensic_copies.datetime | The date and time the corresponding HTTP request was made. | date |
@@ -1014,6 +1043,9 @@ An example event for `dns` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.dns.colo.code | IATA airport code of data center that received the request. | keyword |
 | cloudflare_logpush.dns.edns.subnet | EDNS Client Subnet (IPv4 or IPv6). | ip |
@@ -1163,6 +1195,9 @@ An example event for `dns_firewall` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.dns_firewall.cluster_id | The ID of the cluster which handled this request. | keyword |
 | cloudflare_logpush.dns_firewall.colo.code | IATA airport code of data center that received the request. | keyword |
@@ -1368,6 +1403,9 @@ An example event for `email_security_alerts` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.email_security_alerts.alert_id | The canonical ID for an Email Security Alert. | keyword |
 | cloudflare_logpush.email_security_alerts.alert_reasons | Human-readable list of findings which contributed to this message's final disposition. | keyword |
@@ -1587,6 +1625,9 @@ An example event for `firewall_event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.firewall_event.action | The code of the first-class action the Cloudflare Firewall took on this request. | keyword |
 | cloudflare_logpush.firewall_event.client.asn.description | The ASN of the visitor as string. | keyword |
@@ -1875,6 +1916,9 @@ An example event for `gateway_dns` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_dns.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.gateway_dns.answers | The response data objects. | flattened |
@@ -2165,6 +2209,9 @@ An example event for `gateway_http` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_http.account_id | Cloudflare account tag. | keyword |
 | cloudflare_logpush.gateway_http.action | Action performed by gateway on the HTTP request. | keyword |
@@ -2399,6 +2446,9 @@ An example event for `gateway_network` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_network.account_id | Cloudflare account tag. | keyword |
 | cloudflare_logpush.gateway_network.action | Action performed by gateway on the session. | keyword |
@@ -2743,6 +2793,9 @@ An example event for `http_request` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.http_request.bot.detection_ids | List of IDs that correlate to the Bot Management Heuristic detections made on a request. Available in Logpush v2 only. | long |
 | cloudflare_logpush.http_request.bot.detection_tags | List of tags that correlate to the Bot Management Heuristic detections made on a request. Available only for Bot Management customers. To enable this feature, contact your account team. | keyword |
@@ -2994,6 +3047,9 @@ An example event for `magic_ids` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.magic_ids.action | What action was taken on the packet. Possible values are pass | block. | keyword |
 | cloudflare_logpush.magic_ids.colo.city | The city where the detection occurred. | keyword |
@@ -3107,6 +3163,9 @@ An example event for `nel_report` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.nel_report.client.ip.asn.description | Client ASN description. | keyword |
 | cloudflare_logpush.nel_report.client.ip.asn.value | Client ASN. | long |
@@ -3377,6 +3436,9 @@ An example event for `network_analytics` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.network_analytics.attack.campaign.id | Unique identifier of the attack campaign that this packet was a part of, if any. | keyword |
 | cloudflare_logpush.network_analytics.attack.id | Unique identifier of the mitigation that matched the packet, if any. | keyword |
@@ -3693,6 +3755,9 @@ An example event for `network_session` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.network_session.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.network_session.destination.bytes | The number of bytes sent from the origin to the client during the network session. | long |
@@ -3832,6 +3897,9 @@ An example event for `page_shield_events` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.page_shield_events.action | The action which was taken against the violation. Possible values are (log, allow). | keyword |
 | cloudflare_logpush.page_shield_events.csp_directive | The violated directive in the report. | keyword |
@@ -4032,6 +4100,9 @@ An example event for `sinkhole_http` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.sinkhole_http.account_id | The Account ID. | keyword |
 | cloudflare_logpush.sinkhole_http.destination.ip | The destination IP address of the request. | ip |
@@ -4210,6 +4281,9 @@ An example event for `spectrum_event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.spectrum_event.action | Event Action. | keyword |
 | cloudflare_logpush.spectrum_event.application | The unique public ID of the application on which the event occurred. | keyword |
@@ -4375,6 +4449,9 @@ An example event for `workers_trace` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.workers_trace.dispatch_namespace | The Cloudflare Worker dispatch namespace. | keyword |
 | cloudflare_logpush.workers_trace.entrypoint | The name of the entrypoint class in which the Worker began execution. | keyword |

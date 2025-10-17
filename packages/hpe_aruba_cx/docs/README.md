@@ -2447,6 +2447,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | host.os.version | Operating system version as a raw string. | keyword |
 | input.type | Input type | keyword |
 | log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.inode | Inode of the log file this event came from. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |

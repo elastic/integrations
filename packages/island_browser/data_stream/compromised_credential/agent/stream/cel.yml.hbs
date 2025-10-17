@@ -1,0 +1,104 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  batch_size: {{batch_size}}
+  offset: 0
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - api_key
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+        "end_time": now.format(time_layout.RFC3339),
+      })
+  ).as(state,
+    state.url.trim_right("/").as(base_url, state.with(
+    post_request(
+      base_url + "/api/external/v1/compromised-credentials",
+      "application/json",
+      {
+        "limit": state.batch_size,
+        "offset": state.offset,
+        "start": state.start_time,
+        "end": state.end_time,
+        "sortBy": "CompromisedDate",
+        "sortDirection": "Asc"
+      }.encode_json()
+    ).with({
+        "Header":{
+          "Content-Type": ["application/json"],
+          "api-key": [state.api_key],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, {
+          "events": (size(body.compromisedCredentials) != 0) ?
+            body.compromisedCredentials.map(e,{
+              "message": e.encode_json(),
+            })
+          :
+            [{
+              "message": "retry"
+            }],
+          "offset": body.?compromisedCredentials[0].hasValue() ? int(state.offset) + body.compromisedCredentials.size() : 0,
+          "want_more": body.?compromisedCredentials[0].hasValue(),
+          "cursor": {
+            "last_timestamp": state.end_time
+          },
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + base_url + "/api/external/v1/compromised-credentials: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    ))
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

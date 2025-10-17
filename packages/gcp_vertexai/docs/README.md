@@ -105,6 +105,8 @@ With a properly configured Service Account and the integration setting in place,
 
 ### Requirements
 
+#### AuditLogs
+
 Before you start, you need to create the following Google Cloud resources:
 
 - Log Sink
@@ -124,6 +126,23 @@ At a high level, the steps required are:
 4. Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and `resource.type="audited_resource"` in the "Inclusion filter" to include all audit logs.
 
 This is just an example to create your filter expression to select the Vertex AI audit logs  you want to export to the Pub/Sub topic.
+
+
+#### Prompt Response Logging
+
+The `prompt_response_logs` data stream is designed to collect Vertex AI prompt-response logs from GCP BigQuery. BigQuery is a fully-managed, serverless data warehouse that stores detailed logs of interactions with Vertex AI models.
+
+Vertex AI logs export to BigQuery enables you to export detailed Google Cloud Vertex AI interaction data (such as prompts, responses, model usage, and metadata) automatically to a BigQuery dataset that you specify. Then you can access your Vertex AI logs from BigQuery for detailed analysis and monitoring using this integration. This enables comprehensive tracking of AI model usage, performance monitoring, and cost analysis.
+
+
+Before configuring this integration, you must export Vertex AI logs to a BigQuery table. Follow the official guide here: [Exporting Vertex AI logs to BigQuery](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging_)
+
+
+**Configuration**: When setting up the `prompt_response_logs` data stream, configure the following parameters:
+
+1. **Table ID**: (Required) Full table identifier in the format `project_id.dataset_id.table_name` that contains the Vertex AI logs data. You can copy this from the "Details" tab when viewing your table in the BigQuery web console, under the "Table ID" field.
+
+2. **Time Lookback Hours**: (Optional) Specifies how many hours back from the current time to query for new log entries in the format `time_lookback_hours`. The default value for this is 1hr.
 
 ## Troubleshooting
 
@@ -258,6 +277,8 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 
 ## Logs reference
 
+### AuditLogs 
+
 An example event for `auditlogs` looks as following:
 
 ```json
@@ -373,4 +394,202 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | gcp.vertexai.audit.status.details | A list of messages that carry the error details. | flattened |
 | gcp.vertexai.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
 | gcp.vertexai.audit.type | Type of the logs. | keyword |
+
+
+### Prompt Response Logs 
+
+An example event for `prompt_response` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-08T21:04:22.248Z",
+    "agent": {
+        "ephemeral_id": "c3546c8d-19b4-4c44-89b5-4978b94d7973",
+        "id": "34197d89-3b28-4bcf-9fe9-19336bab3a33",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "9.2.0"
+    },
+    "cloud": {
+        "project": {
+            "id": "elastic-sa"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "vertex-ai"
+        }
+    },
+    "data_stream": {
+        "dataset": "gcp_vertexai.prompt_response_logs",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "34197d89-3b28-4bcf-9fe9-19336bab3a33",
+        "version": "9.2.0"
+    },
+    "event": {
+        "action": "GenerateContent",
+        "agent_id_status": "verified",
+        "dataset": "gcp_vertexai.prompt_response_logs",
+        "duration": 18983446299,
+        "ingested": "2025-09-21T12:59:23Z",
+        "kind": "event",
+        "module": "gcp",
+        "type": [
+            "info"
+        ]
+    },
+    "gcp": {
+        "vertexai": {
+            "prompt_response_logs": {
+                "api_method": "GenerateContent",
+                "full_request": {
+                    "contents": [
+                        {
+                            "role": "user",
+                            "parts": [
+                                {
+                                    "text": "Hello world!"
+                                }
+                            ]
+                        }
+                    ],
+                    "generation_config": {
+                        "max_output_tokens": 8192,
+                        "temperature": 0
+                    },
+                    "model": "projects/elastic-sa/locations/us-central1/publishers/google/models/gemini-2.5-pro"
+                },
+                "full_response": {
+                    "candidates": [
+                        {
+                            "score": -105.80919647216797,
+                            "avg_logprobs": -3.6485929817988954,
+                            "finish_reason": "STOP",
+                            "content": {
+                                "role": "model",
+                                "parts": [
+                                    {
+                                        "text": "Hello there! The classic programmer's greeting.\n\nIt's a good sign that everything is working. How can I help you today?"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "create_time": "2025-09-08T21:04:11.034753Z",
+                    "model_version": "gemini-2.5-pro",
+                    "response_id": "y0S_aMGPArCYqsMPntGNyA4",
+                    "usage_metadata": {
+                        "billable_prompt_usage": {
+                            "text_count": 11
+                        },
+                        "candidates_token_count": 29,
+                        "candidates_tokens_details": [
+                            {
+                                "modality": "TEXT",
+                                "token_count": 29
+                            }
+                        ],
+                        "prompt_token_count": 3,
+                        "prompt_tokens_details": [
+                            {
+                                "modality": "TEXT",
+                                "token_count": 3
+                            }
+                        ],
+                        "thoughts_token_count": 901,
+                        "total_token_count": 933,
+                        "traffic_type": "ON_DEMAND"
+                    }
+                },
+                "logging_time": "2025-09-08T21:04:22.248Z",
+                "metadata": {
+                    "request_latency": 11225.994
+                },
+                "model": "publishers/google/models/gemini-2.5-pro",
+                "model_version": "default",
+                "request_id": "5374205265901353984"
+            }
+        }
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "5E-6B-5E-A6-7C-6E"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    }
+}
+```
+
+**ECS Field Reference**
+
+Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| gcp.vertexai.prompt_response_logs.api_method | The API method called (e.g., generateContent, predict). | keyword |
+| gcp.vertexai.prompt_response_logs.deployed_model_id | The ID of the deployed model that processed the request. | keyword |
+| gcp.vertexai.prompt_response_logs.endpoint | The Vertex AI API endpoint URL used for the request. | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.contents.parts.text | Text content of the prompt or message. | text |
+| gcp.vertexai.prompt_response_logs.full_request.contents.role | Role of the content sender (e.g., user, model, assistant). | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.endpoint | The Vertex AI API endpoint URL used for the request. | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.max_output_tokens | Maximum number of output tokens to generate. | long |
+| gcp.vertexai.prompt_response_logs.full_request.generation_config.temperature | Temperature setting for response randomness (0.0 to 1.0). | float |
+| gcp.vertexai.prompt_response_logs.full_request.model | Full model path including project, location, and model name. | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.safety_settings.category | Safety category (e.g., HARM_CATEGORY_DANGEROUS_CONTENT). | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold | Safety threshold level (e.g., BLOCK_ONLY_HIGH). | keyword |
+| gcp.vertexai.prompt_response_logs.full_request.system_instruction.parts.text | Text content of the system instruction. | text |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.avg_logprobs | Average log probabilities for the candidate. | float |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text | Text content of the response. | text |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.content.role | Role of the response sender (e.g., model). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason | Reason why the generation finished (e.g., STOP). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category | Safety category (e.g., HARM_CATEGORY_HATE_SPEECH). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability | Probability level (e.g., NEGLIGIBLE). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability_score | Probability score for the safety rating. | float |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity | Severity level of potential harm (e.g., HARM_SEVERITY_NEGLIGIBLE). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity_score | Numerical severity score. | float |
+| gcp.vertexai.prompt_response_logs.full_response.candidates.score | Score assigned to the candidate response. | float |
+| gcp.vertexai.prompt_response_logs.full_response.create_time | Timestamp when the response was created. | date |
+| gcp.vertexai.prompt_response_logs.full_response.model_version | Version of the model that generated the response. | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.response_id | Unique identifier for the response. | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.billable_prompt_usage.text_count | Count of text characters in billable prompt usage. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_token_count | Total number of tokens in response candidates. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_tokens_details.modality | Type of content modality (e.g., TEXT). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_tokens_details.token_count | Number of tokens for this modality. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count | Total number of tokens in the prompt. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_tokens_details.modality | Type of content modality (e.g., TEXT). | keyword |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_tokens_details.token_count | Number of tokens for this modality. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.thoughts_token_count | Number of tokens used for internal thoughts/reasoning. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.total_token_count | Total number of tokens used in the entire interaction. | long |
+| gcp.vertexai.prompt_response_logs.full_response.usage_metadata.traffic_type | Type of traffic (e.g., ON_DEMAND). | keyword |
+| gcp.vertexai.prompt_response_logs.logging_time | Timestamp when the AI interaction was logged. | date |
+| gcp.vertexai.prompt_response_logs.metadata.request_latency | Request latency in milliseconds. | float |
+| gcp.vertexai.prompt_response_logs.model | Name of the AI model used. | keyword |
+| gcp.vertexai.prompt_response_logs.model_version | Version of the AI model used. | keyword |
+| gcp.vertexai.prompt_response_logs.request_id | Unique identifier for the AI request. | keyword |
+| gcp.vertexai.prompt_response_logs.request_payload | Array of request payload strings containing user prompts and inputs. | text |
+| gcp.vertexai.prompt_response_logs.response_payload | Array of response payload strings containing AI model outputs. | text |
 

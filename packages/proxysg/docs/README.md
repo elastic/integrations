@@ -186,6 +186,7 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.bytes | Count of bytes sent by the client. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -299,4 +300,5 @@ An example event for `log` looks as following:
 | proxysg.x_sc_connection_issuer_keyring |  | keyword |
 | proxysg.x_sc_connection_issuer_keyring_alias |  | keyword |
 | proxysg.x_virus_id |  | keyword |
+| server.bytes | Count of bytes sent by the server. | long |
 

@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the extraction of an initramfs image using the \"cpio\" command on Linux systems. The \"cpio\" command is used to create or extract cpio archives. Attackers may extract the initramfs image to modify the contents or add malicious files, which can be leveraged to maintain persistence on the system.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*",
+            "endgame-*",
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-crowdstrike.fdr*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Initramfs Extraction via CPIO",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Initramfs Extraction via CPIO\n\nInitramfs is a temporary filesystem used during the Linux boot process, containing essential drivers and scripts. Attackers may exploit the `cpio` command to extract and modify initramfs, embedding malicious files to ensure persistence. The detection rule identifies suspicious `cpio` usage by monitoring process execution patterns, excluding legitimate parent processes, to flag potential threats.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of the cpio command with arguments \"-H\" or \"--format\" and \"newc\" to ensure the alert is not a false positive.\n- Investigate the parent process of the cpio command to determine if it is an unexpected or unauthorized process, as legitimate processes like mkinitramfs or dracut should be excluded.\n- Check the execution path of the parent process to verify if it matches any known legitimate paths such as \"/usr/share/initramfs-tools/*\" or \"/nix/store/*\".\n- Analyze the timeline of events around the cpio execution to identify any preceding or subsequent suspicious activities that might indicate a broader attack or persistence mechanism.\n- Examine the system for any unauthorized modifications or additions to the initramfs image that could indicate tampering or the presence of malicious files.\n- Correlate the alert with other security data sources like Elastic Endgame, Elastic Defend, or Crowdstrike to gather additional context and assess the scope of the potential threat.\n\n### False positive analysis\n\n- Legitimate system updates or maintenance activities may trigger the rule when tools like mkinitramfs or dracut are used. To handle this, ensure these processes are excluded by verifying that the parent process is mkinitramfs or dracut.\n- Custom scripts or automation tools that manage initramfs might use cpio in a non-malicious context. Review these scripts and add their parent process names or paths to the exclusion list if they are verified as safe.\n- Systems using non-standard initramfs management tools located in directories like /usr/share/initramfs-tools or /nix/store may cause false positives. Confirm these tools' legitimacy and update the exclusion paths accordingly.\n- Development or testing environments where initramfs is frequently modified for legitimate reasons can generate alerts. Consider creating environment-specific exceptions to reduce noise while maintaining security in production systems.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further unauthorized access or spread of potential malware.\n- Terminate any suspicious processes related to the `cpio` command that do not have legitimate parent processes, such as `mkinitramfs` or `dracut`.\n- Conduct a thorough review of the extracted initramfs contents to identify and remove any unauthorized or malicious files.\n- Restore the initramfs from a known good backup to ensure system integrity and remove any potential persistence mechanisms.\n- Monitor the system for any further suspicious activity, particularly related to the `cpio` command, to ensure the threat has been fully mitigated.\n- Escalate the incident to the security operations team for further analysis and to determine if additional systems may be affected.\n- Update security policies and procedures to include specific checks for unauthorized `cpio` usage and enhance detection capabilities for similar threats.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\nevent.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\") and\nprocess.name == \"cpio\" and process.args in (\"-H\", \"--format\") and process.args == \"newc\" and\nnot (\n  process.parent.name in (\"mkinitramfs\", \"dracut\") or\n  ?process.parent.executable like~ (\"/usr/share/initramfs-tools/*\", \"/nix/store/*\") or\n  ?process.parent.args in (\n    \"/bin/dracut\", \"/usr/share/initramfs-tools/hooks/amd64_microcode\", \"/usr/bin/dracut\", \"/usr/sbin/mkinitramfs\",\n    \"/usr/sbin/dracut\", \"/usr/bin/update-microcode-initrd\"\n  ) or\n  process.args like (\"/var/tmp/mkinitramfs_*\", \"/tmp/tmp.*/mkinitramfs_*\") or\n  ?process.working_directory like (\n    \"/var/tmp/mkinitramfs-*\", \"/tmp/microcode-initrd_*\", \"/var/tmp/mkinitramfs-*\", \"/var/tmp/dracut.*\",\n    \"/var/tmp/mkinitramfs_*\"\n  )\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "17b3fcd1-90fb-4f5d-858c-dc1d998fa368",
+        "setup": "## Setup\nThis rule requires data coming in from Elastic Defend.\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1542",
+                        "name": "Pre-OS Boot",
+                        "reference": "https://attack.mitre.org/techniques/T1542/"
+                    },
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/"
+                    },
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "17b3fcd1-90fb-4f5d-858c-dc1d998fa368_5",
+    "type": "security-rule"
+}

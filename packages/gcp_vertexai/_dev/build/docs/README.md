@@ -105,6 +105,8 @@ With a properly configured Service Account and the integration setting in place,
 
 ### Requirements
 
+#### AuditLogs
+
 Before you start, you need to create the following Google Cloud resources:
 
 - Log Sink
@@ -125,6 +127,23 @@ At a high level, the steps required are:
 
 This is just an example to create your filter expression to select the Vertex AI audit logs  you want to export to the Pub/Sub topic.
 
+
+#### Prompt Response Logging
+
+The `prompt_response_logs` data stream is designed to collect Vertex AI prompt-response logs from GCP BigQuery. BigQuery is a fully-managed, serverless data warehouse that stores detailed logs of interactions with Vertex AI models.
+
+Vertex AI logs export to BigQuery enables you to export detailed Google Cloud Vertex AI interaction data (such as prompts, responses, model usage, and metadata) automatically to a BigQuery dataset that you specify. Then you can access your Vertex AI logs from BigQuery for detailed analysis and monitoring using this integration. This enables comprehensive tracking of AI model usage, performance monitoring, and cost analysis.
+
+
+Before configuring this integration, you must export Vertex AI logs to a BigQuery table. Follow the official guide here: [Exporting Vertex AI logs to BigQuery](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging_)
+
+
+**Configuration**: When setting up the `prompt_response_logs` data stream, configure the following parameters:
+
+1. **Table ID**: (Required) Full table identifier in the format `project_id.dataset_id.table_name` that contains the Vertex AI logs data. You can copy this from the "Details" tab when viewing your table in the BigQuery web console, under the "Table ID" field.
+
+2. **Time Lookback Hours**: (Optional) Specifies how many hours back from the current time to query for new log entries in the format `time_lookback_hours`. The default value for this is 1hr.
+
 ## Troubleshooting
 
 Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/guide/en/integrations/current/gcp.html#_troubleshooting) for more information about troubleshooting.
@@ -142,6 +161,8 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 
 ## Logs reference
 
+### AuditLogs 
+
 {{event "auditlogs"}}
 
 **ECS Field Reference**
@@ -149,3 +170,13 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "auditlogs"}}
+
+### Prompt Response Logs 
+
+{{event "prompt_response_logs"}}
+
+**ECS Field Reference**
+
+Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "prompt_response_logs"}}

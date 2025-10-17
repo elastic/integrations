@@ -4,7 +4,7 @@ Abnormal AI is a behavioral AI-based email security platform that learns the beh
 
 The Abnormal AI integration collects data for AI Security Mailbox (formerly known as Abuse Mailbox), Audit, Case, and Threat logs using REST API.
 
-## Data streams
+## What data does this integration collect?
 
 The Abnormal AI integration collects six types of logs:
 
@@ -20,13 +20,13 @@ The Abnormal AI integration collects six types of logs:
 
 - **[Vendor Case](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Vendors)** - Get details of Abnormal Vendor Cases.
 
-## Requirements
+## What do I need to use this integration?
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-## Setup
+## How do I deploy this integration?
 
-### To collect data from the Abnormal AI Client API:
+### Collect data from the Abnormal AI Client API
 
 #### Step 1: Go to Portal
 * Visit the [Abnormal AI Portal](https://portal.abnormalsecurity.com/home/settings/integrations) and click on the `Abnormal REST API` setting.
@@ -37,18 +37,17 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 #### Step 3: IP allowlisting
 * Abnormal AI requires you to restrict API access based on source IP. So in order for the integration to work, user needs to update the IP allowlisting to include the external source IP of the endpoint running the integration via Elastic Agent.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Abnormal AI`.
-3. Select the "Abnormal AI" integration from the search results.
-4. Select "Add Abnormal AI" to add the integration.
-5. Add all the required integration configuration parameters, including Access Token, Interval, Initial Interval and Page Size to enable data collection.
-6. Select "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Abnormal AI**.
+3. Select the **Abnormal AI** integration and add it.
+4. Add all the required integration configuration parameters, including Access Token, Interval, Initial Interval and Page Size to enable data collection.
+5. Save the integration.
 
 **Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal AI Base URL changes based on location so find your own base URL.
 
-### Enabling enrichment for Threat events
+### Enable enrichment for Threat events
 
 Introduced in version 1.8.0, the Abnormal AI integration includes a new option called `Enable Attachments and Links enrichment` for the Threat data stream. When enabled, this feature enriches incoming threat events with additional details about any attachments and links included in the original message.
 

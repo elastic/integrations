@@ -2,17 +2,19 @@
 
 This integration periodically fetches logs and metrics from [HAProxy](https://www.haproxy.org/) servers.
 
+The Integration can collect metrics in two datastreams from HAProxy: `info` and `stat`. `info` is not available when using the stats page. For more information, refer to the [HAProxy module](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-haproxy).
+
 ## Compatibility
 
-The `log` dataset was tested with logs from HAProxy 1.8, 1.9 and 2.0, 2.6 running on a Debian. It is not available on Windows. 
-The integration supports the default log patterns below:
+The `log` dataset was tested with logs from HAProxy `1.8`, `1.9` and `2.0`, `2.6` running on a Debian. It is not available on Windows. 
+The integration supports the following default log patterns:
 * [Default log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.1)
 * [TCP log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.2)
 * [HTTP log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.3)
 * [HTTPS log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.4)
 * [Error log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.5)
 
-The `info` and `stat` datasets were tested with tested with HAProxy versions from 1.6, 1.7, 1.8 to 2.0. 
+The `info` and `stat` datasets were tested with HAProxy versions from `1.6`, `1.7`, `1.8` to `2.0`. 
 
 ## Troubleshooting
 
@@ -175,7 +177,7 @@ An example event for `log` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -354,7 +356,7 @@ The fields reported are:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -537,7 +539,7 @@ The fields reported are:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 

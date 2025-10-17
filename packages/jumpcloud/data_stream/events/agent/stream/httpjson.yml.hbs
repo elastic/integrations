@@ -43,8 +43,15 @@ request.transforms:
       target: body.sort
       value: 'ASC'
   - set:
+      target: body.end_time
+      value: '[[ formatDate (now (parseDuration "-{{source_lag_time}}")) "RFC3339" ]]'
+  - set:
       target: body.start_time
-      value: '[[.cursor.timestamp]]'
+      value: >-
+        [[ if (gt (formatDate (parseDate .cursor.timestamp) "RFC3339") (formatDate (now (parseDuration "-{{source_lag_time}}")) "RFC3339"))
+          ]][[ formatDate (now (parseDuration "-{{source_lag_time}}")) "RFC3339" ]]
+        [[else
+          ]][[.cursor.timestamp]][[end]]
       default: '[[ formatDate (now (parseDuration "{{starting_point}}")) "RFC3339" ]]'
 cursor:
   timestamp:
