@@ -1,0 +1,106 @@
+rules:
+  # OAuth2 token endpoint
+  - path: /oauth2/v1/token
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    query_params:
+      grant_type: "client_credentials"
+      scope: "okta.logs.read"
+      client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+      client_assertion: "{client_assertion:.*}"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+            "scope": "okta.users.read"
+          }
+          `}}
+  # OIN token endpoint
+  - path: /oauth2/v1/token
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    Authorization:
+      - "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0"
+    query_params:
+      grant_type: "client_credentials"
+      scope: "okta.logs.read"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+            "scope": "okta.users.read"
+          }
+          `}}
+  - path: /api/v1/users
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          [
+              {
+                  "id": "00ub0oNGTSWTBKOLGLNR",
+                  "status": "ACTIVE",
+                  "created": "2013-06-24T16:39:18.000Z",
+                  "activated": "2013-06-24T16:39:19.000Z",
+                  "statusChanged": "2013-06-24T16:39:19.000Z",
+                  "lastLogin": "2013-06-24T17:39:19.000Z",
+                  "lastUpdated": "2013-07-02T21:36:25.344Z",
+                  "passwordChanged": "2013-07-02T21:36:25.344Z",
+                  "profile": {
+                      "firstName": "Isaac",
+                      "lastName": "Brock",
+                      "email": "isaac.brock@example.com",
+                      "login": "isaac.brock@example.com",
+                      "mobilePhone": "555-415-1337"
+                  },
+                  "credentials": {
+                      "password": {
+                          "value": "tlpWENT2m"
+                      },
+                      "recovery_question": {
+                          "question": "Who's a major player in the cowboy scene?",
+                          "answer": "Annie Oakley"
+                      },
+                      "provider": {
+                          "type": "OKTA",
+                          "name": "OKTA"
+                      }
+                  }
+              }
+          ]
+          `}}
+  - path: /api/v1/users/00ub0oNGTSWTBKOLGLNR/groups
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          [
+              {
+                  "id": "ODc3ZTBjNGZjY2Y4YmRi",
+                  "profile": {
+                      "description": "All users in your organization",
+                      "name": "Everyone"
+                  }
+              }
+          ]
+          `}}
