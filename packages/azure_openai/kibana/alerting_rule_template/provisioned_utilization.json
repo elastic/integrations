@@ -1,0 +1,38 @@
+{
+  "id": "provisioned_utilization",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Azure OpenAI] Provisioned Utilization",
+    "tags": ["Azure OpenAI",
+      "Provisioned Utilization"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-azure.open_ai-default\n| STATS provisioned_utilization = MAX(azure.open_ai.provisioned_managed_utilization_v2.avg) * 100\n by azure.dimensions.model_deployment_name\n| WHERE provisioned_utilization > 85"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

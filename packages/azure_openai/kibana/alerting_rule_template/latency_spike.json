@@ -1,0 +1,38 @@
+{
+  "id": "latency_spike",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[Azure OpenAI] Latency Spike",
+    "tags": ["Azure OpenAI",
+      "Latency"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-azure.open_ai-default\n| STATS time_to_response = AVG(azure.open_ai.time_to_response.avg) by azure.dimensions.model_deployment_name\n| WHERE time_to_response > 5000"
+      },
+      "aggType": "count",
+      "groupBy": "all",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
