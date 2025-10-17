@@ -27,15 +27,19 @@ request.transforms:
   - set:
       target: url.params.state
       value: '{{state}}'
+      do_not_log_failure: true
   - set:
       target: url.params.filter
       value: '{{filter}}'
+      do_not_log_failure: true
   - set:
       target: url.params.labels
       value: '{{labels}}'
+      do_not_log_failure: true
   - set:
       target: url.params.since
       value: '{{since}}'
+      do_not_log_failure: true
   - set:
       target: url.params.per_page
       value: 100
@@ -47,7 +51,7 @@ request.rate_limit.remaining: '[[ .last_response.header.Get "X-RateLimit-Remaini
 response.pagination:
   - set:
       target: url.value
-      value: '[[ getRFC5988Link "next" .last_response.header.Link ]]'
+      value: '[[ if index .last_response.header "Link" ]][[ getRFC5988Link "next" .last_response.header.Link ]][[ end ]]'
       fail_on_template_error: true
       do_not_log_failure: true
 

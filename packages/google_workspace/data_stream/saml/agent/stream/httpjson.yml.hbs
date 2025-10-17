@@ -52,14 +52,17 @@ response.pagination:
           [[- .last_response.body.nextPageToken -]]
         [[- end -]]
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   pagination_finished:
     # Use this flag to identify if an execution was interrupted in the middle
     # of a pagination cycle.
     value: '[[not (index .last_response.body "nextPageToken")]]'
+    ignore_empty_value: true
   last_response_date:
     # Use this value to be able to resume from an interrupted pagination cycle.
     value: '[[.last_response.url.params.Get "startTime"]]'
+    ignore_empty_value: true
   next_start_date:
     # The API returns records sorted from newest to oldest,
     # in order to pick the next startDate we keep the first event (newest) time.
@@ -78,6 +81,7 @@ cursor:
       [[- else -]]
         [[- .last_response.url.params.Get "endTime" -]]
       [[- end -]]
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

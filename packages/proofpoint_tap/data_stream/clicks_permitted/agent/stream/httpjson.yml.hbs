@@ -87,9 +87,11 @@ response.pagination:
           [[- end -]]
         [[- end -]]
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   last_received_time:
-    value: '[[.last_response.body.queryEndTime]]'
+    value: '[[if index .last_response.body "queryEndTime"]][[.last_response.body.queryEndTime]][[end]]'
+    ignore_empty_value: true
 response.split:
   target: body.clicksPermitted
   ignore_empty_value: false
