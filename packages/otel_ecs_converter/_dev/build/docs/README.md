@@ -1,6 +1,6 @@
 # OTel ECS converter
 
-OTel ECS converter integration provide pipelines to convert OTel native documents into ECS documents.
+OTel ECS converter integration provide pipelines to convert OTel native fields to ECS fields in documents.
 The table below lists supported data source, source OTel data set and destination ECS data set,
 
 | Data source     | OTel data set (source) | ECS data set (destination) |
