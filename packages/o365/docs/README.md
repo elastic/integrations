@@ -2,6 +2,16 @@
 
 This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/). It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the [Office 365 Management Activity API](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference).
 
+This integration supports the following Microsoft Office 365 workloads
+
+- Audit.AzureActiveDirectory
+- Audit.Exchange
+- Audit.SharePoint
+- Audit.General
+- DLP.All
+
+For detailed information on the supported record types within these workloads, please refer to the [AuditLogRecordType documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-schema#auditlogrecordtype).
+
 ## Setup
 
 To use this integration you need to [enable `Audit Log`](https://learn.microsoft.com/en-us/purview/audit-log-enable-disable) and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
@@ -10,15 +20,20 @@ Once the Microsoft Entra ID application is registered, you can set up its creden
 
 1. Note the `Application (client) ID` and `Directory (tenant) ID` in the registered application's `Overview` page.
 2. Create a new secret to configure the authentication of your application, as follows:
-    - Navigate to `Certificates & Secrets` section.
+    - Navigate to `Manage -> Certificates & Secrets` section.
     - Click `New client secret`, provide a description and create the new secret.
+      ![New Client Secrete](../img/new_client_secrets.png)
     - Note the `Value` which is required for setup of the integration.
+      ![Value](../img/value.png)
 3. Add permissions to your registered application. Please refer to the [Office 365 Management API documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/get-started-with-office-365-management-apis#specify-the-permissions-your-app-requires-to-access-the-office-365-management-apis) for more details.
-    - Navigate to `API permissions` page and click `Add a permission`
+    - Navigate to `Manage -> API permissions` page. Under Configured permissions click `Add a permission`.
     - Select `Office 365 Management APIs` tile from the listed tiles.
+      ![Select management API](../img/select_management_api.png)
     - Click `Application permissions`.
+      ![API Permission](../img/permission_type.png)
     - Under `ActivityFeed`, select `ActivityFeed.Read` permission. This is minimum required permissions to read audit logs of your organization as [provided in the documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference). Optionally, select `ActivityFeed.ReadDlp` to read DLP policy events.
     - Click `Add permissions`.
+      ![Required Permission](../img/required_permission.png)
     - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
     - After the permissions are added, the admin has to grant consent for these permissions.
 
@@ -74,13 +89,13 @@ If a new integration policy is created to fetch data from existing subscriptions
 
 ## Compatibility
 
-The `ingest-geoip` and `ingest-user_agent` Elasticsearch plugins are required to run this module.
+The Microsoft Office 365 integration is compatible with version 1.0 of Microsoft Office 365 Management API.
 
 ## Logs
 
 ### Audit
 
-Uses the Office 365 Management Activity API to retrieve audit messages from Office 365 and Azure AD activity logs. These are the same logs that are available under Audit Log Search in the Security and Compliance Center.
+Uses the Office 365 Management Activity API to retrieve audit messages from Office 365 and Azure AD activity logs. These are the same logs that are available under Audit Log Search in the Microsoft Purview portal.
 
 An example event for `audit` looks as following:
 
