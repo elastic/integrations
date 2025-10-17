@@ -56,6 +56,7 @@ processors:
       target_field: _temp.utc_timestamp
       type: long
       ignore_failure: true
+      ignore_missing: true
   - date:
       tag: date-timestamp-utc
       description: Parse timestamp from event.
@@ -263,16 +264,19 @@ processors:
       field: crowdstrike.GrandParentCommandLine
       target_field: crowdstrike.GrandparentCommandLine
       ignore_failure: true
+      ignore_missing: true
   - rename:
       tag: rename_GrandParentImageFileName_GrandparentImageFileName
       field: crowdstrike.GrandParentImageFileName
       target_field: crowdstrike.GrandparentImageFileName
       ignore_failure: true
+      ignore_missing: true
   - rename:
       tag: rename_GrandParentImageFilePath_GrandparentImageFilePath
       field: crowdstrike.GrandParentImageFilePath
       target_field: crowdstrike.GrandparentImageFilePath
       ignore_failure: true
+      ignore_missing: true
 
   # Assign severities to conform to security rules values
   #
@@ -325,21 +329,25 @@ processors:
       field: crowdstrike.Hostname
       target_field: crowdstrike.ComputerName
       ignore_failure: true
+      ignore_missing: true
   - rename:
       tag: rename_LogonDomain_MachineDomain
       field: crowdstrike.LogonDomain
       target_field: crowdstrike.MachineDomain
       ignore_failure: true
+      ignore_missing: true
   - rename:
       tag: rename_AgentId_SensorId
       field: crowdstrike.AgentId
       target_field: crowdstrike.SensorId
       ignore_failure: true
+      ignore_missing: true
   - rename:
       tag: rename_Name_DetectName
       field: crowdstrike.Name
       target_field: crowdstrike.DetectName
       ignore_failure: true
+      ignore_missing: true
 
 # EppDetectionSummaryEvent converts
   - convert:
@@ -3048,6 +3056,7 @@ processors:
       target_field: file.path
       ignore_missing: true
       ignore_failure: true
+      if: ctx.file?.path == null
   - set:
       field: file.path
       copy_from: crowdstrike.TargetFileName
