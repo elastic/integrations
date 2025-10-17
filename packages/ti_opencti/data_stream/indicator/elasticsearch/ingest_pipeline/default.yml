@@ -34,6 +34,22 @@ processors:
       field: id
       target_field: event.id
 
+  ###################################
+  # Deduplication using fingerprint  #
+  ###################################
+  
+  # Generate a deterministic ID based on the standard_id
+  # This ensures the same indicator always gets the same document ID
+  - fingerprint:
+      tag: generate_document_id_for_deduplication
+      fields: 
+        - standard_id
+      target_field: _id
+      method: SHA-256
+      if: ctx.standard_id != null && ctx.standard_id != ''
+      description: Generate deterministic document ID from standard_id for deduplication
+      ignore_failure: false
+
   ######################
   # Threat feed fields #
   ######################
@@ -866,6 +882,86 @@ processors:
         }
         if (ctx.threat.indicator.containsKey('x509')) {
           ctx.threat.indicator.x509 = mergeListOfMaps(ctx.threat.indicator.x509);
+        }
+
+  ###################################
+  # Fingerprint for deduplication   #
+  ###################################
+  
+  # Generate a consistent document ID based on the indicator's unique STIX ID
+  # This prevents duplicates when multiple agents fetch the same data
+  - fingerprint:
+      fields:
+        - opencti.indicator.standard_id  # STIX ID is globally unique and consistent
+      target_field: "_id"
+      ignore_missing: false
+      description: Generate consistent document ID for deduplication across multiple agents
+
+  ###########################################################
+  # Tag indicators suitable for Security rule creation     #
+  ###########################################################
+  
+  - set:
+      field: opencti.indicator.rule_compatible
+      value: true
+      if: |
+        ctx.opencti?.indicator?.pattern_type != null && (
+          ctx.opencti.indicator.pattern_type == 'kql' ||
+          ctx.opencti.indicator.pattern_type == 'lucene' ||
+          ctx.opencti.indicator.pattern_type == 'eql' ||
+          ctx.opencti.indicator.pattern_type == 'esql'
+        ) && ctx.opencti?.indicator?.revoked != true
+      description: Mark indicators that can be converted to detection rules
+  
+  - append:
+      field: tags
+      value: detection-rule-candidate
+      if: ctx.opencti?.indicator?.rule_compatible == true
+      allow_duplicates: false
+  
+  - set:
+      field: opencti.indicator.detection_rule.type
+      value: query
+      if: ctx.opencti?.indicator?.pattern_type == 'kql' || ctx.opencti?.indicator?.pattern_type == 'lucene'
+  
+  - set:
+      field: opencti.indicator.detection_rule.type
+      value: eql
+      if: ctx.opencti?.indicator?.pattern_type == 'eql'
+  
+  - set:
+      field: opencti.indicator.detection_rule.type
+      value: esql
+      if: ctx.opencti?.indicator?.pattern_type == 'esql'
+  
+  - set:
+      field: opencti.indicator.detection_rule.query
+      copy_from: opencti.indicator.pattern
+      if: ctx.opencti?.indicator?.rule_compatible == true
+  
+  - script:
+      description: Set detection rule severity based on confidence
+      lang: painless
+      if: ctx.opencti?.indicator?.rule_compatible == true
+      source: |
+        if (ctx.opencti?.indicator?.score != null) {
+          int score = ctx.opencti.indicator.score;
+          if (score >= 80) {
+            ctx.opencti.indicator.detection_rule.severity = 'critical';
+            ctx.opencti.indicator.detection_rule.risk_score = 90;
+          } else if (score >= 60) {
+            ctx.opencti.indicator.detection_rule.severity = 'high';
+            ctx.opencti.indicator.detection_rule.risk_score = 70;
+          } else if (score >= 40) {
+            ctx.opencti.indicator.detection_rule.severity = 'medium';
+            ctx.opencti.indicator.detection_rule.risk_score = 50;
+          } else {
+            ctx.opencti.indicator.detection_rule.severity = 'low';
+            ctx.opencti.indicator.detection_rule.risk_score = 30;
+          }
+        } else {
+          ctx.opencti.indicator.detection_rule.severity = 'medium';
+          ctx.opencti.indicator.detection_rule.risk_score = 50;
         }
 
   #######################################################
