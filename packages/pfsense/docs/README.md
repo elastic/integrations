@@ -2,8 +2,8 @@
 
 This is an integration to parse certain logs from [pfSense and OPNsense firewalls](https://docs.netgate.com/pfsense/en/latest/). It parses logs received over the network via syslog (UDP/TCP/TLS). pfSense natively only supports UDP. OPNsense supports all 3 transports.
 
-Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  
-All other events will be dropped.
+Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, Googleauth, Sshd, Radiusd, Sudo and PHP-FPM (Authentication & configuration) logs.  
+All other events will be classified as not_avaible in the field Event.pipeline.
 The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration. Install the HAProxy integration assets to use them.
 
 ## pfSense Setup
