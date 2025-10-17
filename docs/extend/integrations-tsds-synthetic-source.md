@@ -9,6 +9,3 @@ These pages include details for incorporating indexing features into your integr
 
 * [TSDS guidelines](/extend/developer-tsds-guidelines.md)
 * [How to test indexing features](/extend/testing-indexing-features.md)
-
-
-

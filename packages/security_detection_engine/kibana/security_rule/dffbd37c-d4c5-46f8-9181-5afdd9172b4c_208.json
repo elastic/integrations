@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a privilege escalation attempt via exploiting CVE-2022-38028 to hijack the print spooler service execution.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential privilege escalation via CVE-2022-38028",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential privilege escalation via CVE-2022-38028\n\nCVE-2022-38028 targets the Windows Print Spooler service, a core component managing print jobs. Adversaries exploit this by manipulating specific JavaScript files within system directories to gain elevated privileges. The detection rule identifies unauthorized file presence in critical paths, signaling potential exploitation attempts, leveraging multiple data sources for comprehensive threat detection.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the presence of the file \"MPDW-constraints.js\" in the specified critical paths: \"?:\\\\*\\\\Windows\\\\system32\\\\DriVerStoRe\\\\FiLeRePoSiToRy\\\\*\\\\MPDW-constraints.js\" or \"?:\\\\*\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-printing-printtopdf_*\\\\MPDW-constraints.js\".\n- Check the file creation and modification timestamps to determine when the file was placed or altered in the system directories.\n- Investigate the source of the file by examining recent user activity and process execution logs around the time the file appeared, focusing on any suspicious or unauthorized actions.\n- Correlate the event with other data sources such as Sysmon, Microsoft Defender for Endpoint, or SentinelOne to identify any related suspicious activities or processes that might indicate exploitation attempts.\n- Assess the risk and impact by determining if the affected system has any sensitive roles or access that could be leveraged by an attacker through privilege escalation.\n- If malicious activity is confirmed, initiate containment measures such as isolating the affected system and conducting a full malware scan to prevent further exploitation.\n\n### False positive analysis\n\n- Legitimate software updates or installations may place JavaScript files in the monitored directories. Verify the source and integrity of the software to ensure it is from a trusted vendor.\n- System administrators or automated scripts might deploy or modify JavaScript files in these paths for legitimate configuration purposes. Review change management logs to confirm authorized activities.\n- Security tools or system maintenance processes could temporarily create or modify files in these directories. Cross-reference with scheduled tasks or security tool logs to validate these actions.\n- Exclude known benign applications or processes that frequently interact with the specified file paths by creating exceptions in the detection rule to reduce noise.\n- Regularly update the detection rule to incorporate new intelligence on false positives, ensuring it remains effective and relevant.\n\n### Response and remediation\n\n- Isolate the affected system from the network immediately to prevent further exploitation or lateral movement by the adversary.\n- Terminate any suspicious processes related to the Windows Print Spooler service to halt ongoing exploitation attempts.\n- Remove unauthorized JavaScript files, specifically \"MPDW-constraints.js\", from the identified critical paths to eliminate the immediate threat.\n- Apply the latest security patches and updates from Microsoft to address CVE-2022-38028 and ensure the system is protected against known vulnerabilities.\n- Conduct a thorough review of user accounts and privileges on the affected system to identify and revoke any unauthorized privilege escalations.\n- Monitor the network and system logs for any signs of further exploitation attempts or related suspicious activities, using enhanced detection rules.\n- Report the incident to the appropriate internal security team or external authorities if required, providing detailed information about the exploitation attempt and actions taken.",
+        "query": "file where host.os.type == \"windows\" and event.type != \"deletion\" and\n    file.name : \"MPDW-constraints.js\" and\n    file.path : (\n        \"?:\\\\*\\\\Windows\\\\system32\\\\DriverStore\\\\FileRepository\\\\*\\\\MPDW-constraints.js\",\n        \"?:\\\\*\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-printing-printtopdf_*\\\\MPDW-constraints.js\", \n        \"\\\\Device\\\\HarddiskVolume*\\\\*\\\\Windows\\\\system32\\\\DriverStore\\\\FileRepository\\\\*\\\\MPDW-constraints.js\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\*\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-printing-printtopdf_*\\\\MPDW-constraints.js\"\n    ) and\n    not process.executable : (\n          \"?:\\\\$WINDOWS.~BT\\\\Sources\\\\SetupHost.exe\",\n          \"?:\\\\Windows\\\\System32\\\\taskhostw.exe\"\n    ) and\n    not file.path : (\n        \"?:\\\\$WINDOWS.~BT\\\\NewOS\\\\Windows\\\\WinSxS\\\\*\\\\MPDW-constraints.js\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\$WINDOWS.~BT\\\\NewOS\\\\Windows\\\\WinSxS\\\\*\\\\MPDW-constraints.js\"\n    )\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2024/04/22/analyzing-forest-blizzards-custom-post-compromise-tool-for-exploiting-cve-2022-38028-to-obtain-credentials/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "dffbd37c-d4c5-46f8-9181-5afdd9172b4c",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 208
+    },
+    "id": "dffbd37c-d4c5-46f8-9181-5afdd9172b4c_208",
+    "type": "security-rule"
+}

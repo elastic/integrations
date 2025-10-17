@@ -26,6 +26,9 @@ For more detailed information refer to the following blog:
         - Index pattern : `.ml-anomalies-shared`
         - Select **Show Advanced settings** enable **Allow hidden and system indices**
         - Custom data view ID: `.ml-anomalies-shared`
+
+    _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
+    ![Dashboard Error](../img/dashboard-ded-error.png)
 1. **Enable detection rules**: You can also enable detection rules to alert on Data Exfiltration activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Data Exfiltration Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ![Data Exfiltration Detection Rules](../img/dedrules.png)

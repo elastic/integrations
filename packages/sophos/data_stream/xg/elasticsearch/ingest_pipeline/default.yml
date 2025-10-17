@@ -52,22 +52,33 @@ processors:
 - set:
     description: "Set timezone from log timezone"
     field: _temp_.tz
+    tag: set_tz_from_log
     copy_from: sophos.xg.timezone
     override: false
     if: ctx.sophos?.xg?.timezone != null
 - set:
     description: Convert "Z" timezone to "UTC"
+    tag: convert_z_to_utc
     field: _temp_.tz
     value: UTC
     if: ctx._temp_?.tz == 'Z'
 - set:
-    description: "Set timezone from config tz_offset"
+    description: "Set timezone from config (tz_offset)"
+    tag: set_tz_from_conf_offset
     field: _temp_.tz
     copy_from: _conf.tz_offset
     override: false
     if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
 - set:
+    description: "Set time zone from event.timezone (locale)"
+    tag: set_tz_from_locale
+    field: _temp_.tz
+    copy_from: event.timezone
+    override: false
+    if: ctx.event?.timezone != null
+- set:
     description: "If timezone is not set from any previous source, default to UTC"
+    tag: set_tz_default_utc
     field: _temp_.tz
     value: UTC
     override: false
@@ -96,9 +107,9 @@ processors:
             }
           }
 - set:
+    tag: set_event_time_zone
     field: event.timezone
     copy_from: _temp_.tz
-    if: ctx.event?.timezone == null
 
 # Convert numeric based timezones to the standard time format
 # i.e. "-530" to "-5:30"
@@ -525,12 +536,12 @@ processors:
     field: source.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.geo == null"
+    if: "ctx.source?.geo == null && ctx.source?.ip != ''"
 - geoip:
     field: destination.ip
     target_field: destination.geo
     ignore_missing: true
-    if: "ctx.destination?.geo == null"
+    if: "ctx.destination?.geo == null && ctx.destination?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
@@ -539,6 +550,7 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
+    if: "ctx.source?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: destination.ip
@@ -547,16 +559,17 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
+    if: "ctx.destination?.ip != ''"
 - geoip:
     field: source.nat.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.geo == null"
+    if: "ctx.source?.geo == null && ctx.source?.nat?.ip != ''"
 - geoip:
     field: destination.nat.ip
     target_field: destination.geo
     ignore_missing: true
-    if: "ctx.destination?.geo == null"
+    if: "ctx.destination?.geo == null && ctx.destination?.nat?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: source.nat.ip
@@ -565,7 +578,7 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
-    if: "ctx.source?.as == null"
+    if: "ctx.source?.as == null && ctx.source?.nat?.ip != ''"
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: destination.nat.ip
@@ -574,7 +587,7 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
-    if: "ctx.destination?.as == null"
+    if: "ctx.destination?.as == null && ctx.destination?.nat?.ip != ''"
 - rename:
     field: source.as.asn
     target_field: source.as.number

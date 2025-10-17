@@ -8,7 +8,29 @@ The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
 
 The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2 and 3.6.0.
 
-The `broker` metricset requires Jolokia to fetch JMX metrics. Refer to the Metricbeat documentation about Jolokia for more information.
+The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `producer`, `raft`, `replica_manager`, `topic` metricsets require Jolokia to fetch JMX metrics. Refer to the `How do I deploy this integration?` section below for more information.
+
+## How do I deploy this integration?
+
+To monitor a Kafka component (such as a broker, producer, or consumer) with Jolokia, you need to attach its JVM agent to the Java process.
+
+1. Download the Jolokia JVM-Agent from the [official website](https://jolokia.org/download.html).
+
+2. Attach the Agent via KAFKA_OPTS by setting the `KAFKA_OPTS` environment variable before starting your Kafka process.
+
+For example, to launch a console producer with the Jolokia agent enabled:
+
+```bash
+# Set the KAFKA_OPTS variable to point to the agent JAR
+export KAFKA_OPTS="-javaagent:/path/to/jolokia-jvm-agent.jar=port=8778,host=localhost"
+
+# Start the Kafka producer script
+./bin/kafka-console-producer.sh --topic test --broker-list kafka_host:9092
+```
+
+Make sure to replace `/path/to/jolokia-jvm-agent.jar` with the actual path to the agent you downloaded.
+
+The port and host parameters specify where the Jolokia agent will be accessible.
 
 ## Logs
 
@@ -57,6 +79,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "partition"}}
 
 ### raft
+
+Note that this dataset would be only available if Kafka is run in KRaft mode. 
 
 The `raft` dataset collects metrics related to Kafka's Raft consensus algorithm implementation (KRaft), which is used for metadata management in Kafka without requiring ZooKeeper. KRaft mode is available in Kafka 3.0.0 and later versions.
 
@@ -189,3 +213,59 @@ This dataset includes metrics such as:
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "topic"}}
+
+### consumer
+
+The `consumer` dataset collects metrics specifically for monitoring the performance, throughput, and health of Kafka consumers. It provides key insights into how effectively consumers are processing data, their rate of interaction with brokers, and whether they are keeping up with message production.
+
+This dataset includes metrics such as:
+- Consumption Rates: Metrics like bytes_consumed, records_consumed, and in.bytes_per_sec track the throughput of the consumer in terms of both the number of messages and the volume of data processed per second.
+- Consumer Lag: The max_lag metric is a critical indicator of consumer health, showing the maximum delay between the producer writing a message and the consumer reading it.
+- Fetch Performance: The fetch_rate provides visibility into how frequently the consumer is requesting new messages from the broker.
+
+**Usage**
+
+The Consumer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
+
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka consumer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
+
+```
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-consumer.sh --topic=test --bootstrap-server=<kafka_host>:<kafka_port>
+```
+
+{{event "consumer"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "consumer"}}
+
+### producer
+
+The `producer` dataset gathers metrics focused on the performance, efficiency, and health of Kafka producers. This data is crucial for understanding message production rates, identifying potential bottlenecks, and ensuring reliable data ingestion into Kafka topics.
+
+This dataset includes metrics such as:
+- Throughput and Rate Metrics: Fields like record_send_rate, out.bytes_per_sec, and request_rate measure the producer's output, providing a clear view of how much data is being sent per second.
+- Batching Performance: Metrics such as batch_size_avg, batch_size_max, and records_per_request offer insights into the effectiveness of batching, which is key for optimizing producer efficiency.
+- Health and Error Indicators: The record_error_rate and record_retry_rate are vital for monitoring the health of the producer, highlighting issues that could lead to data loss or delays.
+- Resource Utilization: Metrics like available_buffer_bytes and io_wait help track resource usage and identify performance constraints related to memory or I/O.
+- Data Characteristics: Fields such as record_size_avg and record_size_max provide information about the size of the records being sent.
+
+**Usage**
+
+The Producer dataset relies on [Jolokia](https://www.elastic.co/docs/reference/integrations/jolokia) to fetch JMX metrics. Refer to the link for more information about Jolokia.
+
+Note that the [Jolokia agent](https://jolokia.org/download.html) is required to be deployed along with the JVM application. This can be achieved by using the KAFKA_OPTS environment variable when starting the Kafka producer application (replace `/opt/jolokia-jvm-1.5.0-agent.jar` with your Jolokia agent location):
+
+```
+export KAFKA_OPTS=-javaagent:/opt/jolokia-jvm-1.5.0-agent.jar=port=<port>,host=<host>
+./bin/kafka-console-producer.sh --topic test --broker-list <kafka_host>:<kafka_port>
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "producer"}}
