@@ -237,6 +237,7 @@ An example event for `audit` looks as following:
 | o365.audit.Actor.ID |  | keyword |
 | o365.audit.Actor.Type |  | keyword |
 | o365.audit.ActorContextId |  | keyword |
+| o365.audit.ActorInfoString |  | keyword |
 | o365.audit.ActorIpAddress |  | keyword |
 | o365.audit.ActorUserId |  | keyword |
 | o365.audit.ActorYammerUserId |  | keyword |
@@ -356,6 +357,16 @@ An example event for `audit` looks as following:
 | o365.audit.EventDeepLink |  | keyword |
 | o365.audit.EventSource |  | keyword |
 | o365.audit.ExceptionInfo.\* |  | object |
+| o365.audit.ExchangeFolders.FolderItems.Id | Item ID | keyword |
+| o365.audit.ExchangeFolders.FolderItems.ImmutableId | Immutable ID of the item | keyword |
+| o365.audit.ExchangeFolders.FolderItems.InternetMessageId | Internet message ID | keyword |
+| o365.audit.ExchangeFolders.FolderItems.SizeInBytes | Size of the item in bytes | long |
+| o365.audit.ExchangeFolders.Id | Folder ID | keyword |
+| o365.audit.ExchangeFolders.Path | Path of the folder | keyword |
+| o365.audit.ExchangeMessages.Id | Message ID | keyword |
+| o365.audit.ExchangeMessages.MessageItems.Id | Message item ID | keyword |
+| o365.audit.ExchangeMessages.MessageItems.SizeInBytes | Size of the message item in bytes | long |
+| o365.audit.ExchangeMessages.Path | Path of the message | keyword |
 | o365.audit.ExchangeMetaData.\* |  | long |
 | o365.audit.ExchangeMetaData.CC |  | keyword |
 | o365.audit.ExchangeMetaData.MessageID |  | keyword |
@@ -417,6 +428,7 @@ An example event for `audit` looks as following:
 | o365.audit.ObjectId |  | keyword |
 | o365.audit.ObjectType |  | keyword |
 | o365.audit.Operation |  | keyword |
+| o365.audit.OperationCount |  | keyword |
 | o365.audit.OperationId |  | keyword |
 | o365.audit.OperationProperties |  | object |
 | o365.audit.OrganizationId |  | keyword |
@@ -501,6 +513,8 @@ An example event for `audit` looks as following:
 | o365.audit.TeamName |  | keyword |
 | o365.audit.ThreatDetectionMethods |  | keyword |
 | o365.audit.Timestamp |  | keyword |
+| o365.audit.TokenObjectId |  | keyword |
+| o365.audit.TokenTenantId |  | keyword |
 | o365.audit.UniqueSharingId |  | keyword |
 | o365.audit.UserAgent |  | keyword |
 | o365.audit.UserId |  | keyword |

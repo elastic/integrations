@@ -132,11 +132,12 @@ processors:
         if (!(ctx.o365audit.Actions instanceof List)) {
           ctx.o365audit.Actions = [ctx.o365audit.Actions];
         }
+        def regex = /,\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\"|\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\",/;
         for (def e: ctx.o365audit.Actions) {
           if (e instanceof Map) {
             actions.add(e);
           } else if (e instanceof String) {
-            ctx._tmp.action_strings.add(e);
+            ctx._tmp.action_strings.add(regex.matcher(e).replaceAll(''));
           }
         }
         if (actions.length == ctx.o365audit.Actions.length) {
@@ -672,11 +673,11 @@ processors:
       target_field: file.extension
       ignore_missing: true
       if: ctx.event?.code != null && ["SharePointFileOperation", "SharePointSharingOperation"].contains(ctx.event.code)
-  - append: 
+  - append:
       field: event.category
       value: file
       if: 'ctx.event?.action != null && ["FileAccessed", "FileDeleted", "FileDownloaded", "FileModified", "FileMoved", "FileRenamed", "FileRestored", "FileUploaded", "FolderCopied", "FolderCreated", "FolderDeleted", "FolderModified", "FolderMoved", "FolderRenamed", "FolderRestored"].contains(ctx.event?.action)'
-  - append: 
+  - append:
       field: event.category
       value: configuration
       if: ctx.event?.action == "ComplianceSettingChanged"
@@ -1398,6 +1399,26 @@ processors:
         } else {
           ctx.o365audit.YammerNetworkId = ctx.o365audit.YammerNetworkId.toString();
         }
+  - script:
+      tag: convert_runningtime
+      description: Ensure that RunningTime is not rendered with e-notation or other numeric
+      if: ctx.o365audit?.RunningTime != null
+      source: |-
+        if (ctx.o365audit.RunningTime instanceof double) {
+          ctx.o365audit.RunningTime = ((long)ctx.o365audit.RunningTime).toString();
+        } else {
+          ctx.o365audit.RunningTime = ctx.o365audit.RunningTime.toString();
+        }
+  - script:
+      tag: convert_operationcount
+      description: Ensure that OperationCount is not rendered with e-notation or other numeric
+      if: ctx.o365audit?.OperationCount != null
+      source: |-
+        if (ctx.o365audit.OperationCount instanceof double) {
+          ctx.o365audit.OperationCount = ((long)ctx.o365audit.OperationCount).toString();
+        } else {
+          ctx.o365audit.OperationCount = ctx.o365audit.OperationCount.toString();
+        }
   - append:
       field: email.message_id
       value: "{{{o365audit.InternetMessageId}}}"
@@ -1446,6 +1467,7 @@ processors:
       field: o365audit.EndTimeUtc
       target_field: o365audit.EndTimeUtc
       tag: date_EndTimeUtc
+      timezone: "UTC"
       formats:
         - ISO8601
       if: ctx.o365audit?.EndTimeUtc != null
@@ -1770,6 +1792,36 @@ processors:
       copy_from: o365audit.ApplicationDisplayName
       tag: set_application_name
       ignore_empty_value: true
+
+  # ExchangeItemAggregated Schema
+  - append:
+      field: event.type
+      value: access
+      if: 'ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+  - append:
+      field: event.category
+      value: email
+      if: 'ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+  - rename:
+      field: o365audit.Messages
+      target_field: o365audit.ExchangeMessages
+      tag: rename_messages_exchange
+      if: 'ctx.o365audit?.Messages != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+  - remove:
+      field: o365audit.Messages
+      tag: remove_messages_field
+      if: 'ctx.o365audit?.Messages != null'
+      description: 'remove o365audit.Messages if we have not explicitly renamed them based on record type'
+  - rename:
+      field: o365audit.Folders
+      target_field: o365audit.ExchangeFolders
+      tag: rename_folders_exchange
+      if: 'ctx.o365audit?.Folders != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+  - remove:
+      field: o365audit.Folders
+      tag: remove_folders_field
+      if: 'ctx.o365audit?.Folders != null'
+      description: 'remove o365audit.Folders if we have not explicitly renamed them based on record type'
   - script:
       description: Handle _tmp.entities.ThreatDetectionMethods containing list of lists.
       lang: painless
