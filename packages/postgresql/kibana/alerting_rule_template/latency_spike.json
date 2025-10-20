@@ -2,7 +2,7 @@
   "id": "latency_spike",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[PostgreSQL] Latency Spike",
+    "name": "[PostgreSQL] Latency high",
     "tags": ["PostgreSQL",
       "Latency Spike"],
     "ruleTypeId": ".es-query",
@@ -22,7 +22,7 @@
         "esql": "FROM metrics-postgresql.statement-default\n| STATS avg_query_time=avg(postgresql.statement.query.time.mean.ms) by host.name, postgresql.statement.user.id\n| WHERE avg_query_time >= 5000"
       },
       "aggType": "count",
-      "groupBy": "all",
+      "groupBy": "row",
       "termSize": 5,
       "sourceFields": [],
       "timeField": "@timestamp",
