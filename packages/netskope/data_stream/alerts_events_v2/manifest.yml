@@ -1,9 +1,10 @@
-title: Alerts V2
+title: Alerts V2 and Events V2
 type: logs
+dataset: netskope.alerts_events_v2
 streams:
   - input: azure-blob-storage
-    description: Collect Netskope Alert logs via Azure Blob Storage.
-    title: Netskope Alert Logs
+    description: Collect Netskope Alert and Event logs via Azure Blob Storage.
+    title: Netskope Alert and Event Logs
     template_path: abs.yml.hbs
     enabled: false
     vars:
@@ -121,6 +122,14 @@ streams:
         show_user: false
         default: " "
         description: The field separator character used by the CSV format.
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve netskope.alerts_v2 or netskope.events_v2 fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
       - name: preserve_original_event
         required: true
         show_user: true
@@ -144,13 +153,13 @@ streams:
         required: true
         default:
           - forwarded
-          - netskope-alerts
+          - netskope-alerts_and_events
         multi: true
         show_user: false
   - input: aws-s3
     template_path: aws-s3.yml.hbs
-    title: Collect Alert logs via AWS S3 or SQS
-    description: Collect Alert logs via AWS S3 or SQS input. Note- When using SQS, implementing event-based bucket segregation is required to guarantee that each queue receives only the events relevant to the respective data stream.
+    title: Collect Alert and Event logs via AWS S3 or SQS
+    description: Collect Alert and Event logs via AWS S3 or SQS input.
     enabled: false
     vars:
       - name: bucket_arn
@@ -220,11 +229,7 @@ streams:
         required: false
         show_user: false
         description: >-
-          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded.
-          This is a list of selectors which are made up of regex and expand_event_list_from_field options.
-          The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting.
-          If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors.
-          Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
+          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
       - name: external_id
         type: text
         title: External ID
@@ -248,7 +253,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - netskope-alerts
+          - netskope-alerts_and_events
       - name: preserve_original_event
         required: false
         show_user: true
@@ -261,7 +266,7 @@ streams:
         required: true
         show_user: false
         title: Preserve duplicate custom fields
-        description: Preserve netskope.alerts_v2 fields that were copied to Elastic Common Schema (ECS) fields.
+        description: Preserve netskope.alerts_v2 and netskope.events_v2 fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
         default: false
@@ -274,8 +279,8 @@ streams:
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
   - input: gcs
-    title: Collect Netskope Alert logs via Google Cloud Storage
-    description: Collect Netskope Alert SIEM logs via Google Cloud Storage.
+    title: Collect Netskope Alert and Event logs via Google Cloud Storage
+    description: Collect Netskope Alert and Event SIEM logs via Google Cloud Storage.
     template_path: gcs.yml.hbs
     enabled: false
     vars:
@@ -338,17 +343,7 @@ streams:
         type: yaml
         title: Buckets
         description: >-
-          This attribute contains the details about a specific bucket like, name,
-          max_workers, poll, poll_interval and bucket_timeout. The
-          attribute 'name' is specific to a bucket as it describes the bucket
-          name, while the fields max_workers, poll, poll_interval and
-          bucket_timeout can exist both at the bucket level and at the global
-          level. If you have already defined the attributes globally, then you
-          can only specify the name in this yaml config. If you want to override
-          any specific attribute for a specific bucket, then, you can define it
-          here. Any attribute defined in the yaml will override the global
-          definitions. Please see the relevant[Documentation](https://www.elastic.co/guide/en/beats/filebeat/8.5/filebeat-input-gcs.html#attrib-buckets)
-          for further information.
+          This attribute contains the details about a specific bucket like, name, max_workers, poll, poll_interval and bucket_timeout. The attribute 'name' is specific to a bucket as it describes the bucket name, while the fields max_workers, poll, poll_interval and bucket_timeout can exist both at the bucket level and at the global level. If you have already defined the attributes globally, then you can only specify the name in this yaml config. If you want to override any specific attribute for a specific bucket, then, you can define it here. Any attribute defined in the yaml will override the global definitions. Please see the relevant[Documentation](https://www.elastic.co/guide/en/beats/filebeat/8.5/filebeat-input-gcs.html#attrib-buckets) for further information.
         required: true
         show_user: true
         default: |
@@ -386,3 +381,22 @@ streams:
         default:
           - forwarded
           - netskope-alerts
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve netskope.alerts_v2 and netskope.events_v2 fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true
