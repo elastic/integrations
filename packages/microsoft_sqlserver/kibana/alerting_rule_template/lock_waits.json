@@ -2,7 +2,7 @@
   "id": "lock_waits",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[MicrosoftSQL Server] Lock Waits",
+    "name": "[MicrosoftSQL Server] Lock Waits above Threshold",
     "tags": ["MicrosoftSQL Server",
       "Lock Waits"],
     "ruleTypeId": ".es-query",
@@ -22,7 +22,7 @@
         "esql": "FROM metrics-microsoft_sqlserver.performance-default\n| STATS lockwaits=avg(mssql.metrics.lock_waits_per_sec) by mssql.metrics.server_name\n| WHERE lockwaits > 100"
       },
       "aggType": "count",
-      "groupBy": "all",
+      "groupBy": "row",
       "termSize": 5,
       "sourceFields": [],
       "timeField": "@timestamp",
