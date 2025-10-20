@@ -2152,6 +2152,8 @@ An example event for `powershell_operational` looks as following:
 | powershell.engine.new_state | New state of the PowerShell engine. | keyword |
 | powershell.engine.previous_state | Previous state of the PowerShell engine. | keyword |
 | powershell.engine.version | Version of the PowerShell engine version used to execute the command. | keyword |
+| powershell.file.script_block_entropy | Shannon entropy of the script block text. | float |
+| powershell.file.script_block_entropy_normalized | Normalized Shannon entropy (0.0 - 1.0) of the script block text. | float |
 | powershell.file.script_block_hash | A hash of the script to be used in rules. | keyword |
 | powershell.file.script_block_id | Id of the executed script block. | keyword |
 | powershell.file.script_block_signature | If present in the script, the script signature. | keyword |
