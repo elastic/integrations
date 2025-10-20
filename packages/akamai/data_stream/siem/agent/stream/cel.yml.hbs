@@ -22,7 +22,13 @@ state:
   client_secret: {{client_secret}}
   initial_interval: {{initial_interval}}
   event_limit: {{event_limit}}
-  
+
+redact:
+  fields:
+    - client_secret
+    - access_token
+    - client_token  
+
 program: |
   state.with(
     (
@@ -38,37 +44,61 @@ program: |
           }
         : 
           {
-            "from": max(int(now - duration(state.initial_interval)),int(now - duration("12h"))),
+            "from": max(int(now - duration(state.initial_interval)), int(now - duration("12h"))),
             "to": int(now)
           }
     ).as(params,
-      request(
-        "GET",
-        state.url + "?" + {
-          "limit": [string(state.event_limit)],
-          ?"from": params.?from.orValue("") != "" ? optional.of([string(params.from)]) : optional.none(),
-          ?"to": params.?to.orValue("") != "" ? optional.of([string(params.to)]) : optional.none(),
-          ?"offset": params.?offset.orValue("") != "" ? optional.of([string(params.offset)]) : optional.none(),
-        }.format_query()
-      ).with({
-        "Header":
-          {
-            "Authorization": ["CEL " + state.client_token + ":" + state.access_token]
+      now.format("20060102T15:04:05-0700").as(timestamp,
+        uuid().as(nonce,
+          sprintf("EG1-HMAC-SHA256 client_token=%s;access_token=%s;timestamp=%s;nonce=%s;",
+            [state.client_token, state.access_token, timestamp, nonce]).as(sig_base,
+              base64(hmac(timestamp, "sha256", bytes(state.client_secret))).as(sig_key,
+                (state.url + "?" + {
+                  "limit": [string(state.event_limit)],
+                  ?"from": params.?from.orValue("") != "" ? optional.of([string(params.from)]) : optional.none(),
+                  ?"to": params.?to.orValue("") != "" ? optional.of([string(params.to)]) : optional.none(),
+                  ?"offset": params.?offset.orValue("") != "" ? optional.of([string(params.offset)]) : optional.none(),
+                }.format_query()).parse_url().as(u,
+                  (
+                    "GET\t" +
+                    string(u.Scheme) + "\t" +
+                    string(u.Host) + "\t" +
+                    string(u.Path) + "?" +
+                    string(u.RawQuery) + 
+                    "\t\t\t" + sig_base
+                  ).as(to_sign,
+                    base64(hmac(to_sign, "sha256", bytes(sig_key))).as(signature,
+                      sig_base + "signature=" + signature
+                    )
+                  )
+                )
+              )
+            )
+        )
+      ).as(auth_header,
+        request(
+          "GET",
+          state.url + "?" + {
+            "limit": [string(state.event_limit)],
+            ?"from": params.?from.orValue("") != "" ? optional.of([string(params.from)]) : optional.none(),
+            ?"to": params.?to.orValue("") != "" ? optional.of([string(params.to)]) : optional.none(),
+            ?"offset": params.?offset.orValue("") != "" ? optional.of([string(params.offset)]) : optional.none(),
+          }.format_query()
+        ).with({
+          "Header": {
+            "Authorization": [auth_header]
           }
-      }).do_request().as(resp, resp.StatusCode == 200 ?
-          {
-            "events": string(resp.Body).split("\n").map(e, e!="",
-              {
-                "message": e,
-              }
-            ),
-            "cursor": {
-              ?"offset": resp.Body.?offset.orValue("") != "" ? optional.of(resp.Body.offset) : optional.none(),
-              "recovery_mode": false
-            },
-            "want_more": has(resp.Body.offset) && resp.Body.offset != ""
-          }
-        : 
+        }).do_request().as(resp,
+          resp.StatusCode == 200 ?
+            {
+              "events": string(resp.Body).split("\n").map(e, e!="", { "message": e }),
+              "cursor": {
+                ?"offset": resp.Body.?offset.orValue("") != "" ? optional.of(resp.Body.offset) : optional.none(),
+                "recovery_mode": false
+              },
+              "want_more": has(resp.Body.offset) && resp.Body.offset != ""
+            }
+          :
           resp.StatusCode == 406 ?
             {
               "events": {
@@ -76,16 +106,12 @@ program: |
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
                   "message": "GET " + state.url.trim_right("/") + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                    ),
-                  },
+                    size(resp.Body) != 0 ? string(resp.Body)
+                    : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
                 },
-              "cursor": {
-                "recovery_mode": true
               },
+              "cursor": { "recovery_mode": true },
               "want_more": true
             }
           :
@@ -95,15 +121,14 @@ program: |
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
                   "message": "GET " + state.url.trim_right("/") + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                    ),
-                  },
+                    size(resp.Body) != 0 ? string(resp.Body)
+                    : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
                 },
+              },
               "want_more": false
             }
+        )
       )
     )
   )
