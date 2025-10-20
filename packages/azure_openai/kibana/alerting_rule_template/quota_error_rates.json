@@ -2,7 +2,7 @@
   "id": "quota_error_rates",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[Azure OpenAI] Quota Error Rates",
+    "name": "[Azure OpenAI] Quota Error Rates above threshold",
     "tags": ["Azure OpenAI",
       "Quota Error Rates"],
     "ruleTypeId": ".es-query",
@@ -22,7 +22,7 @@
         "esql": "FROM logs-azure_openai.logs-default\n| STATS quota_error = COUNT(http.response.status_code == 429) by azure.dimensions.model_deployment_name\n| WHERE quota_error > 0"
       },
       "aggType": "count",
-      "groupBy": "all",
+      "groupBy": "row",
       "termSize": 5,
       "sourceFields": [],
       "timeField": "@timestamp",
