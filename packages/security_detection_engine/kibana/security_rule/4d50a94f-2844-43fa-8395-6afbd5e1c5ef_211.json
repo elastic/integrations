@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a high number of failed authentication attempts to the AWS management console for the Root user identity. An adversary may attempt to brute force the password for the Root user identity, as it has complete access to all services and resources for the AWS account.",
+        "false_positives": [
+            "Automated processes that attempt to authenticate using expired credentials and unbounded retries may lead to false positives."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "cloud.account.id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Management Console Brute Force of Root User Identity",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS Management Console Brute Force of Root User Identity\n\nThe AWS Management Console provides a web interface for managing AWS resources. Because the root user has unrestricted privileges, repeated failed console login attempts targeting this identity represent a high-risk credential access event. Even if no login succeeded, this activity may indicate reconnaissance, password spraying, or credential stuffing attempts targeting the root user.\n\nThis rule uses a threshold rule that detects a high number of failed `ConsoleLogin` events (`event.outcom: failure` with `userIdentity.type: Root`) within a short timeframe from the same IP address or user agent.  \nThreshold rules only summarize grouped field values, so analysts must use timeline to review the actual events that triggered the alert.\n\n#### Possible investigation steps\n\n- **Review in Timeline.**  \n  Open the alert and *Investigate in timeline* to view the individual CloudTrail events contributing to the threshold alert. Review:  \n  - `source.ip`, `user_agent.original`, `geo fields` and `@timestamp` for each failure.  \n  - Look for patterns such as distributed sources or repeated retries at consistent intervals.  \n  - Look for any corresponding successful `ConsoleLogin` events around the same timeframe from the same IP or agent.\n\n- **Assess IP reputation and geolocation.**  \n  Use IP intelligence tools to evaluate whether the source addresses belong to known cloud providers, TOR nodes, or foreign regions outside your normal operations.  \n  - Correlate against `cloud.region` and `geo fields` and compare with expected login locations for your organization.\n\n- **Check for related activity.**  \n  Review CloudTrail for other API calls from the same source IP (for example, `GetSessionToken`, `AssumeRole`, or `ListUsers`) that may indicate scripted credential testing or discovery.\n\n- **Correlate with GuardDuty findings.**  \n  GuardDuty may raise complementary findings for anomalous console login behavior or brute force attempts. Review recent GuardDuty and AWS Config alerts for the same timeframe.\n\n- **Determine business context.**  \n  Confirm whether the source IPs are internal (for example, corporate VPN, IT admin network) or part of legitimate red-team or third-party testing. If uncertain, treat as suspicious.\n\n### False positive analysis\n\n- **Forgotten or mistyped credentials.**  \n  Repeated failed logins from known internal IPs could indicate a legitimate user typing errors. Validate by checking if a successful root login followed soon after.  \n- **Automation or scanners.**  \n  Misconfigured monitoring tools or old browser sessions attempting to reuse cached credentials may trigger this rule.  \n- **Planned penetration testing.**  \n  Red-team or security testing activities can generate deliberate brute force attempts. Verify via ticketing or testing schedules.\n\n### Response and remediation\n\n> The AWS Incident Response Playbooks classify root login attempts as Priority-1 credential compromise events.  \n> Follow these steps whether or not your organization has a formal IR team.\n\n**1. Immediate containment**\n- **Check for success.**  \n  After pivoting to Timeline, confirm whether any `ConsoleLogin` events from the same IP or user agent show `event.oucome: success`.  \n  - If a successful login occurred, immediately follow the *AWS Management Console Root Login* rule investigation guide.  \n- **Rotate the root password.**  \n  Use AWS\u2019s password reset function to set a strong, unique password stored in an offline vault.  \n- **Enable or verify Multi-Factor Authentication (MFA)** on the root account. If MFA was already configured, review the device registration for changes or suspicious resets.  \n- **Block offending IPs or networks.**  \n  Use AWS WAF, VPC network ACLs, or Security Groups to temporarily block the IPs used in the failed attempts.  \n- **Alert internal teams.**  \n  Notify your security operations or cloud governance teams of the brute force pattern and actions taken.\n\n**2. Evidence preservation**\n- Export all failed `ConsoleLogin` events visible in Timeline (\u00b130 minutes around the alert window) to a restricted evidence bucket.  \n- Preserve GuardDuty findings, AWS Config history, and CloudTrail logs for the same timeframe for further analysis.\n\n**3. Scoping and investigation**\n- Query CloudTrail across other AWS accounts and regions for additional failed or successful `ConsoleLogin` events from the same IPs.  \n- Check IAM activity for simultaneous key creation, role modifications, or new users \u2014 signs of lateral or parallel intrusion attempts.  \n- Review network telemetry (VPC Flow Logs, CloudFront, WAF) to determine whether the activity originated from a distributed or scripted attack pattern.\n\n**4. Recovery and hardening**\n- Confirm MFA is enabled and enforced on the root account.  \n- Remove any root access keys (none should exist under normal security posture).  \n- Enable organization-wide CloudTrail, GuardDuty, and Security Hub across all regions.  \n- Set up real-time alerts for any future `ConsoleLogin` failures from the root user exceeding expected baselines.  \n- Store root credentials offline with dual-custody and document controlled access procedures.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks/tree/c151b0dc091755fffd4d662a8f29e2f6794da52c/playbooks):** See \u201cCredential Compromise\u201d and \u201cAccount Compromise\u201d for investigation, containment, and escalation guidance.  \n- **[AWS Customer Playbook Framework](https://github.com/aws-samples/aws-customer-playbook-framework/tree/a8c7b313636b406a375952ac00b2d68e89a991f2/docs):** Reference runbooks for failed-login response, evidence preservation, and MFA enforcement.  \n- **AWS Documentation:** [Tasks that require the root user](https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html#aws_tasks-that-require-root).  \n- **Security Best Practices:** [AWS Knowledge Center \u2013 Security Best Practices](https://aws.amazon.com/premiumsupport/knowledge-center/security-best-practices/).  \n",
+        "query": "event.dataset:aws.cloudtrail and \nevent.provider:signin.amazonaws.com and \nevent.action:ConsoleLogin and \naws.cloudtrail.user_identity.type:Root and \nevent.outcome:failure\n",
+        "references": [
+            "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4d50a94f-2844-43fa-8395-6afbd5e1c5ef",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Sign-In",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/"
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "field": [
+                "cloud.account.id"
+            ],
+            "value": 10
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 211
+    },
+    "id": "4d50a94f-2844-43fa-8395-6afbd5e1c5ef_211",
+    "type": "security-rule"
+}
