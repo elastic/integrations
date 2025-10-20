@@ -2,7 +2,7 @@
   "id": "provisioned_utilization",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[Azure AI Foundry] Provisioned Utlization",
+    "name": "[Azure AI Foundry] Provisioned Utilization above threshold",
     "tags": ["Azure AI Foundry",
       "Provisioned Utilization"],
     "ruleTypeId": ".es-query",
@@ -22,7 +22,7 @@
         "esql": "FROM metrics-azure.ai_foundry-default\n| STATS provisioned_utilization = MAX(azure.ai_foundry.provisioned_utilization.avg) * 100\n by azure.dimensions.model_deployment_name\n| WHERE provisioned_utilization > 85"
       },
       "aggType": "count",
-      "groupBy": "all",
+      "groupBy": "row",
       "termSize": 5,
       "sourceFields": [],
       "timeField": "@timestamp",
