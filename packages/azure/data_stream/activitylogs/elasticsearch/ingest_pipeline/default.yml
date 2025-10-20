@@ -96,6 +96,46 @@ processors:
       field: azure.activitylogs.properties
       if: "ctx.azure?.activitylogs?.properties instanceof String"
       ignore_failure: true
+  - json:
+      field: azure.activitylogs.properties.responseBody
+      if: "ctx.azure?.activitylogs?.properties?.responseBody instanceof String"
+      ignore_failure: true
+  - json:
+      field: azure.activitylogs.properties.requestBody
+      if: "ctx.azure?.activitylogs?.properties?.requestBody instanceof String"
+      ignore_failure: true
+  - script:
+      lang: painless
+      source: >-
+        Map toSnakeCase(Map obj) {
+          for (def camelKey : new ArrayList(obj.keySet())) {
+            StringBuilder snakeKeyBuilder = new StringBuilder();
+            for (char c : camelKey.toCharArray()) {
+              if (Character.isUpperCase(c)) {
+                snakeKeyBuilder.append('_');
+              } 
+              snakeKeyBuilder.append(Character.toLowerCase(c));
+            }
+            def snakeKey = snakeKeyBuilder.toString();
+
+            if (!camelKey.equals(snakeKey)) {
+              obj[snakeKey] = obj.remove(camelKey);
+            }
+        
+            if (obj[snakeKey] instanceof Map) {
+              obj[snakeKey] = toSnakeCase(obj[snakeKey])
+            }
+          }
+        
+          return obj;
+        }
+        if (ctx?.azure?.activitylogs?.properties?.responseBody instanceof Map) {
+          toSnakeCase(ctx?.azure?.activitylogs?.properties?.responseBody)
+        }
+        if (ctx?.azure?.activitylogs?.properties?.requestBody instanceof Map) {
+          toSnakeCase(ctx?.azure?.activitylogs?.properties?.requestBody)
+        }
+      ignore_failure: true
   - script:
       lang: painless
       source: >-
@@ -109,6 +149,14 @@ processors:
           ctx.azure.activitylogs.event_category = 'Administrative';
         }
       ignore_failure: true
+  - rename:
+      field: azure.activitylogs.responseBody
+      target_field: azure.activitylogs.response_body
+      ignore_missing: true
+  - rename:
+      field: azure.activitylogs.requestBody
+      target_field: azure.activitylogs.request_body
+      ignore_missing: true
   - remove:
       field: azure.activitylogs.properties.eventCategory
       if: 'ctx.azure.activitylogs.event_category != null'
