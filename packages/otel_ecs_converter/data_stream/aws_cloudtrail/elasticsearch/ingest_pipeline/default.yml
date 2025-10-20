@@ -90,11 +90,11 @@ processors:
         copy_from: attributes.aws.shared_event_id
     - append:
         field: related.user
-        value: '{{attributes.aws.request.parameters.userName}}'
+        value: '{{{attributes.aws.request.parameters.userName}}}'
         if: ctx.attributes.aws?.request?.parameters?.userName != null
     - append:
         field: related.user
-        value: '{{attributes.aws.request.parameters.newUserName}}'
+        value: '{{{attributes.aws.request.parameters.newUserName}}}'
         if: ctx.attributes.aws?.request?.parameters?.newUserName != null
     # todo: need additionalEventData populated and extracted for mfa, mobile & needs digest file support
     # will be addressed once OTel encoding extension support added through
@@ -132,6 +132,13 @@ processors:
         field: pre_extracted
         value: true
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    - set:
+        field: event.kind
+        value: pipeline_error
+        tag: set_pipeline_error_into_event_kind
+    - append:
+        field: error.message
+        value: >-
+            Processor '{{{ _ingest.on_failure_processor_type }}}'
+            {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+            {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
