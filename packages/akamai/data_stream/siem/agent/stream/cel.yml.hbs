@@ -53,7 +53,7 @@ program: |
           sprintf("EG1-HMAC-SHA256 client_token=%s;access_token=%s;timestamp=%s;nonce=%s;",
             [state.client_token, state.access_token, timestamp, nonce]).as(sig_base,
               base64(hmac(timestamp, "sha256", bytes(state.client_secret))).as(sig_key,
-                (state.url + "?" + {
+                (state.url.trim_right("/") + "?" + {
                   "limit": [string(state.event_limit)],
                   ?"from": params.?from.orValue("") != "" ? optional.of([string(params.from)]) : optional.none(),
                   ?"to": params.?to.orValue("") != "" ? optional.of([string(params.to)]) : optional.none(),
@@ -78,7 +78,7 @@ program: |
       ).as(auth_header,
         request(
           "GET",
-          state.url + "?" + {
+          state.url.trim_right("/") + "?" + {
             "limit": [string(state.event_limit)],
             ?"from": params.?from.orValue("") != "" ? optional.of([string(params.from)]) : optional.none(),
             ?"to": params.?to.orValue("") != "" ? optional.of([string(params.to)]) : optional.none(),
