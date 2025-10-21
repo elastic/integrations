@@ -36,4 +36,4 @@ AWS ELB access logs provide detailed information about requests sent to your loa
 * Target status code
 * Bytes received/sent
 
-Please refer to [the Elastic AWS extension docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#elb-access-log-fields) for details on log format and fields.
+Please refer to [OpenTelemetry AWS Logs encoding extension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension#elb-access-log-fields) for details on log format and fields.
