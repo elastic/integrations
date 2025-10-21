@@ -132,7 +132,11 @@ processors:
         if (!(ctx.o365audit.Actions instanceof List)) {
           ctx.o365audit.Actions = [ctx.o365audit.Actions];
         }
-        def regex = /,\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\"|\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\",/;
+        /*
+        * Actions contains both a human readable `QueryTime` using AM/PM and an ISO8601 format `QueryTime`
+        * We remove the AM/PM containing `QueryTime` to avoid duplicate field errors on flattening.
+        */
+        def regex = /,"QueryTime":"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M"|"QueryTime":"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M",/;
         for (def e: ctx.o365audit.Actions) {
           if (e instanceof Map) {
             actions.add(e);
@@ -1414,7 +1418,7 @@ processors:
       description: Ensure that OperationCount is not rendered with e-notation or other numeric
       if: ctx.o365audit?.OperationCount != null
       source: |-
-        if (ctx.o365audit.OperationCount instanceof double) {
+        if (ctx.o365audit.OperationCount instanceof Number) {
           ctx.o365audit.OperationCount = ((long)ctx.o365audit.OperationCount).toString();
         } else {
           ctx.o365audit.OperationCount = ctx.o365audit.OperationCount.toString();
@@ -1797,31 +1801,70 @@ processors:
   - append:
       field: event.type
       value: access
-      if: 'ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+      if: ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"
   - append:
       field: event.category
       value: email
-      if: 'ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+      if: ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"
   - rename:
       field: o365audit.Messages
       target_field: o365audit.ExchangeMessages
       tag: rename_messages_exchange
-      if: 'ctx.o365audit?.Messages != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+      description: 'Move generic Messages field to the ExchangeMessages field defined by the ExchangeAggregatedMessage type'
+      if: ctx.o365audit?.Messages != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"
+  - script:
+      tag: convert_exchange_message_size_to_long
+      if: ctx.o365audit?.ExchangeMessages != null
+      lang: painless
+      source: |
+        for (def i = 0; i < ctx.o365audit.ExchangeMessages.length; i++) {
+          if (ctx.o365audit.ExchangeMessages[i].MessageItems != null) {
+            for (def j = 0; j < ctx.o365audit.ExchangeMessages[i].MessageItems.length; j++) {
+              def size = ctx.o365audit.ExchangeMessages[i].MessageItems[j].SizeInBytes;
+              if (size instanceof String) {
+                ctx.o365audit.ExchangeMessages[i].MessageItems[j].SizeInBytes = Long.parseLong(size);
+              } else {
+                ctx.o365audit.ExchangeMessages[i].MessageItems[j].SizeInBytes = (long)size;
+              }
+            }
+          }
+        }
+
   - remove:
       field: o365audit.Messages
       tag: remove_messages_field
-      if: 'ctx.o365audit?.Messages != null'
+      if: ctx.o365audit?.Messages != null
       description: 'remove o365audit.Messages if we have not explicitly renamed them based on record type'
+
   - rename:
       field: o365audit.Folders
       target_field: o365audit.ExchangeFolders
       tag: rename_folders_exchange
-      if: 'ctx.o365audit?.Folders != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"'
+      description: 'Move generic Folders field to the ExchangeFolders field defined by the ExchangeAggregatedFolder type'
+      if: ctx.o365audit?.Folders != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"
+  - script:
+      tag: convert_exchange_folder_size_to_long
+      if: ctx.o365audit?.ExchangeFolders != null
+      lang: painless
+      source: |
+        for (def i = 0; i < ctx.o365audit.ExchangeFolders.length; i++) {
+          if (ctx.o365audit.ExchangeFolders[i].FolderItems != null) {
+            for (def j = 0; j < ctx.o365audit.ExchangeFolders[i].FolderItems.length; j++) {
+              def size = ctx.o365audit.ExchangeFolders[i].FolderItems[j].SizeInBytes;
+              if (size instanceof String) {
+                ctx.o365audit.ExchangeFolders[i].FolderItems[j].SizeInBytes = Long.parseLong(size);
+              } else {
+                ctx.o365audit.ExchangeFolders[i].FolderItems[j].SizeInBytes = (long)size;
+              }
+            }
+          }
+        }
+
   - remove:
       field: o365audit.Folders
       tag: remove_folders_field
-      if: 'ctx.o365audit?.Folders != null'
-      description: 'remove o365audit.Folders if we have not explicitly renamed them based on record type'
+      if: ctx.o365audit?.Folders != null
+      description: 'Remove o365audit.Folders if we have not explicitly renamed them based on record type'
   - script:
       description: Handle _tmp.entities.ThreatDetectionMethods containing list of lists.
       lang: painless
