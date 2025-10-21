@@ -8,6 +8,8 @@ Summary of Available Feeds:
 - `Newly Observed Domains (NOD)`: Apex-level domains (e.g. example.com but not <www.example.com>) that we observe for the first time, and have not observed previously with our global DNS sensor network.
 - `Domain Discovery`: New domains as they are either discovered in domain registration information, observed by our global sensor network, or reported by trusted third parties.
 - `Domain RDAP`: Changes to global domain registration information, populated by the Registration Data Access Protocol (RDAP). Compliments the 5-Minute WHOIS Feed as registries and registrars switch from Whois to RDAP.
+- `Domain Risk`: Real-time updates to Domain Risk Scores for apex domains, regardless of observed traffic.
+- `Domain Hotlist`: Domains with high Domain Risk Scores that have also been active within 24 hours.
 
 With over 300,000 new domains observed daily, the feed empowers security teams to identify and block potentially malicious domains before they can be weaponized.
 Ideal for threat hunting, phishing prevention, and brand protection.
@@ -25,6 +27,8 @@ Log data streams collected by the DomainTools integration include the following 
 - `Newly Active Domains (NAD)`
 - `Domain Discovery`
 - `Domain RDAP`
+- `Domain Risk`
+- `Domain Hotlist`
 
 ## Requirements
 
@@ -153,7 +157,7 @@ An example event for `nod_feed` looks as following:
 
 ### Newly Active Domains (NAD) Feed
 
-The `nod_feed` data stream provides events from [DomainTools Newly Active Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
+The `nad_feed` data stream provides events from [DomainTools Newly Active Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
@@ -522,6 +526,248 @@ An example event for `domainrdap_feed` looks as following:
 | domaintools.parsed_record.parsed_fields.registrar.iana_id |  | keyword |
 | domaintools.parsed_record.parsed_fields.registrar.name | The registrar name. | keyword |
 | domaintools.requests_url | List of extracted rdap request urls used. | keyword |
+| domaintools.timestamp | Timestamp when the domain was added to the DomainTools feed, in ISO 8601 UTC form. | date |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| message | The feed from DomainTools Feed API. | match_only_text |
+| threat.feed.description | Display the feed description. | constant_keyword |
+| threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.feed.reference | Display the feed reference. | constant_keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+
+
+### Domain Risk Feed
+
+The `domainrisk_feed` data stream provides events from [DomainTools Domain Risk](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
+
+#### Example
+
+An example event for `domainrisk_feed` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-10T17:13:16.748Z",
+    "agent": {
+        "ephemeral_id": "4c3bec09-a0dc-44b4-8dd6-40fbaa915536",
+        "id": "b2456514-4b1d-41a2-9c43-fa3f1d2c309a",
+        "name": "elastic-agent-66378",
+        "type": "filebeat",
+        "version": "8.18.2"
+    },
+    "data_stream": {
+        "dataset": "ti_domaintools.domainrisk_feed",
+        "namespace": "89484",
+        "type": "logs"
+    },
+    "domaintools": {
+        "domain": "bathroom-remodeling-65908.bond",
+        "malware_risk": 99,
+        "overall_risk": 100,
+        "phishing_risk": 99,
+        "proximity_risk": 100,
+        "spam_risk": 77,
+        "timestamp": "2025-09-06T23:08:07Z"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "b2456514-4b1d-41a2-9c43-fa3f1d2c309a",
+        "snapshot": false,
+        "version": "8.18.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_domaintools.domainrisk_feed",
+        "ingested": "2025-09-10T17:13:19Z",
+        "kind": "enrichment",
+        "type": [
+            "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-66378",
+        "ip": [
+            "172.24.0.2",
+            "172.18.0.5"
+        ],
+        "mac": [
+            "2A-6D-82-23-5E-4E",
+            "7E-AE-D2-7C-35-FB"
+        ],
+        "name": "elastic-agent-66378",
+        "os": {
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "threat": {
+        "indicator": {
+            "name": "bathroom-remodeling-65908.bond",
+            "type": "domain-name"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| domaintools.domain | The Domain. | keyword |
+| domaintools.feed | The feed type. | constant_keyword |
+| domaintools.malware_risk | The malware risk score of the domain. | byte |
+| domaintools.overall_risk | The overall risk score of the domain. | byte |
+| domaintools.phishing_risk | The phishing risk score of the domain. | byte |
+| domaintools.proximity_risk | The proximity risk score of the domain. | byte |
+| domaintools.spam_risk | The spam risk score of the domain. | byte |
+| domaintools.timestamp | Timestamp when the domain was added to the DomainTools feed, in ISO 8601 UTC form. | date |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| message | The feed from DomainTools Feed API. | match_only_text |
+| threat.feed.description | Display the feed description. | constant_keyword |
+| threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.feed.reference | Display the feed reference. | constant_keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+
+
+### Domain Hotlist Feed
+
+The `domainhotlist_feed` data stream provides events from [DomainTools Domain Hotlist](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
+
+#### Example
+
+An example event for `domainhotlist_feed` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-11T15:48:25.817Z",
+    "agent": {
+        "ephemeral_id": "74a0f32a-8842-445b-85b8-3f2ef0d68f13",
+        "id": "93715821-51ef-48df-8721-78cbe6cf916d",
+        "name": "elastic-agent-80427",
+        "type": "filebeat",
+        "version": "8.18.2"
+    },
+    "data_stream": {
+        "dataset": "ti_domaintools.domainhotlist_feed",
+        "namespace": "22303",
+        "type": "logs"
+    },
+    "domaintools": {
+        "domain": "axrszo1ibm.click",
+        "expires": "2025-09-07T22:57:35Z",
+        "malware_risk": 99,
+        "overall_risk": 100,
+        "phishing_risk": 99,
+        "proximity_risk": 100,
+        "spam_risk": 99,
+        "timestamp": "2025-09-06T23:00:08Z"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "93715821-51ef-48df-8721-78cbe6cf916d",
+        "snapshot": false,
+        "version": "8.18.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_domaintools.domainhotlist_feed",
+        "ingested": "2025-09-11T15:48:28Z",
+        "kind": "enrichment",
+        "type": [
+            "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-80427",
+        "ip": [
+            "172.24.0.2",
+            "172.18.0.8"
+        ],
+        "mac": [
+            "A2-E3-32-7E-CF-FE",
+            "A6-83-0B-2E-4E-E6"
+        ],
+        "name": "elastic-agent-80427",
+        "os": {
+            "family": "",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "threat": {
+        "indicator": {
+            "name": "axrszo1ibm.click",
+            "type": "domain-name"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| domaintools.domain | The Domain. | keyword |
+| domaintools.expires | The expiration of the entry. The expiration is 24 hours after the first of the two required events (risk or activity) is detected. | date |
+| domaintools.feed | The feed type. | constant_keyword |
+| domaintools.malware_risk | The malware risk score of the domain. | byte |
+| domaintools.overall_risk | The overall risk score of the domain. | byte |
+| domaintools.phishing_risk | The phishing risk score of the domain. | byte |
+| domaintools.proximity_risk | The proximity risk score of the domain. | byte |
+| domaintools.spam_risk | The spam risk score of the domain. | byte |
 | domaintools.timestamp | Timestamp when the domain was added to the DomainTools feed, in ISO 8601 UTC form. | date |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |

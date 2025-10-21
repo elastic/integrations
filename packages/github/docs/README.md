@@ -1081,6 +1081,7 @@ To use this integration, you must [create a fine-grained personal access token](
 | github.security_advisory.vulnerabilities.package.ecosystem |  | keyword |
 | github.security_advisory.vulnerabilities.package.name |  | keyword |
 | github.security_advisory.vulnerabilities.vulnerable_version_range |  | keyword |
+| github.security_advisory.withdrawn_at |  | date |
 | input.type | Type of filebeat input. | keyword |
 
 
