@@ -57,7 +57,6 @@ processors:
         ctx.event.type = params.get((ctx.arista.succeeded).toString()).get('type').clone();
         ctx.event.provider = params.get((ctx.arista.succeeded).toString()).get('provider');
         ctx.arista.remove('succeeded');
-
   ##############
   ## Clean Up ##
   ##############
@@ -73,4 +72,8 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
