@@ -1808,23 +1808,23 @@ processors:
       if: ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"
   - rename:
       field: o365audit.Messages
-      target_field: o365audit.ExchangeMessages
+      target_field: o365audit.ExchangeAggregatedMessages
       tag: rename_messages_exchange
-      description: 'Move generic Messages field to the ExchangeMessages field defined by the ExchangeAggregatedMessage type'
+      description: 'Move generic Messages field to the ExchangeAggregatedMessages field type'
       if: ctx.o365audit?.Messages != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"
   - script:
       tag: convert_exchange_message_size_to_long
-      if: ctx.o365audit?.ExchangeMessages != null
+      if: ctx.o365audit?.ExchangeAggregatedMessages != null
       lang: painless
       source: |
-        for (def i = 0; i < ctx.o365audit.ExchangeMessages.length; i++) {
-          if (ctx.o365audit.ExchangeMessages[i].MessageItems != null) {
-            for (def j = 0; j < ctx.o365audit.ExchangeMessages[i].MessageItems.length; j++) {
-              def size = ctx.o365audit.ExchangeMessages[i].MessageItems[j].SizeInBytes;
+        for (def i = 0; i < ctx.o365audit.ExchangeAggregatedMessages.length; i++) {
+          if (ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems != null) {
+            for (def j = 0; j < ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems.length; j++) {
+              def size = ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes;
               if (size instanceof String) {
-                ctx.o365audit.ExchangeMessages[i].MessageItems[j].SizeInBytes = Long.parseLong(size);
+                ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes = Long.parseLong(size);
               } else {
-                ctx.o365audit.ExchangeMessages[i].MessageItems[j].SizeInBytes = (long)size;
+                ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes = (long)size;
               }
             }
           }
@@ -1838,23 +1838,23 @@ processors:
 
   - rename:
       field: o365audit.Folders
-      target_field: o365audit.ExchangeFolders
+      target_field: o365audit.ExchangeAggregatedFolders
       tag: rename_folders_exchange
-      description: 'Move generic Folders field to the ExchangeFolders field defined by the ExchangeAggregatedFolder type'
+      description: 'Move generic Folders field to the O365 ExchangeAggregatedFolders field type'
       if: ctx.o365audit?.Folders != null && ctx.o365audit?.RecordType != null && ctx.o365audit?.RecordType == "50"
   - script:
       tag: convert_exchange_folder_size_to_long
-      if: ctx.o365audit?.ExchangeFolders != null
+      if: ctx.o365audit?.ExchangeAggregatedFolders != null
       lang: painless
       source: |
-        for (def i = 0; i < ctx.o365audit.ExchangeFolders.length; i++) {
-          if (ctx.o365audit.ExchangeFolders[i].FolderItems != null) {
-            for (def j = 0; j < ctx.o365audit.ExchangeFolders[i].FolderItems.length; j++) {
-              def size = ctx.o365audit.ExchangeFolders[i].FolderItems[j].SizeInBytes;
+        for (def i = 0; i < ctx.o365audit.ExchangeAggregatedFolders.length; i++) {
+          if (ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems != null) {
+            for (def j = 0; j < ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems.length; j++) {
+              def size = ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes;
               if (size instanceof String) {
-                ctx.o365audit.ExchangeFolders[i].FolderItems[j].SizeInBytes = Long.parseLong(size);
+                ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes = Long.parseLong(size);
               } else {
-                ctx.o365audit.ExchangeFolders[i].FolderItems[j].SizeInBytes = (long)size;
+                ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes = (long)size;
               }
             }
           }
