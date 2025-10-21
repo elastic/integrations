@@ -337,10 +337,9 @@ processors:
       if: ctx?._temp?.script_block_no_signature != null
       source: |-
         String script = ctx._temp.script_block_no_signature;
-        if (script.isEmpty()) {
-          return;
-        }
-        int cpLen = script.codePointCount(0, script.length());
+        int strLen = script.length();
+
+        int cpLen = script.codePointCount(0, strLen);
         if (cpLen == 0) {
           return;
         }
@@ -350,18 +349,11 @@ processors:
         double invLog2 = 1.0 / Math.log(2.0);
         double entropy = 0.0;
         for (def value : counts.values()) {
-            double p = ((Number) value).doubleValue() / (double) cpLen;
+            double p = ((Number) value).doubleValue() / (double) strLen;
             entropy -= p * Math.log(p) * invLog2;
         }
-
-        int uniqueCount = counts.size();
-        double normalizedEntropy = (uniqueCount > 1)
-            ? entropy / (Math.log(uniqueCount) * invLog2)
-            : 0.0;
-        normalizedEntropy = Math.max(0.0, Math.min(1.0, normalizedEntropy));
-
         ctx.powershell.file.script_block_entropy = entropy;
-        ctx.powershell.file.script_block_entropy_normalized = normalizedEntropy;
+
 
   - split:
       description: Split Event 4103 command invocation details.
