@@ -782,13 +782,11 @@ processors:
       field: json.userIdentity.userName
       target_field: user.name
       ignore_missing: true
-      if: ctx.aws?.cloudtrail?.user_identity?.type == 'IAMUser'
       tag: rename_user_identity_user_name_iam_user
   - rename:
       field: json.userIdentity.principalId
       target_field: user.id
       ignore_missing: true
-      if: ctx.aws?.cloudtrail?.user_identity?.type == 'IAMUser'
       tag: rename_user_identity_principal_id
   - rename:
       field: json.userIdentity.arn
@@ -819,20 +817,22 @@ processors:
   # userIdentity.sessionIssuer.userName is only set with assumed roles.
   - rename:
       field: json.userIdentity.sessionContext.sessionIssuer.userName
-      target_field: user.effective.name
+      target_field: user.name
       ignore_missing: true
+      override: true
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole'
-      tag: rename_user_effective_name_assumed_role
+      tag: rename_user_name_assumed_role
   - rename:
       field: json.userIdentity.sessionContext.sessionIssuer.principalId
-      target_field: user.effective.id
+      target_field: user.id
       ignore_missing: true
+      override: true
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole'
-      tag: rename_user_effective_id_assumed_role
+      tag: rename_user_id_assumed_role
   - grok:
       field: aws.cloudtrail.user_identity.arn
       patterns:
-        - "arn:aws:sts:.*/%{GREEDYDATA:user.name}$"
+        - "arn:aws:sts:.*/%{GREEDYDATA:user.changes.name}$"
       ignore_missing: true
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' && ctx.aws?.cloudtrail?.user_identity?.arn != null
       tag: extract_user_name_from_arn
@@ -1758,14 +1758,8 @@ processors:
 
   - append:
       field: related.user
-      value: '{{{user.effective.id}}}'
-      if: ctx.user?.effective?.id != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.user
-      value: '{{{user.effective.name}}}'
-      if: ctx.user?.effective?.name != null
+      value: '{{{user.changes.name}}}'
+      if: ctx.user?.changes?.name != null
       allow_duplicates: false
       ignore_failure: true
 
