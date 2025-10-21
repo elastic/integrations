@@ -31,7 +31,7 @@ processors:
       lang: painless
       ignore_failure: false
       tag: Set User Account Control
-      description: Set User Account Control
+      description: script_set_user_account_control
       # USER_ACCOUNT Codes
       # https://learn.microsoft.com/en-us/windows/win32/adschema/a-useraccountcontrol
       # https://learn.microsoft.com/en-us/windows/win32/api/iads/ne-iads-ads_user_flag_enum
@@ -271,8 +271,14 @@ processors:
       if: ctx.activedirectory?.device?.sam_account_name != null
   - append:
       field: related.hosts
+      value: "{{{host.name}}}"
+      tag: append_host_name_into_related_hosts
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hosts
       value: "{{{activedirectory.id}}}"
-      tag: append_id_into_related_user
+      tag: append_id_into_related_hosts
       allow_duplicates: false
       if: ctx.activedirectory?.id != null
   - append:
