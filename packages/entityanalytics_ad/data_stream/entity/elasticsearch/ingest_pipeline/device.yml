@@ -27,32 +27,270 @@ processors:
       tag: pipeline_entity
       ignore_missing_pipeline: true
 
+  - script:
+      lang: painless
+      ignore_failure: false
+      tag: Set User Account Control
+      description: script_set_user_account_control
+      # USER_ACCOUNT Codes
+      # https://learn.microsoft.com/en-us/windows/win32/adschema/a-useraccountcontrol
+      # https://learn.microsoft.com/en-us/windows/win32/api/iads/ne-iads-ads_user_flag_enum
+      params:
+        "0x00000001": SCRIPT
+        "0x00000002": ACCOUNTDISABLE
+        "0x00000008": HOMEDIR_REQUIRED
+        "0x00000010": LOCKOUT
+        "0x00000020": PASSWD_NOTREQD
+        "0x00000040": PASSWD_CANT_CHANGE
+        "0x00000080": ENCRYPTED_TEXT_PWD_ALLOWED
+        "0x00000100": TEMP_DUPLICATE_ACCOUNT
+        "0x00000200": NORMAL_ACCOUNT
+        "0x00000800": INTERDOMAIN_TRUST_ACCOUNT
+        "0x00001000": WORKSTATION_TRUST_ACCOUNT
+        "0x00002000": SERVER_TRUST_ACCOUNT
+        "0x00010000": DONT_EXPIRE_PASSWORD
+        "0x00020000": MNS_LOGON_ACCOUNT
+        "0x00040000": SMARTCARD_REQUIRED
+        "0x00080000": TRUSTED_FOR_DELEGATION
+        "0x00100000": NOT_DELEGATED
+        "0x00200000": USE_DES_KEY_ONLY
+        "0x00400000": DONT_REQUIRE_PREAUTH
+        "0x00800000": PASSWORD_EXPIRED
+        "0x01000000": TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION
+        "0x04000000": PARTIAL_SECRETS_ACCOUNT
+      source: |-
+        Long newUacValue = Long.decode(ctx.activedirectory.device.user_account_control);
+        ArrayList uacResult = new ArrayList();
+        for (entry in params.entrySet()) {
+          Long flag = Long.decode(entry.getKey());
+          if ((newUacValue.longValue() & flag.longValue()) != 0) {
+            uacResult.add(entry.getValue());
+          }
+        }
+        if (uacResult.length != 0) {
+          ctx.activedirectory.device.uac_list = uacResult;
+        }
+      if: ctx.activedirectory?.device?.user_account_control != null && ctx.activedirectory.device.user_account_control != 0
+
+  - date:
+      field: activedirectory.device.when_created
+      target_field: asset.create_date
+      tag: date_device_created
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.device?.when_created != null && ctx.activedirectory.device.when_created != ''
+      on_failure:
+        - remove:
+            field: activedirectory.device.when_created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: activedirectory.device.when_changed
+      target_field: asset.last_updated
+      tag: date_device_changed
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.device?.when_changed != null && ctx.activedirectory.device.when_changed != ''
+      on_failure:
+        - remove:
+            field: activedirectory.device.when_changed
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: activedirectory.device.pwd_last_set
+      target_field: user.account.password_change_date
+      tag: date_user_password_changed
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.device?.pwd_last_set != null && ctx.activedirectory.device.pwd_last_set != ''
+      on_failure:
+        - remove:
+            field: activedirectory.device.pwd_last_set
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'       
+
+  - lowercase:
+      field: activedirectory.device.dns_host_name
+      target_field: asset.name
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: activedirectory.device.sam_account_name
+      ignore_empty_value: true
+  - set:
+      field: asset.id
+      copy_from: activedirectory.device.object_sid
+  - set:
+      field: device.id
+      copy_from: activedirectory.device.object_sid
+
+  - set:
+      field: activedirectory.device.logon_script_enabled
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('SCRIPT') == true
+  - set:
+      field: activedirectory.device.enabled
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('ACCOUNTDISABLE') == false
+  - set:
+      field: activedirectory.device.enabled
+      value: false
+      if: ctx.activedirectory?.device?.uac_list?.contains('ACCOUNTDISABLE') == true
+
+  - set:
+      field: activedirectory.device.locked
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('LOCKOUT') == true
+
+  - set:
+      field: activedirectory.device.password_not_required
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('PASSWD_NOTREQD') == true
+
+  - set:
+      field: activedirectory.device.reversible_encryption_password
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('ENCRYPTED_TEXT_PWD_ALLOWED') == true
+
+  - set:
+      field: activedirectory.device.unconstrained_delegation
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('TRUSTED_FOR_DELEGATION') == true
+
+  - set:
+      field: activedirectory.device.sensitive_object
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('NOT_DELEGATED') == true
+
+  - set:
+      field: activedirectory.device.use_des_key_only
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('USE_DES_KEY_ONLY') == true
+
+  - set:
+      field: activedirectory.device.dont_require_preauth
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('DONT_REQUIRE_PREAUTH') == true
+
+  - set:
+      field: activedirectory.device.constrained_delegation
+      value: true
+      if: ctx.activedirectory?.device?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION') == true
+
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: handle_user_group_details
+      description: Collect user's group details and set privileged_group_member flag based on group membership.
+      if: ctx.activedirectory?.groups instanceof List
+      # Well-known SIDs - Name to SID mapping
+      # https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-identifiers#well-known-sids
+      params:
+        '512': true
+        '516': true
+        '518': true
+        '519': true
+        '520': true
+        '525': true
+        '526': true
+        '527': true
+        '544': true
+        '548': true
+        '549': true
+        '551': true
+      source: |-
+        ctx.user = ctx.user ?: [:];
+        ctx.user.group = ctx.user.group ?: [:];
+
+        for (def group : ctx.activedirectory.groups) {
+          if (group.name != null) {
+            ctx.user.group.name = ctx.user.group.name ?: new HashSet();
+            ctx.user.group.name.add(group.name);
+          }
+
+          if (group?.object_sid == null) {
+            continue;
+          }
+
+          group.id = group.object_sid;
+          ctx.user.group.id = ctx.user.group.id ?: new HashSet();
+          ctx.user.group.id.add(group.id);
+
+          int idx = group.object_sid.lastIndexOf('-');
+          if (idx < 0) {
+            continue;
+          }
+          def priv = params.get(group.object_sid.substring(idx+1));
+          if (priv != null && ctx.activedirectory.device.privileged_group_member == null) {
+            ctx.activedirectory.device.privileged_group_member = priv;
+          }
+        }
+        if (ctx.activedirectory.device.privileged_group_member == null) {
+          ctx.activedirectory.device.privileged_group_member = false;
+        }
+
+  - set:
+      field: activedirectory.device.account_never_expires
+      value: true
+      if: ctx.activedirectory?.device?.account_expires == "0" || ctx.activedirectory?.device?.account_expires == "9223372036854775807"
+
+  - set:
+      field: host.hostname
+      copy_from: activedirectory.device.cn
+      ignore_empty_value: true
+  - lowercase:
+      field: activedirectory.device.dns_host_name
+      target_field: host.name
+      ignore_missing: true
+  - dissect:
+      field: host.name
+      pattern: '%{}.%{host.domain}'
+      if: >-
+        ctx.host?.name instanceof String &&
+        ctx.host?.hostname instanceof String &&
+        ctx.host.name.contains('.') &&
+        ctx.host.name.startsWith(ctx.host.hostname.toLowerCase()+'.')
+
+  - set:
+      field: host.os.full
+      copy_from: activedirectory.device.operating_system
+      ignore_empty_value: true
+  - set:
+      field: host.os.version
+      copy_from: activedirectory.device.operating_system_version
+      ignore_empty_value: true
+
   - append:
       field: related.user
-      value: "{{{activedirectory.user.sam_account_name}}}"
+      value: "{{{activedirectory.device.sam_account_name}}}"
       tag: append_name_into_related_user
       allow_duplicates: false
-      if: ctx.activedirectory?.user?.sam_account_name != null
+      if: ctx.activedirectory?.device?.sam_account_name != null
   - append:
-      field: related.user
+      field: related.hosts
+      value: "{{{host.name}}}"
+      tag: append_host_name_into_related_hosts
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hosts
       value: "{{{activedirectory.id}}}"
-      tag: append_id_into_related_user
+      tag: append_id_into_related_hosts
       allow_duplicates: false
       if: ctx.activedirectory?.id != null
   - append:
-      field: related.user
-      value: "{{{activedirectory.user.object_guid}}}"
-      tag: append_object_guid_into_related_user
+      field: related.hosts
+      value: "{{{activedirectory.device.object_guid}}}"
+      tag: append_object_guid_into_related_hosts
       allow_duplicates: false
-      if: ctx.activedirectory?.user?.object_guid != null
+      if: ctx.activedirectory?.device?.object_guid != null
 
   - rename:
       field: activedirectory.id
-      target_field: activedirectory.user.object_dn
-
-  - rename:
-      field: activedirectory.user
-      target_field: activedirectory.device
+      target_field: activedirectory.device.object_dn
 
   - rename:
       field: activedirectory
