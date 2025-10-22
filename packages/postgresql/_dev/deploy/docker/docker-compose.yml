@@ -1,13 +1,28 @@
 version: '2.3'
 services:
   postgresql:
-    # Commented out `image:` below until we have a process to refresh the hosted images from
-    # Dockerfiles in this repo. Until then, we build the image locally using `build:` below.
-    # image: docker.elastic.co/integrations-ci/beats-postgresql:${POSTGRESQL_VERSION:-9.5.3}-1
-    build: .
-    ports:
-      - 5432
-    volumes:
-      - ${SERVICE_LOGS_DIR}/postgresql:/var/log/postgresql
+    image: postgres:17.5
+    container_name: postgresql-system-test
+    restart: unless-stopped
     environment:
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      # Enable logging
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    ports:
+      - "5432"
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log/postgresql
+    command: >
+      postgres
+      -c logging_collector=on
+      -c log_directory=/var/log/postgresql
+      -c log_filename=postgresql-%Y-%m-%d_%H%M%S.log
+      -c log_statement=all
+      -c log_min_duration_statement=0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
