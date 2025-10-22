@@ -1,0 +1,36 @@
+config_version: 2
+interval: 1m
+resource.url: https://epr.elastic.co
+program: |
+  request("GET", "https://epr.elastic.co")
+    .do_request()
+    .as(resp, resp.StatusCode == 200 ?
+      {
+        "events": [{
+          "message": {
+            "state": "ok",
+            "result": bytes(resp.Body).decode_json()
+          }.encode_json()
+        }]
+      }
+    :
+      {
+        "events": [{
+          "message": {
+            "state": "error",
+            "error": {
+              "code": string(resp.StatusCode),
+              "message": "GET: https://epr.elastic.co - " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              )
+            }
+          }.encode_json()
+        }]
+      }
+    )
+tags:
+  - agentless-hello-world
+publisher_pipeline.disable_host: true
