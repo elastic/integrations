@@ -114,7 +114,7 @@ with_go() {
   echo "GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
   retry 5 curl -sL -o "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
   chmod +x "${BIN_FOLDER}/gvm"
-  eval "$(gvm --url=https://go.dev/dl "$(cat .go-version)")"
+  eval "$(gvm "$(cat .go-version)")"
   go version
   which go
   PATH="${PATH}:$(go env GOPATH):$(go env GOPATH)/bin"
