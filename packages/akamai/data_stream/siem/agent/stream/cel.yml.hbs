@@ -1,7 +1,8 @@
 config_version: 2
 interval: {{interval}}
+max_executions: {{max_executions}}
 resource:
-  url: https://{{api_host}}/siem/v1/configs/{{config_ids}}
+  url: {{api_host}}/siem/v1/configs/{{config_ids}}
   {{#if ssl}}
   ssl: {{ssl}}
   {{/if}}
@@ -38,9 +39,9 @@ program: |
           "to": int(now)
         }
       : 
-        state.?cursor.?offset.hasValue() ? 
+        state.?cursor.?last_offset.hasValue() ? 
           {
-            "offset": state.cursor.offset
+            "offset": state.cursor.last_offset
           }
         : 
           {
@@ -90,16 +91,23 @@ program: |
           }
         }).do_request().as(resp,
           resp.StatusCode == 200 ?
-            {
-              "events": string(resp.Body).split("\n").map(e, e!="", { "message": e }),
-              "cursor": {
-                ?"offset": resp.Body.?offset.orValue("") != "" ? optional.of(resp.Body.offset) : optional.none(),
-                "recovery_mode": false
-              },
-              "want_more": has(resp.Body.offset) && resp.Body.offset != ""
-            }
-          :
-          resp.StatusCode == 406 ?
+            string(resp.Body).split("\n").filter(line, line != "").as(lines, {
+            "events": lines.map(line, { "message": line }),
+            "cursor": {
+              ?"last_offset": lines.size() > 0 ? 
+                lines[lines.size() - 1].decode_json().as(lastEvent,
+                  has(lastEvent.offset) ? optional.of(lastEvent.offset) : optional.none()
+                )
+              : optional.none(),
+              "recovery_mode": false
+            },
+            "want_more": lines.size() > 0 ? 
+              lines[lines.size() - 1].decode_json().as(lastEvent,
+                has(lastEvent.offset) && lastEvent.offset != ""
+              )
+            : false
+          })
+          : resp.StatusCode == 416 ?
             {
               "events": {
                 "error": {
