@@ -24,6 +24,7 @@ request.transforms:
       target: url.params.cursor
       value: '[[.cursor.next_cursor]]'
       default: ''
+      do_not_log_failure: true
   - set:
       target: url.params.oldest
       value: '[[if eq .cursor.next_cursor ""]][[.cursor.max_date_seen_so_far]][[else]][[.cursor.saved_oldest]][[end]]'
@@ -46,16 +47,18 @@ response.split:
 response.pagination:
   - set:
       target: url.params.cursor
-      value: '[[.last_response.body.response_metadata.next_cursor]]'
+      value: '[[if index .last_response.body.response_metadata "next_cursor"]][[.last_response.body.response_metadata.next_cursor]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.oldest
       value: '[[.last_response.url.params.Get "oldest"]]'
 
 cursor:
   next_cursor:
-    value: '[[.last_response.body.response_metadata.Get "next_cursor"]]'
+    value: '[[if index .last_response.body.response_metadata "next_cursor"]][[.last_response.body.response_metadata.next_cursor]][[end]]'
     ignore_empty_value: false
+    do_not_log_failure: true
   saved_oldest:
     value: '[[.last_response.url.params.Get "oldest"]]'
   max_date_seen_so_far:

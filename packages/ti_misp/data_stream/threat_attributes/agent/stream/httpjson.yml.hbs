@@ -77,6 +77,7 @@ response.pagination:
     # Add 2 because the httpjson page counter is zero-based while the MISP page parameter starts at 1.
     value: '[[if (ne (len .last_response.body.response.Attribute) 0)]][[add .last_response.page 2]][[end]]'
     fail_on_template_error: true
+    do_not_log_failure: true
 - set:
     target: body.timestamp
     value: '[[.last_response.url.params.Get "timestamp"]]'
@@ -86,6 +87,7 @@ response.pagination:
 cursor:
   timestamp:
     value: '[[.last_event.timestamp]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

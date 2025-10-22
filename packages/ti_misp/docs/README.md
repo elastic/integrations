@@ -112,37 +112,37 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2014-10-06T07:12:57.000Z",
+    "@timestamp": "2021-05-21T10:22:12.000Z",
     "agent": {
-        "ephemeral_id": "24754055-2625-498c-8778-8566dbc8a368",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "02b1e00e-8317-4a66-9e4d-bfd55b98bc05",
+        "id": "e04b187e-c722-4ef2-941d-cd00a2e89fb2",
+        "name": "elastic-agent-50369",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_misp.threat",
-        "namespace": "ep",
+        "namespace": "74662",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "e04b187e-c722-4ef2-941d-cd00a2e89fb2",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-08-28T15:43:07.992Z",
+        "created": "2025-10-05T07:52:04.900Z",
         "dataset": "ti_misp.threat",
-        "ingested": "2023-08-28T15:43:09Z",
+        "ingested": "2025-10-05T07:52:07Z",
         "kind": "enrichment",
-        "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Network activity\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"22\",\"first_seen\":null,\"id\":\"12394\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1462454963\",\"to_ids\":false,\"type\":\"domain\",\"uuid\":\"572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16\",\"value\":\"whatsapp.com\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":[],\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"5877549f-ea76-4b91-91fb-c72ad682b4a5\"},\"Orgc\":{\"id\":\"2\",\"local\":false,\"name\":\"CthulhuSPRL.be\",\"uuid\":\"55f6ea5f-fd34-43b8-ac1d-40cb950d210f\"},\"RelatedEvent\":[],\"ShadowAttribute\":[],\"Tag\":[{\"colour\":\"#004646\",\"exportable\":true,\"hide_tag\":false,\"id\":\"1\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"type:OSINT\",\"numerical_value\":null,\"user_id\":\"0\"},{\"colour\":\"#339900\",\"exportable\":true,\"hide_tag\":false,\"id\":\"2\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"tlp:green\",\"numerical_value\":null,\"user_id\":\"0\"}],\"analysis\":\"2\",\"attribute_count\":\"29\",\"date\":\"2014-10-03\",\"disable_correlation\":false,\"distribution\":\"3\",\"extends_uuid\":\"\",\"id\":\"2\",\"info\":\"OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"2\",\"proposal_email_lock\":false,\"publish_timestamp\":\"1610622316\",\"published\":true,\"sharing_group_id\":\"0\",\"threat_level_id\":\"2\",\"timestamp\":\"1412579577\",\"uuid\":\"54323f2c-e50c-4268-896c-4867950d210b\"}}",
+        "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Payload delivery\",\"comment\":\"filename content for test event 3\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"3633\",\"first_seen\":null,\"id\":\"266263\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1621589229\",\"to_ids\":false,\"type\":\"filename\",\"uuid\":\"3b322e1a-1dd8-490c-ab96-12e1bc3ee6a3\",\"value\":\"thetestfile.txt\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Payload delivery\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"3633\",\"first_seen\":null,\"id\":\"266265\",\"last_seen\":null,\"object_id\":\"18207\",\"object_relation\":\"sha256\",\"sharing_group_id\":\"0\",\"timestamp\":\"1621589548\",\"to_ids\":true,\"type\":\"sha256\",\"uuid\":\"657c5f2b-9d68-4ff7-a9ad-ab9e6a6c953e\",\"value\":\"f33c27745f2bd87344be790465ef984a972fd539dc83bd4f61d4242c607ef1ee\"},\"ObjectReference\":[],\"comment\":\"File object for event 3\",\"deleted\":false,\"description\":\"File object describing a file with meta-information\",\"distribution\":\"5\",\"event_id\":\"3633\",\"first_seen\":null,\"id\":\"18207\",\"last_seen\":null,\"meta-category\":\"file\",\"name\":\"file\",\"sharing_group_id\":\"0\",\"template_uuid\":\"688c46fb-5edb-40a3-8273-1af7923e2215\",\"template_version\":\"22\",\"timestamp\":\"1621589548\",\"uuid\":\"42a88ad4-6834-46a9-a18b-aff9e078a4ea\"},\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"Orgc\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"RelatedEvent\":[{\"Event\":{\"Org\":{\"id\":\"1\",\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"Orgc\":{\"id\":\"1\",\"name\":\"ORGNAME\",\"uuid\":\"78acad2d-cc2d-4785-94d6-b428a0070488\"},\"analysis\":\"0\",\"date\":\"2021-05-21\",\"distribution\":\"1\",\"id\":\"3631\",\"info\":\"Test event 1 just atrributes\",\"org_id\":\"1\",\"orgc_id\":\"1\",\"published\":false,\"threat_level_id\":\"1\",\"timestamp\":\"1621588162\",\"uuid\":\"8ca56ae9-3747-4172-93d2-808da1a4eaf3\"}}],\"ShadowAttribute\":[],\"analysis\":\"0\",\"attribute_count\":\"6\",\"date\":\"2021-05-21\",\"disable_correlation\":false,\"distribution\":\"1\",\"event_creator_email\":\"admin@admin.test\",\"extends_uuid\":\"\",\"id\":\"3633\",\"info\":\"Test event 3 objects and attributes\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"1\",\"proposal_email_lock\":false,\"publish_timestamp\":\"0\",\"published\":false,\"sharing_group_id\":\"0\",\"threat_level_id\":\"1\",\"timestamp\":\"1621592532\",\"uuid\":\"4edb20c7-8175-484d-bdcd-fce6872c1ef3\"}}",
         "type": [
             "indicator"
         ]
@@ -152,69 +152,104 @@ An example event for `threat` looks as following:
     },
     "misp": {
         "attribute": {
-            "category": "Network activity",
+            "category": "Payload delivery",
             "comment": "",
             "deleted": false,
             "disable_correlation": false,
             "distribution": 5,
-            "event_id": "22",
-            "id": "12394",
-            "object_id": "0",
+            "event_id": "3633",
+            "id": "266265",
+            "object_id": "18207",
+            "object_relation": "sha256",
             "sharing_group_id": "0",
-            "timestamp": "2016-05-05T13:29:23.000Z",
-            "to_ids": false,
-            "type": "domain",
-            "uuid": "572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16"
+            "timestamp": "2021-05-21T09:32:28.000Z",
+            "to_ids": true,
+            "type": "sha256",
+            "uuid": "657c5f2b-9d68-4ff7-a9ad-ab9e6a6c953e"
+        },
+        "context": {
+            "attribute": {
+                "category": "Payload delivery",
+                "comment": "filename content for test event 3",
+                "deleted": false,
+                "disable_correlation": false,
+                "distribution": 5,
+                "event_id": "3633",
+                "id": "266263",
+                "object_id": "0",
+                "sharing_group_id": "0",
+                "timestamp": "2021-05-21T09:27:09.000Z",
+                "to_ids": false,
+                "type": "filename",
+                "uuid": "3b322e1a-1dd8-490c-ab96-12e1bc3ee6a3",
+                "value": "thetestfile.txt"
+            }
         },
         "event": {
-            "attribute_count": 29,
-            "date": "2014-10-03",
+            "attribute_count": 6,
+            "date": "2021-05-21",
             "disable_correlation": false,
-            "distribution": 3,
+            "distribution": 1,
             "extends_uuid": "",
-            "id": "2",
-            "info": "OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks",
+            "id": "3633",
+            "info": "Test event 3 objects and attributes",
             "locked": false,
             "org_id": "1",
-            "orgc_id": "2",
+            "orgc_id": "1",
             "proposal_email_lock": false,
-            "publish_timestamp": "2021-01-14T11:05:16.000Z",
-            "published": true,
+            "publish_timestamp": "1970-01-01T00:00:00.000Z",
+            "published": false,
             "sharing_group_id": "0",
-            "threat_level_id": 2,
-            "uuid": "54323f2c-e50c-4268-896c-4867950d210b"
+            "threat_level_id": 1,
+            "uuid": "4edb20c7-8175-484d-bdcd-fce6872c1ef3"
+        },
+        "object": {
+            "comment": "File object for event 3",
+            "deleted": false,
+            "description": "File object describing a file with meta-information",
+            "distribution": 5,
+            "event_id": "3633",
+            "id": "18207",
+            "meta_category": "file",
+            "name": "file",
+            "sharing_group_id": "0",
+            "template_uuid": "688c46fb-5edb-40a3-8273-1af7923e2215",
+            "template_version": "22",
+            "timestamp": "2021-05-21T09:32:28.000Z",
+            "uuid": "42a88ad4-6834-46a9-a18b-aff9e078a4ea"
         },
         "orgc": {
-            "id": "2",
-            "local": false,
-            "name": "CthulhuSPRL.be",
-            "uuid": "55f6ea5f-fd34-43b8-ac1d-40cb950d210f"
+            "id": "1",
+            "local": true,
+            "name": "ORGNAME",
+            "uuid": "78acad2d-cc2d-4785-94d6-b428a0070488"
         }
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "misp-threat",
-        "type:OSINT",
-        "tlp:green"
+        "misp-threat"
     ],
     "threat": {
         "feed": {
             "name": "MISP"
         },
         "indicator": {
-            "marking": {
-                "tlp": [
-                    "GREEN"
-                ]
+            "file": {
+                "hash": {
+                    "sha256": "f33c27745f2bd87344be790465ef984a972fd539dc83bd4f61d4242c607ef1ee"
+                }
             },
             "provider": "misp",
-            "scanner_stats": 2,
-            "type": "domain-name",
-            "url": {
-                "domain": "whatsapp.com"
-            }
+            "scanner_stats": 0,
+            "type": "file"
         }
+    },
+    "user": {
+        "email": "admin@admin.test",
+        "roles": [
+            "reporting_user"
+        ]
     }
 }
 ```
