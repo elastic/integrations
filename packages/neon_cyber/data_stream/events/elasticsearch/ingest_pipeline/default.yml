@@ -1,0 +1,327 @@
+---
+description: Pipeline for processing Neon events.
+processors:
+    - drop:
+          description: Ignore retry placeholder message.
+          if: ctx.message == "retry"
+    - set:
+          field: ecs.version
+          value: 8.11.0
+    - terminate:
+          tag: data_collection_error
+          if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+          description: error message set and no data to process.
+    - set:
+          field: event.kind
+          value: event
+    - append:
+          field: event.category
+          value: network
+    - append:
+          field: event.type
+          value: info
+    - rename:
+          field: message
+          target_field: event.original
+          ignore_missing: true
+          if: ctx.event?.original == null
+    - remove:
+          field: message
+          ignore_missing: true
+          if: 'ctx.event?.original != null'
+          description: 'The `message` field is no longer required if the document has an `event.original` field.'
+    - remove:
+          field:
+              - organization
+              - division
+              - team
+          ignore_missing: true
+          if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+          description: >-
+              Removes the fields added by Agentless as metadata,
+              as they can collide with ECS fields.
+    - json:
+          field: event.original
+          target_field: json
+          ignore_failure: true
+    - fingerprint:
+          fields:
+              - json.inserted_at
+              - json.updated_at
+              - json.id
+          target_field: _id
+    - date:
+          field: json.event_timestamp
+          target_field: neon_cyber.events.event_timestamp
+          formats:
+              - ISO8601
+    - date:
+          field: json.event_timestamp
+          target_field: '@timestamp'
+          formats:
+              - ISO8601
+    - rename:
+          field: json.event_type
+          target_field: neon_cyber.events.event_type
+    - rename:
+          field: json.id
+          target_field: neon_cyber.events.id
+    - rename:
+          field: json.deployment_id
+          target_field: neon_cyber.events.deployment_id
+    - rename:
+          field: json.client_id
+          target_field: neon_cyber.events.client_id
+    - rename:
+          field: json.registration_id
+          target_field: neon_cyber.events.registration_id
+    - rename:
+          field: json.arch
+          target_field: host.architecture
+          ignore_missing: true
+    - rename:
+          field: json.os
+          target_field: host.os.platform
+          ignore_missing: true
+    - append:
+          field: host.geo.location
+          value: { 'lat': ctx.json.latitude, 'lon': ctx.json.longitude }
+          if: ctx.json?.latitude != 0 && ctx.json?.longitude != 0
+    - rename:
+          field: json.ip
+          target_field: client.nat.ip
+          ignore_missing: true
+    - append:
+          field: client.geo.location
+          value: { 'lat': ctx.json.ip_latitude, 'lon': ctx.json.ip_longitude }
+          if: ctx.json?.latitude != 0 && ctx.json?.longitude != 0
+    - rename:
+          field: json.city
+          target_field: client.geo.city_name
+          ignore_missing: true
+    - rename:
+          field: json.country
+          target_field: client.geo.country_name
+          ignore_missing: true
+    - rename:
+          field: json.postal_code
+          target_field: client.geo.postal_code
+          ignore_missing: true
+    - rename:
+          field: json.region_code
+          target_field: client.geo.region_iso_code
+          ignore_missing: true
+    - rename:
+          field: json.region_name
+          target_field: client.geo.region_name
+          ignore_missing: true
+    - rename:
+          field: json.asn
+          target_field: client.as.number
+          ignore_missing: true
+    - rename:
+          field: json.asn_isp
+          target_field: client.as.organization.name
+          ignore_missing: true
+    - rename:
+          field: json.name
+          target_field: user_agent.name
+          ignore_missing: true
+    - rename:
+          field: json.version
+          target_field: user_agent.version
+          ignore_missing: true
+    - rename:
+          field: json.ua
+          target_field: user_agent.original
+          ignore_missing: true
+    - rename:
+          field: json.url
+          target_field: neon_cyber.events.url
+          ignore_missing: true
+    - rename:
+          field: json.agent
+          target_field: neon_cyber.events.agent
+          ignore_missing: true
+    - rename:
+          field: json.display
+          target_field: neon_cyber.events.display
+          ignore_missing: true
+    - rename:
+          field: json.tab_id
+          target_field: neon_cyber.events.tab_id
+          ignore_missing: true
+    - rename:
+          field: json.frame_id
+          target_field: neon_cyber.events.frame_id
+          ignore_missing: true
+    - rename:
+          field: json.parent_frame_id
+          target_field: neon_cyber.events.parent_frame_id
+          ignore_missing: true
+    - rename:
+          field: json.download_id
+          target_field: neon_cyber.events.download_id
+          ignore_missing: true
+    - rename:
+          field: json.filename
+          target_field: neon_cyber.events.filename
+          ignore_missing: true
+    - rename:
+          field: json.mime
+          target_field: neon_cyber.events.mime
+          ignore_missing: true
+    - rename:
+          field: json.incognito
+          target_field: neon_cyber.events.incognito
+          ignore_missing: true
+    - rename:
+          field: json.referrer
+          target_field: neon_cyber.events.referrer
+          ignore_missing: true
+    - rename:
+          field: json.danger
+          target_field: neon_cyber.events.danger
+          ignore_missing: true
+    - rename:
+          field: json.total_bytes
+          target_field: neon_cyber.events.total_bytes
+          ignore_missing: true
+    - rename:
+          field: json.description
+          target_field: neon_cyber.events.description
+          ignore_missing: true
+    - rename:
+          field: json.catalog_id
+          target_field: neon_cyber.events.catalog_id
+          ignore_missing: true
+    - rename:
+          field: json.catalog_name
+          target_field: neon_cyber.events.catalog_name
+          ignore_missing: true
+    - rename:
+          field: json.domains
+          target_field: neon_cyber.events.domains
+          ignore_missing: true
+    - date:
+          field: json.start_timestamp
+          target_field: neon_cyber.events.start_timestamp
+          formats:
+              - ISO8601
+          if: ctx.json?.start_timestamp != null
+    - date:
+          field: json.end_timestamp
+          target_field: neon_cyber.events.end_timestamp
+          formats:
+              - ISO8601
+          if: ctx.json?.end_timestamp != null
+    - rename:
+          field: json.cumulative
+          target_field: neon_cyber.events.cumulative
+          ignore_missing: true
+    - rename:
+          field: json.auth_method
+          target_field: neon_cyber.events.auth_method
+          ignore_missing: true
+    - rename:
+          field: json.login
+          target_field: neon_cyber.events.login
+          ignore_missing: true
+    - rename:
+          field: json.mfa
+          target_field: neon_cyber.events.mfa
+          ignore_missing: true
+    - rename:
+          field: json.email
+          target_field: neon_cyber.events.email
+          ignore_missing: true
+    - rename:
+          field: json.autofill
+          target_field: neon_cyber.events.autofill
+          ignore_missing: true
+    - rename:
+          field: json.filehash
+          target_field: neon_cyber.events.filehash
+          ignore_missing: true
+    - rename:
+          field: json.extensions
+          target_field: neon_cyber.events.extensions
+          if: ctx.json.extensions != null
+          ignore_failure: true
+    - rename:
+          field: json.ext_id
+          target_field: neon_cyber.events.ext_id
+          ignore_missing: true
+    - rename:
+          field: json.ext_name
+          target_field: neon_cyber.events.ext_name
+          ignore_missing: true
+    - rename:
+          field: json.ext_enabled
+          target_field: neon_cyber.events.ext_enabled
+          ignore_missing: true
+    - rename:
+          field: json.ext_description
+          target_field: neon_cyber.events.ext_description
+          ignore_missing: true
+    - rename:
+          field: json.ext_install_type
+          target_field: neon_cyber.events.ext_install_type
+          ignore_missing: true
+    - rename:
+          field: json.ext_host_permissions
+          target_field: neon_cyber.events.ext_host_permissions
+          ignore_missing: true
+    - rename:
+          field: json.ext_permissions
+          target_field: neon_cyber.events.ext_permissions
+          ignore_missing: true
+    - remove:
+          field: json.event_timestamp
+    - remove:
+          field: json.inserted_at
+    - remove:
+          field: json.updated_at
+    - remove:
+          field: json.start_timestamp
+          if: ctx.json?.start_timestamp != null
+    - remove:
+          field: json.end_timestamp
+          if: ctx.json?.end_timestamp != null
+    - remove:
+          field: json.ip_latitude
+    - remove:
+          field: json.ip_longitude
+    - remove:
+          field: json.latitude
+    - remove:
+          field: json.longitude
+    - script:
+          description: Drops null/empty values recursively.
+          lang: painless
+          source: |
+              boolean dropEmptyFields(Object object) {
+                  if (object == null || object == '') {
+                  return true;
+                  } else if (object instanceof Map) {
+                  ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+                  return (((Map) object).size() == 0);
+                  } else if (object instanceof List) {
+                  ((List) object).removeIf(value -> dropEmptyFields(value));
+                  return (((List) object).length == 0);
+                  }
+                  return false;
+              }
+              dropEmptyFields(ctx);
+on_failure:
+    - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    - set:
+          field: event.kind
+          tag: set_pipeline_error_to_event_kind
+          value: pipeline_error
+    - append:
+          field: tags
+          value: preserve_original_event
+          allow_duplicates: false
