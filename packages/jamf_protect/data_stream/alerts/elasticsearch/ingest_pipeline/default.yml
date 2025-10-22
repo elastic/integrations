@@ -4,14 +4,29 @@ processors:
     - set:
         field: ecs.version
         value: '8.17.0'
-    - json:
+    - rename:
         field: message
-        target_field: jamf_protect.alerts
-        if: ctx.message != null
+        target_field: event.original
+        ignore_missing: true
+        if: ctx.event?.original == null
     - rename:
         field: json
         target_field: jamf_protect.alerts
         if: ctx.json != null
+    - json:
+        field: event.original
+        target_field: jamf_protect.alerts
+        if: ctx.event?.original != null && ctx.jamf_protect?.alerts == null
+    - script:
+        # This should almost never be needed and will not allow preservation of events in the case
+        # of ingest pipeline errors unless preserve_original_event was already set, in which case
+        # it would already have been retained.
+        description: |-
+          Retain the JSON in event.original if it came in that way and we have preserve_original_event.
+        if: ctx.event?.original == null && ctx.jamf_protect?.alerts != null && ctx.tags != null && ctx.tags.contains('preserve_original_event')
+        source: |-
+          ctx.event = ctx.event ?: [:];
+          ctx.event.original = Json.dump(ctx.jamf_protect.alerts);
 
 #######################
 ## ECS Event Mapping ##
@@ -472,6 +487,7 @@ processors:
         - jamf_protect.alerts
         - jamf_protect
         - message
+        - json
         ignore_missing: true
     - script:
         description: Drops null/empty values recursively.

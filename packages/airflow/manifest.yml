@@ -1,47 +1,40 @@
 name: airflow
 title: Airflow
-version: "0.11.0"
+version: "1.0.0"
 description: Airflow Integration.
 type: integration
 format_version: "3.0.0"
 categories:
   - observability
+  # Added process_manager category as Airflow is a workflow management platform that schedules and monitors workflows
+  - process_manager
 conditions:
   kibana:
     version: "^8.13.0 || ^9.0.0"
   elastic:
     subscription: basic
+screenshots:
+  - src: /img/dashboard.png
+    title: Airflow Overview Metrics screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/dashboard_continued.png
+    title: Airflow Overview Metrics screenshot (continued)
+    size: 600x600
+    type: image/png
 icons:
   - src: /img/airflow.svg
     title: Airflow logo
     size: 32x32
     type: image/svg+xml
-vars:
-  - name: host
-    type: text
-    title: Host
-    multi: false
-    required: true
-    show_user: true
-    default: localhost
-  - name: port
-    type: text
-    title: Port
-    multi: false
-    required: true
-    show_user: true
-    default: "8125"
 policy_templates:
   - name: server
     title: Airflow metrics
     description: Collect metrics from Airflow instances
-    data_streams:
-      - statsd
     inputs:
       - type: "statsd/metrics"
         title: "Collect Airflow metrics"
         description: "Collecting Airflow metrics"
-        input_group: metrics
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

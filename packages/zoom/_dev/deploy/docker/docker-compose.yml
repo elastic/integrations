@@ -1,20 +1,22 @@
 version: '2.3'
 services:
   zoom-webhook-http:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
       - STREAM_ADDR=http://elastic-agent:9080/zoom
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/account-ndjson.log
   zoom-webhook-https:
-    image: docker.elastic.co/observability/stream:v0.18.0
+    image: docker.elastic.co/observability/stream:v0.20.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
       - STREAM_INSECURE=true
       - STREAM_ADDR=https://elastic-agent:7443/zoom
       - STREAM_WEBHOOK_HEADER=Authorization=abc123

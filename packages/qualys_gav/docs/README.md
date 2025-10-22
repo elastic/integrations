@@ -57,20 +57,20 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-08-04T11:07:30.158Z",
+    "@timestamp": "2025-09-26T13:07:03.724Z",
     "agent": {
-        "ephemeral_id": "477a4666-bf1a-43a2-82ac-01f123a98616",
-        "id": "e54ee166-80db-4169-8fe4-6d3f8ab4dace",
-        "name": "elastic-agent-60090",
+        "ephemeral_id": "3729163b-132c-437f-b8a8-d4200aef9b6b",
+        "id": "0ef8fd67-1afe-4495-99f1-bae4e45a64b7",
+        "name": "elastic-agent-83075",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.1.4"
     },
     "cloud": {
-        "provider": "Amazon Web Services"
+        "provider": "aws"
     },
     "data_stream": {
         "dataset": "qualys_gav.asset",
-        "namespace": "29826",
+        "namespace": "72894",
         "type": "logs"
     },
     "device": {
@@ -83,9 +83,9 @@ An example event for `asset` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e54ee166-80db-4169-8fe4-6d3f8ab4dace",
+        "id": "0ef8fd67-1afe-4495-99f1-bae4e45a64b7",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.1.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -94,9 +94,9 @@ An example event for `asset` looks as following:
         ],
         "created": "2025-07-09T14:21:12.000Z",
         "dataset": "qualys_gav.asset",
-        "ingested": "2025-08-04T11:07:33Z",
+        "ingested": "2025-09-26T13:07:06Z",
         "kind": "event",
-        "original": "{\"activity\":{\"lastScannedDate\":1752243670000,\"source\":\"EASM\"},\"address\":\"216.160.83.56\",\"agent\":{\"activations\":[{\"key\":\"httpd\",\"status\":\"ACTIVE\"}],\"configurationProfile\":\"Apache HTTP Server\",\"connectedFrom\":\"216.160.83.56\",\"errorStatus\":false,\"lastActivity\":1752520814000,\"lastCheckedIn\":1752520814000,\"lastInventory\":1752520816000,\"udcManifestAssigned\":false,\"version\":\"2.4.7\"},\"agentId\":\"bda51f1d-13cf-49ad-a3a0-9f83debbe5a9\",\"asn\":\"AS53831\",\"assetId\":67533741,\"assetName\":\"test_asset\",\"assetType\":\"HOST\",\"assetUUID\":\"bda51f1d-13cf-49ad-a3a0-9f83debbe5a9\",\"assignedLocation\":{\"city\":\"Pune\",\"country\":\"IN\",\"name\":\"4492 Camino De La Plaza, Pune,IN\",\"state\":\"MH\"},\"biosAssetTag\":\"Test asset tag\",\"biosDescription\":\"Test\",\"biosSerialNumber\":\"Test serial number\",\"businessAppListData\":{\"businessApp\":[{\"businessCriticality\":\"2 - Less Critical\",\"environment\":\"Production\",\"id\":\"BARCODE283904\",\"managedBy\":\"user\",\"name\":\"Quoting App\",\"operationalStatus\":\"Mended\",\"ownedBy\":\"ownerr\",\"status\":\"Installed\",\"supportGroup\":\"SME Operations\",\"supportedBy\":\"sopporter\",\"usedFor\":\"Production\"}]},\"businessInformation\":{\"company\":\"Qualys\",\"department\":\"Engineering\",\"environment\":\"QA\",\"managedBy\":\"Amit\",\"operationalStatus\":\"Blocked\",\"ownedBy\":\"Paul\",\"supportGroup\":\"ABC_01\",\"supportedBy\":\"Nick\"},\"cloudProvider\":\"Amazon Web Services\",\"container\":{\"hasSensor\":\"temp_value\",\"noOfContainers\":5,\"noOfImages\":3,\"product\":\"mock_product\",\"version\":\"mock_version\"},\"cpuCount\":0,\"createdDate\":\"2025-07-09T14:21:12.000Z\",\"criticality\":{\"isDefault\":false,\"lastUpdated\":\"2025-07-09T14:21:11.000Z\",\"score\":3},\"customAttributes\":[{\"connectorName\":\"Qualys\",\"key\":\"Media State4\",\"value\":\"Media disconnected\"}],\"dnsName\":\"test_dns\",\"domain\":[\"domain1\",\"domain2\"],\"domainRole\":\"Member Workstation\",\"easmTags\":[\"cloud\",\"cdn\"],\"hardware\":{\"category\":\"Mock category 1 / Mock category 2\",\"category1\":\"Mock category 1\",\"category2\":\"Mock category 2\",\"fullName\":\"Mock hardware\",\"lifecycle\":{\"eosDate\":\"2025-07-09T14:21:12.000Z\",\"gaDate\":\"2025-07-09T14:21:12.000Z\",\"introDate\":\"2025-07-09T14:21:12.000Z\",\"lifeCycleConfidence\":\"Exact\",\"obsoleteDate\":\"2025-07-09T14:21:12.000Z\",\"stage\":\"Not Applicable\"},\"manufacturer\":\"Mock manufacturer\",\"model\":\"Mock model\",\"productFamily\":\"Mock product family\",\"productName\":\"Mock product name\",\"productUrl\":\"https://mock_product_url.com\",\"taxonomy\":{\"category1\":\"Mock category 1\",\"category2\":\"Mock category 2\",\"id\":\"mock_hardware_taxonomy_id\",\"name\":\"Mock hardware taxonomy name\"}},\"hostId\":1437386,\"hostingCategory1\":\"CDN\",\"hwUUID\":\"422a2b16-4c8b-588a-a20c-c1851ad7e376\",\"inventory\":{\"created\":1752070872000,\"lastUpdated\":1752243670000,\"source\":\"EASM\"},\"isContainerHost\":false,\"isp\":\"test, Inc.\",\"lastBoot\":\"2025-07-09T14:21:12.000Z\",\"lastLocation\":{\"city\":\"New York\",\"continent\":\"North America\",\"country\":\"United States\",\"name\":\"United States\",\"postal\":\"94040\",\"state\":\"California\"},\"lastLoggedOnUser\":\"test_user\",\"lastModifiedDate\":\"2025-07-11T14:21:10.000Z\",\"lparId\":\"mock_lpar_id\",\"missingSoftware\":[\"test1\",\"test2\",\"test3\"],\"netbiosName\":\"test_bios\",\"networkInterfaceListData\":{\"networkInterface\":[{\"addressIpV4\":\"81.2.69.142\",\"addressIpV6\":\"::ffff:5102:458e\",\"addresses\":\"mock_Address\",\"dnsAddress\":\"mock_dns_address\",\"gatewayAddress\":\"mock_geteaway_address\",\"hostname\":\"mock_hostname\",\"interfaceName\":\"mock_interface_name\",\"macAddress\":\"00:0c:29:15:6a:72\",\"macVendorIntroDate\":946944000000,\"manufacturer\":\"Mock manufacturer\",\"netmask\":\"mock_net_mask\"}]},\"openPortListData\":{\"openPort\":[{\"authorization\":\"Mock authorization\",\"description\":\"http protocol over TLS/SSL\",\"detectedService\":\"HTTPs\",\"detectionScore\":100,\"discoverySources\":\"EASM\",\"firstFound\":\"2025-07-09T14:21:12.000Z\",\"lastUpdated\":\"2025-07-09T14:21:12.000Z\",\"port\":443,\"protocol\":\"TCP\"}]},\"operatingSystem\":{\"architecture\":\"x86\",\"category\":\"Operating System / Windows\",\"category1\":\"Windows\",\"category2\":\"Windows\",\"cpe\":\"mock_cpe\",\"cpeId\":\"mock_cpe_id\",\"cpeType\":\"Mock cpe type\",\"edition\":\"Enterprise\",\"fullName\":\"Microsoft Windows 10 Enterprise\",\"installDate\":\"2025-07-09T14:21:12.000Z\",\"lifecycle\":{\"detectionScore\":100,\"eolDate\":\"2025-07-09T14:21:12.000Z\",\"eolSupportStage\":\"End-of-life\",\"eosDate\":\"2025-07-09T14:21:12.000Z\",\"eosSupportStage\":\"End-of-life\",\"gaDate\":\"2025-07-09T14:21:12.000Z\",\"lifeCycleConfidence\":\"Exact\",\"stage\":\"End-of-life\"},\"marketVersion\":\"10.0.19042.1052\",\"osName\":\"Windows 10\",\"productFamily\":\"Mock product family\",\"productName\":\"Microsoft Windows 10 Enterprise\",\"productUrl\":\"https://mock_product_url.com\",\"publisher\":\"test\",\"release\":\"Mock release\",\"taxonomy\":{\"category1\":\"Mock category1\",\"category2\":\"Mock category2\",\"id\":\"mock_taxonomy_id\",\"name\":\"Mock taxonomy name\"},\"update\":\"22.04 LTS 22.04.5 LTS\",\"version\":\"10.0.19042.1052\"},\"organizationName\":[\"mock\"],\"processor\":{\"coresPerSocket\":2,\"description\":\"Intel(R) Xeon(R) Gold 6430\",\"multithreadingStatus\":\"test\",\"noOfSocket\":2,\"numCPUs\":4,\"speed\":3200,\"threadsPerCore\":2},\"provider\":\"Apache\",\"riskScore\":0,\"sensor\":{\"activatedForModules\":[\"mock_activated_module\"],\"firstEasmScanDate\":1752243670000,\"lastComplianceScan\":0,\"lastEasmScanDate\":1752243670000,\"lastFullScan\":0,\"lastPcScanDateAgent\":0,\"lastPcScanDateScanner\":0,\"lastVMScan\":0,\"lastVmScanDateAgent\":0,\"lastVmScanDateScanner\":0,\"pendingActivationForModules\":[\"mock_pending_module\"]},\"sensorLastUpdatedDate\":\"2025-07-11T14:21:10.000Z\",\"serviceList\":{\"service\":[{\"description\":\"temp_Decp\",\"name\":\"systemd-networkd.service\",\"status\":\"loaded/active/running\"}]},\"softwareComponent\":\"Apache HTTP Server\",\"softwareListData\":{\"software\":[{\"architecture\":\"x86_64\",\"authorization\":\"Mock authorization\",\"authorizationDetectionScore\":5,\"category\":\"Network Application / Web Servers\",\"category1\":\"Network Application\",\"category2\":\"Web Servers\",\"component\":\"Server\",\"cpe\":\"mock_cpe\",\"cpeId\":\"mock_cpe_id\",\"cpeType\":\"Mock cpe type\",\"discoveredName\":\"Mock discovered name\",\"discoveredPublisher\":\"Mock discovered publisher\",\"discoveredVersion\":\"mock_version\",\"discoverySources\":\"EASM\",\"edition\":\"Unknown\",\"formerlyKnownAs\":\"httpd\",\"fullName\":\"Apache HTTP Server\",\"id\":8464359598295418000,\"ignoredReason\":\"Insufficient Information\",\"installDate\":\"2021-10-25T14:21:12.000Z\",\"installPath\":\"/usr/local/apache2\",\"isIgnored\":false,\"isPackage\":false,\"isPackageComponent\":false,\"language\":\"C\",\"lastUpdated\":\"2021-10-25T14:21:12.000Z\",\"lastUseDate\":\"2021-10-25T14:21:12.000Z\",\"license\":{\"category\":\"Mock license category\",\"subcategory\":\"Mock license subcategory\"},\"lifecycle\":{\"detectionScore\":0,\"eolDate\":\"2021-10-25T14:21:12.000Z\",\"eolSupportStage\":\"Mock eol support stage\",\"eosDate\":\"2021-10-25T14:21:12.000Z\",\"eosSupportStage\":\"Mock eos support stage\",\"gaDate\":\"2021-10-25T14:21:12.000Z\",\"lifeCycleConfidence\":\"Exact\",\"stage\":\"Not Applicable\"},\"marketVersion\":\"Unknown\",\"packageName\":null,\"productName\":\"Apache HTTP Server\",\"productUrl\":\"https://en.wikipedia.org/wiki/Apache_HTTP_Server,,\",\"publisher\":\"Apache\",\"softwareInstances\":[{\"BIN_PATH\":\"/usr/bin/docker -H unix:///var/run/docker.sock\",\"CONF_PATH\":\"/etc/docker/daemon.json\",\"InstanceName\":\"DOCKER\",\"PROC\":\"   1487       1 root     /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock\",\"PRODUCT\":\"Docker\",\"TECHNOLOGY\":\"Docker CE_EE\",\"VERSION\":\"24.0.7\",\"firstSeen\":\"2025-07-08T01:15:52.000Z\",\"lastSeen\":\"2025-07-14T19:20:15.000Z\"}],\"softwareType\":\"Application\",\"supportStageDesc\":\"Mock support stage desc\",\"update\":\"2021-10-25\",\"version\":\"2.4.7\"}]},\"subdomain\":[\"subdomain1\",\"subdomain2\"],\"tagList\":{\"tag\":[{\"backgroundColor\":0,\"businessImpact\":\"mock_business_impact\",\"criticalityScore\":3,\"foregroundColor\":0,\"tagId\":25971788,\"tagName\":\"Shodan\"}]},\"timeZone\":\"+05:30\",\"totalMemory\":10,\"userAccountListData\":{\"userAccount\":[{\"name\":\"root\"},{\"name\":\"serviceuser\"},{\"name\":\"devuser\"}]},\"volumeListData\":{\"volume\":[{\"free\":34645118976,\"name\":\"/\",\"size\":48202350592}]},\"whois\":[{\"createdDate\":\"2024-02-23T00:00:00.000Z\",\"dnssec\":\"test\",\"domain\":\"test_domainr\",\"domainStatus\":\"clientDeleteProhibited clientRenewProhibited clientTransferProhibited clientUpdateProhibited\",\"expirationDate\":\"2026-02-23T00:00:00.000Z\",\"registrantContact\":\"temp\",\"registrantCountry\":\"UNITED STATES\",\"registrantEmail\":\"594f93785ec9444aa7ebabd79b665059@domainsbyproxy.com\",\"registrantName\":\"1API GmbH\",\"registrantOrganization\":\"Domains By Proxy, LLC\",\"registrar\":\"1API GmbH\",\"updatedDate\":\"2025-07-13T00:00:00.000Z\"}]}",
+        "module": "qualys_gav",
         "risk_score": 0,
         "timezone": "+05:30",
         "type": [
@@ -134,38 +134,23 @@ An example event for `asset` looks as following:
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
     "observer": {
         "product": "Global AssetView",
         "vendor": "Qualys"
     },
     "package": {
-        "architecture": [
-            "x86_64"
-        ],
-        "description": [
-            "Mock support stage desc"
-        ],
-        "installed": [
-            "2021-10-25T14:21:12.000Z"
-        ],
-        "license": [
-            "Mock license category"
-        ],
-        "name": [
-            "Apache HTTP Server"
-        ],
-        "path": [
-            "/usr/local/apache2"
-        ],
-        "reference": [
-            "https://en.wikipedia.org/wiki/Apache_HTTP_Server,,"
-        ],
-        "type": [
-            "Application"
-        ],
-        "version": [
-            "2.4.7"
-        ]
+        "architecture": "x86_64",
+        "description": "Mock support stage desc",
+        "installed": "2021-10-25T14:21:12.000Z",
+        "license": "Mock license category",
+        "name": "Apache HTTP Server",
+        "path": "/usr/local/apache2",
+        "reference": "https://en.wikipedia.org/wiki/Apache_HTTP_Server,,",
+        "type": "Application",
+        "version": "2.4.7"
     },
     "qualys_gav": {
         "asset": {
@@ -175,12 +160,10 @@ An example event for `asset` looks as following:
             },
             "address": "216.160.83.56",
             "agent": {
-                "activations": [
-                    {
-                        "key": "httpd",
-                        "status": "ACTIVE"
-                    }
-                ],
+                "activations": {
+                    "key": "httpd",
+                    "status": "ACTIVE"
+                },
                 "configuration_profile": "Apache HTTP Server",
                 "connected_from": "216.160.83.56",
                 "error_status": false,
@@ -206,21 +189,19 @@ An example event for `asset` looks as following:
             "bios_description": "Test",
             "bios_serial_number": "Test serial number",
             "business_app_list_data": {
-                "business_app": [
-                    {
-                        "business_criticality": "2 - Less Critical",
-                        "environment": "Production",
-                        "id": "BARCODE283904",
-                        "managed_by": "user",
-                        "name": "Quoting App",
-                        "operational_status": "Mended",
-                        "owned_by": "ownerr",
-                        "status": "Installed",
-                        "support_group": "SME Operations",
-                        "supported_by": "sopporter",
-                        "used_for": "Production"
-                    }
-                ]
+                "business_app": {
+                    "business_criticality": "2 - Less Critical",
+                    "environment": "Production",
+                    "id": "BARCODE283904",
+                    "managed_by": "user",
+                    "name": "Quoting App",
+                    "operational_status": "Mended",
+                    "owned_by": "ownerr",
+                    "status": "Installed",
+                    "support_group": "SME Operations",
+                    "supported_by": "sopporter",
+                    "used_for": "Production"
+                }
             },
             "business_information": {
                 "company": "Qualys",
@@ -232,7 +213,42 @@ An example event for `asset` looks as following:
                 "support_group": "ABC_01",
                 "supported_by": "Nick"
             },
-            "cloud_provider": "Amazon Web Services",
+            "cloud_provider": {
+                "aws": {
+                    "ec2": {
+                        "account_id": "1234",
+                        "availability_zone": "us-west-2a",
+                        "has_agent": true,
+                        "hostname": "hostname_value",
+                        "image_id": "imageId_value",
+                        "instance_id": "instanceId_value",
+                        "instance_state": "RUNNING",
+                        "instance_type": "m4.large",
+                        "launchdate": "2022-05-24T10:08:12.000Z",
+                        "private_dns": "privateDNS_value",
+                        "private_ip_address": "10.0.0.1",
+                        "public_ip_address": "175.16.199.1",
+                        "qualys_scanner": false,
+                        "region": {
+                            "code": "us-west-2",
+                            "name": "US West (Oregon)"
+                        },
+                        "spot_instance": false,
+                        "subnet_id": "subnetId_value",
+                        "vpc_id": "vpcId_value"
+                    },
+                    "tags": {
+                        "key": [
+                            "tags_key_1",
+                            "tags_key_2"
+                        ],
+                        "value": [
+                            "tags_value_1",
+                            "tags_value_2"
+                        ]
+                    }
+                }
+            },
             "container": {
                 "has_sensor": "temp_value",
                 "no_of_containers": 5,
@@ -247,13 +263,11 @@ An example event for `asset` looks as following:
                 "last_updated": "2025-07-09T14:21:11.000Z",
                 "score": 3
             },
-            "custom_attributes": [
-                {
-                    "connector_name": "Qualys",
-                    "key": "Media State4",
-                    "value": "Media disconnected"
-                }
-            ],
+            "custom_attributes": {
+                "connector_name": "Qualys",
+                "key": "Media State4",
+                "value": "Media disconnected"
+            },
             "dns_name": "test_dns",
             "domain": [
                 "domain1",
@@ -318,38 +332,32 @@ An example event for `asset` looks as following:
             ],
             "netbios_name": "test_bios",
             "network_interface_list_data": {
-                "network_interface": [
-                    {
-                        "address_ip_v4": "81.2.69.142",
-                        "address_ip_v6": [
-                            "::ffff:5102:458e"
-                        ],
-                        "addresses": "mock_Address",
-                        "dns_address": "mock_dns_address",
-                        "gateway_address": "mock_geteaway_address",
-                        "hostname": "mock_hostname",
-                        "interface_name": "mock_interface_name",
-                        "mac_address": "00-0C-29-15-6A-72",
-                        "mac_vendor_intro_date": "2000-01-04T00:00:00.000Z",
-                        "manufacturer": "Mock manufacturer",
-                        "netmask": "mock_net_mask"
-                    }
-                ]
+                "network_interface": {
+                    "address_ip_v4": "81.2.69.142",
+                    "address_ip_v6": "81.2.69.142",
+                    "addresses": "mock_Address",
+                    "dns_address": "mock_dns_address",
+                    "gateway_address": "mock_geteaway_address",
+                    "hostname": "mock_hostname",
+                    "interface_name": "mock_interface_name",
+                    "mac_address": "00-0C-29-15-6A-72",
+                    "mac_vendor_intro_date": "2000-01-04T00:00:00.000Z",
+                    "manufacturer": "Mock manufacturer",
+                    "netmask": "mock_net_mask"
+                }
             },
             "open_port_list_data": {
-                "open_port": [
-                    {
-                        "authorization": "Mock authorization",
-                        "description": "http protocol over TLS/SSL",
-                        "detected_service": "HTTPs",
-                        "detection_score": 100,
-                        "discovery_sources": "EASM",
-                        "first_found": "2025-07-09T14:21:12.000Z",
-                        "last_updated": "2025-07-09T14:21:12.000Z",
-                        "port": 443,
-                        "protocol": "TCP"
-                    }
-                ]
+                "open_port": {
+                    "authorization": "Mock authorization",
+                    "description": "http protocol over TLS/SSL",
+                    "detected_service": "HTTPs",
+                    "detection_score": 100,
+                    "discovery_sources": "EASM",
+                    "first_found": "2025-07-09T14:21:12.000Z",
+                    "last_updated": "2025-07-09T14:21:12.000Z",
+                    "port": 443,
+                    "protocol": "TCP"
+                }
             },
             "operating_system": {
                 "architecture": "x86",
@@ -388,9 +396,7 @@ An example event for `asset` looks as following:
                 "update": "22.04 LTS 22.04.5 LTS",
                 "version": "10.0.19042.1052"
             },
-            "organization_name": [
-                "mock"
-            ],
+            "organization_name": "mock",
             "processor": {
                 "cores_per_socket": 2,
                 "description": "Intel(R) Xeon(R) Gold 6430",
@@ -400,112 +406,100 @@ An example event for `asset` looks as following:
                 "speed": 3200,
                 "threads_per_core": 2
             },
-            "provider": "Apache",
+            "provider": "AWS",
             "risk_score": 0,
             "sensor": {
-                "activated_for_modules": [
-                    "mock_activated_module"
-                ],
+                "activated_for_modules": "mock_activated_module",
                 "first_easm_scan_date": "2025-07-11T14:21:10.000Z",
                 "last_easm_scan_date": "2025-07-11T14:21:10.000Z",
-                "pending_activation_for_modules": [
-                    "mock_pending_module"
-                ]
+                "pending_activation_for_modules": "mock_pending_module"
             },
             "sensor_last_updated_date": "2025-07-11T14:21:10.000Z",
             "service_list": {
-                "service": [
-                    {
-                        "description": "temp_Decp",
-                        "name": "systemd-networkd.service",
-                        "status": "loaded/active/running"
-                    }
-                ]
+                "service": {
+                    "description": "temp_Decp",
+                    "name": "systemd-networkd.service",
+                    "status": "loaded/active/running"
+                }
             },
             "software_component": "Apache HTTP Server",
             "software_list_data": {
-                "software": [
-                    {
-                        "architecture": "x86_64",
-                        "authorization": "Mock authorization",
-                        "authorization_detection_score": 5,
-                        "category": "Network Application / Web Servers",
-                        "category1": "Network Application",
-                        "category2": "Web Servers",
-                        "component": "Server",
-                        "cpe": "mock_cpe",
-                        "cpe_id": "mock_cpe_id",
-                        "cpe_type": "Mock cpe type",
-                        "discovered_name": "Mock discovered name",
-                        "discovered_publisher": "Mock discovered publisher",
-                        "discovered_version": "mock_version",
-                        "discovery_sources": "EASM",
-                        "edition": "Unknown",
-                        "formerly_known_as": "httpd",
-                        "full_name": "Apache HTTP Server",
-                        "id": "8464359598295418000",
-                        "ignored_reason": "Insufficient Information",
-                        "install_date": "2021-10-25T14:21:12.000Z",
-                        "install_path": "/usr/local/apache2",
-                        "is_ignored": false,
-                        "is_package": false,
-                        "is_package_component": false,
-                        "language": "C",
-                        "last_updated": "2021-10-25T14:21:12.000Z",
-                        "last_use_date": "2021-10-25T14:21:12.000Z",
-                        "license": {
-                            "category": "Mock license category",
-                            "subcategory": "Mock license subcategory"
-                        },
-                        "lifecycle": {
-                            "detection_score": 0,
-                            "eol_date": "2021-10-25T14:21:12.000Z",
-                            "eol_support_stage": "Mock eol support stage",
-                            "eos_date": "2021-10-25T14:21:12.000Z",
-                            "eos_support_stage": "Mock eos support stage",
-                            "ga_date": "2021-10-25T14:21:12.000Z",
-                            "life_cycle_confidence": "Exact",
-                            "stage": "Not Applicable"
-                        },
-                        "market_version": "Unknown",
-                        "product_name": "Apache HTTP Server",
-                        "product_url": "https://en.wikipedia.org/wiki/Apache_HTTP_Server,,",
-                        "publisher": "Apache",
-                        "software_instances": [
-                            {
-                                "bin_path": "/usr/bin/docker -H unix:///var/run/docker.sock",
-                                "conf_path": "/etc/docker/daemon.json",
-                                "first_seen": "2025-07-08T01:15:52.000Z",
-                                "instance_name": "DOCKER",
-                                "last_seen": "2025-07-14T19:20:15.000Z",
-                                "proc": "   1487       1 root     /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
-                                "product": "Docker",
-                                "technology": "Docker CE_EE",
-                                "version": "24.0.7"
-                            }
-                        ],
-                        "software_type": "Application",
-                        "support_stage_desc": "Mock support stage desc",
-                        "update": "2021-10-25",
-                        "version": "2.4.7"
-                    }
-                ]
+                "software": {
+                    "architecture": "x86_64",
+                    "authorization": "Mock authorization",
+                    "authorization_detection_score": 5,
+                    "category": "Network Application / Web Servers",
+                    "category1": "Network Application",
+                    "category2": "Web Servers",
+                    "component": "Server",
+                    "cpe": "mock_cpe",
+                    "cpe_id": "mock_cpe_id",
+                    "cpe_type": "Mock cpe type",
+                    "discovered_name": "Mock discovered name",
+                    "discovered_publisher": "Mock discovered publisher",
+                    "discovered_version": "mock_version",
+                    "discovery_sources": "EASM",
+                    "edition": "Unknown",
+                    "formerly_known_as": "httpd",
+                    "full_name": "Apache HTTP Server",
+                    "id": "8464359598295418000",
+                    "ignored_reason": "Insufficient Information",
+                    "install_date": "2021-10-25T14:21:12.000Z",
+                    "install_path": "/usr/local/apache2",
+                    "is_ignored": false,
+                    "is_package": false,
+                    "is_package_component": false,
+                    "language": "C",
+                    "last_updated": "2021-10-25T14:21:12.000Z",
+                    "last_use_date": "2021-10-25T14:21:12.000Z",
+                    "license": {
+                        "category": "Mock license category",
+                        "subcategory": "Mock license subcategory"
+                    },
+                    "lifecycle": {
+                        "detection_score": 0,
+                        "eol_date": "2021-10-25T14:21:12.000Z",
+                        "eol_support_stage": "Mock eol support stage",
+                        "eos_date": "2021-10-25T14:21:12.000Z",
+                        "eos_support_stage": "Mock eos support stage",
+                        "ga_date": "2021-10-25T14:21:12.000Z",
+                        "life_cycle_confidence": "Exact",
+                        "stage": "Not Applicable"
+                    },
+                    "market_version": "Unknown",
+                    "product_name": "Apache HTTP Server",
+                    "product_url": "https://en.wikipedia.org/wiki/Apache_HTTP_Server,,",
+                    "publisher": "Apache",
+                    "software_instances": {
+                        "bin_path": "/usr/bin/docker -H unix:///var/run/docker.sock",
+                        "conf_path": "/etc/docker/daemon.json",
+                        "first_seen": "2025-07-08T01:15:52.000Z",
+                        "instance_name": "DOCKER",
+                        "last_seen": "2025-07-14T19:20:15.000Z",
+                        "proc": "   1487       1 root     /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+                        "product": "Docker",
+                        "technology": "Docker CE_EE",
+                        "version": "24.0.7"
+                    },
+                    "software_type": "Application",
+                    "support_stage_desc": "Mock support stage desc",
+                    "update": "2021-10-25",
+                    "version": "2.4.7"
+                }
             },
             "subdomain": [
                 "subdomain1",
                 "subdomain2"
             ],
             "tag_list": {
-                "tag": [
-                    {
-                        "background_color": "0",
-                        "business_impact": "mock_business_impact",
-                        "criticality_score": 3,
-                        "foreground_color": "0",
-                        "tag_id": "25971788",
-                        "tag_name": "Shodan"
-                    }
-                ]
+                "tag": {
+                    "background_color": "0",
+                    "business_impact": "mock_business_impact",
+                    "criticality_score": 3,
+                    "foreground_color": "0",
+                    "tag_id": "25971788",
+                    "tag_name": "Shodan"
+                }
             },
             "time_zone": "+05:30",
             "total_memory": 10,
@@ -523,30 +517,26 @@ An example event for `asset` looks as following:
                 ]
             },
             "volume_list_data": {
-                "volume": [
-                    {
-                        "free": 34645118976,
-                        "name": "/",
-                        "size": 48202350592
-                    }
-                ]
-            },
-            "whois": [
-                {
-                    "created_date": "2024-02-23T00:00:00.000Z",
-                    "dnssec": "test",
-                    "domain": "test_domainr",
-                    "domain_status": "clientDeleteProhibited clientRenewProhibited clientTransferProhibited clientUpdateProhibited",
-                    "expiration_date": "2026-02-23T00:00:00.000Z",
-                    "registrant_contact": "REDACTED",
-                    "registrant_country": "UNITED STATES",
-                    "registrant_email": "594f93785ec9444aa7ebabd79b665059@domainsbyproxy.com",
-                    "registrant_name": "1API GmbH",
-                    "registrant_organization": "Domains By Proxy, LLC",
-                    "registrar": "1API GmbH",
-                    "updated_date": "2025-07-13T00:00:00.000Z"
+                "volume": {
+                    "free": 34645118976,
+                    "name": "/",
+                    "size": 48202350592
                 }
-            ]
+            },
+            "whois": {
+                "created_date": "2024-02-23T00:00:00.000Z",
+                "dnssec": "test",
+                "domain": "test_domainr",
+                "domain_status": "clientDeleteProhibited clientRenewProhibited clientTransferProhibited clientUpdateProhibited",
+                "expiration_date": "2026-02-23T00:00:00.000Z",
+                "registrant_contact": "REDACTED",
+                "registrant_country": "UNITED STATES",
+                "registrant_email": "594f93785ec9444aa7ebabd79b665059@domainsbyproxy.com",
+                "registrant_name": "1API GmbH",
+                "registrant_organization": "Domains By Proxy, LLC",
+                "registrar": "1API GmbH",
+                "updated_date": "2025-07-13T00:00:00.000Z"
+            }
         }
     },
     "related": {
@@ -567,7 +557,7 @@ An example event for `asset` looks as following:
         "ip": [
             "216.160.83.56",
             "81.2.69.142",
-            "::ffff:5102:458e"
+            "81.2.69.142"
         ],
         "user": [
             "test_user"
@@ -644,7 +634,72 @@ An example event for `asset` looks as following:
 | qualys_gav.asset.business_information.owned_by |  | keyword |
 | qualys_gav.asset.business_information.support_group |  | keyword |
 | qualys_gav.asset.business_information.supported_by |  | keyword |
-| qualys_gav.asset.cloud_provider |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.account_id |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.availability_zone |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.has_agent |  | boolean |
+| qualys_gav.asset.cloud_provider.aws.ec2.hostname |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.image_id |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.instance_id |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.instance_state |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.instance_type |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.kernel_id |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.launchdate |  | date |
+| qualys_gav.asset.cloud_provider.aws.ec2.private_dns |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.private_ip_address |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.public_dns |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.public_ip_address |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.qualys_scanner |  | boolean |
+| qualys_gav.asset.cloud_provider.aws.ec2.region.code |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.region.name |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.spot_instance |  | boolean |
+| qualys_gav.asset.cloud_provider.aws.ec2.subnet_id |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.ec2.vpc_id |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.tags.key |  | keyword |
+| qualys_gav.asset.cloud_provider.aws.tags.value |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.tags.name |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.tags.value |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.image_offer |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.image_publisher |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.image_version |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.location |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.mac_address |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.name |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.platform |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.private_ip_address |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.public_ip_address |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.resource_group_name |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.size |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.state |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.subnet |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.subscription_id |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.virtual_network |  | keyword |
+| qualys_gav.asset.cloud_provider.azure.vm.vm_id |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.hostname |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.image_id |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.instance_id |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.mac_address |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.machine_type |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.network |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.private_ip_address |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.project_id |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.project_number |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.public_ip_address |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.state |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.compute.zone |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.tags.key |  | keyword |
+| qualys_gav.asset.cloud_provider.gcp.tags.value |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.tags.name |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.tags.value |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.datacenter_id |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.device_name |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.domain |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.ibm_id |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.location |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.private_ip |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.private_vlan |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.public_ip |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.public_vlan |  | keyword |
+| qualys_gav.asset.cloud_provider.ibm.virtual_server.state |  | keyword |
 | qualys_gav.asset.container.has_sensor |  | keyword |
 | qualys_gav.asset.container.no_of_containers |  | long |
 | qualys_gav.asset.container.no_of_images |  | long |
