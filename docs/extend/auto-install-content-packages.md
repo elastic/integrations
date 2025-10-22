@@ -11,7 +11,7 @@ When data is ingested with a specific `data_stream.dataset` value, {{kib}} check
 ## Requirements [auto-install-content-packages-requirements]
 
 - {{kib}} version 9.2.0 or later
-- The `format_version` key in the content package's `manifest.yml` must specify `3.4.1` or a later version.
+- The `format_version` in the content package's `manifest.yml` must specify `3.4.1` or later.
 
 ## Configuration [auto-install-content-packages-configuration]
 
