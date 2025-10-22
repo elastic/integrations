@@ -3,6 +3,8 @@ service: akamai-siem-emulator
 vars: ~
 data_stream:
   vars:
+    # initial_interval should get automatically capped to 12h by the agent logic.
+    initial_interval: 24h
     preserve_original_event: true
     api_host: "http://akamai-siem-emulator:9903"
     client_token: ct-f625f0b8-9c8f-44ce-8250-eaf17bc93051
@@ -12,5 +14,8 @@ data_stream:
     event_limit: 20
     enable_request_tracer: true
 assert:
-  # 24 hours at 5 minutes between events.
-  hit_count: 288 #  = 24 * 60/5
+  # 12 hours at 5 minutes between events.
+  hit_count: 144 #  = 12 * 60/5
+skip:
+  reason: "The fleet health status changes to degraded when the HTTPJSON template's value evaluation comes up empty, which leads to system test failures but does not interrupt the data flow."
+  link: https://github.com/elastic/beats/issues/45664
