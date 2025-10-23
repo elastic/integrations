@@ -1,7 +1,9 @@
 receivers:
-  dockerstats:
+  docker_stats:
 {{#if period}}
     collection_interval: {{period}}
+{{else}}
+    collection_interval: 60s
 {{/if}}
 {{#if endpoint}}
     endpoint: {{endpoint}}
@@ -16,7 +18,7 @@ receivers:
     timeout: {{timeout}}
 {{/if}}
 {{#if api_version}}
-    api_version: {{api_version}}
+    api_version: "{{api_version}}"
 {{/if}}
 {{#if provide_per_core_cpu_metrics}}
     provide_per_core_cpu_metrics: {{provide_per_core_cpu_metrics}}
@@ -30,8 +32,17 @@ receivers:
 {{env_vars_to_metric_labels}}
 {{/if}}
 
+processors:
+  resourcedetection:
+    # Modify the list of detectors to match the cloud environment
+    detectors: [env, system, gcp, ec2, azure]
+    timeout: 2s
+    override: false
+
 service:
   pipelines:
     metrics:
       receivers:
-        - dockerstats
+        - docker_stats
+      processors:
+        - resourcedetection

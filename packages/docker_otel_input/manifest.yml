@@ -1,7 +1,7 @@
 format_version: 3.5.0
 name: docker_otel_input
-title: "Docker Stats (OpenTelemetry)"
-version: 0.0.1
+title: "Docker (OpenTelemetry)"
+version: 0.2.0
 description: "Collect Docker container metrics using OpenTelemetry Collector"
 type: input
 categories:
@@ -14,6 +14,11 @@ conditions:
     version: "^9.2.0"
   elastic:
     subscription: "basic"
+icons:
+  - src: /img/docker_logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
 policy_templates:
   - name: docker_stats
     title: Docker Stats
@@ -25,14 +30,12 @@ policy_templates:
       - name: period
         type: text
         title: Collection Interval
-        description: How often to collect metrics (e.g., 10s, 1m)
-        default: 10s
+        description: How often to collect metrics (e.g., 10s, 1m). Default is 60s.
         required: true
       - name: endpoint
         type: text
         title: Docker Endpoint
         description: Docker daemon endpoint
-        default: "unix:///var/run/docker.sock"
         required: false
       - name: excluded_images
         type: text
@@ -44,13 +47,11 @@ policy_templates:
         type: text
         title: Timeout
         description: Timeout for Docker API requests
-        default: 5s
         required: false
       - name: api_version
         type: text
         title: API Version
         description: Docker API version to use
-        default: "1.22"
         required: false
       - name: provide_per_core_cpu_metrics
         type: bool
