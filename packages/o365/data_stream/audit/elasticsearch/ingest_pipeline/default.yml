@@ -1755,6 +1755,27 @@ processors:
       copy_from: o365audit.AppAccessContext.DeviceId
       tag: set_device_id_from_AppAccessContext_DeviceID
       ignore_empty_value: true
+  - json:
+      tag: json-extract-stringly-ExtendedProperties-additionalDetails
+      field: o365audit.ExtendedProperties.additionalDetails
+      target_field: o365audit.ExtendedProperties.additionalDetails_value
+      if: ctx.o365audit?.ExtendedProperties?.additionalDetails instanceof String
+      on_failure:
+        - remove:
+            field: o365audit.ExtendedProperties.additionalDetails
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: device.id
+      copy_from: o365audit.ExtendedProperties.additionalDetails_value.DeviceId
+      tag: set_device_id_from_additionalDetails_value_DeviceID
+      ignore_empty_value: true
+      override: false
+  - user_agent:
+      field: o365audit.ExtendedProperties.additionalDetails_value.User-Agent
+      if: ctx.user_agent == null
+      ignore_missing: true
   - set:
       field: session.id
       copy_from: o365audit.AppAccessContext.AADSessionId
