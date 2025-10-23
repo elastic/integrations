@@ -1,0 +1,1440 @@
+{
+    "id": "aws_elb_otel-918bae2f-9268-46da-acac-7f4029ca0bfa",
+    "type": "dashboard",
+    "attributes": {
+        "version": 1,
+        "description": "",
+        "timeRestore": false,
+        "title": "[AWS ELB OTEL] Access Logs Overview",
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "showApplySelections": false,
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"1399e27d-a1d1-47a2-8bef-f16490186054\":{\"grow\":false,\"order\":0,\"type\":\"optionsListControl\",\"width\":\"medium\",\"explicitInput\":{\"dataViewId\":\"logs-*\",\"fieldName\":\"cloud.resource_id\",\"title\":\"Load Balancer\",\"exclude\":false,\"existsSelected\":false,\"selectedOptions\":[],\"searchTechnique\":\"prefix\",\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}}}"
+        },
+        "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"syncCursor\":true,\"syncTooltips\":false,\"hidePanelTitles\":false}",
+        "panelsJSON": [
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Top IP Addresses",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| STATS total = count() BY client.address\n| WHERE client.address IS NOT NULL\n| SORT total DESC\n| LIMIT 10"
+                    },
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "d38500fb-1044-4ac2-9eae-3d1672789d9a": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "4f8ed49e-86fd-4672-84b3-68b5a45dd30e",
+                                                    "fieldName": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "d30752aa-4a9f-4146-ac7c-08d6116a2d2c",
+                                                    "fieldName": "client.address",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "fieldName": "total",
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "client.address",
+                                                    "fieldName": "client.address",
+                                                    "label": "client.address",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "4f8ed49e-86fd-4672-84b3-68b5a45dd30e",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "label": "IP Addresses",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "8e5fbb7c-7aee-415c-a97f-befd40cbc060",
+                                                    "fieldName": "client.address",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| STATS total = count() BY client.address\n| WHERE client.address IS NOT NULL\n| SORT total DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| STATS total = count() BY client.address\n| WHERE client.address IS NOT NULL\n| SORT total DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "4f8ed49e-86fd-4672-84b3-68b5a45dd30e"
+                                        ],
+                                        "layerId": "d38500fb-1044-4ac2-9eae-3d1672789d9a",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "8e5fbb7c-7aee-415c-a97f-befd40cbc060"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    }
+                },
+                "panelIndex": "52b97877-a1c9-4955-b273-8771118c36f1",
+                "gridData": {
+                    "i": "52b97877-a1c9-4955-b273-8771118c36f1",
+                    "y": 0,
+                    "x": 32,
+                    "w": 16,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "HTTP 5xx",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 500 and aws.elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                    },
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b2b37178-d353-4b2b-af5c-88585473beac": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Server Errors",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cloud.resource_id",
+                                                    "customLabel": false,
+                                                    "fieldName": "cloud.resource_id",
+                                                    "label": "cloud.resource_id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 500 and aws.elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 500 and aws.elb.status.code < 600\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "layerId": "b2b37178-d353-4b2b-af5c-88585473beac",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "cloud.resource_id",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "total over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    }
+                },
+                "panelIndex": "a3e156aa-03a7-4ba1-8a05-c4436b202643",
+                "gridData": {
+                    "i": "a3e156aa-03a7-4ba1-8a05-c4436b202643",
+                    "y": 15,
+                    "x": 32,
+                    "w": 16,
+                    "h": 15
+                }
+            },
+            {
+                "type": "DASHBOARD_MARKDOWN",
+                "embeddableConfig": {
+                    "content": "# AWS ELB\n\nThis dashboard provides a comprehensive overview of AWS ELB traffic and health including:\n\n- Traffic Health Overview\n- Request & Traffic Volume\n- Error Analysis\n- Top Client IP Addresses"
+                },
+                "panelIndex": "a10cfcf7-8f1a-4c98-903c-50ec93c93c48",
+                "gridData": {
+                    "i": "a10cfcf7-8f1a-4c98-903c-50ec93c93c48",
+                    "y": 0,
+                    "x": 0,
+                    "w": 16,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "aec8b0b7-d5ec-4fca-981f-8b9bc4583960": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "aws.elb.status.code",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "aws.elb.status.code",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-aws.elbaccess.otel-default",
+                                                            "sourceField": "total"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "c1075879-9297-4c28-bb67-355388bff6fe",
+                                                    "fieldName": "aws.elb.status.code",
+                                                    "label": "aws.elb.status.code",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-aws.elbaccess.otel-default",
+                                                            "sourceField": "aws.elb.status.code"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| STATS total = count() BY aws.elb.status.code\n| WHERE aws.elb.status.code IS NOT NULL"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| STATS total = count() BY aws.elb.status.code\n| WHERE aws.elb.status.code IS NOT NULL"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "aec8b0b7-d5ec-4fca-981f-8b9bc4583960",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "aws.elb.status.code"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "c1075879-9297-4c28-bb67-355388bff6fe"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "aws.elb.status.code",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| STATS total = count() BY aws.elb.status.code\n| WHERE aws.elb.status.code IS NOT NULL"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Status Codes"
+                },
+                "panelIndex": "1258bed8-871a-4c51-b332-9dd2582d1567",
+                "gridData": {
+                    "i": "1258bed8-871a-4c51-b332-9dd2582d1567",
+                    "y": 0,
+                    "x": 16,
+                    "w": 8,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "39038e22-56bb-4d16-9b80-390438a258b6": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "network.protocol.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "network.protocol.name",
+                                                    "label": "network.protocol.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| STATS total = count() BY network.protocol.name\n| WHERE network.protocol.name IS NOT NULL"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| STATS total = count() BY network.protocol.name\n| WHERE network.protocol.name IS NOT NULL"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "39038e22-56bb-4d16-9b80-390438a258b6",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "network.protocol.name"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Treemap",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| STATS total = count() BY network.protocol.name\n| WHERE network.protocol.name IS NOT NULL"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Protocols"
+                },
+                "panelIndex": "788a6993-30bd-4b9c-a0c1-b9d14fccf1cb",
+                "gridData": {
+                    "i": "788a6993-30bd-4b9c-a0c1-b9d14fccf1cb",
+                    "y": 0,
+                    "x": 24,
+                    "w": 8,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "HTTP 4xx",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 400 and aws.elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                    },
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "aeab0dba-0f96-4ebc-97dc-fb3d0e59a343": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Client Errors",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cloud.resource_id",
+                                                    "customLabel": false,
+                                                    "fieldName": "cloud.resource_id",
+                                                    "label": "cloud.resource_id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 400 and aws.elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 400 and aws.elb.status.code < 500\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "layerId": "aeab0dba-0f96-4ebc-97dc-fb3d0e59a343",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "cloud.resource_id",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "total over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    }
+                },
+                "panelIndex": "c83d9c17-926d-46e6-986e-0ef6dec881d5",
+                "gridData": {
+                    "i": "c83d9c17-926d-46e6-986e-0ef6dec881d5",
+                    "y": 15,
+                    "x": 16,
+                    "w": 16,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "HTTP 2xx",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 200 and aws.elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                    },
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "881846f3-12db-45cd-aba8-f344d1d520e9": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Successful Requests",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cloud.resource_id",
+                                                    "customLabel": false,
+                                                    "fieldName": "cloud.resource_id",
+                                                    "label": "cloud.resource_id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 200 and aws.elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| WHERE aws.elb.status.code >= 200 and aws.elb.status.code < 300\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "layerId": "881846f3-12db-45cd-aba8-f344d1d520e9",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "cloud.resource_id",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "total over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    }
+                },
+                "panelIndex": "bbfeb891-1d10-4ef5-ac70-b6cf7add7262",
+                "gridData": {
+                    "i": "bbfeb891-1d10-4ef5-ac70-b6cf7add7262",
+                    "y": 15,
+                    "x": 0,
+                    "w": 16,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Total Requests",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                    },
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "title": "logs-*",
+                                            "timeField": "@timestamp"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c790dec8-5486-4347-ac68-73756e641537": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Requests",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cloud.resource_id",
+                                                    "customLabel": false,
+                                                    "fieldName": "cloud.resource_id",
+                                                    "label": "cloud.resource_id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| STATS total = count() BY cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "layerId": "c790dec8-5486-4347-ac68-73756e641537",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "cloud.resource_id",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "total over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    }
+                },
+                "panelIndex": "25d3045b-c56c-42b3-ae85-e2ef614c6197",
+                "gridData": {
+                    "i": "25d3045b-c56c-42b3-ae85-e2ef614c6197",
+                    "y": 30,
+                    "x": 0,
+                    "w": 24,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "23996d9a-d648-4247-a051-abaa13d21d6e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Response Size",
+                                                    "customLabel": false,
+                                                    "fieldName": "Response Size",
+                                                    "inMetricDimension": true,
+                                                    "label": "Response Size",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Request Size",
+                                                    "customLabel": false,
+                                                    "fieldName": "Request Size",
+                                                    "inMetricDimension": true,
+                                                    "label": "Request Size",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cloud.resource_id",
+                                                    "customLabel": false,
+                                                    "fieldName": "cloud.resource_id",
+                                                    "label": "cloud.resource_id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| STATS respsize = avg(http.response.size), reqsize=avg(http.request.size) by cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| RENAME reqsize as `Request Size`, respsize as `Response Size`\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| STATS respsize = avg(http.response.size), reqsize=avg(http.request.size) by cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| RENAME reqsize as `Request Size`, respsize as `Response Size`\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "Response Size",
+                                            "Request Size"
+                                        ],
+                                        "layerId": "23996d9a-d648-4247-a051-abaa13d21d6e",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "cloud.resource_id",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Bytes"
+                            }
+                        },
+                        "title": "Response Size & Request Size over time_bucket",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| STATS respsize = avg(http.response.size), reqsize=avg(http.request.size) by cloud.resource_id, time_bucket=bucket(@timestamp, 50, ?_tstart, ?_tend)\n| RENAME reqsize as `Request Size`, respsize as `Response Size`\n| WHERE cloud.resource_id IS NOT NULL\n| SORT time_bucket ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Inbound and Outbound Traffic"
+                },
+                "panelIndex": "5a21d3df-a7f4-4e74-a127-58f5e602efbe",
+                "gridData": {
+                    "i": "5a21d3df-a7f4-4e74-a127-58f5e602efbe",
+                    "y": 30,
+                    "x": 24,
+                    "w": 24,
+                    "h": 15
+                }
+            },
+            {
+                "type": "lens",
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                    "name": "logs-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "a0241227-251c-4f55-b6d5-0667ccf3cc6e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "url.full",
+                                                    "customLabel": true,
+                                                    "fieldName": "url.full",
+                                                    "label": "HTTP Request",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "3b6c9247-dc61-4a9c-9330-87e7869246c5",
+                                                    "customLabel": true,
+                                                    "fieldName": "cloud.resource_id",
+                                                    "label": "Load Balancer",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-*",
+                                                            "sourceField": "cloud.resource_id"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "d26600e5-5e16-47d2-9bba-95acb8eaedc9",
+                                                    "customLabel": true,
+                                                    "fieldName": "client.address",
+                                                    "label": "Client IP",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-*",
+                                                            "sourceField": "client.address"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "285d7b88-87ca-4dec-b740-f3df1c8a440e",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "label": "Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs-*",
+                                                            "sourceField": "total"
+                                                        },
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "d6c911aa50e2dafcebcedfa50190d5c03bbac0070c96d6b16feb18aa1f84b5da",
+                                            "query": {
+                                                "esql": "FROM logs-*\n| STATS total = count() by url.full, cloud.resource_id, client.address\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-*\n| STATS total = count() by url.full, cloud.resource_id, client.address\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "colorMode": "none",
+                                        "columnId": "url.full"
+                                    },
+                                    {
+                                        "columnId": "3b6c9247-dc61-4a9c-9330-87e7869246c5",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "d26600e5-5e16-47d2-9bba-95acb8eaedc9",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "285d7b88-87ca-4dec-b740-f3df1c8a440e",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
+                                    }
+                                ],
+                                "layerId": "a0241227-251c-4f55-b6d5-0667ccf3cc6e",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-*\n| STATS total = count() by url.full, cloud.resource_id, client.address\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "HTTP Requests Overview"
+                },
+                "panelIndex": "c92135e8-1e9b-4daa-9f1e-6790691844a2",
+                "gridData": {
+                    "i": "c92135e8-1e9b-4daa-9f1e-6790691844a2",
+                    "y": 45,
+                    "x": 0,
+                    "w": 48,
+                    "h": 15
+                }
+            }
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws.elbaccess.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws.elbaccess.otel"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws.elbaccess.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws.elbaccess.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        }
+    },
+    "references": [
+        {
+            "id": "77dd912b-c766-4941-ad21-3f87867c3964",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "77dd912b-c766-4941-ad21-3f87867c3964",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "name": "controlGroup_1399e27d-a1d1-47a2-8bef-f16490186054:optionsListDataView",
+            "type": "index-pattern",
+            "id": "logs-*"
+        }
+    ],
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.3.0"
+}
