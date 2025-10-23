@@ -1,8 +1,11 @@
 config_version: 2
 interval: 1m
-resource.url: https://epr.elastic.co
+resource.timeout: 15
+resource.url: "{{url}}"
+state:
+  url: "{{url}}"
 program: |
-  request("GET", "https://epr.elastic.co")
+  request("GET", state.url)
     .do_request()
     .as(resp, resp.StatusCode == 200 ?
       {
@@ -20,7 +23,7 @@ program: |
             "state": "error",
             "error": {
               "code": string(resp.StatusCode),
-              "message": "GET: https://epr.elastic.co - " + (
+              "message": "GET: " + state.url + " - " + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
@@ -32,5 +35,6 @@ program: |
       }
     )
 tags:
+  - preserve_original_event
   - agentless-hello-world
 publisher_pipeline.disable_host: true

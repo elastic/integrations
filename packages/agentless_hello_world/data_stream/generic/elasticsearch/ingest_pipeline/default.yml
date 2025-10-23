@@ -9,14 +9,16 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
-  - rename:
-      field: event.original.state
-      target_field: agentless_hello_world.generic.state
-      ignore_missing: true
-  - rename:
-      field: event.original.result
-      target_field: agentless_hello_world.generic.result
-      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: agentless_hello_world.generic
+      on_failure:
+        - set:
+            field: error.type
+            value: "json_parse_error"
+        - set:
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: event
@@ -26,9 +28,6 @@ processors:
   - set:
       field: event.category
       value: [web]
-  - remove:
-      field: json
-      ignore_missing: true
   - remove:
       field: message
       if: ctx.event?.original != null
@@ -64,5 +63,12 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
