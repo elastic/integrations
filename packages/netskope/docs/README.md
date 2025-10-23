@@ -46,8 +46,6 @@ Considering you already have an AWS S3 bucket setup, to configure it with Netsko
 
 **Note**: It is recommended to use the combined alerts_events_v2 data stream rather than configuring the individual events_v2 or alerts_v2 data stream. The alerts_events_v2 stream automatically directs logs to the appropriate individual data streams.
 
-If the individual v2 data streams, events_v2 or alerts_v2, are used via SQS, it is necessary to implement event-based bucket segregation.
-
 #### Collect data from Azure Blob Storage
 
 1. If you already have an Azure storage container setup, configure it with Netskope via log streaming.
