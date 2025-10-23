@@ -1,0 +1,76 @@
+format_version: 3.4.0
+name: httpcheck
+title: "Simple HTTP Check"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Perform HTTP checks using the HTTP Check receiver of the OTel Collector."
+type: input
+categories:
+  - monitoring
+  - network
+  - web
+conditions:
+  kibana:
+    version: "^9.0.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: check
+    type: metrics
+    title: HTTP Check
+    description: Perform HTTP checks and collect its results.
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: period
+        type: text
+        title: Collection Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 1m
+      - name: method
+        type: select
+        title: "HTTP method to use"
+        multi: false
+        options:
+          - value: GET
+            text: GET
+          - value: HEAD
+            text: HEAD
+          - value: POST
+            text: POST
+        required: true
+        show_user: true
+        default: GET
+      - name: endpoints
+        type: text
+        title: HTTP endpoints to check
+        multi: true
+        required: true
+        show_user: true
+      - name: headers
+        type: text
+        title: HTTP headers
+        description: HTTP headers, defined as YAML key-values.
+        multi: true
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
+owner:
+  github: elastic/ecosystem
+  type: elastic
