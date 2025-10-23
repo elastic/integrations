@@ -19,8 +19,7 @@ This integration requires no configuration from the user. All settings are pre-c
 ## Data Collection
 
 The integration makes HTTP GET requests to `https://epr.elastic.co` and stores:
-- **state**: Always set to "ok" for successful requests
-- **result**: The JSON response body from the EPR endpoint
+- **status_code**: HTTP Status Code for the response.
 
 ## Requirements
 
@@ -46,8 +45,7 @@ Please refer to the following document for detailed information on ECS fields:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| agentless_hello_world.generic.result | The JSON response from the EPR endpoint. | object |
-| agentless_hello_world.generic.state | State of the request (always "ok"). | keyword |
+| agentless_hello_world.generic.status_code | The HTTP Status Code of the response. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

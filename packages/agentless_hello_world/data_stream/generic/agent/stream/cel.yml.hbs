@@ -1,40 +1,18 @@
 config_version: 2
-interval: 1m
-resource.timeout: 15
+interval: 20s
+resource.timeout: 15s
 resource.url: "{{url}}"
 state:
   url: "{{url}}"
 program: |
   request("GET", state.url)
     .do_request()
-    .as(resp, resp.StatusCode == 200 ?
-      {
+    .as(resp, {
         "events": [{
-          "message": {
-            "state": "ok",
-            "result": bytes(resp.Body).decode_json()
-          }.encode_json()
+            "message": {
+                "status_code": resp.StatusCode
+            }.encode_json()
         }]
-      }
-    :
-      {
-        "events": [{
-          "message": {
-            "state": "error",
-            "error": {
-              "code": string(resp.StatusCode),
-              "message": "GET: " + state.url + " - " + (
-                size(resp.Body) != 0 ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              )
-            }
-          }.encode_json()
-        }]
-      }
-    )
+    })
 tags:
-  - preserve_original_event
   - agentless-hello-world
-publisher_pipeline.disable_host: true
