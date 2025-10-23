@@ -1,0 +1,37 @@
+receivers:
+  dockerstats:
+{{#if period}}
+    collection_interval: {{period}}
+{{/if}}
+{{#if endpoint}}
+    endpoint: {{endpoint}}
+{{/if}}
+{{#if excluded_images}}
+    excluded_images:
+{{#each excluded_images as |image|}}
+      - {{image}}
+{{/each}}
+{{/if}}
+{{#if timeout}}
+    timeout: {{timeout}}
+{{/if}}
+{{#if api_version}}
+    api_version: {{api_version}}
+{{/if}}
+{{#if provide_per_core_cpu_metrics}}
+    provide_per_core_cpu_metrics: {{provide_per_core_cpu_metrics}}
+{{/if}}
+{{#if container_labels_to_metric_labels}}
+    container_labels_to_metric_labels:
+{{container_labels_to_metric_labels}}
+{{/if}}
+{{#if env_vars_to_metric_labels}}
+    env_vars_to_metric_labels:
+{{env_vars_to_metric_labels}}
+{{/if}}
+
+service:
+  pipelines:
+    metrics:
+      receivers:
+        - dockerstats
