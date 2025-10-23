@@ -8,7 +8,7 @@ The [EDOT Cloud Forwarder for AWS](https://www.elastic.co/docs/reference/opentel
 
 ## What do I need to use this integration?
 
-You need an Elastic Observability project (**Serverless only**) for storing, analyzing, and visualizing your ELB logs.
+You need an Elastic Observability project (**Serverless only**) for storing, analyzing, and visualizing your CloudTrail logs.
 
 From the AWS side, to collect CloudTrail logs, you need:
 
