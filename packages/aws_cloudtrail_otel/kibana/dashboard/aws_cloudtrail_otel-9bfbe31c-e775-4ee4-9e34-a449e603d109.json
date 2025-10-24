@@ -1,0 +1,1262 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws.cloudtrail.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws.cloudtrail.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "content": "## AWS CloudTrail Logs Overview\n\nUse this dashboard to visualize CloudTrail Logs.\n\nYou could use this data to:\n- **Visualize CloudTrail activity logs** to quickly identify patterns in API calls and user actions.\n- **Monitor account activity** across AWS services for auditing and compliance purposes.\n- **Detect unusual or unauthorized behavior** by filtering and analyzing access patterns.\n- **Track resource changes** to understand who made modifications and when.\n- **Troubleshoot operational issues** by correlating CloudTrail events with other system metrics.\n- **Generate reports and insights** for security reviews or compliance audits"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8fe0fc68-740c-47e6-83f1-5b972fb53046",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "8fe0fc68-740c-47e6-83f1-5b972fb53046",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "dfe00752-2fd3-4716-95e7-c6187da3dfa6": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "outcome",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "params": {
+                                                            "id": "date"
+                                                        },
+                                                        "sourceParams": {
+                                                            "appliedTimeRange": {
+                                                                "from": "2025-10-06T21:00:00.000Z",
+                                                                "to": "2025-10-14T09:22:02.010Z"
+                                                            },
+                                                            "indexPattern": "logs*",
+                                                            "params": {},
+                                                            "sourceField": "time_bucket"
+                                                        },
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "58715393-c8b0-445d-ac9b-e65dc10a994a",
+                                                    "fieldName": "outcome",
+                                                    "label": "outcome",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "outcome"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| EVAL outcome = CASE(aws.error.code IS NOT NULL, \"Fail\", \"Success\")\n| KEEP outcome, @timestamp\n| STATS total = COUNT() BY outcome, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-dfe00752-2fd3-4716-95e7-c6187da3dfa6",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| EVAL outcome = CASE(aws.error.code IS NOT NULL, \"Fail\", \"Success\")\n| KEEP outcome, @timestamp\n| STATS total = COUNT() BY outcome, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "dfe00752-2fd3-4716-95e7-c6187da3dfa6",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "splitAccessor": "58715393-c8b0-445d-ac9b-e65dc10a994a",
+                                        "xAccessor": "outcome"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Events"
+                            }
+                        },
+                        "title": "Treemap",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| EVAL outcome = CASE(aws.error.code IS NOT NULL, \"Fail\", \"Success\")\n| KEEP outcome, @timestamp\n| STATS total = COUNT() BY outcome, time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Event outcome over time"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d5c3ea68-52bf-43ac-a59b-61f73682a233",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "d5c3ea68-52bf-43ac-a59b-61f73682a233",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "7f82f10e-3ef6-40a5-bff5-e46ec8416e09": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "rpc.service",
+                                                    "customLabel": false,
+                                                    "fieldName": "rpc.service",
+                                                    "label": "rpc.service",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "rpc.method",
+                                                    "customLabel": false,
+                                                    "fieldName": "rpc.method",
+                                                    "label": "rpc.method",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| WHERE rpc.service IS NOT NULL\n| STATS total = COUNT() BY rpc.service, rpc.method\n| KEEP total, rpc.service, rpc.method\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| WHERE rpc.service IS NOT NULL\n| STATS total = COUNT() BY rpc.service, rpc.method\n| KEEP total, rpc.service, rpc.method\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "7f82f10e-3ef6-40a5-bff5-e46ec8416e09",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "legendMaxLines": 2,
+                                        "legendSize": "xlarge",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "rpc.service",
+                                            "rpc.method"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| WHERE rpc.service IS NOT NULL\n| STATS total = COUNT() BY rpc.service, rpc.method\n| KEEP total, rpc.service, rpc.method\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs by service and action"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "9fffcc40-0ed5-44b6-8d48-0c6d13dfdf66",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "9fffcc40-0ed5-44b6-8d48-0c6d13dfdf66",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "d76ae897-feba-4272-befd-650f9e9945d8": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "agent",
+                                                    "customLabel": false,
+                                                    "fieldName": "agent",
+                                                    "label": "agent",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| WHERE user_agent.original IS NOT NULL\n| EVAL agent = REPLACE(user_agent.original, \"^\\\\[|\\\\/.*$|\\\\ -\\\\ .*$\", \"\") // Remove leading square bracket, and everything that is after first slash or hyphen (with spaces) including it\n| STATS total = COUNT() by agent\n| KEEP total, agent\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*\n| WHERE user_agent.original IS NOT NULL\n| EVAL agent = REPLACE(user_agent.original, \"^\\\\[|\\\\/.*$|\\\\ -\\\\ .*$\", \"\") // Remove leading square bracket, and everything that is after first slash or hyphen (with spaces) including it\n| STATS total = COUNT() by agent\n| KEEP total, agent\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "d76ae897-feba-4272-befd-650f9e9945d8",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 2,
+                                        "legendSize": "xlarge",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "agent"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Treemap",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| WHERE user_agent.original IS NOT NULL\n| EVAL agent = REPLACE(user_agent.original, \"^\\\\[|\\\\/.*$|\\\\ -\\\\ .*$\", \"\") // Remove leading square bracket, and everything that is after first slash or hyphen (with spaces) including it\n| STATS total = COUNT() by agent\n| KEEP total, agent\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs by user agent"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "eaf1810e-1ded-4b44-868f-f55de4b6b27f",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "eaf1810e-1ded-4b44-868f-f55de4b6b27f",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b7a2381d-9d37-4b2e-9884-11200c1aa274": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "rpc.system",
+                                                    "customLabel": false,
+                                                    "fieldName": "rpc.system",
+                                                    "label": "rpc.system",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| KEEP rpc.system\n| STATS total = COUNT() by rpc.system\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-b7a2381d-9d37-4b2e-9884-11200c1aa274",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| KEEP rpc.system\n| STATS total = COUNT() by rpc.system\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "b7a2381d-9d37-4b2e-9884-11200c1aa274",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendSize": "xlarge",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "rpc.system"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| KEEP rpc.system\n| STATS total = COUNT() by rpc.system\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Logs by event type"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "9b6cc6b5-a591-498b-ad7a-aa90f5cd9774",
+                    "w": 24,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "9b6cc6b5-a591-498b-ad7a-aa90f5cd9774",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "906d7cc3-10d5-4591-9bab-953eb302ef27": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "aws.error.code",
+                                                    "customLabel": false,
+                                                    "fieldName": "aws.error.code",
+                                                    "label": "aws.error.code",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| WHERE aws.error.code IS NOT NULL\n| KEEP aws.error.code\n| STATS total = COUNT() BY aws.error.code\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-906d7cc3-10d5-4591-9bab-953eb302ef27",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| WHERE aws.error.code IS NOT NULL\n| KEEP aws.error.code\n| STATS total = COUNT() BY aws.error.code\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "906d7cc3-10d5-4591-9bab-953eb302ef27",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 2,
+                                        "legendSize": "xlarge",
+                                        "metrics": [
+                                            "total"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "aws.error.code"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| WHERE aws.error.code IS NOT NULL\n| KEEP aws.error.code\n| STATS total = COUNT() BY aws.error.code\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Failed operations by error code"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "11f19662-21ff-4014-9c23-2bd13efeacc7",
+                    "w": 24,
+                    "x": 24,
+                    "y": 30
+                },
+                "panelIndex": "11f19662-21ff-4014-9c23-2bd13efeacc7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "25487c5b-c5ab-4f0f-9175-05b928babe8c": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": false,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "total",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "0e61e4ef-b235-43a5-ae2e-c05855c15e67",
+                                                    "fieldName": "aws.access_key.id",
+                                                    "label": "aws.access_key.id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "aws.access_key.id"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "aws.access_key.id",
+                                                    "fieldName": "aws.access_key.id",
+                                                    "label": "aws.access_key.id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "0e61e4ef-b235-43a5-ae2e-c05855c15e67",
+                                                    "customLabel": true,
+                                                    "fieldName": "aws.access_key.id",
+                                                    "label": "User ID",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "aws.access_key.id"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "total",
+                                                    "customLabel": true,
+                                                    "fieldName": "total",
+                                                    "inMetricDimension": true,
+                                                    "label": "Events",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*\n| KEEP aws.access_key.id\n| STATS total = COUNT() by aws.access_key.id\n| SORT total DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "name": "textBasedLanguages-datasource-layer-25487c5b-c5ab-4f0f-9175-05b928babe8c",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM logs*\n| KEEP aws.access_key.id\n| STATS total = COUNT() by aws.access_key.id\n| SORT total DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "total",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "0e61e4ef-b235-43a5-ae2e-c05855c15e67",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "25487c5b-c5ab-4f0f-9175-05b928babe8c",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*\n| KEEP aws.access_key.id\n| STATS total = COUNT() by aws.access_key.id\n| SORT total DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top User IDs"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d85f7996-c13e-4d59-88c1-e6511f3da963",
+                    "w": 17,
+                    "x": 31,
+                    "y": 45
+                },
+                "panelIndex": "d85f7996-c13e-4d59-88c1-e6511f3da963",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                    "managed": false,
+                                    "name": "logs*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "3cf5753b-b930-4606-a601-c7318d8459de": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "@timestamp",
+                                                    "inMetricDimension": true,
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "d6e90c83-cae7-44e4-8d3c-8cac1b182022",
+                                                    "customLabel": true,
+                                                    "fieldName": "aws.access_key.id",
+                                                    "label": "Access key ID",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "aws.access_key.id"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "ea24e826-15e2-4a17-806f-82f9830e6350",
+                                                    "customLabel": true,
+                                                    "fieldName": "rpc.service",
+                                                    "label": "Service",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "rpc.service"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "042edc0f-2cf9-4d0e-993b-816edaf2f466",
+                                                    "customLabel": true,
+                                                    "fieldName": "rpc.system",
+                                                    "label": "Event type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "rpc.system"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "f04abe17-b427-4e76-8650-833be58f36c9",
+                                                    "customLabel": true,
+                                                    "fieldName": "rpc.method",
+                                                    "label": "Action",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "rpc.method"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "de2ae2d1-9b3b-48cb-9d7b-9380e7cf1d8b",
+                                                    "customLabel": true,
+                                                    "fieldName": "aws.error.code",
+                                                    "label": "Error code",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "aws.error.code"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "47f478f5-0972-4f83-b349-27c568415024",
+                                                    "customLabel": true,
+                                                    "fieldName": "source.address",
+                                                    "label": "Source address",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "logs*",
+                                                            "sourceField": "source.address"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
+                                            "query": {
+                                                "esql": "FROM logs*"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs*"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "@timestamp",
+                                        "width": 221.57142857142858
+                                    },
+                                    {
+                                        "columnId": "d6e90c83-cae7-44e4-8d3c-8cac1b182022",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "width": 194.73809523809524
+                                    },
+                                    {
+                                        "columnId": "ea24e826-15e2-4a17-806f-82f9830e6350",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "042edc0f-2cf9-4d0e-993b-816edaf2f466",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "width": 110.73809523809524
+                                    },
+                                    {
+                                        "columnId": "f04abe17-b427-4e76-8650-833be58f36c9",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "width": 187.23809523809524
+                                    },
+                                    {
+                                        "columnId": "de2ae2d1-9b3b-48cb-9d7b-9380e7cf1d8b",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "47f478f5-0972-4f83-b349-27c568415024",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "density": "normal",
+                                "layerId": "3cf5753b-b930-4606-a601-c7318d8459de",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs*"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "24eb9660-7a5b-4ecb-9abf-70ec72471782",
+                    "w": 31,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "24eb9660-7a5b-4ecb-9abf-70ec72471782",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[AWS CloudTrail OTEL] CloudTrail Logs Overview",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-10-14T07:53:18.989Z",
+    "created_by": "u_ZYj7dGTEOgapsGLTf8GS1lTKCU-wzK795nZmlm714so_0",
+    "id": "aws_cloudtrail_otel-9bfbe31c-e775-4ee4-9e34-a449e603d109",
+    "references": [
+        {
+            "id": "56b40a51-690a-4354-8659-66a579d2b184",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_ZYj7dGTEOgapsGLTf8GS1lTKCU-wzK795nZmlm714so_0"
+}
