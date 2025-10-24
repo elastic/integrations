@@ -1480,6 +1480,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.CertificatePublisher |  | keyword |
 | crowdstrike.CertificateSignatureHash |  | keyword |
 | crowdstrike.CertificateSignatureHashAlgorithm |  | keyword |
+| crowdstrike.ChangeTime |  | date |
 | crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
 | crowdstrike.ChannelId |  | keyword |
@@ -1839,6 +1840,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.OciContainerHostConfigPrivileged |  | match_only_text |
 | crowdstrike.OciContainerHostConfigPublishAllPorts |  | match_only_text |
 | crowdstrike.OciContainerHostConfigReadOnlyRootfs |  | match_only_text |
+| crowdstrike.OciContainerId |  | match_only_text |
 | crowdstrike.OciContainerImageId |  | match_only_text |
 | crowdstrike.OciContainerInfoRetransmitted |  | match_only_text |
 | crowdstrike.OciContainerMounts |  | match_only_text |
@@ -2001,6 +2003,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ResendToCloud |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
 | crowdstrike.RetransmitTime |  | keyword |
+| crowdstrike.RootPath |  | keyword |
 | crowdstrike.RouteAge |  | keyword |
 | crowdstrike.RouteMetric |  | keyword |
 | crowdstrike.RouteOrigin |  | keyword |
