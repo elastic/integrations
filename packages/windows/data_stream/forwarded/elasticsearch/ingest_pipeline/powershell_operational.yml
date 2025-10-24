@@ -324,6 +324,49 @@ processors:
         - _temp.script_block_no_space
       target_field: powershell.file.script_block_hash
       ignore_missing: true
+  - gsub:
+      field: powershell.file.script_block_text
+      target_field: _temp.script_block_no_signature
+      pattern: "(?s)# SIG # Begin signature block.+"
+      replacement: ""
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: Compute Shannon entropy of the script block text with signature removed.
+      if: ctx?._temp?.script_block_no_signature != null
+      source: |-
+        String script = ctx._temp.script_block_no_signature;
+        if (script.isEmpty()) {
+          return;
+        }
+        int cpLen = script.codePointCount(0, script.length());
+        if (cpLen == 0) {
+          return;
+        }
+
+        Map counts = script.codePoints().boxed().collect(Collectors.groupingBy(c -> c, Collectors.counting()));
+
+        double invLog2 = 1.0 / Math.log(2.0);
+        double entropy = 0.0;
+        for (def value : counts.values()) {
+            double p = ((Number) value).doubleValue() / (double) cpLen;
+            entropy -= p * Math.log(p) * invLog2;
+        }
+
+        int uniqueCount = counts.size();
+        double normalizedEntropy = (uniqueCount > 1)
+            ? entropy / (Math.log(uniqueCount) * invLog2)
+            : 0.0;
+        normalizedEntropy = Math.max(0.0, Math.min(1.0, normalizedEntropy));
+
+        if (ctx.powershell == null) {
+          ctx.powershell = ['file': [:]];
+        } else if (ctx.powershell.file == null) {
+          ctx.powershell.file = [:];
+        }
+        ctx.powershell.file.script_block_entropy = entropy;
+        ctx.powershell.file.script_block_entropy_normalized = normalizedEntropy;
 
   - split:
       description: Split Event 4103 command invocation details.
