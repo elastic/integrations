@@ -305,3 +305,112 @@ An example event for `device_health` looks as following:
     }
 }
 ```
+
+### Network Health
+
+The `network_health` dataset provides metrics related to the overall health and performance of Meraki networks.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| meraki.network.id |  | keyword |  |
+| meraki.network.name |  | keyword |  |
+| meraki.network.vpn_peers.network_id |  | keyword |  |
+| meraki.network.vpn_peers.network_name |  | keyword |  |
+| meraki.network.vpn_peers.usage_summary.received.bytes |  | long | byte |
+| meraki.network.vpn_peers.usage_summary.sent.bytes |  | long | byte |
+| meraki.organization_id |  | keyword |  |
+
+
+An example event for `network_health` looks as following:
+
+```json
+{
+    "@timestamp": "2024-09-30T16:55:38.202Z",
+    "agent": {
+        "ephemeral_id": "11855dde-6a4a-48ce-ac32-087b1c7999a3",
+        "id": "f06c246c-8375-47a9-b0f1-d0fc6c050e4e",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.15.2"
+    },
+    "data_stream": {
+        "dataset": "cisco_meraki_metrics.network_health",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "f06c246c-8375-47a9-b0f1-d0fc6c050e4e",
+        "snapshot": true,
+        "version": "8.15.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "cisco_meraki_metrics.network_health",
+        "duration": 12982553765,
+        "ingested": "2024-09-30T16:56:01Z",
+        "module": "meraki"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "c7f0ac74f5e24f78942164132c2c8ead",
+        "ip": "172.21.0.4",
+        "mac": "02-42-AC-15-00-04",
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "6.8.0-45-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "meraki": {
+        "organization_id": "125432",
+        "network": {
+            "name": "BKYHUM",
+            "vpn_peers": [
+                {
+                    "network_id": "N_837204569103482715",
+                    "network_name": "ZXVRNE",
+                    "usage_summary.received.bytes": 12288,
+                    "usage_summary.sent.bytes": 12288
+                },
+                {
+                    "network_id": "N_294175608239471063",
+                    "network_name": "QWMTJL",
+                    "usage_summary.received.bytes": 0,
+                    "usage_summary.sent.bytes": 79872
+                }
+            ],
+            "id": "L_760194835627109284"
+        }
+    },
+    "metricset": {
+        "name": "network_health",
+        "period": 60000
+    },
+    "service": {
+        "type": "meraki"
+    }
+}
+```
