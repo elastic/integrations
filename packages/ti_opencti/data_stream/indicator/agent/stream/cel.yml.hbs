@@ -37,25 +37,96 @@ fields:
     url: {{url}}
 program: |
   request(
-    "POST",
-    state.url.trim_suffix("graphql").trim_suffix("/") + "/graphql"
-  ).with({
-    "Header": ({
-      "Content-Type": ["application/json"]
-    }).with(
-      has(state.api_key) && size(state.api_key) > 0 ?
-        { "Authorization": ["Bearer " + state.api_key] }
-      :
-        {}
-    )
-  }).with({
-    "Body": {
-      "query": state.query,
-      "variables": {
+        "POST",
+        state.url.trim_suffix("graphql").trim_suffix("/") + "/graphql"
+      ).with({
+        "Header": ({
+          "Content-Type": ["application/json"]
+        }).with(
+          has(state.api_key) && size(state.api_key) > 0 ?
+            { "Authorization": ["Bearer " + state.api_key] }
+          :
+            {}
+        )
+      }).with({
+        "Body": {
+          "query": state.query,
+          "variables": {
         "after": has(state.cursor) && has(state.cursor.value) ? state.cursor.value : null,
         "first": state.page_size,
         "orderBy": "modified",
         "orderMode": "asc",
+        "filters": (
+          // Build the FilterGroup object
+          (
+            (has(state.pattern_types) && size(state.pattern_types) > 0) ||
+            (has(state.indicator_types) && size(state.indicator_types) > 0) ||
+            (has(state.revoked) && state.revoked != null) ||
+            (has(state.valid_from_start) && state.valid_from_start != null) ||
+            (has(state.valid_until_end) && state.valid_until_end != null) ||
+            (has(state.label_ids) && size(state.label_ids) > 0) ||
+            (has(state.confidence_min) && state.confidence_min != null) ||
+            (has(state.author_ids) && size(state.author_ids) > 0) ||
+            (has(state.creator_ids) && size(state.creator_ids) > 0) ||
+            (has(state.created_after) && state.created_after != null) ||
+            (has(state.modified_after) && state.modified_after != null) ||
+            (has(state.last_modified) && state.last_modified != null) ||
+            (has(state.marking_ids) && size(state.marking_ids) > 0)
+          ) ?
+          {
+            "mode": "and",
+            "filters": (
+              // Always filter for Indicator entity type
+              [{"key": "entity_type", "values": ["Indicator"], "operator": "eq"}] +
+              (has(state.pattern_types) && size(state.pattern_types) > 0 ? 
+                [{"key": "pattern_type", "values": state.pattern_types, "operator": "eq", "mode": "or"}] : []
+              ) +
+              (has(state.indicator_types) && size(state.indicator_types) > 0 ? 
+                [{"key": "indicator_types", "values": state.indicator_types, "operator": "eq", "mode": "or"}] : []
+              ) +
+              (has(state.revoked) && state.revoked != null ? 
+                [{"key": "revoked", "values": [state.revoked == "true"], "operator": "eq"}] : []
+              ) +
+              (has(state.valid_from_start) && state.valid_from_start != null ? 
+                [{"key": "valid_from", "values": [state.valid_from_start], "operator": "gte"}] : []
+              ) +
+              (has(state.valid_until_end) && state.valid_until_end != null ? 
+                [{"key": "valid_until", "values": [state.valid_until_end], "operator": "lte"}] : []
+              ) +
+              (has(state.label_ids) && size(state.label_ids) > 0 ? 
+                [{"key": "objectLabel", "values": state.label_ids, "operator": "eq", "mode": "or"}] : []
+              ) +
+              (has(state.confidence_min) && state.confidence_min != null ? 
+                [{"key": "confidence", "values": [string(state.confidence_min)], "operator": "gte"}] : []
+              ) +
+              (has(state.author_ids) && size(state.author_ids) > 0 ? 
+                [{"key": "createdBy", "values": state.author_ids, "operator": "eq", "mode": "or"}] : []
+              ) +
+              (has(state.creator_ids) && size(state.creator_ids) > 0 ? 
+                [{"key": "creator_id", "values": state.creator_ids, "operator": "eq", "mode": "or"}] : []
+              ) +
+              (has(state.created_after) && state.created_after != null ? 
+                [{"key": "created", "values": [state.created_after], "operator": "gt"}] : []
+              ) +
+              (has(state.last_modified) && state.last_modified != null ? 
+                [{"key": "updated_at", "values": [state.last_modified], "operator": "gt"}] : 
+                (has(state.modified_after) && state.modified_after != null ? 
+                  [{"key": "updated_at", "values": [state.modified_after], "operator": "gt"}] : []
+                )
+              ) +
+              (has(state.marking_ids) && size(state.marking_ids) > 0 ? 
+                [{"key": "objectMarking", "values": state.marking_ids, "operator": "eq", "mode": "or"}] : []
+              )
+            ),
+            "filterGroups": []
+          } : 
+          // Default filter: always filter for Indicator entity type
+          {
+            "mode": "and",
+            "filters": [{"key": "entity_type", "values": ["Indicator"], "operator": "eq"}],
+            "filterGroups": []
+          }
+        )
       }
     }.encode_json()
   }).do_request().as(resp,
@@ -65,7 +136,8 @@ program: |
           "events": [{
             "error": { "message": body.errors.map(e, e.message) },
             "event": { "original": body.encode_json() }
-          }]
+          }],
+          "last_modified": state.?last_modified.orValue(null)
         })
       :
         state.with({
@@ -77,23 +149,44 @@ program: |
           )),
           "want_more": body.data.indicators.pageInfo.hasNextPage,
           "cursor": { "value": body.data.indicators.pageInfo.endCursor },
+          "last_modified": has(body.data.indicators.edges) && body.data.indicators.edges.size() > 0 ? 
+            body.data.indicators.edges.map(e, e.node.modified).max() 
+          : 
+            state.?last_modified.orValue(null)
         })
+      )
     )
-  )
 redact:
   fields:
     - api_key
 state:
+  url: {{url}}
   api_key: {{api_key}}
   page_size: {{page_size}}
   preserve_original_event: {{preserve_original_event}}
   want_more: false
+  # Track last modified timestamp to avoid re-fetching
+  last_modified: null
+  # Filter configuration
+  pattern_types: {{#if pattern_types}}{{pattern_types}}{{else}}[]{{/if}}
+  indicator_types: {{#if indicator_types}}{{indicator_types}}{{else}}[]{{/if}}
+  revoked: {{#if revoked}}"{{revoked}}"{{else}}null{{/if}}
+  valid_from_start: {{#if valid_from_start}}"{{valid_from_start}}"{{else}}null{{/if}}
+  valid_until_end: {{#if valid_until_end}}"{{valid_until_end}}"{{else}}null{{/if}}
+  label_ids: {{#if label_ids}}{{label_ids}}{{else}}[]{{/if}}
+  confidence_min: {{#if confidence_min}}{{confidence_min}}{{else}}null{{/if}}
+  author_ids: {{#if author_ids}}{{author_ids}}{{else}}[]{{/if}}
+  creator_ids: {{#if creator_ids}}{{creator_ids}}{{else}}[]{{/if}}
+  created_after: {{#if created_after}}"{{created_after}}"{{else}}null{{/if}}
+  modified_after: {{#if modified_after}}"{{modified_after}}"{{else}}null{{/if}}
+  marking_ids: {{#if marking_ids}}{{marking_ids}}{{else}}[]{{/if}}
   # How to work with this API: https://docs.opencti.io/latest/deployment/integrations/#graphql-api
   # Relevant schema source: https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/schema/opencti.graphql
   query: |
 
     query IndicatorsLinesPaginationQuery(
       $search: String
+      $filters: FilterGroup
       $first: Int!
       $after: ID
       $orderBy: IndicatorsOrdering
@@ -101,6 +194,7 @@ state:
     ) {
       indicators(
         search: $search
+        filters: $filters
         first: $first
         after: $after
         orderBy: $orderBy
