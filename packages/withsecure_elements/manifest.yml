@@ -1,7 +1,7 @@
 format_version: "3.0.2"
 name: withsecure_elements
 title: "WithSecure Elements"
-version: "1.0.0"
+version: "1.0.2"
 source:
   license: "Elastic-2.0"
 description: "Ingest WithSecure Elements incidents and security events data"
@@ -25,122 +25,71 @@ policy_templates:
     description: Collect incidents and security events data from WithSecure Elements API
     inputs:
       - type: httpjson
-        title: Collect Incidents (BCDs)
-        description: "Collects Broad Context Detections (BCDs) from WithSecure Elements API"
+        title: Collect WithSecure Elements Data
+        description: "Collects incidents, security events, and detections from WithSecure Elements API"
         vars:
           - name: url
-            type: text
+            type: url
             title: WithSecure Elements API URL
             description: URL of the WithSecure Elements API
-            show_user: true
+            multi: false
             required: true
+            show_user: true
             default: https://api.connect.withsecure.com
           - name: client_id
             type: text
             title: Client ID
             description: WithSecure Elements API Client ID
-            show_user: true
+            multi: false
             required: true
+            show_user: true
           - name: client_secret
             type: password
             title: Client Secret
             description: WithSecure Elements API Client Secret
-            show_user: true
+            multi: false
             required: true
+            show_user: true
             secret: true
           - name: organization_id
             type: text
             title: Organization ID
             description: WithSecure Elements Organization ID
-            show_user: true
+            multi: false
             required: true
-          - name: interval
+            show_user: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+              Enabling this request tracing compromises security and should only be used for debugging.
+          - name: proxy_url
             type: text
-            title: Collection Interval
-            description: How often to collect data (e.g., 5m, 1h)
-            show_user: true
-            required: true
-            default: 5m
-      - type: httpjson
-        title: Collect Security Events
-        description: "Collects security events from WithSecure Elements API"
-        vars:
-          - name: url
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options.
+            multi: false
+            required: false
+            show_user: false
+          - name: http_client_timeout
             type: text
-            title: WithSecure Elements API URL
-            description: URL of the WithSecure Elements API
-            show_user: true
-            required: true
-            default: https://api.connect.withsecure.com
-          - name: client_id
-            type: text
-            title: Client ID
-            description: WithSecure Elements API Client ID
-            show_user: true
-            required: true
-          - name: client_secret
-            type: password
-            title: Client Secret
-            description: WithSecure Elements API Client Secret
-            show_user: true
-            required: true
-            secret: true
-          - name: organization_id
-            type: text
-            title: Organization ID
-            description: WithSecure Elements Organization ID
-            show_user: true
-            required: true
-          - name: interval
-            type: text
-            title: Collection Interval
-            description: How often to collect data (e.g., 5m, 1h)
-            show_user: true
-            required: true
-            default: 5m
-      - type: httpjson
-        title: Collect Incident Detections
-        description: "Collects detections for specific incidents from WithSecure Elements API"
-        vars:
-          - name: url
-            type: text
-            title: WithSecure Elements API URL
-            description: URL of the WithSecure Elements API
-            show_user: true
-            required: true
-            default: https://api.connect.withsecure.com
-          - name: client_id
-            type: text
-            title: Client ID
-            description: WithSecure Elements API Client ID
-            show_user: true
-            required: true
-          - name: client_secret
-            type: password
-            title: Client Secret
-            description: WithSecure Elements API Client Secret
-            show_user: true
-            required: true
-            secret: true
-          - name: organization_id
-            type: text
-            title: Organization ID
-            description: WithSecure Elements Organization ID
-            show_user: true
-            required: true
-          - name: incident_id
-            type: text
-            title: Incident ID
-            description: Specific Incident ID to collect detections for
-            show_user: true
-            required: true
-          - name: interval
-            type: text
-            title: Collection Interval
-            description: How often to collect data (e.g., 5m, 1h)
-            show_user: true
-            required: true
-            default: 5m
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out.
+            multi: false
+            required: false
+            show_user: false
+            default: 30s
 owner:
   github: elastic/security-service-integrations
   type: community

@@ -1,3 +1,4 @@
+---
 processors:
   - set:
       field: event.dataset
@@ -7,10 +8,10 @@ processors:
       value: withsecure_elements
   - set:
       field: event.category
-      value: threat
+      value: [threat]
   - set:
       field: event.type
-      value: info
+      value: [info]
   - set:
       field: event.kind
       value: event
@@ -20,87 +21,75 @@ processors:
   - set:
       field: event.action
       value: "{{action}}"
-  - set:
-      field: event.outcome
-      value: success
+      if: ctx.action != null
   - set:
       field: event.id
       value: "{{id}}"
-  - set:
-      field: event.created
-      value: "{{serverTimestamp}}"
-  - set:
-      field: event.start
-      value: "{{serverTimestamp}}"
-  - set:
-      field: event.end
-      value: "{{persistenceTimestamp}}"
+      if: ctx.id != null
   - set:
       field: event.severity
       value: "{{severity}}"
+      if: ctx.severity != null
   - set:
-      field: event.original
-      value: "{{_source}}"
-  - set:
-      field: withsecure.security.event.id
-      value: "{{id}}"
-  - set:
-      field: withsecure.security.event.action
-      value: "{{action}}"
-  - set:
-      field: withsecure.security.event.engine
-      value: "{{engine}}"
-  - set:
-      field: withsecure.security.event.severity
-      value: "{{severity}}"
-  - set:
-      field: withsecure.security.event.message
-      value: "{{message}}"
-  - set:
-      field: withsecure.security.event.description
-      value: "{{description}}"
-  - set:
-      field: withsecure.security.event.server_timestamp
+      field: "@timestamp"
       value: "{{serverTimestamp}}"
+      if: ctx.serverTimestamp != null
+  - date:
+      field: serverTimestamp
+      target_field: "@timestamp"
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.serverTimestamp != null
+      ignore_failure: true
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.message != null
+  - rename:
+      field: engine
+      target_field: withsecure.security.event.engine
+      ignore_missing: true
+  - rename:
+      field: description
+      target_field: withsecure.security.event.description
+      ignore_missing: true
+  - rename:
+      field: acknowledged
+      target_field: withsecure.security.event.acknowledged
+      ignore_missing: true
+  - rename:
+      field: acknowledgedBy
+      target_field: withsecure.security.event.acknowledged_by
+      ignore_missing: true
+  - rename:
+      field: userName
+      target_field: withsecure.security.event.user_name
+      ignore_missing: true
+  - rename:
+      field: details
+      target_field: withsecure.security.event.details
+      ignore_missing: true
+  - rename:
+      field: organization
+      target_field: withsecure.security.event.organization
+      ignore_missing: true
+  - rename:
+      field: device
+      target_field: withsecure.security.event.device
+      ignore_missing: true
+  - rename:
+      field: target
+      target_field: withsecure.security.event.target
+      ignore_missing: true
+  - remove:
+      field:
+        - serverTimestamp
+        - persistenceTimestamp
+        - clientTimestamp
+      ignore_missing: true
+on_failure:
   - set:
-      field: withsecure.security.event.persistence_timestamp
-      value: "{{persistenceTimestamp}}"
-  - set:
-      field: withsecure.security.event.client_timestamp
-      value: "{{clientTimestamp}}"
-  - set:
-      field: withsecure.security.event.event_transaction_id
-      value: "{{eventTransactionId}}"
-  - set:
-      field: withsecure.security.event.acknowledged
-      value: "{{acknowledged}}"
-  - set:
-      field: withsecure.security.event.acknowledged_by
-      value: "{{acknowledgedBy}}"
-  - set:
-      field: withsecure.security.event.ack_timestamp
-      value: "{{ackTimestamp}}"
-  - set:
-      field: withsecure.security.event.organization.id
-      value: "{{organization.id}}"
-  - set:
-      field: withsecure.security.event.organization.name
-      value: "{{organization.name}}"
-  - set:
-      field: withsecure.security.event.target.id
-      value: "{{target.id}}"
-  - set:
-      field: withsecure.security.event.target.name
-      value: "{{target.name}}"
-  - set:
-      field: withsecure.security.event.device.id
-      value: "{{device.id}}"
-  - set:
-      field: withsecure.security.event.device.name
-      value: "{{device.name}}"
-  - set:
-      field: withsecure.security.event.user_name
-      value: "{{userName}}"
-  - set:
-      field: withsecure.security.event.details
-      value: "{{details}}"
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
