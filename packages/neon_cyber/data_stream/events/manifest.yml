@@ -1,0 +1,46 @@
+title: 'Neon Cyber Events'
+type: logs
+streams:
+    - input: cel
+      title: 'Collect Neon Cyber Events'
+      description: |-
+          Collect workforce events from the Neon Cyber Platform
+      template_path: cel.yml.hbs
+      vars:
+          - name: resource_url
+            type: text
+            title: 'Resource URL'
+            description: |-
+                i.e. scheme://host:port/path
+            required: true
+            show_user: true
+            default: https://api.neoncyber.io/v1/events
+          - name: resource_interval
+            type: text
+            title: 'Resource Interval'
+            description: |-
+                How often the API is polled, supports seconds, minutes and hours.
+            required: true
+            show_user: true
+            default: 1m
+          - name: tags
+            type: text
+            title: 'Tags'
+            multi: true
+            show_user: false
+            default:
+                - forwarded
+                - neon_cyber-events
+          - name: preserve_original_event
+            required: true
+            show_user: true
+            title: Preserve original event
+            description: Preserves a raw copy of the original event, added to the field `event.original`.
+            type: bool
+            multi: false
+            default: false
+          - name: processors
+            type: yaml
+            title: 'Processors'
+            description: |-
+                Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
