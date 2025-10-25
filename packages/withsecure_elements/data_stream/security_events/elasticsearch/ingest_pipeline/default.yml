@@ -1,6 +1,31 @@
 ---
 processors:
   - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null && ctx.message != null
+      ignore_failure: true
+  - remove:
+      field: message
+      if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: _temp
+      if: ctx.event?.original != null && ctx.event.original instanceof String
+      ignore_failure: true
+  - script:
+      lang: painless
+      description: Move JSON fields from _temp to root context
+      source: |
+        if (ctx._temp != null) {
+          for (entry in ctx._temp.entrySet()) {
+            ctx[entry.getKey()] = entry.getValue();
+          }
+          ctx.remove('_temp');
+        }
+      if: ctx._temp != null
+  - set:
       field: event.dataset
       value: withsecure_elements.security_events
   - set:
@@ -42,14 +67,25 @@ processors:
         - ISO8601
       if: ctx.serverTimestamp != null
       ignore_failure: true
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.message != null
+  - set:
+      field: withsecure.security.event.id
+      value: "{{id}}"
+      if: ctx.id != null
+  - set:
+      field: withsecure.security.event.action
+      value: "{{action}}"
+      if: ctx.action != null
+  - set:
+      field: withsecure.security.event.severity
+      value: "{{severity}}"
+      if: ctx.severity != null
   - rename:
       field: engine
       target_field: withsecure.security.event.engine
+      ignore_missing: true
+  - rename:
+      field: message
+      target_field: withsecure.security.event.message
       ignore_missing: true
   - rename:
       field: description
@@ -83,11 +119,52 @@ processors:
       field: target
       target_field: withsecure.security.event.target
       ignore_missing: true
+  - rename:
+      field: eventTransactionId
+      target_field: withsecure.security.event.event_transaction_id
+      ignore_missing: true
+  - date:
+      field: serverTimestamp
+      target_field: withsecure.security.event.server_timestamp
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.serverTimestamp != null
+      ignore_failure: true
+  - date:
+      field: persistenceTimestamp
+      target_field: withsecure.security.event.persistence_timestamp
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.persistenceTimestamp != null
+      ignore_failure: true
+  - date:
+      field: clientTimestamp
+      target_field: withsecure.security.event.client_timestamp
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.clientTimestamp != null
+      ignore_failure: true
   - remove:
       field:
         - serverTimestamp
         - persistenceTimestamp
         - clientTimestamp
+        - eventTransactionId
+        - id
+        - action
+        - severity
+        - engine
+        - description
+        - acknowledged
+        - acknowledgedBy
+        - userName
+        - details
+        - organization
+        - device
+        - target
       ignore_missing: true
 on_failure:
   - set:

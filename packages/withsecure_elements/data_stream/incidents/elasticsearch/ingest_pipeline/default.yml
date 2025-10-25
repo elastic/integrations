@@ -1,6 +1,31 @@
 ---
 processors:
   - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null && ctx.message != null
+      ignore_failure: true
+  - remove:
+      field: message
+      if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: _temp
+      if: ctx.event?.original != null && ctx.event.original instanceof String
+      ignore_failure: true
+  - script:
+      lang: painless
+      description: Move JSON fields from _temp to root context
+      source: |
+        if (ctx._temp != null) {
+          for (entry in ctx._temp.entrySet()) {
+            ctx[entry.getKey()] = entry.getValue();
+          }
+          ctx.remove('_temp');
+        }
+      if: ctx._temp != null
+  - set:
       field: event.dataset
       value: withsecure_elements.incidents
   - set:
@@ -43,8 +68,9 @@ processors:
       field: event.risk_score
       value: "{{withsecure.incident.risk_score}}"
   - set:
-      field: event.original
-      value: "{{_source}}"
+      field: withsecure.incident.id
+      value: "{{incidentId}}"
+      if: ctx.incidentId != null
   - set:
       field: withsecure.incident.status
       value: "{{status}}"
@@ -84,3 +110,24 @@ processors:
   - set:
       field: withsecure.incident.organization_id
       value: "{{organizationId}}"
+  - remove:
+      field:
+        - status
+        - severity
+        - riskLevel
+        - riskScore
+        - resolution
+        - createdTimestamp
+        - updatedTimestamp
+        - initialReceivedTimestamp
+        - categories
+        - sources
+        - name
+        - incidentPublicId
+        - organizationId
+        - incidentId
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
