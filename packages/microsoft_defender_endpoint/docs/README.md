@@ -112,103 +112,99 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-08T14:14:17.520Z",
+    "@timestamp": "2025-10-16T10:42:06.592Z",
     "agent": {
-        "ephemeral_id": "3f082892-0f6c-45a1-aa4d-4887bd3462c8",
-        "id": "36f3bbaf-2d4f-4f3c-af1f-4c13524514f5",
-        "name": "elastic-agent-19107",
+        "ephemeral_id": "b43b835d-ba25-4ad7-aa9f-200c15733e48",
+        "id": "353e6432-27a9-40a4-98a2-557dbb69496b",
+        "name": "elastic-agent-48674",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.3"
     },
     "cloud": {
         "account": {
-            "id": "123543-d66c-4c7e-9e30-40034eb7c6f3"
+            "id": "a839b112-1253-6432-9bf6-94542403f21c"
         },
         "instance": {
-            "id": "c5a964f417c11f6277d5bf9489f0d"
+            "id": "111e6dd8c833c8a052ea231ec1b19adaf497b625"
         },
         "provider": "azure"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "61125",
+        "namespace": "90146",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "36f3bbaf-2d4f-4f3c-af1f-4c13524514f5",
+        "id": "353e6432-27a9-40a4-98a2-557dbb69496b",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.3"
     },
     "event": {
-        "action": "Malware",
+        "action": "Execution",
         "agent_id_status": "verified",
         "category": [
-            "host",
-            "malware"
+            "host"
         ],
-        "created": "2020-06-30T10:09:01.1569718Z",
+        "created": "2021-01-26T20:33:57.7220239Z",
         "dataset": "microsoft_defender_endpoint.log",
-        "duration": 0,
-        "end": "2020-06-30T10:07:44.333733Z",
-        "id": "da637291085411733957_-1043898914",
-        "ingested": "2025-09-08T14:14:20Z",
+        "duration": 101466100,
+        "end": "2021-01-26T20:31:33.0577322Z",
+        "id": "da637472900382838869_1364969609",
+        "ingested": "2025-10-16T10:42:09Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 21,
-        "start": "2020-06-30T10:07:44.333733Z",
+        "start": "2021-01-26T20:31:32.9562661Z",
         "timezone": "UTC",
         "type": [
-            "end"
+            "access",
+            "start"
         ]
     },
-    "file": {
-        "name": "SB.xsl",
-        "path": "C:\\Windows\\Temp\\sb-sim-temp-ikyxqi\\sb_10554_bs_h4qpk5"
-    },
     "host": {
-        "hostname": "testserver4",
-        "id": "c5a964f417c11f6277d5bf9489f0d",
-        "name": "testserver4"
+        "hostname": "temp123.middleeast.corp.microsoft.com",
+        "id": "111e6dd8c833c8a052ea231ec1b19adaf497b625",
+        "name": "temp123.middleeast.corp.microsoft.com"
     },
     "input": {
-        "type": "log"
+        "type": "httpjson"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/defender_atp-test.json.log"
-        },
-        "offset": 0
-    },
-    "message": "An active 'Exeselrun' malware was detected",
+    "message": "Low-reputation arbitrary code executed by signed executable",
     "microsoft": {
         "defender_endpoint": {
             "assignedTo": "elastic@elasticuser.com",
             "evidence": {
-                "entityType": "File"
+                "aadUserId": "11118379-2a59-1111-ac3c-a51eb4a3c627",
+                "accountName": "name",
+                "domainName": "DOMAIN",
+                "entityType": "User",
+                "userPrincipalName": "temp123@microsoft.com"
             },
-            "incidentId": "12",
-            "investigationId": "9",
-            "investigationState": "Benign",
-            "lastUpdateTime": "2020-07-03T15:15:39.13Z",
-            "resolvedTime": "2020-06-30T11:13:12.2680434Z",
-            "status": "Resolved"
+            "incidentId": "1126093",
+            "investigationState": "Queued",
+            "lastUpdateTime": "2021-01-26T20:33:59.2Z",
+            "rbacGroupName": "A",
+            "status": "New"
         }
     },
     "observer": {
-        "name": "WindowsDefenderAv",
+        "name": "WindowsDefenderAtp",
         "product": "Defender for Endpoint",
         "vendor": "Microsoft"
     },
     "related": {
         "hosts": [
-            "testserver4"
+            "temp123.middleeast.corp.microsoft.com"
+        ],
+        "user": [
+            "temp123"
         ]
     },
     "rule": {
-        "description": "Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nA malware is considered active if it is found running on the machine or it already has persistence mechanisms in place. Active malware detections are assigned higher severity ratings.\n\nBecause this malware was active, take precautionary measures and check for residual signs of infection."
+        "description": "Binaries signed by Microsoft can be used to run low-reputation arbitrary code. This technique hides the execution of malicious code within a trusted process. As a result, the trusted process might exhibit suspicious behaviors, such as opening a listening port or connecting to a command-and-control (C&C) server."
     },
     "tags": [
         "microsoft-defender-endpoint",
@@ -218,9 +214,14 @@ An example event for `log` looks as following:
         "framework": "MITRE ATT&CK",
         "technique": {
             "name": [
-                "Malware"
+                "Execution"
             ]
         }
+    },
+    "user": {
+        "domain": "DOMAIN",
+        "id": "S-1-5-21-11111607-1111760036-109187956-75141",
+        "name": "temp123"
     }
 }
 ```
@@ -270,26 +271,26 @@ An example event for `machine` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-27T10:32:26.521Z",
+    "@timestamp": "2025-10-16T10:43:46.052Z",
     "agent": {
-        "ephemeral_id": "7835dd57-a5b2-46de-b8a9-44f186b6590a",
-        "id": "f86c55ed-0e3d-44c8-b20f-b5d0001d9f64",
-        "name": "elastic-agent-25017",
+        "ephemeral_id": "c45e3532-8231-4823-b919-99eedb3d39d8",
+        "id": "d09beef9-81e5-4ec1-b71e-6e744709b60f",
+        "name": "elastic-agent-38879",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.3"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine",
-        "namespace": "54069",
+        "namespace": "77808",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f86c55ed-0e3d-44c8-b20f-b5d0001d9f64",
+        "id": "d09beef9-81e5-4ec1-b71e-6e744709b60f",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -297,7 +298,7 @@ An example event for `machine` looks as following:
             "host"
         ],
         "dataset": "microsoft_defender_endpoint.machine",
-        "ingested": "2025-05-27T10:32:29Z",
+        "ingested": "2025-10-16T10:43:49Z",
         "kind": "event",
         "original": "{\"aadDeviceId\":null,\"agentVersion\":\"10.8760.17763.6414\",\"computerDnsName\":\"dlp-win2k19\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"High\",\"firstSeen\":\"2024-10-17T13:56:23.9412922Z\",\"healthStatus\":\"Inactive\",\"id\":\"c114cb1c0b827fabcdefabcdef2b9cfd469c091b\",\"ipAddresses\":[{\"ipAddress\":\"10.50.11.140\",\"macAddress\":\"00005E005301\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"1.128.0.0\",\"macAddress\":\"00005E00530A\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"2a02:cf40::\",\"macAddress\":\"00005E005302\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"127.0.0.1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"},{\"ipAddress\":\"::1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"10.50.11.140\",\"lastSeen\":\"2024-10-24T06:12:35.4409708Z\",\"machineTags\":[],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":17763,\"osPlatform\":\"WindowsServer2019\",\"osProcessor\":\"x64\",\"osVersion\":null,\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"version\":\"1809\",\"vmMetadata\":null}",
         "type": [
@@ -461,24 +462,24 @@ An example event for `machine_action` looks as following:
 {
     "@timestamp": "2024-11-22T12:48:56.768Z",
     "agent": {
-        "ephemeral_id": "9a1d6c29-c9ee-4fe3-b548-486c5816bac4",
-        "id": "adb7b810-f850-4c24-826a-be0de9006fc6",
-        "name": "elastic-agent-60393",
+        "ephemeral_id": "2f48d0ac-be9d-40b4-90c7-221a29dbd6f5",
+        "id": "7a528879-f9cb-4500-8ca9-61cdde8b4c76",
+        "name": "elastic-agent-92539",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.3"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine_action",
-        "namespace": "82658",
+        "namespace": "37546",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "adb7b810-f850-4c24-826a-be0de9006fc6",
+        "id": "7a528879-f9cb-4500-8ca9-61cdde8b4c76",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.3"
     },
     "event": {
         "action": "RunAntiVirusScan",
@@ -486,7 +487,7 @@ An example event for `machine_action` looks as following:
         "created": "2024-11-22T12:48:33.993Z",
         "dataset": "microsoft_defender_endpoint.machine_action",
         "id": "d72456af-1234-5678-abcd-abcdef87fdee",
-        "ingested": "2025-06-03T13:37:04Z",
+        "ingested": "2025-10-16T10:45:30Z",
         "kind": "event",
         "original": "{\"cancellationComment\":null,\"cancellationDateTimeUtc\":null,\"cancellationRequestor\":null,\"commands\":[],\"computerDnsName\":\"c-lab-24\",\"creationDateTimeUtc\":\"2024-11-22T12:48:33.9936591Z\",\"errorHResult\":0,\"externalId\":null,\"id\":\"d72456af-1234-5678-abcd-abcdef87fdee\",\"lastUpdateDateTimeUtc\":\"2024-11-22T12:48:56.7684808Z\",\"machineId\":\"de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8\",\"relatedFileInfo\":null,\"requestSource\":\"Portal\",\"requestor\":\"testuser@example.com\",\"requestorComment\":\"Quick Scan\",\"scope\":\"Quick\",\"status\":\"Succeeded\",\"title\":null,\"troubleshootInfo\":null,\"type\":\"RunAntiVirusScan\"}",
         "outcome": "success",
@@ -584,24 +585,24 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-09T18:02:10.412Z",
+    "@timestamp": "2025-10-21T16:43:18.340Z",
     "agent": {
-        "ephemeral_id": "2524101f-667e-439c-bec3-6dd357b7a215",
-        "id": "3b58c8e2-7598-48d3-999b-b24ad7c6946f",
-        "name": "elastic-agent-73278",
+        "ephemeral_id": "fc08f059-a301-41b4-8aca-e04734e21c4d",
+        "id": "85702a4b-7e1b-4c02-bba1-3aec32c16101",
+        "name": "elastic-agent-98433",
         "type": "filebeat",
         "version": "8.19.3"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.vulnerability",
-        "namespace": "80291",
+        "namespace": "32915",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3b58c8e2-7598-48d3-999b-b24ad7c6946f",
+        "id": "85702a4b-7e1b-4c02-bba1-3aec32c16101",
         "snapshot": false,
         "version": "8.19.3"
     },
@@ -612,7 +613,7 @@ An example event for `vulnerability` looks as following:
         ],
         "dataset": "microsoft_defender_endpoint.vulnerability",
         "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
-        "ingested": "2025-10-09T18:02:11Z",
+        "ingested": "2025-10-21T16:43:19Z",
         "kind": "event",
         "original": "{\"CveBatchTitle\":\"Red_hat February 2025 Vulnerabilities\",\"CveBatchUrl\":\"https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2\",\"CveId\":\"CVE-2022-49226\",\"CvssScore\":5.5,\"DeviceId\":\"1212121212121212121212\",\"DeviceName\":\"sample-host-1\",\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-10-06 10:43:58\",\"Id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 22:45:00\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Linux\",\"OSVersion\":\"enterprise_linux_9.4\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-red_hat-_-kernel\",\"RecommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"RecommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"RecommendedSecurityUpdateUrl\":\"https://access.redhat.com/errata/RHSA-2024:9315\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"kernel\",\"SoftwareVendor\":\"red_hat\",\"SoftwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"VulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
