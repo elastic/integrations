@@ -1,5 +1,17 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
         "description": "Overview of host metrics",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -23,7 +35,8 @@
                                 "system.process",
                                 "system.load",
                                 "system.filesystem",
-                                "system.diskio"
+                                "system.diskio",
+                                "system.ntp"
                             ],
                             "type": "phrases"
                         },
@@ -70,6 +83,11 @@
                                         "match_phrase": {
                                             "data_stream.dataset": "system.diskio"
                                         }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.ntp"
+                                        }
                                     }
                                 ]
                             }
@@ -114,7 +132,8 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "title": "System Navigation"
                 },
                 "gridData": {
                     "h": 5,
@@ -124,1203 +143,7 @@
                     "y": 0
                 },
                 "panelIndex": "fcb53f5b-0e6b-41c8-ae1c-e2aafdeaff5a",
-                "title": "System Navigation",
                 "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-f4bd8bea-8ae8-4312-9d98-8021d0efd23b",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "f4bd8bea-8ae8-4312-9d98-8021d0efd23b": {
-                                            "columnOrder": [
-                                                "00b4e73c-e039-402e-b22f-e1596e6e4191",
-                                                "f1a59a8b-c66d-4fc2-85c2-dc3af5fba2e1"
-                                            ],
-                                            "columns": {
-                                                "00b4e73c-e039-402e-b22f-e1596e6e4191": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "system.cpu.total.norm.pct: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "CPU used",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "percent",
-                                                            "params": {
-                                                                "compact": true
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "reducedTimeRange": "",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.cpu.total.norm.pct"
-                                                },
-                                                "f1a59a8b-c66d-4fc2-85c2-dc3af5fba2e1": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "isStaticValue": true,
-                                                    "label": "Static value: 1",
-                                                    "operationType": "static_value",
-                                                    "params": {
-                                                        "value": "1"
-                                                    },
-                                                    "references": [],
-                                                    "scale": "ratio"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "f4bd8bea-8ae8-4312-9d98-8021d0efd23b",
-                                "layerType": "data",
-                                "maxAccessor": "f1a59a8b-c66d-4fc2-85c2-dc3af5fba2e1",
-                                "metricAccessor": "00b4e73c-e039-402e-b22f-e1596e6e4191",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": null
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 70
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 85
-                                            }
-                                        ],
-                                        "continuity": "all",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": null,
-                                        "rangeType": "percent",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 70
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 85
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 100
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "showBar": true
-                            }
-                        },
-                        "title": "CPU Usage Gauge [Metrics System]",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "d0a6fc45-278c-427e-a440-eec3ec3ce367",
-                    "w": 12,
-                    "x": 0,
-                    "y": 5
-                },
-                "panelIndex": "d0a6fc45-278c-427e-a440-eec3ec3ce367",
-                "title": "",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-d8bdfabd-3bb1-42bb-9bf1-82af91c6affa",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "d8bdfabd-3bb1-42bb-9bf1-82af91c6affa": {
-                                            "columnOrder": [
-                                                "760d261e-509a-4bc4-8eec-5733d25624ca",
-                                                "a100cb72-c706-42e1-b705-9a73a7a5d762"
-                                            ],
-                                            "columns": {
-                                                "760d261e-509a-4bc4-8eec-5733d25624ca": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "system.memory.actual.used.pct: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Memory used",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "percent",
-                                                            "params": {
-                                                                "compact": true
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "reducedTimeRange": "",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.memory.actual.used.pct"
-                                                },
-                                                "a100cb72-c706-42e1-b705-9a73a7a5d762": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "isStaticValue": true,
-                                                    "label": "Static value: 1",
-                                                    "operationType": "static_value",
-                                                    "params": {
-                                                        "value": "1"
-                                                    },
-                                                    "references": [],
-                                                    "scale": "ratio"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "d8bdfabd-3bb1-42bb-9bf1-82af91c6affa",
-                                "layerType": "data",
-                                "maxAccessor": "a100cb72-c706-42e1-b705-9a73a7a5d762",
-                                "metricAccessor": "760d261e-509a-4bc4-8eec-5733d25624ca",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": null
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 70
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 85
-                                            }
-                                        ],
-                                        "continuity": "all",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": null,
-                                        "rangeType": "percent",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 70
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 85
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 100
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "showBar": true
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "e50a72f5-160a-4694-8f44-2e6da666b90b",
-                    "w": 12,
-                    "x": 12,
-                    "y": 5
-                },
-                "panelIndex": "e50a72f5-160a-4694-8f44-2e6da666b90b",
-                "title": "",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7": {
-                                            "columnOrder": [
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3",
-                                                "ad2b1a82-ff4b-44e0-8a31-a921913f0512",
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X0",
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X1",
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X2"
-                                            ],
-                                            "columns": {
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Disk used",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "percent",
-                                                            "params": {
-                                                                "compact": true
-                                                            }
-                                                        },
-                                                        "formula": "last_value(system.fsstat.total_size.used)/last_value(system.fsstat.total_size.total) ",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "1f8434f8-82e7-4349-a68d-60665506fdc3X2"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"system.fsstat.total_size.used\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Part of Disk used",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.fsstat.total_size.used"
-                                                },
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"system.fsstat.total_size.total\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Part of Disk used",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.fsstat.total_size.total"
-                                                },
-                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Disk used",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X0",
-                                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X1"
-                                                            ],
-                                                            "location": {
-                                                                "max": 85,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "last_value(system.fsstat.total_size.used)/last_value(system.fsstat.total_size.total) ",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "1f8434f8-82e7-4349-a68d-60665506fdc3X0",
-                                                        "1f8434f8-82e7-4349-a68d-60665506fdc3X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "ad2b1a82-ff4b-44e0-8a31-a921913f0512": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "isStaticValue": true,
-                                                    "label": "Static value: 1",
-                                                    "operationType": "static_value",
-                                                    "params": {
-                                                        "value": "1"
-                                                    },
-                                                    "references": [],
-                                                    "scale": "ratio"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7",
-                                "layerType": "data",
-                                "maxAccessor": "ad2b1a82-ff4b-44e0-8a31-a921913f0512",
-                                "metricAccessor": "1f8434f8-82e7-4349-a68d-60665506fdc3",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": null
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 70
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 85
-                                            }
-                                        ],
-                                        "continuity": "all",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": null,
-                                        "rangeType": "percent",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 70
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 85
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 100
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "showBar": true
-                            }
-                        },
-                        "title": "Disk Used",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "81d645ce-9d97-499f-9117-b3e662caee53",
-                    "w": 12,
-                    "x": 24,
-                    "y": 5
-                },
-                "panelIndex": "81d645ce-9d97-499f-9117-b3e662caee53",
-                "title": "",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "6a26e3ad-990f-42a2-82fd-f147b1ede3b0": {
-                                            "columnOrder": [
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0e",
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1",
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2",
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfb",
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0",
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1",
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX2"
-                                            ],
-                                            "columns": {
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0e": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Outbound traffic per second",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        },
-                                                        "formula": "(max(system.network.out.bytes, reducedTimeRange='30s') - min(system.network.out.bytes, reducedTimeRange='30s')) / 30",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX2"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Outbound Traffic per second",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "reducedTimeRange": "30s",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.out.bytes"
-                                                },
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Outbound Traffic per second",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "reducedTimeRange": "30s",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.out.bytes"
-                                                },
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Outbound Traffic per second",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                {
-                                                                    "args": [
-                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
-                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
-                                                                    ],
-                                                                    "location": {
-                                                                        "max": 110,
-                                                                        "min": 1
-                                                                    },
-                                                                    "name": "subtract",
-                                                                    "text": "max(system.network.out.bytes, reducedTimeRange='30s') - min(system.network.out.bytes, reducedTimeRange='30s')",
-                                                                    "type": "function"
-                                                                },
-                                                                30
-                                                            ],
-                                                            "location": {
-                                                                "max": 116,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "(max(system.network.out.bytes, reducedTimeRange='30s') - min(system.network.out.bytes, reducedTimeRange='30s')) / 30",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
-                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfb": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total transferred",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        },
-                                                        "formula": "max(system.network.out.bytes) - min(system.network.out.bytes)",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "edd2939d-15eb-419e-a0dd-c015dbf49dfbX2"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of max(system.network.out.bytes) - min(system.network.out.bytes)",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.out.bytes"
-                                                },
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of max(system.network.out.bytes) - min(system.network.out.bytes)",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.out.bytes"
-                                                },
-                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of max(system.network.out.bytes) - min(system.network.out.bytes)",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0",
-                                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1"
-                                                            ],
-                                                            "location": {
-                                                                "max": 61,
-                                                                "min": 0
-                                                            },
-                                                            "name": "subtract",
-                                                            "text": "max(system.network.out.bytes) - min(system.network.out.bytes)",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0",
-                                                        "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
-                                "layerType": "data",
-                                "metricAccessor": "6702f512-7df6-4b95-892c-200bafa8bd0e",
-                                "secondaryMetricAccessor": "edd2939d-15eb-419e-a0dd-c015dbf49dfb",
-                                "subtitle": "(Over the last 30 seconds)"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "076b7938-b8bb-46f4-a9a6-e627fb961a8b",
-                    "w": 12,
-                    "x": 36,
-                    "y": 5
-                },
-                "panelIndex": "076b7938-b8bb-46f4-a9a6-e627fb961a8b",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "9f6d8570-52c1-4af2-a105-b9993b2e8b5c": {
-                                            "columnOrder": [
-                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510",
-                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510X0"
-                                            ],
-                                            "columns": {
-                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Processes",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "formula": "unique_count(process.pid)",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "314b8c49-2a3b-464b-bc85-ab7e098fd510X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Processes",
-                                                    "operationType": "unique_count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "process.pid"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
-                                "layerType": "data",
-                                "metricAccessor": "314b8c49-2a3b-464b-bc85-ab7e098fd510"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "17f54fe4-ae84-4319-97fd-069225d0a8fb",
-                    "w": 12,
-                    "x": 0,
-                    "y": 11
-                },
-                "panelIndex": "17f54fe4-ae84-4319-97fd-069225d0a8fb",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-72dc93ee-b1c5-43b2-8ea4-01e840c93cad",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "72dc93ee-b1c5-43b2-8ea4-01e840c93cad": {
-                                            "columnOrder": [
-                                                "70be4197-83b0-44ae-9f56-11bea599cda6",
-                                                "a3165f69-caab-4456-ae40-78f675231f2a"
-                                            ],
-                                            "columns": {
-                                                "70be4197-83b0-44ae-9f56-11bea599cda6": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "system.memory.actual.used.bytes: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Memory used in bytes",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes"
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "reducedTimeRange": "",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.memory.actual.used.bytes"
-                                                },
-                                                "a3165f69-caab-4456-ae40-78f675231f2a": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "system.memory.total: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Total Memory",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes"
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "reducedTimeRange": "",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.memory.total"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "72dc93ee-b1c5-43b2-8ea4-01e840c93cad",
-                                "layerType": "data",
-                                "metricAccessor": "70be4197-83b0-44ae-9f56-11bea599cda6",
-                                "secondaryMetricAccessor": "a3165f69-caab-4456-ae40-78f675231f2a"
-                            }
-                        },
-                        "title": "Memory usage vs total [Metrics System]",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "79d36896-445a-4904-ad18-e0234fd9ca3f",
-                    "w": 12,
-                    "x": 12,
-                    "y": 11
-                },
-                "panelIndex": "79d36896-445a-4904-ad18-e0234fd9ca3f",
-                "title": "",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-6179b687-40bc-453c-9146-89a957636ee5",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "6179b687-40bc-453c-9146-89a957636ee5": {
-                                            "columnOrder": [
-                                                "19b84e5e-5a7f-4755-b505-7c5dca079df7"
-                                            ],
-                                            "columns": {
-                                                "19b84e5e-5a7f-4755-b505-7c5dca079df7": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "system.load.5: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "5m load",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "compact": true
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "reducedTimeRange": "",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.load.5"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "6179b687-40bc-453c-9146-89a957636ee5",
-                                "layerType": "data",
-                                "metricAccessor": "19b84e5e-5a7f-4755-b505-7c5dca079df7"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "baca3f6a-498a-4752-8882-1d8906d06405",
-                    "w": 12,
-                    "x": 24,
-                    "y": 11
-                },
-                "panelIndex": "baca3f6a-498a-4752-8882-1d8906d06405",
-                "title": "",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "6a26e3ad-990f-42a2-82fd-f147b1ede3b0": {
-                                            "columnOrder": [
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0e",
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1",
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2",
-                                                "3dc29293-9e0c-482f-9517-4855549d0166",
-                                                "3dc29293-9e0c-482f-9517-4855549d0166X0",
-                                                "3dc29293-9e0c-482f-9517-4855549d0166X1",
-                                                "3dc29293-9e0c-482f-9517-4855549d0166X2"
-                                            ],
-                                            "columns": {
-                                                "3dc29293-9e0c-482f-9517-4855549d0166": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total transferred",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        },
-                                                        "formula": "max(system.network.in.bytes) - min(system.network.in.bytes)",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "3dc29293-9e0c-482f-9517-4855549d0166X2"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "3dc29293-9e0c-482f-9517-4855549d0166X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of max(system.network.in.bytes) - min(system.network.in.bytes)",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.in.bytes"
-                                                },
-                                                "3dc29293-9e0c-482f-9517-4855549d0166X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of max(system.network.in.bytes) - min(system.network.in.bytes)",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.in.bytes"
-                                                },
-                                                "3dc29293-9e0c-482f-9517-4855549d0166X2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of max(system.network.in.bytes) - min(system.network.in.bytes)",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "3dc29293-9e0c-482f-9517-4855549d0166X0",
-                                                                "3dc29293-9e0c-482f-9517-4855549d0166X1"
-                                                            ],
-                                                            "location": {
-                                                                "max": 59,
-                                                                "min": 0
-                                                            },
-                                                            "name": "subtract",
-                                                            "text": "max(system.network.in.bytes) - min(system.network.in.bytes)",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "3dc29293-9e0c-482f-9517-4855549d0166X0",
-                                                        "3dc29293-9e0c-482f-9517-4855549d0166X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0e": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Inbound traffic per second",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        },
-                                                        "formula": "(max(system.network.in.bytes, reducedTimeRange='30s') - min(system.network.in.bytes, reducedTimeRange='30s')) / 30",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX2"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Inbound Traffic per second",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "reducedTimeRange": "30s",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.in.bytes"
-                                                },
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Inbound Traffic per second",
-                                                    "operationType": "min",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "reducedTimeRange": "30s",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.network.in.bytes"
-                                                },
-                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Inbound Traffic per second",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                {
-                                                                    "args": [
-                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
-                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
-                                                                    ],
-                                                                    "location": {
-                                                                        "max": 108,
-                                                                        "min": 1
-                                                                    },
-                                                                    "name": "subtract",
-                                                                    "text": "max(system.network.in.bytes, reducedTimeRange='30s') - min(system.network.in.bytes, reducedTimeRange='30s')",
-                                                                    "type": "function"
-                                                                },
-                                                                30
-                                                            ],
-                                                            "location": {
-                                                                "max": 114,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "(max(system.network.in.bytes, reducedTimeRange='30s') - min(system.network.in.bytes, reducedTimeRange='30s')) / 30",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
-                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layerId": "6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
-                                "layerType": "data",
-                                "metricAccessor": "6702f512-7df6-4b95-892c-200bafa8bd0e",
-                                "secondaryMetricAccessor": "3dc29293-9e0c-482f-9517-4855549d0166",
-                                "subtitle": "(Over the last 30 seconds)"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "bc29a04c-68c9-42ee-8994-9cbe0580544d",
-                    "w": 12,
-                    "x": 36,
-                    "y": 11
-                },
-                "panelIndex": "bc29a04c-68c9-42ee-8994-9cbe0580544d",
-                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1540,7 +363,8 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Top processes by CPU usage"
                 },
                 "gridData": {
                     "h": 15,
@@ -1550,7 +374,6 @@
                     "y": 20
                 },
                 "panelIndex": "b479c652-8d38-47ed-8599-be33592ebffe",
-                "title": "Top processes by CPU usage",
                 "type": "lens"
             },
             {
@@ -1836,7 +659,8 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "CPU usage over time"
                 },
                 "gridData": {
                     "h": 15,
@@ -1846,7 +670,6 @@
                     "y": 20
                 },
                 "panelIndex": "43ee6ea2-797b-4ef6-83da-c81b9594f694",
-                "title": "CPU usage over time",
                 "type": "lens"
             },
             {
@@ -2041,7 +864,8 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {},
+                    "title": "System load"
                 },
                 "gridData": {
                     "h": 15,
@@ -2051,7 +875,6 @@
                     "y": 20
                 },
                 "panelIndex": "dcf35812-283d-4cc7-b7bb-76419f5231fc",
-                "title": "System load",
                 "type": "lens"
             },
             {
@@ -2077,7 +900,8 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "title": ""
                 },
                 "gridData": {
                     "h": 3,
@@ -2087,7 +911,6 @@
                     "y": 35
                 },
                 "panelIndex": "0aa7a83d-82f4-46d2-9e9e-10f2e63c7575",
-                "title": "",
                 "type": "visualization"
             },
             {
@@ -2266,7 +1089,8 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Top processes by memory usage"
                 },
                 "gridData": {
                     "h": 12,
@@ -2276,7 +1100,6 @@
                     "y": 38
                 },
                 "panelIndex": "5be13ea6-48db-4fc3-8213-20e4736be04e",
-                "title": "Top processes by memory usage",
                 "type": "lens"
             },
             {
@@ -2502,7 +1325,8 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Memory usage over time"
                 },
                 "gridData": {
                     "h": 16,
@@ -2512,7 +1336,6 @@
                     "y": 38
                 },
                 "panelIndex": "7138d681-0dc7-4055-a4c5-8395db1aa1e8",
-                "title": "Memory usage over time",
                 "type": "lens"
             },
             {
@@ -2677,7 +1500,8 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "title": ""
                 },
                 "gridData": {
                     "h": 3,
@@ -2687,7 +1511,6 @@
                     "y": 54
                 },
                 "panelIndex": "a41333eb-ba79-4557-9819-820de64abdf6",
-                "title": "",
                 "type": "visualization"
             },
             {
@@ -2873,7 +1696,8 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {}
+                    "enhancements": {},
+                    "title": "Top mountpoints by disk usage"
                 },
                 "gridData": {
                     "h": 10,
@@ -2883,7 +1707,6 @@
                     "y": 57
                 },
                 "panelIndex": "40c809d8-2728-4ead-a85a-02ac2c3c346e",
-                "title": "Top mountpoints by disk usage",
                 "type": "lens"
             },
             {
@@ -3099,7 +1922,8 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Rate of disk IO"
                 },
                 "gridData": {
                     "h": 14,
@@ -3109,7 +1933,6 @@
                     "y": 57
                 },
                 "panelIndex": "c250dacc-690a-418e-bab6-b11ef6afa80d",
-                "title": "Rate of disk IO",
                 "type": "lens"
             },
             {
@@ -3335,7 +2158,8 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "title": ""
                 },
                 "gridData": {
                     "h": 3,
@@ -3345,7 +2169,6 @@
                     "y": 71
                 },
                 "panelIndex": "4340cff4-224d-43c0-8e98-8257782236f3",
-                "title": "",
                 "type": "visualization"
             },
             {
@@ -3559,7 +2382,8 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": true,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 7,
@@ -3569,7 +2393,6 @@
                     "y": 74
                 },
                 "panelIndex": "f027c91d-4c9c-42ec-bf16-c79572e369b7",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -3864,7 +2687,8 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": true,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 7,
@@ -3874,7 +2698,6 @@
                     "y": 74
                 },
                 "panelIndex": "45714050-7573-4953-b610-488e1f6a689c",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -4209,7 +3032,8 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Network traffic (packets)"
                 },
                 "gridData": {
                     "h": 11,
@@ -4219,7 +3043,6 @@
                     "y": 74
                 },
                 "panelIndex": "c761a6d9-2d25-466f-ae7d-676614316973",
-                "title": "Network traffic (packets)",
                 "type": "lens"
             },
             {
@@ -4660,7 +3483,8 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "title": "Network traffic (bytes)"
                 },
                 "gridData": {
                     "h": 11,
@@ -4670,7 +3494,1363 @@
                     "y": 85
                 },
                 "panelIndex": "0a2fef88-441d-4115-9206-45702928ab95",
-                "title": "Network traffic (bytes)",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-f4bd8bea-8ae8-4312-9d98-8021d0efd23b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f4bd8bea-8ae8-4312-9d98-8021d0efd23b": {
+                                            "columnOrder": [
+                                                "00b4e73c-e039-402e-b22f-e1596e6e4191",
+                                                "f1a59a8b-c66d-4fc2-85c2-dc3af5fba2e1"
+                                            ],
+                                            "columns": {
+                                                "00b4e73c-e039-402e-b22f-e1596e6e4191": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "system.cpu.total.norm.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "CPU used",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "reducedTimeRange": "",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.cpu.total.norm.pct"
+                                                },
+                                                "f1a59a8b-c66d-4fc2-85c2-dc3af5fba2e1": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "isStaticValue": true,
+                                                    "label": "Static value: 1",
+                                                    "operationType": "static_value",
+                                                    "params": {
+                                                        "value": "1"
+                                                    },
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "f4bd8bea-8ae8-4312-9d98-8021d0efd23b",
+                                "layerType": "data",
+                                "maxAccessor": "f1a59a8b-c66d-4fc2-85c2-dc3af5fba2e1",
+                                "metricAccessor": "00b4e73c-e039-402e-b22f-e1596e6e4191",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 85
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "percent",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 85
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 100
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "showBar": true
+                            }
+                        },
+                        "title": "CPU Usage Gauge [Metrics System]",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "d0a6fc45-278c-427e-a440-eec3ec3ce367",
+                    "w": 9,
+                    "x": 0,
+                    "y": 5
+                },
+                "panelIndex": "d0a6fc45-278c-427e-a440-eec3ec3ce367",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9f6d8570-52c1-4af2-a105-b9993b2e8b5c": {
+                                            "columnOrder": [
+                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510",
+                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510X0"
+                                            ],
+                                            "columns": {
+                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Processes",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "unique_count(process.pid)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "314b8c49-2a3b-464b-bc85-ab7e098fd510X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Processes",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.pid"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
+                                "layerType": "data",
+                                "metricAccessor": "314b8c49-2a3b-464b-bc85-ab7e098fd510"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "17f54fe4-ae84-4319-97fd-069225d0a8fb",
+                    "w": 9,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "17f54fe4-ae84-4319-97fd-069225d0a8fb",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-d8bdfabd-3bb1-42bb-9bf1-82af91c6affa",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d8bdfabd-3bb1-42bb-9bf1-82af91c6affa": {
+                                            "columnOrder": [
+                                                "760d261e-509a-4bc4-8eec-5733d25624ca",
+                                                "a100cb72-c706-42e1-b705-9a73a7a5d762"
+                                            ],
+                                            "columns": {
+                                                "760d261e-509a-4bc4-8eec-5733d25624ca": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "system.memory.actual.used.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Memory used",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "reducedTimeRange": "",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.memory.actual.used.pct"
+                                                },
+                                                "a100cb72-c706-42e1-b705-9a73a7a5d762": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "isStaticValue": true,
+                                                    "label": "Static value: 1",
+                                                    "operationType": "static_value",
+                                                    "params": {
+                                                        "value": "1"
+                                                    },
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "d8bdfabd-3bb1-42bb-9bf1-82af91c6affa",
+                                "layerType": "data",
+                                "maxAccessor": "a100cb72-c706-42e1-b705-9a73a7a5d762",
+                                "metricAccessor": "760d261e-509a-4bc4-8eec-5733d25624ca",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 85
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "percent",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 85
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 100
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "showBar": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "e50a72f5-160a-4694-8f44-2e6da666b90b",
+                    "w": 9,
+                    "x": 9,
+                    "y": 5
+                },
+                "panelIndex": "e50a72f5-160a-4694-8f44-2e6da666b90b",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-72dc93ee-b1c5-43b2-8ea4-01e840c93cad",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "72dc93ee-b1c5-43b2-8ea4-01e840c93cad": {
+                                            "columnOrder": [
+                                                "70be4197-83b0-44ae-9f56-11bea599cda6",
+                                                "a3165f69-caab-4456-ae40-78f675231f2a"
+                                            ],
+                                            "columns": {
+                                                "70be4197-83b0-44ae-9f56-11bea599cda6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "system.memory.actual.used.bytes: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Memory used in bytes",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes"
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "reducedTimeRange": "",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.memory.actual.used.bytes"
+                                                },
+                                                "a3165f69-caab-4456-ae40-78f675231f2a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "system.memory.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Total Memory",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes"
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "reducedTimeRange": "",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.memory.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "72dc93ee-b1c5-43b2-8ea4-01e840c93cad",
+                                "layerType": "data",
+                                "metricAccessor": "70be4197-83b0-44ae-9f56-11bea599cda6",
+                                "secondaryMetricAccessor": "a3165f69-caab-4456-ae40-78f675231f2a"
+                            }
+                        },
+                        "title": "Memory usage vs total [Metrics System]",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "79d36896-445a-4904-ad18-e0234fd9ca3f",
+                    "w": 9,
+                    "x": 9,
+                    "y": 11
+                },
+                "panelIndex": "79d36896-445a-4904-ad18-e0234fd9ca3f",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7": {
+                                            "columnOrder": [
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3",
+                                                "ad2b1a82-ff4b-44e0-8a31-a921913f0512",
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X0",
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X1",
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X2"
+                                            ],
+                                            "columns": {
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Disk used",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true
+                                                            }
+                                                        },
+                                                        "formula": "last_value(system.fsstat.total_size.used)/last_value(system.fsstat.total_size.total) ",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "1f8434f8-82e7-4349-a68d-60665506fdc3X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"system.fsstat.total_size.used\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Disk used",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.fsstat.total_size.used"
+                                                },
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"system.fsstat.total_size.total\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Disk used",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.fsstat.total_size.total"
+                                                },
+                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Disk used",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X0",
+                                                                "1f8434f8-82e7-4349-a68d-60665506fdc3X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 85,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "last_value(system.fsstat.total_size.used)/last_value(system.fsstat.total_size.total) ",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "1f8434f8-82e7-4349-a68d-60665506fdc3X0",
+                                                        "1f8434f8-82e7-4349-a68d-60665506fdc3X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ad2b1a82-ff4b-44e0-8a31-a921913f0512": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "isStaticValue": true,
+                                                    "label": "Static value: 1",
+                                                    "operationType": "static_value",
+                                                    "params": {
+                                                        "value": "1"
+                                                    },
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7",
+                                "layerType": "data",
+                                "maxAccessor": "ad2b1a82-ff4b-44e0-8a31-a921913f0512",
+                                "metricAccessor": "1f8434f8-82e7-4349-a68d-60665506fdc3",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 85
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "percent",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 85
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 100
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "showBar": true
+                            }
+                        },
+                        "title": "Disk Used",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "81d645ce-9d97-499f-9117-b3e662caee53",
+                    "w": 9,
+                    "x": 18,
+                    "y": 5
+                },
+                "panelIndex": "81d645ce-9d97-499f-9117-b3e662caee53",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-6179b687-40bc-453c-9146-89a957636ee5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6179b687-40bc-453c-9146-89a957636ee5": {
+                                            "columnOrder": [
+                                                "19b84e5e-5a7f-4755-b505-7c5dca079df7"
+                                            ],
+                                            "columns": {
+                                                "19b84e5e-5a7f-4755-b505-7c5dca079df7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "system.load.5: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "5m load",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "reducedTimeRange": "",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.load.5"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "6179b687-40bc-453c-9146-89a957636ee5",
+                                "layerType": "data",
+                                "metricAccessor": "19b84e5e-5a7f-4755-b505-7c5dca079df7"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "baca3f6a-498a-4752-8882-1d8906d06405",
+                    "w": 9,
+                    "x": 18,
+                    "y": 11
+                },
+                "panelIndex": "baca3f6a-498a-4752-8882-1d8906d06405",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6a26e3ad-990f-42a2-82fd-f147b1ede3b0": {
+                                            "columnOrder": [
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0e",
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1",
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2",
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfb",
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0",
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1",
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX2"
+                                            ],
+                                            "columns": {
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Outbound traffic per second",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "(max(system.network.out.bytes, reducedTimeRange='30s') - min(system.network.out.bytes, reducedTimeRange='30s')) / 30",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Outbound Traffic per second",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "reducedTimeRange": "30s",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.out.bytes"
+                                                },
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Outbound Traffic per second",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "reducedTimeRange": "30s",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.out.bytes"
+                                                },
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Outbound Traffic per second",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
+                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 110,
+                                                                        "min": 1
+                                                                    },
+                                                                    "name": "subtract",
+                                                                    "text": "max(system.network.out.bytes, reducedTimeRange='30s') - min(system.network.out.bytes, reducedTimeRange='30s')",
+                                                                    "type": "function"
+                                                                },
+                                                                30
+                                                            ],
+                                                            "location": {
+                                                                "max": 116,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "(max(system.network.out.bytes, reducedTimeRange='30s') - min(system.network.out.bytes, reducedTimeRange='30s')) / 30",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
+                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total transferred",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "max(system.network.out.bytes) - min(system.network.out.bytes)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "edd2939d-15eb-419e-a0dd-c015dbf49dfbX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of max(system.network.out.bytes) - min(system.network.out.bytes)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.out.bytes"
+                                                },
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of max(system.network.out.bytes) - min(system.network.out.bytes)",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.out.bytes"
+                                                },
+                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of max(system.network.out.bytes) - min(system.network.out.bytes)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0",
+                                                                "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 61,
+                                                                "min": 0
+                                                            },
+                                                            "name": "subtract",
+                                                            "text": "max(system.network.out.bytes) - min(system.network.out.bytes)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "edd2939d-15eb-419e-a0dd-c015dbf49dfbX0",
+                                                        "edd2939d-15eb-419e-a0dd-c015dbf49dfbX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
+                                "layerType": "data",
+                                "metricAccessor": "6702f512-7df6-4b95-892c-200bafa8bd0e",
+                                "secondaryMetricAccessor": "edd2939d-15eb-419e-a0dd-c015dbf49dfb",
+                                "subtitle": "(Over the last 30 seconds)"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "076b7938-b8bb-46f4-a9a6-e627fb961a8b",
+                    "w": 9,
+                    "x": 27,
+                    "y": 5
+                },
+                "panelIndex": "076b7938-b8bb-46f4-a9a6-e627fb961a8b",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6a26e3ad-990f-42a2-82fd-f147b1ede3b0": {
+                                            "columnOrder": [
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0e",
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1",
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2",
+                                                "3dc29293-9e0c-482f-9517-4855549d0166",
+                                                "3dc29293-9e0c-482f-9517-4855549d0166X0",
+                                                "3dc29293-9e0c-482f-9517-4855549d0166X1",
+                                                "3dc29293-9e0c-482f-9517-4855549d0166X2"
+                                            ],
+                                            "columns": {
+                                                "3dc29293-9e0c-482f-9517-4855549d0166": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total transferred",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "max(system.network.in.bytes) - min(system.network.in.bytes)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "3dc29293-9e0c-482f-9517-4855549d0166X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "3dc29293-9e0c-482f-9517-4855549d0166X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of max(system.network.in.bytes) - min(system.network.in.bytes)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.in.bytes"
+                                                },
+                                                "3dc29293-9e0c-482f-9517-4855549d0166X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of max(system.network.in.bytes) - min(system.network.in.bytes)",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.in.bytes"
+                                                },
+                                                "3dc29293-9e0c-482f-9517-4855549d0166X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of max(system.network.in.bytes) - min(system.network.in.bytes)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "3dc29293-9e0c-482f-9517-4855549d0166X0",
+                                                                "3dc29293-9e0c-482f-9517-4855549d0166X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 59,
+                                                                "min": 0
+                                                            },
+                                                            "name": "subtract",
+                                                            "text": "max(system.network.in.bytes) - min(system.network.in.bytes)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "3dc29293-9e0c-482f-9517-4855549d0166X0",
+                                                        "3dc29293-9e0c-482f-9517-4855549d0166X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Inbound traffic per second",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "(max(system.network.in.bytes, reducedTimeRange='30s') - min(system.network.in.bytes, reducedTimeRange='30s')) / 30",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Inbound Traffic per second",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "reducedTimeRange": "30s",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.in.bytes"
+                                                },
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Inbound Traffic per second",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "reducedTimeRange": "30s",
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.network.in.bytes"
+                                                },
+                                                "6702f512-7df6-4b95-892c-200bafa8bd0eX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Inbound Traffic per second",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
+                                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 108,
+                                                                        "min": 1
+                                                                    },
+                                                                    "name": "subtract",
+                                                                    "text": "max(system.network.in.bytes, reducedTimeRange='30s') - min(system.network.in.bytes, reducedTimeRange='30s')",
+                                                                    "type": "function"
+                                                                },
+                                                                30
+                                                            ],
+                                                            "location": {
+                                                                "max": 114,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "(max(system.network.in.bytes, reducedTimeRange='30s') - min(system.network.in.bytes, reducedTimeRange='30s')) / 30",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX0",
+                                                        "6702f512-7df6-4b95-892c-200bafa8bd0eX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
+                                "layerType": "data",
+                                "metricAccessor": "6702f512-7df6-4b95-892c-200bafa8bd0e",
+                                "secondaryMetricAccessor": "3dc29293-9e0c-482f-9517-4855549d0166",
+                                "subtitle": "(Over the last 30 seconds)"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "bc29a04c-68c9-42ee-8994-9cbe0580544d",
+                    "w": 9,
+                    "x": 27,
+                    "y": 11
+                },
+                "panelIndex": "bc29a04c-68c9-42ee-8994-9cbe0580544d",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-3a005ea3-45ea-41d1-91d0-0bffd8c388ad",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3a005ea3-45ea-41d1-91d0-0bffd8c388ad": {
+                                            "columnOrder": [
+                                                "30e00376-7f88-4a38-adc1-1358fe9736a0",
+                                                "8ef48f4e-63f0-4fe8-8c59-4e06f9e32af4",
+                                                "2f785278-1310-44e8-a847-4ee44a5f5d95"
+                                            ],
+                                            "columns": {
+                                                "2f785278-1310-44e8-a847-4ee44a5f5d95": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum offset",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1,
+                                                                "fromUnit": "nanoseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    },
+                                                    "sourceField": "system.ntp.offset"
+                                                },
+                                                "30e00376-7f88-4a38-adc1-1358fe9736a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "NTP host",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2f785278-1310-44e8-a847-4ee44a5f5d95",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "sourceField": "system.ntp.host"
+                                                },
+                                                "8ef48f4e-63f0-4fe8-8c59-4e06f9e32af4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"system.ntp.offset\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Current offset",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1,
+                                                                "fromUnit": "nanoseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "sourceField": "system.ntp.offset"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "30e00376-7f88-4a38-adc1-1358fe9736a0",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "2f785278-1310-44e8-a847-4ee44a5f5d95",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "8ef48f4e-63f0-4fe8-8c59-4e06f9e32af4",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "3a005ea3-45ea-41d1-91d0-0bffd8c388ad",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "35c23236-8915-47c3-9ed9-9ffc64b8f532",
+                    "w": 12,
+                    "x": 36,
+                    "y": 5
+                },
+                "panelIndex": "35c23236-8915-47c3-9ed9-9ffc64b8f532",
                 "type": "lens"
             }
         ],
@@ -4679,55 +4859,9 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-04-12T07:36:25.817Z",
+    "created_at": "2025-10-27T07:30:22.164Z",
     "id": "system-79ffd6e0-faa0-11e6-947f-177f697178b8",
-    "managed": false,
     "references": [
-        {
-            "id": "metrics-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d0a6fc45-278c-427e-a440-eec3ec3ce367:indexpattern-datasource-layer-f4bd8bea-8ae8-4312-9d98-8021d0efd23b",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e50a72f5-160a-4694-8f44-2e6da666b90b:indexpattern-datasource-layer-d8bdfabd-3bb1-42bb-9bf1-82af91c6affa",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "81d645ce-9d97-499f-9117-b3e662caee53:indexpattern-datasource-layer-70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "076b7938-b8bb-46f4-a9a6-e627fb961a8b:indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "17f54fe4-ae84-4319-97fd-069225d0a8fb:indexpattern-datasource-layer-9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "79d36896-445a-4904-ad18-e0234fd9ca3f:indexpattern-datasource-layer-72dc93ee-b1c5-43b2-8ea4-01e840c93cad",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "baca3f6a-498a-4752-8882-1d8906d06405:indexpattern-datasource-layer-6179b687-40bc-453c-9146-89a957636ee5",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "bc29a04c-68c9-42ee-8994-9cbe0580544d:indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
-            "type": "index-pattern"
-        },
         {
             "id": "metrics-*",
             "name": "b479c652-8d38-47ed-8599-be33592ebffe:indexpattern-datasource-layer-7e73c5a0-687d-49a1-9431-d445b9698b64",
@@ -4807,8 +4941,59 @@
             "id": "metrics-*",
             "name": "0a2fef88-441d-4115-9206-45702928ab95:indexpattern-datasource-layer-072cbcc4-1508-483b-b393-05f506c892bb",
             "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d0a6fc45-278c-427e-a440-eec3ec3ce367:indexpattern-datasource-layer-f4bd8bea-8ae8-4312-9d98-8021d0efd23b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "17f54fe4-ae84-4319-97fd-069225d0a8fb:indexpattern-datasource-layer-9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e50a72f5-160a-4694-8f44-2e6da666b90b:indexpattern-datasource-layer-d8bdfabd-3bb1-42bb-9bf1-82af91c6affa",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "79d36896-445a-4904-ad18-e0234fd9ca3f:indexpattern-datasource-layer-72dc93ee-b1c5-43b2-8ea4-01e840c93cad",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "81d645ce-9d97-499f-9117-b3e662caee53:indexpattern-datasource-layer-70f246cc-d5ac-4d11-8f8f-b7bf9e0f5aa7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "baca3f6a-498a-4752-8882-1d8906d06405:indexpattern-datasource-layer-6179b687-40bc-453c-9146-89a957636ee5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "076b7938-b8bb-46f4-a9a6-e627fb961a8b:indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "bc29a04c-68c9-42ee-8994-9cbe0580544d:indexpattern-datasource-layer-6a26e3ad-990f-42a2-82fd-f147b1ede3b0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "35c23236-8915-47c3-9ed9-9ffc64b8f532:indexpattern-datasource-layer-3a005ea3-45ea-41d1-91d0-0bffd8c388ad",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "8.9.0"
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
