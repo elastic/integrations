@@ -54,6 +54,7 @@ response.pagination:
       target: url.params.startOffset
       value: '[[if (ne (len .last_response.body.response) 0)]][[toInt (.last_response.url.params.Get "endOffset")]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.endOffset
       value: '[[add (toInt (.last_response.url.params.Get "endOffset")) {{batch_size}}]]'
@@ -64,6 +65,7 @@ response.split:
 cursor:
   last_event_ts:
     value: '[[if (lt (len .last_response.body.response) {{batch_size}})]][[.last_event.pluginModDate]][[end]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
