@@ -1,0 +1,37 @@
+{
+  "id": "sns-notifications-failed",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "SNS Notifications Failed",
+    "tags": ["aws", "sns", "notifications"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.sns-default\n| STATS notificationsfailed=avg(aws.sns.NumberOfNotificationsFailed.sum) by cloud.account.id, cloud.region, aws.dimensions.TopicName\n| WHERE notificationsfailed > 0"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "event.ingested",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
