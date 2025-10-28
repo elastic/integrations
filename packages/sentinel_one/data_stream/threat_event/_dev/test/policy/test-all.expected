@@ -105,7 +105,10 @@ inputs:
                         "worklist": {
                           "data": (body.?pagination.nextCursor.orValue(null) != null) ? state.worklist.data : tail(state.worklist.data),
                         },
-                        "want_more": state.?fetch_more.orValue(false) ? state.fetch_more : (body.?pagination.nextCursor.orValue(null) != null),
+                        "want_more": state.?fetch_more.orValue(false) ?
+                          state.fetch_more
+                        :
+                          size(state.worklist.data) > 1 || (body.?pagination.nextCursor.orValue(null) != null),
                       }
                     )
                   :
