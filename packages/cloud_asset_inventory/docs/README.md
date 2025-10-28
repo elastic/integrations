@@ -12,8 +12,6 @@ Once you connect your cloud accounts, this integration automatically finds and l
 - **GCP**: Cloud Storage buckets, Compute Engine instances, Kubernetes clusters, and more.
 - **Azure**: Virtual Machines, Blob Storage, Azure Kubernetes Service (AKS), and more.
 
-> ⚠️ (BETA) Please note: Multiple cloud providers per policy are not supported. Please select only one.
-
 [View the full list of supported services for discovery](https://github.com/elastic/cloudbeat/blob/main/internal/inventory/ASSETS.md).
 
 ### Use cases
