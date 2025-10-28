@@ -1488,14 +1488,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| system.ntp.host | The remote NTP server address. | keyword |
-| system.ntp.offset | The estimated offset of the local host's system clock relative to the server's clock (in ns). | long |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| system.ntp.host | The remote NTP server address. | keyword |  |  |
+| system.ntp.offset | The estimated offset of the local host's system clock relative to the server's clock (in ns). | long | nanos | gauge |
 
 
 An example event for `ntp` looks as following:
