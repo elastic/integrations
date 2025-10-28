@@ -390,6 +390,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "ntp"}}
 
+{{event "ntp"}}
+
 ### Process
 
 The System `process` data stream provides process statistics. One document is
