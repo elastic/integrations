@@ -53,7 +53,12 @@ https://management.azure.com/ for azure PublicCloud
 https://management.usgovcloudapi.net/ for azure USGovernmentCloud
 Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
+## Setup
+
+
 ## App Service Logs
+
+{{event "app_service_logs"}}
 
 **ECS Field Reference**
 
