@@ -54,9 +54,14 @@ https://management.usgovcloudapi.net/ for azure USGovernmentCloud
 Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
 ## Setup
-
+To start collecting data with this integration, you need to:
+1. Set up an Event Hub namespace and an Event Hub within it. Follow the instructions in the [Azure Event Hubs documentation](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
+2. Configure diagnostic settings for your Azure App Service to send logs to the Event Hub. Follow the instructions in the [Azure App Service diagnostic settings documentation](https://learn.microsoft.com/en-us/azure/app-service/monitor-diagnostic-logs#send-diagnostic-logs-to-an-event-hub).
+3. Create a Blob Storage account to store the offsets/state of the Event Hub messages. Follow the instructions in the [Azure Blob Storage documentation](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal).
+4. Configure the integration with the necessary credentials mentioned in the Requirements section.
 
 ## App Service Logs
+Collects different types of logs from Azure App Service via Event Hub.
 
 {{event "app_service_logs"}}
 
