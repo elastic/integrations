@@ -333,40 +333,51 @@ processors:
   - script:
       lang: painless
       ignore_failure: true
-      description: Compute Shannon entropy of the script block text with signature removed.
+      description: >
+        Compute Shannon entropy of script block text using Unicode character distribution.
+        Entropy (0-20 bits) measures randomness; surprisal_sd measures distribution uniformity.
       if: ctx?._temp?.script_block_no_signature != null
       source: |-
         String script = ctx._temp.script_block_no_signature;
-        if (script.isEmpty()) {
-          return;
-        }
-        int cpLen = script.codePointCount(0, script.length());
-        if (cpLen == 0) {
+        
+        script = java.text.Normalizer.normalize(script, java.text.Normalizer.Form.NFC);
+        
+        int n = script.codePointCount(0, script.length());
+
+        if (n == 0) {
           return;
         }
 
         Map counts = script.codePoints().boxed().collect(Collectors.groupingBy(c -> c, Collectors.counting()));
+        int uniqueSymbols = counts.size();
 
         double invLog2 = 1.0 / Math.log(2.0);
         double entropy = 0.0;
+        double surprisalVar = 0.0;
+        double pSum = 0.0;
+
         for (def value : counts.values()) {
-            double p = ((Number) value).doubleValue() / (double) cpLen;
-            entropy -= p * Math.log(p) * invLog2;
-        }
+            double cnt = ((Number) value).doubleValue();
+            double p = cnt / (double) n;
+            double l2p = Math.log(p) * invLog2;
 
-        int uniqueCount = counts.size();
-        double normalizedEntropy = (uniqueCount > 1)
-            ? entropy / (Math.log(uniqueCount) * invLog2)
-            : 0.0;
-        normalizedEntropy = Math.max(0.0, Math.min(1.0, normalizedEntropy));
-
-        if (ctx.powershell == null) {
-          ctx.powershell = ['file': [:]];
-        } else if (ctx.powershell.file == null) {
-          ctx.powershell.file = [:];
+            pSum += p;
+            double tmp = entropy;
+            entropy = tmp + (p / pSum) * (l2p - tmp);
+            surprisalVar += p * (l2p - tmp) * (l2p - entropy);
         }
-        ctx.powershell.file.script_block_entropy = entropy;
-        ctx.powershell.file.script_block_entropy_normalized = normalizedEntropy;
+        
+        surprisalVar = Math.max(0.0, surprisalVar);
+        double surprisalSd = Math.sqrt(surprisalVar);
+        double entropyBits = -entropy;
+        if (entropyBits == -0.0) {
+            entropyBits = 0.0;
+        }
+        
+        ctx.powershell.file.script_block_entropy_bits = entropyBits;
+        ctx.powershell.file.script_block_surprisal_sd = surprisalSd;
+        ctx.powershell.file.script_block_length = n;
+        ctx.powershell.file.script_block_unique_symbols = uniqueSymbols;
 
   - split:
       description: Split Event 4103 command invocation details.
