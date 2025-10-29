@@ -26,9 +26,6 @@ An example event for `app_service` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "azure-eventhub"
-    },
     "agent": {
         "name": "EPGETBIW05AD",
         "id": "e42ad9e7-fc37-4342-80cc-ee5bcb314f5d",
@@ -55,13 +52,6 @@ An example event for `app_service` looks as following:
         "ingested": "2025-10-28T09:40:37Z",
         "dataset": "azure_app_service.app_service_logs"
     },
-    "azure-eventhub": {
-        "sequence_number": 133,
-        "consumer_group": "$Default",
-        "offset": 107374190096,
-        "eventhub": "testeventhub",
-        "enqueued_time": "2025-10-28T09:40:36.610Z"
-    },
     "tags": [
         "azure-appservice",
         "forwarded"
@@ -79,7 +69,6 @@ An example event for `app_service` looks as following:
             "event_primary_stamp_name": "waws-prod-fra-033",
             "event_stamp_type": "Stamp",
             "host": "10-30-0-225",
-            "location": "Germany West Central",
             "category": "AppServiceConsoleLogs",
             "container_id": "a9ea19c60625_lemon-flower-af075f43c47545e6b4248c46905e5188"
         }
