@@ -327,6 +327,26 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | meraki.network.id |  | keyword |  |
 | meraki.network.name |  | keyword |  |
+| meraki.network.vpn_peers.jitter_summaries.jitter_avg | Average jitter in milliseconds | double | ms |
+| meraki.network.vpn_peers.jitter_summaries.jitter_max | Maximum jitter in milliseconds | double | ms |
+| meraki.network.vpn_peers.jitter_summaries.jitter_min | Minimum jitter in milliseconds | double | ms |
+| meraki.network.vpn_peers.jitter_summaries.receiver_uplink |  | keyword |  |
+| meraki.network.vpn_peers.jitter_summaries.sender_uplink |  | keyword |  |
+| meraki.network.vpn_peers.latency_summaries.latency_avg.ms |  | double | ms |
+| meraki.network.vpn_peers.latency_summaries.latency_max.ms |  | double | ms |
+| meraki.network.vpn_peers.latency_summaries.latency_min.ms |  | double | ms |
+| meraki.network.vpn_peers.latency_summaries.receiver_uplink |  | keyword |  |
+| meraki.network.vpn_peers.latency_summaries.sender_uplink |  | keyword |  |
+| meraki.network.vpn_peers.loss_percentage_summaries.loss_avg.pct |  | double | percent |
+| meraki.network.vpn_peers.loss_percentage_summaries.loss_max.pct |  | double | percent |
+| meraki.network.vpn_peers.loss_percentage_summaries.loss_min.pct |  | double | percent |
+| meraki.network.vpn_peers.loss_percentage_summaries.receiver_uplink |  | keyword |  |
+| meraki.network.vpn_peers.loss_percentage_summaries.sender_uplink |  | keyword |  |
+| meraki.network.vpn_peers.mos_summaries.mos_avg |  | double |  |
+| meraki.network.vpn_peers.mos_summaries.mos_max |  | double |  |
+| meraki.network.vpn_peers.mos_summaries.mos_min |  | double |  |
+| meraki.network.vpn_peers.mos_summaries.receiver_uplink |  | keyword |  |
+| meraki.network.vpn_peers.mos_summaries.sender_uplink |  | keyword |  |
 | meraki.network.vpn_peers.network_id |  | keyword |  |
 | meraki.network.vpn_peers.network_name |  | keyword |  |
 | meraki.network.vpn_peers.usage_summary.received.bytes |  | long | byte |
