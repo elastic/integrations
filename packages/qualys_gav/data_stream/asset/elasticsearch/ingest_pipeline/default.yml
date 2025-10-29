@@ -23,6 +23,30 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
 
+  # Set up tag logic for choosing which cloud metadata to include.
+  - append:
+      field: tags
+      value: ["elastic_cloud_data", "provider_cloud_data"]
+      if: ctx.tags?.contains('both') == true
+  - script:
+      lang: painless
+      if: ctx.tags?.contains('both') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('both'));
+  - script:
+      lang: painless
+      if: ctx.cloud == null && ctx.tags?.contains('elastic_cloud_data') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
+  - set:
+      field: _conf.want_provider_cloud
+      value: true
+      if: ctx.tags?.contains('provider_cloud_data') == true
+  - remove:
+      description: Remove elastic agent-provided cloud metadata fields if not requested.
+      field: cloud
+      if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
+      ignore_missing: true
+      ignore_failure: true
+
   # parse the event JSON
   - rename:
       field: message
@@ -1094,6 +1118,18 @@ processors:
       target_field: cloud.provider
       tag: lowercase_cloud_provider_from_asset_provider
       ignore_missing: true
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_asset_cloud_provider_aws_ec2_account_id
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.account_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_aws_ec2_availability_zone
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.availability_zone
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
   - convert:
       field: qualys_gav.asset.cloud_provider.aws.ec2.has_agent
       tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_has_agent_to_boolean
@@ -1106,6 +1142,18 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_aws_ec2_instance_id
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.instance_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_aws_ec2_instance_type
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.instance_type
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
   - date:
       field: qualys_gav.asset.cloud_provider.aws.ec2.launchdate
       tag: date_qualys_gav_asset_cloud_provider_aws_ec2_launchdate
@@ -1133,6 +1181,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_asset_cloud_provider_aws_ec2_region_code
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.region.code
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
   - convert:
       field: qualys_gav.asset.cloud_provider.aws.ec2.spot_instance
       tag: convert_qualys_gav_asset_cloud_provider_aws_ec2_spot_instance_to_boolean
