@@ -209,132 +209,132 @@ processors:
       tag: set_panw_panos_destination_location_b4a8aa0b
       field: panw.panos.destination.location
       copy_from: _temp_.dstloc
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_destination_ip_07b53525
       field: destination.ip
       copy_from: panw.panos.destination.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_destination_nat_ip_3718bfe7
       field: destination.nat.ip
       copy_from: panw.panos.destination.nat.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_destination_nat_port_ed3fbecb
       field: destination.nat.port
       copy_from: panw.panos.destination.nat.port
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_destination_port_f95b8fc9
       field: destination.port
       copy_from: panw.panos.destination.port
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_destination_user_email_a9ced2d1
       field: destination.user.email
       copy_from: panw.panos.recipient
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_file_type_3b47313f
       field: file.type
       copy_from: panw.panos.file.type
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_http_request_method_ee026d61
       field: http.request.method
       copy_from: panw.panos.http_method
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_http_request_referrer_d49699ae
       field: http.request.referrer
       copy_from: panw.panos.referrer
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_log_level_ed3c9f74
       field: log.level
       copy_from: panw.panos.severity
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_network_application_5ae7266b
       field: network.application
       copy_from: panw.panos.network.application
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_panw_panos_network_direction_7b1610d9
       field: panw.panos.network.direction
       copy_from: _temp_.direction
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_panw_panos_forwarded_ip_869ae961
       field: panw.panos.forwarded_ip
       copy_from: network.forwarded_ip
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_network_transport_860fbbd0
       field: network.transport
       copy_from: panw.panos.protocol
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_observer_egress_interface_name_a7cd428a
       field: observer.egress.interface.name
       copy_from: panw.panos.outbound_interface
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_observer_egress_zone_1c62484c
       field: observer.egress.zone
       copy_from: panw.panos.destination.zone
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_observer_hostname_5bc96c94
       field: observer.hostname
       copy_from: panw.panos.device_name
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_observer_ingress_interface_name_0cf960b9
       field: observer.ingress.interface.name
       copy_from: panw.panos.inbound_interface
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_observer_ingress_zone_99ce4399
       field: observer.ingress.zone
       copy_from: panw.panos.source.zone
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_rule_uuid_5478ecb2
       field: rule.uuid
       copy_from: panw.panos.rule_uuid
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_panw_panos_source_location_3344cd6f
       field: panw.panos.source.location
       copy_from: _temp_.srcloc
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_source_ip_c1b0f423
       field: source.ip
       copy_from: panw.panos.source.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_source_nat_ip_c6ea5d2f
       field: source.nat.ip
       copy_from: panw.panos.source.nat.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_source_port_ed14489b
       field: source.port
       copy_from: panw.panos.source.port
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_source_nat_port_dcfd151f
       field: source.nat.port
       copy_from: panw.panos.source.nat.port
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       tag: set_source_user_email_1f28b2dc
       field: source.user.email
       copy_from: panw.panos.sender
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       if: 'ctx.panw?.panos?.sub_type == "url" && ctx.panw?.panos?.misc instanceof String'
       tag: set_url
@@ -419,7 +419,7 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'file' && (ctx.panw?.panos?.misc instanceof String) && (ctx.panw.panos.misc.contains('/') || ctx.panw.panos.misc.contains('\\'))
       field: file.path
       copy_from: panw.panos.misc
-      ignore_failure: true
+      ignore_empty_value: true
   - script:
       tag: script_b7379098
       if: ctx.file?.path instanceof String
@@ -436,7 +436,7 @@ processors:
       if: '["file", "virus", "vulnerability", "wildfire", "wildfire-virus"].contains(ctx.panw?.panos?.sub_type) && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains("/") || ctx.panw.panos.misc.contains("\\"))'
       field: file.name
       copy_from: panw.panos.misc
-      ignore_failure: true
+      ignore_empty_value: true
 
   # vulnerability can be either file or url. If it's a file, remove all url fields it was parsed into
   - remove:
@@ -448,7 +448,7 @@ processors:
       tag: set_panw_panos_user_agent_f4b744c1
       field: panw.panos.user_agent
       copy_from: _temp_.user_agent
-      ignore_failure: true
+      ignore_empty_value: true
   - trim:
       tag: trim_panw_panos_url_category_list_e818fc56
       if: ctx.panw?.panos?.url_category_list != null
