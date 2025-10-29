@@ -1412,16 +1412,6 @@ processors:
         } else {
           ctx.o365audit.RunningTime = ctx.o365audit.RunningTime.toString();
         }
-  - script:
-      tag: convert_operationcount
-      description: Ensure that OperationCount is not rendered with e-notation or other numeric
-      if: ctx.o365audit?.OperationCount != null
-      source: |-
-        if (ctx.o365audit.OperationCount instanceof Number) {
-          ctx.o365audit.OperationCount = ((long)ctx.o365audit.OperationCount).toString();
-        } else {
-          ctx.o365audit.OperationCount = ctx.o365audit.OperationCount.toString();
-        }
   - append:
       field: email.message_id
       value: "{{{o365audit.InternetMessageId}}}"
