@@ -8,7 +8,7 @@ This integration is for [Cisco Umbrella](https://docs.umbrella.com/). It include
 
 ### Compatibility
 
-This integration supports the log schema version 13.
+This integration supports the log [schema version 13](https://docs.umbrella.com/umbrella-user-guide/docs/log-format-and-versioning#log-schema-versions).
 
 ## What do I need to use this integration?
 
@@ -194,7 +194,7 @@ An example event for `log` looks as following:
 | cisco.umbrella.isolate_action | The remote browser isolation state associated with the request. | keyword |
 | cisco.umbrella.last_packet_timestamp | The timestamp when the last packet of the session was received in UTC in seconds. | date |
 | cisco.umbrella.message | A brief description of the signature. | keyword |
-| cisco.umbrella.operatoin_mode | The mode of operation chosen when enabling IPS (IDS, IPS or UNKNOWN). | keyword |
+| cisco.umbrella.operation_mode | The mode of operation chosen when enabling IPS (IDS, IPS or UNKNOWN). | keyword |
 | cisco.umbrella.origin_id | The unique identity of the network tunnel. | keyword |
 | cisco.umbrella.policy_identity_type | The first identity type matched with this request. Available in version 3 and above. | keyword |
 | cisco.umbrella.policy_resource_id | The ID identifies the IPS policy resource. | keyword |

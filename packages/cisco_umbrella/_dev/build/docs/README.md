@@ -8,7 +8,7 @@ This integration is for [Cisco Umbrella](https://docs.umbrella.com/). It include
 
 ### Compatibility
 
-This integration supports the log schema version 13.
+This integration supports the log [schema version 13](https://docs.umbrella.com/umbrella-user-guide/docs/log-format-and-versioning#log-schema-versions).
 
 ## What do I need to use this integration?
 
