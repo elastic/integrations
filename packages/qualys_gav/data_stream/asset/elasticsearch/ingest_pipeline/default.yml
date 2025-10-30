@@ -1172,7 +1172,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  # Map AWS EC2 specific fields to ECS fields
+  # Map/Convert AWS EC2 specific fields to ECS fields
   - set:
       field: cloud.account.id
       tag: set_cloud_account_id_from_asset_cloud_provider_aws_ec2_account_id
@@ -1212,9 +1212,10 @@ processors:
   - set:
       field: cloud.service.name
       tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'aws'
       value: ec2
 
-  # Map Azure specific fields to ECS fields
+  # Map/Convert Azure specific fields to ECS fields
   - set:
       field: cloud.account.id
       tag: set_cloud_account_id_from_asset_cloud_provider_azure_vm_subscription_id
@@ -1245,8 +1246,13 @@ processors:
       copy_from: qualys_gav.asset.cloud_provider.azure.vm.location
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
-  
-  # Map GCP specific fields to ECS fields
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure'
+      value: vm
+
+  # Map/Convert GCP specific fields to ECS fields
   - set:
       field: cloud.account.id
       tag: set_cloud_account_id_from_asset_cloud_provider_gcp_compute_project_id
@@ -1297,6 +1303,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'gcp'
+      value: compute
 
   # Convert IBM specific fields
   - convert:
@@ -1310,7 +1321,7 @@ processors:
       type: string
       ignore_missing: true
   
-  # Map IBM specific fields to ECS fields
+  # Map/Convert IBM specific fields to ECS fields
   - set:
       field: cloud.account.id
       tag: set_cloud_account_id_from_asset_cloud_provider_ibm_virtual_server_datacenter_id
