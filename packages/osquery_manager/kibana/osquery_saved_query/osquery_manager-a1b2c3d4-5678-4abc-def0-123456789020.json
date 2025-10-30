@@ -1,0 +1,80 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enumerate storage devices focusing on removable media and unusual volumes",
+        "ecs_mapping": [
+            {
+                "key": "host.disk.name",
+                "value": {
+                    "field": "device_id"
+                }
+            },
+            {
+                "key": "host.disk.type",
+                "value": {
+                    "field": "type"
+                }
+            },
+            {
+                "key": "host.disk.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "host.disk.free",
+                "value": {
+                    "field": "free_space"
+                }
+            },
+            {
+                "key": "file.device",
+                "value": {
+                    "field": "file_system"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["host"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "disk-enumeration"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "host.disk_info"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["removable_media", "disk_info", "storage", "host_info"]
+                }
+            }
+        ],
+        "id": "disk_drives_removable_elastic",
+        "interval": "3600",
+        "query": "SELECT device_id, type, description, file_system, size, free_space, boot_partition FROM logical_drives WHERE size > 0 AND (type = 'Removable Disk' OR type = 'Network Drive' OR file_system NOT IN ('NTFS', 'FAT32', 'exFAT', 'ext4', 'ext3', 'APFS', 'HFS+')) ORDER BY device_id;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789020",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

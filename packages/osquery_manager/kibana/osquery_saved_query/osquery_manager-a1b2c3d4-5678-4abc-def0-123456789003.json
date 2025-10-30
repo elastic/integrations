@@ -1,0 +1,62 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect suspicious services running from user-writable directories or with generic names commonly used by malware",
+        "ecs_mapping": [
+            {
+                "key": "service.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "service.state",
+                "value": {
+                    "field": "status"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "user_account"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "services"]
+                }
+            }
+        ],
+        "id": "suspicious_services_elastic",
+        "interval": "3600",
+        "query": "SELECT name, display_name, status, start_type, path, user_account FROM services WHERE ((path NOT LIKE 'C:\\Windows\\System32\\%' AND path NOT LIKE 'C:\\Windows\\SysWOW64\\%' AND path NOT LIKE 'C:\\Program Files\\Windows%') OR path LIKE '%\\Users\\%\\AppData\\%' OR path LIKE '%\\Temp\\%' OR path LIKE '%\\Users\\Public\\%' OR path LIKE '%\\ProgramData\\%') AND name NOT IN ('wuauserv', 'BITS', 'TrustedInstaller', 'WinDefend') ORDER BY name LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789003",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

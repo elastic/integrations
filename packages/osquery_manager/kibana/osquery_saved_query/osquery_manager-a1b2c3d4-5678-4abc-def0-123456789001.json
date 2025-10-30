@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Track executed binaries via AppCompatCache (ShimCache) focusing on suspicious paths including user-writable directories",
+        "ecs_mapping": [
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "executable"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "shimcache-entry"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["execution_artifact", "appcompatcache", "forensics"]
+                }
+            }
+        ],
+        "id": "shimcache_execution_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT modified_time, path, executable, execution_flag FROM shimcache WHERE (path LIKE '%\\Users\\%\\AppData\\%' OR path LIKE '%\\Temp\\%' OR path LIKE '%\\Users\\Public\\%' OR path LIKE '%\\ProgramData\\%') AND path NOT LIKE '%\\Windows\\System32\\%' AND path NOT LIKE '%\\Windows\\SysWOW64\\%' ORDER BY modified_time DESC LIMIT 500;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789001",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

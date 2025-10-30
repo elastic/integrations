@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Monitor Windows registry Run keys and startup locations for persistence mechanisms, excluding known Microsoft entries",
+        "ecs_mapping": [
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "registry.key",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "registry.value",
+                "value": {
+                    "field": "data"
+                }
+            },
+            {
+                "key": "registry.data.type",
+                "value": {
+                    "field": "type"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "registry", "autorun"]
+                }
+            }
+        ],
+        "id": "registry_persistence_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT path, name, data, type FROM registry WHERE (path LIKE 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run%' OR path LIKE 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run%' OR path LIKE 'HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run%') AND name != '' AND data NOT LIKE '%\\Windows\\System32\\%' AND data NOT LIKE '%\\Program Files\\Windows%' ORDER BY path LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789012",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

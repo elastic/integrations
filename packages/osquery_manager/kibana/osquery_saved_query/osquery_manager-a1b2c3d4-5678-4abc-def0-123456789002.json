@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Track application execution via Prefetch files focusing on LOLBins and recently executed programs with low run counts",
+        "ecs_mapping": [
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "executable_name"
+                }
+            },
+            {
+                "key": "event.start",
+                "value": {
+                    "field": "last_run_time"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["start", "info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "process-execution"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["execution_artifact", "prefetch", "forensics"]
+                }
+            }
+        ],
+        "id": "prefetch_execution_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT executable_name, prefetch_hash, run_count, last_run_time, filename FROM prefetch WHERE (executable_name LIKE '%POWERSHELL%' OR executable_name LIKE '%CMD.EXE%' OR executable_name LIKE '%WSCRIPT%' OR executable_name LIKE '%CSCRIPT%' OR executable_name LIKE '%RUNDLL32%' OR executable_name LIKE '%REGSVR32%' OR executable_name LIKE '%MSHTA%' OR executable_name LIKE '%CERTUTIL%' OR executable_name LIKE '%BITSADMIN%' OR (run_count < 5 AND last_run_time > datetime('now', '-7 days'))) ORDER BY last_run_time DESC LIMIT 200;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789002",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

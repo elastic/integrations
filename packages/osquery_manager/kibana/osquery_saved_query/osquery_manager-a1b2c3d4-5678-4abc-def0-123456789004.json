@@ -1,0 +1,57 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Identify enabled scheduled tasks executing from suspicious locations or using LOLBins like PowerShell, rundll32, or regsvr32",
+        "ecs_mapping": [
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "action"
+                }
+            },
+            {
+                "key": "event.start",
+                "value": {
+                    "field": "last_run_time"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "scheduled_task"]
+                }
+            }
+        ],
+        "id": "scheduled_tasks_persistence_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT name, action, path, enabled, state, hidden, last_run_time, next_run_time FROM scheduled_tasks WHERE enabled = 1 AND (action LIKE '%\\Users\\%\\AppData\\%' OR action LIKE '%\\Temp\\%' OR action LIKE '%\\Users\\Public\\%' OR action LIKE '%\\ProgramData\\%' OR action LIKE '%powershell%' OR action LIKE '%cmd.exe%' OR action LIKE '%wscript%' OR action LIKE '%cscript%' OR action LIKE '%rundll32%' OR action LIKE '%regsvr32%' OR action LIKE '%mshta%') ORDER BY last_run_time DESC LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789004",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

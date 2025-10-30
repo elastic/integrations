@@ -1,0 +1,74 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Identify active network connections to external IPs on common C2 and lateral movement ports like 445, 3389, 4444, 8080",
+        "ecs_mapping": [
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "source.ip",
+                "value": {
+                    "field": "local_address"
+                }
+            },
+            {
+                "key": "source.port",
+                "value": {
+                    "field": "local_port"
+                }
+            },
+            {
+                "key": "destination.ip",
+                "value": {
+                    "field": "remote_address"
+                }
+            },
+            {
+                "key": "destination.port",
+                "value": {
+                    "field": "remote_port"
+                }
+            },
+            {
+                "key": "network.transport",
+                "value": {
+                    "field": "protocol"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["network"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["connection"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["network_activity", "c2_detection", "connections"]
+                }
+            }
+        ],
+        "id": "network_connections_c2_elastic",
+        "interval": "3600",
+        "query": "SELECT pid, protocol, local_address, local_port, remote_address, remote_port, state FROM process_open_sockets WHERE state = 'ESTABLISHED' AND remote_address NOT LIKE '10.%' AND remote_address NOT LIKE '192.168.%' AND remote_address NOT LIKE '172.16.%' AND remote_address NOT LIKE '172.17.%' AND remote_address NOT LIKE '172.18.%' AND remote_address NOT LIKE '172.19.%' AND remote_address NOT LIKE '172.2_.%' AND remote_address NOT LIKE '172.30.%' AND remote_address NOT LIKE '172.31.%' AND remote_address != '127.0.0.1' AND remote_address != '::1' AND remote_address != '' ORDER BY remote_port LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789010",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

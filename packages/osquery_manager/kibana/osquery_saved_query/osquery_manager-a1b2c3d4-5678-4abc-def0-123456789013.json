@@ -1,0 +1,57 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect WMI persistence via command line and script event consumers, focusing on PowerShell, encoded commands, and network activity",
+        "ecs_mapping": [
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "command_line_template"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "wmi-persistence"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "wmi", "advanced_threat"]
+                }
+            }
+        ],
+        "id": "wmi_persistence_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT name, command_line_template FROM wmi_cli_event_consumers WHERE name NOT IN ('SCM Event Log Consumer', 'BVTConsumer') UNION ALL SELECT name, script_text AS command_line_template FROM wmi_script_event_consumers WHERE name NOT IN ('SCM Event Log Consumer', 'BVTConsumer') ORDER BY name LIMIT 50;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789013",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}
