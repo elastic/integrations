@@ -61,9 +61,8 @@ To collect AWS specific metrics, follow these steps:
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **AWS CloudWatch**.
 3. Select the **AWS CloudWatch** integration and add it.
-4. Toggle on **Collect metrics from CloudWatch** and expand the **Change defaults** drop-down.
+4. Toggle on **Collect metrics from CloudWatch** and expand the **Change defaults** drop-down. You can add or remove metrics by specifying the name of the resource instance or tags, as shown in the following example:
 
-   You can add or remove metrics by specifying the name of the resource instance or tags, as shown in the following example:
    ```yaml
    - namespace: AWS/EC2
   resource_type: ec2:instance
@@ -80,6 +79,7 @@ To collect AWS specific metrics, follow these steps:
     # - key: created-by
       # value: foo
   ```
+
 5. Save the integration.
 
 ## Logs reference
