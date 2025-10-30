@@ -1192,6 +1192,12 @@ processors:
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_aws_ec2_hostname
+      copy_from: qualys_gav.asset.cloud_provider.aws.ec2.hostname
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
       field: cloud.machine.type
       tag: set_cloud_machine_type_from_asset_cloud_provider_aws_ec2_instance_type
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.instance_type
@@ -1203,6 +1209,94 @@ processors:
       copy_from: qualys_gav.asset.cloud_provider.aws.ec2.region.code
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      value: ec2
+
+  # Map Azure specific fields to ECS fields
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_asset_cloud_provider_azure_vm_subscription_id
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.subscription_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_azure_vm_vm_id
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.vm_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_azure_vm_name
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.name
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_azure_vm_size
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.size
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region_from_asset_cloud_provider_azure_vm_location
+      copy_from: qualys_gav.asset.cloud_provider.azure.vm.location
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  
+  # Map GCP specific fields to ECS fields
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id_from_asset_cloud_provider_gcp_compute_project_id
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.project_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.availability_zone
+      tag: set_cloud_availability_zone_from_asset_cloud_provider_gcp_compute_zone
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.zone
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id_from_asset_cloud_provider_gcp_compute_instance_id
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.instance_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_gcp_compute_hostname
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.hostname
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.machine.type
+      tag: set_cloud_machine_type_from_asset_cloud_provider_gcp_compute_machine_type
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.machine_type
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.project.id
+      tag: set_cloud_project_id_from_asset_cloud_provider_gcp_compute_project_id
+      copy_from: qualys_gav.asset.cloud_provider.gcp.compute.project_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - grok:
+      field: qualys_gav.asset.cloud_provider.gcp.compute.zone
+      tag: grok_cloud_region_from_asset_cloud_provider_gcp_compute_zone
+      patterns:
+        - '%{GREEDYDATA:cloud.region}-%{WORD}$'
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: cloud.region
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Convert IBM specific fields
   - convert:
@@ -1227,6 +1321,12 @@ processors:
       field: cloud.instance.id
       tag: set_cloud_instance_id_from_asset_cloud_provider_ibm_virtual_server_ibm_id
       copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.ibm_id
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name_from_asset_cloud_provider_ibm_virtual_server_device_name
+      copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.device_name
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - set:
