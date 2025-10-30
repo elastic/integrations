@@ -12,8 +12,8 @@ processors:
       ignore_failure: true
       tag: bom_removed
   - drop:
-      if: ctx.message == 'HEARTBEAT'
       tag: drop_heartbeat_events
+      if: ctx.message == 'HEARTBEAT' && ctx.tags != null && ctx.tags.contains('drop_heartbeat_message') == true
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -27,6 +27,9 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
+  - terminate:
+      tag: terminate_processing_for_heartbeat_messages
+      if: ctx.event?.original == 'HEARTBEAT'
   - json:
       field: event.original
       tag: json_event_original
