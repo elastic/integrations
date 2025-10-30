@@ -63,15 +63,18 @@ response.split:
 response.pagination:
   - set:
       target: body.startOffset
-      value: '[[if (ne (toInt .last_response.body.response.returnedRecords) 0)]][[toInt .last_response.body.response.endOffset]][[end]]'
+      value: '[[if (ne (toInt .last_response.body.response.returnedRecords) 0)]][[if index .last_response.body.response "endOffset"]][[toInt .last_response.body.response.endOffset]][[end]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: body.endOffset
-      value: '[[add (toInt .last_response.body.response.endOffset) {{batch_size}}]]'
+      value: '[[if index .last_response.body.response "endOffset"]][[add (toInt .last_response.body.response.endOffset) {{batch_size}}]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   last_event_ts:
-    value: '[[if (ge (toInt .last_response.body.response.endOffset) (toInt .last_response.body.response.totalRecords))]][[toInt .last_response.body.timestamp]][[end]]'
+    value: '[[if index .last_response.body.response "endOffset"]][[if (ge (toInt .last_response.body.response.endOffset) (toInt .last_response.body.response.totalRecords))]][[toInt .last_response.body.timestamp]][[end]][[end]]'
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
