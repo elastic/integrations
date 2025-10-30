@@ -240,6 +240,9 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.client |  | keyword |
 | cisco.ftd.security_event.client_version |  | keyword |
 | cisco.ftd.security_event.connection_duration |  | integer |
+| cisco.ftd.security_event.destination_ip_dynamic_attribute | Destination IP dynamic attribute (EPG information) | keyword |
+| cisco.ftd.security_event.destination_security_group | Destination Security Group Tag (SGT) | keyword |
+| cisco.ftd.security_event.destination_security_group_tag | Destination Security Group Tag number | keyword |
 | cisco.ftd.security_event.dns_query |  | keyword |
 | cisco.ftd.security_event.dns_record_type |  | keyword |
 | cisco.ftd.security_event.dns_response_type |  | keyword |
@@ -274,6 +277,9 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.responder_bytes |  | long |
 | cisco.ftd.security_event.responder_packets |  | integer |
 | cisco.ftd.security_event.sha_disposition |  | keyword |
+| cisco.ftd.security_event.source_security_group | Source Security Group Tag (SGT) | keyword |
+| cisco.ftd.security_event.source_security_group_tag | Source Security Group Tag number | keyword |
+| cisco.ftd.security_event.source_security_group_type | Source Security Group Tag type | keyword |
 | cisco.ftd.security_event.spero_disposition |  | keyword |
 | cisco.ftd.security_event.src_ip |  | ip |
 | cisco.ftd.security_event.src_port |  | integer |
