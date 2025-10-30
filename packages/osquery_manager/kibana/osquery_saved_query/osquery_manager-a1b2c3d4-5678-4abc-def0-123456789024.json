@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enumerate USB device history from Windows Registry USBSTOR to identify removable media used for data exfiltration or malware introduction",
+        "ecs_mapping": [
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "registry.key",
+                "value": {
+                    "field": "key"
+                }
+            },
+            {
+                "key": "registry.value",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "registry.data.strings",
+                "value": {
+                    "field": "data"
+                }
+            },
+            {
+                "key": "device.serial_number",
+                "value": {
+                    "field": "SerialNumber"
+                }
+            },
+            {
+                "key": "device.manufacturer",
+                "value": {
+                    "field": "Vendor"
+                }
+            },
+            {
+                "key": "device.model.name",
+                "value": {
+                    "field": "Product"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "usb-device-connection"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["device"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["access"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["usb", "removable_media", "device_history"]
+                }
+            }
+        ],
+        "id": "usb_device_history_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- USB device history from Windows Registry USBSTOR\n-- Shows all USB storage devices that have been connected\nWITH usb_devices AS (\n  SELECT\n    key,\n    path,\n    mtime,\n    -- Parse device key format: VendorID&ProductID\\\\SerialNumber\n    CASE\n      WHEN path LIKE '%\\\\%&%\\\\%' THEN\n        substr(path,\n          length('HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\') + 1,\n          instr(substr(path, length('HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\') + 1), '\\\\') - 1\n        )\n      ELSE 'Unknown'\n    END AS DeviceClass,\n    -- Extract vendor and product from device class\n    CASE\n      WHEN path LIKE '%\\\\%&%\\\\%' THEN\n        substr(\n          substr(path,\n            length('HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\') + 1,\n            instr(substr(path, length('HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\') + 1), '\\\\') - 1\n          ),\n          instr(substr(path,\n            length('HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\') + 1,\n            instr(substr(path, length('HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\') + 1), '\\\\') - 1\n          ), '_') + 1\n        )\n      ELSE 'Unknown'\n    END AS VendorProduct,\n    -- Extract serial number (last component of path)\n    CASE\n      WHEN path LIKE '%\\\\%&%\\\\%' THEN\n        substr(path,\n          length(key) + 2\n        )\n      ELSE 'Unknown'\n    END AS SerialNumber\n  FROM registry\n  WHERE key LIKE 'HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\%'\n    AND path LIKE '%\\\\%&%\\\\%'  -- Only device instances with serial numbers\n),\ndevice_properties AS (\n  SELECT\n    r.key AS parent_key,\n    r.path,\n    r.name,\n    r.data,\n    r.type\n  FROM registry r\n  WHERE r.key LIKE 'HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\USBSTOR\\\\%'\n    AND r.name IN ('FriendlyName', 'DeviceDesc', 'Mfg', 'Service', 'Class', 'ClassGUID')\n)\nSELECT DISTINCT\n  ud.key,\n  ud.path,\n  datetime(ud.mtime, 'unixepoch') AS LastConnected,\n  ud.DeviceClass,\n  -- Parse vendor from device class (format: Disk&Ven_Vendor&Prod_Product&Rev_Rev)\n  CASE\n    WHEN ud.VendorProduct LIKE '%Ven_%' THEN\n      substr(ud.VendorProduct,\n        instr(ud.VendorProduct, 'Ven_') + 4,\n        CASE\n          WHEN instr(substr(ud.VendorProduct, instr(ud.VendorProduct, 'Ven_') + 4), '&') > 0\n          THEN instr(substr(ud.VendorProduct, instr(ud.VendorProduct, 'Ven_') + 4), '&') - 1\n          ELSE length(ud.VendorProduct)\n        END\n      )\n    ELSE 'Unknown'\n  END AS Vendor,\n  -- Parse product from device class\n  CASE\n    WHEN ud.VendorProduct LIKE '%Prod_%' THEN\n      substr(ud.VendorProduct,\n        instr(ud.VendorProduct, 'Prod_') + 5,\n        CASE\n          WHEN instr(substr(ud.VendorProduct, instr(ud.VendorProduct, 'Prod_') + 5), '&') > 0\n          THEN instr(substr(ud.VendorProduct, instr(ud.VendorProduct, 'Prod_') + 5), '&') - 1\n          ELSE length(ud.VendorProduct)\n        END\n      )\n    ELSE 'Unknown'\n  END AS Product,\n  ud.SerialNumber,\n  -- Get friendly name from properties\n  (SELECT dp.data FROM device_properties dp\n   WHERE dp.parent_key = ud.key AND dp.name = 'FriendlyName' LIMIT 1) AS FriendlyName,\n  -- Get device description\n  (SELECT dp.data FROM device_properties dp\n   WHERE dp.parent_key = ud.key AND dp.name = 'DeviceDesc' LIMIT 1) AS DeviceDesc,\n  -- Get manufacturer\n  (SELECT dp.data FROM device_properties dp\n   WHERE dp.parent_key = ud.key AND dp.name = 'Mfg' LIMIT 1) AS Manufacturer,\n  -- Identify potential risks\n  CASE\n    WHEN ud.SerialNumber LIKE '%&0' THEN 'missing_serial_number'\n    WHEN ud.VendorProduct LIKE '%Generic%' THEN 'generic_device'\n    WHEN ud.VendorProduct LIKE '%USB%Flash%' THEN 'flash_drive'\n    WHEN ud.VendorProduct LIKE '%USB%Mass%Storage%' THEN 'mass_storage'\n    ELSE 'standard_device'\n  END AS DeviceType\nFROM usb_devices ud\nWHERE\n  ud.SerialNumber != 'Unknown'\n  AND ud.SerialNumber != ''\nORDER BY ud.mtime DESC\nLIMIT 100;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789024",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

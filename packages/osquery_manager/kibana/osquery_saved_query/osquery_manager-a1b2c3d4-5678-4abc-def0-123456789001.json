@@ -17,12 +17,6 @@
                 }
             },
             {
-                "key": "file.name",
-                "value": {
-                    "field": "executable"
-                }
-            },
-            {
                 "key": "event.category",
                 "value": {
                     "value": ["file"]
@@ -50,7 +44,7 @@
         "id": "shimcache_execution_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "SELECT modified_time, path, executable, execution_flag FROM shimcache WHERE (path LIKE '%\\Users\\%\\AppData\\%' OR path LIKE '%\\Temp\\%' OR path LIKE '%\\Users\\Public\\%' OR path LIKE '%\\ProgramData\\%') AND path NOT LIKE '%\\Windows\\System32\\%' AND path NOT LIKE '%\\Windows\\SysWOW64\\%' ORDER BY modified_time DESC LIMIT 500;",
+        "query": "SELECT\n  modified_time,\n  path,\n  CASE\n    WHEN execution_flag = 1 THEN 'Executed'\n    ELSE 'Not Executed/Unknown'\n  END AS execution_status,\n  entry\nFROM shimcache\nWHERE\n  (path LIKE '%\\\\Users\\\\%\\\\AppData\\\\%'\n   OR path LIKE '%\\\\Temp\\\\%'\n   OR path LIKE '%\\\\Users\\\\Public\\\\%'\n   OR path LIKE '%\\\\ProgramData\\\\%')\n  AND path NOT LIKE '%\\\\Windows\\\\System32\\\\%'\n  AND path NOT LIKE '%\\\\Windows\\\\SysWOW64\\\\%'\n  AND path NOT LIKE '%\\\\Program Files\\\\Windows%'\nORDER BY modified_time DESC\nLIMIT 500;",
         "updated_at": "2025-01-29T12:00:00.000Z",
         "updated_by": "elastic"
     },

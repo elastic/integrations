@@ -50,7 +50,7 @@
         "id": "prefetch_execution_elastic",
         "interval": "3600",
         "platform": "windows",
-        "query": "SELECT executable_name, prefetch_hash, run_count, last_run_time, filename FROM prefetch WHERE (executable_name LIKE '%POWERSHELL%' OR executable_name LIKE '%CMD.EXE%' OR executable_name LIKE '%WSCRIPT%' OR executable_name LIKE '%CSCRIPT%' OR executable_name LIKE '%RUNDLL32%' OR executable_name LIKE '%REGSVR32%' OR executable_name LIKE '%MSHTA%' OR executable_name LIKE '%CERTUTIL%' OR executable_name LIKE '%BITSADMIN%' OR (run_count < 5 AND last_run_time > datetime('now', '-7 days'))) ORDER BY last_run_time DESC LIMIT 200;",
+        "query": "SELECT\n  filename AS executable_name,\n  hash AS prefetch_hash,\n  run_count,\n  last_run_time,\n  size,\n  volume_serial,\n  volume_creation,\n  accessed_files_count,\n  accessed_directories_count\nFROM prefetch\nWHERE\n  (filename LIKE '%POWERSHELL%'\n   OR filename LIKE '%CMD.EXE%'\n   OR filename LIKE '%WSCRIPT%'\n   OR filename LIKE '%CSCRIPT%'\n   OR filename LIKE '%RUNDLL32%'\n   OR filename LIKE '%REGSVR32%'\n   OR filename LIKE '%MSHTA%'\n   OR filename LIKE '%CERTUTIL%'\n   OR filename LIKE '%BITSADMIN%'\n   OR (run_count < 5 AND last_run_time > datetime('now', '-7 days')))\n  AND (filename NOT LIKE 'SVCHOST%' OR run_count < 10)\nORDER BY last_run_time DESC\nLIMIT 200;",
         "updated_at": "2025-01-29T12:00:00.000Z",
         "updated_by": "elastic"
     },

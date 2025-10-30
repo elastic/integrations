@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect suspicious process command line patterns including encoded commands, obfuscation, LOLBins abuse, download activity, and privilege escalation attempts",
+        "ecs_mapping": [
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "parent"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "process-execution"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["start"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["process", "command_line", "execution_artifact"]
+                }
+            }
+        ],
+        "id": "suspicious_process_cmdlines_elastic",
+        "interval": "300",
+        "platform": "windows,linux,darwin",
+        "query": "-- Detect suspicious command line patterns across all platforms\n-- Focus on high-confidence indicators of malicious activity\nSELECT\n  p.pid,\n  p.parent AS parent_pid,\n  p.name AS process_name,\n  p.path AS process_path,\n  -- Truncate very long command lines but preserve for analysis\n  CASE\n    WHEN length(p.cmdline) > 500 THEN\n      substr(p.cmdline, 1, 497) || '...'\n    ELSE\n      p.cmdline\n  END AS cmdline,\n  p.uid,\n  datetime(p.start_time, 'unixepoch') AS StartTime,\n  -- Identify parent process\n  pp.name AS parent_name,\n  pp.path AS parent_path,\n  -- Categorize suspicious patterns (primary)\n  CASE\n    -- Encoded/Obfuscated commands\n    WHEN p.cmdline LIKE '%EncodedCommand%' THEN 'encoded_powershell'\n    WHEN p.cmdline LIKE '%-enc %' THEN 'encoded_powershell'\n    WHEN p.cmdline LIKE '%-e %' AND p.name LIKE '%powershell%' THEN 'encoded_powershell'\n    WHEN p.cmdline LIKE '%FromBase64String%' THEN 'base64_decode'\n    WHEN p.cmdline LIKE '%Convert%::FromBase64String%' THEN 'base64_decode'\n    -- Download activity\n    WHEN p.cmdline LIKE '%Invoke-WebRequest%' THEN 'web_download'\n    WHEN p.cmdline LIKE '%DownloadString%' THEN 'web_download'\n    WHEN p.cmdline LIKE '%DownloadFile%' THEN 'file_download'\n    WHEN p.cmdline LIKE '%wget%' THEN 'web_download'\n    WHEN p.cmdline LIKE '%curl%' AND p.cmdline LIKE '% -o %' THEN 'file_download'\n    WHEN p.cmdline LIKE '%certutil%' AND p.cmdline LIKE '%-urlcache%' THEN 'certutil_download'\n    WHEN p.cmdline LIKE '%bitsadmin%' AND p.cmdline LIKE '%/transfer%' THEN 'bits_download'\n    -- Remote execution\n    WHEN p.cmdline LIKE '%Invoke-Expression%' THEN 'invoke_expression'\n    WHEN p.cmdline LIKE '%IEX%' AND p.name LIKE '%powershell%' THEN 'invoke_expression'\n    WHEN p.cmdline LIKE '%Start-Process%' THEN 'process_creation'\n    WHEN p.cmdline LIKE '%Invoke-Command%' THEN 'remote_command'\n    WHEN p.cmdline LIKE '%New-Object%Net.WebClient%' THEN 'webclient_object'\n    -- LOLBins abuse\n    WHEN p.name = 'mshta.exe' THEN 'mshta_lolbin'\n    WHEN p.cmdline LIKE '%regsvr32%' AND p.cmdline LIKE '%scrobj.dll%' THEN 'regsvr32_lolbin'\n    WHEN p.cmdline LIKE '%rundll32%' AND p.cmdline LIKE '%javascript%' THEN 'rundll32_lolbin'\n    WHEN p.cmdline LIKE '%wmic%' AND p.cmdline LIKE '%process%call%create%' THEN 'wmic_execution'\n    WHEN p.cmdline LIKE '%msbuild%' AND p.cmdline LIKE '%.xml%' THEN 'msbuild_lolbin'\n    WHEN p.cmdline LIKE '%installutil%' THEN 'installutil_lolbin'\n    WHEN p.cmdline LIKE '%regasm%' THEN 'regasm_lolbin'\n    WHEN p.cmdline LIKE '%regsvcs%' THEN 'regsvcs_lolbin'\n    -- Security tool evasion\n    WHEN p.cmdline LIKE '%Add-MpPreference%' AND p.cmdline LIKE '%-ExclusionPath%' THEN 'av_exclusion'\n    WHEN p.cmdline LIKE '%Set-MpPreference%' AND p.cmdline LIKE '%DisableRealtimeMonitoring%' THEN 'av_disable'\n    WHEN p.cmdline LIKE '%DisableRealtimeMonitoring%$true%' THEN 'av_disable'\n    WHEN p.cmdline LIKE '%amsi%' AND p.cmdline LIKE '%bypass%' THEN 'amsi_bypass'\n    WHEN p.cmdline LIKE '%AmsiScanBuffer%' THEN 'amsi_bypass'\n    -- Privilege escalation\n    WHEN p.cmdline LIKE '%runas%' AND p.cmdline LIKE '%/user:%' THEN 'runas_elevation'\n    WHEN p.cmdline LIKE '%sudo%' AND p.name IN ('sudo', 'su') THEN 'sudo_elevation'\n    WHEN p.cmdline LIKE '%UAC%' AND p.cmdline LIKE '%bypass%' THEN 'uac_bypass'\n    -- Credential access\n    WHEN p.cmdline LIKE '%mimikatz%' THEN 'mimikatz'\n    WHEN p.cmdline LIKE '%sekurlsa%' THEN 'mimikatz_module'\n    WHEN p.cmdline LIKE '%lsass%' AND p.cmdline LIKE '%dump%' THEN 'lsass_dump'\n    WHEN p.cmdline LIKE '%procdump%' AND p.cmdline LIKE '%lsass%' THEN 'lsass_dump'\n    WHEN p.cmdline LIKE '%comsvcs.dll%' AND p.cmdline LIKE '%MiniDump%' THEN 'lsass_dump'\n    -- Persistence\n    WHEN p.cmdline LIKE '%schtasks%' AND p.cmdline LIKE '%/create%' THEN 'scheduled_task_creation'\n    WHEN p.cmdline LIKE '%New-ScheduledTask%' THEN 'scheduled_task_creation'\n    WHEN p.cmdline LIKE '%at %' AND p.cmdline LIKE '%.exe%' THEN 'at_job_creation'\n    WHEN p.cmdline LIKE '%crontab%' AND p.cmdline LIKE '%-e%' THEN 'crontab_edit'\n    -- Registry manipulation\n    WHEN p.cmdline LIKE '%reg%add%' AND p.cmdline LIKE '%Run%' THEN 'registry_run_key'\n    WHEN p.cmdline LIKE '%New-ItemProperty%' AND p.cmdline LIKE '%Run%' THEN 'registry_run_key'\n    -- Hidden execution\n    WHEN p.cmdline LIKE '%Hidden%' AND p.cmdline LIKE '%WindowStyle%' THEN 'hidden_window'\n    WHEN p.cmdline LIKE '%-w hidden%' THEN 'hidden_window'\n    WHEN p.cmdline LIKE '%-windowstyle hidden%' THEN 'hidden_window'\n    -- Execution policy bypass\n    WHEN p.cmdline LIKE '%bypass%' AND p.cmdline LIKE '%ExecutionPolicy%' THEN 'policy_bypass'\n    WHEN p.cmdline LIKE '%-ep bypass%' THEN 'policy_bypass'\n    WHEN p.cmdline LIKE '%-ExecutionPolicy Bypass%' THEN 'policy_bypass'\n    WHEN p.cmdline LIKE '%unrestricted%' THEN 'policy_bypass'\n    -- Network reconnaissance\n    WHEN p.cmdline LIKE '%nslookup%' THEN 'dns_lookup'\n    WHEN p.cmdline LIKE '%nltest%' THEN 'domain_trust_enum'\n    WHEN p.cmdline LIKE '%net%view%' THEN 'network_enum'\n    WHEN p.cmdline LIKE '%net%user%' AND p.cmdline LIKE '%/domain%' THEN 'domain_user_enum'\n    WHEN p.cmdline LIKE '%net%group%' AND p.cmdline LIKE '%/domain%' THEN 'domain_group_enum'\n    ELSE 'other_suspicious'\n  END AS SuspiciousPattern,\n  -- Risk level assessment\n  CASE\n    WHEN p.cmdline LIKE '%mimikatz%' THEN 'critical'\n    WHEN p.cmdline LIKE '%lsass%' AND p.cmdline LIKE '%dump%' THEN 'critical'\n    WHEN p.cmdline LIKE '%encoded%' OR p.cmdline LIKE '%-enc %' THEN 'high'\n    WHEN p.cmdline LIKE '%FromBase64String%' THEN 'high'\n    WHEN p.cmdline LIKE '%Invoke-Expression%' OR p.cmdline LIKE '%IEX%' THEN 'high'\n    WHEN p.cmdline LIKE '%Download%' THEN 'high'\n    WHEN p.cmdline LIKE '%bypass%' THEN 'high'\n    WHEN p.name IN ('mshta.exe', 'regsvr32.exe') THEN 'high'\n    WHEN p.cmdline LIKE '%Add-MpPreference%' THEN 'high'\n    WHEN p.cmdline LIKE '%DisableRealtimeMonitoring%' THEN 'high'\n    WHEN p.cmdline LIKE '%schtasks%' AND p.cmdline LIKE '%/create%' THEN 'medium'\n    WHEN p.cmdline LIKE '%Hidden%' THEN 'medium'\n    WHEN p.cmdline LIKE '%wmic%' THEN 'medium'\n    WHEN p.cmdline LIKE '%rundll32%' THEN 'medium'\n    ELSE 'low'\n  END AS RiskLevel\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nWHERE\n  -- Filter based on suspicious patterns\n  (\n    p.cmdline LIKE '%encoded%'\n    OR p.cmdline LIKE '%-enc %'\n    OR p.cmdline LIKE '%-e %'\n    OR p.cmdline LIKE '%FromBase64String%'\n    OR p.cmdline LIKE '%Invoke-%'\n    OR p.cmdline LIKE '%IEX%'\n    OR p.cmdline LIKE '%Download%'\n    OR p.cmdline LIKE '%wget%'\n    OR p.cmdline LIKE '%curl%'\n    OR p.cmdline LIKE '%certutil%urlcache%'\n    OR p.cmdline LIKE '%bitsadmin%transfer%'\n    OR p.cmdline LIKE '%bypass%'\n    OR p.cmdline LIKE '%unrestricted%'\n    OR p.cmdline LIKE '%Hidden%'\n    OR p.cmdline LIKE '%mimikatz%'\n    OR p.cmdline LIKE '%sekurlsa%'\n    OR p.cmdline LIKE '%lsass%dump%'\n    OR p.cmdline LIKE '%Add-MpPreference%'\n    OR p.cmdline LIKE '%DisableRealtimeMonitoring%'\n    OR p.cmdline LIKE '%amsi%bypass%'\n    OR p.cmdline LIKE '%schtasks%/create%'\n    OR p.cmdline LIKE '%wmic%process%call%create%'\n    OR p.name IN ('mshta.exe', 'regsvr32.exe', 'rundll32.exe', 'msbuild.exe', 'installutil.exe')\n  )\n  -- Exclude system processes\n  AND p.name NOT IN ('System', 'Registry', 'smss.exe', 'csrss.exe', 'wininit.exe', 'services.exe', 'lsass.exe')\n  -- Exclude empty command lines\n  AND p.cmdline IS NOT NULL\n  AND p.cmdline != ''\nORDER BY\n  CASE RiskLevel\n    WHEN 'critical' THEN 1\n    WHEN 'high' THEN 2\n    WHEN 'medium' THEN 3\n    ELSE 4\n  END,\n  p.start_time DESC\nLIMIT 100;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789027",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

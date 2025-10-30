@@ -1,25 +1,25 @@
 {
     "attributes": {
-        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_at": "2025-01-30T12:00:00.000Z",
         "created_by": "elastic",
-        "description": "Enumerate mounted storage devices focusing on removable media and unusual volumes (Linux/macOS: uses mounts table, Windows: use separate logical_drives query)",
+        "description": "Enumerate logical drives on Windows systems focusing on removable media and unusual volumes (uses logical_drives table for Windows)",
         "ecs_mapping": [
             {
                 "key": "host.disk.name",
                 "value": {
-                    "field": "device"
+                    "field": "device_id"
                 }
             },
             {
                 "key": "host.disk.type",
                 "value": {
-                    "field": "type"
+                    "field": "description"
                 }
             },
             {
                 "key": "host.disk.size",
                 "value": {
-                    "field": "total_size"
+                    "field": "size"
                 }
             },
             {
@@ -29,15 +29,9 @@
                 }
             },
             {
-                "key": "file.path",
-                "value": {
-                    "field": "path"
-                }
-            },
-            {
                 "key": "file.device",
                 "value": {
-                    "field": "device"
+                    "field": "device_id"
                 }
             },
             {
@@ -67,21 +61,21 @@
             {
                 "key": "tags",
                 "value": {
-                    "value": ["removable_media", "disk_info", "storage", "host_info", "linux", "macos"]
+                    "value": ["removable_media", "disk_info", "storage", "host_info", "windows"]
                 }
             }
         ],
-        "id": "disk_drives_removable_elastic",
+        "id": "disk_drives_removable_windows_elastic",
         "interval": "3600",
-        "platform": "linux,darwin",
-        "query": "SELECT device, device_alias, path, type, (blocks * blocks_size) AS total_size, (blocks_free * blocks_size) AS free_space, (blocks_available * blocks_size) AS available_space, flags FROM mounts WHERE (blocks * blocks_size) > 0 AND (path LIKE '/media/%' OR path LIKE '/mnt/%' OR path LIKE '/run/media/%' OR path LIKE '/Volumes/%' OR type IN ('vfat', 'exfat', 'ntfs', 'msdos', 'fuseblk', 'fuse', 'iso9660', 'udf')) AND path NOT IN ('/', '/boot', '/home', '/proc', '/sys', '/dev', '/run', '/tmp', '/var', '/usr') ORDER BY path;",
-        "updated_at": "2025-01-29T12:00:00.000Z",
+        "platform": "windows",
+        "query": "SELECT device_id, description, file_system, size, free_space, boot_partition FROM logical_drives WHERE size > 0 AND (file_system IN ('FAT', 'FAT32', 'exFAT', 'CDFS', 'UDF') OR boot_partition = 0) ORDER BY device_id;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
         "updated_by": "elastic"
     },
     "coreMigrationVersion": "8.3.0",
-    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789020",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789030",
     "references": [],
     "type": "osquery-saved-query",
-    "updated_at": "2025-01-29T12:00:00.000Z",
+    "updated_at": "2025-01-30T12:00:00.000Z",
     "version": "WzEsMV0="
 }

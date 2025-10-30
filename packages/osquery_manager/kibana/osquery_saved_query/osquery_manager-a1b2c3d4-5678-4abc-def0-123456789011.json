@@ -5,9 +5,9 @@
         "description": "Track shell command history on Linux and macOS systems focusing on suspicious commands like wget, curl, base64 encoding, and privilege escalation attempts",
         "ecs_mapping": [
             {
-                "key": "user.name",
+                "key": "user.id",
                 "value": {
-                    "field": "username"
+                    "field": "uid"
                 }
             },
             {
@@ -55,8 +55,8 @@
         ],
         "id": "shell_history_suspicious_elastic",
         "interval": "3600",
-        "platform": "linux",
-        "query": "SELECT username, time, command, history_file FROM shell_history WHERE (command LIKE '%wget%' OR command LIKE '%curl%' OR command LIKE '%chmod%+x%' OR command LIKE '%/tmp/%' OR command LIKE '%/dev/shm/%' OR command LIKE '%base64%' OR command LIKE '%python%' OR command LIKE '%perl%' OR command LIKE '%ssh%' OR command LIKE '%scp%' OR command LIKE '%nc %' OR command LIKE '%netcat%' OR command LIKE '%sudo%' OR command LIKE '%passwd%' OR command LIKE '%useradd%' OR command LIKE '%crontab%' OR command LIKE '%systemctl%' OR command LIKE '%rm -rf%') AND command NOT LIKE 'ls%' AND command NOT LIKE 'cd %' AND command NOT LIKE 'pwd%' ORDER BY time DESC LIMIT 200;",
+        "platform": "linux,darwin",
+        "query": "SELECT uid, time, command, history_file FROM shell_history WHERE (command LIKE '%wget%' OR command LIKE '%curl%' OR command LIKE '%chmod%+x%' OR command LIKE '%/tmp/%' OR command LIKE '%/dev/shm/%' OR command LIKE '%base64%' OR command LIKE '%python%' OR command LIKE '%perl%' OR command LIKE '%ssh%' OR command LIKE '%scp%' OR command LIKE '%nc %' OR command LIKE '%netcat%' OR command LIKE '%sudo%' OR command LIKE '%passwd%' OR command LIKE '%useradd%' OR command LIKE '%crontab%' OR command LIKE '%systemctl%' OR command LIKE '%rm -rf%') AND command NOT LIKE 'ls%' AND command NOT LIKE 'cd %' AND command NOT LIKE 'pwd%' ORDER BY time DESC LIMIT 200;",
         "updated_at": "2025-01-29T12:00:00.000Z",
         "updated_by": "elastic"
     },

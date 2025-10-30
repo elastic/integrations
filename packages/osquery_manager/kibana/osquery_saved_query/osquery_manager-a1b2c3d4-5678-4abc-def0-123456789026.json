@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect network share connections by analyzing logged_in_users table for remote sessions and process_open_sockets for SMB connections to identify lateral movement",
+        "ecs_mapping": [
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "user"
+                }
+            },
+            {
+                "key": "host.name",
+                "value": {
+                    "field": "host"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "sid"
+                }
+            },
+            {
+                "key": "source.ip",
+                "value": {
+                    "field": "remote_address"
+                }
+            },
+            {
+                "key": "destination.port",
+                "value": {
+                    "field": "remote_port"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "network.protocol",
+                "value": {
+                    "value": "smb"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "network-share-connection"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["network"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["connection"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["smb", "network_share", "lateral_movement"]
+                }
+            }
+        ],
+        "id": "network_share_connections_elastic",
+        "interval": "600",
+        "platform": "windows,linux,darwin",
+        "query": "-- Network share connections via SMB/CIFS (port 445)\n-- Cross-platform detection using process_open_sockets\nWITH smb_connections AS (\n  SELECT\n    pos.pid,\n    pos.local_address,\n    pos.local_port,\n    pos.remote_address,\n    pos.remote_port,\n    pos.state,\n    -- Get process information\n    p.name AS process_name,\n    p.path AS process_path,\n    p.cmdline AS process_cmdline,\n    p.uid,\n    p.start_time\n  FROM process_open_sockets pos\n  LEFT JOIN processes p ON pos.pid = p.pid\n  WHERE\n    -- SMB/CIFS ports\n    (pos.remote_port = 445 OR pos.remote_port = 139)\n    AND pos.state = 'ESTABLISHED'\n    -- Exclude localhost\n    AND pos.remote_address NOT IN ('127.0.0.1', '::1', '')\n),\nlogged_users AS (\n  SELECT\n    user,\n    host,\n    tty,\n    sid,\n    time AS login_time\n  FROM logged_in_users\n  WHERE type = 'user'\n)\nSELECT\n  sc.pid,\n  sc.process_name,\n  sc.process_path,\n  -- Truncate long command lines\n  CASE\n    WHEN length(sc.process_cmdline) > 200 THEN\n      substr(sc.process_cmdline, 1, 197) || '...'\n    ELSE\n      sc.process_cmdline\n  END AS process_cmdline,\n  sc.local_address,\n  sc.local_port,\n  sc.remote_address,\n  sc.remote_port,\n  datetime(sc.start_time, 'unixepoch') AS ConnectionStarted,\n  -- Classify connection type\n  CASE\n    WHEN sc.remote_port = 445 THEN 'SMB (445)'\n    WHEN sc.remote_port = 139 THEN 'NetBIOS (139)'\n    ELSE 'Unknown'\n  END AS ConnectionType,\n  -- Identify connection direction\n  CASE\n    WHEN sc.remote_address LIKE '10.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '192.168.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '172.16.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '172.17.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '172.18.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '172.19.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '172.2_.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '172.30.%' THEN 'internal_network'\n    WHEN sc.remote_address LIKE '172.31.%' THEN 'internal_network'\n    ELSE 'external_network'\n  END AS NetworkLocation,\n  -- Identify suspicious patterns\n  CASE\n    WHEN sc.process_name LIKE '%powershell%' THEN 'powershell_smb'\n    WHEN sc.process_name LIKE '%cmd%' THEN 'cmd_smb'\n    WHEN sc.process_name LIKE '%psexec%' THEN 'psexec_lateral'\n    WHEN sc.process_name LIKE '%wmic%' THEN 'wmic_lateral'\n    WHEN sc.process_name LIKE '%msbuild%' THEN 'lolbin_smb'\n    WHEN sc.process_cmdline LIKE '%net use%' THEN 'net_use_command'\n    WHEN sc.process_cmdline LIKE '%\\\\\\\\%' THEN 'unc_path'\n    WHEN sc.process_cmdline LIKE '%admin$%' THEN 'admin_share'\n    WHEN sc.process_cmdline LIKE '%c$%' THEN 'c_drive_share'\n    WHEN sc.process_cmdline LIKE '%ipc$%' THEN 'ipc_share'\n    ELSE 'standard_smb'\n  END AS SuspiciousPattern,\n  -- Get associated user if available\n  lu.user AS LoggedInUser,\n  lu.sid AS UserSID\nFROM smb_connections sc\nLEFT JOIN logged_users lu ON sc.uid = lu.sid\nWHERE\n  -- Filter out common benign processes\n  sc.process_name NOT IN (\n    'System',\n    'svchost.exe',\n    'services.exe',\n    'lsass.exe'\n  )\n  -- Exclude system user connections\n  AND sc.uid NOT IN ('0', 'S-1-5-18', 'S-1-5-19', 'S-1-5-20')\nORDER BY\n  CASE SuspiciousPattern\n    WHEN 'psexec_lateral' THEN 1\n    WHEN 'wmic_lateral' THEN 2\n    WHEN 'admin_share' THEN 3\n    WHEN 'powershell_smb' THEN 4\n    WHEN 'cmd_smb' THEN 5\n    ELSE 6\n  END,\n  sc.start_time DESC\nLIMIT 100;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789026",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}
