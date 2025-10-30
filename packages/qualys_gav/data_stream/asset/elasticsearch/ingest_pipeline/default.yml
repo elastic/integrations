@@ -728,31 +728,69 @@ processors:
       if: ctx.qualys_gav?.asset?.netbios_name != null
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
-      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v4
+      tag: foreach_network_interface_list_data_network_interface_to_split_address_ip_v4
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
-        convert:
+        split:
           field: _ingest._value.address_ip_v4
-          tag: convert_asset_network_interface_list_data_network_interface_address_ip_v4
-          type: ip
+          separator: ','
+          tag: split_asset_network_interface_list_data_network_interface_address_ip_v4
           ignore_missing: true
           on_failure:
-            - remove:
-                field: _ingest._value.address_ip_v4
-                ignore_missing: true
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
+      tag: foreach_network_interface_list_data_network_interface_to_trim_address_ip_v4
+      if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4_trim
+          ignore_failure: true
+          processor:
+            trim:
+              field: _ingest._value
+              tag: trim_asset_network_interface_list_data_network_interface_address_ip_v4
+              ignore_missing: true
+  - foreach:
+      field: qualys_gav.asset.network_interface_list_data.network_interface
+      tag: foreach_asset_network_interface_list_data_network_interface_to_convert_address_ip_v4
+      if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_asset_network_interface_list_data_network_interface_address_ip_v4
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: qualys_gav.asset.network_interface_list_data.network_interface
       tag: foreach_network_interface_list_data_network_interface_to_set_related_ip_from_address_ip_v4
       if: ctx.qualys_gav?.asset?.network_interface_list_data?.network_interface instanceof List
       processor:
-        append:
-          field: related.ip
-          tag: append_network_interface_list_data_network_interface_address_ip_v4_into_related_ip
-          value: '{{{_ingest._value.address_ip_v4}}}'
-          allow_duplicates: false
+        foreach:
+          field: _ingest._value.address_ip_v4
+          tag: foreach_asset_network_interface_list_data_network_interface_address_ip_v4
+          ignore_failure: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_network_interface_list_data_network_interface_address_ip_v4_into_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
   - foreach:
       field: qualys_gav.asset.network_interface_list_data.network_interface
       tag: foreach_network_interface_list_data_network_interface_to_gsub_mac_address
