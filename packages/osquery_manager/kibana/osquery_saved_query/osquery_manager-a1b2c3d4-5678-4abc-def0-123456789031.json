@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect unauthorized SSH key additions for persistence by monitoring authorized_keys files, focusing on root account, service accounts, and non-standard key locations",
+        "ecs_mapping": [
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "key_file"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["authentication"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "ssh-authorized-keys-enumeration"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "ssh.authorized_keys"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["ssh", "persistence", "credential_access", "linux", "macos", "T1098.004"]
+                }
+            }
+        ],
+        "id": "ssh_authorized_keys_persistence_elastic",
+        "interval": "3600",
+        "platform": "linux,darwin",
+        "query": "SELECT uid, algorithm, key, key_file, encrypted FROM authorized_keys WHERE uid = 0 OR uid < 1000 OR key_file NOT LIKE '%/.ssh/authorized_keys' ORDER BY uid, key_file;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789031",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

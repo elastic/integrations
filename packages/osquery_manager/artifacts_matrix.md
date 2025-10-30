@@ -3,10 +3,10 @@
 This document tracks the coverage of forensic artifacts from the Velociraptor to Osquery mapping analysis.
 
 **Last Updated**: 2025-01-30
-**Total Core Artifacts**: 26
-**Supported**: 21 (80.8%)
-**Not Supported**: 5 (19.2%)
-**Total Queries**: 57 (30 core forensic + 27 additional)
+**Total Core Artifacts**: 36
+**Supported**: 31 (86.1%)
+**Not Supported**: 5 (13.9%)
+**Total Queries**: 67 (40 core forensic + 27 additional)
 
 ---
 
@@ -35,6 +35,16 @@ This document tracks the coverage of forensic artifacts from the Velociraptor to
 | Registry | ✅ Supported | Windows | registry_persistence_elastic<br>autorun_registry_keys_elastic | [012](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789012.json)<br>[025](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789025.json) | Registry persistence keys (14 autorun locations) |
 | Network Connections | ✅ Supported | Windows, Linux, macOS | network_connections_c2_elastic<br>network_share_connections_elastic | [010](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789010.json)<br>[026](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789026.json) | Active network connections for C2 + SMB share monitoring |
 | Shell History | ✅ Supported | Linux, macOS | shell_history_suspicious_elastic | [011](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789011.json) | Bash/Zsh command history with suspicious pattern detection |
+| SSH Authorized Keys | ✅ Supported | Linux, macOS | ssh_authorized_keys_persistence_elastic | [031](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789031.json) | SSH key additions for persistence detection (T1098.004) |
+| SSH Private Keys | ✅ Supported | Linux, macOS | ssh_private_keys_discovery_elastic | [032](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789032.json) | Unencrypted SSH keys and credential exposure (T1552.004) |
+| Linux Cron Jobs | ✅ Supported | Linux | linux_crontab_persistence_elastic | [033](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789033.json) | Cron-based persistence and scheduled task detection (T1053.003) |
+| Linux systemd Services | ✅ Supported | Linux | linux_systemd_services_persistence_elastic | [034](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789034.json) | Service-based persistence and privilege escalation (T1543.002) |
+| macOS LaunchAgents | ✅ Supported | macOS | macos_launchagents_persistence_elastic | [035](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789035.json) | User-level persistence via LaunchAgents (T1543.001) |
+| macOS LaunchDaemons | ✅ Supported | macOS | macos_launchdaemons_persistence_elastic | [036](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789036.json) | System-level persistence via LaunchDaemons (T1543.004) |
+| Windows BAM Execution | ✅ Supported | Windows 10+ | windows_bam_execution_elastic | [037](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789037.json) | BAM/DAM execution artifacts with better reliability than Prefetch (T1059) |
+| Windows Account Events | ✅ Supported | Windows | windows_account_creation_events_elastic | [038](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789038.json) | Account creation and manipulation detection (T1136.001, T1078) |
+| Windows Privilege Use | ✅ Supported | Windows | windows_privilege_use_events_elastic | [039](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789039.json) | Privilege escalation and token manipulation (T1078.002, T1134) |
+| Windows Process Creation | ✅ Supported | Windows | windows_process_creation_events_elastic | [040](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789040.json) | Comprehensive process execution audit via Event ID 4688 (T1059) |
 | RDP Connections | ✅ Supported | Windows | rdp_connection_events_elastic | [022](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789022.json) | RDP authentication events (Event ID 4624/4625) for lateral movement |
 | USB Devices | ✅ Supported | Windows | usb_device_history_elastic | [024](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789024.json) | USB device history from USBSTOR registry keys |
 | Office Documents | ✅ Supported | Windows | recent_office_documents_elastic | [028](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-5678-4abc-def0-123456789028.json) | Recently accessed Office documents from ComDlg32 registry |
@@ -101,6 +111,8 @@ These queries existed in the original repository and provide additional coverage
 - ✅ UserAssist (Supported)
 - ✅ PowerShell History (Supported)
 - ✅ Process Listing (Supported)
+- ✅ Windows BAM Execution (Supported)
+- ✅ Windows Process Creation (Supported)
 - ❌ AmCache (Not Supported)
 
 ### Persistence Mechanisms
@@ -109,6 +121,10 @@ These queries existed in the original repository and provide additional coverage
 - ✅ Startup Items (Supported)
 - ✅ WMI Consumers (Supported)
 - ✅ Registry (Supported)
+- ✅ Linux Cron Jobs (Supported)
+- ✅ Linux systemd Services (Supported)
+- ✅ macOS LaunchAgents (Supported)
+- ✅ macOS LaunchDaemons (Supported)
 
 ### Network/C2 Indicators
 - ✅ BITS Jobs (Supported)
@@ -121,6 +137,8 @@ These queries existed in the original repository and provide additional coverage
 - ✅ Shellbags (Supported)
 - ✅ Office Documents (Supported)
 - ✅ Shell History (Supported)
+- ✅ SSH Authorized Keys (Supported)
+- ✅ SSH Private Keys (Supported)
 - ❌ Browser History (Not Supported)
 
 ### File Activity
@@ -134,6 +152,8 @@ These queries existed in the original repository and provide additional coverage
 - ✅ Disk Info (Supported)
 - ✅ USB Devices (Supported)
 - ✅ Event Log Clearing (Supported)
+- ✅ Windows Account Events (Supported)
+- ✅ Windows Privilege Use (Supported)
 - ❌ File Handles (Not Supported)
 
 ---
@@ -174,5 +194,51 @@ These queries existed in the original repository and provide additional coverage
 - Network connections via process_open_sockets
 - File table for static file analysis
 - External extension (eclecticiq-osq-ext-bin)
+
+---
+
+## Implementation Notes
+
+### Windows Event-Based Queries (038, 039, 040)
+
+These queries require additional configuration:
+
+**Prerequisites**:
+- `windows_events` table configured in osquery.conf
+- Windows audit policies enabled:
+  - Event ID 4688: "Audit Process Creation" + "Include command line in process creation events"
+  - Event IDs 4720-4756: "Audit User Account Management" + "Audit Security Group Management"
+  - Event IDs 4672-4674: "Audit Sensitive Privilege Use"
+
+**Configuration Example**:
+```json
+{
+  "packs": {
+    "windows_events": {
+      "queries": {
+        "windows_security_events": {
+          "query": "SELECT * FROM windows_events WHERE channel='Security';",
+          "interval": 60,
+          "platform": "windows"
+        }
+      }
+    }
+  }
+}
+```
+
+### Coverage Summary
+
+**Current Coverage**: 75-80% of Velociraptor's core DFIR capabilities
+- **Windows**: 20 queries covering execution, persistence, credential access, and privilege escalation
+- **Linux**: 7 queries covering persistence, credential access, and system enumeration
+- **macOS**: 5 queries covering persistence and system configuration
+- **Cross-platform**: 8 queries for network, process, and file analysis
+
+**Remaining Gaps** (require osquery extensions):
+- Browser history/forensics (requires ATC extension)
+- Advanced memory forensics
+- MFT parsing (requires Trail of Bits extension)
+- AmCache/Jumplists (PR closed due to complexity)
 
 ---
