@@ -14,9 +14,12 @@ processors:
       target_field: _temp
       if: ctx.event?.original != null && ctx.event.original instanceof String
       ignore_failure: true
+      tag: json_decode
+      description: Decode JSON from event.original
   - script:
       lang: painless
       description: Move JSON fields from _temp to root context
+      tag: move_json_fields
       source: |
         if (ctx._temp != null) {
           for (entry in ctx._temp.entrySet()) {
@@ -49,24 +52,8 @@ processors:
   - set:
       field: event.outcome
       value: success
-  - set:
-      field: event.id
-      value: "{{withsecure.incident.id}}"
-  - set:
-      field: event.created
-      value: "{{withsecure.incident.created_timestamp}}"
-  - set:
-      field: event.start
-      value: "{{withsecure.incident.created_timestamp}}"
-  - set:
-      field: event.end
-      value: "{{withsecure.incident.updated_timestamp}}"
-  - set:
-      field: event.severity
-      value: "{{withsecure.incident.severity}}"
-  - set:
-      field: event.risk_score
-      value: "{{withsecure.incident.risk_score}}"
+
+  # Set WithSecure custom fields FIRST
   - set:
       field: withsecure.incident.id
       value: "{{incidentId}}"
@@ -74,42 +61,98 @@ processors:
   - set:
       field: withsecure.incident.status
       value: "{{status}}"
+      if: ctx.status != null
   - set:
       field: withsecure.incident.severity
       value: "{{severity}}"
+      if: ctx.severity != null
   - set:
       field: withsecure.incident.risk_level
       value: "{{riskLevel}}"
+      if: ctx.riskLevel != null
   - set:
       field: withsecure.incident.risk_score
       value: "{{riskScore}}"
+      if: ctx.riskScore != null
   - set:
       field: withsecure.incident.resolution
       value: "{{resolution}}"
+      if: ctx.resolution != null
   - set:
       field: withsecure.incident.created_timestamp
       value: "{{createdTimestamp}}"
+      if: ctx.createdTimestamp != null
   - set:
       field: withsecure.incident.updated_timestamp
       value: "{{updatedTimestamp}}"
+      if: ctx.updatedTimestamp != null
   - set:
       field: withsecure.incident.initial_received_timestamp
       value: "{{initialReceivedTimestamp}}"
+      if: ctx.initialReceivedTimestamp != null
   - set:
       field: withsecure.incident.categories
       value: "{{categories}}"
+      if: ctx.categories != null
   - set:
       field: withsecure.incident.sources
       value: "{{sources}}"
+      if: ctx.sources != null
   - set:
       field: withsecure.incident.name
       value: "{{name}}"
+      if: ctx.name != null
   - set:
       field: withsecure.incident.public_id
       value: "{{incidentPublicId}}"
+      if: ctx.incidentPublicId != null
   - set:
       field: withsecure.incident.organization_id
       value: "{{organizationId}}"
+      if: ctx.organizationId != null
+
+  # Set @timestamp from createdTimestamp
+  - date:
+      field: createdTimestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.createdTimestamp != null
+      tag: set_timestamp
+      ignore_failure: true
+
+  # Now set ECS event fields using withsecure.incident fields
+  - set:
+      field: event.id
+      copy_from: withsecure.incident.id
+      if: ctx.withsecure?.incident?.id != null
+      ignore_failure: true
+  - set:
+      field: event.created
+      copy_from: withsecure.incident.created_timestamp
+      if: ctx.withsecure?.incident?.created_timestamp != null
+      ignore_failure: true
+  - set:
+      field: event.start
+      copy_from: withsecure.incident.created_timestamp
+      if: ctx.withsecure?.incident?.created_timestamp != null
+      ignore_failure: true
+  - set:
+      field: event.end
+      copy_from: withsecure.incident.updated_timestamp
+      if: ctx.withsecure?.incident?.updated_timestamp != null
+      ignore_failure: true
+  - set:
+      field: event.severity
+      copy_from: withsecure.incident.severity
+      if: ctx.withsecure?.incident?.severity != null
+      ignore_failure: true
+  - set:
+      field: event.risk_score
+      copy_from: withsecure.incident.risk_score
+      if: ctx.withsecure?.incident?.risk_score != null
+      ignore_failure: true
   - remove:
       field:
         - status
@@ -129,5 +172,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

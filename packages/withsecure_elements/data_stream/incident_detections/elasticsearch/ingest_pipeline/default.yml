@@ -1,5 +1,36 @@
 ---
 processors:
+  # Decode JSON from message or event.original
+  - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null && ctx.message != null
+      ignore_failure: true
+  - remove:
+      field: message
+      if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: _temp
+      if: ctx.event?.original != null && ctx.event.original instanceof String
+      ignore_failure: true
+      tag: json_decode
+      description: Decode JSON from event.original
+  - script:
+      lang: painless
+      description: Move JSON fields from _temp to root context
+      tag: move_json_fields
+      source: |
+        if (ctx._temp != null) {
+          for (entry in ctx._temp.entrySet()) {
+            ctx[entry.getKey()] = entry.getValue();
+          }
+          ctx.remove('_temp');
+        }
+      if: ctx._temp != null
+
+  # Set ECS fields
   - set:
       field: event.dataset
       value: withsecure_elements.incident_detections
@@ -8,10 +39,10 @@ processors:
       value: withsecure_elements
   - set:
       field: event.category
-      value: threat
+      value: [threat]
   - set:
       field: event.type
-      value: detection
+      value: [info]
   - set:
       field: event.kind
       value: alert
@@ -27,96 +58,128 @@ processors:
   - set:
       field: event.id
       value: "{{id}}"
+      if: ctx.id != null
+      tag: set_event_id
   - set:
       field: event.created
       value: "{{createdTimestamp}}"
+      if: ctx.createdTimestamp != null
+      tag: set_event_created
   - set:
       field: event.start
       value: "{{createdTimestamp}}"
+      if: ctx.createdTimestamp != null
+      tag: set_event_start
   - set:
       field: event.end
       value: "{{updatedTimestamp}}"
+      if: ctx.updatedTimestamp != null
+      tag: set_event_end
   - set:
       field: event.severity
       value: "{{severity}}"
-  - set:
-      field: event.original
-      value: "{{_source}}"
+      if: ctx.severity != null
+      tag: set_event_severity
+
+  # Set WithSecure custom fields
   - set:
       field: withsecure.incident.detection.id
       value: "{{id}}"
+      if: ctx.id != null
+      ignore_failure: true
   - set:
       field: withsecure.incident.detection.incident_id
       value: "{{incidentId}}"
+      if: ctx.incidentId != null
+      ignore_failure: true
   - set:
       field: withsecure.incident.detection.detection_type
       value: "{{detectionType}}"
+      if: ctx.detectionType != null
+      ignore_failure: true
   - set:
       field: withsecure.incident.detection.severity
       value: "{{severity}}"
+      if: ctx.severity != null
+      ignore_failure: true
   - set:
       field: withsecure.incident.detection.status
       value: "{{status}}"
-  - set:
-      field: withsecure.incident.detection.created_timestamp
-      value: "{{createdTimestamp}}"
-  - set:
-      field: withsecure.incident.detection.updated_timestamp
-      value: "{{updatedTimestamp}}"
+      if: ctx.status != null
+      ignore_failure: true
+  - date:
+      field: createdTimestamp
+      target_field: withsecure.incident.detection.created_timestamp
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.createdTimestamp != null
+      ignore_failure: true
+      tag: convert_created_timestamp
+  - date:
+      field: updatedTimestamp
+      target_field: withsecure.incident.detection.updated_timestamp
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.updatedTimestamp != null
+      ignore_failure: true
+      tag: convert_updated_timestamp
   - set:
       field: withsecure.incident.detection.source
       value: "{{source}}"
+      if: ctx.source != null
+      ignore_failure: true
   - set:
       field: withsecure.incident.detection.category
       value: "{{category}}"
+      if: ctx.category != null
+      ignore_failure: true
   - set:
       field: withsecure.incident.detection.description
       value: "{{description}}"
+      if: ctx.description != null
+      ignore_failure: true
+  - rename:
+      field: details
+      target_field: withsecure.incident.detection.details
+      ignore_missing: true
+  - rename:
+      field: device
+      target_field: withsecure.incident.detection.device
+      ignore_missing: true
+  - rename:
+      field: user
+      target_field: withsecure.incident.detection.user
+      ignore_missing: true
+  - rename:
+      field: file
+      target_field: withsecure.incident.detection.file
+      ignore_missing: true
+  - rename:
+      field: network
+      target_field: withsecure.incident.detection.network
+      ignore_missing: true
+
+  # Clean up temporary fields
+  - remove:
+      field:
+        - id
+        - incidentId
+        - detectionType
+        - severity
+        - status
+        - createdTimestamp
+        - updatedTimestamp
+        - source
+        - category
+        - description
+      ignore_missing: true
+
+on_failure:
   - set:
-      field: withsecure.incident.detection.details
-      value: "{{details}}"
-  - set:
-      field: withsecure.incident.detection.device.id
-      value: "{{device.id}}"
-  - set:
-      field: withsecure.incident.detection.device.name
-      value: "{{device.name}}"
-  - set:
-      field: withsecure.incident.detection.device.ip_address
-      value: "{{device.ipAddress}}"
-  - set:
-      field: withsecure.incident.detection.device.os
-      value: "{{device.os}}"
-  - set:
-      field: withsecure.incident.detection.user.id
-      value: "{{user.id}}"
-  - set:
-      field: withsecure.incident.detection.user.name
-      value: "{{user.name}}"
-  - set:
-      field: withsecure.incident.detection.user.email
-      value: "{{user.email}}"
-  - set:
-      field: withsecure.incident.detection.file.name
-      value: "{{file.name}}"
-  - set:
-      field: withsecure.incident.detection.file.path
-      value: "{{file.path}}"
-  - set:
-      field: withsecure.incident.detection.file.hash
-      value: "{{file.hash}}"
-  - set:
-      field: withsecure.incident.detection.file.size
-      value: "{{file.size}}"
-  - set:
-      field: withsecure.incident.detection.network.source_ip
-      value: "{{network.sourceIp}}"
-  - set:
-      field: withsecure.incident.detection.network.destination_ip
-      value: "{{network.destinationIp}}"
-  - set:
-      field: withsecure.incident.detection.network.port
-      value: "{{network.port}}"
-  - set:
-      field: withsecure.incident.detection.network.protocol
-      value: "{{network.protocol}}"
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -14,9 +14,12 @@ processors:
       target_field: _temp
       if: ctx.event?.original != null && ctx.event.original instanceof String
       ignore_failure: true
+      tag: json_decode
+      description: Decode JSON from event.original
   - script:
       lang: painless
       description: Move JSON fields from _temp to root context
+      tag: move_json_fields
       source: |
         if (ctx._temp != null) {
           for (entry in ctx._temp.entrySet()) {
@@ -168,5 +171,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
