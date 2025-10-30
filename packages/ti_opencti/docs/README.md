@@ -6,14 +6,14 @@ Use this integration to get indicator data from OpenCTI. You can monitor and exp
 
 ## Data streams
 
-The OpenCTI integration collects one type of data stream: logs.
+The OpenCTI integration collects one type of data stream: indicator.
 
-**Logs** are lists of records created over time.
-Each event in the log data stream collected by the OpenCTI integration is an indicator that can be used to detect suspicious or malicious cyber activity. The data is fetched from [OpenCTI's GraphQL API](https://docs.opencti.io/latest/deployment/integrations/#graphql-api).
+**Indicator** are lists of records created over time.
+Each event in the Indicator data stream collected by the OpenCTI integration is an indicator that can be used to detect suspicious or malicious cyber activity. The data is fetched from [OpenCTI's GraphQL API](https://docs.opencti.io/latest/deployment/integrations/#graphql-api).
 
 ## Requirements
 
-This integration requires Filebeat version 8.9.0, or later.
+This integration requires Filebeat version 8.16.0, or later.
 
 It has been updated for OpenCTI version 5.12.24 and requires that version or later.
 
