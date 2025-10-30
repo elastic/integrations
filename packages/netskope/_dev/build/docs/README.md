@@ -178,23 +178,11 @@ Default port: _9021_
 
 {{event "alerts"}}
 
-### Alerts V2
-
-{{fields "alerts_v2"}}
-
-{{event "alerts_v2"}}
-
 ### Events
 
 {{fields "events"}}
 
 {{event "events"}}
-
-### Events V2
-
-{{fields "events_v2"}}
-
-{{event "events_v2"}}
 
 ### Transaction
 
