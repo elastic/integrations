@@ -4,7 +4,7 @@
 
 ## Overview
 
-The [Neon Cyber](https://www.neoncyber.com) Package integration for Elastic enables collection of workforce events and cybersecurity detections from the Neon [API](https://api.neoncyber.io/v1/docs])
+The [Neon Cyber](https://www.neoncyber.com) integration for Elastic enables collection of workforce events and cybersecurity detections from the Neon [API](https://api.neoncyber.io/v1/docs])
 
 ## What data does this integration collect?
 
