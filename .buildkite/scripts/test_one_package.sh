@@ -25,6 +25,12 @@ with_kubernetes
 
 use_elastic_package
 
+# Detect an absolute path to the individual package checker script.
+# This avoids issues caused by changing the working directory.
+current_folder=$(dirname "$(realpath $0)")
+custom_package_checker_script_path="$current_folder/packages/$package.sh"
+
+
 pushd packages > /dev/null
 exit_code=0
 if ! process_package "${package}" ; then
@@ -32,7 +38,14 @@ if ! process_package "${package}" ; then
     # is not hidden by the previous collapsed group.
     echo "--- [${package}] failed"
     exit_code=1
+elif [ -x "$custom_package_checker_script_path" ]; then
+  echo "--- [${package}] Run individual package checker"
+  "$custom_package_checker_script_path"
+else
+  echo "--- [${package}] Individual package checker $custom_package_checker_script_path is not found, continue..."
 fi
 popd > /dev/null
+
+pwd
 
 exit "${exit_code}"
