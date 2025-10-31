@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect privilege escalation and access token manipulation by monitoring sensitive privilege usage (Event IDs 4672, 4673, 4674) including SeDebugPrivilege, SeLoadDriverPrivilege, and SeImpersonatePrivilege",
+        "ecs_mapping": [
+            {
+                "key": "event.code",
+                "value": {
+                    "field": "eventid"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["authentication"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "privilege-use-event"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "windows.security"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "field": "provider_name"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["privilege_escalation", "credential_access", "windows", "T1078.002", "T1134"]
+                }
+            }
+        ],
+        "id": "windows_privilege_use_events_elastic",
+        "interval": "60",
+        "platform": "windows",
+        "query": "SELECT time, datetime, source, provider_name, eventid, data FROM windows_events WHERE channel = 'Security' AND eventid IN (4672, 4673, 4674) AND (data LIKE '%SeDebugPrivilege%' OR data LIKE '%SeLoadDriverPrivilege%' OR data LIKE '%SeTakeOwnershipPrivilege%' OR data LIKE '%SeRestorePrivilege%' OR data LIKE '%SeBackupPrivilege%' OR data LIKE '%SeImpersonatePrivilege%' OR data LIKE '%SeAssignPrimaryTokenPrivilege%') ORDER BY time DESC;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789039",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

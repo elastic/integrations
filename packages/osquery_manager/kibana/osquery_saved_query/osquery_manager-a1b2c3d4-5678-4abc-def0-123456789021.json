@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect potentially malicious PowerShell script blocks by parsing Event ID 4104 from PowerShell operational logs, focusing on obfuscated commands, downloads, and suspicious patterns",
+        "ecs_mapping": [
+            {
+                "key": "event.id",
+                "value": {
+                    "value": "4104"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "value": "Microsoft-Windows-PowerShell"
+                }
+            },
+            {
+                "key": "powershell.script.id",
+                "value": {
+                    "field": "ScriptBlockId"
+                }
+            },
+            {
+                "key": "powershell.script.text",
+                "value": {
+                    "field": "ScriptBlockText"
+                }
+            },
+            {
+                "key": "powershell.script.level",
+                "value": {
+                    "field": "MessageLevel"
+                }
+            },
+            {
+                "key": "powershell.script.path",
+                "value": {
+                    "field": "ScriptPath"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "script-block-logging"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["powershell", "script_block", "execution_artifact"]
+                }
+            }
+        ],
+        "id": "powershell_script_blocks_elastic",
+        "interval": "300",
+        "platform": "windows",
+        "query": "WITH script_blocks AS (\n  SELECT\n    datetime,\n    -- Extract script block ID\n    json_extract(data, '$.EventData.ScriptBlockId') AS ScriptBlockId,\n    -- Extract script text (may be truncated for large scripts)\n    json_extract(data, '$.EventData.ScriptBlockText') AS ScriptBlockText,\n    -- Extract message number and total\n    CAST(json_extract(data, '$.EventData.MessageNumber') AS INTEGER) AS MessageNumber,\n    CAST(json_extract(data, '$.EventData.MessageTotal') AS INTEGER) AS MessageTotal,\n    -- Extract level\n    json_extract(data, '$.EventData.MessageLevel') AS MessageLevel,\n    -- Extract script path if available\n    json_extract(data, '$.EventData.Path') AS ScriptPath,\n    -- Process and computer info\n    pid,\n    computer_name\n  FROM windows_eventlog\n  WHERE channel = 'Microsoft-Windows-PowerShell/Operational'\n    AND eventid = 4104\n    -- Only get events from last hour to reduce load\n    AND datetime > datetime('now', '-1 hour')\n)\nSELECT\n  datetime,\n  ScriptBlockId,\n  MessageNumber || '/' || MessageTotal AS BlockSequence,\n  MessageLevel,\n  ScriptPath,\n  -- Truncate script text for display but preserve key indicators\n  CASE\n    WHEN length(ScriptBlockText) > 500 THEN\n      substr(ScriptBlockText, 1, 497) || '...'\n    ELSE\n      ScriptBlockText\n  END AS ScriptBlockText,\n  -- Flag suspicious patterns\n  CASE\n    WHEN ScriptBlockText LIKE '%EncodedCommand%' THEN 'encoded_command'\n    WHEN ScriptBlockText LIKE '%-enc %' THEN 'encoded_command'\n    WHEN ScriptBlockText LIKE '%FromBase64String%' THEN 'base64_decode'\n    WHEN ScriptBlockText LIKE '%Invoke-WebRequest%' THEN 'web_download'\n    WHEN ScriptBlockText LIKE '%DownloadString%' THEN 'web_download'\n    WHEN ScriptBlockText LIKE '%DownloadFile%' THEN 'file_download'\n    WHEN ScriptBlockText LIKE '%Invoke-Expression%' THEN 'remote_execution'\n    WHEN ScriptBlockText LIKE '%IEX%' THEN 'remote_execution'\n    WHEN ScriptBlockText LIKE '%Start-Process%' THEN 'process_creation'\n    WHEN ScriptBlockText LIKE '%Hidden%' THEN 'hidden_window'\n    WHEN ScriptBlockText LIKE '%bypass%' THEN 'policy_bypass'\n    WHEN ScriptBlockText LIKE '%unrestricted%' THEN 'policy_bypass'\n    WHEN ScriptBlockText LIKE '%Add-MpPreference%' THEN 'av_exclusion'\n    WHEN ScriptBlockText LIKE '%DisableRealtimeMonitoring%' THEN 'av_disable'\n    WHEN ScriptBlockText LIKE '%amsi%' THEN 'amsi_bypass'\n    WHEN ScriptBlockText LIKE '%Reflection.Assembly%' THEN 'reflection_load'\n    WHEN ScriptBlockText LIKE '%System.Management.Automation%' THEN 'automation_api'\n    ELSE 'standard'\n  END AS SuspiciousPattern,\n  pid,\n  computer_name\nFROM script_blocks\nWHERE\n  -- Filter out common benign scripts\n  ScriptBlockText NOT LIKE '%Microsoft.PowerShell.Utility%'\n  AND ScriptBlockText NOT LIKE '%Microsoft.PowerShell.Management%'\n  AND ScriptBlockText NOT LIKE '%Get-Help%'\n  AND ScriptBlockText NOT LIKE '%Get-Command%'\n  -- Focus on suspicious patterns\n  AND (\n    ScriptBlockText LIKE '%EncodedCommand%'\n    OR ScriptBlockText LIKE '%-enc %'\n    OR ScriptBlockText LIKE '%FromBase64String%'\n    OR ScriptBlockText LIKE '%Invoke-%'\n    OR ScriptBlockText LIKE '%Download%'\n    OR ScriptBlockText LIKE '%IEX%'\n    OR ScriptBlockText LIKE '%Hidden%'\n    OR ScriptBlockText LIKE '%bypass%'\n    OR ScriptBlockText LIKE '%unrestricted%'\n    OR ScriptBlockText LIKE '%Add-MpPreference%'\n    OR ScriptBlockText LIKE '%Disable%Monitoring%'\n    OR ScriptBlockText LIKE '%amsi%'\n    OR ScriptBlockText LIKE '%Reflection%'\n    OR MessageLevel = 'Warning'\n  )\nORDER BY datetime DESC\nLIMIT 100;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789021",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

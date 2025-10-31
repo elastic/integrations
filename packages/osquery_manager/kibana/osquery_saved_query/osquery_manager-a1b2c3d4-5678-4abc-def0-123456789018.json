@@ -1,0 +1,93 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect BITS transfers potentially used for malicious downloads (Event ID 59)",
+        "ecs_mapping": [
+            {
+                "key": "@timestamp",
+                "value": {
+                    "field": "datetime"
+                }
+            },
+            {
+                "key": "url.original",
+                "value": {
+                    "field": "url"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "file_size"
+                }
+            },
+            {
+                "key": "network.bytes",
+                "value": {
+                    "field": "bytes_transferred"
+                }
+            },
+            {
+                "key": "event.id",
+                "value": {
+                    "field": "transfer_id"
+                }
+            },
+            {
+                "key": "event.code",
+                "value": {
+                    "field": "eventid"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["network", "file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["connection", "download"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "bits-transfer"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "windows.bits"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "value": "Microsoft-Windows-Bits-Client"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["c2_detection", "bits", "download", "network_activity"]
+                }
+            }
+        ],
+        "id": "bits_transfers_c2_elastic",
+        "interval": "86400",
+        "platform": "windows",
+        "query": "SELECT datetime, json_extract(data, '$.EventData.url') AS url, json_extract(data, '$.EventData.name') AS job_name, json_extract(data, '$.EventData.Id') AS transfer_id, json_extract(data, '$.EventData.fileLength') AS file_size, json_extract(data, '$.EventData.bytesTransferred') AS bytes_transferred, eventid FROM windows_eventlog WHERE channel = 'Microsoft-Windows-Bits-Client/Operational' AND eventid = 59 AND datetime > datetime('now', '-30 days') ORDER BY datetime DESC LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789018",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

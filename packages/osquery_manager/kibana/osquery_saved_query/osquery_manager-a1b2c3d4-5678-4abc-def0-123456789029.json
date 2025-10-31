@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect Windows Event Log clearing activities by monitoring Event ID 1102 (Security log cleared) and Event ID 104 (System log cleared) for evidence tampering",
+        "ecs_mapping": [
+            {
+                "key": "event.id",
+                "value": {
+                    "field": "EventID"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "value": "Microsoft-Windows-Eventlog"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "event-log-cleared"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "SubjectUserName"
+                }
+            },
+            {
+                "key": "user.domain",
+                "value": {
+                    "field": "SubjectDomainName"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "SubjectUserSid"
+                }
+            },
+            {
+                "key": "event.module",
+                "value": {
+                    "field": "Channel"
+                }
+            },
+            {
+                "key": "host.name",
+                "value": {
+                    "field": "computer_name"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["deletion"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["event_log", "evidence_tampering", "defense_evasion"]
+                }
+            }
+        ],
+        "id": "event_log_clearing_elastic",
+        "interval": "300",
+        "platform": "windows",
+        "query": "-- Event Log Clearing Detection\n-- Event ID 1102: Audit log was cleared (Security)\n-- Event ID 104: System log was cleared (System)\nWITH log_clearing_events AS (\n  SELECT\n    datetime,\n    eventid AS EventID,\n    channel AS Channel,\n    provider_name AS ProviderName,\n    computer_name,\n    -- Extract subject (who cleared the log)\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserName') AS SubjectUserName,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectDomainName') AS SubjectDomainName,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectUserSid') AS SubjectUserSid,\n    json_extract(data, '$.UserData.LogFileCleared.SubjectLogonId') AS SubjectLogonId,\n    -- For Event ID 1102 (Security log)\n    json_extract(data, '$.EventData.SubjectUserName') AS SecuritySubjectUserName,\n    json_extract(data, '$.EventData.SubjectDomainName') AS SecuritySubjectDomainName,\n    json_extract(data, '$.EventData.SubjectUserSid') AS SecuritySubjectUserSid,\n    json_extract(data, '$.EventData.SubjectLogonId') AS SecuritySubjectLogonId,\n    -- Extract log file info\n    json_extract(data, '$.UserData.LogFileCleared.Channel') AS ClearedChannel,\n    json_extract(data, '$.UserData.LogFileCleared.BackupPath') AS BackupPath,\n    data AS RawData\n  FROM windows_eventlog\n  WHERE\n    -- Event ID 1102: Security log cleared\n    (channel = 'Security' AND eventid = 1102)\n    -- Event ID 104: System/Application log cleared  \n    OR (channel = 'System' AND eventid = 104)\n    OR (channel = 'Application' AND eventid = 104)\n    -- Check last 24 hours\n    AND datetime > datetime('now', '-24 hours')\n)\nSELECT\n  datetime,\n  EventID,\n  Channel,\n  computer_name,\n  -- Determine which event format and extract user\n  CASE\n    WHEN EventID = 1102 THEN\n      COALESCE(SecuritySubjectUserName, SubjectUserName, 'Unknown')\n    WHEN EventID = 104 THEN\n      COALESCE(SubjectUserName, 'Unknown')\n    ELSE 'Unknown'\n  END AS SubjectUserName,\n  CASE\n    WHEN EventID = 1102 THEN\n      COALESCE(SecuritySubjectDomainName, SubjectDomainName, 'Unknown')\n    WHEN EventID = 104 THEN\n      COALESCE(SubjectDomainName, 'Unknown')\n    ELSE 'Unknown'\n  END AS SubjectDomainName,\n  CASE\n    WHEN EventID = 1102 THEN\n      COALESCE(SecuritySubjectUserSid, SubjectUserSid, 'Unknown')\n    WHEN EventID = 104 THEN\n      COALESCE(SubjectUserSid, 'Unknown')\n    ELSE 'Unknown'\n  END AS SubjectUserSid,\n  -- Logon ID can help correlate with other events\n  CASE\n    WHEN EventID = 1102 THEN\n      COALESCE(SecuritySubjectLogonId, SubjectLogonId)\n    WHEN EventID = 104 THEN\n      SubjectLogonId\n    ELSE NULL\n  END AS SubjectLogonId,\n  -- What log was cleared\n  CASE\n    WHEN EventID = 1102 THEN 'Security'\n    WHEN EventID = 104 AND Channel = 'System' THEN 'System'\n    WHEN EventID = 104 AND Channel = 'Application' THEN 'Application'\n    ELSE COALESCE(ClearedChannel, Channel)\n  END AS ClearedLog,\n  -- Backup path (if log was backed up before clearing)\n  BackupPath,\n  -- Categorize the event\n  CASE\n    WHEN EventID = 1102 THEN 'security_log_cleared'\n    WHEN EventID = 104 AND Channel = 'System' THEN 'system_log_cleared'\n    WHEN EventID = 104 AND Channel = 'Application' THEN 'application_log_cleared'\n    ELSE 'other_log_cleared'\n  END AS EventCategory,\n  -- Risk assessment\n  CASE\n    -- Security log clearing is critical indicator\n    WHEN EventID = 1102 THEN 'critical'\n    -- System log clearing is high risk\n    WHEN EventID = 104 AND Channel = 'System' THEN 'high'\n    -- Application log less critical but still suspicious\n    WHEN EventID = 104 AND Channel = 'Application' THEN 'medium'\n    ELSE 'low'\n  END AS RiskLevel,\n  -- Context analysis\n  CASE\n    WHEN BackupPath IS NULL OR BackupPath = '' THEN 'no_backup'\n    WHEN BackupPath IS NOT NULL THEN 'backed_up'\n    ELSE 'unknown'\n  END AS BackupStatus,\n  -- Identify suspicious patterns\n  CASE\n    WHEN SubjectUserName LIKE '%admin%' OR SubjectUserName LIKE '%Administrator%' THEN 'admin_user'\n    WHEN SubjectUserSid LIKE 'S-1-5-21-%' THEN 'domain_user'\n    WHEN SubjectUserSid LIKE 'S-1-5-18%' THEN 'system_user'\n    WHEN SubjectUserSid LIKE 'S-1-5-19%' THEN 'local_service'\n    WHEN SubjectUserSid LIKE 'S-1-5-20%' THEN 'network_service'\n    ELSE 'other_user'\n  END AS UserType,\n  -- Additional context\n  ProviderName\nFROM log_clearing_events\nWHERE\n  -- Filter out system maintenance clearing (if needed)\n  SubjectUserName NOT IN ('SYSTEM', 'LOCAL SERVICE', 'NETWORK SERVICE')\n  -- Exclude service accounts if needed\n  AND SubjectUserName NOT LIKE '%$'\nORDER BY\n  -- Sort by risk and time\n  CASE RiskLevel\n    WHEN 'critical' THEN 1\n    WHEN 'high' THEN 2\n    WHEN 'medium' THEN 3\n    ELSE 4\n  END,\n  datetime DESC\nLIMIT 100;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789029",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

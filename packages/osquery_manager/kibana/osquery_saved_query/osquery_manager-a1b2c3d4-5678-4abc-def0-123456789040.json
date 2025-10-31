@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Comprehensive process execution audit via Windows Security Event ID 4688, tracking script interpreters, LOLBins, and processes from suspicious locations with command line capture",
+        "ecs_mapping": [
+            {
+                "key": "event.code",
+                "value": {
+                    "value": "4688"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["start"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "process-creation"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "windows.security"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "field": "provider_name"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["execution", "process_creation", "windows", "T1059"]
+                }
+            }
+        ],
+        "id": "windows_process_creation_events_elastic",
+        "interval": "60",
+        "platform": "windows",
+        "query": "SELECT time, datetime, source, provider_name, eventid, data FROM windows_events WHERE channel = 'Security' AND eventid = 4688 AND (data LIKE '%powershell.exe%' OR data LIKE '%cmd.exe%' OR data LIKE '%wscript.exe%' OR data LIKE '%cscript.exe%' OR data LIKE '%mshta.exe%' OR data LIKE '%rundll32.exe%' OR data LIKE '%regsvr32.exe%' OR data LIKE '%certutil.exe%' OR data LIKE '%bitsadmin.exe%' OR data LIKE '%msiexec.exe%' OR data LIKE '%\\Temp\\%' OR data LIKE '%\\AppData\\Local\\Temp\\%' OR data LIKE '%\\Users\\Public\\%' OR data LIKE '%\\ProgramData\\%') ORDER BY time DESC;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789040",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

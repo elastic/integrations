@@ -1,0 +1,93 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Track folder access including network shares and removable media via Shellbags",
+        "ecs_mapping": [
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "accessed_time"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "modified_time"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "created_time"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "sid"
+                }
+            },
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "source"
+                }
+            },
+            {
+                "key": "file.type",
+                "value": {
+                    "value": "directory"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["access"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "folder-access"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "windows.shellbags"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["folder_access", "user_activity", "shellbags", "forensics"]
+                }
+            }
+        ],
+        "id": "shellbags_folder_access_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT path, accessed_time, modified_time, created_time, sid, source FROM shellbags WHERE (path LIKE '%\\Users\\%\\Desktop%' OR path LIKE '%\\Users\\%\\Downloads%' OR path LIKE '\\\\%' OR path LIKE '%Removable Disk%') AND accessed_time > datetime('now', '-30 days') ORDER BY accessed_time DESC LIMIT 500;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789016",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

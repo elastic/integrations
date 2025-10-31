@@ -1,0 +1,56 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Monitor ARP cache for lateral movement indicators, excluding common private network ranges to focus on unusual connections",
+        "ecs_mapping": [
+            {
+                "key": "destination.ip",
+                "value": {
+                    "field": "address"
+                }
+            },
+            {
+                "key": "destination.mac",
+                "value": {
+                    "field": "mac"
+                }
+            },
+            {
+                "key": "network.interface",
+                "value": {
+                    "field": "interface"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["network"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["network_activity", "arp", "lateral_movement"]
+                }
+            }
+        ],
+        "id": "arp_cache_lateral_movement_elastic",
+        "interval": "3600",
+        "query": "SELECT address, mac, interface, permanent FROM arp_cache WHERE permanent = '0' ORDER BY interface, address LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789009",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

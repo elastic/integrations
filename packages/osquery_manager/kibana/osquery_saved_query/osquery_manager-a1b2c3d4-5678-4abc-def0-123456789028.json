@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enumerate recently accessed Office documents from Windows Registry ComDlg32\\OpenSavePidlMRU to identify user file access patterns and potential data exfiltration targets",
+        "ecs_mapping": [
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "registry.key",
+                "value": {
+                    "field": "key"
+                }
+            },
+            {
+                "key": "registry.value",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "registry.data.bytes",
+                "value": {
+                    "field": "data"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "FilePath"
+                }
+            },
+            {
+                "key": "file.extension",
+                "value": {
+                    "field": "FileExtension"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "UserSID"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "file-access-history"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["access"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["office_documents", "user_activity", "recent_files"]
+                }
+            }
+        ],
+        "id": "recent_office_documents_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Recent Office document access from ComDlg32 OpenSavePidlMRU\n-- Tracks documents opened via File Open/Save dialogs\nWITH recent_files AS (\n  SELECT\n    key,\n    path,\n    name AS ValueName,\n    data,\n    type AS RegistryType,\n    datetime(mtime, 'unixepoch') AS LastModified,\n    -- Extract user SID from registry path\n    CASE\n      WHEN path LIKE 'HKEY_USERS\\\\%\\\\%' THEN\n        substr(path, 13, instr(substr(path, 13), '\\\\') - 1)\n      ELSE 'Unknown'\n    END AS UserSID,\n    -- Extract file extension from key\n    CASE\n      WHEN key LIKE '%\\\\doc\\\\%' THEN 'doc'\n      WHEN key LIKE '%\\\\docx\\\\%' THEN 'docx'\n      WHEN key LIKE '%\\\\xls\\\\%' THEN 'xls'\n      WHEN key LIKE '%\\\\xlsx\\\\%' THEN 'xlsx'\n      WHEN key LIKE '%\\\\ppt\\\\%' THEN 'ppt'\n      WHEN key LIKE '%\\\\pptx\\\\%' THEN 'pptx'\n      WHEN key LIKE '%\\\\pdf\\\\%' THEN 'pdf'\n      WHEN key LIKE '%\\\\txt\\\\%' THEN 'txt'\n      WHEN key LIKE '%\\\\csv\\\\%' THEN 'csv'\n      WHEN key LIKE '%\\\\rtf\\\\%' THEN 'rtf'\n      WHEN key LIKE '%\\\\odt\\\\%' THEN 'odt'\n      WHEN key LIKE '%\\\\ods\\\\%' THEN 'ods'\n      ELSE 'unknown'\n    END AS FileExtension\n  FROM registry\n  WHERE\n    -- OpenSavePidlMRU tracks recent file access\n    key LIKE 'HKEY_USERS\\\\%\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\ComDlg32\\\\OpenSavePidlMRU\\\\%'\n    -- Focus on Office document extensions\n    AND (\n      key LIKE '%\\\\doc\\\\%'\n      OR key LIKE '%\\\\docx\\\\%'\n      OR key LIKE '%\\\\xls\\\\%'\n      OR key LIKE '%\\\\xlsx\\\\%'\n      OR key LIKE '%\\\\ppt\\\\%'\n      OR key LIKE '%\\\\pptx\\\\%'\n      OR key LIKE '%\\\\pdf\\\\%'\n      OR key LIKE '%\\\\txt\\\\%'\n      OR key LIKE '%\\\\csv\\\\%'\n      OR key LIKE '%\\\\rtf\\\\%'\n      OR key LIKE '%\\\\odt\\\\%'\n      OR key LIKE '%\\\\ods\\\\%'\n    )\n    -- Exclude MRUListEx (metadata entry)\n    AND name != 'MRUListEx'\n    -- Only recent entries (last 30 days)\n    AND datetime(mtime, 'unixepoch') > datetime('now', '-30 days')\n),\noffice_recent AS (\n  SELECT\n    key,\n    path,\n    name AS ValueName,\n    data,\n    datetime(mtime, 'unixepoch') AS LastModified,\n    -- Extract user SID\n    CASE\n      WHEN path LIKE 'HKEY_USERS\\\\%\\\\%' THEN\n        substr(path, 13, instr(substr(path, 13), '\\\\') - 1)\n      ELSE 'Unknown'\n    END AS UserSID,\n    -- Extract file extension from path\n    CASE\n      WHEN data LIKE '%.docx' OR data LIKE '%.docx%' THEN 'docx'\n      WHEN data LIKE '%.doc' OR data LIKE '%.doc%' THEN 'doc'\n      WHEN data LIKE '%.xlsx' OR data LIKE '%.xlsx%' THEN 'xlsx'\n      WHEN data LIKE '%.xls' OR data LIKE '%.xls%' THEN 'xls'\n      WHEN data LIKE '%.pptx' OR data LIKE '%.pptx%' THEN 'pptx'\n      WHEN data LIKE '%.ppt' OR data LIKE '%.ppt%' THEN 'ppt'\n      WHEN data LIKE '%.pdf' OR data LIKE '%.pdf%' THEN 'pdf'\n      ELSE 'other'\n    END AS FileExtension\n  FROM registry\n  WHERE\n    -- Office Recent Files lists\n    key LIKE 'HKEY_USERS\\\\%\\\\Software\\\\Microsoft\\\\Office\\\\%\\\\%\\\\File MRU\\\\%'\n    -- Only recent entries\n    AND datetime(mtime, 'unixepoch') > datetime('now', '-30 days')\n)\nSELECT\n  path,\n  key,\n  ValueName,\n  LastModified,\n  UserSID,\n  FileExtension,\n  -- Attempt to extract readable file path from binary data\n  -- Note: PIDL data is binary, this shows hex representation\n  CASE\n    WHEN length(data) < 200 THEN data\n    ELSE substr(data, 1, 197) || '...'\n  END AS DataPreview,\n  'ComDlg32_MRU' AS Source,\n  -- Categorize document type\n  CASE\n    WHEN FileExtension IN ('doc', 'docx', 'rtf', 'odt', 'txt') THEN 'text_document'\n    WHEN FileExtension IN ('xls', 'xlsx', 'csv', 'ods') THEN 'spreadsheet'\n    WHEN FileExtension IN ('ppt', 'pptx') THEN 'presentation'\n    WHEN FileExtension = 'pdf' THEN 'pdf_document'\n    ELSE 'other'\n  END AS DocumentType,\n  -- Risk assessment for data exfiltration\n  CASE\n    WHEN FileExtension IN ('xlsx', 'xls', 'csv') THEN 'high_value'\n    WHEN FileExtension IN ('docx', 'doc') THEN 'medium_value'\n    WHEN FileExtension IN ('pdf', 'txt') THEN 'medium_value'\n    ELSE 'low_value'\n  END AS DataValue\nFROM recent_files\nWHERE UserSID != 'Unknown'\n  AND FileExtension != 'unknown'\nUNION ALL\nSELECT\n  path,\n  key,\n  ValueName,\n  LastModified,\n  UserSID,\n  FileExtension,\n  CASE\n    WHEN length(data) < 200 THEN data\n    ELSE substr(data, 1, 197) || '...'\n  END AS DataPreview,\n  'Office_MRU' AS Source,\n  CASE\n    WHEN FileExtension IN ('doc', 'docx') THEN 'text_document'\n    WHEN FileExtension IN ('xls', 'xlsx') THEN 'spreadsheet'\n    WHEN FileExtension IN ('ppt', 'pptx') THEN 'presentation'\n    WHEN FileExtension = 'pdf' THEN 'pdf_document'\n    ELSE 'other'\n  END AS DocumentType,\n  CASE\n    WHEN FileExtension IN ('xlsx', 'xls') THEN 'high_value'\n    WHEN FileExtension IN ('docx', 'doc') THEN 'medium_value'\n    WHEN FileExtension = 'pdf' THEN 'medium_value'\n    ELSE 'low_value'\n  END AS DataValue\nFROM office_recent\nWHERE UserSID != 'Unknown'\n  AND FileExtension != 'other'\nORDER BY LastModified DESC\nLIMIT 200;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789028",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

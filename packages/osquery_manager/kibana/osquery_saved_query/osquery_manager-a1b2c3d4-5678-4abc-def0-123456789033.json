@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect Linux persistence via cron jobs by monitoring for suspicious commands including network utilities, script interpreters, and operations in temporary directories",
+        "ecs_mapping": [
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "command"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "cron-job-enumeration"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "linux.crontab"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "execution", "scheduled_task", "linux", "T1053.003"]
+                }
+            }
+        ],
+        "id": "linux_crontab_persistence_elastic",
+        "interval": "3600",
+        "platform": "linux",
+        "query": "SELECT event, minute, hour, day_of_month, month, day_of_week, command, path FROM crontab WHERE command LIKE '%curl%' OR command LIKE '%wget%' OR command LIKE '%bash -c%' OR command LIKE '%python%' OR command LIKE '%nc %' OR command LIKE '%ncat%' OR command LIKE '%/tmp/%' OR command LIKE '%chmod +x%' OR command LIKE '%base64%' OR path NOT LIKE '/etc/cron%' ORDER BY path, event;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789033",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

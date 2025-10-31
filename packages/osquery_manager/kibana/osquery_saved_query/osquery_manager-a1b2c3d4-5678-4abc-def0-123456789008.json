@@ -1,0 +1,80 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enumerate recently modified executables with file hashes from suspicious locations for threat intelligence correlation",
+        "ecs_mapping": [
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "filename"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "mtime"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["file_analysis", "hashing", "threat_hunting"]
+                }
+            }
+        ],
+        "id": "file_hashes_threat_intel_elastic",
+        "interval": "86400",
+        "query": "SELECT f.path, f.filename, f.size, f.mtime, h.md5, h.sha1, h.sha256 FROM file f JOIN hash h ON f.path = h.path WHERE (f.path LIKE 'C:\\Users\\%\\AppData\\Local\\Temp\\%.exe' OR f.path LIKE 'C:\\Users\\%\\AppData\\Roaming\\%.exe' OR f.path LIKE 'C:\\Users\\%\\Downloads\\%.exe' OR f.path LIKE 'C:\\Users\\Public\\%.exe' OR f.path LIKE 'C:\\ProgramData\\%.exe' OR f.path LIKE 'C:\\Windows\\Temp\\%.exe' OR f.path LIKE '/tmp/%.sh' OR f.path LIKE '/var/tmp/%') AND f.size > 0 AND f.size < 10485760 AND f.mtime > datetime('now', '-30 days') ORDER BY f.mtime DESC LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789008",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

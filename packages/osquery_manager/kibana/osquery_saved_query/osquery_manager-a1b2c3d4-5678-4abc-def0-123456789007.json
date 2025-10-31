@@ -1,0 +1,57 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Track NTFS USN Journal file system changes focusing on creation, deletion, and rename operations of executables and scripts in suspicious locations",
+        "ecs_mapping": [
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "field": "action"
+                }
+            },
+            {
+                "key": "@timestamp",
+                "value": {
+                    "field": "record_timestamp"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["change"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["file_activity", "usn_journal", "forensics"]
+                }
+            }
+        ],
+        "id": "usn_journal_activity_elastic",
+        "interval": "86400",
+        "platform": "windows",
+        "query": "SELECT action, category, old_path, path, record_timestamp, drive_letter FROM ntfs_journal_events WHERE (action IN ('FILE_CREATE', 'FILE_DELETE', 'RENAME_OLD_NAME', 'RENAME_NEW_NAME')) AND (path LIKE '%\\Users\\%\\AppData\\%' OR path LIKE '%\\Temp\\%' OR path LIKE '%\\Users\\Public\\%' OR path LIKE '%\\ProgramData\\%' OR path LIKE '%\\Users\\%\\Desktop\\%' OR path LIKE '%\\Users\\%\\Downloads\\%') AND (path LIKE '%.exe' OR path LIKE '%.dll' OR path LIKE '%.ps1' OR path LIKE '%.bat' OR path LIKE '%.cmd' OR path LIKE '%.vbs' OR path LIKE '%.zip') AND record_timestamp > datetime('now', '-7 days') ORDER BY record_timestamp DESC LIMIT 500;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789007",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

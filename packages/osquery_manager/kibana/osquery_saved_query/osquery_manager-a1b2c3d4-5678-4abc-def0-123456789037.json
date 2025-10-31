@@ -1,0 +1,69 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect program execution via Windows 10+ BAM (Background Activity Moderator) registry artifacts, providing better reliability than Prefetch with user attribution and precise timestamps",
+        "ecs_mapping": [
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "registry.key",
+                "value": {
+                    "field": "key"
+                }
+            },
+            {
+                "key": "registry.data.bytes",
+                "value": {
+                    "field": "data"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "bam-execution-artifact"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "windows.bam"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["execution", "windows", "bam", "forensics", "T1059"]
+                }
+            }
+        ],
+        "id": "windows_bam_execution_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT key, name, data, mtime FROM registry WHERE (key LIKE 'HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\bam\\State\\UserSettings\\%' OR key LIKE 'HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\dam\\State\\UserSettings\\%') AND name != '' AND (name LIKE '%\\Temp\\%' OR name LIKE '%\\AppData\\Local\\Temp\\%' OR name LIKE '%\\Users\\Public\\%' OR name LIKE '%\\ProgramData\\%' OR name LIKE '%\\Downloads\\%' OR name LIKE '%\\powershell.exe' OR name LIKE '%\\cmd.exe' OR name LIKE '%\\wscript.exe' OR name LIKE '%\\cscript.exe' OR name LIKE '%\\mshta.exe') ORDER BY mtime DESC;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789037",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

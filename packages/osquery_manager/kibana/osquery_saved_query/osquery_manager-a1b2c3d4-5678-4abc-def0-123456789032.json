@@ -1,0 +1,69 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Identify unencrypted SSH private keys and keys in suspicious locations to detect credential exposure risks and potential lateral movement key material",
+        "ecs_mapping": [
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.type",
+                "value": {
+                    "value": "file"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "ssh-private-key-discovery"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "ssh.private_keys"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["ssh", "credential_access", "lateral_movement", "linux", "macos", "T1552.004"]
+                }
+            }
+        ],
+        "id": "ssh_private_keys_discovery_elastic",
+        "interval": "3600",
+        "platform": "linux,darwin",
+        "query": "SELECT uid, path, encrypted, key_type FROM user_ssh_keys WHERE encrypted = 0 OR path NOT LIKE '%/.ssh/%' OR key_type NOT IN ('rsa', 'ed25519', 'ecdsa') ORDER BY encrypted ASC, uid;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789032",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

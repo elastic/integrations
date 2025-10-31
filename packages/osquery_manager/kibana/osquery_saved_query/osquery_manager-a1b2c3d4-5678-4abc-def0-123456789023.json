@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect WMI Event Filters used for persistence by querying wmi_event_filters table, focusing on suspicious event filters that execute code when triggered",
+        "ecs_mapping": [
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "wmi-event-filter"
+                }
+            },
+            {
+                "key": "wmi.filter.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "wmi.filter.query",
+                "value": {
+                    "field": "query"
+                }
+            },
+            {
+                "key": "wmi.filter.query_language",
+                "value": {
+                    "field": "query_language"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["creation"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["wmi", "persistence", "event_filter"]
+                }
+            }
+        ],
+        "id": "wmi_event_filters_persistence_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- WMI Event Filters are used for persistence by creating triggers\n-- Cross-reference with wmi_filter_consumer_binding for full persistence chain\nSELECT\n  name,\n  -- Query is the WQL that defines when the filter triggers\n  query,\n  query_language,\n  relative_path,\n  -- Identify suspicious patterns in filter queries\n  CASE\n    WHEN query LIKE '%Win32_ProcessStartTrace%' THEN 'process_creation_trigger'\n    WHEN query LIKE '%Win32_ModuleLoadTrace%' THEN 'module_load_trigger'\n    WHEN query LIKE '%Win32_ThreadTrace%' THEN 'thread_creation_trigger'\n    WHEN query LIKE '%SystemRestore%' THEN 'restore_point_trigger'\n    WHEN query LIKE '%RegistryKeyChangeEvent%' THEN 'registry_trigger'\n    WHEN query LIKE '%RegistryValueChangeEvent%' THEN 'registry_trigger'\n    WHEN query LIKE '%__InstanceCreationEvent%' THEN 'instance_creation_trigger'\n    WHEN query LIKE '%__InstanceModificationEvent%' THEN 'instance_modification_trigger'\n    WHEN query LIKE '%__InstanceDeletionEvent%' THEN 'instance_deletion_trigger'\n    WHEN query LIKE '%__TimerEvent%' THEN 'timer_trigger'\n    WHEN query LIKE '%__IntervalTimerInstruction%' THEN 'interval_timer_trigger'\n    WHEN query LIKE '%Win32_LogonSession%' THEN 'logon_trigger'\n    WHEN query LIKE '%Win32_ComputerSystemEvent%' THEN 'system_event_trigger'\n    ELSE 'custom_trigger'\n  END AS FilterTriggerType,\n  -- Check for encoded or suspicious content\n  CASE\n    WHEN query LIKE '%powershell%' THEN 'powershell_related'\n    WHEN query LIKE '%cmd%' THEN 'cmd_related'\n    WHEN query LIKE '%wscript%' THEN 'script_related'\n    WHEN query LIKE '%cscript%' THEN 'script_related'\n    WHEN query LIKE '%mshta%' THEN 'lolbin_related'\n    WHEN query LIKE '%regsvr32%' THEN 'lolbin_related'\n    WHEN query LIKE '%rundll32%' THEN 'lolbin_related'\n    WHEN query LIKE '%certutil%' THEN 'lolbin_related'\n    WHEN query LIKE '%bitsadmin%' THEN 'lolbin_related'\n    ELSE 'standard'\n  END AS SuspiciousContent,\n  -- Evaluate risk level based on query patterns\n  CASE\n    WHEN name LIKE 'SCM Event Log Consumer%' THEN 'benign_system'\n    WHEN name LIKE 'BVTFilter%' THEN 'benign_system'\n    WHEN relative_path LIKE '%root\\\\\\\\subscription%' AND query LIKE '%__TimerEvent%' THEN 'high_risk'\n    WHEN query LIKE '%Win32_ProcessStartTrace%' THEN 'high_risk'\n    WHEN query LIKE '%powershell%' OR query LIKE '%cmd%' OR query LIKE '%script%' THEN 'medium_risk'\n    WHEN query LIKE '%__InstanceCreationEvent%' THEN 'medium_risk'\n    WHEN query LIKE '%__InstanceModificationEvent%' THEN 'low_risk'\n    ELSE 'unknown'\n  END AS RiskLevel\nFROM wmi_event_filters\nWHERE\n  -- Exclude common system filters\n  name NOT LIKE 'SCM Event Log Consumer%'\n  AND name NOT LIKE 'BVTFilter%'\n  AND name NOT LIKE 'MSFT_%'\n  -- Focus on subscription namespace (persistence location) using relative_path\n  AND relative_path LIKE '%root\\\\\\\\subscription%'\nORDER BY\n  CASE RiskLevel\n    WHEN 'high_risk' THEN 1\n    WHEN 'medium_risk' THEN 2\n    WHEN 'low_risk' THEN 3\n    ELSE 4\n  END,\n  name\nLIMIT 100;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789023",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

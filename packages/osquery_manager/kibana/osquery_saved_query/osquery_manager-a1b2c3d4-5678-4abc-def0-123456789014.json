@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Track GUI program execution via UserAssist registry showing user-initiated program launches from suspicious locations",
+        "ecs_mapping": [
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "event.start",
+                "value": {
+                    "field": "last_execution_time"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "sid"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["start", "info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "gui-execution"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["execution_artifact", "userassist", "user_activity"]
+                }
+            }
+        ],
+        "id": "userassist_execution_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT path, count, last_execution_time, sid FROM userassist WHERE (path LIKE '%.exe' OR path LIKE '%.scr' OR path LIKE '%.com' OR path LIKE '%.bat' OR path LIKE '%.ps1' OR path LIKE '%.vbs') AND (path NOT LIKE 'C:\\Windows\\System32\\%' OR path LIKE '%\\Users\\%' OR path LIKE '%\\Temp\\%' OR path LIKE '%\\AppData\\%') ORDER BY last_execution_time DESC LIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789014",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

@@ -1,0 +1,75 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Enumerate all Windows Registry autorun locations (Run, RunOnce, RunOnceEx) across HKLM and HKCU for persistence detection, including startup folder references",
+        "ecs_mapping": [
+            {
+                "key": "registry.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "registry.key",
+                "value": {
+                    "field": "key"
+                }
+            },
+            {
+                "key": "registry.value",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "registry.data.strings",
+                "value": {
+                    "field": "data"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "ExecutablePath"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "registry-autorun"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["creation"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["autorun", "persistence", "registry"]
+                }
+            }
+        ],
+        "id": "autorun_registry_keys_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "-- Comprehensive Windows Registry autorun enumeration\n-- Covers all Run/RunOnce keys in HKLM and HKCU plus policies\nSELECT\n  path,\n  key,\n  name AS ValueName,\n  data AS Command,\n  type AS RegistryType,\n  datetime(mtime, 'unixepoch') AS LastModified,\n  -- Identify autorun location type\n  CASE\n    WHEN key LIKE '%\\\\Run' THEN 'Run'\n    WHEN key LIKE '%\\\\RunOnce' THEN 'RunOnce'\n    WHEN key LIKE '%\\\\RunOnceEx' THEN 'RunOnceEx'\n    WHEN key LIKE '%\\\\RunServices' THEN 'RunServices'\n    WHEN key LIKE '%\\\\RunServicesOnce' THEN 'RunServicesOnce'\n    ELSE 'Other'\n  END AS AutorunType,\n  -- Identify registry hive\n  CASE\n    WHEN key LIKE 'HKEY_LOCAL_MACHINE%' THEN 'HKLM'\n    WHEN key LIKE 'HKEY_CURRENT_USER%' THEN 'HKCU'\n    WHEN key LIKE 'HKEY_USERS%' THEN 'HKU'\n    ELSE 'Unknown'\n  END AS RegistryHive,\n  -- Extract executable path from command\n  CASE\n    -- Handle quoted paths\n    WHEN data LIKE '\"%' THEN\n      substr(data, 2, instr(substr(data, 2), '\"') - 1)\n    -- Handle paths with spaces and arguments\n    WHEN data LIKE '%.exe %' THEN\n      substr(data, 1, instr(data, '.exe ') + 3)\n    WHEN data LIKE '%.dll %' THEN\n      substr(data, 1, instr(data, '.dll ') + 3)\n    WHEN data LIKE '%.bat %' THEN\n      substr(data, 1, instr(data, '.bat ') + 3)\n    WHEN data LIKE '%.cmd %' THEN\n      substr(data, 1, instr(data, '.cmd ') + 3)\n    WHEN data LIKE '%.vbs %' THEN\n      substr(data, 1, instr(data, '.vbs ') + 3)\n    WHEN data LIKE '%.js %' THEN\n      substr(data, 1, instr(data, '.js ') + 3)\n    -- Simple path without arguments\n    ELSE data\n  END AS ExecutablePath,\n  -- Identify suspicious patterns\n  CASE\n    WHEN data LIKE '%powershell%' THEN 'powershell'\n    WHEN data LIKE '%cmd%/c%' THEN 'cmd_execution'\n    WHEN data LIKE '%wscript%' THEN 'wscript'\n    WHEN data LIKE '%cscript%' THEN 'cscript'\n    WHEN data LIKE '%mshta%' THEN 'mshta_lolbin'\n    WHEN data LIKE '%regsvr32%' THEN 'regsvr32_lolbin'\n    WHEN data LIKE '%rundll32%' THEN 'rundll32_lolbin'\n    WHEN data LIKE '%certutil%' THEN 'certutil_lolbin'\n    WHEN data LIKE '%bitsadmin%' THEN 'bitsadmin_lolbin'\n    WHEN data LIKE '%http://%' OR data LIKE '%https://%' THEN 'url_present'\n    WHEN data LIKE '%AppData\\\\Roaming%' THEN 'user_appdata'\n    WHEN data LIKE '%AppData\\\\Local%' THEN 'user_local_appdata'\n    WHEN data LIKE '%Temp%' THEN 'temp_directory'\n    WHEN data LIKE '%ProgramData%' THEN 'programdata'\n    WHEN data LIKE '%.bat%' OR data LIKE '%.cmd%' THEN 'batch_script'\n    WHEN data LIKE '%.vbs%' OR data LIKE '%.js%' THEN 'script_file'\n    WHEN data LIKE '%.dll%' THEN 'dll_execution'\n    WHEN data LIKE '%encoded%' OR data LIKE '%-enc %' THEN 'encoded_command'\n    WHEN data LIKE '%hidden%' THEN 'hidden_execution'\n    ELSE 'standard'\n  END AS SuspiciousIndicator,\n  -- Risk assessment\n  CASE\n    -- High risk indicators\n    WHEN data LIKE '%powershell%' AND (data LIKE '%encoded%' OR data LIKE '%-enc %') THEN 'high'\n    WHEN data LIKE '%http://%' OR data LIKE '%https://%' THEN 'high'\n    WHEN data LIKE '%AppData\\\\Roaming%' AND data LIKE '%.exe%' THEN 'high'\n    WHEN data LIKE '%Temp%' AND data LIKE '%.exe%' THEN 'high'\n    WHEN data LIKE '%mshta%' OR data LIKE '%regsvr32%' THEN 'high'\n    -- Medium risk indicators\n    WHEN data LIKE '%powershell%' THEN 'medium'\n    WHEN data LIKE '%cmd%' THEN 'medium'\n    WHEN data LIKE '%wscript%' OR data LIKE '%cscript%' THEN 'medium'\n    WHEN data LIKE '%AppData%' THEN 'medium'\n    WHEN data LIKE '%.bat%' OR data LIKE '%.cmd%' THEN 'medium'\n    WHEN data LIKE '%.vbs%' OR data LIKE '%.js%' THEN 'medium'\n    WHEN data LIKE '%rundll32%' THEN 'medium'\n    -- Low risk (likely benign)\n    WHEN data LIKE '%Program Files%' THEN 'low'\n    WHEN data LIKE '%Windows%System32%' THEN 'low'\n    WHEN data LIKE '%Microsoft%' THEN 'low'\n    ELSE 'unknown'\n  END AS RiskLevel\nFROM registry\nWHERE\n  -- All Run/RunOnce locations in HKLM\n  key IN (\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run',\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce',\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnceEx',\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunServices',\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunServicesOnce',\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run',\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Wow6432Node\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run',\n    'HKEY_LOCAL_MACHINE\\\\Software\\\\Wow6432Node\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce',\n    -- All Run/RunOnce locations in HKCU\n    'HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run',\n    'HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce',\n    'HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnceEx',\n    'HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunServices',\n    'HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunServicesOnce',\n    'HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run'\n  )\n  -- Exclude empty values\n  AND data IS NOT NULL\n  AND data != ''\nORDER BY\n  -- Sort by risk level, then by modification time\n  CASE RiskLevel\n    WHEN 'high' THEN 1\n    WHEN 'medium' THEN 2\n    WHEN 'low' THEN 3\n    ELSE 4\n  END,\n  mtime DESC\nLIMIT 200;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789025",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

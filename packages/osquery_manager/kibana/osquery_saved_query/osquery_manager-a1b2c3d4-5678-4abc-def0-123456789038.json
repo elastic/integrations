@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect unauthorized account creation and manipulation via Windows Security event log monitoring (Event IDs 4720, 4722, 4726, 4728, 4732, 4756) for persistence and privilege escalation",
+        "ecs_mapping": [
+            {
+                "key": "event.code",
+                "value": {
+                    "field": "eventid"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["iam"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["user", "creation", "change", "deletion", "group"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "account-creation-event"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "windows.security"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "field": "provider_name"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["account_manipulation", "persistence", "privilege_escalation", "windows", "T1136.001", "T1078"]
+                }
+            }
+        ],
+        "id": "windows_account_creation_events_elastic",
+        "interval": "60",
+        "platform": "windows",
+        "query": "SELECT time, datetime, source, provider_name, eventid, data FROM windows_events WHERE channel = 'Security' AND eventid IN (4720, 4722, 4726, 4728, 4732, 4756) ORDER BY time DESC;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789038",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

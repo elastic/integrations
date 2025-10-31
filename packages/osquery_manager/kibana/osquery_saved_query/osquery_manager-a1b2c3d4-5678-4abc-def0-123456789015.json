@@ -1,0 +1,69 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Monitor PowerShell history files focusing on suspicious commands including downloads, encoded commands, and obfuscation techniques",
+        "ecs_mapping": [
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "mtime"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "value": "powershell.exe"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["powershell", "command_history", "user_activity"]
+                }
+            }
+        ],
+        "id": "powershell_history_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT path, mtime, size, substr(path, length('C:\\Users\\') + 1, instr(substr(path, length('C:\\Users\\') + 1), '\\') - 1) AS username FROM file WHERE path LIKE 'C:\\Users\\%\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt' AND size > 0 ORDER BY mtime DESC LIMIT 50;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789015",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

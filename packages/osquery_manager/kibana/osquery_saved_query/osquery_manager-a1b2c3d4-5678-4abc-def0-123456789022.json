@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "created_at": "2025-01-30T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Detect RDP connection attempts including successful and failed logons (Event ID 4624/4625) for lateral movement detection, focusing on Type 10 RemoteInteractive sessions",
+        "ecs_mapping": [
+            {
+                "key": "event.id",
+                "value": {
+                    "field": "EventID"
+                }
+            },
+            {
+                "key": "event.outcome",
+                "value": {
+                    "field": "LogonResult"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "TargetUserName"
+                }
+            },
+            {
+                "key": "user.domain",
+                "value": {
+                    "field": "TargetDomainName"
+                }
+            },
+            {
+                "key": "source.ip",
+                "value": {
+                    "field": "IpAddress"
+                }
+            },
+            {
+                "key": "source.port",
+                "value": {
+                    "field": "IpPort"
+                }
+            },
+            {
+                "key": "host.name",
+                "value": {
+                    "field": "WorkstationName"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "remote-logon"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["authentication"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["start"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["rdp", "lateral_movement", "authentication"]
+                }
+            }
+        ],
+        "id": "rdp_connection_events_elastic",
+        "interval": "300",
+        "platform": "windows",
+        "query": "WITH rdp_events AS (\n  SELECT\n    datetime,\n    eventid AS EventID,\n    -- Extract logon information\n    json_extract(data, '$.EventData.TargetUserName') AS TargetUserName,\n    json_extract(data, '$.EventData.TargetDomainName') AS TargetDomainName,\n    json_extract(data, '$.EventData.TargetUserSid') AS TargetUserSid,\n    -- Extract logon type (Type 10 = RemoteInteractive/RDP)\n    CAST(json_extract(data, '$.EventData.LogonType') AS INTEGER) AS LogonType,\n    -- Extract source information\n    json_extract(data, '$.EventData.IpAddress') AS IpAddress,\n    json_extract(data, '$.EventData.IpPort') AS IpPort,\n    json_extract(data, '$.EventData.WorkstationName') AS WorkstationName,\n    -- Extract process information\n    json_extract(data, '$.EventData.ProcessName') AS ProcessName,\n    json_extract(data, '$.EventData.LogonProcessName') AS LogonProcessName,\n    -- Extract authentication package\n    json_extract(data, '$.EventData.AuthenticationPackageName') AS AuthPackage,\n    -- Extract failure reason for 4625\n    json_extract(data, '$.EventData.Status') AS FailureStatus,\n    json_extract(data, '$.EventData.SubStatus') AS FailureSubStatus,\n    json_extract(data, '$.EventData.FailureReason') AS FailureReason,\n    computer_name\n  FROM windows_eventlog\n  WHERE channel = 'Security'\n    AND eventid IN (4624, 4625)  -- Successful and failed logons\n    -- Filter for RDP-related logon types\n    AND (\n      json_extract(data, '$.EventData.LogonType') = '10'  -- Type 10: RemoteInteractive (RDP)\n      OR json_extract(data, '$.EventData.LogonType') = '7'   -- Type 7: Unlock (could be via RDP)\n      OR json_extract(data, '$.EventData.LogonType') = '3'   -- Type 3: Network (can include RDP)\n    )\n    -- Only get events from last hour\n    AND datetime > datetime('now', '-1 hour')\n)\nSELECT\n  datetime,\n  EventID,\n  -- Determine logon result\n  CASE\n    WHEN EventID = 4624 THEN 'success'\n    WHEN EventID = 4625 THEN 'failure'\n  END AS LogonResult,\n  -- User information\n  TargetDomainName || '\\\\' || TargetUserName AS TargetUser,\n  TargetUserName,\n  TargetDomainName,\n  TargetUserSid,\n  -- Logon type description\n  CASE LogonType\n    WHEN 3 THEN 'Network'\n    WHEN 7 THEN 'Unlock'\n    WHEN 10 THEN 'RemoteInteractive (RDP)'\n    ELSE 'Type_' || LogonType\n  END AS LogonTypeDesc,\n  -- Source information\n  IpAddress,\n  IpPort,\n  WorkstationName,\n  -- Process and auth info\n  ProcessName,\n  LogonProcessName,\n  AuthPackage,\n  -- Failure information (for 4625)\n  CASE\n    WHEN EventID = 4625 THEN\n      CASE FailureStatus\n        WHEN '0xC0000064' THEN 'User does not exist'\n        WHEN '0xC000006A' THEN 'Incorrect password'\n        WHEN '0xC0000234' THEN 'Account locked out'\n        WHEN '0xC0000072' THEN 'Account disabled'\n        WHEN '0xC000006F' THEN 'Outside authorized hours'\n        WHEN '0xC0000070' THEN 'Workstation restriction'\n        WHEN '0xC0000193' THEN 'Account expiration'\n        WHEN '0xC0000071' THEN 'Password expired'\n        WHEN '0xC0000133' THEN 'Time sync failure'\n        WHEN '0xC0000224' THEN 'Password must change'\n        ELSE FailureStatus\n      END\n    ELSE NULL\n  END AS FailureReasonDesc,\n  -- Identify suspicious patterns\n  CASE\n    WHEN EventID = 4625 AND TargetUserName LIKE 'admin%' THEN 'brute_force_admin'\n    WHEN EventID = 4625 AND TargetUserName LIKE 'sa' THEN 'brute_force_sa'\n    WHEN EventID = 4625 AND TargetUserName LIKE 'root' THEN 'brute_force_root'\n    WHEN EventID = 4625 AND TargetUserName = 'Administrator' THEN 'brute_force_admin'\n    WHEN IpAddress LIKE '10.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '192.168.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '172.16.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '172.17.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '172.18.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '172.19.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '172.2_.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '172.30.%' THEN 'internal_network'\n    WHEN IpAddress LIKE '172.31.%' THEN 'internal_network'\n    WHEN IpAddress = '::1' OR IpAddress = '127.0.0.1' THEN 'localhost'\n    WHEN IpAddress IS NOT NULL AND IpAddress != '-' THEN 'external_source'\n    ELSE 'local_console'\n  END AS SourceType,\n  computer_name\nFROM rdp_events\nWHERE\n  -- Filter out system accounts\n  TargetUserName NOT LIKE 'UMFD-%'\n  AND TargetUserName NOT LIKE 'DWM-%'\n  AND TargetUserName NOT LIKE 'ANONYMOUS LOGON'\n  AND TargetUserName NOT IN ('SYSTEM', 'LOCAL SERVICE', 'NETWORK SERVICE')\n  -- Filter out computer accounts\n  AND TargetUserName NOT LIKE '%$'\n  -- Focus on interactive RDP sessions\n  AND LogonType IN (3, 7, 10)\nORDER BY datetime DESC\nLIMIT 200;",
+        "updated_at": "2025-01-30T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789022",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-30T12:00:00.000Z",
+    "version": "WzEsMV0="
+}

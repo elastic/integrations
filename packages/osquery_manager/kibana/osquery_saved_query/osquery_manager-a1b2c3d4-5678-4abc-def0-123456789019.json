@@ -1,0 +1,80 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Document network configuration and identify anomalies like VPN or tunnel interfaces",
+        "ecs_mapping": [
+            {
+                "key": "host.network.interface.name",
+                "value": {
+                    "field": "interface_name"
+                }
+            },
+            {
+                "key": "host.ip",
+                "value": {
+                    "field": "address"
+                }
+            },
+            {
+                "key": "host.mac",
+                "value": {
+                    "field": "mac"
+                }
+            },
+            {
+                "key": "network.name",
+                "value": {
+                    "field": "description"
+                }
+            },
+            {
+                "key": "network.type",
+                "value": {
+                    "field": "interface_type"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["configuration", "host"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "network-interface-enumeration"
+                }
+            },
+            {
+                "key": "event.dataset",
+                "value": {
+                    "value": "host.network_interfaces"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["network_baseline", "host_info", "network_configuration"]
+                }
+            }
+        ],
+        "id": "network_interfaces_baseline_elastic",
+        "interval": "3600",
+        "query": "SELECT ia.interface AS interface_name, ia.address, ia.mask, id.mac, id.mtu, id.flags, id.type, id.description, CASE WHEN id.description LIKE '%VPN%' THEN 'VPN' WHEN id.description LIKE '%Virtual%' THEN 'Virtual' WHEN id.description LIKE '%Tunnel%' THEN 'Tunnel' WHEN id.description LIKE '%TAP%' THEN 'TAP' ELSE 'Physical' END AS interface_type FROM interface_addresses ia JOIN interface_details id ON ia.interface = id.interface WHERE ia.address NOT LIKE '::1%' AND ia.address != '127.0.0.1' AND ia.address NOT LIKE 'fe80::%' ORDER BY interface_type, ia.interface;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789019",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}
