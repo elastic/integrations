@@ -322,6 +322,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | meraki.network.id |  | keyword |  |
 | meraki.network.name |  | keyword |  |
 | meraki.network.vpn_peers.jitter_summaries.jitter_avg |  | double |  |
