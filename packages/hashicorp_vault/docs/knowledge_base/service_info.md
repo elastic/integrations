@@ -23,7 +23,7 @@ This integration collects the following types of data from HashiCorp Vault:
 
 This integration has been tested with HashiCorp Vault 1.11.
 
-The integration requires Elastic Stack version 8.12.0 or higher, or version 9.0.0 and above.
+The integration requires Elastic Stack version 8.12.0 or higher.
 
 ## Scaling and Performance
 
@@ -67,7 +67,7 @@ The following prerequisites are required on the HashiCorp Vault side:
 
 ## Elastic prerequisites
 
-- Elastic Stack version 8.12.0 or higher (or 9.0.0+)
+- Elastic Stack version 8.12.0 or higher
 - Elastic Agent installed and enrolled in Fleet
 
 ## Vendor set up steps
@@ -126,20 +126,32 @@ Direct Vault's log output to a file that Elastic Agent can read.
 
 ### Setting up Metrics
 
-1. Configure Vault telemetry in your Vault configuration file:
-```hcl
-telemetry {
-  disable_hostname = true
-  enable_hostname_label = true
-}
-```
+1.  Configure Vault telemetry in your Vault configuration file:
+    ```hcl
+    telemetry {
+      disable_hostname = true
+      enable_hostname_label = true
+    }
+    ```
+    Restart the Vault server after saving this file.
 
-2. Create a Vault token with read access to the metrics endpoint:
-```bash
-vault token create -policy=metrics-read
-```
+2.  Create a Vault policy file that grants read access to the metrics endpoint.
+    ```hcl
+    path "sys/metrics" {
+      capabilities = ["read"]
+    }
+    ```
 
-Ensure the token has a policy that grants read access to `sys/metrics`.
+3.  Apply the policy.
+    ```bash
+    vault policy write read-metrics metrics-policy.hcl
+    ```
+
+4.  Create a Vault token with this policy:
+    ```bash
+    vault token create -policy="read-metrics" -display-name="elastic-agent-token"
+    ```
+    Save the token value, it will be needed to complete configuring the integration in Kibana.
 
 ## Kibana set up steps
 
@@ -152,21 +164,21 @@ Ensure the token has a policy that grants read access to `sys/metrics`.
 4. Configure the integration based on your data collection needs:
 
    **For Audit Logs (File)**:
-   - Enable the "Audit logs (file audit device)" input
+   - Enable the "Logs from file" --> "Audit logs (file audit device)" input
    - Specify the file path (default: `/var/log/vault/audit*.json*`)
    - Optionally enable "Preserve original event" to keep raw logs
 
    **For Audit Logs (TCP Socket)**:
-   - Enable the "Audit logs (socket audit device)" input
+   - Enable the "Logs from TCP socket" input
    - Configure the listen address (default: `localhost`) and port (default: `9007`)
    - If Vault will connect remotely, set listen address to `0.0.0.0`
 
    **For Operational Logs**:
-   - Enable the "Operation logs" input
+   - Enable the "Logs from file" --> "Operation logs" input
    - Specify the log file path (default: `/var/log/vault/log*.json*`)
 
    **For Metrics**:
-   - Enable the "Vault metrics (prometheus)" input
+   - Enable the "Metrics" input
    - Enter the Vault host URL (default: `http://localhost:8200`)
    - Provide the Vault token with read access to `/sys/metrics`
    - Optionally configure SSL settings if using HTTPS
@@ -183,7 +195,7 @@ After configuring the integration, validate that data is flowing correctly:
 1. **Check Agent Status**: In Fleet, verify that the Elastic Agent shows a "Healthy" status
 
 2. **Verify Data Ingestion**:
-   - Navigate to **Analytics > Discover** in Kibana
+   - Navigate to **Discover** in Kibana
    - Select the appropriate data view for each data stream:
      - `logs-hashicorp_vault.audit-*` for audit logs
      - `logs-hashicorp_vault.log-*` for operational logs
@@ -194,11 +206,11 @@ After configuring the integration, validate that data is flowing correctly:
 
 4. **View Dashboards**:
    - Navigate to **Analytics > Dashboards**
-   - Open the "Hashicorp Vault Audit Log Dashboard" to view audit log visualizations
-   - Open the "Hashicorp Vault Log Dashboard" to view operational log visualizations
+   - Open the "[Hashicorp Vault] Audit Logs" to view audit log visualizations
+   - Open the "[Hashicorp Vault] Operational Logs" to view operational log visualizations
    - Verify that data is populating the dashboard panels
 
-5. **Check Metrics**: For metrics collection, verify that Prometheus metrics are being collected by searching for documents with `hashicorp_vault.metrics.*` fields
+5. **Check Metrics**: For metrics collection, verify that metrics are being collected by searching for documents with `hashicorp_vault.metrics.*` fields
 
 # Troubleshooting
 
@@ -269,4 +281,5 @@ path "sys/metrics" {
 - [HashiCorp Vault Configuration Reference](https://developer.hashicorp.com/vault/docs/configuration)
 - [HashiCorp Vault Deployment Guide](https://developer.hashicorp.com/vault/tutorials/day-one-raft/raft-deployment-guide)
 - [Elastic HashiCorp Vault Integration Documentation](https://docs.elastic.co/integrations/hashicorp_vault)
+
 

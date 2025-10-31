@@ -15,7 +15,7 @@ This integration facilitates the following use cases:
 ### Compatibility
 
 This integration has been tested with HashiCorp Vault 1.11.
-It requires Elastic Stack version 8.12.0 or higher, or version 9.0.0 and above.
+It requires Elastic Stack version 8.12.0 or higher.
 
 ## What data does this integration collect?
 
@@ -33,13 +33,13 @@ This integration collects the following types of data from HashiCorp Vault:
 - **For Audit Log Collection (Socket)**: A socket audit device can be configured to stream logs to a TCP endpoint where Elastic Agent is listening.
 - **For Operational Log Collection**: Vault must be configured to output logs in JSON format (`log_format = "json"`) and the log file must be accessible by Elastic Agent.
 - **For Metrics Collection**:
+    - The Vault telemetry endpoint must be enabled.
     - A Vault token with read access to the `/sys/metrics` API endpoint.
-    - Vault telemetry must be configured with `disable_hostname = true`. It is also recommended to set `enable_hostname_label = true`.
     - The Elastic Agent must have network access to the Vault API endpoint.
 
 ### Elastic Prerequisites
 
-- Elastic Stack version 8.12.0 or higher (or 9.0.0+).
+- Elastic Stack version 8.12.0 or higher.
 - Elastic Agent installed and enrolled in Fleet.
 
 ## How do I deploy this integration?
@@ -49,14 +49,12 @@ This integration collects the following types of data from HashiCorp Vault:
 #### Setting up Audit Logs (File Audit Device)
 
 1.  Create a directory for audit logs on each Vault server:
-    ```bash
-    mkdir /var/log/vault
-    ```
+
+    `mkdir /var/log/vault`
 
 2.  Enable the file audit device in Vault:
-    ```bash
-    vault audit enable file file_path=/var/log/vault/audit.json
-    ```
+
+    `vault audit enable file file_path=/var/log/vault/audit.json`
 
 3.  Configure log rotation to prevent disk space issues. The following is an example using `logrotate`:
     ```bash
@@ -83,16 +81,14 @@ This integration collects the following types of data from HashiCorp Vault:
 1.  Note the IP address and port where Elastic Agent will be listening (e.g., port `9007`).
 2.  **Important**: Configure and deploy the integration in Kibana *before* enabling the socket device in Vault, as Vault will immediately test the connection.
 3.  Enable the socket audit device in Vault, substituting the IP of your Elastic Agent:
-    ```bash
-    vault audit enable socket address=${ELASTIC_AGENT_IP}:9007 socket_type=tcp
-    ```
+
+    `vault audit enable socket address=${ELASTIC_AGENT_IP}:9007 socket_type=tcp`
 
 #### Setting up Operational Logs
 
 Add the following line to your Vault configuration file to enable JSON-formatted logs. Ensure the log output is directed to a file that Elastic Agent can read.
-```hcl
-log_format = "json"
-```
+
+`log_format = "json"`
 
 #### Setting up Metrics
 
@@ -103,18 +99,24 @@ log_format = "json"
       enable_hostname_label = true
     }
     ```
+    Restart the Vault server after saving this file.
 
-2.  Create a Vault policy that grants read access to the metrics endpoint.
+2.  Create a Vault policy file that grants read access to the metrics endpoint.
     ```hcl
     path "sys/metrics" {
       capabilities = ["read"]
     }
     ```
 
-3.  Create a Vault token with this policy:
-    ```bash
-    vault token create -policy=metrics-read
-    ```
+3.  Apply the policy.
+
+    `vault policy write read-metrics metrics-policy.hcl`
+
+4.  Create a Vault token with this policy:
+
+    `vault token create -policy="read-metrics" -display-name="elastic-agent-token"`
+
+    Save the token value, it will be needed to complete configuring the integration in Kibana.
 
 ### Onboard / configure in Kibana
 
@@ -124,20 +126,23 @@ log_format = "json"
 4.  Configure the integration based on your data collection needs:
 
     **For Audit Logs (File)**:
-    - Enable the "Audit logs (file audit device)" input.
+    - Enable the "Logs from file" --> "Audit logs (file audit device)" input.
     - Specify the file path (default: `/var/log/vault/audit*.json*`).
 
+
     **For Audit Logs (TCP Socket)**:
-    - Enable the "Audit logs (socket audit device)" input.
+    - Enable the "Logs from TCP socket" input.
     - Configure the `Listen Address` (default: `localhost`) and `Listen Port` (default: `9007`).
     - If Vault connects from a different host, set the Listen Address to `0.0.0.0`.
 
+
     **For Operational Logs**:
-    - Enable the "Operation logs" input.
+    - Enable the "Logs from file" --> "Operation logs" input.
     - Specify the log file path (default: `/var/log/vault/log*.json*`).
 
+
     **For Metrics**:
-    - Enable the "Vault metrics (prometheus)" input.
+    - Enable the "Metrics" input.
     - Enter the Vault host URL under `Hosts` (default: `http://localhost:8200`).
     - Provide the `Vault Token` created earlier.
     - Adjust the collection `Period` if needed (default: `30s`).
@@ -148,11 +153,11 @@ log_format = "json"
 
 1.  **Check Agent Status**: In Fleet, verify that the Elastic Agent shows a "Healthy" status.
 2.  **Verify Data Ingestion**:
-    - Navigate to **Analytics > Discover** in Kibana.
+    - Navigate to **Discover** in Kibana.
     - Select the appropriate data view (`logs-hashicorp_vault.audit-*`, `logs-hashicorp_vault.log-*`, or `metrics-hashicorp_vault.metrics-*`).
     - Confirm that events are appearing with recent timestamps.
 3.  **View Dashboards**:
-    - Navigate to **Analytics > Dashboards**.
+    - Navigate to **Dashboards**.
     - Search for "Hashicorp Vault" to find the pre-built dashboards.
     - Verify that data is populating the dashboard panels.
 
@@ -178,6 +183,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 ### Vendor Resources
 
 - [HashiCorp Vault Audit Devices](https://developer.hashicorp.com/vault/docs/audit)
+- [HashiCorp Vault File Audit Device](https://developer.hashicorp.com/vault/docs/audit/file)
 - [HashiCorp Vault Telemetry Configuration](https://developer.hashicorp.com/vault/docs/configuration/telemetry)
 - [HashiCorp Vault Troubleshooting](https://developer.hashicorp.com/vault/docs/troubleshoot)
 
@@ -308,6 +314,103 @@ The `audit` data stream collects audit logs from the file or socket audit device
 | user.id | Unique identifier of the user. | keyword |
 
 
+#### audit sample event
+
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2023-09-26T13:07:49.743Z",
+    "agent": {
+        "ephemeral_id": "5bbd86cc-8032-432d-be82-fae8f624ed98",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "data_stream": {
+        "dataset": "hashicorp_vault.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "action": "update",
+        "agent_id_status": "verified",
+        "category": [
+            "authentication"
+        ],
+        "dataset": "hashicorp_vault.audit",
+        "id": "0b1b9013-da54-633d-da69-8575e6794ed3",
+        "ingested": "2023-09-26T13:08:15Z",
+        "kind": "event",
+        "original": "{\"time\":\"2023-09-26T13:07:49.743284857Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"0b1b9013-da54-633d-da69-8575e6794ed3\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
+        "outcome": "success",
+        "type": [
+            "info"
+        ]
+    },
+    "hashicorp_vault": {
+        "audit": {
+            "auth": {
+                "token_type": "default"
+            },
+            "request": {
+                "id": "0b1b9013-da54-633d-da69-8575e6794ed3",
+                "namespace": {
+                    "id": "root"
+                },
+                "operation": "update",
+                "path": "sys/audit/test"
+            },
+            "type": "request"
+        }
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
+        "ip": [
+            "192.168.80.5"
+        ],
+        "mac": [
+            "02-42-C0-A8-50-05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/vault/audit.json"
+        },
+        "offset": 0
+    },
+    "tags": [
+        "preserve_original_event",
+        "hashicorp-vault-audit"
+    ]
+}
+```
+
 ### log
 
 The `log` data stream collects operational logs from Vault's standard log file.
@@ -338,6 +441,87 @@ The `log` data stream collects operational logs from Vault's standard log file.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 
+
+#### log sample event
+
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2023-09-26T13:09:08.587Z",
+    "agent": {
+        "ephemeral_id": "5bbd86cc-8032-432d-be82-fae8f624ed98",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "data_stream": {
+        "dataset": "hashicorp_vault.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "hashicorp_vault.log",
+        "ingested": "2023-09-26T13:09:35Z",
+        "kind": "event",
+        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2023-09-26T13:09:08.587324Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
+    },
+    "hashicorp_vault": {
+        "log": {
+            "http_proxy": "",
+            "https_proxy": "",
+            "no_proxy": ""
+        }
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
+        "ip": [
+            "192.168.80.5"
+        ],
+        "mac": [
+            "02-42-C0-A8-50-05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/log.json"
+        },
+        "level": "info",
+        "offset": 709
+    },
+    "message": "proxy environment",
+    "tags": [
+        "preserve_original_event",
+        "hashicorp-vault-log"
+    ]
+}
+```
 
 ### metrics
 
@@ -456,4 +640,3 @@ ssl.client_authentication: "optional"
 ### API usage
 These APIs are used with this integration:
 * **`/v1/sys/metrics`**: Used to collect Prometheus-formatted telemetry data. See the [HashiCorp Vault Metrics API documentation](https://developer.hashicorp.com/vault/api-docs/system/metrics) for more information.
-* **`/sys/audit-hash`**: Can be used to manually verify the hash of a secret found in an audit log. See the [HashiCorp Vault Audit Hash API documentation](https://developer.hashicorp.com/vault/api-docs/system/audit-hash) for more information.
