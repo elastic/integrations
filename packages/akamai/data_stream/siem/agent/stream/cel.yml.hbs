@@ -38,7 +38,7 @@ program: |-
       state.?cursor.recovery_mode.orValue(false) ?
         {
           "from": int(now - duration("12h")),
-          "to": int(now),
+          "to":   int(now - duration("1m")),
         }
       : state.?cursor.last_offset.hasValue() ?
         {
@@ -47,7 +47,7 @@ program: |-
       :
         {
           "from": max(int(now - duration(state.initial_interval)), int(now - duration("12h"))),
-          "to": int(now),
+          "to":   int(now - duration("1m")),
         }
     ).as(params,
       (
@@ -131,7 +131,11 @@ program: |-
                         ),
                       },
                     },
-                    "cursor": {"recovery_mode": true},
+                    "cursor": state.cursor.drop("last_offset").with(
+                      {
+                        "recovery_mode": true,
+                      }
+                    ),
                     "want_more": true,
                   }
                 :
