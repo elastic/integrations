@@ -104,7 +104,7 @@ Use the following table to identify the target data streams for each log categor
 | `logs-azure.graphactivitylog-*`    | `MicrosoftGraphActivityLogs`                                                                                                                                 |
 | `logs-azure.identity_protection-*` | `RiskyUsers`, `UserRiskEvents`                                                                                                                               |
 | `logs-azure.provisioning-*`        | `ProvisioningLogs`                                                                                                                                           |
-| `logs-azure.signinlogs-*`          | `SignInLogs`, `NonInteractiveUserSignInLogs`, `ServicePrincipalSignInLogs`, `MicrosoftServicePrincipalSignInLogs`, `ManagedIdentitySignInLogs`                                                      |
+| `logs-azure.signinlogs-*`          | `*SignInLogs`                                                      |
 | `logs-azure.springcloudlogs-*`     | `ApplicationConsole`, `SystemLogs`, `IngressLogs`, `BuildLogs`, `ContainerEventLogs`                                                                         |
 | `logs-azure.platformlogs-*`        | All other log categories                                                                                                                                     |
 
