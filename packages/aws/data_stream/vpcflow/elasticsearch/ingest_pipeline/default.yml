@@ -25,50 +25,51 @@ processors:
       field: event.category
       value: [network]
   - drop:
-      if: 'ctx.event?.original.startsWith("version") || ctx.event?.original.startsWith("instance-id")'
+      if: ctx.pre_extracted != true && (ctx.event?.original.startsWith("version") || ctx.event?.original.startsWith("instance-id"))
   - dissect:
       field: event.original
       pattern: '{"message":"%{event.original}"}'
+      if: ctx.pre_extracted != true
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx.event?.original != null
+      if: ctx.event?.original != null && ctx.pre_extracted != true
       source: >-
         ctx._temp_ = new HashMap();
         ctx._temp_.message_token_count = ctx.event?.original.splitOnToken(" ").length;
   - dissect:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status}'
-      if: ctx?._temp_?.message_token_count == 14
+      if: ctx._temp_?.message_token_count == 14 && ctx.pre_extracted != true
   - dissect:
       field: event.original
       pattern: '%{aws.vpcflow.instance_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr}'
-      if: ctx?._temp_?.message_token_count == 6
+      if: ctx?._temp_?.message_token_count == 6 && ctx.pre_extracted != true
   - dissect:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.interface_id} %{aws.vpcflow.account_id} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{aws.vpcflow.action} %{aws.vpcflow.log_status}'
-      if: ctx?._temp_?.message_token_count == 17
+      if: ctx?._temp_?.message_token_count == 17 && ctx.pre_extracted != true
   - dissect:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.account_id} %{aws.vpcflow.type} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{aws.vpcflow.protocol} %{aws.vpcflow.bytes} %{aws.vpcflow.packets} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.log_status}'
-      if: ctx?._temp_?.message_token_count == 21
+      if: ctx?._temp_?.message_token_count == 21 && ctx.pre_extracted != true
   - dissect:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path}'
-      if: ctx?._temp_?.message_token_count == 29
+      if: ctx?._temp_?.message_token_count == 29 && ctx.pre_extracted != true
   - dissect:
       field: event.original
       description: default format for transit gateway vpc flow logs, covering versions v2 through v6.
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.resource_type} %{aws.vpcflow.account_id} %{aws.vpcflow.tgw_id} %{aws.vpcflow.tgw_attachment_id} %{aws.vpcflow.tgw_src_vpc_account_id} %{aws.vpcflow.tgw_dst_vpc_account_id} %{aws.vpcflow.tgw_src_vpc_id} %{aws.vpcflow.tgw_dst_vpc_id} %{aws.vpcflow.tgw_src_subnet_id} %{aws.vpcflow.tgw_dst_subnet_id} %{aws.vpcflow.tgw_src_eni} %{aws.vpcflow.tgw_dst_eni} %{aws.vpcflow.tgw_src_az_id} %{aws.vpcflow.tgw_dst_az_id} %{aws.vpcflow.tgw_pair_attachment_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.log_status} %{aws.vpcflow.type} %{aws.vpcflow.packets_lost_no_route} %{aws.vpcflow.packets_lost_blackhole} %{aws.vpcflow.packets_lost_mtu_exceeded} %{aws.vpcflow.packets_lost_ttl_expired} %{aws.vpcflow.tcp_flags} %{cloud.region} %{network.direction} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service}'
-      if: ctx?._temp_?.message_token_count == 36
+      if: ctx?._temp_?.message_token_count == 36 && ctx.pre_extracted != true
   - dissect:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path} %{aws.vpcflow.ecs_cluster_arn} %{aws.vpcflow.ecs_cluster_name} %{aws.vpcflow.ecs_container_instance_arn} %{aws.vpcflow.ecs_container_instance_id} %{aws.vpcflow.ecs_container_id} %{aws.vpcflow.ecs_second_container_id} %{aws.vpcflow.ecs_service_name} %{aws.vpcflow.ecs_task_definition_arn} %{aws.vpcflow.ecs_task_arn} %{aws.vpcflow.ecs_task_id}'
-      if: ctx?._temp_?.message_token_count == 39
+      if: ctx?._temp_?.message_token_count == 39 && ctx.pre_extracted != true
   - dissect:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path} %{aws.vpcflow.ecs_cluster_arn} %{aws.vpcflow.ecs_cluster_name} %{aws.vpcflow.ecs_container_instance_arn} %{aws.vpcflow.ecs_container_instance_id} %{aws.vpcflow.ecs_container_id} %{aws.vpcflow.ecs_second_container_id} %{aws.vpcflow.ecs_service_name} %{aws.vpcflow.ecs_task_definition_arn} %{aws.vpcflow.ecs_task_arn} %{aws.vpcflow.ecs_task_id} %{aws.vpcflow.reject_reason}'
-      if: ctx?._temp_?.message_token_count == 40
+      if: ctx?._temp_?.message_token_count == 40 && ctx.pre_extracted != true
 
   # Convert Unix epoch to timestamp
   - date:
@@ -77,18 +78,21 @@ processors:
       ignore_failure: true
       formats:
         - UNIX
+      if: ctx.pre_extracted != true
   - date:
       field: aws.vpcflow.start
       target_field: event.start
       ignore_failure: true
       formats:
         - UNIX
+      if: ctx.pre_extracted != true
   - date:
       field: aws.vpcflow.end
       target_field: event.end
       ignore_failure: true
       formats:
         - UNIX
+      if: ctx.pre_extracted != true
   - remove:
       field:
         - aws.vpcflow.start
@@ -391,6 +395,7 @@ processors:
         - aws.vpcflow.ecs_container_instance_id
         - aws.vpcflow.ecs_service_name
         - aws.vpcflow.reject_reason
+        - pre_extracted
       ignore_missing: true
 on_failure:
   - set:
