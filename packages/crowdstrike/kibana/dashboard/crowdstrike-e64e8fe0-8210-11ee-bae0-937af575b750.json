@@ -14,7 +14,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "observer.address",
-                        "id": "1424080f-b8da-4816-94dd-904bde41c6de",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -32,7 +31,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "data_stream.dataset",
-                        "id": "234700e7-0f96-4054-9073-64b3e2d61fa2",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -50,7 +48,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "host.hostname",
-                        "id": "2f027408-9e82-4fbe-8c59-f32e933b50f0",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -68,7 +65,6 @@
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "fieldName": "event.action",
-                        "id": "3dc73766-aa88-46ff-a02d-b0e600136550",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -123,6 +119,26 @@
                                 ]
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "event.action",
+                            "negate": false,
+                            "params": {
+                                "query": "CloudSecurityIOMEvaluation"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.action": "CloudSecurityIOMEvaluation"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -162,7 +178,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## **Crowdstrike**\n\n### Navigation\n\n**Overview** \n\n[FDR](/app/dashboards#/view/crowdstrike-a4972bc0-fb53-11eb-abed-07307b3f2b0f)  \n\n[Falcon](/app/dashboards#/view/crowdstrike-ad80a080-821b-11ee-bae0-937af575b750) \n\n[Alert](/app/dashboards#/view/crowdstrike-d8070b00-99b3-11ee-bf4d-afbc95e0486c)\n\n[Host](/app/dashboards#/view/crowdstrike-2921b7f0-99b5-11ee-bf4d-afbc95e0486c)\n\n[Vulnerability](/app/dashboards#/view/crowdstrike-63da2573-4e68-4e7d-a06b-6858edb60fd5)\n\n### Overview\n\nThis dashboards shows the overview of currently enabled Crowdstrike Integrations (Falcon and FDR).\n\n",
+                            "markdown": "## **Crowdstrike**\n\n### Navigation\n\n**Overview** \n\n[FDR](/app/dashboards#/view/crowdstrike-a4972bc0-fb53-11eb-abed-07307b3f2b0f)  \n\n[CSPM](/app/dashboards#/view/crowdstrike-9ff47e3a-08a1-49f1-8020-a7ff3f13ffc7)\n\n[Falcon](/app/dashboards#/view/crowdstrike-ad80a080-821b-11ee-bae0-937af575b750) \n\n[Alert](/app/dashboards#/view/crowdstrike-d8070b00-99b3-11ee-bf4d-afbc95e0486c)\n\n[Host](/app/dashboards#/view/crowdstrike-2921b7f0-99b5-11ee-bf4d-afbc95e0486c)\n\n[Vulnerability](/app/dashboards#/view/crowdstrike-63da2573-4e68-4e7d-a06b-6858edb60fd5)\n\n### Overview\n\nThis dashboards shows the overview of currently enabled Crowdstrike Integrations (Falcon and FDR).\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -300,8 +316,75 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "crowdstrike.fdr"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "crowdstrike.fdr"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.kind",
+                                            "index": "logs-*",
+                                            "key": "event.kind",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "alert"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.kind": "alert"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 7,
@@ -433,8 +516,75 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "crowdstrike.falcon"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "crowdstrike.falcon"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "crowdstrike.event.Category",
+                                            "index": "logs-*",
+                                            "key": "crowdstrike.event.Category",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "Incidents"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "crowdstrike.event.Category": "Incidents"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 7,
@@ -582,8 +732,20 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 21,
@@ -755,8 +917,75 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "crowdstrike.fdr"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "crowdstrike.fdr"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.kind",
+                                            "index": "logs-*",
+                                            "key": "event.kind",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "alert"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.kind": "alert"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
@@ -928,8 +1157,75 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "crowdstrike.falcon"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "crowdstrike.falcon"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "crowdstrike.event.Category",
+                                            "index": "logs-*",
+                                            "key": "crowdstrike.event.Category",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "Incidents"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "crowdstrike.event.Category": "Incidents"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
                 },
                 "gridData": {
                     "h": 14,
@@ -945,7 +1241,11 @@
             {
                 "embeddableConfig": {
                     "description": "",
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 20,
@@ -962,7 +1262,11 @@
             {
                 "embeddableConfig": {
                     "description": "",
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 20,
@@ -979,17 +1283,31 @@
         ],
         "timeRestore": false,
         "title": "[Crowdstrike] Overview",
-        "version": 2
+        "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-03-01T12:27:18.648Z",
+    "created_at": "2025-10-27T07:15:10.460Z",
     "id": "crowdstrike-e64e8fe0-8210-11ee-bae0-937af575b750",
-    "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "crowdstrike-9b99d190-8214-11ee-bae0-937af575b750",
+            "name": "32d232a4-d1fd-43ac-8f5e-02e4e2aff981:panel_32d232a4-d1fd-43ac-8f5e-02e4e2aff981",
+            "type": "search"
+        },
+        {
+            "id": "crowdstrike-a9e7ff80-8212-11ee-bae0-937af575b750",
+            "name": "5faa13bd-3f89-4fa2-9f96-242cf14237a4:panel_5faa13bd-3f89-4fa2-9f96-242cf14237a4",
+            "type": "search"
         },
         {
             "id": "logs-*",
@@ -1037,21 +1355,6 @@
             "type": "index-pattern"
         },
         {
-            "id": "crowdstrike-9b99d190-8214-11ee-bae0-937af575b750",
-            "name": "32d232a4-d1fd-43ac-8f5e-02e4e2aff981:panel_32d232a4-d1fd-43ac-8f5e-02e4e2aff981",
-            "type": "search"
-        },
-        {
-            "id": "crowdstrike-a9e7ff80-8212-11ee-bae0-937af575b750",
-            "name": "5faa13bd-3f89-4fa2-9f96-242cf14237a4:panel_5faa13bd-3f89-4fa2-9f96-242cf14237a4",
-            "type": "search"
-        },
-        {
-            "id": "crowdstrike-security-solution-default",
-            "name": "tag-ref-security-solution-default",
-            "type": "tag"
-        },
-        {
             "id": "logs-*",
             "name": "controlGroup_1424080f-b8da-4816-94dd-904bde41c6de:optionsListDataView",
             "type": "index-pattern"
@@ -1070,9 +1373,28 @@
             "id": "logs-*",
             "name": "controlGroup_3dc73766-aa88-46ff-a02d-b0e600136550:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "crowdstrike-security-solution-default",
+            "name": "tag-ref-crowdstrike-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "crowdstrike-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.2.0"
 }
