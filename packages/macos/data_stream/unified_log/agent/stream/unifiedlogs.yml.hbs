@@ -1,0 +1,80 @@
+predicate:
+{{#if authentication}}
+- 'process contains "sudo" OR composedMessage CONTAINS "sudo" OR process contains "su"'
+- 'process contains "loginwindow" and composedMessage CONTAINS "sessionDidLogin"'
+- 'process == "sshd"'
+{{/if}}
+{{#if user_and_account_management}}
+- 'process == "sysadminctl" AND composedMessage CONTAINS "Creating user"'
+- 'process == "dscl" AND composedMessage CONTAINS "create"'
+- 'process == "sysadminctl" AND composedMessage CONTAINS "Deleting user"'
+- 'process == "dscl" AND composedMessage CONTAINS "delete"'
+- '(process == "dscl" OR process == "opendirectoryd") AND composedMessage CONTAINS "admin"'
+{{/if}}
+{{#if process_execution_monitoring}}
+- 'eventMessage CONTAINS[c] "exec" OR eventMessage CONTAINS[c] "fork" OR eventMessage CONTAINS[c] "exited" OR eventMessage CONTAINS[c] "terminated"'
+- 'subsystem == "com.apple.securityd" AND (composedMessage CONTAINS "code signing" OR composedMessage CONTAINS "not valid")'
+- 'composedMessage CONTAINS "com.apple.quarantine"'
+{{/if}}
+{{#if network_activity}}
+- 'composedMessage CONTAINS "connect" AND (composedMessage CONTAINS "TCP" OR composedMessage CONTAINS "UDP")'
+- 'composedMessage CONTAINS "disconnect" OR composedMessage CONTAINS "closed connection"'
+- 'subsystem == "com.apple.necp" AND composedMessage CONTAINS "new connection"'
+- 'eventMessage CONTAINS[c] "listening" AND eventMessage CONTAINS[c] "service"'
+{{/if}}
+{{#if file_reads_writes}}
+- '(eventMessage CONTAINS "open" OR eventMessage CONTAINS "write" OR eventMessage CONTAINS "unlink" OR eventMessage CONTAINS "rename") AND ((processImagePath BEGINSWITH "/System") OR (processImagePath BEGINSWITH "/bin") OR (processImagePath BEGINSWITH "/sbin") OR (processImagePath BEGINSWITH "/usr" AND NOT processImagePath BEGINSWITH "/usr/local") OR (processImagePath BEGINSWITH "/etc"))'
+- 'subsystem == "com.apple.quarantine" OR eventMessage CONTAINS "com.apple.quarantine"'
+{{/if}}
+{{#if system_changes}}
+- 'subsystem == "com.apple.security" OR subsystem == "com.apple.systempolicy" OR subsystem == "com.apple.installer" OR process == "Installer" OR process == "softwareupdated" OR eventMessage CONTAINS[c] "removed package" OR eventMessage CONTAINS[c] "forget package"'
+{{/if}}
+{{#if advanced_monitoring}}
+- '(composedMessage CONTAINS ".plist" AND (composedMessage CONTAINS "write" OR composedMessage CONTAINS "modified")) OR (composedMessage CONTAINS ".ssh" AND (composedMessage CONTAINS "write" OR composedMessage CONTAINS "modified")) OR (process == "kernel" AND composedMessage CONTAINS "boot") OR (process == "launchd" AND (composedMessage CONTAINS "started" OR composedMessage CONTAINS "listening")) OR (process == "loginwindow" AND composedMessage CONTAINS "sessionDidLogin") OR (composedMessage CONTAINS "posix_spawn" OR composedMessage CONTAINS "exec") OR (subsystem == "com.apple.securityd" AND (composedMessage CONTAINS "code signing" OR composedMessage CONTAINS "not valid"))'
+{{/if}}
+{{#each predicate as |p|}}
+- {{p}}
+{{/each}}
+{{#if start}}
+start: {{start}}
+{{/if}}
+{{#if end}}
+end: {{end}}
+{{/if}}
+{{#if process}}
+process:
+{{#each process as |p|}}
+- {{p}}
+{{/each}}
+{{/if}}
+source: {{source}}
+info: {{info}}
+debug: {{debug}}
+backtrace: {{backtrace}}
+signpost: {{signpost}}
+unreliable: {{unreliable}}
+mach_continuous_time: {{mach_continuous_time}}
+backfill: {{backfill}}
+{{#if archive_file}}
+archive_file: {{archive_file}}
+{{/if}}
+{{#if trace_file}}
+trace_file: {{trace_file}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,342 @@
+---
+description: Pipeline for processing grok patterns in network events.
+processors:
+  - grok:
+      description: Grok the eventMessage.
+      tag: grok-event-message
+      field: macos.unified_log.event.message.description
+      ignore_missing: true
+      pattern_definitions:
+        GREEDYMULTILINE: '(.|\n)*'
+      patterns:
+        - '^\[%{WORD}\] %{DATA}\:(?:%{SPACE}mach=%{WORD:macos.unified_log.event.message.mach:boolean})?(?:%{SPACE}listener=%{WORD:macos.unified_log.event.message.listener:boolean})?(?:%{SPACE}peer=%{WORD:macos.unified_log.event.message.peer:boolean})?(?:%{SPACE}name=%{GREEDYDATA:macos.unified_log.event.message.name})?'
+        - '^%{WORD} \[%{DATA}\](?:%{SPACE}flags=\[%{DATA:macos.unified_log.event.message.flags}\])?(?:%{SPACE}seq=%{DATA:macos.unified_log.event.message.seq},)?(?:%{SPACE}ack=%{DATA:macos.unified_log.event.message.ack},)?(?:%{SPACE}win=%{DATA:macos.unified_log.event.message.win})?(?:%{SPACE}state=%{DATA:macos.unified_log.event.message.state})?(?:%{SPACE}rcv_nxt=%{DATA:macos.unified_log.event.message.rcv_nxt},)?(?:snd_una=%{DATA:macos.unified_log.event.message.snd_una})'
+        - '^%{WORD} \[%{DATA}\](?:%{SPACE}flags=\[%{DATA:macos.unified_log.event.message.flags}\])?(?:%{SPACE}seq=%{DATA:macos.unified_log.event.message.seq},)?(?:%{SPACE}ack=%{DATA:macos.unified_log.event.message.ack},)?(?:%{SPACE}win=%{DATA:macos.unified_log.event.message.win})?(?:%{SPACE}state=%{DATA:macos.unified_log.event.message.state})?(?:%{SPACE}rcv_nxt=%{DATA:macos.unified_log.event.message.rcv_nxt},)?(?:snd_una=%{DATA:macos.unified_log.event.message.snd_una})'
+        - '^nw_protocol_boringssl_signal_connected\(%{NUMBER}\) \[%{DATA:macos.unified_log.event.message.connection_identifier}\]\[%{DATA}\] TLS connected \[(?:version\(%{DATA:macos.unified_log.event.message.tls_version}\))?(?:%{SPACE}ciphersuite\(%{DATA:macos.unified_log.event.message.cipher_suite}\))?(?:%{SPACE}group\(%{DATA:macos.unified_log.event.message.group}\))?(?:%{SPACE}signature_alg\(%{DATA:macos.unified_log.event.message.signature_alg}\))?(?:%{SPACE}alpn\(%{DATA:macos.unified_log.event.message.alpn}\))?(?:%{SPACE}resumed\(%{DATA:macos.unified_log.event.message.resumed}\))?(?:%{SPACE}offered_ticket\(%{DATA:macos.unified_log.event.message.offered_ticket}\))?(?:%{SPACE}false_started\(%{DATA:macos.unified_log.event.message.false_started}\))?(?:%{SPACE}ocsp_received\(%{DATA:macos.unified_log.event.message.ocsp_received}\))?(?:%{SPACE}sct_received\(%{DATA:macos.unified_log.event.message.sct_received}\))?(?:%{SPACE}connect_time\(%{DATA:macos.unified_log.event.message.connection_time}\))?(?:%{SPACE}flight_time\(%{DATA:macos.unified_log.event.message.flight_time}\))?(?:%{SPACE}rtt\(%{DATA:macos.unified_log.event.message.rtt}\))?(?:%{SPACE}write_stalls\(%{DATA:macos.unified_log.event.message.write_stalls:int}\))?(?:%{SPACE}read_stalls\(%{DATA:macos.unified_log.event.message.read_stalls:int}\))?\]'
+        - '^Task \<%{DATA:macos.unified_log.event.message.task_uid}\>.\<%{NUMBER}\>%{SPACE}summary for %{DATA} \{(?:transaction_duration_ms=%{NUMBER:macos.unified_log.event.message.transaction_duration_ms:int},)?(?:%{SPACE}response_status=%{NUMBER:macos.unified_log.event.message.response_status:int},)?(?:%{SPACE}connection=%{NUMBER:macos.unified_log.event.message.connection:int},)?(?:%{SPACE}protocol=%{DATA:macos.unified_log.event.message.protocol},)?(?:%{SPACE}domain_lookup_duration_ms=%{NUMBER:macos.unified_log.event.message.domain_lookup_duration_ms:int},)?(?:%{SPACE}connect_duration_ms=%{NUMBER:macos.unified_log.event.message.connection_duration_ms:int},)?(?:%{SPACE}secure_connection_duration_ms=%{NUMBER:macos.unified_log.event.message.secure_connection_duration_ms:int},)?(?:%{SPACE}private_relay=%{WORD:macos.unified_log.event.message.private_relay:boolean},)?(?:%{SPACE}request_start_ms=%{NUMBER:macos.unified_log.event.message.request_start_ms:int},)?(?:%{SPACE}request_duration_ms=%{NUMBER:macos.unified_log.event.message.request_duration_ms:int},)?(?:%{SPACE}response_start_ms=%{NUMBER:macos.unified_log.event.message.response_start_ms:int},)?(?:%{SPACE}response_duration_ms=%{NUMBER:macos.unified_log.event.message.response_duration_ms:int},)?(?:%{SPACE}request_bytes=%{NUMBER:macos.unified_log.event.message.request_bytes:int},)?(?:%{SPACE}response_bytes=%{NUMBER:macos.unified_log.event.message.response_bytes:int},)?(?:%{SPACE}cache_hit=%{WORD:macos.unified_log.event.message.cache_hit:boolean})?\}'
+        - '^%{DATA} \[%{DATA:macos.unified_log.event.message.connection_identifier}\]%{SPACE}\[%{UUID:macos.unified_log.event.message.connection_uuid} <private>:%{NUMBER:macos.unified_log.event.message.src_port:int}<-><private>:%{NUMBER:macos.unified_log.event.message.dest_port:int}\]%{SPACE}Init: %{NUMBER:macos.unified_log.event.message.init_flag:int}, Conn_Time: %{DATA:macos.unified_log.event.message.connection_time}, SYNs: %{NUMBER:macos.unified_log.event.message.syns:int}, WR_T: %{DATA:macos.unified_log.event.message.wr_t_in_out}, RD_T: %{DATA:macos.unified_log.event.message.rd_t_in_out}, TFO: %{DATA:macos.unified_log.event.message.tfo_in_out_miss}, ECN: %{DATA:macos.unified_log.event.message.ecn_in_out_miss}, Accurate ECN %{GREEDYDATA}: %{GREEDYDATA:macos.unified_log.event.message.accurate_ecn}, TS: %{NUMBER:macos.unified_log.event.message.timestamp_enabled:int}, TSO: %{NUMBER:macos.unified_log.event.message.tso_enabled:int}%{SPACE}rtt_cache: %{DATA:macos.unified_log.event.message.rtt_cache}, rtt_upd: %{NUMBER:macos.unified_log.event.message.rtt_updates:int}, rtt: %{DATA:macos.unified_log.event.message.rtt}, rtt_var: %{DATA:macos.unified_log.event.message.rtt_var_ms} rtt_nc: %{DATA:macos.unified_log.event.message.rtt_nc_ms}, rtt_var_nc: %{DATA:macos.unified_log.event.message.rtt_var_nc_ms} base rtt: %{GREEDYDATA:macos.unified_log.event.message.base_rtt_ms}%{SPACE}ACKs-compressed: %{NUMBER:macos.unified_log.event.message.acks_compressed:int}, ACKs delayed: %{NUMBER:macos.unified_log.event.message.acks_delayed:int} delayed ACKs sent: %{NUMBER:macos.unified_log.event.message.delayed_acks_sent:int}'
+        - '^\[C%{NUMBER:macos.unified_log.event.message.connection_id} %{UUID:macos.unified_log.event.message.session_uuid} (Hostname\#)?%{DATA:macos.unified_log.event.message.hostname}:%{NUMBER:macos.unified_log.event.message.hostname_port:int} %{DATA}(, bundle id: %{DATA:macos.unified_log.event.message.bundle_id})?(, pid: %{DATA:macos.unified_log.event.message.pid:int})?(, account id: %{DATA:macos.unified_log.event.message.account_id})?(, url: %{DATA:macos.unified_log.event.message.url})?(, url hash: %{BASE16NUM:macos.unified_log.event.message.url_hash})?(, traffic class: %{NUMBER:macos.unified_log.event.message.traffic_class})?(, expected workload: %{NUMBER:macos.unified_log.event.message.expected_workload})?(, %{GREEDYDATA})?, attribution: %{DATA:macos.unified_log.event.message.attribution}(, %{GREEDYDATA})?\] cancelled\n\t\[C%{DATA:macos.unified_log.event.message.connection_detail} %{UUID:macos.unified_log.event.message.connection_uuid} %{IP:macos.unified_log.event.message.client_ip}:%{NUMBER:macos.unified_log.event.message.client_port:int}<->(IPv4#)?%{DATA:macos.unified_log.event.message.server_id}:%{NUMBER:macos.unified_log.event.message.server_port:int}\]\n\tConnected Path: %{DATA:macos.unified_log.event.message.path_status}(, %{DATA})?(, interface: %{DATA:macos.unified_log.event.message.interface})?(, %{GREEDYDATA})?\n\tPrivacy Stance: %{DATA:macos.unified_log.event.message.privacy_stance}\n\tDuration: %{DATA:macos.unified_log.event.message.duration}, DNS @%{DATA:macos.unified_log.event.message.dns_start} took %{DATA:macos.unified_log.event.message.dns_duration}, TCP @%{DATA:macos.unified_log.event.message.tcp_start} took %{DATA:macos.unified_log.event.message.tcp_duration}, TLS %{DATA:macos.unified_log.event.message.tls_version} took %{DATA:macos.unified_log.event.message.tls_duration}\n\tbytes in\/out: %{NUMBER:macos.unified_log.event.message.bytes_in:int}\/%{NUMBER:macos.unified_log.event.message.bytes_out:int}, packets in\/out: %{NUMBER:macos.unified_log.event.message.packets_in:int}\/%{NUMBER:macos.unified_log.event.message.packets_out:int}, rtt: %{DATA:macos.unified_log.event.message.rtt}, retransmitted bytes: %{NUMBER:macos.unified_log.event.message.retransmitted_bytes:int}, out-of-order bytes: %{NUMBER:macos.unified_log.event.message.out_of_order_bytes:int}\n\tecn packets sent\/acked\/marked\/lost: %{NUMBER:macos.unified_log.event.message.ecn_sent:int}\/%{NUMBER:macos.unified_log.event.message.ecn_acked:int}\/%{NUMBER:macos.unified_log.event.message.ecn_marked:int}\/%{NUMBER:macos.unified_log.event.message.ecn_lost:int}$'
+        - '%{GREEDYDATA:macos.unified_log.event.message.original}'
+  - convert:
+      field: macos.unified_log.event.message.client_ip
+      tag: convert_client_ip_to_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.id
+      tag: set_host_id
+      copy_from: macos.unified_log.event.message.hostname
+      ignore_empty_value: true
+  - set:
+      field: process.pid
+      tag: set_process_pid
+      copy_from: macos.unified_log.event.message.pid
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original
+      copy_from: macos.unified_log.event.message.url
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip
+      copy_from: macos.unified_log.event.message.client_ip
+      ignore_empty_value: true
+  - set:
+      field: source.port
+      tag: set_source_port
+      copy_from: macos.unified_log.event.message.client_port
+      ignore_empty_value: true
+  - set:
+      field: destination.port
+      tag: set_destination_port
+      copy_from: macos.unified_log.event.message.server_port
+      ignore_empty_value: true
+  - set:
+      field: source.bytes
+      tag: set_source_bytes
+      copy_from: macos.unified_log.event.message.bytes_in
+      ignore_empty_value: true
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes
+      copy_from: macos.unified_log.event.message.bytes_out
+      ignore_empty_value: true
+  - set:
+      field: source.packets
+      tag: set_source_packets
+      copy_from: macos.unified_log.event.message.packets_in
+      ignore_empty_value: true
+  - set:
+      field: destination.packets
+      tag: set_destination_packets
+      copy_from: macos.unified_log.event.message.packets_out
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: calculate_total_bytes
+      description: calculate total bytes of in and out if in and out are not null
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null
+      source: |
+        ctx.network = new HashMap();
+        ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes
+  - script:
+      lang: painless
+      tag: calculate_total_packets
+      description: calculate total packets of in and out if in and out are not null
+      if: ctx.source?.packets != null && ctx.destination?.packets != null
+      source: |
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        ctx.network.packets = ctx.source.packets + ctx.destination.packets
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: append_host_id_into_related_hosts
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - set:
+      field: process.code_signature.digest_algorithm
+      tag: set_process_code_signature_digest_algorithm
+      copy_from: macos.unified_log.event.message.signature_alg
+      ignore_empty_value: true
+  - set:
+      field: macos.unified_log.event.message.resumed
+      tag: set_event_message_resumed_true
+      value: true
+      if: ctx.macos?.unified_log?.event?.message?.resumed == "1"
+  - set:
+      field: macos.unified_log.event.message.resumed
+      tag: set_event_message_resumed_false
+      value: false
+      if: ctx.macos?.unified_log?.event?.message?.resumed == "0"
+  - set:
+      field: macos.unified_log.event.message.offered_ticket
+      tag: set_event_message_offered_ticket_true
+      value: true
+      if: ctx.macos?.unified_log?.event?.message?.offered_ticket == "1"
+  - set:
+      field: macos.unified_log.event.message.offered_ticket
+      tag: set_event_message_offered_ticket_false
+      value: false
+      if: ctx.macos?.unified_log?.event?.message?.offered_ticket == "0"
+  - set:
+      field: macos.unified_log.event.message.false_started
+      tag: set_event_message_false_started_true
+      value: true
+      if: ctx.macos?.unified_log?.event?.message?.false_started == "1"
+  - set:
+      field: macos.unified_log.event.message.false_started
+      tag: set_event_message_false_started_false
+      value: false
+      if: ctx.macos?.unified_log?.event?.message?.false_started == "0"
+  - set:
+      field: macos.unified_log.event.message.ocsp_received
+      tag: set_event_message_oscp_received_true
+      value: true
+      if: ctx.macos?.unified_log?.event?.message?.ocsp_received == "1"
+  - set:
+      field: macos.unified_log.event.message.ocsp_received
+      tag: set_event_message_oscp_received_false
+      value: false
+      if: ctx.macos?.unified_log?.event?.message?.ocsp_received == "0"
+  - set:
+      field: macos.unified_log.event.message.sct_received
+      tag: set_event_message_sct_received_true
+      value: true
+      if: ctx.macos?.unified_log?.event?.message?.sct_received == "1"
+  - set:
+      field: macos.unified_log.event.message.sct_received
+      tag: set_event_message_sct_received_false
+      value: false
+      if: ctx.macos?.unified_log?.event?.message?.sct_received == "0"
+  - set:
+      field: http.request.bytes
+      tag: set_http_request_bytes
+      copy_from: macos.unified_log.event.message.request_bytes
+      ignore_empty_value: true
+  - set:
+      field: http.response.bytes
+      tag: set_http_response_bytes
+      copy_from: macos.unified_log.event.message.response_bytes
+      ignore_empty_value: true
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code
+      copy_from: macos.unified_log.event.message.response_status
+      ignore_empty_value: true
+  - set:
+      field: destination.port
+      tag: set_destination_port
+      copy_from: macos.unified_log.event.message.dest_port
+      ignore_empty_value: true
+  - set:
+      field: source.port
+      tag: set_source_port
+      copy_from: macos.unified_log.event.message.src_port
+      ignore_empty_value: true
+  - dissect:
+      field: macos.unified_log.event.message.ecn_in_out_miss
+      tag: dissect_ecn_in_out_miss
+      pattern: "%{macos.unified_log.event.message.ecn_in}/%{macos.unified_log.event.message.ecn_out}/%{macos.unified_log.event.message.ecn_miss}"
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.ecn_in
+      tag: convert_macos_unified_log_event_message_ecn_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.ecn_out
+      tag: convert_macos_unified_log_event_message_ecn_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.ecn_miss
+      tag: convert_macos_unified_log_event_message_ecn_miss_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      field: macos.unified_log.event.message.rd_t_in_out
+      tag: dissect_rd_t_in_out
+      pattern: "%{macos.unified_log.event.message.rd_t_in}/%{macos.unified_log.event.message.rd_t_out}"
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.rd_t_in
+      tag: convert_macos_unified_log_event_message_rd_t_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.rd_t_out
+      tag: convert_macos_unified_log_event_message_rd_t_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      field: macos.unified_log.event.message.tfo_in_out_miss
+      tag: dissect_tfo_in_out_miss
+      pattern: "%{macos.unified_log.event.message.tfo_in}/%{macos.unified_log.event.message.tfo_out}/%{macos.unified_log.event.message.tfo_miss}"
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.tfo_in
+      tag: convert_macos_unified_log_event_message_tfo_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.tfo_out
+      tag: convert_macos_unified_log_event_message_tfo_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.tfo_miss
+      tag: convert_macos_unified_log_event_message_tfo_miss_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      field: macos.unified_log.event.message.wr_t_in_out
+      tag: dissect_wr_t_in_out
+      pattern: "%{macos.unified_log.event.message.wr_t_in}/%{macos.unified_log.event.message.wr_t_out}"
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.wr_t_in
+      tag: convert_macos_unified_log_event_message_wr_t_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: macos.unified_log.event.message.wr_t_out
+      tag: convert_macos_unified_log_event_message_wr_t_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      field: macos.unified_log.event.message.accurate_ecn
+      tag: dissect_accurate_ecn
+      pattern: "%{macos.unified_log.event.message.accurate_ecn_client}/%{macos.unified_log.event.message.accurate_ecn_server}"
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
