@@ -5,8 +5,54 @@ container-logs integration collects and parses logs of Kubernetes containers.
 It requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
-By default only {{ url "filebeat-input-filestream-parsers" "container parser" }} is enabled. Additional log parsers can be added as an advanced options configuration.
+By default, only {{ url "filebeat-input-filestream-parsers" "container parser" }} is enabled. Additional log parsers can be added as an advanced options configuration.
 
+## Ingesting Rotated Container Logs
+```{applies_to}
+stack: beta 9.2.0
+```
+
+The integration can monitor and ingest rotated Kubernetes container logs, including 
+on-the-fly decompression of GZIP archives. To enable this, `add gzip_experimental: true` 
+under _Advanced options > Custom configurations_ and set the path to the rotated 
+log files in the Kubernetes container log path configuration. Refer to
+[filestream documentation on reading GZIP files](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-filestream#reading-gzip-files)
+
+### Which path to add
+
+Kubernetes stores logs on `/var/log/pods` and uses symlinks on `/var/log/containers`
+for active log files. For full details, refer to the official 
+[Kubernetes documentation on log rotation](https://kubernetes.io/docs/concepts/cluster-administration/logging/#log-rotation).
+
+The path you add depends on whether this is a new or existing integration.
+
+#### For new integrations
+
+For new installations, instead of monitoring both paths, you can monitor only 
+`/var/log/pods`, which includes active and rotated files.
+
+Add the following path to the Kubernetes container log path configuration: 
+`/var/log/pods/${kubernetes.namespace}_${kubernetes.pod.name}_${kubernetes.pod.uid}/${kubernetes.container.name}/*.log*`
+This wildcard (`*.log*`) matches both active (`.log`) and rotated (`.log.*`) 
+files.
+
+#### For existing integrations
+By default, existing integrations monitor active logs via `/var/log/containers`. 
+To add rotated logs, you must add the path to the rotated log files:
+`/var/log/pods/${kubernetes.namespace}_${kubernetes.pod.name}_${kubernetes.pod.uid}/${kubernetes.container.name}/*.log.*`
+
+This wildcard (`*.log.*`) specifically targets only the rotated archive files.
+
+::::{warning}
+Potential Data Duplication: When you add this path to an existing integration, 
+the integration reads all existing files in that directory from the beginning. 
+This action causes a one-time re-ingestion of all previously rotated logs, which 
+results in duplicate data.
+
+After the initial scan, the integration tracks files normally and will only 
+ingest new log data. Subsequent file rotations are handled correctly without 
+further data duplication.
+::::
 
 ## Rerouting and preserve original event based on pod annotations
 
@@ -20,7 +66,7 @@ Customization can happen at:
 
 ### Set at pod definition time
 
-Here is an example of an Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
+Here is an example of a Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
 
 ```yaml
 # nginx-deployment.yaml
