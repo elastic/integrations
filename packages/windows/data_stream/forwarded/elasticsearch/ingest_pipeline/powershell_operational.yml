@@ -120,23 +120,16 @@ processors:
       copy_from: winlog.user.identifier
       ignore_failure: true
       ignore_empty_value: true
-  - split:
-      field: winlog.event_data.User
-      target_field: "_temp.user_parts"
-      separator: '\\'
-      if: ctx.winlog?.event_data?.User != null
   - set:
       field: user.domain
-      value: "{{_temp.user_parts.0}}"
+      copy_from: winlog.user.domain
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
       field: user.name
-      value: "{{_temp.user_parts.1}}"
+      copy_from: winlog.user.name
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - append:
       field: related.user
       value: "{{user.name}}"
@@ -303,14 +296,20 @@ processors:
   - trim:
       field: powershell.file.script_block_text
       ignore_missing: true
-  - dissect:
+  - gsub:
       field: powershell.file.script_block_text
+      target_field: _temp.script_block_signature
+      pattern: "(?s).+# SIG # Begin signature block"
+      replacement: "# SIG # Begin signature block"
+      ignore_missing: true
+  - dissect:
+      field: _temp.script_block_signature
       pattern: "# SIG # Begin signature block%{powershell.file.script_block_signature}# SIG # End signature block"
       ignore_missing: true
       ignore_failure: true
   - gsub:
       field: powershell.file.script_block_signature
-      pattern: "\\n# "
+      pattern: "\\n# |\\n"
       replacement: ""
       ignore_missing: true
   - gsub:
