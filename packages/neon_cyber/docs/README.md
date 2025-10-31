@@ -41,9 +41,9 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2025-10-12T21:39:13.241Z",
     "agent": {
-        "ephemeral_id": "e48fbba5-ea16-4f17-960b-e7a2045bf0d0",
-        "id": "e78b712e-a544-4de8-a480-e395251005e2",
-        "name": "elastic-agent-76958",
+        "ephemeral_id": "63a1d288-6cac-4c16-9a0b-a600c4d79973",
+        "id": "b6475bcc-ac9f-4f59-80f9-a10c6087771c",
+        "name": "elastic-agent-88799",
         "type": "filebeat",
         "version": "9.1.3"
     },
@@ -57,6 +57,13 @@ An example event for `events` looks as following:
         "geo": {
             "city_name": "Brighton",
             "country_name": "GB",
+            "location": {
+                "coordinates": [
+                    -0.11100003495812416,
+                    11.11109996214509
+                ],
+                "type": "Point"
+            },
             "postal_code": "BN3",
             "region_iso_code": "BNH",
             "region_name": "Brighton and Hove"
@@ -67,14 +74,14 @@ An example event for `events` looks as following:
     },
     "data_stream": {
         "dataset": "neon_cyber.events",
-        "namespace": "18527",
+        "namespace": "47706",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e78b712e-a544-4de8-a480-e395251005e2",
+        "id": "b6475bcc-ac9f-4f59-80f9-a10c6087771c",
         "snapshot": false,
         "version": "9.1.3"
     },
@@ -84,7 +91,7 @@ An example event for `events` looks as following:
             "network"
         ],
         "dataset": "neon_cyber.events",
-        "ingested": "2025-10-22T02:57:08Z",
+        "ingested": "2025-10-31T21:38:47Z",
         "kind": "event",
         "module": "neon_cyber",
         "original": "{\"agent\":\"1.2.4\",\"arch\":\"arm64\",\"asn\":9105,\"asn_isp\":\"TalkTalk\",\"auth_method\":\"userpass\",\"autofill\":true,\"city\":\"Brighton\",\"client_id\":\"d19143bd-3a34-4c7e-886b-87f643df4835\",\"country\":\"GB\",\"deployment_id\":\"ec080215-913c-490c-bb81-a1baa311ee45\",\"description\":\"User authenticated using userpass for https://www.bluthfamily.biz\",\"display\":\"Chrome\",\"email\":\"barry@bluthfamily.biz\",\"event_timestamp\":\"2025-10-12T21:39:13.241+00:00\",\"event_type\":\"auth\",\"id\":\"95cf3375-6a70-4366-9a4d-8bb602b0d7c9\",\"inserted_at\":\"2025-10-13T18:13:17.312372+00:00\",\"ip\":\"192.0.2.1\",\"ip_latitude\":11.1111,\"ip_longitude\":-0.111,\"latitude\":11.1111,\"longitude\":-0.111,\"name\":\"chrome\",\"os\":\"linux\",\"postal_code\":\"BN3\",\"region_code\":\"BNH\",\"region_name\":\"Brighton and Hove\",\"registration_id\":\"a00db187-ad55-4074-8a84-d085555abe29\",\"ua\":\"Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36\",\"updated_at\":\"2025-10-13T18:13:17.312372+00:00\",\"url\":\"https://www.bluthfamily.biz\",\"version\":\"134.0.0.0\"}",
@@ -94,6 +101,15 @@ An example event for `events` looks as following:
     },
     "host": {
         "architecture": "arm64",
+        "geo": {
+            "location": {
+                "coordinates": [
+                    -0.11100003495812416,
+                    11.11109996214509
+                ],
+                "type": "Point"
+            }
+        },
         "os": {
             "platform": "linux"
         }
@@ -218,9 +234,9 @@ An example event for `detections` looks as following:
 {
     "@timestamp": "2025-10-10T17:09:32.988Z",
     "agent": {
-        "ephemeral_id": "ecb12362-e8e4-459d-91aa-9795a0bcc6ad",
-        "id": "e29fd06f-045f-4130-9a57-42a6a72109a1",
-        "name": "elastic-agent-74525",
+        "ephemeral_id": "98cf5343-1a50-4bab-b4f7-9563f97d16c9",
+        "id": "f5f1b4cb-621c-4024-b7bb-b71bfad29ee8",
+        "name": "elastic-agent-18794",
         "type": "filebeat",
         "version": "9.1.3"
     },
@@ -234,6 +250,13 @@ An example event for `detections` looks as following:
         "geo": {
             "city_name": "Brighton",
             "country_name": "GB",
+            "location": {
+                "coordinates": [
+                    -0.11100003495812416,
+                    11.11109996214509
+                ],
+                "type": "Point"
+            },
             "postal_code": "BN3",
             "region_iso_code": "BNH",
             "region_name": "Brighton and Hove"
@@ -244,14 +267,14 @@ An example event for `detections` looks as following:
     },
     "data_stream": {
         "dataset": "neon_cyber.detections",
-        "namespace": "99139",
+        "namespace": "56407",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e29fd06f-045f-4130-9a57-42a6a72109a1",
+        "id": "f5f1b4cb-621c-4024-b7bb-b71bfad29ee8",
         "snapshot": false,
         "version": "9.1.3"
     },
@@ -261,7 +284,7 @@ An example event for `detections` looks as following:
             "network"
         ],
         "dataset": "neon_cyber.detections",
-        "ingested": "2025-10-22T03:01:29Z",
+        "ingested": "2025-10-31T21:42:58Z",
         "kind": "alert",
         "module": "neon_cyber",
         "original": "{\"agent\":\"1.2.4\",\"arch\":\"arm64\",\"asn\":9105,\"asn_isp\":\"TalkTalk\",\"city\":\"Brighton\",\"client_id\":\"d19143bd-3a34-4c7e-886b-87f643df4835\",\"country\":\"GB\",\"deployment_id\":\"ec080215-913c-490c-bb81-a1baa311ee45\",\"description\":null,\"detection_subtype\":null,\"detection_timestamp\":\"2025-10-10T17:09:32.988+00:00\",\"detection_type\":\"phishing\",\"display\":\"Chrome\",\"id\":\"c24b2526-11e4-48bf-af45-f6837232037f\",\"incognito\":false,\"inserted_at\":\"2025-10-13T18:13:15.88219+00:00\",\"ip\":\"192.0.2.1\",\"ip_latitude\":11.1111,\"ip_longitude\":-0.111,\"latitude\":11.1111,\"longitude\":-0.111,\"name\":\"chrome\",\"os\":\"linux\",\"postal_code\":\"BN3\",\"region_code\":\"BNH\",\"region_name\":\"Brighton and Hove\",\"registration_id\":\"a00db187-ad55-4074-8a84-d085555abe29\",\"source\":\"Phishing AI\",\"tab_id\":12345,\"ua\":\"Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36\",\"updated_at\":\"2025-10-13T18:13:15.88219+00:00\",\"url\":\"https://click.this.link.banckcorp.com\",\"version\":\"134.0.0.0\"}",
@@ -271,6 +294,15 @@ An example event for `detections` looks as following:
     },
     "host": {
         "architecture": "arm64",
+        "geo": {
+            "location": {
+                "coordinates": [
+                    -0.11100003495812416,
+                    11.11109996214509
+                ],
+                "type": "Point"
+            }
+        },
         "os": {
             "platform": "linux"
         }
