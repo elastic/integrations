@@ -21,7 +21,7 @@ This integration collects the following types of data from HashiCorp Vault:
 
 ## Compatibility
 
-This integration has been tested with HashiCorp Vault 1.11.
+This integration has been tested with HashiCorp Vault 1.11 and 1.21.
 
 The integration requires Elastic Stack version 8.12.0 or higher.
 
