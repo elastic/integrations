@@ -791,11 +791,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
 | azure.auditlogs.properties.activity_display_name | Activity display name | keyword |
+| azure.auditlogs.properties.activity_result_status | The result status of the activity. | long |
+| azure.auditlogs.properties.activity_type | The numeric identifier for the activity type. | long |
+| azure.auditlogs.properties.actor.actor_type | Type of actor (e.g., user, application, admin). | long |
+| azure.auditlogs.properties.actor.application | Application ID or identifier related to the actor. | keyword |
+| azure.auditlogs.properties.actor.application_name | Application display name associated with the actor. | keyword |
+| azure.auditlogs.properties.actor.is_delegated_admin | Indicates whether the actor is a delegated admin. | boolean |
+| azure.auditlogs.properties.actor.name | Display name of the actor. | keyword |
+| azure.auditlogs.properties.actor.object_id | The Azure AD object ID of the actor. | keyword |
+| azure.auditlogs.properties.actor.partner_tenant_id | Partner tenant ID if applicable. | keyword |
+| azure.auditlogs.properties.actor.user_permissions | List of permissions assigned to the actor. | keyword |
+| azure.auditlogs.properties.actor.user_principal_name | User principal name (UPN) associated with the actor. | keyword |
 | azure.auditlogs.properties.additional_details.key | Additional details key | keyword |
 | azure.auditlogs.properties.additional_details.user_agent | User agent name. | keyword |
 | azure.auditlogs.properties.additional_details.value | Additional details value | keyword |
+| azure.auditlogs.properties.additional_details_as_string | Additional details as a string. | text |
+| azure.auditlogs.properties.audit_event_id | The unique identifier for the audit event. | keyword |
 | azure.auditlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.auditlogs.properties.category | category | keyword |
+| azure.auditlogs.properties.category_code | Numeric category code for the audit log activity. | long |
 | azure.auditlogs.properties.correlation_id | Correlation ID | keyword |
 | azure.auditlogs.properties.id | ID | keyword |
 | azure.auditlogs.properties.initiated_by.app.appId | App ID | keyword |
@@ -809,8 +823,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.auditlogs.properties.initiated_by.user.userPrincipalName | User principal name | keyword |
 | azure.auditlogs.properties.logged_by_service | Logged by service | keyword |
 | azure.auditlogs.properties.operation_type | Operation type | keyword |
+| azure.auditlogs.properties.relation_id | The related object or event ID. | keyword |
 | azure.auditlogs.properties.result | Log result | keyword |
 | azure.auditlogs.properties.result_reason | Reason for the log result | keyword |
+| azure.auditlogs.properties.target_display_names | List of display names of the targets affected by the activity. | keyword |
+| azure.auditlogs.properties.target_object_ids | List of object IDs of the targets affected by the activity. | keyword |
 | azure.auditlogs.properties.target_resources.\*.display_name | Display name | keyword |
 | azure.auditlogs.properties.target_resources.\*.id | ID | keyword |
 | azure.auditlogs.properties.target_resources.\*.ip_address | ip Address | keyword |
@@ -819,8 +836,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.auditlogs.properties.target_resources.\*.modified_properties.\*.old_value | Old value | keyword |
 | azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
 | azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
+| azure.auditlogs.properties.targets.\*.modified_properties.\*.name | Name of the modified property. | keyword |
+| azure.auditlogs.properties.targets.\*.modified_properties.\*.new | New value of the property after modification. | text |
+| azure.auditlogs.properties.targets.\*.modified_properties.\*.old | Previous value of the property before modification. | text |
+| azure.auditlogs.properties.targets.\*.name | The target name. | keyword |
 | azure.auditlogs.result_description | Result description | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
+| azure.auditlogs.result_type | Result type | keyword |
 | azure.auditlogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |

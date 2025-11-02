@@ -29,6 +29,10 @@
       type: keyword
       description: |
         Result description
+    - name: result_type
+      type: keyword
+      description: |
+        Result type
     - name: level
       type: float
       description: Value for level.
@@ -71,6 +75,10 @@
           type: keyword
           description: |
             category
+        - name: category_code
+          type: long
+          description: |
+             Numeric category code for the audit log activity. 
         - name: target_resources.*
           type: group
           fields:
@@ -166,9 +174,82 @@
             - name: value
               type: keyword
               description: Additional details value
+        - name: additional_details_as_string
+          type: text
+          description: Additional details as a string.
         - name: authentication_protocol
           type: keyword
           description: Authentication protocol type.
+        - name: activity_result_status
+          type: long
+          description: The result status of the activity.
+        - name: activity_type
+          type: long
+          description: The numeric identifier for the activity type.
+        - name: audit_event_id
+          type: keyword
+          description: The unique identifier for the audit event.
+        - name: relation_id
+          type: keyword
+          description: The related object or event ID.
+        - name: target_display_names
+          type: keyword
+          description: List of display names of the targets affected by the activity.
+        - name: target_object_ids
+          type: keyword
+          description: List of object IDs of the targets affected by the activity.
+        - name: targets.*
+          type: group
+          description: >
+            List of target objects impacted by this event, including their modified properties.
+          fields:
+            - name: name
+              type: keyword
+              description: The target name.
+            - name: modified_properties.*
+              type: group
+              description: The list of modified properties for the target.
+              fields:
+                - name: name
+                  type: keyword
+                  description: Name of the modified property.
+                - name: new
+                  type: text
+                  description: New value of the property after modification.
+                - name: old
+                  type: text
+                  description: Previous value of the property before modification.
+        - name: actor
+          type: group
+          description: Information about the actor or user who initiated the activity.
+          fields:
+            - name: actor_type
+              type: long
+              description: Type of actor (e.g., user, application, admin).
+            - name: application
+              type: keyword
+              description: Application ID or identifier related to the actor.
+            - name: application_name
+              type: keyword
+              description: Application display name associated with the actor.
+            - name: user_principal_name
+              type: keyword
+              description: User principal name (UPN) associated with the actor.
+            - name: is_delegated_admin
+              type: boolean
+              description: Indicates whether the actor is a delegated admin.
+            - name: name
+              type: keyword
+              description: Display name of the actor.
+            - name: object_id
+              type: keyword
+              description: The Azure AD object ID of the actor.
+            - name: partner_tenant_id
+              type: keyword
+              description: Partner tenant ID if applicable.
+            - name: user_permissions
+              type: keyword
+              description: List of permissions assigned to the actor.
 # the following `geo` mappings are not allowed at root level in ECS, and are defined here for backward compatibility.
 - name: geo
   type: group
