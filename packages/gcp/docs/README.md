@@ -1187,6 +1187,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
 | gcp.billing.effective_price | The charged price for usage of the Google Cloud SKUs and SKU tiers. Reflects contract pricing if applicable, otherwise, it's the list price. | float |
 | gcp.billing.invoice_month | Billing report month. | keyword |
+| gcp.billing.labels | Resource labels as key-value pairs. Labels are user-defined metadata that can be attached to GCP resources. | object |
+| gcp.billing.location.country | The country code for the resource location (e.g., US, GB). | keyword |
+| gcp.billing.location.region | The geographic region where the resource was used (e.g., us-central1, europe-west1). | keyword |
+| gcp.billing.location.zone | The specific zone within the region (e.g., us-central1-a). | keyword |
 | gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
 | gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
 | gcp.billing.service_description | The Google Cloud service that reported the Cloud Billing data. | keyword |
@@ -1197,6 +1201,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.tags.key |  | keyword |
 | gcp.billing.tags.value |  | keyword |
 | gcp.billing.total | Total billing amount. | float |
+| gcp.billing.usage_end_time | The end time of the usage period for this billing record. | date |
+| gcp.billing.usage_start_time | The start time of the usage period for this billing record. | date |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -1244,7 +1250,16 @@ An example event for `billing` looks as following:
                     "key": "size",
                     "value": "standard"
                 }
-            ]
+            ],
+            "labels": {
+                "test_label": "value"
+            },
+            "location": {
+                "region": "us-central1",
+                "country": "US"
+            },
+            "usage_start_time": "2023-10-22T22:00:00.000Z",
+            "usage_end_time": "2023-10-22T23:00:00.000Z"
         }
     },
     "metricset": {
