@@ -4,12 +4,6 @@
 
 The Juniper SRX integration for Elastic collects logs from Juniper SRX devices, enabling real-time visibility into network security, traffic patterns, and threat detection. By parsing and visualizing syslog data, this integration helps security and network operations teams to monitor firewall events, detect threats, and ensure compliance.
 
-This integration facilitates several key use cases:
-- **Network Security Monitoring**: Track firewall session events (creation, closure, denial) to monitor network traffic and identify potential security issues.
-- **Threat Detection and Response**: Analyze intrusion detection (IDS), intrusion prevention (IDP), and advanced anti-malware (AAMW) logs to respond to security threats in real-time.
-- **Compliance and Auditing**: Centralize security logs for audit trails and compliance reporting on network access and security policy enforcement.
-- **Unified Threat Management (UTM) Monitoring**: Gain visibility into application-layer threats by monitoring web filtering, antivirus, antispam, and content filtering events.
-
 ### Compatibility
 
 This integration is compatible with Juniper SRX series firewalls running Junos OS version 19.x or later. Supported models range from branch office devices to data center appliances.
@@ -33,6 +27,16 @@ The Juniper SRX integration collects the following log types from SRX devices:
 *   **System logs**: General system-level events from the SRX device.
 
 All logs must be sent in the `structured-data + brief` syslog format.
+
+### Supported use cases
+
+This integration enables the following use cases:
+
+- **Network Security Monitoring**: Monitor firewall events including session creation, closure, and denial to track network traffic patterns and identify potential security issues.
+- **Threat Detection and Response**: Collect and analyze intrusion detection (IDS), intrusion prevention (IDP), and advanced anti-malware (AAMW) events to detect and respond to security threats in real-time.
+- **Compliance and Auditing**: Centralize security logs for compliance reporting and audit trails of network access and security policy enforcement.
+- **Unified Threat Management (UTM) Monitoring**: Track web filtering, antivirus, antispam, and content filtering events to maintain visibility into application-layer threats.
+- **Security Intelligence Analysis**: Analyze security intelligence (SECINTEL) events to identify connections to known malicious sources and take proactive security measures.
 
 ## What do I need to use this integration?
 
@@ -99,57 +103,57 @@ For more details, refer to the Juniper Knowledge Base article [KB16502](https://
 5.  Choose the **Input type** for collecting logs. The available options are detailed below.
 
 ##### UDP Input
-Collect logs via a UDP syslog listener. This is recommended for most systems where occasional log loss is acceptable.
+Collects logs via a UDP syslog listener. This protocol can be suitable for high-volume environments where some packet loss is acceptable.
 
 **Basic Options**
 
-| Option | Description | Default Value |
-|---|---|---|
-| Syslog Host | The IP address the agent should listen on. Use `0.0.0.0` to listen on all available interfaces. | `localhost` |
-| Syslog Port | The port to listen on for syslog messages. This must match the port configured on the SRX device. | `9006` |
+| Option      | Description                                                                                             | Default Value |
+|-------------|---------------------------------------------------------------------------------------------------------|---------------|
+| Syslog Host | The IP address the agent should listen on. Use `0.0.0.0` to listen on all available interfaces.          | `localhost`   |
+| Syslog Port | The port to listen on for syslog messages. This must match the port configured on the SRX device.         | `9006`        |
 
 **Advanced Options**
 
-| Option | Description | Default Value |
-|---|---|---|
-| `read_buffer` | The size of the UDP receive buffer in bytes. | `104857600` (100MiB) |
-| `max_message_size` | The maximum size of a single syslog message in bytes. | `51200` (50KiB) |
-| `timeout` | The read timeout for the UDP socket. | `5m` |
-| `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field. | `false` |
+| Option                    | Description                                                                                       | Default Value          |
+|---------------------------|---------------------------------------------------------------------------------------------------|------------------------|
+| `read_buffer`             | The size of the UDP receive buffer in bytes. Increase this for high-volume environments.          | `104857600` (100MiB)   |
+| `max_message_size`        | The maximum size of a single syslog message in bytes.                                             | `51200` (50KiB)        |
+| `timeout`                 | The read timeout for the UDP socket.                                                              | `5m`                   |
+| `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field.                 | `false`                |
 
 ##### TCP Input
-Collect logs via a TCP syslog listener. This provides reliable, ordered delivery and is suitable for environments where log loss is not acceptable.
+Collects logs via a TCP syslog listener. This protocol provides reliable, ordered delivery and is suitable for environments where log loss is not acceptable.
 
 **Basic Options**
 
-| Option | Description | Default Value |
-|---|---|---|
-| Syslog Host | The IP address the agent should listen on. Use `0.0.0.0` to listen on all available interfaces. | `localhost` |
-| Syslog Port | The port to listen on for syslog messages. This must match the port configured on the SRX device. | `9006` |
+| Option      | Description                                                                                             | Default Value |
+|-------------|---------------------------------------------------------------------------------------------------------|---------------|
+| Syslog Host | The IP address the agent should listen on. Use `0.0.0.0` to listen on all available interfaces.          | `localhost`   |
+| Syslog Port | The port to listen on for syslog messages. This must match the port configured on the SRX device.         | `9006`        |
 
 **Advanced Options**
 
-| Option | Description | Default Value |
-|---|---|---|
-| `max_message_size` | The maximum size of a single syslog message in bytes. | `20971520` (20MiB) |
-| `timeout` | The read timeout for the TCP socket. | `5m` |
-| SSL Settings | Configuration for TLS/SSL encryption. | Disabled |
-| `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field. | `false` |
+| Option                    | Description                                                                                       | Default Value          |
+|---------------------------|---------------------------------------------------------------------------------------------------|------------------------|
+| `max_message_size`        | The maximum size of a single syslog message in bytes.                                             | `20971520` (20MiB)     |
+| `timeout`                 | The read timeout for the TCP socket.                                                              | `5m`                   |
+| SSL Settings              | Configuration for TLS/SSL encryption if required.                                                 | Disabled               |
+| `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field.                 | `false`                |
 
 ##### File Input
-Collect logs from files on the host where the Elastic Agent is running.
+Collects logs from files on the host where the Elastic Agent is running.
 
 **Basic Options**
 
-| Option | Description | Default Value |
-|---|---|---|
-| Paths | A list of file paths to monitor for new log entries. Glob patterns are supported. | `[/var/log/juniper-srx.log]` |
+| Option | Description                                                                         | Default Value                 |
+|--------|-------------------------------------------------------------------------------------|-------------------------------|
+| Paths  | A list of file paths to monitor for new log entries. Glob patterns are supported. | `[/var/log/juniper-srx.log]` |
 
 **Advanced Options**
 
-| Option | Description | Default Value |
-|---|---|---|
-| `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field. | `false` |
+| Option                    | Description                                                                                       | Default Value |
+|---------------------------|---------------------------------------------------------------------------------------------------|---------------|
+| `preserve_original_event` | If enabled, the original raw log message is stored in the `event.original` field.                 | `false`       |
 
 6.  Select an existing agent policy or create a new one.
 7.  Click **Save and continue** to add the integration to your chosen policy.
