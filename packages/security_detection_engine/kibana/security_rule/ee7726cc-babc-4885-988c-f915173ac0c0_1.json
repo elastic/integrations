@@ -1,0 +1,154 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempt to execute Windows scripts from a remote WebDav Share. Adversaries may abuse this method to evade dropping malicious files to victim file system.",
+        "false_positives": [
+            "Trusted webdav shares used to host trusted content."
+        ],
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Execution from a WebDav Share",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Execution from a WebDav Share\n\n#### Possible investigation steps\n\n- Check if the remote webdav server is autorized by the organization.\n- Check all the downloaded files from the remote server and their content.\n- Investigate the process execution chain (parent process tree) to identify the initial vector.\n- Investigate other alerts associated with the user/host during the past 5 minutes.\n- Identify the user account that performed the action and whether it should perform this kind of action.\n- Identify the target computer and its role in the IT environment.\n- Investigate what commands were run, and assess whether this behavior is prevalent in the environment by looking for similar occurrences across hosts.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Isolate the involved hosts to prevent further post-compromise behavior.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords for these accounts and other potentially compromised credentials, such as email, business systems, and web services.\n- Run a full antimalware scan. This may reveal additional artifacts left in the system, persistence mechanisms, and malware components.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection through the same vector.\n- Review the privileges assigned to the user to ensure that the least privilege principle is being followed.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.name : (\"cmd.exe\", \"powershell.exe\", \"conhost.exe\", \"wscript.exe\", \"mshta.exe\", \"curl.exe\", \"msiexec.exe\", \"bitsadmin.exe\", \"net.exe\") and\n process.command_line : (\"*trycloudflare.com*\", \"*@SSL\\\\*\", \"*\\\\webdav\\\\*\", \"*\\\\DavWWWRoot\\\\*\", \"*\\\\\\\\*.*@8080\\\\*\", \"*\\\\\\\\*.*@80\\\\*\", \"*\\\\\\\\*.*@8443\\\\*\", \"*\\\\\\\\*.*@443\\\\*\") and\n not (process.name : \"cmd.exe\" and process.args : \"\\\\\\\\?\\\\UNC\\\\*.sharepoint.com@SSL\\\\DavWWWRoot\\\\*\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ee7726cc-babc-4885-988c-f915173ac0c0",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.002",
+                                "name": "SMB/Windows Admin Shares",
+                                "reference": "https://attack.mitre.org/techniques/T1021/002/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1570",
+                        "name": "Lateral Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1570/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "ee7726cc-babc-4885-988c-f915173ac0c0_1",
+    "type": "security-rule"
+}

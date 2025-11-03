@@ -260,6 +260,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.addrgrp | Address Group | keyword |
 | fortinet.firewall.adgroup | AD Group Name | keyword |
 | fortinet.firewall.admin | Admin User | keyword |
+| fortinet.firewall.advpnsc | Indicates that a VPN event is based on an ADVPN shortcut. | boolean |
 | fortinet.firewall.age | Time in seconds - time passed since last seen | integer |
 | fortinet.firewall.agent | User agent - eg. agent="Mozilla/5.0" | keyword |
 | fortinet.firewall.alarmid | Alarm ID | integer |

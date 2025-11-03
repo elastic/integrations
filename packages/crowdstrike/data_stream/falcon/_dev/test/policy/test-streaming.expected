@@ -1,0 +1,62 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: crowdstrike
+      name: test-streaming-crowdstrike
+      streams:
+        - auth:
+            client_id: test_client_id
+            client_secret: ${SECRET_0}
+            token_url: http://host.tld/oauth2/token
+          crowdstrike_app_id: test_app_id
+          data_stream:
+            dataset: crowdstrike.falcon
+            type: logs
+          processors: null
+          program: |
+            state.response.decode_json().as(body, {
+              // Handle both old agent behaviour and new multi-resource cursors.
+              ?"cursor": !has(state.feed) ?
+                // Old behaviour: no feed key.
+                body.?metadata.optMap(m, {"offset": m.offset})
+              : has(body.metadata) ?
+                // New behaviour with a cursor from the event.
+                optional.of(state.?cursor.orValue({}).with({
+                  ?state.feed: body.?metadata.optMap(m, {"offset": m.offset}),
+                }))
+              :
+                // New behaviour with no cursor; pass through.
+                state.?cursor,
+              "events": [{
+                    "message":  body.encode_json(),
+              }],
+            })
+          publisher_pipeline.disable_host: true
+          redact:
+            fields: null
+          stream_type: crowdstrike
+          tags:
+            - preserve_original_event
+            - forwarded
+            - crowdstrike-falcon
+          url: http://host.tld/sensors/entities/datafeed/v2
+      type: streaming
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-crowdstrike.falcon-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

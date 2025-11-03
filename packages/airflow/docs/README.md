@@ -27,7 +27,7 @@ Note:
 
 The Airflow module is tested with Airflow `2.4.0`. It should work with versions `2.0.0` and later.
 
-## Prerequisites
+## What do I need to use this integration?
 
 Users require Elasticsearch to store and search user data, and Kibana to visualize and manage it. They can utilize the hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
 

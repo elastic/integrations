@@ -1,0 +1,110 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies AWS CloudTrail events where an EC2 route table or association has been modified or deleted. Route table or association modifications can be used by attackers to disrupt network traffic, reroute communications, or maintain persistence in a compromised environment. This is a New Terms rule that detects the first instance of this behavior by a user or role.",
+        "false_positives": [
+            "Route Tables could be modified or deleted by a system administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Route Tables being modified from unfamiliar users should be investigated. If known behavior is causing false positives, it can be exempted from the rule. Also automated processes that use Terraform may lead to false positives."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-10d",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EC2 Route Table Modified or Deleted",
+        "new_terms_fields": [
+            "cloud.account.id",
+            "user.name"
+        ],
+        "note": "## Triage and Analysis\n\n### Investigating AWS EC2 Route Table Modified or Deleted\n\nThis rule detects modifications or deletions of AWS route tables using actions such as `ReplaceRoute`, `ReplaceRouteTableAssociation`, `DeleteRouteTable`, `DeleteRoute`, or `DisassociateRouteTable`. These actions may indicate legitimate administrative activity, but they can also be abused by attackers to disrupt network traffic, reroute communications, or maintain persistence in a compromised environment.\n\n#### Possible Investigation Steps\n\n- **Review Request Parameters:**\n   - Check the `aws.cloudtrail.request_parameters` field. The sub-fields may vary depending on the `event.action` (e.g., `routeTableId` for `DeleteRouteTable`, `destinationCidrBlock` for `ReplaceRoute`).\n   - Validate the affected route table, routes, or associations based on the API call:\n     - For `ReplaceRoute`: Look for changes in specific routes using `destinationCidrBlock`.\n     - For `ReplaceRouteTableAssociation`: Review the new association details (e.g., subnet ID).\n     - For `DeleteRouteTable`: Confirm the `routeTableId` of the deleted table.\n     - For `DisassociateRouteTable`: Verify the disassociated resources.\n\n- **Review User Context**:\n  - **User Identity**: Inspect the `aws.cloudtrail.user_identity.arn` field to determine the user or role initiating the action. Investigate whether this user is authorized to perform these operations.\n  - **Access Key ID**: Check the `aws.cloudtrail.user_identity.access_key_id` field to identify if the access key used was expected or potentially compromised.\n  - **Access Patterns**: Validate whether the user or role has a history of performing route table modifications and whether this aligns with their expected responsibilities.\n\n- **Analyze Request Details**:\n  - **Action Type**: Verify the specific API call in the `event.action` field (e.g., `ReplaceRoute`, `DeleteRouteTable`) to understand the nature of the modification.\n  - **Source IP and Geolocation**: Examine the `source.ip` and `source.geo` fields to confirm whether the request originated from a trusted location. Suspicious geolocations or IPs may indicate adversarial activity.\n  - **User Agent**: Review the `user_agent.original` field to determine the tool used for the request (e.g., AWS CLI, Terraform). Unusual or custom user agents may indicate malicious intent.\n\n- **Correlate with Other Activity**:\n  - **Concurrent API Calls**: Look for related API calls (e.g., `CreateRoute`, `AuthorizeSecurityGroupIngress`, or `ModifyInstanceAttribute`) from the same user or IP to detect broader attack patterns.\n  - **IAM Changes**: Investigate whether any IAM policy updates or privilege escalation attempts preceded this activity.\n  - **Unusual Volume of Changes**: Check if the user has performed multiple route table modifications or deletions in a short timeframe.\n\n- **Validate the Intent**:\n  - **Planned Changes**: Confirm with administrators whether the route table changes were part of a planned update or maintenance activity.\n  - **Permissions and Justification**: Ensure that the user or role has the least privilege necessary for these actions and that there is a valid reason for modifying the route table.\n\n### False Positive Analysis\n\n- **Routine Administration**: Route table modifications are often part of routine administrative tasks, such as creating new routes, updating associations, or removing unused resources.\n- **Automation Tools**: Automated workflows, such as those executed by Terraform or CloudFormation, may trigger these events. Verify whether the `user_agent.original` field or source IP matches known automation tools.\n- **Maintenance or Scaling**: Confirm whether these actions align with maintenance activities or scaling events (e.g., adding or removing subnets).\n\n### Response and Remediation\n\n- **Revoke Unauthorized Permissions**: If unauthorized, remove permissions for related actions from the user or role. You can use the managed [AWSDenyAll](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWSDenyAll.html) policy.\n- **Restore the Route Table**:\n  - If critical networking was impacted, restore the route table or reapply previous configurations from backups or Terraform state files.\n  - Verify connectivity to affected subnets or instances to ensure no disruptions to services.\n- **Audit IAM Policies**:\n  - Limit route table modification permissions to specific trusted users, roles, or automation accounts.\n  - Implement conditions in IAM policies, such as source IP restrictions, to reduce the risk of unauthorized access.\n- **Monitor and Alert**:\n  - Set up additional alerts for unexpected route table modifications or deletions.\n  - Use VPC flow logs and CloudTrail to monitor for related suspicious activity.\n- **Secure Automation**: Ensure automation tools, such as Terraform or CloudFormation, are configured securely and that their credentials are stored in secure locations like AWS Secrets Manager.\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.provider: \"ec2.amazonaws.com\"\n    and event.action:(\n        \"ReplaceRoute\" or\n        \"ReplaceRouteTableAssociation\" or\n        \"DeleteRouteTable\" or\n        \"DeleteRoute\" or\n        \"DisassociateRouteTable\"\n    )\n    and event.outcome: \"success\"\n",
+        "references": [
+            "https://github.com/easttimor/aws-incident-response#network-routing",
+            "https://docs.datadoghq.com/security_platform/default_rules/aws-ec2-route-table-modified/",
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ReplaceRoute.html",
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ReplaceRouteTableAssociation",
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DeleteRouteTable.html",
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DeleteRoute.html",
+            "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DisassociateRouteTable.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e7cd5982-17c8-4959-874c-633acde7d426",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS EC2",
+            "Use Case: Network Security Monitoring",
+            "Resources: Investigation Guide",
+            "Tactic: Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 211
+    },
+    "id": "e7cd5982-17c8-4959-874c-633acde7d426_211",
+    "type": "security-rule"
+}

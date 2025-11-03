@@ -155,6 +155,25 @@ processors:
       value: '{{{microsoft_defender_endpoint.machine.id}}}'
       allow_duplicates: false
       if: ctx.microsoft_defender_endpoint?.machine?.id != null
+  - script:
+      lang: painless
+      description: Drops empty string values recursively.
+      tag: painless_remove_empty_from_ip_addresses
+      if: ctx.json?.ipAddresses != null
+      source: |-
+        boolean drop(Object object) {
+          if (object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx.json.ipAddresses);
   - foreach:
       field: json.ipAddresses
       if: ctx.json?.ipAddresses instanceof List

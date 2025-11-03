@@ -12,6 +12,16 @@ processors:
   - set:
       field: event.kind
       value: event
+  - append:
+      field: event.category
+      tag: append_network_into_event_category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
   # process dates on base fields
   - date:
       field: gigamon.ami.ts
@@ -64,6 +74,34 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      field: gigamon.ami.flow_start_sec
+      target_field: gigamon.ami.flow_start_sec
+      tag: date_gigamon_ami_flow_start_sec
+      formats:
+        - 'yyyy:MM:dd HH:mm:ss'
+        - ISO8601
+      if: ctx.gigamon?.ami?.flow_start_sec != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.flow_start_sec
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.flow_end_sec
+      target_field: gigamon.ami.flow_end_sec
+      tag: date_gigamon_ami_flow_end_sec
+      formats:
+        - 'yyyy:MM:dd HH:mm:ss'
+        - ISO8601
+      if: ctx.gigamon?.ami?.flow_end_sec != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.flow_end_sec
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
       field: gigamon.ami.ssl_validity_not_before
       target_field: gigamon.ami.ssl_validity_not_before
       tag: date_gigamon_ami_ssl_validity_not_before
@@ -107,18 +145,6 @@ processors:
       on_failure:
         - remove:
             field: gigamon.ami.seq_num
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: gigamon.ami.app_id
-      if: ctx.gigamon?.ami?.app_id != null
-      tag: convert_app_id
-      type: long
-      on_failure:
-        - remove:
-            field: gigamon.ami.app_id
             ignore_missing: true
         - append:
             field: error.message
@@ -404,6 +430,42 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt
+      if: ctx.gigamon?.ami?.tcp_rtt != null
+      tag: convert_tcp_rtt
+      type: float
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_app
+      if: ctx.gigamon?.ami?.tcp_rtt_app != null
+      tag: convert_tcp_rtt_app
+      type: float
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_app
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_retransmission_bytes
+      if: ctx.gigamon?.ami?.tcp_retransmission_bytes != null
+      tag: convert_tcp_retransmission_bytes
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_retransmission_bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'  
   - script:
       lang: painless
       description: Gigamon AMI lookup mappings
@@ -827,6 +889,346 @@ processors:
         if (ctx.gigamon.ami.dns_reply_code != null) {
             ctx.gigamon.ami.dns_reply_code_value = params['dns_reply_code'][ctx.gigamon.ami.dns_reply_code];
         }
+
+  - convert:
+      field: gigamon.ami.dns_response_time
+      if: ctx.gigamon?.ami?.dns_response_time != null
+      tag: convert_dns_response_time
+      type: float
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_response_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+     lang: painless
+     description: Convert dns_response_time in seconds to nanoseconds for populating event.duration
+     source: >-
+       ctx.event.duration = ctx.gigamon.ami.dns_response_time * 1000000000L;
+     if: ctx.gigamon?.ami?.dns_response_time != null
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name
+      copy_from: gigamon.ami.dns_query
+      if: ctx.gigamon?.ami?.dns_query != null
+  - set:
+      field: dns.question.registered_domain
+      tag: set_dns_question_registered_domain
+      copy_from: gigamon.ami.dns_name
+      if: ctx.gigamon?.ami?.dns_name != null
+  - append:
+      field: host.ip
+      tag: set_host_ip
+      value: "{{{gigamon.ami.dns_host_addr}}}"
+      if: ctx.gigamon?.ami?.dns_host_addr != null
+      allow_duplicates: false
+  - convert:
+      field: gigamon.ami.dns_ttl
+      if: ctx.gigamon?.ami?.dns_ttl != null
+      tag: convert_dns_ttl
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_ttl
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dns.answers.ttl
+      tag: set_dns_answers.ttl
+      copy_from: gigamon.ami.dns_ttl
+      if: ctx.gigamon?.ami?.dns_ttl != null
+  - set:
+      field: dns.question.type
+      tag: set_dns_question_type
+      copy_from: gigamon.ami.dns_query_type_value
+      if: ctx.gigamon?.ami?.dns_query_type_value != null
+  - set:
+      field: dns.response_code
+      tag: set_dns_response_code
+      copy_from: gigamon.ami.dns_reply_code_value
+      if: ctx.gigamon?.ami?.dns_reply_code_value != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: gigamon.ami.dns_host
+      if: ctx.gigamon?.ami?.dns_host != null
+  - set:
+      field: host.type
+      tag: set_host_type
+      copy_from: gigamon.ami.dns_host_type
+      if: ctx.gigamon?.ami?.dns_host_type!= null
+  - append:
+      field: related.ip
+      tag: set_related_ip
+      value: "{{{gigamon.ami.dns_reverse_addr}}}"
+      if: ctx.gigamon?.ami?.dns_reverse_addr != null
+      allow_duplicates: false
+  - set:
+      field: dns.type
+      tag: set_dns_type
+      copy_from: gigamon.ami.dns_message_type
+      if: ctx.gigamon?.ami?.dns_message_type != null
+  - convert:
+      field: gigamon.ami.http_rtt
+      if: ctx.gigamon?.ami?.http_rtt != null
+      tag: convert_http_rtt
+      type: float
+      on_failure:
+        - remove:
+            field: gigamon.ami.http_rtt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+     lang: painless
+     description: Convert http_rtt in seconds to nanoseconds for populating event.duration
+     source: >-
+       ctx.event.duration = ctx.gigamon.ami.http_rtt * 1000000000L;
+     if: ctx.gigamon?.ami?.http_rtt != null
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original
+      copy_from: gigamon.ami.http_user_agent
+      if: ctx.gigamon?.ami?.http_user_agent != null
+  - set:
+      field: http.request.method
+      tag: set_http_request_method
+      copy_from: gigamon.ami.http_method
+      if: ctx.gigamon?.ami?.http_method != null
+  - set:
+      field: http.version
+      tag: set_http_version
+      copy_from: gigamon.ami.http_version
+      if: ctx.gigamon?.ami?.http_version != null
+  - convert:
+      field: gigamon.ami.http_code
+      if: ctx.gigamon?.ami?.http_code != null
+      tag: convert_http_code
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.http_code
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code
+      copy_from: gigamon.ami.http_code
+      if: ctx.gigamon?.ami?.http_code != null
+  - set:
+      field: file.extension
+      tag: set_http_file_extension
+      copy_from: gigamon.ami.http_file_type
+      if: ctx.gigamon?.ami?.http_file_type != null
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referer
+      copy_from: gigamon.ami.http_referer
+      if: ctx.gigamon?.ami?.http_referer != null
+  - set:
+      field: server.domain
+      tag: set_server_domain
+      copy_from: gigamon.ami.http_server
+      if: ctx.gigamon?.ami?.http_server != null
+  - set:
+      field: url.path
+      tag: set_url_path
+      copy_from: gigamon.ami.http_uri_path
+      if: ctx.gigamon?.ami?.http_uri_path != null 
+  - set:
+      field: url.full
+      tag: set_url_full
+      copy_from: gigamon.ami.http_uri
+      if: ctx.gigamon?.ami?.http_uri != null 
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: gigamon.ami.http_host
+      if: ctx.gigamon?.ami?.http_host != null 
+  - set:
+      field: url.original
+      tag: set_url_original
+      copy_from: gigamon.ami.http_uri_raw
+      if: ctx.gigamon?.ami?.http_uri_raw != null 
+  - set:
+      field: tls.cipher
+      tag: set_tls_cipher
+      copy_from: gigamon.ami.ssl_cipher_suite_id_value
+      if: ctx.gigamon?.ami?.ssl_cipher_suite_id_value != null
+  - set:
+      field: tls.client.not_after 
+      tag: set_tls_client_not_after
+      copy_from: gigamon.ami.ssl_validity_not_after
+      if: ctx.gigamon?.ami?.ssl_validity_not_after != null 
+  - set:
+      field: tls.client.not_before
+      tag: set_tls_client_not_before
+      copy_from: gigamon.ami.ssl_validity_not_before
+      if: ctx.gigamon?.ami?.ssl_validity_not_before != null 
+  - set:
+      field:  tls.version_protocol
+      tag: set_tls_version_protocol
+      copy_from: gigamon.ami.ssl_protocol_version_value
+      if: ctx.gigamon?.ami?.ssl_protocol_version_value != null 
+  - set:
+      field: tls.client.server_name
+      tag: set_tls_client_server_name
+      copy_from: gigamon.ami.ssl_common_name
+      if: ctx.gigamon?.ami?.ssl_common_name != null 
+  - set:
+      field: tls.client.issuer
+      tag: set_tls_client_issuer
+      copy_from: gigamon.ami.ssl_issuer
+      if: ctx.gigamon?.ami?.ssl_issuer != null 
+  - set:
+      field: tls.client.subject
+      tag: set_tls_client_subject
+      copy_from: gigamon.ami.ssl_certificate_subject_cn
+      if: ctx.gigamon?.ami?.ssl_certificate_subject_cn != null 
+  - set:
+      field: source.ip
+      tag: set_source_ip
+      copy_from: gigamon.ami.src_ip
+      if: ctx.gigamon?.ami?.src_ip != null
+  - set:
+      field: destination.ip
+      tag: set_destination_ip
+      copy_from: gigamon.ami.dst_ip
+      if: ctx.gigamon?.ami?.dst_ip != null
+  - set:
+      field: source.port
+      tag: set_source_port
+      copy_from: gigamon.ami.src_port
+      if: ctx.gigamon?.ami?.src_port != null
+  - set:
+      field: destination.port
+      tag: set_destination_port
+      copy_from: gigamon.ami.dst_port
+      if: ctx.gigamon?.ami?.dst_port != null
+  - set:
+      field: service.type
+      tag: set_service_type
+      copy_from: gigamon.ami.app_name
+      if: ctx.gigamon?.ami?.app_name != null
+  - set:
+      field: event.start
+      tag: set_event_start
+      copy_from: gigamon.ami.start_time
+      if: ctx.gigamon?.ami?.start_time != null
+  - set:
+      field: event.end
+      tag: set_event_end
+      copy_from: gigamon.ami.end_time
+      if: ctx.gigamon?.ami?.end_time != null
+  - set:
+      field: source.ip
+      tag: set_source_ip
+      copy_from: gigamon.ami.src_ipv6
+      if: ctx.gigamon?.ami?.src_ipv6 != null
+  - set:
+      field: destination.ip
+      tag: set_destination_ip
+      copy_from: gigamon.ami.dst_ipv6
+      if: ctx.gigamon?.ami?.dst_ipv6 != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - set:
+      field: source.bytes
+      tag: set_source_bytes
+      copy_from: gigamon.ami.src_bytes
+      if: ctx.gigamon?.ami?.src_bytes != null
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes
+      copy_from: gigamon.ami.dst_bytes
+      if: ctx.gigamon?.ami?.dst_bytes != null
+  - set:
+      field: source.packets
+      tag: set_source_packets
+      copy_from: gigamon.ami.src_packets
+      if: ctx.gigamon?.ami?.src_packets != null
+  - set:
+      field: destination.packets
+      tag: set_destination_packets
+      copy_from: gigamon.ami.dst_packets
+      if: ctx.gigamon?.ami?.dst_packets != null
+  - set:
+      field: service.version
+      tag: set_snmp_version
+      copy_from: gigamon.ami.snmp_version
+      if: ctx.gigamon?.ami?.snmp_version != null
+  - set:
+      field: service.version
+      tag: set_smb_version
+      copy_from: gigamon.ami.smb_version_value
+      if: ctx.gigamon?.ami?.smb_version_value != null
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: gigamon.ami.id
+      if: ctx.gigamon?.ami?.id != null
+  - set:
+      field: service.id
+      tag: set_service.id
+      copy_from: gigamon.ami.app_id
+      if: ctx.gigamon?.ami?.app_id != null
+  - script:
+     lang: painless
+     description: Replace ":" in source mac with "-"
+     source: >-
+       ctx.source.mac = ctx.gigamon.ami.src_mac.replace(":", "-").toUpperCase();
+     if: ctx.gigamon?.ami?.src_mac != null
+  - script:
+     lang: painless
+     description: Replace ":" in destination mac with "-"
+     source: >-
+       ctx.destination.mac = ctx.gigamon.ami.dst_mac.replace(":", "-").toUpperCase();
+     if: ctx.gigamon?.ami?.dst_mac != null
   - remove:
       field:
         - ts

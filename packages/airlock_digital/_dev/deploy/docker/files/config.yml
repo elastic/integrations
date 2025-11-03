@@ -1,0 +1,323 @@
+rules:
+  #  We’re unable to test the pagination functionality with the current rule
+  #  since a fixed batch size of 10,000 is being used in data-collection.
+  - path: /v1/agent/find
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          X-ApiKey:
+            - my-secret-api-key
+        body: |
+          {{ minify_json `
+          {
+            "error": "Success",
+            "response": {
+              "agents": [
+                {
+                  "agentid": "b12a9d5f-d3fc-4893-8dc3-9e2982e732f1",
+                  "clientversion": "5.3.0.0",
+                  "domain": "CORP-WORKSTATION",
+                  "freespace": "61",
+                  "groupid": "f5c9a3b4-09df-4eae-bf7d-72ab9850138d",
+                  "hostname": "CORP-WORKSTATION",
+                  "ip": "175.16.199.1",
+                  "localip": "175.16.199.254",
+                  "lastcheckin": "2024-04-29T15:12:17.001Z",
+                  "os": "Windows 11 x64 (Release: 23H2)",
+                  "policyversion": "9.1",
+                  "status": 3,
+                  "username": "jane.doe"
+                },
+                {
+                  "agentid": "32af7b1a-9850-4e9d-877e-d438b984c8de",
+                  "clientversion": "5.3.0.0",
+                  "domain": "LAPTOP-ALPHA",
+                  "freespace": "48",
+                  "groupid": "7fc5df84-d611-44c9-a690-4a4f1bb6a9f1",
+                  "hostname": "LAPTOP-ALPHA",
+                  "ip": "216.160.83.59",
+                  "localip": "216.160.83.62",
+                  "lastcheckin": "2024-04-29T12:55:09.421Z",
+                  "os": "Windows 10 x64 (Release: 22H2)",
+                  "policyversion": "9.0",
+                  "status": 0,
+                  "username": "alpha.user"
+                },
+                {
+                  "agentid": "4be7dfb7-5b9f-4e95-8d41-c30b6b7b02b3",
+                  "clientversion": "5.3.0.0",
+                  "domain": "FINANCE-PC",
+                  "freespace": "77",
+                  "groupid": "7fc5df84-d611-44c9-a690-4a4f1bb6a9f1",
+                  "hostname": "FINANCE-PC",
+                  "ip": "81.2.69.142",
+                  "localip": "81.2.69.143",
+                  "lastcheckin": "2024-04-29T14:47:28.960Z",
+                  "os": "Windows 10 x64 (Release: 21H2)",
+                  "policyversion": "8.9",
+                  "status": 1,
+                  "username": "samantha"
+                }
+              ]
+            }
+          }
+          ` }}
+  - path: /v1/group/policies
+    methods: ['POST']
+    query_params:
+      groupid: f5c9a3b4-09df-4eae-bf7d-72ab9850138d
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          X-ApiKey:
+            - my-secret-api-key
+        body: |
+          {{ minify_json `
+           {
+            "error": "Success",
+            "response": {
+              "agentstopcode": "",
+              "applications": [
+                {
+                  "applicationid": "1570641682",
+                  "name": "Airlock Enforcement Agents",
+                  "version": ""
+                }
+              ],
+              "auditmode": 0,
+              "autoupdate": 0,
+              "baselines": [
+                {
+                  "baselineid": "1567253648",
+                  "name": "Windows 10 1903 x64 May 2019 (Reference)"
+                },
+                {
+                  "baselineid": "1569941628",
+                  "name": "Windows 10 1803 x64 May 2019 (Reference)"
+                },
+                {
+                  "baselineid": "1597574944",
+                  "name": "Windows 10 2004 x86 RTM (Reference)"
+                }
+              ],
+              "batch": 1,
+              "blocklists": null,
+              "check_ea": 0,
+              "command": 1,
+              "commlist": [
+                {
+                  "ip": "81.2.69.143",
+                  "name": "test.server.com"
+                }
+              ],
+              "commlistid": "airlock-default-communication-list",
+              "compiledhtml": 1,
+              "dylib": 0,
+              "enable_notifications": 1,
+              "extensions_enabled": 0,
+              "generalisation": 0,
+              "gprocesses": null,
+              "groupid": "f5c9a3b4-09df-4eae-bf7d-72ab9850138d",
+              "hashdb_ver": "215",
+              "htmlapplication": 1,
+              "javaapplication": 1,
+              "javascript": 1,
+              "modreload": 0,
+              "name": "ADL Workstations",
+              "notification_message": "%filename% has been prevented from executing as a result of Application Whitelisting. If this event caused unexpected system behaviour please contact your Administrator",
+              "parent": "Airlock Groups",
+              "paths": [
+                {
+                  "comment": "",
+                  "name": "C:\\\\Windows\\\\assembly\\\\GAC*\\\\*\\\\*.*.*_*\\\\*.dll"
+                },
+                {
+                  "comment": "",
+                  "name": "C:\\\\Windows\\\\Temp\\\\__PSScriptPolicyTest_????????.???.ps1"
+                },
+                {
+                  "comment": "",
+                  "name": "C:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Temp\\\\__PSScriptPolicyTest_????????.???.ps1"
+                }
+              ],
+              "policyver": "316",
+              "poll_time": 600,
+              "powershell": 1,
+              "pprocesses": [
+                {
+                  "comment": "comment on inherited proc",
+                  "name": "testprocInherited.exe"
+                }
+              ],
+              "proxyauth": 0,
+              "proxyenabled": 0,
+              "proxypass": "",
+              "proxyport": "",
+              "proxyserver": "",
+              "proxyuser": "",
+              "pslockdown": 0,
+              "publishers": [
+                {
+                  "comment": "",
+                  "name": "Microsoft Corporation"
+                },
+                {
+                  "comment": "",
+                  "name": "Microsoft Dynamic Code Publisher"
+                },
+                {
+                  "comment": "",
+                  "name": "Microsoft Windows"
+                }
+              ],
+              "python": 1,
+              "reflection": 0,
+              "script_custom": 0,
+              "script_enabled": 2,
+              "selfservice": 0,
+              "selfupgrade": 0,
+              "shellscript": 0,
+              "targetvers": [
+                {
+                  "linux": "",
+                  "macos": "6.1.0.8047",
+                  "windows": ""
+                }
+              ],
+              "trusted_config": false,
+              "trusted_upload": 0,
+              "vbscript": 1,
+              "windowsinstaller": 1,
+              "windowsscriptcomponent": 1
+            }
+            }
+          ` }}
+  - path: /v1/group/policies
+    methods: ['POST']
+    query_params:
+      groupid: 7fc5df84-d611-44c9-a690-4a4f1bb6a9f1
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          X-ApiKey:
+            - my-secret-api-key
+        body: |
+          {{ minify_json `
+             {
+              "error": "Success",
+              "response": {
+                "agentstopcode": "",
+                "applications": [
+                  {
+                    "applicationid": "1570641683",
+                    "name": "Airlock Audit Agents",
+                    "version": "1.0.2"
+                  }
+                ],
+                "auditmode": 1,
+                "autoupdate": 1,
+                "baselines": [
+                  {
+                    "baselineid": "1579253944",
+                    "name": "Windows 11 22H2 x64 August 2023 (Reference)"
+                  },
+                  {
+                    "baselineid": "1569827623",
+                    "name": "Windows Server 2019 x64 June 2023 (Reference)"
+                  }
+                ],
+                "batch": 1,
+                "blocklists": null,
+                "check_ea": 0,
+                "command": 1,
+                "commlist": [
+                  {
+                    "ip": "216.160.83.58",
+                    "name": "prod.server.net"
+                  }
+                ],
+                "commlistid": "prod-communication-list",
+                "compiledhtml": 0,
+                "dylib": 1,
+                "enable_notifications": 1,
+                "extensions_enabled": 1,
+                "generalisation": 0,
+                "gprocesses": null,
+                "groupid": "7fc5df84-d611-44c9-a690-4a4f1bb6a9f1",
+                "hashdb_ver": "220",
+                "htmlapplication": 1,
+                "javaapplication": 0,
+                "javascript": 1,
+                "modreload": 0,
+                "name": "Engineering Workstations",
+                "notification_message": "%filename% was blocked by Application Control Policy. Contact IT support if unexpected behavior occurs.",
+                "parent": "Main Airlock Groups",
+                "paths": [
+                  {
+                    "comment": "",
+                    "name": "C:\\Program Files\\Common Files\\*.dll"
+                  },
+                  {
+                    "comment": "",
+                    "name": "C:\\Temp\\*.bat"
+                  },
+                  {
+                    "comment": "",
+                    "name": "C:\\Users\\*\\AppData\\Roaming\\*.vbs"
+                  }
+                ],
+                "policyver": "319",
+                "poll_time": 900,
+                "powershell": 1,
+                "pprocesses": [
+                  {
+                    "comment": "trusted inherited process",
+                    "name": "parentproc.exe"
+                  }
+                ],
+                "proxyauth": 0,
+                "proxyenabled": 0,
+                "proxypass": "",
+                "proxyport": "",
+                "proxyserver": "",
+                "proxyuser": "",
+                "pslockdown": 0,
+                "publishers": [
+                  {
+                    "comment": "",
+                    "name": "Adobe Systems Inc."
+                  },
+                  {
+                    "comment": "",
+                    "name": "VMware Inc."
+                  }
+                ],
+                "python": 1,
+                "reflection": 0,
+                "script_custom": 0,
+                "script_enabled": 1,
+                "selfservice": 0,
+                "selfupgrade": 0,
+                "shellscript": 0,
+                "targetvers": [
+                  {
+                    "linux": "2.4.3",
+                    "macos": "",
+                    "windows": "7.3.0.6125"
+                  }
+                ],
+                "trusted_config": "False",
+                "trusted_upload": 0,
+                "vbscript": 1,
+                "windowsinstaller": 1,
+                "windowsscriptcomponent": 0
+              }
+            }
+          ` }}

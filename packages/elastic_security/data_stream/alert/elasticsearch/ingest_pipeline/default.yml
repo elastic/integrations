@@ -48,6 +48,50 @@ processors:
       tag: convert_user_id
       type: string
       ignore_missing: true
+  - foreach:
+      field: process.supplemental_groups
+      tag: foreach_process_supplemental_groups
+      if: ctx.process?.supplemental_groups instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_process_supplemental_groups_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: process.group_leader.supplemental_groups
+      tag: foreach_group_leader_supplemental_groups
+      if: ctx.process?.group_leader?.supplemental_groups instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_process_group_leader_supplemental_groups_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: process.parent.supplemental_groups
+      tag: foreach_parent_supplemental_groups
+      if: ctx.process?.parent?.supplemental_groups instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_process_parent_supplemental_groups_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: process.session_leader.supplemental_groups
+      tag: foreach_session_leader_supplemental_groups
+      if: ctx.process?.session_leader?.supplemental_groups instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_process_session_leader_supplemental_groups_id_to_string
+          type: string
+          ignore_missing: true
   - convert:
       field: group.id
       tag: convert_group_id

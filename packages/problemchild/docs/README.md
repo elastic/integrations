@@ -33,19 +33,15 @@ For more detailed information refer to the following blogs and webinar:
       }
       ```
     - If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
-    - If using an Elastic Beat such as Winlogbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `winlogbeat.yml`.
-1. **Add the required mappings to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template.
-    ![Component Templates](../img/component-templates.png)
+    - If using an Elastic Beat such as Winlogbeat, see the next step on how to add the ingest pipeline as part of the component template
+1. **Add the required mappings to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template if present. ![Component Templates](../img/component-templates.png)
+     
+    #### Elastic Defend
     - If the `@custom` component template does not exist, you can execute the following command in the Dev Console to create it and then continue to the **Rollover** section in these instructions. Be sure to change `<VERSION>` to the current package version.
       ```
       PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
       {
         "template": {
-          "settings": {
-            "index": {
-              "default_pipeline": "<VERSION>-problem_child_ingest_pipeline"
-            }
-          },
           "mappings": {
             "properties": {
               "blocklist_label": {
@@ -69,14 +65,6 @@ For more detailed information refer to the following blogs and webinar:
       ```
     - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
-    - On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
-      ```
-      {
-        "index": {
-          "default_pipeline": "<VERSION>-problem_child_ingest_pipeline"
-        }
-      }
-      ```
     - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
     ![Component Templates](../img/field1.png)
     - Then create an `Object` field for `problemchild`. 
@@ -88,7 +76,42 @@ For more detailed information refer to the following blogs and webinar:
     - Your component mappings should look like the following:
     ![Component Templates](../img/fields-complete.png)
     - Click **Review** then **Save Component Template**.
-1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up. The deault index pattern for Elastic Defend is `logs-endpoint.events.process-default`.
+   
+   #### Winlogbeat
+    - If using an Elastic Beat such as Winlogbeat, create a new component template with a name like `winlogbeat-problemchild-<VERSION>`, replacing `<VERSION>` with the current package version. You can do this by executing the following command in the Dev Tools:
+      ```
+      PUT _component_template/winlogbeat-problemchild-<VERSION>
+      {
+        "template": {
+          "mappings": {
+            "properties": {
+              "blocklist_label": {
+                "type": "long"
+              },
+              "problemchild": {
+                "type": "object",
+                "properties": {
+                  "prediction": {
+                    "type": "long"
+                  },
+                  "prediction_probability": {
+                    "type": "float"
+                  }
+                }
+              }
+            }
+          },
+          "settings": {
+            "index": {
+              "final_pipeline": "<VERSION>-problem_child_ingest_pipeline"
+            }
+          }
+        }
+      }
+      ```
+    - Then, after creating the component template, you will need to add it to the appropriate index template. Navigate to **Stack Management > Data > Index Management > Index Templates**. Find the index template `winlogbeat-{WINLOGBEAT_VERSION}` for the Winlogbeat version that you are using and click **Edit**. Then click on **Component templates**. Add the `winlogbeat-problemchild-<VERSION>` component template that was created in the previous step. Click **Review template** then **Save template**. 
+
+1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up. The deault index pattern for Elastic Defend is `logs-endpoint.events.process-default` and `winlogbeat-<WINLOGBEAT_VERSION>` for Winlogbeat.
     ```
     POST INDEX_NAME/_rollover
     ```

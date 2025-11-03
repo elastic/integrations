@@ -180,6 +180,135 @@ processors:
       tag: rename_data
       target_field: checkpoint_email.event.data
       ignore_missing: true
+  - grok:
+      field: checkpoint_email.event.data
+      tag: grok_parse_data
+      ignore_missing: true
+      patterns:
+        - "^#%{DATA:_temp.scan_information} attempt detected in an email from #%{DATA:_temp.source_user} - '#%{DATA:_temp.email_subject}' \\(#%{DATA:_temp.destination_user}'s mailbox\\)$"
+        - "^%{DATA}(A user|has detected) #%{DATA:_temp.scan_information} in an email from #%{DATA:_temp.source_user} - '#%{DATA:_temp.email_subject}' \\(#%{DATA:_temp.destination_user}'s mailbox\\)$"
+        - "^%{DATA} has detected malicious attachment\\(s\\) in '#%{DATA:_temp.email_subject}' \\(#%{DATA:_temp.destination_user}'s mailbox\\)$"
+        - "^User #%{DATA:_temp.destination_user} reported a phishing email #%{DATA:_temp.email_subject}$"
+        - "^Unusual geo activity for #%{DATA:_temp.user_address}: #%{DATA:_temp.user_action} for the first time from %{DATA:checkpoint_email.event.user.country}$"
+        - '^%{GREEDYDATA}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: _temp.scan_information
+      tag: json_temp_scan_information
+      if: ctx._temp?.scan_information != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: checkpoint_email.event.scan_type
+      tag: set_scan_type_from_temp_scan_information_entity_type
+      copy_from: _temp.scan_information.entity_type
+      ignore_empty_value: true
+  - json:
+      field: _temp.email_subject
+      tag: json_temp_email_subject
+      if: ctx._temp?.email_subject != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: checkpoint_email.event.email_subject
+      tag: set_event_email_subject_from_temp_email_subject_label
+      copy_from: _temp.email_subject.label
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_event_email_subject
+      copy_from: checkpoint_email.event.email_subject
+      ignore_empty_value: true
+  - json:
+      field: _temp.destination_user
+      tag: json_temp_destination_user
+      if: ctx._temp?.destination_user != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: checkpoint_email.event.destination_address
+      tag: set_event_destination_address_from_temp_destination_user_label
+      copy_from: _temp.destination_user.label
+      ignore_empty_value: true
+      if: ctx._temp?.destination_user?.label != '<Unknown>'
+  - append:
+      field: email.to.address
+      tag: append_destination_address_into_email_to_address
+      value: '{{{checkpoint_email.event.destination_address}}}'
+      allow_duplicates: false
+      if: ctx.checkpoint_email?.event?.destination_address != null
+  - set:
+      field: destination.user.email
+      tag: set_destination_user_email_from_event_destination_address
+      copy_from: checkpoint_email.event.destination_address
+      ignore_empty_value: true
+  # Keeping ignore_failure: true because we do not want to log a failure when unable to parse the user name and domain.
+  - dissect:
+      field: destination.user.email
+      tag: dissect_destination_user_email
+      pattern: '%{destination.user.name}@%{destination.user.domain}'
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.user
+      tag: append_destination_address_into_related_user
+      value: '{{{checkpoint_email.event.destination_address}}}'
+      allow_duplicates: false
+      if: ctx.checkpoint_email?.event?.destination_address != null
+  - json:
+      field: _temp.user_address
+      tag: json_temp_user_address
+      if: ctx._temp?.user_address != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: checkpoint_email.event.user.address
+      tag: set_event_user_address_from_temp_user_address_label
+      copy_from: _temp.user_address.label
+      ignore_empty_value: true
+      if: ctx._temp?.user_address?.label != '<Unknown>'
+  - set:
+      field: user.email
+      tag: set_user_email_from_user_address
+      copy_from: checkpoint_email.event.user.address
+      ignore_empty_value: true
+  # Keeping ignore_failure: true because we do not want to log a failure when unable to parse the user name and domain.
+  - dissect:
+      field: user.email
+      tag: dissect_user_email
+      pattern: '%{user.name}@%{user.domain}'
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.user
+      tag: append_user_address_into_related.user
+      value: '{{{checkpoint_email.event.user.address}}}'
+      allow_duplicates: false
+      if: ctx.checkpoint_email?.event?.user?.address != null
+  - json:
+      field: _temp.user_action
+      tag: json_temp_user_action
+      if: ctx._temp?.user_action != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: checkpoint_email.event.user.action
+      tag: set_event_user_action_from_temp_user_action_label
+      copy_from: _temp.user_action.label
+      ignore_empty_value: true
   - rename:
       field: json.description
       tag: rename_description
@@ -251,6 +380,13 @@ processors:
       tag: set_source_user_email_from_sender_address
       copy_from: checkpoint_email.event.sender_address
       ignore_empty_value: true
+  # Keeping ignore_failure: true because we do not want to log a failure when unable to parse the user name and domain.
+  - dissect:
+      field: source.user.email
+      tag: dissect_source_user_email
+      pattern: '%{source.user.name}@%{source.user.domain}'
+      ignore_missing: true
+      ignore_failure: true
   - set:
       field: email.sender.address
       tag: set_email_sender_address_from_sender_address
@@ -313,12 +449,16 @@ processors:
         - checkpoint_email.event.created
         - checkpoint_email.event.severity
         - checkpoint_email.event.sender_address
+        - checkpoint_email.event.destination_address
+        - checkpoint_email.event.email_subject
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
-      field: json
-      tag: remove_json
+      field:
+        - json
+        - _temp
+      tag: remove_json_and_temp
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values

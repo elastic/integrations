@@ -1,0 +1,78 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{metrics_path}}
+namespace: metrics
+period: {{period}}
+http_method: {{http_method}}
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+ssl.verification_mode: {{ssl.verification_mode}}
+{{/if}}
+{{#if ssl.certificate_authorities}}
+ssl.certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+{{#if ssl.certificate}}
+ssl.certificate: {{ssl.certificate}}
+{{/if}}
+{{#if ssl.key}}
+ssl.key: {{ssl.key}}
+{{/if}}
+{{#if ssl.key_passphrase}}
+ssl.key_passphrase: {{ssl.key_passphrase}}
+{{/if}}
+{{#if ssl.ca_trusted_fingerprint}}
+ssl.ca_trusted_fingerprint: {{ssl.ca_trusted_fingerprint}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+jmx.mappings: 
+  # Raft metrics
+  - mbean: 'kafka.server:type=raft-metrics'
+    attributes:
+      - attr: append-records-rate
+        field: append_records_rate
+      - attr: commit-latency-avg
+        field: commit_latency_avg
+      - attr: commit-latency-max
+        field: commit_latency_max
+      - attr: current-epoch
+        field: current_epoch
+      - attr: current-leader
+        field: current_leader
+      - attr: current-vote
+        field: current_vote
+      - attr: fetch-records-rate
+        field: fetch_records_rate
+      - attr: high-watermark
+        field: high_watermark
+      - attr: log-end-epoch
+        field: log_end_epoch
+      - attr: log-end-offset
+        field: log_end_offset
+      - attr: number-unknown-voter-connections
+        field: number_unknown_voter_connections
+      - attr: poll-idle-ratio-avg
+        field: poll_idle_ratio_avg
+      - attr: current-state
+        field: current_state
+      - attr: number-of-voters
+        field: number_of_voters
+{{#if headers}}
+{{headers}}
+{{/if}}
+{{#if connect_timeout}}
+connect_timeout: {{connect_timeout}}
+{{/if}}
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

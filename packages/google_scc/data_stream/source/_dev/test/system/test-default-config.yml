@@ -1,4 +1,7 @@
 input: httpjson
+skip:
+  reason: "The fleet health status changes to degraded when the HTTPJSON template's value evaluation comes up empty, which leads to system test failures but does not interrupt the data flow."
+  link: https://github.com/elastic/beats/issues/45664
 service: google_scc
 vars:
   credentials_type: credentials_json
@@ -19,6 +22,7 @@ vars:
   id: xxxx
 data_stream:
   vars:
+    api_version: v1
     url: http://{{Hostname}}:{{Port}}
     preserve_original_event: true
     preserve_duplicate_custom_fields: true
