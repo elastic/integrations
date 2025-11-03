@@ -1240,7 +1240,7 @@ processors:
   - set:
       field: cloud.service.name
       tag: set_cloud_service_name
-      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'aws'
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'aws' && ctx.qualys_gav?.asset?.cloud_provider?.aws?.ec2 != null
       value: ec2
 
   # Map/Convert Azure specific fields to ECS fields
@@ -1277,7 +1277,7 @@ processors:
   - set:
       field: cloud.service.name
       tag: set_cloud_service_name
-      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure'
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.azure?.vm != null
       value: vm
 
   # Map/Convert GCP specific fields to ECS fields
@@ -1325,16 +1325,13 @@ processors:
       if: ctx._conf?.want_provider_cloud == true
       ignore_missing: true
       on_failure:
-        - remove:
-            field: cloud.region
-            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.service.name
       tag: set_cloud_service_name
-      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'gcp'
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'gcp' && ctx.qualys_gav?.asset?.cloud_provider?.gcp?.compute != null
       value: compute
 
   # Convert IBM specific fields
@@ -1374,6 +1371,11 @@ processors:
       copy_from: qualys_gav.asset.cloud_provider.ibm.virtual_server.location
       if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.provider == 'azure' && ctx.qualys_gav?.asset?.cloud_provider?.ibm?.virtual_server != null
+      value: virtual_server
 
   # Map risk scores
   - convert:
