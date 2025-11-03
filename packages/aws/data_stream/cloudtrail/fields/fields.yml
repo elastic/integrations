@@ -202,7 +202,7 @@
       fields:
         - name: id
           type: keyword
-
+          description: "Legacy field containing all target entity identifiers. For type-specific entities, use user.target.entity.id, service.target.entity.id, host.target.entity.id, or entity.target.id instead."
 - name: actor
   type: group
   fields:
@@ -211,3 +211,70 @@
       fields:
         - name: id
           type: keyword
+          description: "Legacy field containing the actor entity identifier. For type-specific entities, use user.entity.id, service.entity.id, host.entity.id, or entity.id instead."
+- name: user
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Unique identifier for IAM users and roles acting as principals in CloudTrail events. Contains ARNs for IAM users, assumed roles, and federated users."
+    - name: target
+      type: group
+      fields:
+        - name: entity
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: "Unique identifier for IAM users, roles, groups, and policies targeted by CloudTrail events. Includes ARNs, usernames, group names, role names, access key IDs, and MFA serial numbers."
+- name: service
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Unique identifier for AWS services acting as principals in CloudTrail events. Contains service identifiers like 'lambda.amazonaws.com' or 'ec2.amazonaws.com'."
+    - name: target
+      type: group
+      fields:
+        - name: entity
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: "Unique identifier for AWS service resources targeted by CloudTrail events. Includes ARNs and IDs for resources like S3 buckets, Lambda functions, KMS keys, RDS databases, CloudWatch logs, SNS topics, security groups, VPCs, and other AWS service resources."
+- name: host
+  type: group
+  fields:
+    - name: entity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Unique identifier for EC2 instances acting as principals in CloudTrail events. Contains instance IDs or ARNs."
+    - name: target
+      type: group
+      fields:
+        - name: entity
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: "Unique identifier for compute resources targeted by CloudTrail events. Includes EC2 instance IDs, EBS volume IDs, snapshot IDs, and AMI IDs."
+- name: entity
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: "Generic entity identifier for principals that don't fit into specific categories (user, service, host). Used as a fallback for unknown or miscellaneous entity types."
+    - name: target
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Generic entity identifier for targets that don't fit into specific categories (user, service, host). Used as a fallback for unknown resources, account IDs, and miscellaneous entity types."
