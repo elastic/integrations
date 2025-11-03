@@ -17,19 +17,19 @@ processors:
   - json:
       field: event.original
       tag: json_event_original
-      target_field: netskope.alerts_or_events
+      target_field: netskope.alerts_events_v2
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alerts_v2" }}'
-      if: ctx.netskope?.alerts_or_events?.alert == "yes"
+      if: ctx.netskope?.alerts_events_v2?.alert == "yes"
       tag: pipeline_alerts
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_events_v2" }}'
-      if: ctx.netskope?.alerts_or_events?.alert == null || ctx.netskope.alerts_or_events.alert == "no"
+      if: ctx.netskope?.alerts_events_v2?.alert == null || ctx.netskope.alerts_events_v2.alert == "no"
       tag: pipeline_events
       ignore_missing_pipeline: true
   - append:
