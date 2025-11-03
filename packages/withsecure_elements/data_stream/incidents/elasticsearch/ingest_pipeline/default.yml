@@ -11,23 +11,23 @@ processors:
       ignore_missing: true
   - json:
       field: event.original
-      target_field: _temp
+      target_field: json
       if: ctx.event?.original != null && ctx.event.original instanceof String
       ignore_failure: true
       tag: json_decode
       description: Decode JSON from event.original
   - script:
       lang: painless
-      description: Move JSON fields from _temp to root context
+      description: Move JSON fields from json to root context
       tag: move_json_fields
       source: |
-        if (ctx._temp != null) {
-          for (entry in ctx._temp.entrySet()) {
+        if (ctx.json != null) {
+          for (entry in ctx.json.entrySet()) {
             ctx[entry.getKey()] = entry.getValue();
           }
-          ctx.remove('_temp');
+          ctx.remove('json');
         }
-      if: ctx._temp != null
+      if: ctx.json != null
   - set:
       field: event.dataset
       value: withsecure_elements.incidents
