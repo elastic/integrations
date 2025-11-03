@@ -33,7 +33,7 @@ program: |
       "id": state.?interval.id.orValue(uuid()),
     }
   })).as(state,
-    (has(state.worklist) && size(state.worklist) > 0 
+    (has(state.worklist) && size(state.worklist) > 0
     ?
       state
     :
@@ -61,10 +61,10 @@ program: |
             (
               has(resp.Body) && size(resp.Body) != 0
               ?
-                (resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
-                  !has(ahd_body.decode_xml_error_ahd) 
+                (resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_ahd'), "decode_xml_error_ahd").as(ahd_body,
+                  !has(ahd_body.decode_xml_error_ahd)
                   ?
-                    (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue() 
+                    (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue()
                     ?
                       ({
                         "worklist": {
@@ -78,7 +78,7 @@ program: |
                           ),
                           "KB_MAP": {},
                         },
-                        "next_page": { 
+                        "next_page": {
                           ?"link": ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL
                         },
                         "next": 0,
@@ -112,7 +112,7 @@ program: |
                     }
                 )))
               :
-                // Qualys sends 200 success but with no response body. 
+                // Qualys sends 200 success but with no response body.
                 // Handling this case as okay.
                 {
                   "events": [],
@@ -176,7 +176,7 @@ program: |
         ))
       )
     ).as(state, state.with(
-      !has(state.worklist) ? state : 
+      !has(state.worklist) ? state :
         has(state.worklist.HOST_QID_LIST) && size(state.worklist.HOST_QID_LIST[0]) > 0 ?
           request("GET", state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/?" +
             {
@@ -189,8 +189,8 @@ program: |
               "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
             }
           }).do_request().as(resp, (resp.StatusCode == 200 ?
-            resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_kb'), "decode_xml_error_kb").as(kb_body, 
-              !has(kb_body.decode_xml_error_kb) 
+            resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_kb'), "decode_xml_error_kb").as(kb_body,
+              !has(kb_body.decode_xml_error_kb)
               ?
                 (
                   has(kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
@@ -203,14 +203,14 @@ program: |
                           // Ready to publish events as last set of QIDs for this batch of hosts have been collected. Reset worklist.
                           {
                             "events": (
-                              state.worklist.AHD_LIST.map(h, 
+                              state.worklist.AHD_LIST.map(h,
                                 h.DETECTION_LIST.DETECTION.map(v,
                                   h.with({
                                     "DETECTION_LIST": v,
-                                    "KNOWLEDGE_BASE": try(wl_kb_map[v.QID], "map_has_no_key_error").as(kb_qid, 
-                                      !has(kb_qid.map_has_no_key_error)? 
+                                    "KNOWLEDGE_BASE": try(wl_kb_map[v.QID], "map_has_no_key_error").as(kb_qid,
+                                      !has(kb_qid.map_has_no_key_error)?
                                         kb_qid
-                                      : 
+                                      :
                                         {}
                                     ),
                                   })
@@ -250,7 +250,7 @@ program: |
                       "worklist": {},
                       "want_more": false,
                     }
-                ).as(state, 
+                ).as(state,
                   state.want_more && size(state.events) == 0 ?
                     state.with({"events": [{"message": "retry"}]})
                   :
