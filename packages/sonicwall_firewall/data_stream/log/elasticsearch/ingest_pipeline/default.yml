@@ -108,23 +108,27 @@ processors:
           - to: sonicwall.firewall.gcat
           - to: sonicwall.firewall.event_group_category
             map:
-              '1': Value
-              '2': System
-              '3': Log
-              '4': Security Services
-              '5': Users
-              '6': Firewall Settings
-              '7': Network
-              '8': VPN
-              '9': High Availability
-              '10': 3G/4G, Modem, and Module Firewall
+              '1': System
+              '2': Log
+              '3': Security Services
+              '4': Users
+              '5': Firewall Settings
+              '6': Network
+              '7': VPN
+              '8': High Availability
+              '9': WWAN Modem
+              '10': Firewall
               '11': Wireless
               '12': VoIP
               '13': SSL VPN
               '14': Anti-Spam
               '15': WAN Acceleration
-              '16': SD-WAN
-              '17': Multi-Tenancy
+              '16': Object
+              '17': SD-WAN
+              '18': Multi-Instance
+              '19': Unified Policy Engine
+              '20': WireGuard
+              '21': Cloud Secure Edge
         id:
           - to: observer.name
         m:
@@ -167,6 +171,8 @@ processors:
           - to: destination.packets
         rule:
           - to: rule.id
+        uuid:
+          - to: rule.uuid
         sent:
           - to: source.bytes
         spkt:
@@ -947,7 +953,7 @@ processors:
           "1315": config-delete # 1315,Network,NAT Policy,---,INFO,---,NAT Policy Delete,NAT policy deleted
 
           # TCP
-          "36": connection-end # 36,Network,TCP,TCP,NOTICE,7209,TCP Packets Dropped,TCP connection dropped
+          "36": packet-dropped # 36,Network,TCP,TCP,NOTICE,7209,TCP Packets Dropped,TCP connection dropped
           "48": packet-dropped # 48,Network,TCP,Debug,DEBUG,7218,Out of Order Packets Dropped,Out-of-order command packet dropped
           "173": connection-denied # 173,Network,TCP,LAN TCP,NOTICE,7222,LAN TCP Deny,TCP connection from LAN denied
           "181": packet-dropped # 181,Network,TCP,Debug,DEBUG,7005,TCP FIN Drop,TCP FIN packet dropped
