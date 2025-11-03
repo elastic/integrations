@@ -121,9 +121,11 @@ processors:
       ignore_missing: true
       tag: rename_user_agent
   - user_agent:
+      tag: user_agent_user_agent_original_b5325863
       field: user_agent.original
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_sophos_utm_url_to_url_f29fd9d9
       field: sophos.utm.url
       target_field: url
       remove_if_successful: true
@@ -195,6 +197,7 @@ processors:
 
   # Converts all kebab-case key names to snake_case
   - foreach:
+      tag: foreach_sophos_utm_94c822ba
       field: sophos.utm
       processor:
         gsub:
@@ -313,8 +316,11 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
