@@ -760,12 +760,159 @@ processors:
         enrichElasticLoadBalancing(enrichCtx, eventSource, eventName);
         enrichDynamoDB(enrichCtx, eventSource, eventName);
 
+        // Classify target entities by type
         if (!enrichCtx.target.isEmpty()) {
+          // Always set the legacy target.entity.id for backward compatibility
           field("target.entity.id").set(enrichCtx.target);
+          
+          def userTargets = new TreeSet();
+          def hostTargets = new TreeSet();
+          def serviceTargets = new TreeSet();
+          def genericTargets = new TreeSet();
+
+          for (def targetValue : enrichCtx.target) {
+            if (targetValue == null || targetValue == "") {
+              continue;
+            }
+
+            String target = targetValue.toString();
+            boolean classified = false;
+
+            // User-related: IAM users, roles, groups, policies, access keys, MFA devices
+            if (target.contains(":user/") || 
+                target.contains(":role/") || 
+                target.contains(":assumed-role/") ||
+                target.contains(":federated-user/") ||
+                target.contains(":group/") ||
+                target.contains(":policy/") ||
+                target.contains(":mfa/") ||
+                target.toLowerCase().contains("username") ||
+                target.toLowerCase().contains("groupname") ||
+                target.toLowerCase().contains("rolename") ||
+                (target.length() == 20 && target.startsWith("AKIA")) || // Access Key ID pattern
+                (target.startsWith("arn:") && target.contains(":serialNumber:"))) {
+              userTargets.add(target);
+              classified = true;
+            }
+            // Host-related: EC2 instances, volumes, snapshots, AMIs
+            else if (target.startsWith("i-") ||  // EC2 instance ID
+                     target.startsWith("vol-") ||  // EBS volume ID
+                     target.startsWith("snap-") ||  // Snapshot ID
+                     target.startsWith("ami-") ||  // AMI ID
+                     target.contains(":instance/") ||
+                     target.contains(":volume/") ||
+                     target.contains(":snapshot/") ||
+                     target.contains(":image/")) {
+              hostTargets.add(target);
+              classified = true;
+            }
+            // Service-related: Most AWS resources (S3 buckets, Lambda functions, KMS keys, etc.)
+            else if (target.contains(":stack/") ||  // CloudFormation
+                     target.contains(":stack-set/") ||
+                     target.contains(":trail/") ||  // CloudTrail
+                     target.contains(":configuration-recorder/") ||  // Config
+                     target.contains(":file-system/") ||  // EFS
+                     target.contains(":mount-target/") ||
+                     target.contains(":rule/") ||  // EventBridge/CloudWatch Events
+                     target.contains(":detector/") ||  // GuardDuty
+                     target.contains(":key/") ||  // KMS
+                     target.contains(":function/") ||  // Lambda
+                     target.contains(":log-group/") ||  // CloudWatch Logs
+                     target.contains(":log-stream/") ||
+                     target.contains(":alarm/") ||  // CloudWatch Alarms
+                     target.contains(":db/") ||  // RDS
+                     target.contains(":cluster/") ||
+                     target.contains(":global-cluster/") ||
+                     target.contains(":trust-anchor/") ||  // IAM Roles Anywhere
+                     target.contains(":resolver-query-log-config/") ||  // Route53 Resolver
+                     target.contains("arn:aws:s3:") ||  // S3
+                     target.contains(":secret:") ||  // Secrets Manager
+                     target.contains(":parameter/") ||  // SSM Parameter
+                     target.contains(":document/") ||  // SSM Document
+                     target.contains(":session/") ||  // SSM Session
+                     target.contains(":webacl/") ||  // WAFv2
+                     target.contains(":rulegroup/") ||
+                     target.contains(":ipset/") ||
+                     target.contains(":topic:") ||  // SNS
+                     target.contains(":model/") ||  // Bedrock
+                     target.contains(":loadbalancer/") ||  // ELB
+                     target.contains(":table/") ||  // DynamoDB
+                     target.contains(":security-group/") ||  // EC2 Security Groups
+                     target.contains(":network-interface/") ||  // ENI
+                     target.contains(":vpc/") ||  // VPC
+                     target.contains(":subnet/") ||  // Subnet
+                     target.contains(":network-acl/") ||  // Network ACL
+                     target.contains(":dhcp-options/") ||
+                     target.startsWith("sg-") ||  // Security Group ID
+                     target.startsWith("sgr-") ||  // Security Group Rule ID
+                     target.startsWith("eni-") ||  // ENI ID
+                     target.startsWith("vpc-") ||  // VPC ID
+                     target.startsWith("subnet-") ||  // Subnet ID
+                     target.startsWith("acl-") ||  // Network ACL ID
+                     target.startsWith("rtb-") ||  // Route Table ID
+                     target.startsWith("igw-") ||  // Internet Gateway ID
+                     target.startsWith("nat-")) {  // NAT Gateway ID
+              serviceTargets.add(target);
+              classified = true;
+            }
+
+            // Generic fallback for everything else (including account IDs)
+            if (!classified) {
+              genericTargets.add(target);
+            }
+          }
+
+          // Set the appropriate type-specific entity fields
+          if (!userTargets.isEmpty()) {
+            field("user.target.entity.id").set(userTargets);
+          }
+          if (!hostTargets.isEmpty()) {
+            field("host.target.entity.id").set(hostTargets);
+          }
+          if (!serviceTargets.isEmpty()) {
+            field("service.target.entity.id").set(serviceTargets);
+          }
+          if (!genericTargets.isEmpty()) {
+            field("entity.target.id").set(genericTargets);
+          }
+
           enrichCtx.related.addAll(enrichCtx.target);
         }
 
-        field("actor.entity.id").set([ enrichCtx.actor ]);
+        // Map actor to appropriate entity type based on identity
+        if (enrichCtx.actor != null) {
+          // Always set the legacy actor.entity.id for backward compatibility
+          field("actor.entity.id").set([ enrichCtx.actor ]);
+          
+          def userType = $("json.userIdentity.type", null);
+          
+          if (userType == "AWSService") {
+            // AWS services -> service.entity.id
+            field("service.entity.id").set([ enrichCtx.actor ]);
+          } else if (userType == "AssumedRole" || 
+                     (enrichCtx.actor instanceof String && 
+                      (enrichCtx.actor.contains(":role/") || 
+                       enrichCtx.actor.contains(":assumed-role/")))) {
+            // IAM roles (including assumed roles) -> user.entity.id
+            field("user.entity.id").set([ enrichCtx.actor ]);
+          } else if (enrichCtx.actor instanceof String && 
+                     (enrichCtx.actor.contains(":user/") || 
+                      enrichCtx.actor.contains(":federated-user/"))) {
+            // IAM users -> user.entity.id
+            field("user.entity.id").set([ enrichCtx.actor ]);
+          } else if (enrichCtx.actor instanceof String && 
+                     (enrichCtx.actor.contains(":instance/") || 
+                      enrichCtx.actor.startsWith("i-"))) {
+            // EC2 instances -> host.entity.id
+            field("host.entity.id").set([ enrichCtx.actor ]);
+          } else if (userType == "IAMUser" || userType == "Root") {
+            // IAM users and root -> user.entity.id
+            field("user.entity.id").set([ enrichCtx.actor ]);
+          } else {
+            // Fallback for other types -> entity.id
+            field("entity.id").set([ enrichCtx.actor ]);
+          }
+        }
 
         field("related.entity").set(enrichCtx.related);
 

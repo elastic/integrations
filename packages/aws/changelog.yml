@@ -1,4 +1,28 @@
 # newer versions go on top
+- version: "4.5.0"
+  changes:
+    - description: |
+        Add type-specific entity fields to CloudTrail data stream for enhanced graph visualization.
+        The integration now populates both legacy fields and new type-specific fields:
+        
+        Actor entities are now classified and populated into:
+        - `user.entity.id` for IAM users, roles, and federated users
+        - `service.entity.id` for AWS services
+        - `host.entity.id` for EC2 instances
+        - `entity.id` for other entity types
+        - `actor.entity.id` continues to be populated for backward compatibility
+        
+        Target entities are now classified and populated into:
+        - `user.target.entity.id` for IAM users, roles, groups, policies
+        - `service.target.entity.id` for AWS service resources (S3, Lambda, KMS, etc.)
+        - `host.target.entity.id` for compute resources (EC2, EBS, snapshots, AMIs)
+        - `entity.target.id` for other target types
+        - `target.entity.id` continues to be populated for backward compatibility
+        
+        Existing dashboards and queries using `actor.entity.id` and `target.entity.id` continue to work unchanged.
+        New implementations should use the type-specific fields for better entity classification.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/12345
 - version: "4.4.0"
   changes:
     - description: Prefer set with copy_from.
