@@ -1419,6 +1419,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
+| crowdstrike.AntiTamperStateFlag |  | keyword |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
@@ -1427,6 +1428,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AsepIndex |  | keyword |
 | crowdstrike.AsepValueType |  | keyword |
 | crowdstrike.AsepWrittenCount |  | long |
+| crowdstrike.AssemblyFlags |  | keyword |
+| crowdstrike.AssemblyId |  | keyword |
+| crowdstrike.AssemblyName |  | keyword |
 | crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.Attacks.Tactic |  | keyword |
 | crowdstrike.Attacks.Technique |  | keyword |
@@ -1439,6 +1443,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.AuthenticodeHashData |  | keyword |
 | crowdstrike.AuthenticodeHashDataSHA256 |  | keyword |
 | crowdstrike.BaseReachableTime |  | keyword |
+| crowdstrike.BatchDataNumber |  | keyword |
+| crowdstrike.BatchDataTotal |  | keyword |
+| crowdstrike.BatchTimestamp |  | date |
 | crowdstrike.BinaryExecutableWrittenCount |  | long |
 | crowdstrike.BiosChanged |  | match_only_text |
 | crowdstrike.BiosManufacturer |  | keyword |
@@ -1470,6 +1477,15 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.BoundedCount |  | long |
 | crowdstrike.BoundingLimitCount |  | long |
 | crowdstrike.BoundingLimitDuration |  | keyword |
+| crowdstrike.BrowserExtensionId |  | keyword |
+| crowdstrike.BrowserExtensionInstallMethod |  | keyword |
+| crowdstrike.BrowserExtensionStatusEnabled |  | keyword |
+| crowdstrike.BrowserFileHash |  | keyword |
+| crowdstrike.BrowserFilePath |  | keyword |
+| crowdstrike.BrowserName |  | keyword |
+| crowdstrike.BrowserProfileId |  | keyword |
+| crowdstrike.BrowserProfileName |  | keyword |
+| crowdstrike.BrowserVersion |  | keyword |
 | crowdstrike.BundleID |  | keyword |
 | crowdstrike.CLICreationCount |  | long |
 | crowdstrike.CNAMERecords |  | keyword |
@@ -1490,6 +1506,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ChassisType |  | keyword |
 | crowdstrike.ClientComputerName |  | keyword |
 | crowdstrike.ClientId |  | match_only_text |
+| crowdstrike.ClientProcessStartKey |  | keyword |
 | crowdstrike.CommandCount |  | match_only_text |
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
@@ -1516,6 +1533,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ContextBaseFileName |  | keyword |
 | crowdstrike.ContextImageFileName |  | keyword |
 | crowdstrike.ContextProcessId |  | keyword |
+| crowdstrike.ContextProcessTagsAsString |  | keyword |
 | crowdstrike.ContextTimeStamp | System local time of event creation. | date |
 | crowdstrike.CpuClockSpeed |  | keyword |
 | crowdstrike.CpuFeaturesMask |  | keyword |
@@ -1552,6 +1570,8 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.DnsResponseType |  | keyword |
 | crowdstrike.DocumentFileWrittenCount |  | long |
 | crowdstrike.DomainSid |  | keyword |
+| crowdstrike.DotnetModuleFlags |  | keyword |
+| crowdstrike.DotnetModuleId |  | keyword |
 | crowdstrike.DownloadPath |  | keyword |
 | crowdstrike.DownloadPort |  | long |
 | crowdstrike.DownloadServer |  | keyword |
@@ -1580,7 +1600,9 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.EnvironmentVariablesString |  | match_only_text |
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
+| crowdstrike.EtwProviderType |  | keyword |
 | crowdstrike.EtwRawProcessId |  | long |
+| crowdstrike.EtwRawRpcClientProcessId |  | keyword |
 | crowdstrike.EtwRawThreadId |  | long |
 | crowdstrike.EventCorrelationId |  | keyword |
 | crowdstrike.EventOrigin |  | integer |
@@ -1658,9 +1680,11 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
 | crowdstrike.GrandparentImageFilePath |  | keyword |
+| crowdstrike.GrandparentProcessId |  | keyword |
 | crowdstrike.GroupRid |  | keyword |
 | crowdstrike.HandleCreateAuthenticationId |  | keyword |
 | crowdstrike.HandleCreated |  | keyword |
+| crowdstrike.HandleOperationType |  | keyword |
 | crowdstrike.HashAlgorithm |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
@@ -1678,6 +1702,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.IcmpCode |  | keyword |
 | crowdstrike.IcmpType |  | keyword |
 | crowdstrike.IfType |  | keyword |
+| crowdstrike.ImageBaseName |  | keyword |
 | crowdstrike.ImageCheckSum |  | keyword |
 | crowdstrike.ImageEntryPoint |  | keyword |
 | crowdstrike.ImageFileName |  | keyword |
@@ -1718,6 +1743,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.InterfaceVersion |  | keyword |
 | crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
+| crowdstrike.IsHosted |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsProcessInitializing |  | keyword |
@@ -1786,9 +1812,11 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.MoboProductName |  | keyword |
 | crowdstrike.ModelPrediction |  | keyword |
 | crowdstrike.ModuleCharacteristics |  | keyword |
+| crowdstrike.ModuleILPath |  | keyword |
 | crowdstrike.ModuleLoadCount |  | long |
 | crowdstrike.ModuleLoadTelemetryClassification |  | keyword |
 | crowdstrike.ModuleSize |  | keyword |
+| crowdstrike.MountedVolumeAction |  | keyword |
 | crowdstrike.NDRoot |  | keyword |
 | crowdstrike.NegateInterface |  | keyword |
 | crowdstrike.NegateLocalAddress |  | keyword |
@@ -1881,6 +1909,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.ParentImageFilePath |  | keyword |
+| crowdstrike.ParentProcessPatternIdList |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PathMtuDiscoveryTimeout |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
@@ -1970,6 +1999,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.RFMState |  | keyword |
 | crowdstrike.RGID |  | keyword |
 | crowdstrike.RPath |  | match_only_text |
+| crowdstrike.RTRState |  | keyword |
 | crowdstrike.RUID |  | keyword |
 | crowdstrike.RawThreadId |  | keyword |
 | crowdstrike.ReachableTime |  | keyword |
@@ -2036,6 +2066,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
 | crowdstrike.ServiceAccessPropertiesEtw |  | match_only_text |
+| crowdstrike.ServiceCurrentState |  | keyword |
 | crowdstrike.ServiceDelayedAutoStart |  | match_only_text |
 | crowdstrike.ServiceDependOnService |  | match_only_text |
 | crowdstrike.ServiceDescription |  | keyword |
@@ -2053,6 +2084,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SetThreadContextCount |  | long |
 | crowdstrike.Severity |  | integer |
 | crowdstrike.SeverityName |  | keyword |
+| crowdstrike.ShannonEntropy |  | keyword |
 | crowdstrike.ShareAccess |  | keyword |
 | crowdstrike.ShareName |  | keyword |
 | crowdstrike.ShareSecurity |  | keyword |
@@ -2122,10 +2154,14 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.SystemTableIndex |  | long |
 | crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
+| crowdstrike.TargetAuthenticationId |  | keyword |
 | crowdstrike.TargetCommandLineParameters |  | keyword |
 | crowdstrike.TargetDomainControllerObjectGuid |  | keyword |
 | crowdstrike.TargetDomainControllerObjectSid |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
+| crowdstrike.TargetIntegrityLevel |  | keyword |
+| crowdstrike.TargetProcessCommandLine |  | keyword |
+| crowdstrike.TargetProcessImageFileName |  | keyword |
 | crowdstrike.TargetSHA256HashData |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
 | crowdstrike.TargetThreadModule |  | keyword |
@@ -2151,6 +2187,7 @@ If the severity name is not available from the original document, it is determin
 | crowdstrike.UninstallPendingUpdateIds |  | match_only_text |
 | crowdstrike.UnixMode |  | keyword |
 | crowdstrike.UnsignedModuleLoadCount |  | long |
+| crowdstrike.UpdateFlag |  | keyword |
 | crowdstrike.UploadId |  | keyword |
 | crowdstrike.User |  | keyword |
 | crowdstrike.UserFlags |  | keyword |
