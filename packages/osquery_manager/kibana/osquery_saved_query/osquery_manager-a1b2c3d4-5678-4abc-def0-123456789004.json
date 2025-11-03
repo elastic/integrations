@@ -1,0 +1,57 @@
+{
+    "attributes": {
+        "created_at": "2025-01-29T12:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Identify enabled scheduled tasks executing from suspicious locations or using LOLBins like PowerShell, rundll32, or regsvr32",
+        "ecs_mapping": [
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "action"
+                }
+            },
+            {
+                "key": "event.start",
+                "value": {
+                    "field": "last_run_time"
+                }
+            },
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["persistence", "scheduled_task"]
+                }
+            }
+        ],
+        "id": "scheduled_tasks_persistence_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT \n  name, \n  action, \n  path, \n  enabled, \n  state, \n  hidden, \n  last_run_time, \n  next_run_time \nFROM scheduled_tasks \nWHERE enabled = 1 \n  AND (\n    action LIKE '%\\\\Users\\\\%\\\\AppData\\\\%' \n    OR action LIKE '%\\\\Temp\\\\%' \n    OR action LIKE '%\\\\Users\\\\Public\\\\%' \n    OR action LIKE '%\\\\ProgramData\\\\%' \n    OR action LIKE '%powershell%' \n    OR action LIKE '%cmd.exe%' \n    OR action LIKE '%wscript%' \n    OR action LIKE '%cscript%' \n    OR action LIKE '%rundll32%' \n    OR action LIKE '%regsvr32%' \n    OR action LIKE '%mshta%'\n  ) \nORDER BY last_run_time DESC \nLIMIT 100;",
+        "updated_at": "2025-01-29T12:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "osquery_manager-a1b2c3d4-5678-4abc-def0-123456789004",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2025-01-29T12:00:00.000Z",
+    "version": "WzEsMV0="
+}
