@@ -23,6 +23,58 @@ The EDOT Cloud Forwarder for AWS supports collecting logs from:
 
 For the full documentation on how to set up the EDOT Cloud Forwarder, follow this link: [EDOT Cloud Forwarder for AWS](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/aws).
 
+## Alternative setup using [AWS S3 receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver)
+
+Alternative setup allows to bypass "Serverless only" limitation.
+
+### Prerequisites
+
+- An S3 bucket for storing the logs
+- A load balancer configured to export access logs to the S3 bucket. Check the [official AWS docs](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html) on how to export access logs
+- An SQS queue receiving notifications on object creation in the S3 bucket
+- `awss3receiver` and `awslogsencodingextension`
+
+### Config example
+
+For details on configuration refer to corresponding docs: [awss3receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awss3receiver), [awslogsencodingextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/awslogsencodingextension), [elasticsearchexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter)
+
+```yaml
+extensions:
+  awslogs_encoding/elbaccess:
+    format: elbaccess
+
+receivers:
+  awss3:
+    sqs:
+      queue_url: "<sqs-url>"
+      region: "<region>"
+    s3downloader:
+      region: "<region>"
+      s3_bucket: '<bucket_name>'
+      s3_prefix: 'AWSLogs/<account-id>'
+    encodings:
+      - extension: awslogs_encoding/elbaccess
+
+exporters:
+  debug:
+    verbosity: detailed
+  elasticsearch/otel:
+    endpoints: https://<host>:<port>
+    user: elastic
+    password: <password>
+    mapping:
+      mode: otel
+    metrics_dynamic_index:
+      enabled: true
+
+service:
+  extensions: [awslogs_encoding/elbaccess]
+  pipelines:
+    logs:
+      exporters: [debug, elasticsearch/otel]
+      receivers: [awss3]
+```
+
 ## Logs reference
 
 ### AWS ELB access logs
