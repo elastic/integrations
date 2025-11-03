@@ -1,185 +1,132 @@
 ---
+description: Pipeline for processing WithSecure Elements incident detections
 processors:
-  # Decode JSON from message or event.original
+  # Store original message
   - set:
       field: event.original
       copy_from: message
       if: ctx.event?.original == null && ctx.message != null
       ignore_failure: true
+      tag: set_event_original
   - remove:
       field: message
       if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
       ignore_missing: true
+      tag: remove_message
+
+  # Parse JSON directly into custom namespace
   - json:
       field: event.original
-      target_field: json
+      target_field: withsecure_elements.incident_detections
       if: ctx.event?.original != null && ctx.event.original instanceof String
-      ignore_failure: true
+      on_failure:
+        - set:
+            field: error.message
+            value: 'Failed to parse JSON from event.original'
       tag: json_decode
-      description: Decode JSON from event.original
-  - script:
-      lang: painless
-      description: Move JSON fields from json to root context
-      tag: move_json_fields
-      source: |
-        if (ctx.json != null) {
-          for (entry in ctx.json.entrySet()) {
-            ctx[entry.getKey()] = entry.getValue();
-          }
-          ctx.remove('json');
-        }
-      if: ctx.json != null
+      description: Decode JSON from event.original into withsecure_elements.incident_detections
 
-  # Set ECS fields
+  # Set ECS version and basic fields
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+      tag: set_ecs_version
   - set:
       field: event.dataset
       value: withsecure_elements.incident_detections
+      tag: set_event_dataset
   - set:
       field: event.module
       value: withsecure_elements
+      tag: set_event_module
   - set:
       field: event.category
       value: [threat]
+      tag: set_event_category
   - set:
       field: event.type
       value: [info]
+      tag: set_event_type
   - set:
       field: event.kind
       value: alert
+      tag: set_event_kind
   - set:
       field: event.provider
       value: withsecure_elements
+      tag: set_event_provider
   - set:
       field: event.action
       value: detected
+      tag: set_event_action
   - set:
       field: event.outcome
       value: success
+      tag: set_event_outcome
+
+  # Map to ECS fields using copy_from
   - set:
       field: event.id
-      value: "{{id}}"
-      if: ctx.id != null
+      copy_from: withsecure_elements.incident_detections.id
+      if: ctx.withsecure_elements?.incident_detections?.id != null
+      ignore_failure: true
       tag: set_event_id
   - set:
+      field: event.severity
+      copy_from: withsecure_elements.incident_detections.severity
+      if: ctx.withsecure_elements?.incident_detections?.severity != null
+      ignore_failure: true
+      tag: set_event_severity
+
+  # Set timestamps
+  - date:
+      field: withsecure_elements.incident_detections.createdTimestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.withsecure_elements?.incident_detections?.createdTimestamp != null
+      tag: set_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to parse createdTimestamp: {{{withsecure_elements.incident_detections.createdTimestamp}}}'
+  - set:
       field: event.created
-      value: "{{createdTimestamp}}"
-      if: ctx.createdTimestamp != null
+      copy_from: "@timestamp"
+      if: ctx['@timestamp'] != null
+      ignore_failure: true
       tag: set_event_created
   - set:
       field: event.start
-      value: "{{createdTimestamp}}"
-      if: ctx.createdTimestamp != null
+      copy_from: "@timestamp"
+      if: ctx['@timestamp'] != null
+      ignore_failure: true
       tag: set_event_start
-  - set:
-      field: event.end
-      value: "{{updatedTimestamp}}"
-      if: ctx.updatedTimestamp != null
+  - date:
+      field: withsecure_elements.incident_detections.updatedTimestamp
+      target_field: event.end
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.withsecure_elements?.incident_detections?.updatedTimestamp != null
       tag: set_event_end
-  - set:
-      field: event.severity
-      value: "{{severity}}"
-      if: ctx.severity != null
-      tag: set_event_severity
-
-  # Set WithSecure custom fields
-  - set:
-      field: withsecure.incident.detection.id
-      value: "{{id}}"
-      if: ctx.id != null
-      ignore_failure: true
-  - set:
-      field: withsecure.incident.detection.incident_id
-      value: "{{incidentId}}"
-      if: ctx.incidentId != null
-      ignore_failure: true
-  - set:
-      field: withsecure.incident.detection.detection_type
-      value: "{{detectionType}}"
-      if: ctx.detectionType != null
-      ignore_failure: true
-  - set:
-      field: withsecure.incident.detection.severity
-      value: "{{severity}}"
-      if: ctx.severity != null
-      ignore_failure: true
-  - set:
-      field: withsecure.incident.detection.status
-      value: "{{status}}"
-      if: ctx.status != null
-      ignore_failure: true
-  - date:
-      field: createdTimestamp
-      target_field: withsecure.incident.detection.created_timestamp
-      formats:
-        - ISO8601
-        - UNIX_MS
-      if: ctx.createdTimestamp != null
-      ignore_failure: true
-      tag: convert_created_timestamp
-  - date:
-      field: updatedTimestamp
-      target_field: withsecure.incident.detection.updated_timestamp
-      formats:
-        - ISO8601
-        - UNIX_MS
-      if: ctx.updatedTimestamp != null
-      ignore_failure: true
-      tag: convert_updated_timestamp
-  - set:
-      field: withsecure.incident.detection.source
-      value: "{{source}}"
-      if: ctx.source != null
-      ignore_failure: true
-  - set:
-      field: withsecure.incident.detection.category
-      value: "{{category}}"
-      if: ctx.category != null
-      ignore_failure: true
-  - set:
-      field: withsecure.incident.detection.description
-      value: "{{description}}"
-      if: ctx.description != null
-      ignore_failure: true
-  - rename:
-      field: details
-      target_field: withsecure.incident.detection.details
-      ignore_missing: true
-  - rename:
-      field: device
-      target_field: withsecure.incident.detection.device
-      ignore_missing: true
-  - rename:
-      field: user
-      target_field: withsecure.incident.detection.user
-      ignore_missing: true
-  - rename:
-      field: file
-      target_field: withsecure.incident.detection.file
-      ignore_missing: true
-  - rename:
-      field: network
-      target_field: withsecure.incident.detection.network
-      ignore_missing: true
-
-  # Clean up temporary fields
-  - remove:
-      field:
-        - id
-        - incidentId
-        - detectionType
-        - severity
-        - status
-        - createdTimestamp
-        - updatedTimestamp
-        - source
-        - category
-        - description
-      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
   - append:
-      field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
