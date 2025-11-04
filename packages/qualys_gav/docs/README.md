@@ -57,11 +57,11 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-11-04T08:55:59.677Z",
+    "@timestamp": "2025-11-04T13:41:51.662Z",
     "agent": {
-        "ephemeral_id": "7a916d54-a4bb-4fa3-9415-5755d114b175",
-        "id": "25d0b464-c23f-40dc-8cc1-3eb305a1f52b",
-        "name": "elastic-agent-62189",
+        "ephemeral_id": "6b78f4f1-2fe7-41bc-ba21-b2a95737736d",
+        "id": "cd4b416e-a47a-42d6-865d-a01b7fe3d45d",
+        "name": "elastic-agent-63287",
         "type": "filebeat",
         "version": "9.2.0"
     },
@@ -85,7 +85,7 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_gav.asset",
-        "namespace": "50468",
+        "namespace": "22762",
         "type": "logs"
     },
     "device": {
@@ -98,7 +98,7 @@ An example event for `asset` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "25d0b464-c23f-40dc-8cc1-3eb305a1f52b",
+        "id": "cd4b416e-a47a-42d6-865d-a01b7fe3d45d",
         "snapshot": false,
         "version": "9.2.0"
     },
@@ -109,7 +109,7 @@ An example event for `asset` looks as following:
         ],
         "created": "2025-07-09T14:21:12.000Z",
         "dataset": "qualys_gav.asset",
-        "ingested": "2025-11-04T08:56:02Z",
+        "ingested": "2025-11-04T13:41:54Z",
         "kind": "event",
         "module": "qualys_gav",
         "risk_score": 0,
@@ -325,6 +325,13 @@ An example event for `asset` looks as following:
                 "created": "2025-07-09T14:21:12.000Z",
                 "last_updated": "2025-07-11T14:21:10.000Z",
                 "source": "EASM"
+            },
+            "inventory_list_data": {
+                "inventory": {
+                    "created": "2024-01-12T03:40:12.000Z",
+                    "last_updated": "2025-11-04T08:08:04.000Z",
+                    "source": "EASM"
+                }
             },
             "is_container_host": false,
             "isp": "test, Inc.",
