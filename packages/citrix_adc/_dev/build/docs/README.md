@@ -8,7 +8,7 @@ The Citrix ADC integration for Elastic collects logs and metrics from your Citri
 
 This integration has been tested and is compatible with Citrix ADC versions `v13.0`, `v13.1`, and `v14.1`.
 
-The minimum required Kibana version is `8.12.0`.
+The minimum required Kibana version is `8.13.0`.
 
 ### How it works
 
@@ -40,7 +40,7 @@ The Citrix ADC integration collects the following types of data:
 ### Elastic prerequisites
 
 *   An installed and enrolled Elastic Agent.
-*   Kibana version `>= 8.12.0` and an available Elasticsearch cluster.
+*   Kibana version `>= 8.13.0` and an available Elasticsearch cluster.
 *   Permissions to add the Citrix ADC integration in Kibana.
 
 ## How do I deploy this integration?

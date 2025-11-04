@@ -15,7 +15,7 @@
 
 ## Compatibility
 - Tested against Citrix ADC versions `v13.0`, `v13.1`, and `v14.1`.
-- Minimum Kibana version: `8.12.0`.
+- Minimum Kibana version: `8.13.0`.
 - Elastic Agent is required. Elasticsearch and Kibana can be Elastic Cloud or self-managed.
 
 ## Scaling and Performance
@@ -32,7 +32,7 @@
 
 ## Elastic prerequisites
 - Elastic Agent installed and enrolled.
-- Kibana `>= 8.12.0` and an available Elasticsearch cluster.
+- Kibana `>= 8.13.0` and an available Elasticsearch cluster.
 - Permissions to add the Citrix ADC integration in Kibana.
 
 ## Vendor set up steps
