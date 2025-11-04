@@ -1,0 +1,36 @@
+{
+  "id": "mongodb-connection-usage-high",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB Availability] High connection usage",
+    "tags": ["MongoDB", "Availability"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mongodb.status-default\n| STATS current_conn = AVG(`mongodb.status.connections.current`),\n        available_conn = AVG(`mongodb.status.connections.available`) BY `service.address`\n| EVAL connection_usage_pct = (current_conn / (current_conn + available_conn)) * 100\n| WHERE connection_usage_pct > 80"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
+

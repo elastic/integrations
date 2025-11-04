@@ -1,0 +1,36 @@
+{
+  "id": "mongodb-cache-usage-high",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB Resources] WiredTiger cache pressure",
+    "tags": ["MongoDB", "Resources"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mongodb.status-default\n| STATS cache_used = AVG(`mongodb.status.wired_tiger.cache.used.bytes`),\n        cache_max = AVG(`mongodb.status.wired_tiger.cache.maximum.bytes`) BY `service.address`\n| EVAL cache_usage_pct = (cache_used / cache_max) * 100\n| WHERE cache_usage_pct > 85"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
+

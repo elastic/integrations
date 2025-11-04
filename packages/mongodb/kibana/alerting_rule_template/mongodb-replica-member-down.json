@@ -1,0 +1,36 @@
+{
+  "id": "mongodb-replica-member-down",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB Replication] Replica member down",
+    "tags": ["MongoDB", "Replication"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mongodb.replstatus-default\n| STATS members_down = MAX(`mongodb.replstatus.members.down.count`) BY `mongodb.replstatus.set_name`, `service.address`\n| WHERE members_down > 0"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
+

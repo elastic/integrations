@@ -1,0 +1,36 @@
+{
+  "id": "mongodb-write-tickets-low",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB Performance] Low write tickets available",
+    "tags": ["MongoDB", "Performance"],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "1m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "size": 100,
+      "esqlQuery": {
+        "esql": "FROM metrics-mongodb.status-default\n| STATS write_tickets_available = AVG(`mongodb.status.wired_tiger.concurrent_transactions.write.available`) BY `service.address`\n| WHERE write_tickets_available < 10"
+      },
+      "aggType": "count",
+      "groupBy": "row",
+      "termSize": 5,
+      "sourceFields": [],
+      "timeField": "@timestamp",
+      "excludeHitsFromPreviousRun": true
+    },
+    "alertDelay": {
+      "active": 1
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}
+
