@@ -12,7 +12,10 @@ The Amazon GuardDuty integration can be used in three different modes to collect
 ## What do I need to use this integration?
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-**Note**: It is recommended to use AWS SQS for Amazon GuardDuty.
+
+**Note**: 
+ - It is recommended to use AWS SQS for Amazon GuardDuty.
+ - When using the Amazon GuardDuty API to collect logs, there is a known issue where data duplication can occur due to certain API limitations.
 
 ### Agentless Enabled Integration
 
