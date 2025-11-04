@@ -1,0 +1,107 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer:
+  enabled: true
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+resource.headers:
+  User-Agent:
+    - Elastic-WithSecure-Elements-Connector/0.1.0
+  Accept:
+    - application/json
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{url}}/as/token.oauth2
+  endpoint_params:
+    grant_type: client_credentials
+    scope: connect.api.read
+state:
+  organization_id: !!str {{organization_id}}
+  initial_interval: 168h
+program: |-
+  request(
+    "GET",
+    state.url.trim_right("/") + "/incidents/v1/incidents?" + {
+      "organizationId": [state.organization_id],
+      "updatedTimestampStart": [
+        state.?cursor.?last_updated.orValue(
+          (now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+        )
+      ],
+      "archived": ["false"],
+      "limit": ["50"],
+      "order": ["asc"],
+      ?"anchor": state.?next_anchor.optMap(v, [v]),
+    }.format_query()
+  ).do_request().as(resp, resp.StatusCode == 200 ?
+    resp.Body.decode_json().as(body,
+      {
+        "events": has(body.items) && body.items.size() > 0 ?
+          body.items.map(e, {
+            "message": e.encode_json(),
+          })
+        :
+          [],
+        "cursor": {
+          "last_updated": has(body.items) && body.items.size() > 0 ?
+            body.items[body.items.size() - 1].updatedTimestamp
+          :
+            state.?cursor.?last_updated.orValue(
+              (now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+            ),
+        },
+        "organization_id": state.organization_id,
+        "initial_interval": state.initial_interval,
+        ?"next_anchor": body.?nextAnchor.hasValue() ? optional.of(body.nextAnchor) : optional.none(),
+        "want_more": body.?nextAnchor.hasValue(),
+      }
+    )
+  :
+    {
+      "events": [{
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET /incidents/v1/incidents: " + (
+            resp.Body.size() > 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+          ),
+        },
+      }],
+      "organization_id": state.organization_id,
+      "initial_interval": state.initial_interval,
+      "want_more": false,
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
