@@ -56,12 +56,10 @@ program: |-
         :
           [],
         "cursor": {
-          "last_updated": has(body.items) && body.items.size() > 0 ?
-            body.items[body.items.size() - 1].updatedTimestamp
+          ?"last_updated": has(body.items) && body.items.size() > 0 ?
+            optional.of(body.items[body.items.size() - 1].updatedTimestamp)
           :
-            state.?cursor.?last_updated.orValue(
-              (now() - duration(state.initial_interval)).format(time_layout.RFC3339)
-            ),
+            state.?cursor.?last_updated,
         },
         "organization_id": state.organization_id,
         "initial_interval": state.initial_interval,

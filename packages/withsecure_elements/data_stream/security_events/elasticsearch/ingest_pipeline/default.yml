@@ -56,6 +56,15 @@ processors:
       value: withsecure_elements
       tag: set_event_provider
 
+  # Generate unique _id for automatic deduplication
+  - fingerprint:
+      fields:
+        - withsecure_elements.security_events.id
+        - withsecure_elements.security_events.persistenceTimestamp
+      target_field: _id
+      ignore_missing: true
+      tag: generate_document_id
+  
   # Map to ECS fields using copy_from
   - set:
       field: event.id
