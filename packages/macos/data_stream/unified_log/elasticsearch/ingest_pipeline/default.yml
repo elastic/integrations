@@ -336,6 +336,41 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-network" }}'
       if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.subsystem.toLowerCase().contains('network') || ctx.macos.unified_log.subsystem.toLowerCase().contains('xpc'))
+  - set:
+      field: macos.unified_log.event.category
+      tag: set_category_type_network_into_custom_field
+      value: 'Network Activity'
+      if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.subsystem.toLowerCase().contains('network') || ctx.macos.unified_log.subsystem.toLowerCase().contains('xpc') || ctx.macos.unified_log.subsystem.toLowerCase().contains('necp'))
+  - set:
+      field: macos.unified_log.event.category
+      tag: set_category_type_system_changes_into_custom_field
+      value: 'System Changes'
+      if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.subsystem.toLowerCase().contains('com.apple.security') || ctx.macos.unified_log.subsystem.toLowerCase().contains('systempolicy') || ctx.macos.unified_log.subsystem.toLowerCase().contains('com.apple.installer') || ctx.macos.unified_log.subsystem.toLowerCase().contains('softwareupdate') || ctx.macos.unified_log.event.message.description.contains('removed package') || ctx.macos.unified_log.event.message.description.contains('removed package') || ctx.macos.unified_log.event.message.description.contains('forget package'))
+  - set:
+      field: macos.unified_log.event.category
+      tag: set_category_type_user_account_management_into_custom_field
+      value: 'User and Account Management'
+      if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.subsystem.toLowerCase().contains('opendirectoryd') || ctx.macos.unified_log.event.message.description.contains('admin') || ctx.macos.unified_log.event.message.description.contains('delete') || ctx.macos.unified_log.event.message.description.contains('create') || ctx.macos.unified_log.event.message.description.contains('Creating user') || ctx.macos.unified_log.event.message.description.contains('Deleting user'))
+  - set:
+      field: macos.unified_log.event.category
+      tag: set_category_type_authentication_into_custom_field
+      value: 'Authentication'
+      if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.event.message.description.contains('sudo') || ctx.macos.unified_log.event.message.description.contains('sessionDidLogin') || ctx.macos.unified_log.event.message.description.contains('loginwindow') || ctx.macos.unified_log.event.message.description.contains('login') || ctx.macos.unified_log.event.message.description.contains('sshd') || ctx.macos.unified_log.subsystem.toLowerCase().contains('sshd') || ctx.macos.unified_log.subsystem.toLowerCase().contains('loginwindow'))
+  - set:
+      field: macos.unified_log.event.category
+      tag: set_category_type_process_into_custom_field
+      value: 'Process Execution Monitoring'
+      if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.event.message.description.contains('exec') || ctx.macos.unified_log.event.message.description.contains('fork') || ctx.macos.unified_log.event.message.description.contains('exited') || ctx.macos.unified_log.event.message.description.contains('terminated') || ctx.macos.unified_log.event.message.description.contains('launch') || (ctx.macos.unified_log.subsystem.toLowerCase().contains('com.apple.securityd') && (ctx.macos.unified_log.event.message.description.contains('code signing') || ctx.macos.unified_log.event.message.description.contains('not valid'))) || ctx.macos.unified_log.event.message.description.contains('com.apple.quarantine'))
+  - set:
+      field: macos.unified_log.event.category
+      tag: set_category_type_process_into_custom_field
+      value: 'File'
+      if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.event.message.description.contains(' open') || ctx.macos.unified_log.event.message.description.contains('write ') || ctx.macos.unified_log.event.message.description.contains('unlink') || ctx.macos.unified_log.event.message.description.contains('rename') || ctx.macos.unified_log.event.message.description.contains('modified'))
+  - set:
+      field: macos.unified_log.event.category
+      tag: set_category_type_process_into_custom_field
+      value: 'Advanced Monitoring'
+      if: ctx.macos?.unified_log?.subsystem != null && (ctx.macos.unified_log.event.message.description.contains('.plist') || ctx.macos.unified_log.event.message.description.contains('.ssh') || ctx.macos.unified_log.event.message.description.contains('boot') || ctx.macos.unified_log.event.message.description.contains('posix_spawn') || ctx.macos.unified_log.event.message.description.contains(' started ') || ctx.macos.unified_log.event.message.description.contains('listening'))
   - remove:
       field:
         - macos.unified_log.event.message.description
