@@ -33,19 +33,11 @@ state:
 program: |-
   request(
     "GET",
-    state.url.trim_right("/") + "/incidents/v1/incidents/" + state.incident_id + "/detections?" + (
-      state.?next_anchor.hasValue() ?
-        {
-          "limit": ["50"],
-          "order": ["desc"],
-          "anchor": [state.next_anchor],
-        }
-      :
-        {
-          "limit": ["50"],
-          "order": ["desc"],
-        }
-    ).format_query()
+    state.url.trim_right("/") + "/incidents/v1/incidents/" + state.incident_id + "/detections?" + {
+      "limit": ["50"],
+      "order": ["desc"],
+      ?"anchor": state.?next_anchor.optMap(v, [v]),
+    }.format_query()
   ).do_request().as(resp, resp.StatusCode == 200 ?
     resp.Body.decode_json().as(body,
       {
