@@ -38,7 +38,7 @@ program: |-
       state.?cursor.recovery_mode.orValue(false) ?
         {
           "from": int(now - duration("12h")),
-          "to":   int(now - duration("1m")),
+          "to": int(now - duration("1m")),
         }
       : state.?cursor.last_offset.hasValue() ?
         {
@@ -47,7 +47,7 @@ program: |-
       :
         {
           "from": max(int(now - duration(state.initial_interval)), int(now - duration("12h"))),
-          "to":   int(now - duration("1m")),
+          "to": int(now - duration("1m")),
         }
     ).as(params,
       (
@@ -119,18 +119,25 @@ program: |-
                   )
                 : (resp.StatusCode == 416) ?
                   {
-                    "events": {
-                      "error": {
-                        "code": string(resp.StatusCode),
-                        "id": string(resp.Status),
-                        "message": "GET " + request_url + (
-                          (size(resp.Body) != 0) ?
-                            string(resp.Body)
-                          :
-                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                        ),
+                    "events": [
+                      {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + request_url + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
                       },
-                    },
+                      {
+                        "info": {
+                          "message": "Initiating recovery mode due to offset expiry.",
+                        },
+                      },
+                    ],
                     "cursor": state.cursor.drop("last_offset").with(
                       {
                         "recovery_mode": true,
