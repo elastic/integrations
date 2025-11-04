@@ -115,6 +115,11 @@ vault audit enable socket address=${ELASTIC_AGENT_IP}:9007 socket_type=tcp
 
 **Note**: Configure the integration in Kibana first before enabling the socket audit device, as Vault will test the connection.
 
+**Warning: Risk of Unresponsive Vault with TCP Socket Audit Devices**: If a TCP socket audit log destination (like the Elastic Agent)
+becomes unavailable, Vault may block and stop processing all requests until the connection is restored. This can lead to a service outage.
+To mitigate this risk, HashiCorp strongly recommends that a socket audit device is configured as a secondary device, alongside a primary,
+non-socket audit device (like the `file` audit device). For more details, see the official documentation on [Blocked Audit Devices](https://developer.hashicorp.com/vault/docs/audit/socket#configuration).
+
 ### Setting up Operational Logs
 
 Configure Vault to output logs in JSON format by adding to your Vault configuration file:
@@ -236,6 +241,11 @@ After configuring the integration, validate that data is flowing correctly:
 - **Token Permissions**: Ensure the token has read access to the `/sys/metrics` endpoint
 - **Telemetry Configuration**: Confirm Vault telemetry is properly configured with `disable_hostname = true`
 - **Network Access**: Verify Elastic Agent can reach the Vault API endpoint
+
+### Vault is Unresponsive or Stops Accepting Request
+If Vault stops responding to requests, you may have a blocked audit device. This can happen if a TCP socket destination is unavailable or a file
+audit device cannot write to disk. Review Vault's operational logs for errors related to audit logging. For more information on identifying and
+resolving this, see the [Blocked Audit Device Behavior](https://developer.hashicorp.com/vault/tutorials/monitoring/blocked-audit-devices#blocked-audit-device-behavior) tutorial.
 
 ## Ingestion Errors
 

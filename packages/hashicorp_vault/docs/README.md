@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Hashicorp Vault integration for Elastic enables the collection of logs and metrics from Hashicorp Vault. This allows you to monitor Vault server health, track access to secrets, and maintain a detailed audit trail for security and compliance.
+The Hashicorp Vault integration for Elastic enables you to collect logs and metrics from Hashicorp Vault. This allows you to ingest audit logs for security monitoring, collect operational logs for troubleshooting, and gather metrics to monitor the overall health and performance of your Vault servers.
 
 This integration facilitates the following use cases:
 - **Security Monitoring and Auditing**: Track all access to secrets, who accessed them, and when, providing a detailed audit trail for compliance and security investigations.
@@ -77,6 +77,12 @@ This integration collects the following types of data from HashiCorp Vault:
     ```
 
 #### Setting up Audit Logs (Socket Audit Device)
+
+> **Warning: Risk of Unresponsive Vault with TCP Socket Audit Devices**
+>
+> If a TCP socket audit log destination (like the Elastic Agent) becomes unavailable, Vault may block and stop processing all requests until the connection is restored. This can lead to a service outage.
+>
+> To mitigate this risk, HashiCorp strongly recommends that a socket audit device is configured as a secondary device, alongside a primary, non-socket audit device (like the `file` audit device). For more details, see the official documentation on [Blocked Audit Devices](https://developer.hashicorp.com/vault/docs/audit/socket#configuration).
 
 1.  Note the IP address and port where Elastic Agent will be listening (e.g., port `9007`).
 2.  **Important**: Configure and deploy the integration in Kibana *before* enabling the socket device in Vault, as Vault will immediately test the connection.
@@ -167,6 +173,8 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Common Configuration Issues
 
+- **Vault is Unresponsive or Stops Accepting Requests**:
+    - If Vault stops responding to requests, you may have a blocked audit device. This can happen if a TCP socket destination is unavailable or a file audit device cannot write to disk. Review Vault's operational logs for errors related to audit logging. For more information on identifying and resolving this, see the [Blocked Audit Device Behavior](https://developer.hashicorp.com/vault/tutorials/monitoring/blocked-audit-devices#blocked-audit-device-behavior) tutorial.
 - **No Data Collected**:
     - Verify Elastic Agent is healthy in Fleet.
     - Ensure the user running Elastic Agent has read permissions on log files.
@@ -191,7 +199,6 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 - **Audit Log Performance**: Vault's file audit device provides the strongest delivery guarantees. Ensure adequate disk I/O capacity, as Vault will block operations if it cannot write audit logs.
 - **Metrics Collection**: The default collection interval is 30 seconds. Adjust this period based on your monitoring needs and Vault server load.
-- **TCP Socket Considerations**: When using the socket audit device, ensure network reliability between Vault and the Elastic Agent. If the TCP connection is unavailable, Vault operations will be blocked until it is restored.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
