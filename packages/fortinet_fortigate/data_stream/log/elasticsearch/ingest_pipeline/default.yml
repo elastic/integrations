@@ -151,6 +151,26 @@ processors:
       replacement: $1$2
       ignore_missing: true
       ignore_failure: true
+
+  - set:
+      field: event.timezone
+      copy_from: _conf.tz_offset
+      if: ctx.event?.timezone == null && ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
+      ignore_empty_value: true
+
+  - script:
+      lang: painless
+      tag: script_tz_mapping
+      if: ctx.event?.timezone == null && ctx._conf?.tz_map != null &&ctx.fortinet?.firewall?.timezone != null && ctx.fortinet?.firewall?.timezone != ''
+      source: |
+        def tz = ctx.fortinet?.firewall?.timezone;
+        for (def item : ctx._conf.tz_map) {
+          if (item.tz_match_value == tz) {
+            ctx.event.timezone = item.tz_replace_value;
+            break;
+          }
+        }
+
   - set:
       tag: set__temp_time_2240d59c
       field: _temp.time
@@ -777,6 +797,7 @@ processors:
       tag: remove_c87f67c3
       field:
         - _temp
+        - _conf
         - fortinet.firewall.tz
         - fortinet.firewall.date
         - fortinet.firewall.devid
