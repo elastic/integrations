@@ -57,11 +57,11 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-31T13:45:09.114Z",
+    "@timestamp": "2025-11-04T08:55:59.677Z",
     "agent": {
-        "ephemeral_id": "610611d4-7d6e-4d92-875d-e36be3592a28",
-        "id": "543bc156-60b7-4837-8416-d9e6821a67d7",
-        "name": "elastic-agent-44463",
+        "ephemeral_id": "7a916d54-a4bb-4fa3-9415-5755d114b175",
+        "id": "25d0b464-c23f-40dc-8cc1-3eb305a1f52b",
+        "name": "elastic-agent-62189",
         "type": "filebeat",
         "version": "9.2.0"
     },
@@ -85,7 +85,7 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_gav.asset",
-        "namespace": "83683",
+        "namespace": "50468",
         "type": "logs"
     },
     "device": {
@@ -98,7 +98,7 @@ An example event for `asset` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "543bc156-60b7-4837-8416-d9e6821a67d7",
+        "id": "25d0b464-c23f-40dc-8cc1-3eb305a1f52b",
         "snapshot": false,
         "version": "9.2.0"
     },
@@ -109,7 +109,7 @@ An example event for `asset` looks as following:
         ],
         "created": "2025-07-09T14:21:12.000Z",
         "dataset": "qualys_gav.asset",
-        "ingested": "2025-10-31T13:45:12Z",
+        "ingested": "2025-11-04T08:56:02Z",
         "kind": "event",
         "module": "qualys_gav",
         "risk_score": 0,
