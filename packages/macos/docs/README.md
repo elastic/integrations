@@ -151,6 +151,7 @@ For more information on architectures that can be used for scaling this integrat
 | macos.unified_log.backtrace.frames.image.uuid |  | keyword |
 | macos.unified_log.boot_uuid |  | keyword |
 | macos.unified_log.category |  | keyword |
+| macos.unified_log.event.category |  | keyword |
 | macos.unified_log.event.message.account_id |  | keyword |
 | macos.unified_log.event.message.accurate_ecn_client |  | keyword |
 | macos.unified_log.event.message.accurate_ecn_server |  | keyword |
