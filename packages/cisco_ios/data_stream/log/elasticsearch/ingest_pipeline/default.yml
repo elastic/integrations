@@ -77,8 +77,11 @@ processors:
       tag: grok_message_at_top_level
       patterns:
         - '^%%{GREEDYDATA:message}$'
+        - '^(%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA}%%{GREEDYDATA:message}$' # message could still have hostname, continue to parse if available
         - '^%{GREEDYDATA}%%{GREEDYDATA:message}$' # Extract part after % in message
         - '^%{GREEDYDATA:_temp_.generic_message}$'
+      pattern_definitions:
+        CISCO_HOSTNAME: '[0-9a-zA-Z][.0-9a-zA-Z_-]{0,253}[0-9a-zA-Z]?'
   # Handle all-digit hostnames as sequence numbers
   - grok:
       tag: grok_log_syslog_hostname_54433610
@@ -284,10 +287,11 @@ processors:
       tag: dissect_gnp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx.event?.code)"
-  - dissect:
+  - grok:
       field: message
-      tag: dissect_login
-      pattern: "%{cisco.ios.action} %{_temp_.event.action} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
+      tag: grok_login
+      patterns: 
+        - "%{DATA:cisco.ios.action} %{WORD:_temp_.event.action} \\[user: %{DATA:source.user.name}\\] \\[Source: %{DATA:source.address}\\]\\s*\\[localport: %{INT:destination.port}\\]"
       if: "ctx.event?.code == 'LOGIN_SUCCESS'"
   - dissect:
       field: message
