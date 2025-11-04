@@ -258,6 +258,12 @@ processors:
       ignore_missing: true
       if: ctx.crowdstrike?.HostHiddenStatus == null
 
+# Non-sensor Events
+  - pipeline:
+      name: '{{ IngestPipeline "data_protection_detection_summary" }}'
+      tag: data_protection_detection_summary
+      if: ctx.crowdstrike?.ExternalApiType == 'Event_DataProtectionDetectionSummaryEvent'
+
 # Handle case changes.
   - rename:
       tag: rename_GrandParentCommandLine_GrandparentCommandLine
