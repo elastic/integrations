@@ -240,6 +240,22 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date-change-time
+      field: crowdstrike.ChangeTime
+      target_field: crowdstrike.ChangeTime
+      formats:
+        - UNIX
+      if: >
+        ctx.crowdstrike?.ChangeTime != null &&
+        ctx.crowdstrike.ChangeTime != ""
+      on_failure:
+        - remove:
+            field: crowdstrike.ChangeTime
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename-message
       field: crowdstrike.message
@@ -2059,6 +2075,28 @@ processors:
           name = executable.splitOnToken("/")[-1];
         }
         ctx.process.put("name", name);
+
+  # This handles a special case occurs in Linux-based containerized environments
+  # when the "runc" process clones itself to get into its own namespace.
+  # The child process would have its executable path set to "/"
+  # and consequently, the process name would not be set.
+  # For more details, see https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2021/12/28/runc-internals-3.
+  - script:
+      tag: parse_process_name_from_command_line
+      description: Extract process.name from command line if not already present.
+      lang: painless
+      if: >-
+        ctx.process?.executable == '/' &&
+        (ctx.process.name == null || ctx.process.name == '') &&
+        (ctx.process.args instanceof List && ctx.process.args.length > 0)
+      source: |-
+        ctx.process.name = ctx.process.args[0];
+
+        // Clean up path separators.
+        int lastSlash = ctx.process.name.lastIndexOf("/");
+        if (lastSlash != -1) {
+            ctx.process.name = ctx.process.name.substring(lastSlash + 1);
+        }
   - convert:
       field: crowdstrike.ExitCode
       type: long
