@@ -758,12 +758,14 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 #### Falcon SIEM Connector configuration file
 
-By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhoseclient.cf` provides configuration options related to the events collected by Falcon SIEM Connector.
+By default, the configuration file located at `/opt/crowdstrike/etc/cs.falconhoseclient.cfg` provides configuration options related to the events collected by Falcon SIEM Connector.
 
 Parts of the configuration file called `EventTypeCollection` and `EventSubTypeCollection` provides a list of event types that the connector should collect.
 
 Current supported event types are:
+- DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
+- EppDetectionSummaryEvent
 - IncidentSummaryEvent
 - UserActivityAuditEvent
 - AuthActivityAuditEvent
