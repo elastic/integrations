@@ -1,0 +1,71 @@
+{
+  "attributes": {
+    "created_at": "2025-11-04T12:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Detect autostart persistence mechanisms on Linux via user systemd units, focusing on enabled services in user directories",
+    "ecs_mapping": [
+      {
+        "key": "process.name",
+        "value": {
+          "field": "id"
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "fragment_path"
+        }
+      },
+      {
+        "key": "registry.path",
+        "value": {
+          "field": "fragment_path"
+        }
+      },
+      {
+        "key": "service.state",
+        "value": {
+          "field": "active_state"
+        }
+      },
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "configuration"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "persistence",
+            "autostart",
+            "linux"
+          ]
+        }
+      }
+    ],
+    "id": "autostart_persistence_linux_elastic",
+    "interval": "3600",
+    "platform": "linux",
+    "query": "SELECT \n  id, \n  description, \n  fragment_path, \n  unit_file_state, \n  active_state \nFROM systemd_units \nWHERE fragment_path LIKE '%/.config/systemd/user/%' \n  AND unit_file_state = 'enabled' \n  AND (id LIKE '%.service' OR id LIKE '%.timer' OR id LIKE '%.target') \n  AND (\n    fragment_path LIKE '%/tmp/%' \n    OR fragment_path LIKE '%/home/%/tmp/%' \n    OR fragment_path LIKE '%/dev/shm/%'\n  ) \nORDER BY id \nLIMIT 100;",
+    "updated_at": "2025-11-04T12:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "8.8.0",
+  "id": "osquery_manager-79e842cc-f15b-4316-9e44-7c99dbddb587",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-11-04T12:00:00.000Z",
+  "version": "Wzk5LDJd"
+}

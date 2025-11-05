@@ -1,0 +1,70 @@
+{
+  "attributes": {
+    "created_at": "2025-11-04T12:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Detect removable media mounts across macOS and Linux, identifying USB drives and external storage devices",
+    "ecs_mapping": [
+      {
+        "key": "host.disk.name",
+        "value": {
+          "field": "device_alias"
+        }
+      },
+      {
+        "key": "host.disk.type",
+        "value": {
+          "field": "type"
+        }
+      },
+      {
+        "key": "file.device",
+        "value": {
+          "field": "device"
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "path"
+        }
+      },
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "file"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "removable-media",
+            "usb",
+            "external-storage"
+          ]
+        }
+      }
+    ],
+    "id": "mounts_removable_elastic",
+    "interval": "3600",
+    "query": "SELECT \n  device, \n  device_alias, \n  path, \n  type, \n  flags, \n  blocks_size, \n  blocks, \n  blocks_free, \n  inodes_free \nFROM mounts \nWHERE (\n    device_alias LIKE '/dev/disk%' \n    OR device LIKE '/dev/sd%' \n    OR device LIKE '/dev/mmcblk%'\n  ) \n  AND device NOT LIKE '/dev/loop%' \n  AND type IN ('hfs', 'apfs', 'msdos', 'exfat', 'ntfs', 'udf', 'iso9660', 'vfat', 'ext2', 'ext3', 'ext4') \n  AND path != '/' \n  AND path NOT LIKE '/System/%' \n  AND path NOT LIKE '/boot%' \n  AND path NOT LIKE '/sys%' \n  AND path NOT LIKE '/proc%' \nORDER BY path \nLIMIT 50;",
+    "updated_at": "2025-11-04T12:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "8.8.0",
+  "id": "osquery_manager-334f0f0f-3d0a-40e2-b094-c844e419a968",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-11-04T12:00:00.000Z",
+  "version": "WzEwMCwyXQ=="
+}

@@ -1,0 +1,58 @@
+{
+  "attributes": {
+    "created_at": "2025-11-04T12:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Detect suspicious crontab entries across macOS and Linux, flagging commands in temporary directories or using common attack tools",
+    "ecs_mapping": [
+      {
+        "key": "process.command_line",
+        "value": {
+          "field": "command"
+        }
+      },
+      {
+        "key": "file.path",
+        "value": {
+          "field": "path"
+        }
+      },
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "process"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "persistence",
+            "crontab",
+            "scheduled-task"
+          ]
+        }
+      }
+    ],
+    "id": "crontab_persistence_elastic",
+    "interval": "3600",
+    "query": "SELECT \n  event, \n  minute, \n  hour, \n  day_of_month, \n  month, \n  day_of_week, \n  command, \n  path \nFROM crontab \nWHERE command NOT LIKE '/usr/libexec/%' \n  AND command NOT LIKE '/usr/sbin/%' \n  AND command NOT LIKE '/System/%' \n  AND command NOT LIKE '/usr/bin/%' \n  AND command NOT LIKE '/bin/%' \n  AND command NOT LIKE '/sbin/%' \n  AND (\n    command LIKE '%/tmp/%' \n    OR command LIKE '%/var/tmp/%' \n    OR command LIKE '%/dev/shm/%' \n    OR command LIKE '%curl%' \n    OR command LIKE '%wget%' \n    OR command LIKE '%base64%' \n    OR command LIKE '%Downloads/%' \n    OR command LIKE '%Desktop/%' \n    OR command LIKE '%nc %' \n    OR command LIKE '%ncat%' \n    OR command LIKE '%/dev/tcp/%'\n  ) \nORDER BY path \nLIMIT 100;",
+    "updated_at": "2025-11-04T12:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "8.8.0",
+  "id": "osquery_manager-b1c9c896-5306-4002-9699-519e8eee4ef5",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-11-04T12:00:00.000Z",
+  "version": "Wzk3LDJd"
+}

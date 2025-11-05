@@ -1,0 +1,77 @@
+{
+  "attributes": {
+    "created_at": "2025-11-04T12:00:00.000Z",
+    "created_by": "elastic",
+    "description": "Detect suspicious launch daemons and agents on macOS, excluding system paths but flagging user-writable directories",
+    "ecs_mapping": [
+      {
+        "key": "service.name",
+        "value": {
+          "field": "label"
+        }
+      },
+      {
+        "key": "service.state",
+        "value": {
+          "field": "disabled"
+        }
+      },
+      {
+        "key": "process.executable",
+        "value": {
+          "field": "program"
+        }
+      },
+      {
+        "key": "process.args",
+        "value": {
+          "field": "program_arguments"
+        }
+      },
+      {
+        "key": "user.name",
+        "value": {
+          "field": "username"
+        }
+      },
+      {
+        "key": "event.category",
+        "value": {
+          "value": [
+            "process"
+          ]
+        }
+      },
+      {
+        "key": "event.type",
+        "value": {
+          "value": [
+            "info"
+          ]
+        }
+      },
+      {
+        "key": "tags",
+        "value": {
+          "value": [
+            "persistence",
+            "launchd",
+            "macos"
+          ]
+        }
+      }
+    ],
+    "id": "suspicious_launchd_macos_elastic",
+    "interval": "3600",
+    "platform": "darwin",
+    "query": "SELECT \n  name, \n  label, \n  path, \n  program, \n  program_arguments, \n  run_at_load, \n  keep_alive, \n  username \nFROM launchd \nWHERE path NOT LIKE '/System/Library/%' \n  AND path NOT LIKE '/Library/Apple/%' \n  AND path NOT LIKE '/Applications/Xcode.app/%' \n  AND (\n    path LIKE '/tmp/%' \n    OR path LIKE '/var/tmp/%' \n    OR path LIKE '/Users/%/Downloads/%' \n    OR path LIKE '/Users/%/Desktop/%'\n  ) \nORDER BY label \nLIMIT 100;",
+    "updated_at": "2025-11-04T12:00:00.000Z",
+    "updated_by": "elastic"
+  },
+  "coreMigrationVersion": "8.8.0",
+  "id": "osquery_manager-5823a22e-5add-416d-a142-de323400edb0",
+  "references": [],
+  "type": "osquery-saved-query",
+  "updated_at": "2025-11-04T12:00:00.000Z",
+  "version": "Wzk1LDJd"
+}
