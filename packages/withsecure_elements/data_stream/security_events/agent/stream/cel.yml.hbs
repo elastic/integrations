@@ -16,11 +16,6 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
-resource.headers:
-  User-Agent:
-    - Elastic-WithSecure-Elements-Connector/0.1.0
-  Accept:
-    - application/json
 auth.oauth2:
   client.id: {{client_id}}
   client.secret: {{client_secret}}
@@ -31,20 +26,34 @@ auth.oauth2:
 state:
   organization_id: !!str {{organization_id}}
   initial_interval: 168h
+  batch_size: {{batch_size}}
+{{#if engine_groups}}
+  engine_groups:
+{{#each engine_groups as |group|}}
+    - {{group}}
+{{/each}}
+{{/if}}
 program: |-
-  request(
-    "GET",
-    state.url.trim_right("/") + "/security-events/v1/security-events?" + {
-      "organizationId": [state.organization_id],
+  post_request(
+    state.url.trim_right("/") + "/security-events/v1/security-events",
+    "application/x-www-form-urlencoded",
+    {
       "persistenceTimestampStart": [
         state.?cursor.?last_timestamp.orValue(
           (now() - duration(state.initial_interval)).format(time_layout.RFC3339)
         )
       ],
-      "limit": ["100"],
+      "engineGroup": state.engine_groups,
+      "limit": [string(state.batch_size)],
       ?"anchor": state.?next_anchor.optMap(v, [v]),
     }.format_query()
-  ).do_request().as(resp, resp.StatusCode == 200 ?
+  ).with({
+    "Header": {
+      "Content-Type": ["application/x-www-form-urlencoded"],
+      "User-Agent": ["Elastic-WithSecure-Elements-Connector/0.1.0"],
+      "Accept": ["application/json"],
+    },
+  }).do_request().as(resp, resp.StatusCode == 200 ?
     resp.Body.decode_json().as(body,
       {
         "events": has(body.items) && body.items.size() > 0 ?
@@ -61,6 +70,8 @@ program: |-
         },
         "organization_id": state.organization_id,
         "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "engine_groups": state.engine_groups,
         ?"next_anchor": body.?nextAnchor,
         "want_more": has(body.nextAnchor),
       }
@@ -71,7 +82,7 @@ program: |-
         "error": {
           "code": string(resp.StatusCode),
           "id": string(resp.Status),
-          "message": "GET /security-events/v1/security-events: " + (
+          "message": "POST /security-events/v1/security-events: " + (
             resp.Body.size() > 0 ?
               string(resp.Body)
             :
@@ -81,6 +92,8 @@ program: |-
       }],
       "organization_id": state.organization_id,
       "initial_interval": state.initial_interval,
+      "batch_size": state.batch_size,
+      "engine_groups": state.engine_groups,
       "want_more": false,
     }
   )
@@ -101,3 +114,4 @@ publisher_pipeline.disable_host: true
 processors:
 {{processors}}
 {{/if}}
+
