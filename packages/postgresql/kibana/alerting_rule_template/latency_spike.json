@@ -3,8 +3,7 @@
   "type": "alerting_rule_template",
   "attributes": {
     "name": "[PostgreSQL] Latency high",
-    "tags": ["PostgreSQL",
-      "Latency Spike"],
+    "tags": ["PostgreSQL"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -13,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
         "esql": "FROM metrics-postgresql.statement-default\n| STATS avg_query_time=avg(postgresql.statement.query.time.mean.ms) by host.name, postgresql.statement.user.id\n| WHERE avg_query_time >= 5000"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1

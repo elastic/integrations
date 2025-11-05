@@ -3,8 +3,7 @@
   "type": "alerting_rule_template",
   "attributes": {
     "name": "[PostgreSQL] Buffer Cache Hit Ratio above threshold",
-    "tags": ["PostgreSQL",
-      "Buffer Cache Hit Ratio"],
+    "tags": ["PostgreSQL"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -13,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": "<",
-      "size": 100,
       "esqlQuery": {
         "esql": "FROM metrics-postgresql.statement-default\n| STATS total_hits=SUM(postgresql.database.blocks.hit), total_reads=SUM(postgresql.database.blocks.read) BY postgresql.database.name, host.name\n| EVAL total_blocks = total_hits + total_reads\n| EVAL cache_hit_ratio = CASE(total_blocks > 0, (total_hits / total_blocks) * 100, 0)\n| WHERE cache_hit_ratio < 90"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1
