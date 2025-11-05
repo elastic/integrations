@@ -78,7 +78,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| actor.entity.id | Legacy field containing the actor entity identifier. For type-specific entities, use user.entity.id, service.entity.id, host.entity.id, or entity.id instead. | keyword |
+| actor.entity.id | [Deprecated] Legacy field containing the actor entity identifier. For type-specific entities, use user.entity.id, service.entity.id, host.entity.id, or entity.id instead. | keyword |
 | aws.cloudtrail.additional_eventdata | Additional data about the event that was not part of the request or response. | keyword |
 | aws.cloudtrail.additional_eventdata.text | Multi-field of `aws.cloudtrail.additional_eventdata`. | text |
 | aws.cloudtrail.api_version | Identifies the API version associated with the AwsApiCall eventType value. | keyword |
@@ -143,7 +143,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | related.entity | A collection of all entity identifiers associated with the document.  If the document  contains multiple entities, identifiers for each will be included. Example identifiers include(but not limited to) cloud resource IDs, ARNs,  email addresses, and hostnames. | keyword |
 | service.entity.id | Unique identifier for AWS services acting as principals in CloudTrail events. Contains service identifiers like 'lambda.amazonaws.com' or 'ec2.amazonaws.com'. | keyword |
 | service.target.entity.id | Unique identifier for AWS service resources targeted by CloudTrail events. Includes ARNs and IDs for resources like S3 buckets, Lambda functions, KMS keys, RDS databases, CloudWatch logs, SNS topics, security groups, VPCs, and other AWS service resources. | keyword |
-| target.entity.id | Legacy field containing all target entity identifiers. For type-specific entities, use user.target.entity.id, service.target.entity.id, host.target.entity.id, or entity.target.id instead. | keyword |
+| target.entity.id | [Deprecated] Legacy field containing all target entity identifiers. For type-specific entities, use user.target.entity.id, service.target.entity.id, host.target.entity.id, or entity.target.id instead. | keyword |
 | user.entity.id | Unique identifier for IAM users and roles acting as principals in CloudTrail events. Contains ARNs for IAM users, assumed roles, and federated users. | keyword |
 | user.target.entity.id | Unique identifier for IAM users, roles, groups, and policies targeted by CloudTrail events. Includes ARNs, usernames, group names, role names, access key IDs, and MFA serial numbers. | keyword |
 
