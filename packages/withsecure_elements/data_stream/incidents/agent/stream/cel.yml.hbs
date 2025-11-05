@@ -31,6 +31,7 @@ auth.oauth2:
 state:
   organization_id: !!str {{organization_id}}
   initial_interval: 168h
+  batch_size: {{batch_size}}
 program: |-
   request(
     "GET",
@@ -42,7 +43,7 @@ program: |-
         )
       ],
       "archived": ["false"],
-      "limit": ["50"],
+      "limit": [string(state.batch_size)],
       "order": ["asc"],
       ?"anchor": state.?next_anchor.optMap(v, [v]),
     }.format_query()
@@ -63,6 +64,7 @@ program: |-
         },
         "organization_id": state.organization_id,
         "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
         ?"next_anchor": body.?nextAnchor,
         "want_more": has(body.nextAnchor),
       }
@@ -83,6 +85,7 @@ program: |-
       }],
       "organization_id": state.organization_id,
       "initial_interval": state.initial_interval,
+      "batch_size": state.batch_size,
       "want_more": false,
     }
   )
