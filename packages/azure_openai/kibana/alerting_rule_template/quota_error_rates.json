@@ -3,8 +3,7 @@
   "type": "alerting_rule_template",
   "attributes": {
     "name": "[Azure OpenAI] Quota Error Rates above threshold",
-    "tags": ["Azure OpenAI",
-      "Quota Error Rates"],
+    "tags": ["Azure OpenAI"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -13,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": "<",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM logs-azure_openai.logs-default\n| STATS quota_error = COUNT(http.response.status_code == 429) by azure.dimensions.model_deployment_name\n| WHERE quota_error > 0"
+        "esql": "// The recommended threshold value for quota errors is > 0, and the alerting rule is grouped by Model Name. You can adjust the threshold value by modifying the quota_error count in the WHERE clause. \n FROM logs-azure_openai.logs-default\n| STATS quota_error = COUNT(http.response.status_code == 429) by azure.dimensions.model_deployment_name\n| WHERE quota_error > 0"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1

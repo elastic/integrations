@@ -3,8 +3,7 @@
   "type": "alerting_rule_template",
   "attributes": {
     "name": "[Azure OpenAI] Latency high",
-    "tags": ["Azure OpenAI",
-      "Latency"],
+    "tags": ["Azure OpenAI"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -13,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-azure.open_ai-default\n| STATS time_to_response = AVG(azure.open_ai.time_to_response.avg) by azure.dimensions.model_deployment_name\n| WHERE time_to_response > 5000"
+        "esql": "// The recommended threshold value for response latency is > 5 seconds, and the alerting rule is grouped by Model Name. You can adjust the threshold value by modifying the time_to_response in the WHERE clause, which is specified in milliseconds. \nFROM metrics-azure.open_ai-default\n| STATS time_to_response = AVG(azure.open_ai.time_to_response.avg) by azure.dimensions.model_deployment_name\n| WHERE time_to_response > 5000"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1
