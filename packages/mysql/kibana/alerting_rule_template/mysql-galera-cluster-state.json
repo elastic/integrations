@@ -2,7 +2,7 @@
   "id": "mysql-galera-cluster-state",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[MySQL Galera] Cluster State",
+    "name": "[MySQL Galera] Cluster State Abnormal",
     "tags": ["MySQL Galera"],
     "ruleTypeId": ".es-query",
     "schedule": {
@@ -12,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-mysql.galera_status-default\n| STATS statuses = VALUES(mysql.galera_status.connected) BY host.name\n| WHERE \"ON\" != statuses"
+        "esql": "// The recommended threshold value for connected status is != ON, and the alerting rule is grouped by host name. You can adjust the threshold value by modifying the statuses value in the WHERE clause.\nFROM metrics-mysql.galera_status-default\n| STATS statuses = VALUES(mysql.galera_status.connected) BY host.name\n| WHERE \"ON\" != statuses"
       },
-      "aggType": "count",
-      "groupBy": "all",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "groupBy": "row",
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1

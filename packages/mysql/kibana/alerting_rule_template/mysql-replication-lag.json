@@ -2,7 +2,7 @@
   "id": "mysql-replication-lag",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[MySQL Replica] Lag",
+    "name": "[MySQL Replica] Replication Lag High",
     "tags": ["MySQL Replica"],
     "ruleTypeId": ".es-query",
     "schedule": {
@@ -12,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-mysql.replica_status-default\n| STATS secondsbehind=max(mysql.replica_status.seconds_behind_source) by host.name, mysql.replica_status.channel.name\n| WHERE secondsbehind > 10"
+        "esql": "// The recommended threshold value for seconds behind source is > 10, and the alerting rule is grouped by host name and channel name. You can adjust the threshold value by modifying the secondsbehind value in the WHERE clause, which is specified in seconds.\nFROM metrics-mysql.replica_status-default\n| STATS secondsbehind=max(mysql.replica_status.seconds_behind_source) by host.name, mysql.replica_status.channel.name\n| WHERE secondsbehind > 10"
       },
-      "aggType": "count",
-      "groupBy": "all",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "groupBy": "row",
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1

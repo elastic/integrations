@@ -2,7 +2,7 @@
   "id": "mysql-slow-queries",
   "type": "alerting_rule_template",
   "attributes": {
-    "name": "[MySQL Performance] Slow Queries P95 Latency",
+    "name": "[MySQL Performance] Slow Query Latency High",
     "tags": ["MySQL Performance"],
     "ruleTypeId": ".es-query",
     "schedule": {
@@ -12,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
-        "esql": "FROM metrics-mysql.performance-default\n| STATS p95_ms = max(`mysql.performance.events_statements.quantile.95`/1e9) BY host.name, mysql.performance.events_statements.query_id, mysql.performance.events_statements.schemaname\n| WHERE p95_ms > 500"
+        "esql": "// The recommended threshold value for slow queries is > 500, and the alerting rule is grouped by host name, query id and schema name. You can adjust the threshold value by modifying the p95_ms value in the WHERE clause, which is specified in milliseconds.\nFROM metrics-mysql.performance-default\n| STATS p95_ms = max(`mysql.performance.events_statements.quantile.95`/1e9) BY host.name, mysql.performance.events_statements.query_id, mysql.performance.events_statements.schemaname\n| WHERE p95_ms > 500"
       },
-      "aggType": "count",
-      "groupBy": "all",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "groupBy": "row",
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1
