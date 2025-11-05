@@ -48,6 +48,10 @@ processors:
           field: event.original
           target_field: json
           tag: json_parse_original
+          on_failure:
+              - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     - fingerprint:
           fields:
               - json.inserted_at
@@ -61,12 +65,20 @@ processors:
           tag: date_detection_timestamp
           formats:
               - ISO8601
+          on_failure:
+              - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     - date:
           field: json.detection_timestamp
           target_field: '@timestamp'
           tag: date_timestamp
           formats:
               - ISO8601
+          on_failure:
+              - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     - rename:
           field: json.id
           target_field: neon_cyber.detections.id

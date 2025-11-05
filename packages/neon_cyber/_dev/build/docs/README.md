@@ -1,4 +1,3 @@
-{{- generatedHeader }}
 # Neon Cyber Integration for Elastic
 
 ## Overview

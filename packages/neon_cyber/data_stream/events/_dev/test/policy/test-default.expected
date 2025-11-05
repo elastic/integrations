@@ -9,13 +9,13 @@ inputs:
         - config_version: 2
           data_stream:
             dataset: neon_cyber.events
-          interval: 1m
+          interval: 1h
           program: |-
             (
               state.with(
                 request(
                   "GET",
-                  state.url
+                  state.url.trim_right("/") + "/v1/events"
                 ).with(
                   {
                     "Header": {
@@ -63,7 +63,7 @@ inputs:
             enabled: false
             filename: ../../logs/cel/http-request-trace-*.ndjson
             maxbackups: 5
-          resource.url: http://host.tld
+          resource.url: https://api.neoncyber.io
           state:
             api_token: ${SECRET_0}
           tags:
