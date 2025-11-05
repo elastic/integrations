@@ -40,7 +40,10 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      source: ctx.event.duration = ctx.event.duration * params.param_nano
+      source: |
+        if (ctx.event.duration != null) {
+          ctx.event.duration = ctx.event.duration * params.param_nano
+        }
       params:
         param_nano: 1000000
   - rename:
@@ -93,6 +96,11 @@ processors:
       field: azure.auditlogs.properties.additionalDetails
       target_field: azure.auditlogs.properties.additional_details
       ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.AdditionalDetails
+      target_field: azure.auditlogs.properties.additional_details_as_string
+      ignore_missing: true
+      if: ctx.azure?.auditlogs?.properties?.AdditionalDetails != null && ctx.azure.auditlogs.properties.AdditionalDetails instanceof String
   - convert:
       field: azure.auditlogs.callerIpAddress
       target_field: source.ip
@@ -137,8 +145,12 @@ processors:
       target_field: azure.auditlogs.properties.result_reason
       ignore_missing: true
   - rename:
-      field: azure.auditlogs.properties.resultDescription
-      target_field: azure.auditlogs.properties.result_description
+      field: azure.auditlogs.resultDescription
+      target_field: azure.auditlogs.result_description
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.resultType
+      target_field: azure.auditlogs.result_type
       ignore_missing: true
   - rename:
       field: azure.auditlogs.properties.correlationId
@@ -160,11 +172,132 @@ processors:
       field: azure.auditlogs.properties.additional_details.userAgent
       target_field: azure.auditlogs.properties.additional_details.user_agent
       ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.Category
+      target_field: azure.auditlogs.properties.category_code
+      ignore_missing: true
+  - remove:
+      description: Drop RelationId field if value is null.
+      field: azure.auditlogs.properties.RelationId
+      ignore_missing: true
+      if: ctx.azure?.auditlogs?.properties?.RelationId == null
+  - rename:
+      field: azure.auditlogs.properties.RelationId
+      target_field: azure.auditlogs.properties.relation_id
+      ignore_missing: true
+      if: ctx.azure?.auditlogs?.properties?.RelationId != null
+  - rename:
+      field: azure.auditlogs.properties.Actor.ActorType
+      target_field: azure.auditlogs.properties.actor.actor_type
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.Actor.Application
+      target_field: azure.auditlogs.properties.actor.application
+      ignore_missing: true
+      if: ctx.azure?.auditlogs?.properties?.Actor?.Application != null
+  - rename:
+      field: azure.auditlogs.properties.Actor.ApplicationName
+      target_field: azure.auditlogs.properties.actor.application_name
+      ignore_missing: true
+      if: ctx.azure?.auditlogs?.properties?.Actor?.ApplicationName != null
+  - rename:
+      field: azure.auditlogs.properties.Actor.IsDelegatedAdmin
+      target_field: azure.auditlogs.properties.actor.is_delegated_admin
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.Actor.Name
+      target_field: azure.auditlogs.properties.actor.name
+      ignore_missing: true
+      if: ctx.azure?.auditlogs?.properties?.Actor?.Name != null
+  - rename:
+      field: azure.auditlogs.properties.Actor.ObjectId
+      target_field: azure.auditlogs.properties.actor.object_id
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.Actor.PartnerTenantId
+      target_field: azure.auditlogs.properties.actor.partner_tenant_id
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.Actor.UserPermissions
+      target_field: azure.auditlogs.properties.actor.user_permissions
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.Actor.UPN
+      target_field: azure.auditlogs.properties.actor.user_principal_name
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.ActivityDate
+      target_field: azure.auditlogs.properties.activity_datetime
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.ActivityDateTime
+      target_field: azure.auditlogs.properties.activity_datetime
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.ActivityResultStatus
+      target_field: azure.auditlogs.properties.activity_result_status
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.ActivityType
+      target_field: azure.auditlogs.properties.activity_type
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.AuditEventId
+      target_field: azure.auditlogs.properties.audit_event_id
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.Category
+      target_field: azure.auditlogs.properties.category
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.TargetDisplayNames
+      target_field: azure.auditlogs.properties.target_display_names
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.TargetObjectIds
+      target_field: azure.auditlogs.properties.target_object_ids
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      source: >-
+        if (ctx.azure?.auditlogs?.properties?.Targets != null) {
+          ctx.azure.auditlogs.properties.targets = new HashMap();
+          for (def i = 0; i < ctx.azure.auditlogs.properties.Targets.length; i++) {
+            String index = String.valueOf(i);
+            ctx.azure.auditlogs.properties.targets[index] = new HashMap();
+            if (ctx.azure.auditlogs.properties.Targets[i].Name != null) {
+              ctx.azure.auditlogs.properties.targets[index].name = ctx.azure.auditlogs.properties.Targets[i].Name;
+            }
+            if (ctx.azure.auditlogs.properties.Targets[i].ModifiedProperties != null) {
+              ctx.azure.auditlogs.properties.targets[index].modified_properties = new HashMap();
+              for (def j = 0; j < ctx.azure.auditlogs.properties.Targets[i].ModifiedProperties.length; j++) {
+                String n = String.valueOf(j);
+                ctx.azure.auditlogs.properties.targets[index].modified_properties[n] = new HashMap();
+                def modProp = ctx.azure.auditlogs.properties.Targets[i].ModifiedProperties[j];
+                if (modProp.Name != null) {
+                  ctx.azure.auditlogs.properties.targets[index].modified_properties[n].name = modProp.Name;
+                }
+                if (modProp.New != null) {
+                  ctx.azure.auditlogs.properties.targets[index].modified_properties[n].new = modProp.New;
+                }
+                if (modProp.Old != null) {
+                  ctx.azure.auditlogs.properties.targets[index].modified_properties[n].old = modProp.Old;
+                }
+              }
+            }
+          }
+          ctx.azure.auditlogs.properties.remove('Targets');
+        }
   - remove:
       description: Drop displayName field if value is null.
       if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.user?.displayName == null
       field: azure.auditlogs.properties.initiatedBy.user.displayName
-      ignore_missing: true   
+      ignore_missing: true 
+  - remove:
+      description: Drop the Actor object after renaming all the non-null fields.
+      field: azure.auditlogs.properties.Actor
+      ignore_missing: true
   - script:
       lang: painless
       source: >-
