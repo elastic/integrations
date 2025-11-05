@@ -3,8 +3,7 @@
   "type": "alerting_rule_template",
   "attributes": {
     "name": "[MicrosoftSQL Server] Used Log Space above threshold",
-    "tags": ["MicrosoftSQL Server",
-      "Used Log Space"],
+    "tags": ["MicrosoftSQL Server"],
     "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "1m"
@@ -13,20 +12,11 @@
       "searchType": "esqlQuery",
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
-      "threshold": [
-        0
-      ],
-      "thresholdComparator": ">",
-      "size": 100,
       "esqlQuery": {
         "esql": "FROM metrics-microsoft_sqlserver.transaction_log-default\n| STATS used_logspace=MAX(mssql.metrics.used_log_space_pct) * 100\n by mssql.metrics.server_name\n| WHERE used_logspace > 90"
       },
-      "aggType": "count",
       "groupBy": "row",
-      "termSize": 5,
-      "sourceFields": [],
-      "timeField": "@timestamp",
-      "excludeHitsFromPreviousRun": true
+      "timeField": "@timestamp"
     },
     "alertDelay": {
       "active": 1
