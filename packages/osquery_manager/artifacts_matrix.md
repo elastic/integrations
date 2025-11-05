@@ -3,8 +3,18 @@
 This document tracks the coverage of forensic artifacts from the Velociraptor to Osquery mapping analysis.
 
 **Last Updated**: 2025-11-05
-**Total Core Artifacts**: 12
+**Total Core Artifacts**: 12 available + 5 not available = 17 total
 **Total Queries**: 45 (18 core forensic variants + 27 additional)
+**Coverage Rate**: 70.6% (12/17 core artifacts available with standard osquery)
+
+---
+
+## Coverage Summary
+
+| Status | Count | Percentage |
+|--------|-------|------------|
+| ✅ Available (Standard osquery) | 12 | 70.6% |
+| ⚠️ Not Available (Requires Extensions) | 5 | 29.4% |
 
 ---
 
@@ -30,6 +40,11 @@ This document tracks the coverage of forensic artifacts from the Velociraptor to
 | 11 | Network Interfaces      | ✅ | All | network_interfaces_baseline | [019](kibana/osquery_saved_query/osquery_manager-cafd7d30-52d9-495a-ba23-020e6fa06357.json) | Document network configuration and identify anomalies like VPN or tunnel interfaces |
 | 12 | Disk Info               | ✅ | Win | disk_drives_removable_windows | [030](kibana/osquery_saved_query/osquery_manager-09d80b84-b3a6-4ac4-a85b-bf1731c00e64.json) | Enumerate logical drives on Windows systems focusing on removable media and unusual volumes (uses logical_drives table) |
 | 12a | Disk Info               | ✅ | Mac+Linux | mounts_removable | [048](kibana/osquery_saved_query/osquery_manager-334f0f0f-3d0a-40e2-b094-c844e419a968.json) | Enumerate mounted volumes focusing on removable media and external drives (unified query for both platforms) |
+| 13 | AmCache                 | ⚠️ | Win | - | - | **Not Available** - PR #7261 closed due to SQL constraint problems. Alternative: Use Prefetch + File Hashes + Registry uninstall keys |
+| 14 | Jumplists               | ⚠️ | Win | - | - | **Not Available** - PR #7260 closed due to OLE format complexity. Alternative: File enumeration + Shellbags + Office MRU |
+| 15 | Browser History         | ⚠️ | All | - | - | **Not Available** - No native table, databases locked while browser running. Alternative: Downloads folder + cache analysis + ATC extension |
+| 16 | MFT                     | ⚠️ | Win | - | - | **Not Available** - Complex NTFS structure requires specialized parsing. Alternative: Trail of Bits extension + USN Journal + targeted queries |
+| 17 | File Handles            | ⚠️ | All | - | - | **Not Available** - PR #7835 still open, not merged. Alternative: process_open_sockets + file table + eclecticiq extension |
 
 ---
 
@@ -71,11 +86,35 @@ These queries existed in the original repository and provide additional coverage
 
 ---
 
+## Not Available Artifacts
+
+The following artifacts cannot be queried with standard osquery and require extensions or are not yet supported:
+
+| # | Artifact | Status | Reason | Alternative Approach |
+|:-:|----------|:------:|--------|----------------------|
+| 1 | AmCache | ⚠️ | PR #7261 closed due to SQL constraint problems | Use combination of Prefetch analysis, file system queries for recent executables, and registry uninstall keys |
+| 2 | Jumplists | ⚠️ | PR #7260 closed due to OLE format complexity | File enumeration (list .automaticDestinations-ms files), manual offline analysis, or use Recent files from Shellbags/Office MRU |
+| 3 | Browser History | ⚠️ | No native table, databases locked while browser running | Downloads folder analysis, file system queries for browser cache, or ATC custom tables (if deployed) |
+| 4 | MFT | ⚠️ | Complex NTFS structure requires specialized parsing | Trail of Bits osquery extension (if deployed), USN Journal for recent activity, or targeted file system queries |
+| 5 | File Handles | ⚠️ | PR #7835 still open, not merged | Network connections via process_open_sockets, file table for static analysis, or eclecticiq-osq-ext-bin extension |
+
+### Alternative Coverage
+
+While these artifacts are not directly available, the existing queries provide strong coverage through related artifacts:
+
+**Execution Tracking**: Use Prefetch + File Hashes + Process Listing instead of AmCache
+**User Activity**: Use Shellbags + LNK Files + Office Documents instead of Jumplists/Browser History
+**File System Monitoring**: Use USN Journal + File Hashes instead of MFT
+**Resource Access**: Use Network Connections + Process Listing instead of File Handles
+
+---
+
 ## Legend
 
 ### Status Definitions
 
 - ✅ Available in standard osquery with production-ready queries
+- ⚠️ Not Available - Requires osquery extensions or not yet supported
 
 ---
 
@@ -96,9 +135,18 @@ These queries existed in the original repository and provide additional coverage
 ### File Activity
 - ✅ File Hashes
 - ✅ LNK Files
+- ⚠️ Jumplists (Not Available)
+- ⚠️ MFT (Not Available)
 
 ### System Information
 - ✅ Disk Info
 - ✅ Process Listing
+- ⚠️ File Handles (Not Available)
+
+### Execution Artifacts
+- ⚠️ AmCache (Not Available)
+
+### User Activity
+- ⚠️ Browser History (Not Available)
 
 ---
