@@ -34,31 +34,34 @@ program: |-
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           {
-            "events": (has(body.data) && body.data.size() > 0) ?
-              body.data.map(e,
-                {
-                  "message": e.encode_json(),
-                }
-              )
-            :
-              []
+            "events": dyn(
+              (has(body.data) && body.data.size() > 0) ?
+                body.data.map(e,
+                  {
+                    "message": e.encode_json(),
+                  }
+                )
+              :
+                []
+            )
           }
         )
       :
         {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET " + state.url + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
-            },
-          },
-          "want_more": false,
+          "events": dyn(
+            {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/v1/events: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            }
+          )
         }
       )
     )
